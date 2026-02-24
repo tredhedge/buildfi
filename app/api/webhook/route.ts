@@ -6,9 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { translateToMC } from "@/lib/quiz-translator";
 import { runMC } from "@/lib/engine";
-import { extractReportData } from "@/lib/report-data";
-import { renderReportHTML } from "@/lib/report-html";
-import { calcCostOfDelay, calcMinViableReturn } from "@/lib/report-html";
+import { renderReportHTML, calcCostOfDelay, calcMinViableReturn, extractReportData } from "@/lib/report-html";
 import { generatePDF } from "@/lib/pdf-generator";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
@@ -87,7 +85,6 @@ export async function POST(req: NextRequest) {
     const D = extractReportData(mc, params);
 
     // ─── Step 5: Render report HTML ───
-    // Full branded HTML with embedded CSS, SVG charts, DM Sans font
     const quiz = quizAnswers;
     const costDelay = calcCostOfDelay(params);
     const minReturn = calcMinViableReturn(params);
@@ -106,8 +103,6 @@ export async function POST(req: NextRequest) {
       access: "public",
       contentType: "application/pdf",
       addRandomSuffix: true,
-      // Note: Vercel Blob doesn't have native expiry; 
-      // use a cron job to clean old blobs, or use signed URLs
     });
 
     console.log(`[webhook] PDF uploaded: ${blob.url}`);
@@ -134,8 +129,6 @@ export async function POST(req: NextRequest) {
   } catch (err: unknown) {
     console.error("[webhook] Processing error:", err);
     // Don't return 500 to Stripe — it would retry.
-    // Log the error and return 200 to acknowledge receipt.
-    // TODO: Add dead letter queue / alert for failed deliveries
     return NextResponse.json({
       received: true,
       error: err instanceof Error ? err.message : "Processing failed",

@@ -18,7 +18,6 @@ async function getBrowser(): Promise<Browser> {
     _browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      // Common paths — adjust for your OS
       executablePath:
         process.platform === "darwin"
           ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -30,9 +29,9 @@ async function getBrowser(): Promise<Browser> {
     // Vercel serverless: use @sparticuz/chromium
     _browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: { width: 1280, height: 900 },
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      headless: true,
     });
   }
 

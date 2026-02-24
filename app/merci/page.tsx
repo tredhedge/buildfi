@@ -1,10 +1,8 @@
 // /app/merci/page.tsx
 // Post-purchase confirmation page
-// Displays success message and provides download link
 
 import { Suspense } from "react";
 
-// Stripe session lookup happens server-side
 async function getSessionData(sessionId: string) {
   if (!sessionId) return null;
 
@@ -31,9 +29,7 @@ function ConfirmationContent({
 }: {
   searchParams: { session_id?: string };
 }) {
-  // For now, render a static confirmation
-  // In production, look up the session to personalize
-  const fr = true; // Default to French; use session.lang in production
+  const fr = true;
 
   return (
     <div
@@ -51,11 +47,10 @@ function ConfirmationContent({
         {/* Logo */}
         <div
           style={{
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: 800,
             color: "#1A1208",
-            letterSpacing: -0.5,
-            marginBottom: 8,
+            marginBottom: 4,
           }}
         >
           buildfi.ca
@@ -67,27 +62,35 @@ function ConfirmationContent({
             fontWeight: 600,
             textTransform: "uppercase" as const,
             letterSpacing: 2,
-            marginBottom: 40,
+            marginBottom: 36,
           }}
         >
-          {fr ? "Planification financière accessible" : "Accessible financial planning"}
+          {fr
+            ? "Planification financière accessible"
+            : "Accessible financial planning"}
         </div>
 
         {/* Success icon */}
         <div
           style={{
-            width: 80,
-            height: 80,
+            width: 72,
+            height: 72,
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #2A8C46, #3AA856)",
-            display: "inline-flex",
+            background: "#2A8C46",
+            display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 24,
+            margin: "0 auto 24px",
           }}
         >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-            <polyline points="20 6 9 17 4 12" />
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M20 6L9 17l-5-5"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
 
@@ -96,7 +99,7 @@ function ConfirmationContent({
           style={{
             fontSize: 28,
             fontWeight: 800,
-            color: "#1A1A1A",
+            color: "#1A1208",
             marginBottom: 12,
           }}
         >
@@ -106,29 +109,33 @@ function ConfirmationContent({
         {/* Message */}
         <p
           style={{
-            fontSize: 15,
+            fontSize: 16,
             color: "#555",
-            lineHeight: 1.8,
+            lineHeight: 1.7,
             marginBottom: 32,
           }}
         >
           {fr
             ? "Votre rapport personnalisé est en cours de préparation. Vous recevrez un courriel avec votre rapport PDF dans les prochaines minutes."
-            : "Your personalized report is being prepared. You'll receive an email with your PDF report in the next few minutes."}
+            : "Your personalized report is being prepared. You will receive an email with your PDF report within the next few minutes."}
         </p>
 
-        {/* Email note */}
+        {/* Email reminder */}
         <div
           style={{
-            background: "#FFF8ED",
+            background: "#FDF8F0",
             border: "1px solid #E8E0D4",
             borderRadius: 12,
             padding: "20px 24px",
-            marginBottom: 24,
+            marginBottom: 32,
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1208", marginBottom: 6 }}>
-            {fr ? "Vérifiez votre boîte de réception" : "Check your inbox"}
+          <div
+            style={{ fontSize: 14, fontWeight: 700, color: "#1A1208", marginBottom: 6 }}
+          >
+            {fr
+              ? "Vérifiez votre boîte de réception"
+              : "Check your inbox"}
           </div>
           <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>
             {fr
@@ -137,12 +144,16 @@ function ConfirmationContent({
           </div>
         </div>
 
-        {/* Support */}
-        <p style={{ fontSize: 12, color: "#999" }}>
-          {fr
-            ? "Besoin d'aide? Écrivez à support@buildfi.ca"
-            : "Need help? Email support@buildfi.ca"}
-        </p>
+        {/* Support link */}
+        <div style={{ fontSize: 13, color: "#999" }}>
+          {fr ? "Besoin d'aide? Écrivez à " : "Need help? Email "}
+          <a
+            href="mailto:support@buildfi.ca"
+            style={{ color: "#C4944A", textDecoration: "none", fontWeight: 600 }}
+          >
+            support@buildfi.ca
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -156,8 +167,16 @@ export default function MerciPage({
   return (
     <Suspense
       fallback={
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          Chargement...
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#FEFCF9",
+          }}
+        >
+          <div style={{ fontSize: 16, color: "#888" }}>Chargement...</div>
         </div>
       }
     >
