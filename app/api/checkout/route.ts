@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2026-01-28.clover",
 });
 
 // Stripe metadata values have a 500-char limit per key.
