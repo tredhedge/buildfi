@@ -43,7 +43,6 @@ export async function sendReportEmail(params: SendReportParams) {
         contentType: "application/pdf",
       },
     ],
-    // Tag for analytics
     tags: [
       { name: "tier", value: tier },
       { name: "grade", value: grade },
@@ -77,7 +76,7 @@ function buildEmailHTML(params: {
 </head>
 <body style="margin:0;padding:0;background:#FEFCF9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
   <div style="max-width:580px;margin:0 auto;padding:40px 24px">
-    
+
     <!-- Header -->
     <div style="text-align:center;margin-bottom:32px">
       <div style="font-size:24px;font-weight:800;color:#1A1208;letter-spacing:-0.5px">buildfi.ca</div>
@@ -111,7 +110,7 @@ function buildEmailHTML(params: {
 
     <!-- Download button -->
     <div style="text-align:center;margin-bottom:32px">
-      <a href="${downloadUrl}" 
+      <a href="${downloadUrl}"
          style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700">
         ${fr ? "Télécharger mon rapport" : "Download my report"}
       </a>
@@ -120,7 +119,7 @@ function buildEmailHTML(params: {
       </div>
     </div>
 
-    <!-- Upsell hint (subtle) -->
+    <!-- Upsell hint -->
     <div style="background:#F8F4EE;border-radius:10px;padding:20px;margin-bottom:28px;border:1px solid #E8E0D4">
       <div style="font-size:13px;font-weight:700;color:#1A1208;margin-bottom:6px">
         ${fr ? "Envie d'aller plus loin?" : "Want to go further?"}

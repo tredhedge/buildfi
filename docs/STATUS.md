@@ -3,70 +3,111 @@
 > Mis à jour: 2026-02-25
 
 ## PHASE ACTUELLE
-**P0 Infrastructure ✅ complétée → P1 en cours**
+**P1.4 — Pipeline paiement ~90% complété. Reste : bug UTF-8, variables Vercel, connexion quiz→checkout.**
+
+---
 
 ## CE QUI EST FAIT
 
-### Infrastructure (P0)
+### Infrastructure (P0) ✅
 | Service | Statut | Notes |
 |---------|--------|-------|
-| Domaine `buildfi.ca` | ✅ | Cloudflare Registrar |
+| Domaine `buildfi.ca` | ✅ | Cloudflare |
 | Vercel | ✅ | Auto-deploy sur push GitHub |
 | GitHub `tredhedge/buildfi` | ✅ | Repo privé |
-| Stripe | ✅ | 3 produits créés, mode TEST actif |
+| Stripe | ✅ | 3 produits créés, mode TEST |
 | Resend | ✅ | DNS pending verification |
-| PostHog | ✅ | Free plan, session replay activé |
-| Pages légales (P0.7) | ⏸ | Reporté — besoin nom légal + email contact |
+| PostHog | ✅ | Free plan |
+| Pages légales (P0.7) | ⏸ | Besoin nom légal + email contact |
 
-### Produit
-| Fichier | Statut | Notes |
-|---------|--------|-------|
-| `planner.html` | ✅ | Moteur MC + UI. 4,148 tests. Clé API retirée. |
-| `quiz-essentiel.html` | ✅ | Quiz 7 écrans + rapport Essentiel. AMF-compliant. |
-| `quiz-intermediaire.html` | ✅ | Rapport Intermédiaire. 18 scénarios validés. |
-| `manifest.json` + `sw.js` | ✅ | PWA |
-| `icon192/512.png` | ⚠️ | À refaire — créés avant le nom buildfi.ca |
+### Produit ✅
+| Fichier | Statut |
+|---------|--------|
+| `planner.html` | ✅ Moteur MC + UI. 4,148 tests. |
+| `quiz-essentiel.html` | ✅ Quiz 7 écrans + rapport. AMF-compliant. |
+| `quiz-intermediaire.html` | ✅ Rapport Intermédiaire. 18 scénarios validés. |
+
+### Pipeline Next.js (découvert 2026-02-25) ✅
+| Fichier | Statut |
+|---------|--------|
+| `lib/engine/index.js` | ✅ Moteur MC extrait (112KB, port 1:1) |
+| `lib/quiz-translator.ts` | ✅ Translator complet (40+ heuristiques) |
+| `lib/report-data.ts` | ✅ Extraction données rapport |
+| `lib/report-html.js` | ✅ Renderer HTML rapport (port 1:1) |
+| `lib/email.ts` | ✅ Template email bilingue + Resend |
+| `lib/pdf-generator.ts` | ✅ Puppeteer + Chromium Vercel |
+| `app/api/checkout/route.ts` | ✅ Stripe Checkout + metadata chunking |
+| `app/api/webhook/route.ts` | ✅ Pipeline complet MC→PDF→Blob→Email |
+| `app/merci/page.tsx` | ⚠️ Page faite — bug encodage UTF-8 |
+
+---
 
 ## CE QUI RESTE À FAIRE
 
-### Avant lancement P1
+### P1.4 — Immédiat (pour lancer)
+- [ ] **Bug UTF-8** — corriger accents corrompus dans `merci/page.tsx` et `email.ts`
+- [ ] **Variables Vercel** — configurer dans dashboard Vercel :
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_PRICE_ESSENTIEL` (Price ID depuis Stripe dashboard)
+  - `RESEND_API_KEY`
+  - `RESEND_FROM` = `BuildFi <rapport@buildfi.ca>`
+  - `NEXT_PUBLIC_BASE_URL` = `https://buildfi.ca`
+  - `STRIPE_WEBHOOK_SECRET` (après création webhook dans Stripe)
+- [ ] **Connexion quiz→checkout** — bouton "Acheter" dans `quiz-essentiel.html` doit POST vers `/api/checkout`
+- [ ] **Stripe webhook** — créer endpoint dans Stripe dashboard pointant vers `https://buildfi.ca/api/webhook`
+- [ ] **Tester pipeline complet** en mode TEST (Stripe card test 4242 4242 4242 4242)
+- [ ] **Vérifier `app/page.tsx`** — page d'accueil pointe où?
+
+### P1.5 — Après pipeline fonctionnel
+- [ ] Landing page buildfi.ca
+- [ ] Audit qualité R19-R20
+- [ ] Soft launch organique
+
+### Avant toute mise à l'échelle
 - [ ] Nouvelle clé API Anthropic (ancienne révoquée)
-- [ ] Stripe webhooks → livraison automatique post-paiement
-- [ ] Email templates Resend (reçu + livraison rapport)
-- [ ] PDF export du rapport
-- [ ] Blurred preview avant achat
-- [ ] PostHog events dans le quiz
-- [ ] P0.7 Pages légales (besoin : nom légal + email contact)
+- [ ] Pages légales P0.7
 - [ ] Nouveau logo buildfi.ca
-- [ ] Facebook Pixel (avant premier dollar de pub)
+- [ ] Facebook Pixel
 
-### P1 restant
-- [ ] P1.4 Paiement Stripe + livraison email
-- [ ] P1.5 Landing page + site web
-- [ ] P1.6 Audit qualité R19-R20
-- [ ] P1.7 Soft launch organique (Reddit, LinkedIn)
+---
 
-## WORKFLOW MISE À JOUR FICHIERS
-1. Claude génère le fichier mis à jour
-2. Télécharger → remplacer dans le dossier `buildfi` sur votre ordi
-3. GitHub Desktop détecte le changement automatiquement
-4. Commit (résumé court) → Push origin
-5. Vercel déploie en ~30 secondes
-
-## STRUCTURE REPO GITHUB
+## STRUCTURE REPO GITHUB (état réel)
 ```
 buildfi/
 ├── planner.html
 ├── quiz-essentiel.html
 ├── quiz-intermediaire.html
-├── manifest.json
-├── sw.js
-├── icon192.png
-├── icon512.png
+├── manifest.json + sw.js + icon192/512.png
+├── next.config.js + package.json + tsconfig.json
+├── .env.local (local seulement, jamais committé)
+├── app/
+│   ├── page.tsx              ← À vérifier
+│   ├── layout.tsx
+│   ├── globals.css
+│   ├── favicon.ico
+│   ├── api/checkout/route.ts ← ✅ Stripe checkout
+│   ├── api/webhook/route.ts  ← ✅ Pipeline MC→PDF→Email
+│   └── merci/page.tsx        ← ⚠️ Bug UTF-8
+├── lib/
+│   ├── engine/index.js       ← ✅ Moteur MC (112KB)
+│   ├── quiz-translator.ts    ← ✅ 40+ heuristiques
+│   ├── report-data.ts        ← ✅ Extraction données
+│   ├── report-html.js        ← ✅ Renderer HTML
+│   ├── email.ts              ← ⚠️ Bug UTF-8
+│   └── pdf-generator.ts      ← ✅ Puppeteer
+├── public/                   ← Vide (SVGs boilerplate supprimés)
 └── docs/
-    ├── STATUS.md          ← ce fichier — état actuel + prochaine session
-    ├── ROADMAP.md         ← phases, sous-étapes, statuts, go/no-go
-    ├── TECH-REFERENCE.md  ← architecture, code, audits, conformité AMF
-    ├── SERVICES.md        ← tous les comptes et configs backend
-    └── STRATEGY.md        ← brand, marketing, compétiteurs, pricing
+    ├── STATUS.md
+    ├── ROADMAP.md
+    ├── TECH-REFERENCE.md
+    ├── SERVICES.md
+    ├── STRATEGY.md
+    └── P1.3-P1.4-SPEC.md
 ```
+
+## WORKFLOW MISE À JOUR FICHIERS
+1. Claude génère le fichier mis à jour
+2. Télécharger → remplacer dans le dossier `buildfi` sur votre ordi
+3. GitHub Desktop détecte le changement
+4. Commit (résumé court) → Push origin
+5. Vercel déploie en ~30 secondes
