@@ -2526,6 +2526,11 @@ function render() {
     app.innerHTML = renderPaywall(s.reportData, s.lang);
     return;
   }
+  if (s.showPaywall && s.reportData && !s.paid) {
+    var reportHTML = renderReport(s.reportData, s.mc, s.quiz, s.ai, s.aiLoading, s.lang, s.costDelay||0, s.minReturn||0);
+    app.innerHTML = renderBlurredReport(reportHTML, s.reportData, s.lang);
+    return;
+  }
   if (s.showReport && s.reportData) {
     app.innerHTML = renderReport(s.reportData, s.mc, s.quiz, s.ai, s.aiLoading, s.lang, s.costDelay||0, s.minReturn||0);
     return;
@@ -2548,7 +2553,7 @@ function render() {
         STATE.costDelay = calcCostOfDelay(params);
         STATE.minReturn = calcMinViableReturn(params);
         STATE.aiLoading = false;
-        STATE.showReport = true;
+        STATE.showPaywall = true;
         render();
       }, 100);
     }
@@ -2838,6 +2843,61 @@ function renderPaywall(D, lang) {
 
   h += '</div>';
   return h;
+}
+function startCheckout() {
+  var email = document.getElementById("buyer-email").value.trim();
+  if (!email || !email.includes("@")) {
+    alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+    return;
+  }
+  var btn = document.querySelector("#paywall-btn");
+  btn.disabled = true;
+  btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
+  fetch("/api/checkout", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({quizAnswers: STATE.quiz, lang: STATE.lang, email: email, tier: "essentiel"})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.url) { window.location.href = data.url; }
+    else {
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+      btn.disabled = false;
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport — 39 $" : "Get my report — $39";
+    }
+  })
+  .catch(function() {
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+    btn.disabled = false;
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport — 39 $" : "Get my report — $39";
+  });
+}
+
+function renderBlurredReport(reportHTML, D, lang) {
+  var fr = lang === "fr";
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  return '<div style="position:relative;overflow:hidden">'
+    + '<div style="filter:blur(6px);pointer-events:none;user-select:none;max-height:600px;overflow:hidden">'
+    + reportHTML
+    + '</div>'
+    + '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to bottom,transparent 20%,rgba(250,248,244,0.97) 55%)">'
+    + '</div>'
+    + '<div style="position:absolute;top:180px;left:0;right:0;text-align:center;padding:0 24px">'
+    + '<div style="background:#fff;border-radius:20px;padding:32px 28px;max-width:480px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,0.12)">'
+    + '<div style="font-size:13px;color:#888;margin-bottom:6px">' + (fr ? "VOTRE NOTE DE RETRAITE" : "YOUR RETIREMENT GRADE") + '</div>'
+    + '<div style="font-size:72px;font-weight:800;color:' + gradeColor + ';line-height:1;margin-bottom:8px">' + D.grade + '</div>'
+    + '<div style="font-size:15px;color:#555;margin-bottom:24px">' + D.successPct + '% ' + (fr ? "de scenarios reussis sur 5 000" : "of 5,000 scenarios succeeded") + '</div>'
+    + '<div style="font-size:14px;color:#333;margin-bottom:20px;line-height:1.6">'
+    + (fr ? "Votre rapport complet est pret. Debloquez l\'analyse detaillee, les projections et les recommandations personnalisees."
+          : "Your full report is ready. Unlock the detailed analysis, projections and personalized recommendations.")
+    + '</div>'
+    + '<input id="buyer-email" type="email" placeholder="' + (fr ? "Votre adresse courriel" : "Your email address") + '" style="width:100%;padding:13px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">'
+    + '<button id="paywall-btn" onclick="startCheckout()" style="width:100%;padding:15px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">'
+    + (fr ? "Obtenir mon rapport — 39 $" : "Get my report — $39")
+    + '</button>'
+    + '<div style="font-size:11px;color:#aaa;margin-top:10px">' + (fr ? "Paiement unique. Garantie 30 jours." : "One-time payment. 30-day guarantee.") + '</div>'
+    + '</div></div></div>';
 }
 function renderReport(D, mc, quiz, ai, aiLoading, lang, costDelay, minReturn) {
   costDelay = costDelay || 0;
@@ -3170,6 +3230,10 @@ render();
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
