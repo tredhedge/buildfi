@@ -2569,7 +2569,16 @@ function go(step) {
   render();
 }
 
-function uq(key, val) { STATE.quiz[key] = val; render(); }
+var _uqTimer = null;
+function uq(key, val) {
+  STATE.quiz[key] = val;
+  if (typeof val === "number") {
+    clearTimeout(_uqTimer);
+    _uqTimer = setTimeout(render, 600);
+  } else {
+    render();
+  }
+}
 
 
 // ============================================================
@@ -2683,9 +2692,9 @@ function renderQuiz(step, q, lang) {
     var debtTypes = [{v:"cc",l:t("Carte de crédit","Credit card"),r:19.99},{v:"student",l:t("Prêt étudiant","Student loan"),r:5.5},{v:"car",l:t("Prêt automobile","Car loan"),r:6.5},{v:"loc",l:t("Marge de crédit","Line of credit"),r:7.5}];
     var debtInputs = debtTypes.map(function(dt) {
       var d = q.debts.find(function(x){return x.type===dt.v;}) || {type:dt.v, amount:0, minPayment:0, rate:dt.r};
-      var curRate = d.rate != null ? d.rate : dt.r;
+      var curRate = d.rate != null ? Math.round(d.rate * 1000) / 10 : Math.round(dt.r * 1000) / 10;
       return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:8px">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '\',\'rate\',+this.value)" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--bd);font-size:12px;font-family:monospace;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '','rate',+this.value/100)" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--bd);font-size:12px;font-family:monospace;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
         + '<div><label style="font-size:12px;color:var(--ts)">' + t("Solde","Balance") + ' ($)</label><input type="number" min="0" step="100" value="' + (d.amount||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'amount\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
         + '<div><label style="font-size:12px;color:var(--ts)">' + t("Paiement min.","Min. payment") + ' ($/'+t("mois","mo")+')</label><input type="number" min="0" step="10" value="' + (d.minPayment||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'minPayment\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
@@ -2850,7 +2859,7 @@ function startCheckout() {
     alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
     return;
   }
-  var btn = document.querySelector("#paywall-btn");
+  var btn = document.querySelector("#email-gate button") || document.querySelector("#paywall-btn") || document.activeElement;
   btn.disabled = true;
   btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
   fetch("/api/checkout", {
@@ -3230,6 +3239,10 @@ render();
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
