@@ -1,113 +1,106 @@
 # STATUS.md
 > État actuel du projet. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-02-25
+> Mis à jour: 2026-02-25 — Fin de session
 
 ## PHASE ACTUELLE
-**P1.4 — Pipeline paiement ~90% complété. Reste : bug UTF-8, variables Vercel, connexion quiz→checkout.**
+**P1.4 — Pipeline en cours. Bugs quiz-essentiel.html à régler avant lancement.**
 
 ---
 
 ## CE QUI EST FAIT
 
 ### Infrastructure (P0) ✅
-| Service | Statut | Notes |
-|---------|--------|-------|
-| Domaine `buildfi.ca` | ✅ | Cloudflare |
-| Vercel | ✅ | Auto-deploy sur push GitHub |
-| GitHub `tredhedge/buildfi` | ✅ | Repo privé |
-| Stripe | ✅ | 3 produits créés, mode TEST |
-| Resend | ✅ | DNS pending verification |
-| PostHog | ✅ | Free plan |
-| Pages légales (P0.7) | ⏸ | Besoin nom légal + email contact |
+| Service | Statut |
+|---------|--------|
+| Domaine buildfi.ca | ✅ |
+| Vercel | ✅ Auto-deploy |
+| GitHub tredhedge/buildfi | ✅ |
+| Stripe | ✅ 3 produits, mode TEST |
+| Resend | ✅ DNS pending |
+| PostHog | ✅ |
+| Variables Vercel | ✅ Toutes configurées |
 
-### Produit ✅
+### Pipeline Next.js ✅
 | Fichier | Statut |
 |---------|--------|
-| `planner.html` | ✅ Moteur MC + UI. 4,148 tests. |
-| `quiz-essentiel.html` | ✅ Quiz 7 écrans + rapport. AMF-compliant. |
-| `quiz-intermediaire.html` | ✅ Rapport Intermédiaire. 18 scénarios validés. |
+| lib/engine/index.js | ✅ Moteur MC extrait |
+| lib/quiz-translator.ts | ✅ |
+| lib/report-data.ts | ✅ |
+| lib/report-html.js | ✅ |
+| lib/email.ts | ✅ UTF-8 corrigé |
+| lib/pdf-generator.ts | ✅ |
+| app/api/checkout/route.ts | ✅ |
+| app/api/webhook/route.ts | ✅ |
+| app/merci/page.tsx | ✅ UTF-8 corrigé |
+| app/page.tsx | ✅ Redirige vers quiz |
 
-### Pipeline Next.js (découvert 2026-02-25) ✅
-| Fichier | Statut |
-|---------|--------|
-| `lib/engine/index.js` | ✅ Moteur MC extrait (112KB, port 1:1) |
-| `lib/quiz-translator.ts` | ✅ Translator complet (40+ heuristiques) |
-| `lib/report-data.ts` | ✅ Extraction données rapport |
-| `lib/report-html.js` | ✅ Renderer HTML rapport (port 1:1) |
-| `lib/email.ts` | ✅ Template email bilingue + Resend |
-| `lib/pdf-generator.ts` | ✅ Puppeteer + Chromium Vercel |
-| `app/api/checkout/route.ts` | ✅ Stripe Checkout + metadata chunking |
-| `app/api/webhook/route.ts` | ✅ Pipeline complet MC→PDF→Blob→Email |
-| `app/merci/page.tsx` | ⚠️ Page faite — bug encodage UTF-8 |
+### Quiz Essentiel — Partiellement corrigé
+| Fix | Statut |
+|-----|--------|
+| quiz-essentiel.html dans /public | ✅ |
+| Paywall showPaywall = true | ✅ |
+| renderBlurredReport() ajoutée | ✅ |
+| startCheckout() ajoutée | ✅ |
+| Champ API key masqué | ✅ |
+| Debounce inputs numériques (600ms) | ✅ |
+| curRate × 100 pour affichage % | ✅ |
+| Syntaxe setDebtField rate corrigée | ✅ |
 
 ---
 
-## CE QUI RESTE À FAIRE
+## BUGS RESTANTS — PRIORITÉ HAUTE
 
-### P1.4 — Immédiat (pour lancer)
-- [ ] **Bug UTF-8** — corriger accents corrompus dans `merci/page.tsx` et `email.ts`
-- [ ] **Variables Vercel** — configurer dans dashboard Vercel :
-  - `STRIPE_SECRET_KEY`
-  - `STRIPE_PRICE_ESSENTIEL` (Price ID depuis Stripe dashboard)
-  - `RESEND_API_KEY`
-  - `RESEND_FROM` = `BuildFi <rapport@buildfi.ca>`
-  - `NEXT_PUBLIC_BASE_URL` = `https://buildfi.ca`
-  - `STRIPE_WEBHOOK_SECRET` (après création webhook dans Stripe)
-- [ ] **Connexion quiz→checkout** — bouton "Acheter" dans `quiz-essentiel.html` doit POST vers `/api/checkout`
-- [ ] **Stripe webhook** — créer endpoint dans Stripe dashboard pointant vers `https://buildfi.ca/api/webhook`
-- [ ] **Tester pipeline complet** en mode TEST (Stripe card test 4242 4242 4242 4242)
-- [ ] **Vérifier `app/page.tsx`** — page d'accueil pointe où?
+### quiz-essentiel.html (public/)
+1. **Rapport flouté ne s'affiche pas** — renderBlurredReport() ne se déclenche pas correctement
+2. **Erreur au clic "Obtenir mon rapport"** — startCheckout() a encore un bug
+3. **Inputs numériques difficiles** — debounce partiel, encore des problèmes UX
+4. **Boîtes de pourcentage trop petites** — step 4/7, taux dettes peu lisibles
 
-### P1.5 — Après pipeline fonctionnel
-- [ ] Landing page buildfi.ca
-- [ ] Audit qualité R19-R20
-- [ ] Soft launch organique
-
-### Avant toute mise à l'échelle
-- [ ] Nouvelle clé API Anthropic (ancienne révoquée)
-- [ ] Pages légales P0.7
-- [ ] Nouveau logo buildfi.ca
-- [ ] Facebook Pixel
+### À faire après bugs réglés
+- [ ] Tester flow complet Stripe (carte test 4242 4242 4242 4242)
+- [ ] Vérifier livraison email Resend
+- [ ] Propager tous les fixes vers quiz-intermediaire.html
+- [ ] Stripe webhook en mode LIVE
+- [ ] Audit R19-R20
 
 ---
 
-## STRUCTURE REPO GITHUB (état réel)
+## STRUCTURE REPO GITHUB
 ```
 buildfi/
 ├── planner.html
-├── quiz-essentiel.html
+├── quiz-essentiel.html          ← version racine (modifiée mais pas celle servie)
 ├── quiz-intermediaire.html
-├── manifest.json + sw.js + icon192/512.png
-├── next.config.js + package.json + tsconfig.json
-├── .env.local (local seulement, jamais committé)
 ├── app/
-│   ├── page.tsx              ← À vérifier
-│   ├── layout.tsx
-│   ├── globals.css
-│   ├── favicon.ico
-│   ├── api/checkout/route.ts ← ✅ Stripe checkout
-│   ├── api/webhook/route.ts  ← ✅ Pipeline MC→PDF→Email
-│   └── merci/page.tsx        ← ⚠️ Bug UTF-8
+│   ├── page.tsx                 ✅ redirige vers /quiz-essentiel.html
+│   ├── api/checkout/route.ts    ✅
+│   ├── api/webhook/route.ts     ✅
+│   └── merci/page.tsx           ✅
 ├── lib/
-│   ├── engine/index.js       ← ✅ Moteur MC (112KB)
-│   ├── quiz-translator.ts    ← ✅ 40+ heuristiques
-│   ├── report-data.ts        ← ✅ Extraction données
-│   ├── report-html.js        ← ✅ Renderer HTML
-│   ├── email.ts              ← ⚠️ Bug UTF-8
-│   └── pdf-generator.ts      ← ✅ Puppeteer
-├── public/                   ← Vide (SVGs boilerplate supprimés)
+│   ├── engine/index.js          ✅
+│   ├── quiz-translator.ts       ✅
+│   ├── report-data.ts           ✅
+│   ├── report-html.js           ✅
+│   ├── email.ts                 ✅
+│   └── pdf-generator.ts         ✅
+├── public/
+│   └── quiz-essentiel.html      ← FICHIER SERVI — bugs en cours de correction
 └── docs/
     ├── STATUS.md
     ├── ROADMAP.md
     ├── TECH-REFERENCE.md
     ├── SERVICES.md
-    ├── STRATEGY.md
-    └── P1.3-P1.4-SPEC.md
+    └── STRATEGY.md
 ```
 
-## WORKFLOW MISE À JOUR FICHIERS
-1. Claude génère le fichier mis à jour
-2. Télécharger → remplacer dans le dossier `buildfi` sur votre ordi
-3. GitHub Desktop détecte le changement
-4. Commit (résumé court) → Push origin
-5. Vercel déploie en ~30 secondes
+## NOTE IMPORTANTE
+Le fichier servi est **public/quiz-essentiel.html** — pas le fichier racine.
+Tous les fixes doivent être appliqués à `public/quiz-essentiel.html`.
+Après correction complète, propager vers `quiz-intermediaire.html`.
+
+## PROCHAINE SESSION
+1. Déboguer renderBlurredReport() + startCheckout()
+2. Corriger UX inputs numériques
+3. Corriger boîtes pourcentage trop petites
+4. Tester flow Stripe complet
+5. Propager fixes vers quiz-intermediaire.html
