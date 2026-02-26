@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -2507,7 +2507,7 @@ var STATE = {
     worries:[], win:"", fix:"", confidence:3, family:""
   },
   mc: null, reportData: null, ai: {}, aiLoading: false, computed: false,
-  showReport: false, costDelay: 0, minReturn: 0
+  showReport: false, showPaywall: false, paid: false, costDelay: 0, minReturn: 0
 };
 
 function f$(n) {
@@ -2522,6 +2522,10 @@ function render() {
   var s = STATE, q = s.quiz, fr = s.lang === "fr";
   var t = function(f, e) { return fr ? f : e; };
 
+  if (s.showPaywall && s.reportData && !s.paid) {
+    app.innerHTML = renderPaywall(s.reportData, s.lang);
+    return;
+  }
   if (s.showReport && s.reportData) {
     app.innerHTML = renderReport(s.reportData, s.mc, s.quiz, s.ai, s.aiLoading, s.lang, s.costDelay||0, s.minReturn||0);
     return;
@@ -2737,6 +2741,104 @@ function toggleWorry(w) {
 // ============================================================
 // REPORT RENDERER (from essentiel-report-v4.jsx)
 // ============================================================
+function startCheckout() {
+  var email = document.getElementById("buyer-email").value.trim();
+  if (!email || !email.includes("@")) {
+    alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+    return;
+  }
+  var btn = document.querySelector("#email-gate button");
+  btn.disabled = true;
+  btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
+  fetch("/api/checkout", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      quizAnswers: STATE.quiz,
+      lang: STATE.lang,
+      email: email,
+      tier: "essentiel"
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+      btn.disabled = false;
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
+    }
+  })
+  .catch(function() {
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+    btn.disabled = false;
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
+  });
+}
+function renderPaywall(D, lang) {
+  var fr = lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  var gradeLabel = D.successPct >= 80 ? t("Votre plan est solide","Your plan is solid") : D.successPct >= 60 ? t("Votre plan a du potentiel","Your plan has potential") : t("Votre plan a besoin d'ajustements","Your plan needs adjustments");
+
+  var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:\'DM Sans\',sans-serif">';
+
+  // Logo
+  h += '<div style="text-align:center;margin-bottom:32px">';
+  h += '<div style="font-size:22px;font-weight:800;color:#1a2744">buildfi.ca</div>';
+  h += '<div style="font-size:11px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px">' + t("BILAN RETRAITE PERSONNALISÉ","PERSONALIZED RETIREMENT ASSESSMENT") + '</div>';
+  h += '</div>';
+
+  // Grade card
+  h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
+  h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de scénarios réussis","of scenarios succeeded") + '</div>';
+  h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
+  h += '</div>';
+
+  // What's in the report
+  h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
+  h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre rapport complet inclut :","Your full report includes:") + '</div>';
+  var items = fr ? [
+    "Analyse détaillée de vos 5 000 scénarios simulés",
+    "Projection de vos revenus à la retraite (RRQ, PSV, épargne)",
+    "Stratégie de remboursement de dettes optimisée",
+    "Analyse de vos frais de gestion et leur impact",
+    "Recommandations personnalisées pour améliorer votre note"
+  ] : [
+    "Detailed analysis of your 5,000 simulated scenarios",
+    "Retirement income projection (QPP, OAS, savings)",
+    "Optimized debt repayment strategy",
+    "Management fee analysis and their impact",
+    "Personalized recommendations to improve your grade"
+  ];
+  items.forEach(function(item) {
+    h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
+    h += '<div style="color:#1a7a4c;font-size:16px;margin-top:1px">✓</div>';
+    h += '<div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // Price + CTA
+  h += '<div style="text-align:center;margin-bottom:20px">';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
+  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">39 <span style="font-size:20px">$</span></div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
+  h += '<div id="email-gate" style="margin-bottom:16px">';
+  h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
+  h += t("Obtenir mon rapport complet →","Get my full report →");
+  h += '</button>';
+  h += '</div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Garantie satisfaction 30 jours — remboursement sans questions","30-day satisfaction guarantee — no questions asked") + '</div>';
+  h += '</div>';
+
+  h += '</div>';
+  return h;
+}
 function renderReport(D, mc, quiz, ai, aiLoading, lang, costDelay, minReturn) {
   costDelay = costDelay || 0;
   minReturn = minReturn || 0;
@@ -3068,3 +3170,8 @@ render();
 </script>
 </body>
 </html>
+
+
+
+
+
