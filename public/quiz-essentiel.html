@@ -2694,7 +2694,7 @@ function renderQuiz(step, q, lang) {
       var d = q.debts.find(function(x){return x.type===dt.v;}) || {type:dt.v, amount:0, minPayment:0, rate:dt.r};
       var curRate = d.rate != null ? Math.round(d.rate * 1000) / 10 : Math.round(dt.r * 1000) / 10;
       return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:8px">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '','rate',+this.value/100)" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--bd);font-size:12px;font-family:monospace;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '\',\'rate\',+this.value/100)" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--bd);font-size:12px;font-family:monospace;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
         + '<div><label style="font-size:12px;color:var(--ts)">' + t("Solde","Balance") + ' ($)</label><input type="number" min="0" step="100" value="' + (d.amount||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'amount\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
         + '<div><label style="font-size:12px;color:var(--ts)">' + t("Paiement min.","Min. payment") + ' ($/'+t("mois","mo")+')</label><input type="number" min="0" step="10" value="' + (d.minPayment||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'minPayment\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
@@ -3239,6 +3239,8 @@ render();
 </script>
 </body>
 </html>
+
+
 
 
 
