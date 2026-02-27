@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>buildfi.ca — Votre bilan retraite personnalisé | Jusqu'à 10 000 scénarios</title>
+<meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. À partir de 19,50$.">
+<meta property="og:title" content="buildfi.ca — Savoir si votre argent va durer">
+<meta property="og:description" content="Planification de retraite canadienne. Des milliers de scénarios, un rapport clair, un paiement unique.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buildfi.ca/">
+<meta property="og:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<link rel="canonical" href="https://buildfi.ca/">
+<link rel="alternate" hreflang="fr" href="https://buildfi.ca/">
+<link rel="alternate" hreflang="en" href="https://buildfi.ca/?lang=en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BuildFi","url":"https://buildfi.ca","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"AggregateOffer","lowPrice":"19.50","highPrice":"139","priceCurrency":"CAD"},"description":"Savoir si votre argent va durer. Planification de retraite canadienne par simulation Monte Carlo. 10 provinces et 3 territoires, bilingue.","inLanguage":["fr","en"]}
+</script>
+<script id="faqSchema" type="application/ld+json"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1a2744;--navy-light:#2c3e6b;--navy-dark:#111b2e;
+  --gold:#b8860b;--gold-light:#d4a520;--gold-dark:#96700a;
+  --gold-wash:rgba(184,134,11,.06);--gold-wash-strong:rgba(184,134,11,.12);
+  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
+  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
+  --border:#e8e0d4;--border-light:#f0ece4;
+  --success:#1a7a4c;--warning:#b89830;--danger:#b91c1c;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+  --shadow-gold:0 4px 20px rgba(184,134,11,.15);
+  --shadow-card:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-data:'JetBrains Mono',monospace;
+  --max-content:1120px;--max-narrow:720px;--max-wide:1280px;
+  --section-py:clamp(72px,9vw,104px);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(15px,1vw,16px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");opacity:.5}
+img{max-width:100%;display:block}
+a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(--gold-dark)}
+.skip-nav{position:absolute;top:-100%;left:16px;z-index:9999;background:var(--navy);color:#fff;padding:12px 24px;border-radius:0 0 8px 8px;font-weight:700;font-size:14px}.skip-nav:focus{top:0}
+.container{width:100%;max-width:var(--max-content);margin:0 auto;padding:0 24px}
+.container--narrow{max-width:var(--max-narrow)}.container--wide{max-width:var(--max-wide)}
+.section{padding:var(--section-py) 0;position:relative}
+.section--sand{background:var(--sand)}
+.section--navy{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 50%,#2a4070 100%);color:#fff;position:relative;overflow:hidden}
+.section--navy::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(184,134,11,.08) 0%,transparent 60%);pointer-events:none}
+.section-label{font-family:var(--font-body);font-size:clamp(11px,.8vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.section--navy .section-label{color:var(--gold-light)}
+.section-title{font-family:var(--font-display);font-size:clamp(26px,3.2vw,40px);font-weight:700;line-height:1.12;color:var(--navy);margin-bottom:14px}
+.section--navy .section-title{color:#fff}
+.section-subtitle{font-size:clamp(15px,1.15vw,17px);color:var(--text-secondary);max-width:580px;line-height:1.65}
+.section--navy .section-subtitle{color:rgba(255,255,255,.7)}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-weight:700;border:none;cursor:pointer;transition:all .25s;text-decoration:none;letter-spacing:.2px}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:16px 32px;border-radius:var(--radius-md);font-size:16px;box-shadow:0 2px 8px rgba(184,134,11,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold),0 8px 24px rgba(184,134,11,.25);color:#fff}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:transparent;color:var(--navy);border:2px solid var(--border);padding:14px 28px;border-radius:var(--radius-md);font-size:15px}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+.btn-ghost{background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:8px 0}
+.btn-ghost:hover{color:var(--gold)}
+.section--navy .btn-secondary{border-color:rgba(255,255,255,.25);color:#fff}
+.section--navy .btn-secondary:hover{border-color:var(--gold-light);color:var(--gold-light);background:rgba(184,134,11,.08)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .35s}
+.nav.scrolled{background:rgba(250,248,244,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04);padding:12px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-wide);margin:0 auto;padding:0 24px}
+.nav-logo{font-family:var(--font-body);font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:36px;list-style:none}
+.nav-links a{font-size:14px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:color .2s;position:relative}.nav-links a:hover{color:var(--navy)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s;border-radius:1px}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.lang-toggle{font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;transition:all .2s}.lang-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all .25s;box-shadow:0 2px 8px rgba(184,134,11,.15)}.nav-cta:hover{transform:translateY(-1px);box-shadow:var(--shadow-gold);color:#fff}
+.nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px;width:40px;height:40px;position:relative}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--navy);position:absolute;left:9px;transition:all .3s}
+.nav-hamburger span:nth-child(1){top:12px}.nav-hamburger span:nth-child(2){top:19px}.nav-hamburger span:nth-child(3){top:26px}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg);top:19px}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg);top:19px}
+.nav-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(250,248,244,.98);backdrop-filter:blur(16px);padding:80px 24px 24px;flex-direction:column;gap:8px}
+.nav-drawer.open{display:flex}
+.nav-drawer a{display:block;padding:16px 0;font-size:18px;font-weight:600;color:var(--navy);text-decoration:none;border-bottom:1px solid var(--border-light)}
+.nav-drawer .nav-cta{display:block;text-align:center;margin-top:16px;padding:16px;border-radius:var(--radius-md);font-size:16px}
+@media(max-width:900px){.nav-links,.nav-right .nav-cta{display:none}.nav-hamburger{display:block}}
+
+/* ═══ HERO ═══ */
+.hero{padding:clamp(128px,15vw,172px) 0 var(--section-py);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-20%;right:-15%;width:60%;height:140%;background:radial-gradient(ellipse,rgba(184,134,11,.04) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,5vw,72px);align-items:center}
+.hero-text{position:relative;z-index:2}
+.hero-headline{font-family:var(--font-display);font-size:clamp(34px,4.5vw,56px);font-weight:700;line-height:1.08;color:var(--navy);margin-bottom:24px;letter-spacing:-.5px}
+.hero-sub{font-size:clamp(16px,1.25vw,18px);color:var(--text-secondary);line-height:1.7;margin-bottom:32px;max-width:480px}
+.hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hero-actions-price{font-size:14px;color:var(--text-muted)}.hero-actions-price strong{color:var(--gold);font-weight:700}
+
+/* ═══ TRUST GRID (compact) ═══ */
+.hero-trust{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding-top:24px;border-top:1px solid var(--border-light)}
+.hero-trust-item{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text-primary);line-height:1.4;background:var(--sand);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 16px;transition:border-color .2s}
+.hero-trust-item:hover{border-color:var(--gold)}
+.hero-trust-icon{width:18px;height:18px;flex-shrink:0;color:var(--gold)}
+
+/* ═══ GRADE CARD ═══ */
+.grade-card{width:100%;max-width:340px;margin:0 auto;background:linear-gradient(150deg,var(--navy),var(--navy-light),#344a7a);border-radius:var(--radius-xl);padding:clamp(36px,4.5vw,52px) clamp(28px,3vw,40px);box-shadow:0 24px 64px rgba(26,39,68,.3),0 0 0 1px rgba(255,255,255,.06) inset;position:relative;overflow:hidden;text-align:center;transform:perspective(800px) rotateY(-2deg) rotateX(1deg)}
+.grade-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.05) 45%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.05) 55%,transparent 60%);animation:shimmer 5s ease-in-out infinite;pointer-events:none}
+@keyframes shimmer{0%,100%{transform:translateX(-30%) translateY(-30%) rotate(25deg)}50%{transform:translateX(30%) translateY(30%) rotate(25deg)}}
+.grade-card-label{font-family:var(--font-body);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--gold-light);margin-bottom:28px}
+.grade-card-letter{font-family:var(--font-data);font-size:clamp(72px,10vw,100px);font-weight:800;color:#fff;line-height:1;margin-bottom:8px;text-shadow:0 2px 16px rgba(0,0,0,.2)}
+.grade-card-pct{font-family:var(--font-data);font-size:15px;font-weight:500;color:rgba(255,255,255,.55);margin-bottom:22px}
+.grade-card-pill{display:inline-block;padding:7px 20px;border-radius:20px;font-size:13px;font-weight:700;letter-spacing:.5px}
+.grade-card-pill--success{background:rgba(26,122,76,.2);color:#5ce0a0}
+.grade-card-brand{margin-top:28px;font-size:11px;font-weight:600;color:rgba(255,255,255,.2);letter-spacing:1.5px}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr;text-align:center}.hero-text{order:1}.hero-sub{margin-left:auto;margin-right:auto}.hero-actions{justify-content:center}.hero-price{text-align:center}.hero-trust{text-align:left;max-width:400px;margin-left:auto;margin-right:auto}.grade-card{order:2;margin-top:16px;transform:none}}
+
+/* ═══ PRODUCTS (streamlined cards) ═══ */
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:52px}
+.product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 28px 32px;display:flex;flex-direction:column;transition:all .3s;position:relative;box-shadow:var(--shadow-card)}
+.product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
+.product-card--inter{border:2px solid var(--gold);box-shadow:var(--shadow-card),0 0 0 1px rgba(184,134,11,.08)}
+.product-card--inter:hover{box-shadow:var(--shadow-lg),var(--shadow-gold)}
+.product-card--expert{background:linear-gradient(150deg,var(--navy),var(--navy-light));color:#fff;border-color:transparent;box-shadow:var(--shadow-card),0 8px 32px rgba(26,39,68,.15)}
+.product-card--expert:hover{box-shadow:0 12px 40px rgba(26,39,68,.25)}
+.product-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:20px;letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 8px rgba(184,134,11,.3)}
+.product-persona{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);margin-bottom:12px}
+.product-card--expert .product-persona{color:var(--gold-light)}
+.product-name{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.product-card--expert .product-name{color:#fff}
+.product-price{font-family:var(--font-data);margin-bottom:4px}
+.product-price-current{font-size:clamp(30px,3.2vw,38px);font-weight:800;color:var(--navy)}
+.product-card--expert .product-price-current{color:#fff}
+.product-price-original{font-size:14px;font-weight:500;color:var(--text-muted);text-decoration:line-through;margin-right:8px}
+.product-card--expert .product-price-original{color:rgba(255,255,255,.4)}
+.product-price-note{font-size:12px;color:var(--text-muted);margin-bottom:16px}
+.product-card--expert .product-price-note{color:rgba(255,255,255,.4)}
+.product-desc{font-size:14px;color:var(--text-secondary);line-height:1.65;margin-bottom:20px;flex-grow:1}
+.product-card--expert .product-desc{color:rgba(255,255,255,.75)}
+.product-check{color:var(--success);flex-shrink:0;font-size:13px;margin-top:1px;font-weight:700}
+.product-card--expert .product-check{color:#5ce0a0}
+.product-time{font-size:12px;color:var(--text-muted);margin-bottom:18px;display:flex;align-items:center;gap:6px}
+.product-time svg{width:14px;height:14px;flex-shrink:0}
+.product-card--expert .product-time{color:rgba(255,255,255,.4)}
+.product-card .btn{width:100%;justify-content:center}
+.product-process{font-size:12px;color:var(--text-muted);margin-top:12px;text-align:center;line-height:1.5;padding-top:2px}
+.product-card--expert .product-process{color:rgba(255,255,255,.35)}
+.product-for-tag{display:inline-block;margin-top:auto;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;background:var(--navy);color:#fff;align-self:center}
+.product-for-tag--light{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7)}
+.products-meta{text-align:center;margin-top:32px;padding-top:28px;border-top:1px solid var(--border-light)}
+.products-upgrade{font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:12px}
+.products-meta-row{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.products-early{padding:8px 20px;background:var(--gold-wash-strong);border:1px solid rgba(184,134,11,.15);border-radius:20px;font-size:13px;font-weight:700;color:var(--gold-dark)}
+.products-stripe{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+@media(max-width:900px){.products-grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}}
+
+/* ═══ COMPARE TABLE (collapsible) ═══ */
+/* BONUS SECTION */
+.bonus-section{margin-top:64px;text-align:center}
+.bonus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:36px;text-align:left}
+.bonus-card{background:#fff;border:2px solid var(--gold);border-radius:16px;padding:28px 24px 24px;display:flex;flex-direction:column;position:relative;transition:transform .2s,box-shadow .2s}
+.bonus-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(26,43,71,.1)}
+.bonus-card-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),#e8a817);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.bonus-card-icon svg{width:26px;height:26px;stroke:#fff}
+.bonus-card-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gold);margin-bottom:6px}
+.bonus-card-title{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--navy);margin-bottom:10px;line-height:1.3}
+.bonus-card-desc{font-size:14px;color:var(--text-secondary);line-height:1.6;flex-grow:1;margin-bottom:16px}
+.bonus-card-tags{display:flex;gap:8px;flex-wrap:wrap}
+.bonus-tag{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.4px}
+.bonus-tag--ess{background:rgba(26,43,71,.08);color:var(--navy)}
+.bonus-tag--inter{background:var(--gold);color:#fff}
+@media(max-width:768px){
+  .bonus-grid{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}
+}
+
+.compare-section{margin-top:48px;text-align:center}
+.compare-toggle{cursor:pointer;font-weight:700;color:var(--gold);border:none;background:none;font-size:14px;font-family:var(--font-body);padding:12px 0;transition:color .2s;letter-spacing:.2px}
+.compare-toggle:hover{color:var(--gold-dark)}
+.compare-toggle .compare-arrow{display:inline-block;transition:transform .3s;margin-left:4px}
+.compare-toggle[aria-expanded="true"] .compare-arrow{transform:rotate(180deg)}
+.compare-table-wrap{max-height:0;overflow:hidden;transition:max-height .5s ease;margin-top:20px}
+.compare-table-wrap.open{max-height:1200px}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.compare-table th{padding:14px 16px;text-align:left;font-weight:700;background:var(--sand);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-secondary)}
+.compare-table th:not(:first-child){text-align:center}
+.compare-table td{padding:11px 16px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.compare-table td:first-child{font-weight:600;color:var(--navy)}
+.compare-table .check{color:var(--success);font-weight:700;text-align:center;font-size:15px}
+.compare-table .dash{color:var(--text-muted);text-align:center}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table tr:hover td{background:rgba(184,134,11,.02)}
+@media(max-width:600px){.compare-table{font-size:11px}.compare-table th,.compare-table td{padding:8px 10px}}
+
+/* ═══ WHY BUILDFI ═══ */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.why-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:28px 24px;box-shadow:var(--shadow-sm);transition:all .3s}
+.why-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.why-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--gold-wash-strong);border-radius:10px;margin-bottom:16px}
+.why-icon svg{width:20px;height:20px;color:var(--gold)}
+.why-card-title{font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.why-card-desc{font-size:13px;color:var(--text-secondary);line-height:1.65}
+@media(max-width:700px){.why-grid{grid-template-columns:1fr}}
+
+/* ═══ PREVIEW (two-column) ═══ */
+.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px}
+.preview-col{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 24px;box-shadow:var(--shadow-card)}
+.preview-col--inter{border:2px solid var(--gold);box-shadow:var(--shadow-card),0 0 0 1px rgba(184,134,11,.06)}
+.preview-col-header{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.preview-col-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.5}
+.preview-items{display:flex;flex-direction:column;gap:14px}
+.preview-item{display:flex;gap:12px;align-items:flex-start}
+.preview-num{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--font-data);font-size:11px;font-weight:700;margin-top:1px}
+.preview-num--gold{background:var(--gold)}
+.preview-item-title{display:block;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
+.preview-item-desc{display:block;font-size:12.5px;color:var(--text-muted);line-height:1.55;margin-top:2px}
+@media(max-width:700px){.preview-grid{grid-template-columns:1fr}}
+
+/* ═══ FAQ ═══ */
+.faq-list{max-width:var(--max-narrow);margin:32px auto 0}
+.faq-item{border-bottom:1px solid var(--border-light)}
+.faq-question{width:100%;background:none;border:none;text-align:left;cursor:pointer;padding:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);transition:color .2s}
+.faq-question:hover{color:var(--gold)}
+.faq-chevron{width:20px;height:20px;flex-shrink:0;transition:transform .3s;stroke:var(--text-muted);fill:none;stroke-width:2}
+.faq-item.open .faq-chevron{transform:rotate(90deg);stroke:var(--gold)}
+.faq-item.open .faq-question{color:var(--gold)}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-answer-inner{padding:0 0 18px;font-size:14px;color:var(--text-secondary);line-height:1.7;border-left:3px solid var(--gold);padding-left:20px;margin-left:2px}
+
+/* ═══ FINAL CTA ═══ */
+.final-cta .section-title{color:#fff;font-size:clamp(26px,3.2vw,40px)}
+.final-cta .section-subtitle{color:rgba(255,255,255,.65);margin:14px auto 36px}
+.final-cta-actions{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.final-cta-trust{text-align:center;margin-top:28px;font-size:13px;color:rgba(255,255,255,.4);letter-spacing:.3px}
+
+/* ═══ STICKY MOBILE ═══ */
+.sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:rgba(250,248,244,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px 16px;border-top:1px solid var(--border);transform:translateY(100%);transition:transform .35s ease}
+.sticky-cta.visible{transform:translateY(0)}
+.sticky-cta-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:var(--max-content);margin:0 auto}
+.sticky-cta-text{font-size:14px;font-weight:600;color:var(--navy)}.sticky-cta-text span{color:var(--gold);font-family:var(--font-data);font-weight:800}
+.sticky-cta .btn-primary{padding:12px 24px;font-size:14px;border-radius:10px;white-space:nowrap}
+@media(max-width:900px){.sticky-cta{display:block}body{padding-bottom:72px}}
+
+/* ═══ FOOTER ═══ */
+.footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
+.footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(184,134,11,.3),transparent)}
+.footer-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:52px}
+.footer-brand{font-size:22px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
+.footer-tagline{font-size:14px;color:rgba(255,255,255,.35);line-height:1.65;max-width:280px}
+.footer-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;padding:5px 0;transition:color .2s}.footer-col a:hover{color:var(--gold-light)}
+.footer-soon{display:block;font-size:14px;color:rgba(255,255,255,.25);padding:5px 0;cursor:default}
+.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:12px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;color:rgba(255,255,255,.2)}
+.footer-bottom-lang{background:none;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.35);cursor:pointer;transition:all .2s}.footer-bottom-lang:hover{border-color:var(--gold-light);color:var(--gold-light)}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.footer-bottom{flex-direction:column;gap:12px;text-align:center}}
+
+/* ═══ UTILITIES ═══ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}.reveal-delay-5{transition-delay:.42s}
+input,select,textarea{font-size:16px}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-nav" id="skipNav">Aller au contenu</a>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="nav" role="navigation" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#products" id="navProducts">Produits</a></li>
+      <li><a href="#why" id="navWhy">Pourquoi BuildFi</a></li>
+      <li><a href="#preview" id="navPreview">Aperçu</a></li>
+      <li><a href="#faq" id="navFaq">FAQ</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="lang-toggle" id="langToggle" aria-label="Switch to English">EN</button>
+      <a href="#products" class="nav-cta" id="navCta" data-track="nav_cta">Commencer</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="#products" id="drawerProducts">Produits</a>
+  <a href="#why" id="drawerWhy">Pourquoi BuildFi</a>
+  <a href="#preview" id="drawerPreview">Aperçu</a>
+  <a href="#faq" id="drawerFaq">FAQ</a>
+  <a href="#products" class="nav-cta" id="drawerCta">Commencer</a>
+</div>
+
+<!-- ═══ SECTION 1: HERO ═══ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="section-label reveal" id="heroLabel">Planification de retraite canadienne</p>
+        <h1 class="hero-headline reveal reveal-delay-1" id="heroTitle">
+          Savoir si votre argent<br>va durer.
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2" id="heroSub">
+          BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d'abonnement. Pas de compte à créer.
+        </p>
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
+          <span class="hero-actions-price" id="heroPrice">À partir de <strong>19,50 $</strong> · Paiement unique</span>
+        </div>
+        <div class="hero-trust reveal reveal-delay-4">
+          <div class="hero-trust-item" id="trust1">
+            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Données jamais stockées</span>
+          </div>
+          <div class="hero-trust-item" id="trust2">
+            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>5 à 15 min</span>
+          </div>
+          <div class="hero-trust-item" id="trust3">
+            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Paiement unique</span>
+          </div>
+          <div class="hero-trust-item" id="trust4">
+            <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>10 provinces, 3 territoires</span>
+          </div>
+        </div>
+      </div>
+      <div class="grade-card reveal" aria-hidden="true">
+        <div class="grade-card-label" id="gradeLabel">Votre note de retraite</div>
+        <div class="grade-card-letter" id="gradeLetter">B+</div>
+        <div class="grade-card-pct">78 %</div>
+        <div class="grade-card-pill grade-card-pill--success" id="gradePill">En bonne voie</div>
+        <div class="grade-card-brand">buildfi.ca</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: PRODUCTS (streamlined cards + compare table) ═══ -->
+<section class="section section--sand" id="products">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="section-label" id="productsLabel">Choisissez votre rapport</p>
+      <h2 class="section-title" id="productsTitle">Simple ou complet. Vous décidez.</h2>
+      <p class="section-subtitle" style="margin:0 auto" id="productsSubtitle">Chaque rapport utilise le même moteur de simulation — jusqu'à 10 000 scénarios. La différence, c'est la profondeur de l'analyse.</p>
+    </div>
+
+    <div class="products-grid">
+      <!-- ESSENTIEL -->
+      <div class="product-card reveal">
+        <div class="product-persona" id="prodEssPersona">Vous commencez à planifier</div>
+        <div class="product-name" id="prodEssName">Essentiel</div>
+        <div class="product-price">
+          <span class="product-price-original" id="prodEssOrig">39 $</span>
+          <span class="product-price-current" id="prodEssCurr">19,<small>50</small> $</span>
+        </div>
+        <div class="product-price-note" id="prodEssNote">paiement unique · prix de lancement</div>
+        <p class="product-desc" id="prodEssDesc">
+          Vous ne savez pas trop où vous en êtes — et les outils génériques ne vous disent rien d'utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.
+        </p>
+        <div class="product-time" id="prodEssTime">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          5 à 8 minutes
+        </div>
+        <a href="/essentiel" class="btn btn-primary" data-track="product_ess" id="prodEssCta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
+        <p class="product-process" id="prodEssProcess">Questionnaire → Rapport en ligne + PDF par courriel</p>
+        <div class="product-for-tag" id="prodEssFor">Personnes seules</div>
+      </div>
+
+      <!-- INTERMÉDIAIRE -->
+      <div class="product-card product-card--inter reveal reveal-delay-1">
+        <div class="product-badge" id="prodInterBadge">Populaire</div>
+        <div class="product-persona" id="prodInterPersona">Vous voulez aller plus loin</div>
+        <div class="product-name" id="prodInterName">Intermédiaire</div>
+        <div class="product-price">
+          <span class="product-price-original" id="prodInterOrig">69 $</span>
+          <span class="product-price-current" id="prodInterCurr">34,<small>50</small> $</span>
+        </div>
+        <div class="product-price-note" id="prodInterNote">paiement unique · prix de lancement</div>
+        <p class="product-desc" id="prodInterDesc">
+          Vous épargnez déjà, vous êtes en couple ou propriétaire — et vous voulez savoir si votre stratégie tient la route. L'Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.
+        </p>
+        <div class="product-time" id="prodInterTime">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          10 à 15 minutes
+        </div>
+        <a href="/intermediaire" class="btn btn-primary" data-track="product_inter" id="prodInterCta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
+        <p class="product-process" id="prodInterProcess">Questionnaire → Rapport en ligne + PDF par courriel</p>
+        <div class="product-for-tag" id="prodInterFor">Couples · Propriétaires · Profils complexes</div>
+      </div>
+
+      <!-- EXPERT -->
+      <div class="product-card product-card--expert reveal reveal-delay-2">
+        <div class="product-persona" id="prodExpPersona">Tout ce que vous avez toujours cherché</div>
+        <div class="product-name" id="prodExpName">Expert · Simulateur</div>
+        <div class="product-price">
+          <span class="product-price-original" id="prodExpOrig">139 $</span>
+          <span class="product-price-current" id="prodExpCurr">69,<small>50</small> $</span>
+        </div>
+        <div class="product-price-note" id="prodExpNote">paiement unique · prix de lancement</div>
+        <p class="product-desc" id="prodExpDesc">
+          Vous n'avez jamais trouvé un seul outil qui fait tout. L'Expert, c'est ça — un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions — tout y est.
+        </p>
+        <div class="product-time" id="prodExpTime">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          À votre rythme — sessions illimitées
+        </div>
+        <a href="/expert" class="btn btn-primary" data-track="product_expert" id="prodExpCta">En savoir plus <span aria-hidden="true">→</span></a>
+        <p class="product-process" id="prodExpProcess">Détails et fonctionnalités sur la page Expert</p>
+        <div class="product-for-tag product-for-tag--light" id="prodExpFor">Contrôle total</div>
+      </div>
+    </div>
+
+    <div class="products-meta reveal">
+      <p class="products-upgrade" id="productsUpgrade">Votre situation a changé? Passez au niveau suivant — nous créditons votre achat précédent.</p>
+      <div class="products-meta-row">
+        <div class="products-early" id="productsEarly">Premiers 100 clients — 50 % de rabais</div>
+        <div class="products-stripe" id="productsStripe">
+          <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span id="stripeLabel">Paiement sécurisé par Stripe</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BONUS SECTION -->
+    <div class="bonus-section reveal">
+      <p class="section-label" id="bonusLabel">Inclus avec votre rapport</p>
+      <h2 class="section-title" id="bonusTitle">Des outils concrets, pas juste un PDF.</h2>
+      <div class="bonus-grid">
+
+        <div class="bonus-card">
+          <div class="bonus-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M7 10l3 3 7-7"/></svg>
+          </div>
+          <div class="bonus-card-type" id="bonusType1">Outil interactif</div>
+          <h3 class="bonus-card-title" id="bonusName1">Analyse des dettes</h3>
+          <p class="bonus-card-desc" id="bonusDesc1">Entrez vos dettes, comparez avalanche vs boule de neige, visualisez votre calendrier de remboursement mois par mois. Calcul des intérêts économisés en temps réel.</p>
+          <div class="bonus-card-tags">
+            <span class="bonus-tag bonus-tag--ess" id="bonusTag1a">Essentiel</span>
+            <span class="bonus-tag bonus-tag--inter" id="bonusTag1b">Intermédiaire</span>
+          </div>
+        </div>
+
+        <div class="bonus-card">
+          <div class="bonus-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+          </div>
+          <div class="bonus-card-type" id="bonusType2">Guide PDF</div>
+          <h3 class="bonus-card-title" id="bonusName2">101 — Les bases de vos finances</h3>
+          <p class="bonus-card-desc" id="bonusDesc2">Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir — en langage clair, avec des exemples en dollars.</p>
+          <div class="bonus-card-tags">
+            <span class="bonus-tag bonus-tag--ess" id="bonusTag2a">Essentiel</span>
+            <span class="bonus-tag bonus-tag--inter" id="bonusTag2b">Intermédiaire</span>
+          </div>
+        </div>
+
+        <div class="bonus-card">
+          <div class="bonus-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h4M9 15h2"/></svg>
+          </div>
+          <div class="bonus-card-type" id="bonusType3">Guide PDF</div>
+          <h3 class="bonus-card-title" id="bonusName3">201 — Optimiser votre retraite</h3>
+          <p class="bonus-card-desc" id="bonusDesc3">Décaissement, fiscalité, protection PSV, fractionnement, meltdown REER, guardrails, immobilier, CCPC. 11 chapitres pour patrimoines établis.</p>
+          <div class="bonus-card-tags">
+            <span class="bonus-tag bonus-tag--inter" id="bonusTag3">Intermédiaire</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COMPARE TABLE (collapsible) -->
+    <div class="compare-section reveal">
+      <button class="compare-toggle" id="compareToggle" data-track="compare_toggle" aria-expanded="false">
+        <span id="compareText">Comparer les fonctionnalités</span> <span class="compare-arrow">↓</span>
+      </button>
+      <div class="compare-table-wrap" id="compareWrap">
+      <table class="compare-table" id="compareTable">
+        <thead>
+          <tr>
+            <th id="compFeat">Fonctionnalité</th>
+            <th>Essentiel</th>
+            <th>Intermédiaire</th>
+            <th>Expert</th>
+          </tr>
+        </thead>
+        <tbody id="compBody">
+          <tr><td id="cr1">Note de retraite (A+ à F)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr2">Narration IA personnalisée</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr3">Monte Carlo (jusqu'à 10 000 scénarios)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr4">Rapport PDF</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr5">Outil interactif — Analyse des dettes</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
+          <tr><td id="cr6">Guide 101 — Les bases de vos finances</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
+          <tr><td id="cr6b">Guide 201 — Optimiser votre retraite</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
+          <tr><td id="cr7">Analyse de couple</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr8">Portrait immobilier</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr9">Stratégie de décumulation</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr10">Score de résilience (4 jauges)</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr11">Héritage et succession</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr12">Simulateur interactif (190+ param.)</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td id="cr13">Stress tests (6 scénarios)</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td id="cr14">Analyse CCPC / incorporation</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr14b">Simulateur CCPC complet (DPE, CDA, RDTOH, IPP)</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td id="cr15">Comparateur pensions (RRQ/PSV)</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td id="cr16">Sessions illimitées</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td id="cr17">Rapports IA à la demande (10 inclus)</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2B: POURQUOI BUILDFI ═══ -->
+<section class="section" id="why" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="section-label" id="whyLabel">Ce qu'on fait différemment</p>
+      <h2 class="section-title" id="whyTitle">On ne vend pas d'abonnement. On vend un outil qui fonctionne.</h2>
+      <p class="section-subtitle" style="margin:0 auto;max-width:620px" id="whySub">Les outils de retraite au Canada sont soit gratuits et trop simplistes, soit réservés aux professionnels. On a construit autre chose.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why1t">Pas une projection. Des milliers.</h3>
+        <p class="why-card-desc" id="why1d">Un calculateur vous dit « vous aurez 800 000 $ ». Ça ne veut rien dire. BuildFi teste votre plan dans jusqu'à 10 000 scénarios — bonnes années, mauvaises années, crises — et vous dit dans quel pourcentage votre argent dure.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7-7"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why2t">Vos vrais impôts. Pas une estimation.</h3>
+        <p class="why-card-desc" id="why2d">On calcule vos impôts fédéraux et provinciaux ligne par ligne — crédits pour l'âge, pension, récupération de la PSV, fractionnement. Les 10 provinces et 3 territoires, barèmes 2026.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-2">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why3t">Vous allez comprendre votre rapport.</h3>
+        <p class="why-card-desc" id="why3d">Chaque rapport inclut une analyse écrite par IA qui explique vos résultats comme un humain le ferait. Pas de tableaux incompréhensibles. Des observations concrètes, en français, sur votre situation à vous.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why4t">430 tests. Avant chaque mise à jour.</h3>
+        <p class="why-card-desc" id="why4d">Employés, couples, fonctionnaires, propriétaires d'entreprise — 17 profils testés automatiquement. Si un calcul casse, on le sait avant vous.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why5t">Canadien. Pas américain traduit.</h3>
+        <p class="why-card-desc" id="why5d">RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR — chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-2">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="why-card-title" id="why6t">On ne veut pas vos données.</h3>
+        <p class="why-card-desc" id="why6d">Les calculs roulent dans votre navigateur. Rien n'est envoyé à nos serveurs. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre rapport. C'est tout.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: PREVIEW (Essentiel + Intermédiaire side by side) ═══ -->
+<section class="section" id="preview" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="section-label" id="previewLabel">Aperçu du rapport</p>
+      <h2 class="section-title" id="previewTitle">Ce que contient chaque rapport</h2>
+      <p class="section-subtitle" style="margin:0 auto" id="previewSubtitle">Présenté clairement, sans jargon financier. L'Intermédiaire inclut tout l'Essentiel.</p>
+    </div>
+
+    <div class="preview-grid">
+      <!-- ESSENTIEL COLUMN -->
+      <div class="preview-col">
+        <div class="preview-col-header" id="prevEssHeader">Rapport Essentiel</div>
+        <div class="preview-col-sub" id="prevEssSub">8 sections · 4 graphiques · narration IA · PDF</div>
+        <div class="preview-items">
+          <div class="preview-item"><span class="preview-num">1</span><div><span class="preview-item-title" id="pe1">Votre diagnostic</span><span class="preview-item-desc" id="pe1d">Note de retraite (A+ à F), pourcentage de réussite et ce que cela signifie pour vous.</span></div></div>
+          <div class="preview-item"><span class="preview-num">2</span><div><span class="preview-item-title" id="pe2">Observations prioritaires</span><span class="preview-item-desc" id="pe2d">Jusqu'à 5 constats classés par impact, avec explication de ce que chaque élément signifie.</span></div></div>
+          <div class="preview-item"><span class="preview-num">3</span><div><span class="preview-item-title" id="pe3">Revenus à la retraite</span><span class="preview-item-desc" id="pe3d">Combien par mois de chaque source: RRQ/PSV, REER, CÉLI, non enregistré.</span></div></div>
+          <div class="preview-item"><span class="preview-num">4</span><div><span class="preview-item-title" id="pe4">Projection du patrimoine</span><span class="preview-item-desc" id="pe4d">Graphique année par année de l'évolution de vos épargnes.</span></div></div>
+          <div class="preview-item"><span class="preview-num">5</span><div><span class="preview-item-title" id="pe5">Analyse de risque</span><span class="preview-item-desc" id="pe5d">Comment votre plan résiste aux marchés baissiers, inflation, longévité.</span></div></div>
+          <div class="preview-item"><span class="preview-num">6</span><div><span class="preview-item-title" id="pe6">Portrait des comptes</span><span class="preview-item-desc" id="pe6d">Répartition REER, CÉLI, non enregistré. Contribution optimale.</span></div></div>
+          <div class="preview-item"><span class="preview-num">7</span><div><span class="preview-item-title" id="pe7">Narration IA</span><span class="preview-item-desc" id="pe7d">Résumé personnalisé — comme un ami qui comprend la finance.</span></div></div>
+          <div class="preview-item"><span class="preview-num">8</span><div><span class="preview-item-title" id="pe8">Méthodologie</span><span class="preview-item-desc" id="pe8d">Hypothèses, limites, sources. Transparence complète.</span></div></div>
+        </div>
+      </div>
+
+      <!-- INTERMÉDIAIRE COLUMN -->
+      <div class="preview-col preview-col--inter">
+        <div class="preview-col-header" id="prevInterHeader">L'Intermédiaire ajoute</div>
+        <div class="preview-col-sub" id="prevInterSub">6 sections supplémentaires · inclut tout l'Essentiel</div>
+        <div class="preview-items">
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi1">Analyse de couple</span><span class="preview-item-desc" id="pi1d">Revenus combinés, stratégie conjointe, impact du décès du premier conjoint.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi2">Portrait immobilier</span><span class="preview-item-desc" id="pi2d">Valeur nette, hypothèque, impact de la vente, scénario de location.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi3">Stratégie de décumulation</span><span class="preview-item-desc" id="pi3d">Ordre optimal de retrait: REER, CÉLI, non enregistré. Conversion REER accélérée.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi4">Score de résilience</span><span class="preview-item-desc" id="pi4d">4 jauges: longévité, marché, inflation, dépenses imprévues.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi5">Analyse CCPC</span><span class="preview-item-desc" id="pi5d">Salaire vs dividende, extraction corporative, impact sur votre plan.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi6">Héritage et succession</span><span class="preview-item-desc" id="pi6d">Ce que vous laisserez. Impôt successoral estimé. Frais d'homologation.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: FAQ ═══ -->
+<section class="section section--sand" id="faq" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="section-label" id="faqLabel">Questions fréquentes</p>
+      <h2 class="section-title" id="faqTitle">Tout ce que vous devez savoir</h2>
+    </div>
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq1">Est-ce un conseil financier?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa1">Non. BuildFi est un outil éducatif qui produit des projections statistiques basées sur les données que vous fournissez. Ce n'est pas un conseil financier, fiscal ou juridique. Les résultats utilisent le conditionnel (« vous pourriez ») et ne remplacent pas l'avis d'un professionnel certifié. Consultez un planificateur financier ou un fiscaliste avant de prendre des décisions importantes.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq2">Combien de temps ça prend?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa2"><strong>Essentiel:</strong> 5 à 8 minutes — un questionnaire rapide et vos résultats arrivent en ligne et par courriel.<br><strong>Intermédiaire:</strong> 10 à 15 minutes — un questionnaire plus détaillé pour couvrir le couple, la propriété et la stratégie fiscale.<br><strong>Expert:</strong> À votre rythme. Le simulateur est accessible en sessions illimitées. Explorez, testez, ajustez aussi longtemps que vous le souhaitez.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq3">Quelle est la différence entre les trois produits?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa3"><strong>Essentiel</strong> est pour les personnes seules qui veulent un premier portrait — c'est le point de départ. <strong>Intermédiaire</strong> est pour les couples et les propriétaires qui ont besoin d'une analyse plus complète. <strong>Expert</strong> est pour ceux qui veulent tout contrôler: un simulateur interactif avec sessions illimitées. Chaque niveau inclut tout le contenu du niveau précédent. En doute? Commencez par l'Essentiel — vous pouvez toujours passer au niveau suivant et nous créditons votre achat.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq4">Qu'est-ce que « 10 000 scénarios »?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa4">Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans jusqu'à 10 000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C'est la méthode Monte Carlo — couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq5">Mes données sont-elles protégées?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Oui. Vos données financières ne sont jamais stockées sur nos serveurs. Les calculs s'exécutent dans votre navigateur. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 — le plus haut niveau de sécurité dans l'industrie. Nous ne voyons jamais votre numéro de carte.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq6">Puis-je passer d'un produit à l'autre?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa6">Oui. Si votre situation évolue, nous créditons votre achat précédent vers le produit supérieur. Par exemple, si vous passez de l'Essentiel à l'Intermédiaire, vous payez uniquement la différence. Contactez-nous et nous activerons votre mise à niveau.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq7">Quelle est votre politique après l'achat?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa7">BuildFi est un produit numérique livré instantanément. Il n'y a pas de remboursement. Si une erreur technique empêche la livraison ou affecte la qualité de votre rapport, nous le corrigerons ou le reproduirons sans frais supplémentaires. Contactez-nous à support@buildfi.ca.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: FINAL CTA ═══ -->
+<section class="section section--navy final-cta" id="finalCta">
+  <div class="container" style="text-align:center">
+    <h2 class="section-title" id="finalTitle">Vous méritez de savoir où vous en êtes.</h2>
+    <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un rapport complet, un paiement unique. Premiers 100 clients: 50 % de rabais.</p>
+    <div class="final-cta-actions">
+      <a href="/essentiel" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Obtenir mon rapport <span aria-hidden="true">→</span></a>
+      <a href="#products" class="btn btn-secondary" data-track="final_compare" id="finalCtaSec">Voir les produits <span aria-hidden="true">↑</span></a>
+    </div>
+    <p class="final-cta-trust" id="finalTrust">Paiement unique · Livraison instantanée · Données non conservées</p>
+  </div>
+</section>
+
+<!-- STICKY MOBILE CTA -->
+<div class="sticky-cta" id="stickyCta">
+  <div class="sticky-cta-inner">
+    <div class="sticky-cta-text" id="stickyText">À partir de <span>19,50 $</span></div>
+    <a href="#products" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer" id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">build<span>fi</span></div>
+        <p class="footer-tagline" id="footerTagline">Planification de retraite canadienne. Propulsé par la simulation Monte Carlo.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title" id="footProd">Produits</div>
+        <a href="#products" id="footEss">Essentiel</a>
+        <a href="#products" id="footInter">Intermédiaire</a>
+        <a href="#products" id="footExp">Expert · Simulateur</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title" id="footRes">Ressources</div>
+        <a href="#faq" id="footFaq">FAQ</a>
+        <a href="mailto:support@buildfi.ca" id="footContact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title" id="footLegal">Légal</div>
+        <span class="footer-soon" id="footPriv">Confidentialité</span>
+        <span class="footer-soon" id="footTerms">Conditions d'utilisation</span>
+      </div>
+    </div>
+    <div class="footer-disclaimer" id="footDisclaimer">
+      BuildFi n'est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques basées sur la méthode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifié avant de prendre des décisions financières. BuildFi est un produit de BuildFi Technologies inc.
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 buildfi.ca — Tous droits réservés</span>
+      <button class="footer-bottom-lang" id="footLangToggle">English</button>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+(function(){
+'use strict';
+
+var lang = (new URLSearchParams(window.location.search).get('lang') || 'fr').toLowerCase() === 'en' ? 'en' : 'fr';
+
+var T = {
+  // Nav
+  navProducts: { fr:'Produits', en:'Products' },
+  navWhy: { fr:'Pourquoi BuildFi', en:'Why BuildFi' },
+  navPreview: { fr:'Aperçu', en:'Preview' },
+  navFaq: { fr:'FAQ', en:'FAQ' },
+  navCta: { fr:'Commencer', en:'Get started' },
+  langToggle: { fr:'EN', en:'FR' },
+  skipNav: { fr:'Aller au contenu', en:'Skip to content' },
+  // Hero
+  heroLabel: { fr:'Planification de retraite canadienne', en:'Canadian retirement planning' },
+  heroTitle: { fr:'Savoir si votre argent<br>va durer.', en:'Know if your money<br>will last.' },
+  heroSub: { fr:"BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d\u2019abonnement. Pas de compte à créer.", en:"BuildFi analyzes your savings, income, and taxes across thousands of economic scenarios. You get a clear report with a grade, projections, and personalized observations. No subscription. No account to create." },
+  heroCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
+  heroPrice: { fr:'À partir de <strong>19,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <strong>$19.50</strong> \u00b7 One-time payment' },
+  trust1: { fr:'Données jamais stockées', en:'Data never stored' },
+  trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
+  trust3: { fr:'Paiement unique', en:'One payment' },
+  trust4: { fr:'10 provinces, 3 territoires', en:'10 provinces, 3 territories' },
+  gradeLabel: { fr:'Votre note de retraite', en:'Your retirement grade' },
+  gradePill: { fr:'En bonne voie', en:'On track' },
+  // Products
+  productsLabel: { fr:'Choisissez votre rapport', en:'Choose your report' },
+  productsTitle: { fr:'Simple ou complet. Vous décidez.', en:'Simple or complete. You decide.' },
+  productsSubtitle: { fr:"Chaque rapport utilise le même moteur de simulation \u2014 jusqu\u2019à 10\u00a0000 scénarios. La différence, c\u2019est la profondeur de l\u2019analyse.", en:"Every report uses the same simulation engine \u2014 up to 10,000 scenarios. The difference is the depth of the analysis." },
+  prodEssPersona: { fr:'Vous commencez à planifier', en:"You\u2019re starting to plan" },
+  prodEssName: { fr:'Essentiel', en:'Essential' },
+  prodEssDesc: { fr:"Vous ne savez pas trop où vous en êtes \u2014 et les outils génériques ne vous disent rien d\u2019utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.", en:"You\u2019re not sure where you stand \u2014 and generic tools don\u2019t tell you much. In a few minutes, you get a clear portrait of your situation: your grade, projected income, risks, and personalized observations." },
+  prodInterPersona: { fr:'Vous voulez aller plus loin', en:'You want to go deeper' },
+  prodInterName: { fr:'Intermédiaire', en:'Intermediate' },
+  prodInterBadge: { fr:'Populaire', en:'Popular' },
+  prodInterDesc: { fr:"Vous épargnez déjà, vous êtes en couple ou propriétaire \u2014 et vous voulez savoir si votre stratégie tient la route. L\u2019Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.", en:"You\u2019re already saving, you\u2019re a couple or homeowner \u2014 and you want to know if your strategy holds up. Intermediate analyzes your complete situation: taxes, real estate, succession, and plan resilience." },
+  prodExpPersona: { fr:'Tout ce que vous avez toujours cherché', en:"Everything you\u2019ve been looking for" },
+  prodExpName: { fr:'Expert \u00b7 Simulateur', en:'Expert \u00b7 Simulator' },
+  prodExpDesc: { fr:"Vous n\u2019avez jamais trouvé un seul outil qui fait tout. L\u2019Expert, c\u2019est ça \u2014 un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions \u2014 tout y est.", en:"You\u2019ve never found one tool that does it all. Expert is it \u2014 a simulator where you test, adjust, and explore every variable of your retirement. Incorporation, stress tests, pensions \u2014 it\u2019s all there." },
+  prodEssCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
+  prodInterCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
+  prodExpCta: { fr:'En savoir plus \u2192', en:'Learn more \u2192' },
+  prodEssProcess: { fr:'Questionnaire \u2192 Rapport en ligne + PDF par courriel', en:'Questionnaire \u2192 Online report + PDF by email' },
+  prodInterProcess: { fr:'Questionnaire \u2192 Rapport en ligne + PDF par courriel', en:'Questionnaire \u2192 Online report + PDF by email' },
+  prodExpProcess: { fr:'Détails et fonctionnalités sur la page Expert', en:'Details and features on the Expert page' },
+  prodEssFor: { fr:'Personnes seules', en:'Individuals' },
+  prodInterFor: { fr:'Couples \u00b7 Propriétaires \u00b7 Profils complexes', en:'Couples \u00b7 Homeowners \u00b7 Complex profiles' },
+  prodExpFor: { fr:'Contrôle total', en:'Full control' },
+  productsUpgrade: { fr:'Votre situation a changé? Passez au niveau suivant \u2014 nous créditons votre achat précédent.', en:'Your situation changed? Move to the next level \u2014 we credit your previous purchase.' },
+  productsEarly: { fr:'Premiers 100 clients \u2014 50\u00a0% de rabais', en:'First 100 customers \u2014 50% off' },
+  stripeLabel: { fr:'Paiement sécurisé par Stripe', en:'Secure payment via Stripe' },
+  // Bonus section
+  bonusLabel: { fr:'Inclus avec votre rapport', en:'Included with your report' },
+  bonusTitle: { fr:'Des outils concrets, pas juste un PDF.', en:'Real tools, not just a PDF.' },
+  bonusType1: { fr:'Outil interactif', en:'Interactive tool' },
+  bonusName1: { fr:'Analyse des dettes', en:'Debt analysis' },
+  bonusDesc1: { fr:"Entrez vos dettes, comparez avalanche vs boule de neige, visualisez votre calendrier de remboursement mois par mois. Calcul des intérêts économisés en temps réel.", en:"Enter your debts, compare avalanche vs snowball, visualize your month-by-month repayment schedule. Interest savings calculated in real time." },
+  bonusTag1a: { fr:'Essentiel', en:'Essential' },
+  bonusTag1b: { fr:'Intermédiaire', en:'Intermediate' },
+  bonusType2: { fr:'Guide PDF', en:'PDF guide' },
+  bonusName2: { fr:'101 \u2014 Les bases de vos finances', en:'101 \u2014 The basics of your finances' },
+  bonusDesc2: { fr:"Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir \u2014 en langage clair, avec des exemples en dollars.", en:"Budget, debt, credit, savings, RRSP vs TFSA, CPP, OAS, insurance. Everything you need to know \u2014 in plain language, with dollar examples." },
+  bonusTag2a: { fr:'Essentiel', en:'Essential' },
+  bonusTag2b: { fr:'Intermédiaire', en:'Intermediate' },
+  bonusType3: { fr:'Guide PDF', en:'PDF guide' },
+  bonusName3: { fr:'201 \u2014 Optimiser votre retraite', en:'201 \u2014 Optimize your retirement' },
+  bonusDesc3: { fr:"Décaissement, fiscalité, protection PSV, fractionnement, meltdown REER, guardrails, immobilier, CCPC. 11 chapitres pour patrimoines établis.", en:"Withdrawal strategy, taxation, OAS protection, income splitting, RRSP meltdown, guardrails, real estate, CCPC. 11 chapters for established portfolios." },
+  bonusTag3: { fr:'Intermédiaire', en:'Intermediate' },
+  compareText: { fr:'Comparer les fonctionnalités', en:'Compare features' },
+  compFeat: { fr:'Fonctionnalité', en:'Feature' },
+  cr1: { fr:'Note de retraite (A+ à F)', en:'Retirement grade (A+ to F)' },
+  cr2: { fr:'Narration IA personnalisée', en:'Personalized AI narration' },
+  cr3: { fr:'Monte Carlo (jusqu\u2019à 10\u00a0000 scénarios)', en:'Monte Carlo (up to 10,000 scenarios)' },
+  cr4: { fr:'Rapport PDF', en:'PDF report' },
+  cr5: { fr:'Outil interactif \u2014 Analyse des dettes', en:'Interactive tool \u2014 Debt analysis' },
+  cr6: { fr:'Guide 101 \u2014 Les bases de vos finances', en:'Guide 101 \u2014 The basics of your finances' },
+  cr6b: { fr:'Guide 201 \u2014 Optimiser votre retraite', en:'Guide 201 \u2014 Optimize your retirement' },
+  cr15: { fr:'Comparateur pensions (RRQ/PSV)', en:'Pension comparator (CPP/OAS)' },
+  // Why BuildFi
+  whyLabel: { fr:'Ce qu\u2019on fait différemment', en:'What we do differently' },
+  whyTitle: { fr:"On ne vend pas d\u2019abonnement. On vend un outil qui fonctionne.", en:"We don\u2019t sell subscriptions. We sell a tool that works." },
+  whySub: { fr:"Les outils de retraite au Canada sont soit gratuits et trop simplistes, soit réservés aux professionnels. On a construit autre chose.", en:"Retirement tools in Canada are either free and too simplistic, or reserved for professionals. We built something else." },
+  why1t: { fr:'Pas une projection. Des milliers.', en:'Not one projection. Thousands.' },
+  why1d: { fr:"Un calculateur vous dit \u00ab\u00a0vous aurez 800\u00a0000\u00a0$\u00a0\u00bb. Ça ne veut rien dire. BuildFi teste votre plan dans jusqu\u2019à 10\u00a0000 scénarios \u2014 bonnes années, mauvaises années, crises \u2014 et vous dit dans quel pourcentage votre argent dure.", en:"A calculator tells you \u201cyou\u2019ll have $800,000.\u201d That means nothing. BuildFi tests your plan across up to 10,000 scenarios \u2014 good years, bad years, crises \u2014 and tells you what percentage of the time your money lasts." },
+  why2t: { fr:'Vos vrais impôts. Pas une estimation.', en:'Your real taxes. Not an estimate.' },
+  why2d: { fr:"On calcule vos impôts fédéraux et provinciaux ligne par ligne \u2014 crédits pour l\u2019âge, pension, récupération de la PSV, fractionnement. Les 10 provinces et 3 territoires, barèmes 2026.", en:"We calculate your federal and provincial taxes line by line \u2014 age credits, pension, OAS clawback, income splitting. All 10 provinces and 3 territories, 2026 brackets." },
+  why3t: { fr:'Vous allez comprendre votre rapport.', en:'You\u2019ll actually understand your report.' },
+  why3d: { fr:"Chaque rapport inclut une analyse écrite par IA qui explique vos résultats comme un humain le ferait. Pas de tableaux incompréhensibles. Des observations concrètes, en français, sur votre situation à vous.", en:"Every report includes an AI-written analysis that explains your results like a human would. No incomprehensible tables. Concrete observations, in plain language, about your specific situation." },
+  why4t: { fr:'430 tests. Avant chaque mise à jour.', en:'430 tests. Before every update.' },
+  why4d: { fr:"Employés, couples, fonctionnaires, propriétaires d\u2019entreprise \u2014 17 profils testés automatiquement. Si un calcul casse, on le sait avant vous.", en:"Employees, couples, government workers, business owners \u2014 17 profiles tested automatically. If a calculation breaks, we know before you do." },
+  why5t: { fr:'Canadien. Pas américain traduit.', en:'Canadian. Not a translated American tool.' },
+  why5d: { fr:"RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR \u2014 chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.", en:"CPP, OAS, GIS, RRSP, TFSA, FHSA, RRIF \u2014 every government program is modeled. Built for Canadian taxation from the first line of code." },
+  why6t: { fr:'On ne veut pas vos données.', en:'We don\u2019t want your data.' },
+  why6d: { fr:"Les calculs roulent dans votre navigateur. Rien n\u2019est envoyé à nos serveurs. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre rapport. C\u2019est tout.", en:"Calculations run in your browser. Nothing is sent to our servers. No account. No marketing emails. You pay, you get your report. That\u2019s it." },
+  // Preview
+  previewLabel: { fr:'Aperçu du rapport', en:'Report preview' },
+  previewTitle: { fr:'Ce que contient chaque rapport', en:'What each report contains' },
+  previewSubtitle: { fr:"Présenté clairement, sans jargon financier. L\u2019Intermédiaire inclut tout l\u2019Essentiel.", en:'Presented clearly, without financial jargon. Intermediate includes all of Essential.' },
+  prevEssHeader: { fr:'Rapport Essentiel', en:'Essential Report' },
+  prevEssSub: { fr:'8 sections \u00b7 4 graphiques \u00b7 narration IA \u00b7 PDF', en:'8 sections \u00b7 4 charts \u00b7 AI narration \u00b7 PDF' },
+  prevInterHeader: { fr:'L\u2019Intermédiaire ajoute', en:'Intermediate adds' },
+  prevInterSub: { fr:"6 sections supplémentaires \u00b7 inclut tout l\u2019Essentiel", en:'6 additional sections \u00b7 includes all of Essential' },
+  pe1: { fr:'Votre diagnostic', en:'Your assessment' },
+  pe1d: { fr:'Note de retraite (A+ à F), pourcentage de réussite et ce que cela signifie pour vous.', en:'Retirement grade (A+ to F), success rate, and what it means for you.' },
+  pe2: { fr:'Observations prioritaires', en:'Priority observations' },
+  pe2d: { fr:"Jusqu\u2019à 5 constats classés par impact, avec explication de ce que chaque élément signifie.", en:'Up to 5 findings ranked by impact, with explanation of what each one means.' },
+  pe3: { fr:'Revenus à la retraite', en:'Retirement income' },
+  pe3d: { fr:'Combien par mois de chaque source: RRQ/PSV, REER, CÉLI, non enregistré.', en:'How much monthly from each source: CPP/OAS, RRSP, TFSA, non-registered.' },
+  pe4: { fr:'Projection du patrimoine', en:'Wealth projection' },
+  pe4d: { fr:"Graphique année par année de l\u2019évolution de vos épargnes.", en:'Year-by-year chart of your savings evolution.' },
+  pe5: { fr:'Analyse de risque', en:'Risk analysis' },
+  pe5d: { fr:'Comment votre plan résiste aux marchés baissiers, inflation, longévité.', en:'How your plan holds up against bear markets, inflation, longevity.' },
+  pe6: { fr:'Portrait des comptes', en:'Account overview' },
+  pe6d: { fr:'Répartition REER, CÉLI, non enregistré. Contribution optimale.', en:'RRSP, TFSA, non-registered breakdown. Optimal contributions.' },
+  pe7: { fr:'Narration IA', en:'AI narration' },
+  pe7d: { fr:'Résumé personnalisé \u2014 comme un ami qui comprend la finance.', en:'Personalized summary \u2014 like a friend who understands finance.' },
+  pe8: { fr:'Méthodologie', en:'Methodology' },
+  pe8d: { fr:'Hypothèses, limites, sources. Transparence complète.', en:'Assumptions, limitations, sources. Complete transparency.' },
+  pi1: { fr:'Analyse de couple', en:'Joint analysis' },
+  pi1d: { fr:'Revenus combinés, stratégie conjointe, impact du décès du premier conjoint.', en:'Combined income, joint strategy, impact of first spouse\u2019s death.' },
+  pi2: { fr:'Portrait immobilier', en:'Real estate portrait' },
+  pi2d: { fr:'Valeur nette, hypothèque, impact de la vente, scénario de location.', en:'Net value, mortgage, sale impact, rental scenario.' },
+  pi3: { fr:'Stratégie de décumulation', en:'Withdrawal strategy' },
+  pi3d: { fr:'Ordre optimal de retrait: REER, CÉLI, non enregistré. Conversion REER accélérée.', en:'Optimal withdrawal order: RRSP, TFSA, non-registered. Accelerated RRSP conversion.' },
+  pi4: { fr:'Score de résilience', en:'Resilience score' },
+  pi4d: { fr:'4 jauges: longévité, marché, inflation, dépenses imprévues.', en:'4 gauges: longevity, market, inflation, unexpected expenses.' },
+  pi5: { fr:'Analyse CCPC', en:'CCPC analysis' },
+  pi5d: { fr:'Salaire vs dividende, extraction corporative, impact sur votre plan.', en:'Salary vs dividend, corporate extraction, impact on your plan.' },
+  pi6: { fr:'Héritage et succession', en:'Estate and succession' },
+  pi6d: { fr:"Ce que vous laisserez. Impôt successoral estimé. Frais d\u2019homologation.", en:'What you\u2019ll leave behind. Estimated estate tax. Probate fees.' },
+  // FAQ
+  faqLabel: { fr:'Questions fréquentes', en:'Frequently asked questions' },
+  faqTitle: { fr:'Tout ce que vous devez savoir', en:'Everything you need to know' },
+  fq1: { fr:'Est-ce un conseil financier?', en:'Is this financial advice?' },
+  fa1: { fr:"Non. BuildFi est un outil éducatif qui produit des projections statistiques basées sur les données que vous fournissez. Ce n\u2019est pas un conseil financier, fiscal ou juridique. Les résultats utilisent le conditionnel (\u00ab\u00a0vous pourriez\u00a0\u00bb) et ne remplacent pas l\u2019avis d\u2019un professionnel certifié. Consultez un planificateur financier ou un fiscaliste avant de prendre des décisions importantes.", en:"No. BuildFi is an educational tool that produces statistical projections based on the data you provide. It is not financial, tax, or legal advice. Results use conditional language and do not replace the advice of a certified professional. Consult a financial planner or tax specialist before making important decisions." },
+  fq2: { fr:'Combien de temps ça prend?', en:'How long does it take?' },
+  fa2: { fr:"<strong>Essentiel:</strong> 5 à 8 minutes \u2014 un questionnaire rapide et vos résultats arrivent en ligne et par courriel.<br><strong>Intermédiaire:</strong> 10 à 15 minutes \u2014 un questionnaire plus détaillé pour couvrir le couple, la propriété et la stratégie fiscale.<br><strong>Expert:</strong> À votre rythme. Le simulateur est accessible en sessions illimitées. Explorez, testez, ajustez aussi longtemps que vous le souhaitez.", en:"<strong>Essential:</strong> 5 to 8 minutes \u2014 a quick questionnaire and your results arrive online and by email.<br><strong>Intermediate:</strong> 10 to 15 minutes \u2014 a more detailed questionnaire covering couples, property, and tax strategy.<br><strong>Expert:</strong> At your own pace. The simulator is accessible in unlimited sessions. Explore, test, adjust as long as you wish." },
+  fq3: { fr:'Quelle est la différence entre les trois produits?', en:'What\u2019s the difference between the three products?' },
+  fa3: { fr:"<strong>Essentiel</strong> est pour les personnes seules qui veulent un premier portrait \u2014 c\u2019est le point de départ. <strong>Intermédiaire</strong> est pour les couples et les propriétaires qui ont besoin d\u2019une analyse plus complète. <strong>Expert</strong> est pour ceux qui veulent tout contrôler: un simulateur interactif avec sessions illimitées. Chaque niveau inclut tout le contenu du niveau précédent. En doute? Commencez par l\u2019Essentiel \u2014 vous pouvez toujours passer au niveau suivant et nous créditons votre achat.", en:"<strong>Essential</strong> is for individuals who want a first portrait \u2014 it\u2019s the starting point. <strong>Intermediate</strong> is for couples and homeowners who need a more complete analysis. <strong>Expert</strong> is for those who want full control: an interactive simulator with unlimited sessions. Each level includes all features from the level below. Unsure? Start with Essential \u2014 you can always upgrade and we credit your purchase." },
+  fq4: { fr:'Qu\u2019est-ce que \u00ab\u00a010\u00a0000 scénarios\u00a0\u00bb?', en:'What does \u201c10,000 scenarios\u201d mean?' },
+  fa4: { fr:"Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans jusqu\u2019à 10\u00a0000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C\u2019est la méthode Monte Carlo \u2014 couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.", en:"Instead of giving you one optimistic projection, our engine simulates your plan across up to 10,000 different conditions: bull markets, recessions, variable inflation, increased longevity. This is the Monte Carlo method \u2014 widely used in financial analysis. Your retirement grade reflects the percentage of scenarios where your money lasts your lifetime." },
+  fq5: { fr:'Mes données sont-elles protégées?', en:'Is my data protected?' },
+  fa5: { fr:"Oui. Vos données financières ne sont jamais stockées sur nos serveurs. Les calculs s\u2019exécutent dans votre navigateur. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 \u2014 le plus haut niveau de sécurité dans l\u2019industrie. Nous ne voyons jamais votre numéro de carte.", en:"Yes. Your financial data is never stored on our servers. Calculations run in your browser. Payment is processed by Stripe, certified PCI DSS Level 1 \u2014 the highest security level in the industry. We never see your card number." },
+  fq6: { fr:"Puis-je passer d\u2019un produit à l\u2019autre?", en:'Can I switch between products?' },
+  fa6: { fr:"Oui. Si votre situation évolue, nous créditons votre achat précédent vers le produit supérieur. Par exemple, si vous passez de l\u2019Essentiel à l\u2019Intermédiaire, vous payez uniquement la différence. Contactez-nous et nous activerons votre mise à niveau.", en:"Yes. If your situation changes, we credit your previous purchase toward the higher product. For example, if you move from Essential to Intermediate, you only pay the difference. Contact us and we\u2019ll activate your upgrade." },
+  fq7: { fr:"Quelle est votre politique après l\u2019achat?", en:'What is your post-purchase policy?' },
+  fa7: { fr:"BuildFi est un produit numérique livré instantanément. Il n\u2019y a pas de remboursement. Si une erreur technique empêche la livraison ou affecte la qualité de votre rapport, nous le corrigerons ou le reproduirons sans frais supplémentaires. Contactez-nous à support@buildfi.ca.", en:"BuildFi is a digital product delivered instantly. There are no refunds. If a technical error prevents delivery or affects your report quality, we will correct or reproduce it at no additional cost. Contact us at support@buildfi.ca." },
+  // Final CTA
+  finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
+  finalSubtitle: { fr:'Un rapport complet, un paiement unique. Premiers 100 clients: 50\u00a0% de rabais.', en:'A complete report, one payment. First 100 customers: 50% off.' },
+  finalCtaPrimary: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
+  finalCtaSec: { fr:'Voir les produits \u2191', en:'See products \u2191' },
+  finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non conservées', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never stored' },
+  stickyText: { fr:'À partir de <span>19,50\u00a0$</span>', en:'Starting at <span>$19.50</span>' },
+  stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },
+  footerTagline: { fr:'Planification de retraite canadienne. Propulsé par la simulation Monte Carlo.', en:'Canadian retirement planning. Powered by Monte Carlo simulation.' },
+  footProd: { fr:'Produits', en:'Products' },
+  footRes: { fr:'Ressources', en:'Resources' },
+  footLegal: { fr:'Légal', en:'Legal' },
+  footEss: { fr:'Essentiel', en:'Essential' },
+  footInter: { fr:'Intermédiaire', en:'Intermediate' },
+  footExp: { fr:'Expert \u00b7 Simulateur', en:'Expert \u00b7 Simulator' },
+  footFaq: { fr:'FAQ', en:'FAQ' },
+  footPriv: { fr:'Confidentialité', en:'Privacy' },
+  footTerms: { fr:"Conditions d\u2019utilisation", en:'Terms of use' },
+  footContact: { fr:'Contact', en:'Contact' },
+  footDisclaimer: { fr:"BuildFi n\u2019est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques basées sur la méthode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifié avant de prendre des décisions financières. BuildFi est un produit de BuildFi Technologies inc.", en:"BuildFi is not a financial, tax, or legal advisor. Projections are statistical estimates based on the Monte Carlo method and do not constitute guarantees of future performance. Consult a certified professional before making financial decisions. BuildFi is a product of BuildFi Technologies inc." },
+};
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  Object.keys(T).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && T[id][lang] !== undefined) {
+      if (T[id][lang].indexOf('<') >= 0) el.innerHTML = T[id][lang];
+      else el.textContent = T[id][lang];
+    }
+  });
+  ['trust1','trust2','trust3','trust4'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && T[id]) { var sp = el.querySelector('span'); if (sp) sp.innerHTML = T[id][lang]; }
+  });
+  var lt = document.getElementById('langToggle');
+  if (lt) lt.textContent = lang === 'fr' ? 'EN' : 'FR';
+  var flt = document.getElementById('footLangToggle');
+  if (flt) flt.textContent = lang === 'fr' ? 'English' : 'Français';
+  var dd = document.getElementById('drawerProducts'); if (dd) dd.textContent = T.navProducts[lang];
+  var dw = document.getElementById('drawerWhy'); if (dw) dw.textContent = T.navWhy[lang];
+  var dv = document.getElementById('drawerPreview'); if (dv) dv.textContent = T.navPreview[lang];
+  var df = document.getElementById('drawerFaq'); if (df) df.textContent = T.navFaq[lang];
+  var dc = document.getElementById('drawerCta'); if (dc) dc.textContent = T.navCta[lang];
+}
+
+function toggleLang() {
+  lang = lang === 'fr' ? 'en' : 'fr';
+  var url = new URL(window.location);
+  url.searchParams.set('lang', lang);
+  try { history.replaceState(null, '', url); } catch(e) {}
+  applyLang();
+  trackEvent('lang_toggle', { lang: lang });
+}
+
+/* ─── NAV ─── */
+var nav = document.getElementById('nav');
+var hamburger = document.getElementById('hamburger');
+var drawer = document.getElementById('navDrawer');
+window.addEventListener('scroll', function() {
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+if (hamburger) hamburger.addEventListener('click', function() {
+  var open = drawer.classList.toggle('open');
+  hamburger.classList.toggle('open');
+  hamburger.setAttribute('aria-expanded', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+drawer.querySelectorAll('a').forEach(function(a) {
+  a.addEventListener('click', function() {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  });
+});
+
+/* ─── REVEAL ─── */
+var reveals = document.querySelectorAll('.reveal');
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(function(el) { revealObs.observe(el); });
+
+/* ─── GRADE CARD ─── */
+var grades = ['B+','A-','B','A','B+','A+','C+','B+'];
+var gradeIdx = 0;
+var gradeLetter = document.getElementById('gradeLetter');
+if (gradeLetter) {
+  setInterval(function() {
+    gradeIdx = (gradeIdx + 1) % grades.length;
+    gradeLetter.style.opacity = '0';
+    gradeLetter.style.transform = 'translateY(-8px)';
+    setTimeout(function() {
+      gradeLetter.textContent = grades[gradeIdx];
+      gradeLetter.style.opacity = '1';
+      gradeLetter.style.transform = 'translateY(0)';
+    }, 200);
+  }, 2400);
+  gradeLetter.style.transition = 'opacity .2s, transform .2s';
+}
+
+/* ─── FAQ ─── */
+document.querySelectorAll('.faq-question').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(fi) {
+      fi.classList.remove('open');
+      fi.querySelector('.faq-answer').style.maxHeight = '0';
+      fi.querySelector('.faq-question').setAttribute('aria-expanded','false');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.faq-answer');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+      btn.setAttribute('aria-expanded','true');
+      trackEvent('faq_open', { q: btn.querySelector('span').textContent });
+    }
+  });
+});
+
+/* ─── COMPARE TOGGLE ─── */
+var compareToggle = document.getElementById('compareToggle');
+var compareWrap = document.getElementById('compareWrap');
+if (compareToggle && compareWrap) compareToggle.addEventListener('click', function() {
+  var open = compareWrap.classList.toggle('open');
+  compareToggle.setAttribute('aria-expanded', open);
+  trackEvent('compare_toggle');
+});
+
+/* ─── STICKY MOBILE CTA ─── */
+var stickyCta = document.getElementById('stickyCta');
+var heroSection = document.getElementById('hero');
+if (stickyCta && heroSection) {
+  var stickyObs = new IntersectionObserver(function(entries) {
+    stickyCta.classList.toggle('visible', !entries[0].isIntersecting);
+  }, { threshold: 0 });
+  stickyObs.observe(heroSection);
+}
+
+/* ─── TRACKING ─── */
+function trackEvent(name, props) {
+  try { if (window.posthog) window.posthog.capture(name, props); } catch(e) {}
+}
+document.querySelectorAll('[data-track]').forEach(function(el) {
+  el.addEventListener('click', function() { trackEvent(el.dataset.track); });
+});
+var productsSection = document.getElementById('products');
+if (productsSection) {
+  var productsObs = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) { trackEvent('pricing_view'); productsObs.disconnect(); }
+  }, { threshold: 0.3 });
+  productsObs.observe(productsSection);
+}
+
+/* ─── FAQ SCHEMA ─── */
+function buildFaqSchema() {
+  var items = [];
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    var q = item.querySelector('.faq-question span');
+    var a = item.querySelector('.faq-answer-inner');
+    if (q && a) items.push({ '@type':'Question', name: q.textContent, acceptedAnswer: { '@type':'Answer', text: a.textContent } });
+  });
+  var schema = { '@context':'https://schema.org', '@type':'FAQPage', mainEntity: items };
+  var el = document.getElementById('faqSchema');
+  if (el) el.textContent = JSON.stringify(schema);
+}
+
+document.getElementById('langToggle').addEventListener('click', toggleLang);
+document.getElementById('footLangToggle').addEventListener('click', toggleLang);
+applyLang();
+buildFaqSchema();
+})();
+</script>
+</body>
+</html>

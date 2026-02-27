@@ -1,0 +1,5 @@
+﻿User-agent: *
+Allow: /
+Disallow: /outils/
+Disallow: /api/
+Disallow: /assets/
