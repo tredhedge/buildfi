@@ -1,11 +1,11 @@
 // /lib/pdf-generator.ts
-// Converts branded HTML report → PDF buffer using Puppeteer
-// Uses @sparticuz/chromium for Vercel serverless compatibility (~45MB)
-
+// Converts branded HTML report -> PDF buffer using Puppeteer
+// Uses @sparticuz/chromium-min + remote binary for Vercel compatibility
 import puppeteer, { type Browser } from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 
-// Reuse browser instance across warm invocations
+const CHROMIUM_PACK = "https://github.com/nichochar/chromium-headless-aws/releases/download/v143.0.0/chromium-v143.0.0-pack.tar";
+
 let _browser: Browser | null = null;
 
 async function getBrowser(): Promise<Browser> {
@@ -14,7 +14,6 @@ async function getBrowser(): Promise<Browser> {
   const isLocal = process.env.NODE_ENV === "development";
 
   if (isLocal) {
-    // Local dev: use system Chrome
     _browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -26,11 +25,10 @@ async function getBrowser(): Promise<Browser> {
             : "/usr/bin/google-chrome",
     });
   } else {
-    // Vercel serverless: use @sparticuz/chromium
     _browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1280, height: 900 },
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.executablePath(CHROMIUM_PACK),
       headless: true,
     });
   }
@@ -38,34 +36,25 @@ async function getBrowser(): Promise<Browser> {
   return _browser;
 }
 
-/**
- * Generate a PDF from an HTML string.
- * The HTML should be a complete document with embedded CSS and fonts.
- * Returns a Buffer containing the PDF.
- */
 export async function generatePDF(html: string): Promise<Buffer> {
   const browser = await getBrowser();
   const page = await browser.newPage();
 
   try {
-    // Set content with generous timeout for font loading
     await page.setContent(html, {
       waitUntil: "networkidle0",
       timeout: 30000,
     });
 
-    // Wait for Google Fonts to load (DM Sans)
     await page.evaluate(() => {
       return document.fonts.ready;
     });
 
-    // Small delay to ensure SVG charts render
     await new Promise((r) => setTimeout(r, 500));
 
-    // Generate PDF
     const pdfBuffer = await page.pdf({
-      format: "Letter", // 8.5 x 11 — standard Canadian
-      printBackground: true, // Preserve backgrounds & colors
+      format: "Letter",
+      printBackground: true,
       margin: {
         top: "0.5in",
         right: "0.6in",
@@ -85,7 +74,7 @@ export async function generatePDF(html: string): Promise<Buffer> {
         </div>
       `,
       preferCSSPageSize: false,
-      tagged: true, // Accessibility
+      tagged: true,
     });
 
     return Buffer.from(pdfBuffer);
@@ -94,9 +83,6 @@ export async function generatePDF(html: string): Promise<Buffer> {
   }
 }
 
-/**
- * Cleanup: close browser (call on process exit if needed)
- */
 export async function closeBrowser(): Promise<void> {
   if (_browser) {
     await _browser.close();
