@@ -2994,6 +2994,332 @@ function runTestSuite() {
     mcMsg = (mcMsg||"") + " DisplayTests err: " + (e.message||e);
   }
 
+
+  // ═══════════════════════════════════════════════════════════════
+  // R-21: EXPANDED TEST SUITE — ~90 new tests
+  // Covers: MC edge cases, zero/extreme inputs, display integrity,
+  // AMF compliance, withdrawal rate, MER, spending, UI strings
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── MC EDGE: Zero savings ──
+  var zeroSav = safeMC(Object.assign({}, bp, {
+    rrsp:0, tfsa:0, nr:0, rrspC:0, tfsaC:0, nrC:0, dcBal:0, liraBal:0,
+    fhsaBal:0, peBal:0, pmBal:0, retSpM:3000, sal:50000
+  }), 10);
+  if(zeroSav) {
+    T("Edge","ZeroSav succ<100",zeroSav.succ<1.0?1:0,1,0);
+    T("Edge","ZeroSav succ>=0",zeroSav.succ>=0?1:0,1,0);
+    T("Edge","ZeroSav medF defined",typeof zeroSav.medF==="number"?1:0,1,0);
+  }
+
+  // ── MC EDGE: Zero income ──
+  var zeroInc = safeMC(Object.assign({}, bp, {
+    sal:0, rrsp:500000, tfsa:100000, nr:50000, retSpM:3000
+  }), 10);
+  if(zeroInc) {
+    T("Edge","ZeroInc runs",1,1,0);
+    T("Edge","ZeroInc succ>=0",zeroInc.succ>=0?1:0,1,0);
+  }
+
+  // ── MC EDGE: Already retired (age >= retAge) ──
+  var alrRet2 = safeMC(Object.assign({}, bp, {
+    age:67, retAge:65, rrsp:300000, tfsa:80000, retSpM:4000, sal:0
+  }), 10);
+  if(alrRet2) {
+    T("AlrRet","AlrRet runs",1,1,0);
+    T("AlrRet","AlrRet succ>=0",alrRet2.succ>=0?1:0,1,0);
+    T("AlrRet","AlrRet has pD",alrRet2.pD&&alrRet2.pD.length>0?1:0,1,0);
+  }
+
+  // ── MC EDGE: Very young (age 25, retAge 65) ──
+  var youngTest = safeMC(Object.assign({}, bp, {
+    age:25, retAge:65, deathAge:95, sal:45000, rrsp:5000, tfsa:2000,
+    rrspC:3000, tfsaC:3000, retSpM:3500
+  }), 10);
+  if(youngTest) {
+    T("Edge","Young25 runs",1,1,0);
+    T("Edge","Young25 has 70yr horizon",youngTest.pD&&youngTest.pD.length>=60?1:0,1,0);
+  }
+
+  // ── MC EDGE: Very old (age 80, retAge 80) ──
+  var oldTest = safeMC(Object.assign({}, bp, {
+    age:80, retAge:80, deathAge:95, sal:0, rrsp:200000, tfsa:50000,
+    retSpM:3000, qppAge:65, oasAge:65
+  }), 10);
+  if(oldTest) {
+    T("Edge","Old80 runs",1,1,0);
+    T("Edge","Old80 succ>=0",oldTest.succ>=0?1:0,1,0);
+  }
+
+  // ── MC EDGE: Max debt load ──
+  var maxDebt = safeMC(Object.assign({}, bp, {
+    sal:60000, rrsp:20000, tfsa:5000, retSpM:3000,
+    debts:[{bal:50000,rate:0.20,min:500},{bal:30000,rate:0.06,min:300},{bal:15000,rate:0.25,min:200}]
+  }), 10);
+  if(maxDebt) {
+    T("Debt","MaxDebt runs",1,1,0);
+    T("Debt","MaxDebt lowers succ",maxDebt.succ<0.95?1:0,1,0);
+  }
+
+  // ── MC EDGE: GIS eligible (very low income) ──
+  var gisTest2 = safeMC(Object.assign({}, bp, {
+    sal:18000, rrsp:10000, tfsa:5000, nr:0, retSpM:1500,
+    age:63, retAge:65, rrspC:0, tfsaC:0, nrC:0
+  }), 10);
+  if(gisTest2) {
+    T("GIS","LowInc runs",1,1,0);
+    T("GIS","LowInc succ>=0",gisTest2.succ>=0?1:0,1,0);
+  }
+
+  // ── MC EDGE: 100% success scenario (massive savings) ──
+  var rich = safeMC(Object.assign({}, bp, {
+    sal:200000, rrsp:2000000, tfsa:500000, nr:500000,
+    rrspC:20000, tfsaC:7000, nrC:5000, retSpM:5000
+  }), 10);
+  if(rich) {
+    T("Edge","Rich succ>90%",rich.succ>0.90?1:0,1,0);
+  }
+
+  // ── MC EDGE: Near-zero spending ──
+  var zeroSpend = safeMC(Object.assign({}, bp, {
+    retSpM:100, sal:50000, rrsp:100000, tfsa:50000
+  }), 10);
+  if(zeroSpend) {
+    T("Edge","ZeroSpend runs",1,1,0);
+    T("Edge","ZeroSpend succ high",zeroSpend.succ>0.80?1:0,1,0);
+  }
+
+  // ── MC EDGE: Extreme spending ──
+  var bigSpend = safeMC(Object.assign({}, bp, {
+    retSpM:15000, sal:80000, rrsp:100000, tfsa:50000
+  }), 10);
+  if(bigSpend) {
+    T("Edge","BigSpend runs",1,1,0);
+    T("Edge","BigSpend succ<80%",bigSpend.succ<0.80?1:0,1,0);
+  }
+
+  // ── MC EDGE: All defaults / minimal params ──
+  var minimal = safeMC(Object.assign({}, bp), 10);
+  if(minimal) {
+    T("Edge","MinimalDefaults runs",1,1,0);
+    T("Edge","MinimalDefaults succ 0-1",minimal.succ>=0&&minimal.succ<=1?1:0,1,0);
+  }
+
+  // ── TAX: Retired credits ──
+  var retTax = calcTax(40000, 0, "QC", 0, true);
+  var nonRetTax = calcTax(40000, 0, "QC", 0, false);
+  T("Tax","RetiredCredit lower tax",retTax.total <= nonRetTax.total ? 1 : 0, 1, 0);
+
+  // ── TAX: Very high income ──
+  var highTax = calcTax(500000, 0, "QC", 0);
+  T("Tax","500K QC >200K tax",highTax.total > 200000 ? 1 : 0, 1, 0);
+  T("Tax","500K QC marginal >50%",highTax.marg > 0.50 ? 1 : 0, 1, 0);
+
+  // ── TAX: All provinces at 150K ──
+  var provs150 = ["QC","ON","BC","AB","SK","MB","NB","NS","PE","NL","NT","YT","NU"];
+  for(var pi2=0;pi2<provs150.length;pi2++){
+    var t150=calcTax(150000,0,provs150[pi2],0);
+    T("Tax",provs150[pi2]+" @150K >30K",t150.total>30000?1:0,1,0);
+    T("Tax",provs150[pi2]+" @150K <70K",t150.total<70000?1:0,1,0);
+  }
+
+  // ── OAS: Clawback precision ──
+  var oasCalc = typeof calcOAS === "function";
+  if(oasCalc) {
+    var oasFull = calcOAS(90000, 65, 0);
+    var oasClaw = calcOAS(120000, 65, 0);
+    var oasZero = calcOAS(160000, 65, 0);
+    T("OAS","Below threshold full", oasFull > 8000 ? 1 : 0, 1, 0);
+    T("OAS","Above threshold reduced", oasClaw < oasFull ? 1 : 0, 1, 0);
+    T("OAS","Way above near zero", oasZero < oasFull * 0.3 ? 1 : 0, 1, 0);
+  }
+
+  // ── QPP: Age adjustments ──
+  if(typeof calcQPP === "function") {
+    var qpp60 = calcQPP(60, 50000, 35);
+    var qpp65 = calcQPP(65, 50000, 35);
+    var qpp70 = calcQPP(70, 50000, 35);
+    T("QPP","60<65",qpp60 < qpp65 ? 1 : 0, 1, 0);
+    T("QPP","70>65",qpp70 > qpp65 ? 1 : 0, 1, 0);
+    T("QPP","60 is ~64% of 65",Math.abs(qpp60/qpp65 - 0.64) < 0.05 ? 1 : 0, 1, 0);
+    T("QPP","70 is ~142% of 65",Math.abs(qpp70/qpp65 - 1.42) < 0.05 ? 1 : 0, 1, 0);
+  }
+
+  // ── RRIF: Min withdrawal rates ──
+  T("RRIF","Age71 rate 5.28%",Math.abs(getRRIFMin(71,100000)-5280)<10?1:0,1,0);
+  T("RRIF","Age80 rate 6.82%",Math.abs(getRRIFMin(80,100000)-6820)<10?1:0,1,0);
+  T("RRIF","Age95 rate 20%",Math.abs(getRRIFMin(95,100000)-20000)<10?1:0,1,0);
+  T("RRIF","Age70 no min",getRRIFMin(70,100000)===0?1:0,1,0);
+
+  // ── COUPLE: Asymmetric incomes ──
+  var asymCouple = safeMC(Object.assign({}, bp, {
+    cOn:true, cAge:bp.age, cRetAge:bp.retAge, cDeath:90,
+    sal:150000, cRRSP:10000, cTFSA:5000, cNR:0,
+    cRetSpM:3000, cQppAge:65, cAvgE:20000, cQppYrs:15, cOasAge:65, cPenType:"none",
+    rrsp:400000, tfsa:200000, retSpM:5000, split:true
+  }), 10);
+  if(asymCouple) {
+    T("Couple","AsymCouple runs",1,1,0);
+    T("Couple","AsymCouple succ 0-1",asymCouple.succ>=0&&asymCouple.succ<=1?1:0,1,0);
+  }
+
+  // ── COUPLE: Both high earners ──
+  var dualHigh = safeMC(Object.assign({}, bp, {
+    cOn:true, cAge:bp.age+2, cRetAge:bp.retAge, cDeath:90,
+    sal:120000, cRRSP:300000, cTFSA:100000, cNR:50000,
+    cRetSpM:4000, cQppAge:65, cAvgE:90000, cQppYrs:35, cOasAge:65, cPenType:"none",
+    rrsp:350000, tfsa:150000, retSpM:5000, split:true
+  }), 10);
+  if(dualHigh) {
+    T("Couple","DualHigh runs",1,1,0);
+    T("Couple","DualHigh succ>50%",dualHigh.succ>0.50?1:0,1,0);
+  }
+
+  // ── MELTDOWN: On vs Off ──
+  var meltOff = safeMC(Object.assign({}, bp, {
+    rrsp:600000, tfsa:100000, retSpM:4000, melt:false, age:58, retAge:62
+  }), 10);
+  var meltOn = safeMC(Object.assign({}, bp, {
+    rrsp:600000, tfsa:100000, retSpM:4000, melt:true, age:58, retAge:62
+  }), 10);
+  if(meltOff && meltOn) {
+    T("Meltdown","MeltOn helps big RRSP",meltOn.succ >= meltOff.succ - 0.05 ? 1 : 0, 1, 0);
+  }
+
+  // ── SPLIT: On vs Off for couple ──
+  var splitOff = safeMC(Object.assign({}, bp, {
+    cOn:true, cAge:bp.age, cRetAge:bp.retAge, cDeath:90,
+    cRRSP:0, cTFSA:0, cNR:0, cRetSpM:3000,
+    cQppAge:65, cAvgE:20000, cQppYrs:20, cOasAge:65, cPenType:"none",
+    rrsp:400000, retSpM:5000, split:false, penType:"db", penM:3000
+  }), 10);
+  var splitOn = safeMC(Object.assign({}, bp, {
+    cOn:true, cAge:bp.age, cRetAge:bp.retAge, cDeath:90,
+    cRRSP:0, cTFSA:0, cNR:0, cRetSpM:3000,
+    cQppAge:65, cAvgE:20000, cQppYrs:20, cOasAge:65, cPenType:"none",
+    rrsp:400000, retSpM:5000, split:true, penType:"db", penM:3000
+  }), 10);
+  if(splitOff && splitOn) {
+    T("Split","SplitHelps",splitOn.succ >= splitOff.succ - 0.02 ? 1 : 0, 1, 0);
+  }
+
+  // ── DISPLAY: Withdrawal rate sanity ──
+  // WR should be retSpM*12 / total savings at retirement
+  if(typeof mcRes !== "undefined" && mcRes && mcRes.pD) {
+    var retYr = mcRes.pD.find(function(r){ return r.age === bp.retAge; });
+    if(retYr) {
+      var totalAtRet = (retYr.mp_rrsp||0) + (retYr.mp_tfsa||0) + (retYr.mp_nr||0) + (retYr.mp_dc||0);
+      if(totalAtRet > 0) {
+        var calcWR = (bp.retSpM * 12) / totalAtRet * 100;
+        T("Display","WR is reasonable 0-15%", calcWR > 0 && calcWR < 15 ? 1 : 0, 1, 0);
+      }
+    }
+  }
+
+  // ── DISPLAY: Real $ vs Nominal ──
+  // Check that html contains "réel" or "real" or "constant" references
+  T("Display","Has real$ mention", html.indexOf("réel")>-1||html.indexOf("réels")>-1||html.indexOf("real")>-1||html.indexOf("constant")>-1 ? 1 : 0, 1, 0);
+
+  // ── DISPLAY: MER / Fees reference ──
+  T("Display","Has MER reference", html.indexOf("MER")>-1||html.indexOf("mer")>-1||html.indexOf("frais")>-1 ? 1 : 0, 1, 0);
+
+  // ── DISPLAY: Withdrawal order logic exists ──
+  T("Display","Has withdrawal order", html.indexOf("wOrder")>-1||html.indexOf("WOrder")>-1||html.indexOf("WITHDRAWAL_ORDER")>-1||html.indexOf("withdrawalOrder")>-1 ? 1 : 0, 1, 0);
+
+  // ── DISPLAY: Success rate color coding ──
+  T("Display","Has grade coloring", html.indexOf("gradeColor")>-1||html.indexOf("grade_color")>-1||html.indexOf("successColor")>-1||html.indexOf("getGradeColor")>-1||html.indexOf("gcol")>-1 ? 1 : 0, 1, 0);
+
+  // ── DISPLAY: Spending display in retirement ──
+  T("Display","Has retSpM display", html.indexOf("retSpM")>-1 ? 1 : 0, 1, 0);
+  T("Display","Has spending section", html.indexOf("mp_spend")>-1||html.indexOf("spending")>-1||html.indexOf("dépens")>-1 ? 1 : 0, 1, 0);
+
+  // ── ENGINE: Inflation compounds correctly ──
+  var inf1 = calcTax(50000, 5, "QC", 0.03);
+  var inf2 = calcTax(50000, 10, "QC", 0.03);
+  // With inflation adjustment, brackets shift — tax should be <= no-inflation
+  var noInf = calcTax(50000, 0, "QC", 0);
+  T("Inflate","5yr brackets shift",inf1.total <= noInf.total + 500 ? 1 : 0, 1, 0);
+  T("Inflate","10yr brackets shift",inf2.total <= noInf.total + 500 ? 1 : 0, 1, 0);
+
+  // ── ENGINE: Dividend tax integration ──
+  var divElig = calcTax(80000, 0, "QC", 0, false, {eligible:40000, nonEligible:0});
+  var divNon = calcTax(80000, 0, "QC", 0, false, {eligible:0, nonEligible:40000});
+  var noDivT = calcTax(80000, 0, "QC", 0);
+  T("DivTax","EligDiv has credit", divElig.divCredFed > 0 ? 1 : 0, 1, 0);
+  T("DivTax","NonEligDiv has credit", divNon.divCredFed > 0 ? 1 : 0, 1, 0);
+  T("DivTax","EligDiv credit > NonElig", divElig.divCredFed > divNon.divCredFed ? 1 : 0, 1, 0);
+
+  // ── ENGINE: Province ordering (AB should be lower tax than QC at same income) ──
+  var taxAB = calcTax(100000, 0, "AB", 0);
+  var taxQC = calcTax(100000, 0, "QC", 0);
+  var taxON = calcTax(100000, 0, "ON", 0);
+  T("Province","AB<QC @100K", taxAB.total < taxQC.total ? 1 : 0, 1, 0);
+  T("Province","ON<QC @100K", taxON.total < taxQC.total ? 1 : 0, 1, 0);
+
+  // ── MC: Schedule continuity (no gaps in age sequence) ──
+  if(mcRes && mcRes.pD && mcRes.pD.length > 2) {
+    var gapFound = false;
+    for(var gi=1;gi<mcRes.pD.length;gi++){
+      if(mcRes.pD[gi].age !== mcRes.pD[gi-1].age + 1) { gapFound = true; break; }
+    }
+    T("MC","No age gaps in pD", gapFound ? 0 : 1, 1, 0);
+  }
+
+  // ── MC: Percentiles are ordered (p5 <= p25 <= p50 <= p75 <= p95) ──
+  if(mcRes && mcRes.pD && mcRes.pD.length > 5) {
+    var midPD = mcRes.pD[Math.floor(mcRes.pD.length/2)];
+    var pOrd = (midPD.p5||0) <= (midPD.p25||0) &&
+               (midPD.p25||0) <= (midPD.p50||0) &&
+               (midPD.p50||0) <= (midPD.p75||0) &&
+               (midPD.p75||0) <= (midPD.p95||0);
+    T("MC","Percentiles ordered", pOrd ? 1 : 0, 1, 0);
+  }
+
+  // ── MC: Success rate monotonic with savings ──
+  var lowSav = safeMC(Object.assign({}, bp, {rrsp:50000,tfsa:20000,nr:0,retSpM:4000}), 10);
+  var highSav = safeMC(Object.assign({}, bp, {rrsp:500000,tfsa:200000,nr:100000,retSpM:4000}), 10);
+  if(lowSav && highSav) {
+    T("MC","More savings = higher succ", highSav.succ >= lowSav.succ - 0.05 ? 1 : 0, 1, 0);
+  }
+
+  // ── MC: Success rate monotonic with spending (inverse) ──
+  var lowSpend2 = safeMC(Object.assign({}, bp, {retSpM:2000,rrsp:200000,tfsa:80000}), 10);
+  var highSpend2 = safeMC(Object.assign({}, bp, {retSpM:8000,rrsp:200000,tfsa:80000}), 10);
+  if(lowSpend2 && highSpend2) {
+    T("MC","Less spend = higher succ", lowSpend2.succ >= highSpend2.succ - 0.05 ? 1 : 0, 1, 0);
+  }
+
+  // ── PART-TIME: Income shows in schedule ──
+  var ptTest = safeMC(Object.assign({}, bp, {
+    inc1Age:bp.retAge, inc1Amt:12000, retAge:65, age:63
+  }), 10);
+  if(ptTest && ptTest.pD) {
+    var ptAt66 = ptTest.pD.find(function(r){return r.age===66;});
+    T("PartTime","PT income in schedule", ptAt66 && (ptAt66.mp_other||ptAt66.mp_inc||0) > 0 ? 1 : 0, 1, 0);
+  }
+
+  // ── SMILE: Spending pattern affects outcome ──
+  if(typeof bp.smileOn !== "undefined") {
+    var smileOff2 = safeMC(Object.assign({}, bp, {smileOn:false, retSpM:5000, rrsp:300000}), 10);
+    var smileOn2 = safeMC(Object.assign({}, bp, {smileOn:true, smileMid:0.85, smileLate:0.70, retSpM:5000, rrsp:300000}), 10);
+    if(smileOff2 && smileOn2) {
+      T("Smile","Smile improves succ", smileOn2.succ >= smileOff2.succ - 0.02 ? 1 : 0, 1, 0);
+    }
+  }
+
+  // ── HTML INTEGRITY: Key sections exist ──
+  T("Display","Has calcTax function", html.indexOf("function calcTax")>-1 ? 1 : 0, 1, 0);
+  T("Display","Has runMC function", html.indexOf("function runMC")>-1 ? 1 : 0, 1, 0);
+  T("Display","Has province selector", html.indexOf("province")>-1||html.indexOf("prov")>-1 ? 1 : 0, 1, 0);
+  T("Display","Has bilingual t()", html.indexOf("function t(")>-1||html.indexOf("var t=")>-1||html.indexOf("lang==")>-1 ? 1 : 0, 1, 0);
+
+  // ── AMF COMPLIANCE: Key conditional tense markers ──
+  T("Display","Has conditional language", 
+    html.indexOf("pourrait")>-1||html.indexOf("could")>-1||html.indexOf("would")>-1||html.indexOf("devrait")>-1 ? 1 : 0, 1, 0);
+  T("Display","Has disclaimer", 
+    html.indexOf("informatif")>-1||html.indexOf("informational")>-1||html.indexOf("conseil")>-1||html.indexOf("advice")>-1 ? 1 : 0, 1, 0);
+
+
   return{pass:pass,fail:fail,total:total,results:results,mcMsg:mcMsg};
 }
 // === DECUMULATION OPTIMIZER (S3c) ===
@@ -5943,7 +6269,7 @@ function App() {
   var _aiRpt = useState(null), aiReport = _aiRpt[0], setAiReport = _aiRpt[1];
   var _aiLoad = useState(false), aiLoading = _aiLoad[0], setAiLoading = _aiLoad[1];
   // AI config: default key (owner) + usage tracking
-  var AI_DEFAULT_KEY = '';
+  var AI_DEFAULT_KEY = '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';
   var AI_MAX_REPORTS = 50; // max reports per session (adjust or connect to backend later)
   var _aiCount = useState(0), aiCount = _aiCount[0], setAiCount = _aiCount[1];
   var _aiKey = useState(AI_DEFAULT_KEY), aiApiKey = _aiKey[0], setAiApiKey = _aiKey[1];

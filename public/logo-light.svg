@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="153" height="44" viewBox="0 0 180 52">
+  <defs>
+    <linearGradient id="embG" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#C45A2C"/>
+      <stop offset="100%" stop-color="#E8A84C"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 46 C14 46 8 30 14 18 C20 6 26 12 26 22 C26 12 32 0 38 10 C44 22 38 32 38 32" stroke="url(#embG)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text x="48" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="#1A1A1A" letter-spacing="-1.2">build</text>
+  <text x="131" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="url(#embG)" letter-spacing="-1.2">fi</text>
+</svg>

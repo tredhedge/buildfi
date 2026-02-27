@@ -139,7 +139,7 @@ function buildEmailHTML(params: {
         : "This report is an educational tool. It does not constitute personalized financial advice."
       }</p>
       <p>buildfi.ca — Montréal, QC</p>
-      <p>${fr ? "Garantie satisfaction 30 jours" : "30-day satisfaction guarantee"}</p>
+      <p>${fr ? "Produit numérique — livraison instantanée" : "Digital product — instant delivery"}</p>
     </div>
 
   </div>

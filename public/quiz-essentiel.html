@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -14,58 +14,69 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A
   --bg:#FEFCF9;--bgc:#fff;--bd:#E8E0D4;--bdl:#F0ECE4;
   --gbg:rgba(196,148,74,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
   --rdbg:rgba(204,68,68,.06);--bga:rgba(124,96,184,.04);
+  --quiz-max:480px;--report-max:760px;
 }
 .qs{animation:fadeIn .4s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bd);border-radius:3px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
-.pbtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:var(--bd);border-radius:4px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
+.pbtn{display:block;width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s;letter-spacing:.2px}
 .pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,148,74,.25)}
 .pbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
 .card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
 .card:hover{border-color:var(--gl);background:#FDF8F0}
+.card:focus{outline:2px solid var(--g);outline-offset:2px}
 .card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,148,74,.25);transform:scale(1.02)}
-.chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:13px;cursor:pointer;transition:all .2s;margin:3px}
+.chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:14px;cursor:pointer;transition:all .2s;margin:3px}
 .chip:hover{border-color:var(--gl);background:#FDF8F0}
 .chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,148,74,.2)}
-.back-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:11px;font-weight:600;cursor:pointer;color:var(--ts)}
+.back-btn{padding:10px 20px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:13px;font-weight:600;cursor:pointer;color:var(--ts)}
+.fld-block{margin-bottom:20px}
+.fld-label{display:block;font-size:14px;font-weight:700;color:var(--ts);margin-bottom:6px}
+.inp{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--bd);font-size:16px;font-family:'DM Sans',sans-serif;background:var(--bgc);transition:border-color .2s}
+.inp:focus{border-color:var(--g);outline:none;box-shadow:0 0 0 3px rgba(196,148,74,.1)}
+.inp-sm{padding:12px 14px;font-size:15px}
 .loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin:0 3px;animation:bounce .6s infinite alternate}
 .loading-dot:nth-child(2){animation-delay:.2s}
 .loading-dot:nth-child(3){animation-delay:.4s}
 @keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
-.err-msg{color:var(--rd);font-size:12px;margin-top:4px;display:none}
-.err-msg.show{display:block}
-.sample-frame{border:1px solid var(--bd);border-radius:12px;position:relative;-webkit-overflow-scrolling:touch}
-.sample-frame::-webkit-scrollbar{width:6px}
-.sample-frame::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
-.sample-fade{position:sticky;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,#FEFCF9);pointer-events:none}
-.tab-btn{padding:8px 20px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:13px;font-weight:600;cursor:pointer;color:var(--ts);transition:all .2s}
-.tab-btn.active{border-color:var(--g);background:var(--gbg);color:var(--g);font-weight:700}
-/* Report styles (for sample report rendering) */
-.rpt-card{background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
-.rpt-kp{text-align:center;padding:16px 10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bgc)}
-.rpt-kvr{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdl);font-size:13px}
-.rpt-kvr span:first-child{color:var(--ts)}
-.rpt-kvr span:last-child{font-family:monospace;font-weight:600}
-.rpt-callout{border-radius:6px;padding:14px 16px;font-size:13px;color:#333;margin:12px 0;line-height:1.8}
-.rpt-callout.info{background:var(--gbg);border:1px solid var(--g);border-left:4px solid var(--g)}
-.rpt-callout.insight{background:var(--gnbg);border:1px solid var(--gn);border-left:4px solid var(--gn)}
-.rpt-callout.warning{background:var(--ambg);border:1px solid var(--am);border-left:4px solid var(--am)}
-.rpt-sec-h{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--g);font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--g)}
-.rpt-sec-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:12px;font-weight:800}
-.rpt-ai{font-size:14px;color:#444;line-height:1.8;margin:12px 0}
 @media print{body{background:#fff}.no-print{display:none!important}}
-@media(min-width:900px){
+
+/* ═══ TABLET (768px+) ═══ */
+@media(min-width:768px){
+  :root{--quiz-max:560px;--report-max:860px}
   body{font-size:16px}
-  .qs h2{font-size:24px!important}
-  .qs label{font-size:15px!important}
-  .qs input[type="number"],.qs select{font-size:17px!important;padding:14px!important}
-  .qs .card{padding:18px 16px!important}
-  .qs .card div[style*="font-weight:700"]{font-size:16px!important}
-  .qs .card div[style*="font-size:12px"]{font-size:13px!important}
-  .pbtn{font-size:16px!important;padding:18px 20px!important}
-  .back-btn{font-size:13px!important;padding:10px 20px!important}
+  .fld-label{font-size:15px!important}
+  .inp{font-size:17px!important;padding:15px 16px!important}
+  .inp-sm{font-size:16px!important;padding:13px 14px!important}
+  .pbtn{font-size:17px!important;padding:18px!important}
+  .back-btn{font-size:14px!important;padding:12px 24px!important}
+  .card{padding:18px!important}
+  .chip{font-size:15px!important;padding:10px 20px!important}
+  input[type=range]::-webkit-slider-thumb{width:32px;height:32px}
 }
+
+/* ═══ DESKTOP (1024px+) ═══ */
+@media(min-width:1024px){
+  :root{--quiz-max:640px;--report-max:940px}
+  body{font-size:17px}
+  .qs h2{font-size:26px!important}
+  .fld-label{font-size:16px!important}
+  .inp{font-size:18px!important;padding:16px 18px!important}
+  .inp-sm{font-size:17px!important;padding:14px 16px!important}
+  .pbtn{font-size:18px!important;padding:20px!important}
+  .back-btn{font-size:14px!important}
+  .card{padding:20px 18px!important}
+  .card div[style*="font-weight:700"],
+  .card div[style*="font-weight:600"]{font-size:16px!important}
+}
+
+/* ═══ LARGE DESKTOP (1440px+) ═══ */
+@media(min-width:1440px){
+  :root{--quiz-max:700px;--report-max:1000px}
+}
+
+/* ═══ MOBILE ≤640px ═══ */
 @media(max-width:640px){
   .rpt-grid3{grid-template-columns:1fr!important}
   .rpt-grid2{grid-template-columns:1fr!important}
@@ -73,40 +84,335 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;heigh
   .rpt-donut{flex-direction:column!important;align-items:center!important;gap:16px!important}
   .rpt-tax-label{width:100px!important;font-size:11px!important}
   .rpt-cta-grid{grid-template-columns:1fr!important}
-  .debt-grid{grid-template-columns:1fr!important}
-  .ls-grid4{grid-template-columns:repeat(2,1fr)!important}
 }
-@media(max-width:480px){
+
+/* ═══ SMALL MOBILE ≤400px ═══ */
+@media(max-width:400px){
   body{font-size:14px}
   h1{font-size:22px!important}
   h2{font-size:18px!important}
+  .inp{padding:12px!important;font-size:15px!important}
+  .inp-sm{padding:10px!important;font-size:14px!important}
+  .card{padding:14px 12px!important}
 }
 </style>
+<script src="/logo.js"></script>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// ============================================================
-// buildfi.ca — Quiz Essentiel (Thin Client)
-// Engine runs server-side only. This file collects answers.
-// ============================================================
+// ENGINE: sourced from planner.html v11.12.9 — DO NOT FORK
+// For production: import from shared module, do not duplicate.
 
-// Province display names
-var PROV_NAMES = {
-  QC:"Qu\u00e9bec",ON:"Ontario",BC:"Colombie-Britannique",AB:"Alberta",
-  MB:"Manitoba",SK:"Saskatchewan",NS:"Nouvelle-\u00c9cosse",NB:"Nouveau-Brunswick",
-  NL:"Terre-Neuve-et-Labrador",PE:"\u00cele-du-Prince-\u00c9douard",
-  NT:"Territoires du Nord-Ouest",YT:"Yukon",NU:"Nunavut"
-};
-var PROV_NAMES_EN = {
-  QC:"Quebec",ON:"Ontario",BC:"British Columbia",AB:"Alberta",
-  MB:"Manitoba",SK:"Saskatchewan",NS:"Nova Scotia",NB:"New Brunswick",
-  NL:"Newfoundland and Labrador",PE:"Prince Edward Island",
-  NT:"Northwest Territories",YT:"Yukon",NU:"Nunavut"
-};
+// ══════════════════════════════════════════════════════════════════════
+// THIN CLIENT — No MC engine. All computation runs server-side.
+// Quiz answers are sent to /api/checkout → Stripe → webhook → MC → PDF → email
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Lightweight helpers for blurred preview (no real MC) ──
+var COL_ADJ = {QC:1, ON:1.15, BC:1.35, AB:1.05, MB:0.92, SK:0.90, NS:0.95, NB:0.88, NL:0.93, PE:0.87, NT:1.25, YT:1.20, NU:1.40};
+var PMED = {QC:380000, ON:620000, BC:850000, AB:440000, MB:320000, SK:310000, NS:360000, NB:260000, NL:270000, PE:280000, NT:400000, YT:420000, NU:380000};
+var DEBT_RATES = {cc:0.199, student:0.055, car:0.065, loc:0.075, other:0.07};
+
+function amortDebt(bal, rate, pay) {
+  if (bal <= 0) return {months:0, totalInt:0, feasible:true};
+  var mr = rate / 12, b = bal, ti = 0, mo = 0;
+  if (pay <= b * mr && mr > 0) return {months:999, totalInt:Math.round(bal*rate*50), feasible:false};
+  while (b > 0.01 && mo < 600) { var ii = b * mr; b -= Math.min(b, pay - ii); ti += ii; mo++; }
+  return {months:mo, totalInt:Math.round(ti), feasible:true};
+}
+
+function defMinPay(type, bal) {
+  if (type === "cc") return Math.max(Math.round(bal * 0.02), 25);
+  if (type === "student") return Math.max(Math.round(bal / 120), 50);
+  if (type === "car") return Math.max(Math.round(bal / 60), 100);
+  return Math.max(Math.round(bal * 0.01), Math.round(bal * (DEBT_RATES[type] || 0.08) / 12));
+}
+
+// ── Mock report data for blurred paywall preview ──
+// This generates plausible-looking numbers WITHOUT running the real MC engine.
+// The real numbers come from the server after payment.
+function generateMockPreview(q) {
+  var age = q.age || 35, retAge = q.retAge || 65, sex = q.sex || "M";
+  var prov = q.prov || "QC", sal = q.income || 70000;
+  var col = COL_ADJ[prov] || 1;
+  var tot = q.totalSavings || 0;
+  var mc = q.monthlyContrib || 0;
+
+  // Rough savings split
+  var rrsp, tfsa, nr;
+  if (q.savingsDetail && q.rrsp != null) {
+    rrsp = q.rrsp || 0; tfsa = q.tfsa || 0; nr = q.nr || 0;
+  } else {
+    if (age < 35) { rrsp = tot * 0.2; tfsa = tot * 0.5; nr = tot * 0.3; }
+    else if (age < 50) { rrsp = tot * 0.45; tfsa = tot * 0.35; nr = tot * 0.2; }
+    else { rrsp = tot * 0.55; tfsa = tot * 0.25; nr = tot * 0.2; }
+  }
+
+  // Spending
+  var retSpM;
+  if (q.lifestyle === "cozy") retSpM = Math.round(3000 * col);
+  else if (q.lifestyle === "premium") retSpM = Math.round(7500 * col);
+  else retSpM = Math.round(5000 * col);
+
+  // Rough pension
+  var penType = "none", penM = 0, dcBal = 0;
+  var emp = q.employer || "x";
+  if (emp === "gov") { penType = "db"; penM = Math.round(sal * 0.02 * Math.min(35, retAge - 25) / 12); }
+  else if (emp === "large" || emp === "tech") { penType = "dc"; dcBal = Math.round(sal * 0.06 * Math.min(20, Math.max(0, age - 25))); }
+
+  // Rough QPP/OAS
+  var qppAge = Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
+  var oasAge = Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
+  var qppM = Math.round(1508 * Math.min(1, (sal / 74600)) * Math.min(1, Math.max(0, age - 18) / 40) * (qppAge <= 60 ? 0.64 : qppAge <= 65 ? 1.0 : 1.42));
+  var oasM = oasAge <= 65 ? 742 : Math.round(742 * 1.36);
+
+  var govM = qppM + oasM + penM;
+  var gapM = Math.max(0, retSpM - govM);
+
+  // Rough future value of savings
+  var yrs = Math.max(0, retAge - age);
+  var fvSav = (tot + mc * 12 * yrs) * Math.pow(1.05, yrs) * 0.85; // conservative
+  var retBal = Math.round(fvSav + dcBal);
+
+  // Rough success estimate (NOT real MC — just for preview appearance)
+  var wdRate = retBal > 0 ? (gapM * 12) / retBal : 99;
+  var roughSucc;
+  if (wdRate <= 0.03) roughSucc = 0.95;
+  else if (wdRate <= 0.04) roughSucc = 0.85;
+  else if (wdRate <= 0.05) roughSucc = 0.70;
+  else if (wdRate <= 0.06) roughSucc = 0.55;
+  else if (wdRate <= 0.08) roughSucc = 0.35;
+  else roughSucc = 0.15;
+
+  var succPct = Math.round(roughSucc * 100);
+  var grade;
+  if (succPct >= 95) grade = "A+";
+  else if (succPct >= 90) grade = "A";
+  else if (succPct >= 85) grade = "A\u2212";
+  else if (succPct >= 80) grade = "B+";
+  else if (succPct >= 75) grade = "B";
+  else if (succPct >= 70) grade = "B\u2212";
+  else if (succPct >= 60) grade = "C+";
+  else if (succPct >= 50) grade = "C";
+  else if (succPct >= 40) grade = "D";
+  else grade = "F";
+
+  // Debts
+  var debts = ((q.debts || []).filter(function(d){return (d.amount||0)>0;})).map(function(d){
+    var bal = d.amount, rate = d.rate > 0 ? d.rate / 100 : DEBT_RATES[d.type] || 0.08;
+    var minPay = d.minPayment > 0 ? d.minPayment : defMinPay(d.type, bal);
+    var am = amortDebt(bal, rate, minPay);
+    return {type:d.type, bal:bal, rate:rate, minPay:minPay, months:am.months, totalInt:am.totalInt, feasible:am.feasible, annualCost:Math.round(bal*rate)};
+  });
+
+  var deathAge = sex === "F" ? 92 : 90;
+
+  return {
+    age:age, retAge:retAge, sex:sex, prov:prov, sal:sal, deathAge:deathAge,
+    avgDeath: sex === "F" ? 87 : 84,
+    totalSavings: Math.round(rrsp + tfsa + nr),
+    rrsp:Math.round(rrsp), tfsa:Math.round(tfsa), nr:Math.round(nr),
+    retBal:retBal, retYearBalance:retBal,
+    qppMonthly:qppM, oasMonthly:oasM, dbPensionMonthly:penM,
+    govMonthly:govM, coveragePct:Math.min(100, Math.round(govM/Math.max(1,retSpM)*100)),
+    gapMonthly:gapM, retSpM:retSpM,
+    withdrawalRatePct: retBal > 0 ? Math.round(wdRate * 1000) / 10 : 99,
+    successPct:succPct, succ:roughSucc, grade:grade,
+    rMedF:Math.round(retBal * 0.4), rP5F:0, rP25F:Math.round(retBal*0.15),
+    rP75F:Math.round(retBal*0.6), rP95F:Math.round(retBal*0.9),
+    medRuin: roughSucc > 0.5 ? 999 : Math.round(retAge + (retBal / Math.max(1, gapM * 12))),
+    p5Ruin: roughSucc > 0.5 ? 999 : Math.round(retAge + (retBal / Math.max(1, gapM * 12)) * 0.7),
+    taxCurrentEffective: Math.round(Math.min(40, Math.max(15, sal * 0.00003))),
+    taxRetirementEffective: Math.round(Math.min(30, Math.max(8, retSpM * 12 * 0.000025))),
+    taxCurrentMarginal: Math.round(Math.min(53, Math.max(28, sal * 0.000035))),
+    margRate: Math.min(0.53, Math.max(0.28, sal * 0.0000035)),
+    merWeighted: 0.015,
+    feeCostLifetime: Math.round(0.015 * retBal * (deathAge - retAge)),
+    penType:penType, dcBal:dcBal, hasPension: penType !== "none",
+    ptM: q.parttime === "yes" ? (q.parttimeAmount || 1500) : q.parttime === "maybe" ? 800 : 0,
+    ptYrs: q.parttime === "yes" ? (q.parttimeYears || 5) : q.parttime === "maybe" ? 3 : 0,
+    qppAge:qppAge, oasAge:oasAge,
+    inf:0.021, nSim:5000,
+    medRevData:[], // Empty — no real MC data
+    expReturn: 0.06, afterTaxReturn: 0.04,
+    _isMockPreview: true // Flag so UI knows this is not real
+  };
+}
+
+// ── Lightweight translateToMC for _report passthrough (debt display only) ──
+function translateToMC(a) {
+  var debts = ((a.debts || []).filter(function(d){return (d.amount||0)>0;})).map(function(d){
+    var bal = d.amount, rate = d.rate > 0 ? d.rate / 100 : DEBT_RATES[d.type] || 0.08;
+    var minPay = d.minPayment > 0 ? d.minPayment : defMinPay(d.type, bal);
+    var am = amortDebt(bal, rate, minPay);
+    return {type:d.type, bal:bal, rate:rate, minPay:minPay, months:am.months, totalInt:am.totalInt, feasible:am.feasible, annualCost:Math.round(bal*rate)};
+  });
+  var props = [];
+  if (a.homeowner) {
+    var hv = a.homeValue || PMED[a.prov||"QC"] || 400000;
+    var mb = a.mortgage || Math.round(hv * 0.55);
+    props.push({on:true, val:hv, mb:mb});
+  }
+  return {
+    _quiz: {couple:a.couple||"no", win:a.win||"", fix:a.fix||"", confidence:a.confidence||3, worries:a.worries||[], family:a.family||"", risk:a.risk||"balanced", employer:a.employer||"", savingsDetail:a.savingsDetail||false, lifestyle:a.lifestyle||"active", parttime:a.parttime||"no"},
+    _report: {
+      debts:debts,
+      debtBal:debts.reduce(function(s,d){return s+d.bal;},0),
+      debtAnnualCost:debts.reduce(function(s,d){return s+d.annualCost;},0),
+      homeVal:props.length>0?props[0].val:0,
+      mortBal:props.length>0?props[0].mb:0,
+      mortAmort:props.length>0?(a.mortgageAmort||20):0,
+      equity:props.length>0?Math.max(0,props[0].val-props[0].mb):0,
+      mortFreeAge:props.length>0&&props[0].mb>0?(a.age||35)+(a.mortgageAmort||20):0,
+      mortPayment:props.length>0&&props[0].mb>0?(function(){var mmr=0.055/12;var n=(a.mortgageAmort||20)*12;return Math.round(props[0].mb*mmr/(1-Math.pow(1+mmr,-n)))})():0
+    },
+    retSpM: 0, sal: a.income || 70000, prov: a.prov || "QC",
+    penType: "none", dcBal: 0
+  };
+}
+
+// ── buildPriority for blurred preview ──
+function buildPriority(D, p, fr) {
+  var isQC = p.prov === "QC";
+  var margRate = D.margRate || 0.30;
+  var expRet = D.expReturn || 0.053;
+  var afterTaxRet = D.afterTaxReturn || 0.035;
+  var pct = function(v) { return (v * 100).toFixed(1) + "%"; };
+  var priorities = [];
+
+  // 1. Employer match (if DC or large)
+  if (p._quiz.employer === "large" || p._quiz.employer === "tech") {
+    priorities.push({
+      name: fr ? "Cotisation employeur (contrepartie)" : "Employer match contribution",
+      rate: "50-100%",
+      why: fr ? "Rendement instantané de 50-100%. Généralement priorisé." : "Instant 50-100% return. Generally considered first.",
+      color: "#2A8C46", priority: 1
+    });
+  }
+
+  // 2. High-interest debts (>10%)
+  (p._report.debts || []).filter(function(d){return d.rate >= 0.10;}).forEach(function(d) {
+    var tl = fr ? {cc:"Carte de crédit",student:"Prêt étudiant",car:"Prêt automobile",loc:"Marge de crédit"}
+               : {cc:"Credit card",student:"Student loan",car:"Car loan",loc:"Line of credit"};
+    priorities.push({
+      name: (tl[d.type] || d.type) + " (" + Math.round(d.bal).toLocaleString() + " $)",
+      rate: pct(d.rate),
+      why: fr ? "Taux de " + pct(d.rate) + " garanti. Le remboursement est généralement priorisé."
+             : "Guaranteed " + pct(d.rate) + " rate. Repayment is often favoured.",
+      color: "#CC4444", priority: 2
+    });
+  });
+
+  // 3. RRSP vs TFSA order depends on marginal rate
+  if (margRate > 0.4) {
+    priorities.push({
+      name: fr ? "Régime enregistré d'épargne-retraite" : "Registered Retirement Savings Plan",
+      rate: pct(margRate),
+      why: fr ? "Taux marginal de " + pct(margRate) + " > 40%. Déduction fiscale élevée."
+             : "Marginal rate " + pct(margRate) + " > 40%. High tax deduction.",
+      color: "#4680C0", priority: 3
+    });
+    priorities.push({
+      name: fr ? "Compte d'épargne libre d'impôt" : "Tax-Free Savings Account",
+      rate: pct(expRet),
+      why: fr ? "Croissance libre d'impôt. Après le régime enregistré." : "Tax-free growth. After registered plan.",
+      color: "#2A8C46", priority: 4
+    });
+  } else {
+    priorities.push({
+      name: fr ? "Compte d'épargne libre d'impôt" : "Tax-Free Savings Account",
+      rate: pct(expRet),
+      why: fr ? "Taux marginal de " + pct(margRate) + " ≤ 40%. Souvent priorisé." : "Marginal rate " + pct(margRate) + " ≤ 40%. Often favoured.",
+      color: "#2A8C46", priority: 3
+    });
+    priorities.push({
+      name: fr ? "Régime enregistré d'épargne-retraite" : "Registered Retirement Savings Plan",
+      rate: pct(margRate),
+      why: fr ? "Déduction modérée. Après le compte libre d'impôt." : "Moderate deduction. After tax-free account.",
+      color: "#4680C0", priority: 4
+    });
+  }
+
+  // 4. Medium-rate debts (4-10%)
+  (p._report.debts || []).filter(function(d){return d.rate >= 0.04 && d.rate < 0.10;}).forEach(function(d) {
+    var tl = fr ? {cc:"Carte de crédit",student:"Prêt étudiant",car:"Prêt automobile",loc:"Marge de crédit"}
+               : {cc:"Credit card",student:"Student loan",car:"Car loan",loc:"Line of credit"};
+    priorities.push({
+      name: (tl[d.type] || d.type) + " (" + Math.round(d.bal).toLocaleString() + " $)",
+      rate: pct(d.rate),
+      why: d.rate > afterTaxRet
+        ? (fr ? "Taux > rendement après impôt. Le remboursement est généralement favorisé." : "Rate > after-tax return. Repayment is generally favored.")
+        : (fr ? "Taux < rendement. Paiement minimum acceptable." : "Rate < return. Minimum payment acceptable."),
+      color: "#B89830", priority: 5
+    });
+  });
+
+  // 5. Mortgage
+  if (p._report.mortBal > 0) {
+    var mmr = 0.055;
+    priorities.push({
+      name: fr ? "Hypothèque (" + Math.round(p._report.mortBal).toLocaleString() + " $)" : "Mortgage (" + Math.round(p._report.mortBal).toLocaleString() + " $)",
+      rate: pct(mmr),
+      why: mmr > afterTaxRet
+        ? (fr ? "Taux > rendement après impôt. Le remboursement accéléré est souvent favorisé." : "Rate > after-tax return. Accelerated repayment is often favored.")
+        : (fr ? "Taux < rendement après impôt. L'investissement est souvent favorisé." : "Rate < after-tax return. Investing is often favored."),
+      color: "#B89830", priority: 6
+    });
+  }
+
+  return priorities;
+}
+
 
 // ============================================================
-// STATE
+// AI PROMPT BUILDER
+// ============================================================
+function buildAIPrompt(D, p, fr) {
+  var q = p._quiz, rp = p._report;
+  var isQC = p.prov === "QC";
+  var gP = fr ? (isQC ? "Régime de rentes du Québec" : "Régime de pensions du Canada") : (isQC ? "Quebec Pension Plan" : "Canada Pension Plan");
+  var oN = fr ? "Pension de la Sécurité de la vieillesse" : "Old Age Security";
+
+  var confInstr = q.confidence <= 2 ? "TONE: Extra warm, reassuring. Lead with positives." : q.confidence >= 4 ? "TONE: Data-forward, confident. Specific numbers." : "TONE: Balanced, professional.";
+  var winMap = {home:fr?"Ouvrir en reconnaissant l'achat immobilier.":"Open acknowledging home purchase.",debtfree:fr?"Ouvrir en soulignant l'absence de dettes.":"Open acknowledging debt-free status.",saving:fr?"Ouvrir en reconnaissant l'habitude d'épargne.":"Open acknowledging consistent saving.",investing:fr?"Ouvrir en reconnaissant les connaissances en investissement.":"Open acknowledging investing knowledge.",business:fr?"Ouvrir en reconnaissant l'esprit entrepreneurial.":"Open acknowledging entrepreneurial ability.",none:fr?"Ce rapport est un point de départ.":"This report is a starting point."};
+  var winInstr = "WIN: " + (winMap[q.win] || winMap.none);
+  var fixMap = {save_more:"Lead obs_1 with savings rate.",debt:"Lead obs_1 with debt cost and payoff.",invest:"Lead obs_1 with fee impact.",tax:"Lead obs_1 with tax rate savings.",retire_early:"Lead obs_1 with withdrawal rate.",clarity:"Lead obs_1 with success rate."};
+  var fixInstr = "FIX: " + (fixMap[q.fix] || "");
+  var worryMap = {runout:"EXPAND longevity to 3-4 sentences.",tax:"EXPAND tax to 3-4 sentences.",inflation:"Note: all amounts inflation-adjusted.",health:"Note health costs.",market:"Reference volatility.",legacy:"Mention estate."};
+  var wInstr = (q.worries||[]).map(function(w){return worryMap[w]||"";}).filter(Boolean).join(" ");
+
+  var debtSlot = rp.debtBal > 0 ? '"debt_impact":"Debt cost, payoff, opportunity cost. No shaming.",' : "";
+  var ptSlot = D.ptM > 0 ? "Part-time bridge: " + D.ptM + "$/mo x " + D.ptYrs + "yrs." : "";
+  var cplSlot = q.couple === "yes" ? "Household context." : "";
+  var propSlot = rp.mortBal > 0 ? (rp.mortFreeAge > p.retAge ? "Mortgage extends " + (rp.mortFreeAge - p.retAge) + "yrs into retirement." : "Mortgage paid by age " + rp.mortFreeAge + ".") : "";
+
+  var hooks = [q.couple==="yes"?"couple":null, rp.homeVal>0?"homeowner":null, rp.debtBal>0?"debt":null].filter(Boolean).join("+");
+
+  var data = {
+    profile:{age:D.age, retAge:D.retAge, prov:D.prov, sex:D.sex, couple:q.couple, qppAge:D.qppAge, oasAge:D.oasAge},
+    savings:{total:D.totalSavings, retBal:D.retYearBalance},
+    debt:rp.debtBal > 0 ? rp.debts.map(function(d){return {type:d.type,bal:d.bal,rate:d.rate,annualCost:d.annualCost,months:d.months};}) : null,
+    property:rp.homeVal > 0 ? {value:rp.homeVal,mortgage:rp.mortBal,equity:rp.equity,paidOffAge:rp.mortFreeAge} : null,
+    gov:{qpp:D.qppMonthly,oas:D.oasMonthly,db:D.dbPensionMonthly,total:D.govMonthly,cover:D.coveragePct},
+    spend:{mo:D.retSpM,gap:D.gapMonthly,wd:D.withdrawalRatePct},
+    results:{pct:D.successPct,grade:D.grade,med:D.rMedF,p5:D.rP5F,p25:D.rP25F,p75:D.rP75F},
+    tax:{eff:D.taxCurrentEffective,retEff:D.taxRetirementEffective},
+    fees:{mer:D.merWeighted,cost:D.feeCostLifetime}
+  };
+
+  var sys = "You narrate buildfi.ca Essentiel reports.\nRULES: Observational only. CONDITIONAL tense. Never directive.\nCite numbers. Grade 10 reading. Short sentences.\nNo acronyms: " + gP + ", " + oN + ".\nJSON only. No markdown.";
+
+  var usr = "LANG: " + (fr ? "French (vous)" : "English") + "\n" + confInstr + "\n" + winInstr + "\n" + fixInstr + "\n"
+    + (wInstr ? "WORRIES: " + wInstr + "\n" : "") + (cplSlot ? cplSlot + "\n" : "") + (propSlot ? propSlot + "\n" : "") + (ptSlot ? ptSlot + "\n" : "")
+    + "\nDATA: " + JSON.stringify(data)
+    + '\n\nJSON (2-3 sentences each):\n{"snapshot_intro":"Grade + WIN.",' + debtSlot + '"savings_context":"Trajectory.","gov_explanation":"' + gP + ' + ' + oN + '.","gap_explanation":"Gap + sustainability.","tax_insight":"Rate comparison.","longevity_good":"Median + optimistic.","longevity_watch":"Pessimistic.","obs_1":"FIX-driven.","obs_2":"Coverage.","obs_3":"Fees.","upgrade_hook":"For ' + hooks + '."}';
+
+  return {sys:sys, usr:usr};
+}
+
+// ============================================================
+// MAIN APPLICATION STATE + LOGIC
 // ============================================================
 var STATE = {
   step: 0, lang: "fr",
@@ -114,58 +420,220 @@ var STATE = {
     retAge:62, age:38, sex:"M", prov:"QC", employer:"large", couple:"no",
     income:75000, totalSavings:50000, monthlyContrib:500,
     savingsDetail:false, rrsp:0, tfsa:0, nr:0,
-    debts:[], homeowner:false, homeValue:0, mortgage:0, mortgageAmort:20,
+    debts:[], hasDebts:false, homeowner:false, homeValue:0, mortgage:0, mortgageRate:5.0, mortgageAmort:20,
     lifestyle:"active", risk:"balanced",
-    retSpending:5000, retSpendingCustom:false,
-    equityPct:70, equityCustom:false,
     parttime:"no", parttimeAmount:0, parttimeYears:0,
     worries:[], win:"", fix:"", confidence:3, family:""
   },
-  sampleTab: "marie" // "marie" or "jp"
+  mc: null, reportData: null, ai: {}, aiLoading: false, computed: false,
+  showReport: false, showPaywall: false, paid: false, costDelay: 0, minReturn: 0
 };
 
-// Restore from localStorage if available
-try {
-  var saved = localStorage.getItem("buildfi_quiz");
-  if (saved) {
-    var parsed = JSON.parse(saved);
-    if (parsed && parsed.quiz && parsed.step != null) {
-      STATE.step = parsed.step;
-      STATE.lang = parsed.lang || "fr";
-      STATE.quiz = Object.assign(STATE.quiz, parsed.quiz);
-    }
-  }
-} catch(e) {}
+// ── Province names (bilingual) ──
+var PROV_NAMES_FR={"QC":"Qu\u00e9bec","ON":"Ontario","BC":"Colombie-Britannique","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nouvelle-\u00c9cosse","NB":"Nouveau-Brunswick","NL":"Terre-Neuve-et-Labrador","PE":"\u00cele-du-Prince-\u00c9douard","NT":"Territoires du Nord-Ouest","YT":"Yukon","NU":"Nunavut"};
+var PROV_NAMES_EN={"QC":"Quebec","ON":"Ontario","BC":"British Columbia","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nova Scotia","NB":"New Brunswick","NL":"Newfoundland and Labrador","PE":"Prince Edward Island","NT":"Northwest Territories","YT":"Yukon","NU":"Nunavut"};
+function provName(code){return(STATE.lang==="fr"?PROV_NAMES_FR:PROV_NAMES_EN)[code]||code;}
 
-// Save to localStorage on changes
-function saveState() {
-  try {
-    localStorage.setItem("buildfi_quiz", JSON.stringify({
-      step: STATE.step, lang: STATE.lang, quiz: STATE.quiz
-    }));
-  } catch(e) {}
-}
+// ── localStorage persistence ──
+try{var saved=localStorage.getItem("buildfi_quiz_ess");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);}}}catch(e){}
+function saveState(){try{localStorage.setItem("buildfi_quiz_ess",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
 
-// ============================================================
-// HELPERS
-// ============================================================
+
 function f$(n) {
   if (n == null || isNaN(n)) return "\u2014";
   return (n < 0 ? "-" : "") + Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $";
 }
 
-function gCol(s) { return s >= 90 ? "#2A8C46" : s >= 75 ? "#B89830" : "#CC4444"; }
+function gCol(s) { return s >= 0.9 ? "#2A8C46" : s >= 0.75 ? "#B89830" : "#CC4444"; }
 
-var _dTimer = {};
-function uq(key, val) { STATE.quiz[key] = val; saveState(); render(); }
-// uqd: for number inputs. Does NOT re-render (so user can clear/type freely).
-// Only saves to state + localStorage after 600ms pause.
-function uqd(key, rawVal) {
-  // Store as number if valid, keep current value if empty/NaN
-  var n = parseFloat(rawVal);
-  STATE.quiz[key] = isNaN(n) ? (rawVal === "" || rawVal == null ? 0 : STATE.quiz[key]) : n;
-  clearTimeout(_dTimer[key]);
-  _dTimer[key] = setTimeout(function() { saveState(); }, 600);
+// ── Logo SVG (matches intermediaire) ──
+// Logo — inline fallback, overridden by /logo.js on server
+if (typeof logoSVG === "undefined") {
+function logoSVG(size,context){var isDark=context==="dark";var tFill=isDark?"#F0E4D4":"#1A1A1A";var s=size==="lg"?1.2:size==="md"?0.85:0.55;var w=Math.round(180*s);var h=Math.round(52*s);var uid="emb"+size+Math.random().toString(36).slice(2,6);return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 180 52" style="display:block"><defs><linearGradient id="'+uid+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#C45A2C"/><stop offset="100%" stop-color="#E8A84C"/></linearGradient></defs><path d="M14 46 C14 46 8 30 14 18 C20 6 26 12 26 22 C26 12 32 0 38 10 C44 22 38 32 38 32" stroke="url(#'+uid+')" stroke-width="3" fill="none" stroke-linecap="round"/><text x="48" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="'+tFill+'" letter-spacing="-1.2">build</text><text x="131" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="url(#'+uid+')" letter-spacing="-1.2">fi</text></svg>';}
+}
+
+// ── Debounced input (no re-render flicker on typing) ──
+var _dTimer={};
+function uqd(key,rawVal){var n=parseFloat(rawVal);STATE.quiz[key]=isNaN(n)?(rawVal===""||rawVal==null?0:STATE.quiz[key]):n;clearTimeout(_dTimer[key]);_dTimer[key]=setTimeout(function(){saveState();},600);}
+
+// ── Validation ──
+function validateStep(step){var q=STATE.quiz,fr=STATE.lang==="fr";if(step===1){if(q.age<18||q.age>80)return fr?"\u00c2ge doit \u00eatre entre 18 et 80.":"Age must be 18-80.";if(q.retAge<=q.age)return fr?"Retraite doit \u00eatre > \u00e2ge actuel.":"Retirement must be > current age.";}if(step===3){if(q.income<=0)return fr?"Revenu invalide.":"Invalid income.";}return null;}
+
+function render() {
+  var app = document.getElementById("app");
+  var s = STATE, q = s.quiz, fr = s.lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  document.documentElement.lang = s.lang;
+  document.title = fr ? "buildfi.ca \u2014 Rapport Essentiel" : "buildfi.ca \u2014 Essentials Report";
+  saveState();
+
+  if (s.showPaywall && s.reportData) {
+    app.innerHTML = renderPaywall(s.reportData, s.lang);
+    return;
+  }
+
+  if (s.step === 8) {
+    // THIN CLIENT: Generate mock preview for blurred paywall, no real MC
+    if (!s.computed) {
+      s.computed = true;
+      STATE.reportData = generateMockPreview(q);
+      STATE.mc = {succ: STATE.reportData.succ, medF: STATE.reportData.rMedF, medRevData: []};
+      STATE.costDelay = 0;
+      STATE.minReturn = 0;
+      STATE.showPaywall = true;
+      STATE.showReport = false;
+      render();
+    }
+    return;
+  }
+
+  app.innerHTML = renderQuiz(s.step, q, s.lang);
+}
+
+function go(step) {
+  STATE.step = step;
+  saveState();
+  window.scrollTo({top:0, behavior:"smooth"});
+  render();
+}
+
+function uq(key, val) { STATE.quiz[key] = val; render(); }
+
+
+// ============================================================
+// QUIZ SCREENS
+// ============================================================
+function renderLoading(fr) {
+  return '<div style="max-width:480px;margin:80px auto;text-align:center;padding:20px"><div style="font-size:48px;margin-bottom:24px">🔮</div><h2 style="font-size:20px;font-weight:700;color:var(--g)">' + (fr ? "Analyse en cours..." : "Analyzing...") + '</h2><p style="color:var(--ts);margin:12px 0;font-size:14px">' + (fr ? "5 000 scénarios économiques simulés" : "Simulating 5,000 economic scenarios") + '</p><div style="margin:24px 0"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
+}
+
+function renderQuiz(step, q, lang) {
+  var fr = lang === "fr", t = function(f,e){return fr?f:e;};
+  var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/7</span><span>' + Math.round(step/7*100) + '%</span></div><div style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/7*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" key="' + step + '">' + inner + '</div></div>'; };
+  var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 7 ? step+1 : 8) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
+  var backBtn = step > 0 ? '<button class="back-btn" onclick="go(' + (step-1) + ')" style="margin-top:10px;width:100%;text-align:center">' + t("Retour","Back") + '</button>' : '';
+
+  // STEP 0: LANDING PAGE
+  if (step === 0) {
+    return '<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:var(--quiz-max);margin:0 auto;padding:40px 24px">'
+      // Language toggle
+      + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
+      + '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">FR</button>'
+      + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
+      // Brand — SVG logo
+      + '<div style="text-align:center;margin-bottom:28px"><div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>'
+      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Essentiel","Essentials Report") + '</div>'
+      + '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Planifiez votre libert\u00e9 financi\u00e8re.","Plan your financial freedom.") + '</div></div>'
+      // Headline
+      + '<h1 style="font-size:28px;font-weight:800;line-height:1.25;text-align:center;margin:0 0 14px">'
+      + t("Est-ce que votre plan<br>tient la route ?","Is your retirement plan<br>on track?")
+      + '</h1>'
+      // Subhead — brand voice: warm, clear, confident
+      + '<p style="font-size:15px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'
+      + t("3 \u00e0 5 minutes. 8 sections d\u2019analyse. 5\u00a0000 sc\u00e9narios simul\u00e9s.",
+         "3 to 5 minutes. 8 analysis sections. 5,000 simulated scenarios.")
+      + '</p>'
+      // "Have handy" prep card
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:14px;padding:22px 24px;margin-bottom:24px">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:14px;text-transform:uppercase;letter-spacing:.8px">'
+      + t("\ud83d\udccb Documents sugg\u00e9r\u00e9s","\ud83d\udccb Suggested documents")
+      + '</div>'
+      + '<div style="display:grid;gap:6px">'
+      + [{f:"\u00c9pargne totale approximative (REER, CELI, non enregistr\u00e9)",e:"Approximate total savings (RRSP, TFSA, non-registered)"},{f:"Cotisation mensuelle \u00e0 l\u2019\u00e9pargne",e:"Monthly savings contribution"},{f:"Solde hypoth\u00e9caire, taux et amortissement restant",e:"Mortgage balance, rate and remaining amortization"},{f:"Soldes de dettes avec taux et paiements minimum",e:"Debt balances with rates and minimum payments"}].map(function(item){return '<div style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ts)"><div style="color:var(--gn);font-size:12px;margin-top:2px;flex-shrink:0">\u2714</div>' + t(item.f,item.e) + '</div>';}).join("")
+      + '</div>'
+      + '<div style="font-size:14px;color:var(--tm);margin-top:14px;padding-top:10px;border-top:1px solid var(--bdl)">'
+      + t("Des estimations raisonnables suffisent \u2014 le simulateur tient compte de l\u2019incertitude.","Reasonable estimates are fine \u2014 the simulator accounts for uncertainty.")
+      + '</div></div>'
+      // CTA
+      + '<button class="pbtn" onclick="go(1)">' + t("Commencer mon bilan \u2192","Start my assessment \u2192") + '</button>'
+      + '</div>';
+  }
+
+  if (step === 1) {
+    var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card' + (q.sex===o.v?" sel":"") + '" onclick="uq(\'sex\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:14px"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
+    var provOptions = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"].map(function(p){return '<option value="'+p+'"'+(q.prov===p?' selected':'')+'>'+provName(p)+'</option>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Parlons de vous","About you") + '</h2>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Âge actuel","Current age") + '</label>'
+      + '<input type="number" min="18" max="80" value="' + q.age + '" oninput="uq(\'age\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("À quel âge aimeriez-vous prendre votre retraite ?","At what age would you like to retire?") + '</label>'
+      + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><input type="range" min="40" max="75" value="' + q.retAge + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:24px;font-weight:800;color:var(--g);min-width:42px;text-align:center">' + q.retAge + '</span></div>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px;margin-bottom:16px">' + sexCards + '</div>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">Province</label><select onchange="uq(\'prov\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:16px;background:var(--bgc)">' + provOptions + '</select>'
+      + btn() + backBtn);
+  }
+
+  if (step === 2) {
+    var empCards = [{v:"gov",l:t("Gouvernement","Government"),d:t("Pension à prestations déterminées","Defined benefit pension")},{v:"large",l:t("Grande entreprise","Large company"),d:t("Régime de cotisations","Contribution matching")},{v:"tech",l:"Tech / Startup",d:t("Cotisations et options","Contributions and options")},{v:"small",l:t("PME / Travailleur autonome","Small business / Self-employed"),d:t("Pas de régime employeur","No employer plan")}].map(function(o){return '<div tabindex="0" class="card' + (q.employer===o.v?" sel":"") + '" onclick="uq(\'employer\',\'' + o.v + '\')"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:12px;color:var(--ts);margin-top:2px">' + o.d + '</div></div>';}).join("");
+    var cplCards = [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.couple===o.v?" sel":"") + '" onclick="uq(\'couple\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Emploi et situation","Employment & situation") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Type d'employeur","Employer type") + '</label>' + empCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Vivez-vous en couple ?","Do you live with a partner?") + '</label><div style="display:flex;gap:8px">' + cplCards + '</div>' + btn() + backBtn);
+  }
+
+  if (step === 3) {
+    var detailFields = '';
+    if (q.savingsDetail) {
+      detailFields = '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte de retraite enregistré","Registered retirement account") + ' (RRSP/REER)</label>'
+        + '<input type="number" min="0" step="1000" value="' + (q.rrsp||0) + '" oninput="uq(\'rrsp\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte d\'épargne libre d\'impôt","Tax-free savings account") + ' (TFSA/CELI)</label>'
+        + '<input type="number" min="0" step="1000" value="' + (q.tfsa||0) + '" oninput="uq(\'tfsa\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Placements non enregistrés","Non-registered investments") + '</label>'
+        + '<input type="number" min="0" step="1000" value="' + (q.nr||0) + '" oninput="uq(\'nr\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px" />'
+        + '</div>';
+    }
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Revenus et épargne","Income & savings") + '</h2>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Revenu annuel brut","Annual gross income") + ' ($)</label>'
+      + '<input type="number" min="0" max="500000" step="1000" value="' + q.income + '" oninput="uq(\'income\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Épargne totale","Total savings") + ' ($)</label>'
+      + '<input type="number" min="0" max="5000000" step="1000" value="' + q.totalSavings + '" oninput="uq(\'totalSavings\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:8px" />'
+      + '<div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--g)"><input type="checkbox" ' + (q.savingsDetail?"checked":"") + ' onchange="uq(\'savingsDetail\',this.checked)" style="accent-color:var(--g)" />' + t("Je connais la répartition entre mes comptes","I know the breakdown between my accounts") + '</label></div>'
+      + detailFields
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Cotisation mensuelle","Monthly contribution") + ' ($/'+t("mois","mo")+')</label>'
+      + '<input type="number" min="0" max="10000" step="50" value="' + q.monthlyContrib + '" oninput="uq(\'monthlyContrib\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
+      + btn() + backBtn);
+  }
+
+  if (step === 4) {
+    var debtTypes = [{v:"cc",l:t("Carte de cr\u00e9dit","Credit card"),r:19.9},{v:"student",l:t("Pr\u00eat \u00e9tudiant","Student loan"),r:5.5},{v:"car",l:t("Pr\u00eat automobile","Car loan"),r:6.5},{v:"loc",l:t("Marge de cr\u00e9dit","Line of credit"),r:7.5},{v:"other",l:t("Autre dette","Other debt"),r:7.0}];
+    var debtInputs = debtTypes.map(function(dt) {
+      var d = q.debts.find(function(x){return x.type===dt.v;}) || {type:dt.v, amount:0, minPayment:0, rate:dt.r};
+      var curRate = parseFloat(d.rate != null ? d.rate : dt.r).toFixed(1);
+      return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:10px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '\',\'rate\',this.value)" style="width:60px;padding:6px 8px;border-radius:6px;border:1px solid var(--bd);font-size:14px;font-family:DM Sans,sans-serif;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Solde","Balance") + ' ($)</label><input type="number" min="0" step="100" value="' + (d.amount||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'amount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
+        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Paiement min.","Min. payment") + ' ($/'+t("mois","mo")+')</label><input type="number" min="0" step="10" value="' + (d.minPayment||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'minPayment\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
+        + '</div></div>';
+    }).join("");
+    var debtToggle = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.hasDebts===o.v?" sel":"") + '" onclick="uq(\'hasDebts\',' + o.v + ')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600">' + o.l + '</div></div>';}).join("");
+    var homeCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.homeowner===o.v?" sel":"") + '" onclick="uq(\'homeowner\',' + o.v + ')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
+    var homeInputs = q.homeowner ? '<label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Valeur de la propriété","Property value") + ' ($)</label><input type="number" min="0" step="10000" value="' + (q.homeValue||0) + '" oninput="uq(\'homeValue\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Solde hypothécaire","Mortgage balance") + ' ($)</label><input type="number" min="0" step="5000" value="' + (q.mortgage||0) + '" oninput="uq(\'mortgage\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div><label style="font-size:12px;color:var(--ts)">' + t("Taux hypothécaire","Mortgage rate") + ' (%)</label><input type="number" min="0" max="15" step="0.1" value="' + parseFloat(q.mortgageRate||5.0).toFixed(1) + '" oninput="uq(\'mortgageRate\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:12px;color:var(--ts)">' + t("Années restantes","Years remaining") + '</label><input type="number" min="1" max="30" value="' + (q.mortgageAmort||20) + '" oninput="uq(\'mortgageAmort\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div>' : '';
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dettes et propriété","Debts & property") + '</h2>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Avez-vous des dettes ?","Do you have debts?") + '</label>'
+      + '<div style="display:flex;gap:8px;margin-bottom:16px">' + debtToggle + '</div>'
+      + (q.hasDebts ? debtInputs : '')
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin:20px 0 8px">' + t("Êtes-vous propriétaire ?","Are you a homeowner?") + '</label><div style="display:flex;gap:8px">' + homeCards + '</div>' + homeInputs + btn() + backBtn);
+  }
+
+  if (step === 5) {
+    var lsCards = [{v:"cozy",l:t("Tranquille","Cozy"),d:t("~3 000 $/mois","~$3,000/mo")},{v:"active",l:t("Actif","Active"),d:t("~5 000 $/mois","~$5,000/mo")},{v:"premium",l:t("Premium","Premium"),d:t("~7 500 $/mois","~$7,500/mo")}].map(function(o){return '<div tabindex="0" class="card' + (q.lifestyle===o.v?" sel":"") + '" onclick="uq(\'lifestyle\',\'' + o.v + '\')"><div style="font-weight:700">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.d + '</div></div>';}).join("");
+    var riskCards = [{v:"conservative",l:t("Prudent","Conservative"),d:"50% " + t("actions","equity")},{v:"balanced",l:t("Équilibré","Balanced"),d:"70% " + t("actions","equity")},{v:"growth",l:t("Croissance","Growth"),d:"85% " + t("actions","equity")}].map(function(o){return '<div tabindex="0" class="card' + (q.risk===o.v?" sel":"") + '" onclick="uq(\'risk\',\'' + o.v + '\')"><div style="font-weight:700">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.d + '</div></div>';}).join("");
+    var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-être","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.parttime===o.v?" sel":"") + '" onclick="uq(\'parttime\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
+    var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estimé","Estimated monthly income") + ' ($)</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uq(\'parttimeAmount\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\'années","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uq(\'parttimeYears\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Style de retraite souhaité","Desired retirement lifestyle") + '</label>' + lsCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Tolérance au risque","Risk tolerance") + '</label>' + riskCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Travail à temps partiel en début de retraite ?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div>' + ptFields + btn() + backBtn);
+  }
+
+  if (step === 6) {
+    var worryOpts = [{v:"runout",l:t("Manquer d'argent","Running out of money")},{v:"tax",l:t("Trop d'impôts","Too many taxes")},{v:"inflation",l:t("L'inflation","Inflation")},{v:"health",l:t("Coûts de santé","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un héritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip' + (sel?" sel":"") + '" onclick="toggleWorry(\'' + o.v + '\')">' + o.l + '</span>';}).join("");
+    var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("Épargner régulièrement","Saving regularly")},{v:"investing",l:t("Commencer à investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div tabindex="0" class="card' + (q.win===o.v?" sel":"") + '" onclick="uq(\'win\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Ce qui compte pour vous","What matters to you") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos 3 plus grandes préoccupations","Your 3 biggest concerns") + '</label><div style="margin-bottom:16px">' + worryOpts + '</div><label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre plus grande victoire financière","Your biggest financial win") + '</label>' + winCards + btn() + backBtn);
+  }
+
+  if (step === 7) {
+    var fixCards = [{v:"save_more",l:t("Épargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d'impôts","Pay less tax")},{v:"retire_early",l:t("Retraite plus tôt","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div tabindex="0" class="card' + (q.fix===o.v?" sel":"") + '" onclick="uq(\'fix\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dernières questions","Final questions") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Si vous pouviez améliorer une chose","If you could improve one thing") + '</label>' + fixCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Confiance financière (1-5)","Financial confidence (1-5)") + '</label><input type="range" min="1" max="5" value="' + q.confidence + '" oninput="uq(\'confidence\',+this.value)" /><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span>' + t("Débutant","Beginner") + '</span><span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--g)">' + q.confidence + '/5</span><span>' + t("Expert","Expert") + '</span></div>' + btn(t("Voir mon rapport \u2192","See my report \u2192")) + backBtn);
+  }
+
+  return '';
 }
 
 function setDebtField(type, field, rawVal) {
@@ -176,74 +644,33 @@ function setDebtField(type, field, rawVal) {
   d[field] = isNaN(n) ? 0 : n;
   q.debts = q.debts.filter(function(x){return x.amount > 0 || x.minPayment > 0 || x.rate > 0;});
   clearTimeout(_dTimer["debt_"+type+"_"+field]);
-  _dTimer["debt_"+type+"_"+field] = setTimeout(function() { saveState(); }, 600);
+  _dTimer["debt_"+type+"_"+field]=setTimeout(function(){saveState();},600);
 }
+
+// Keep old helpers for backward compat
+function toggleDebt(type) { /* no-op now — all debts always visible */ }
+function setDebtAmt(type, val) { setDebtField(type, 'amount', val); }
 
 function toggleWorry(w) {
   var q = STATE.quiz;
   if (q.worries.indexOf(w) >= 0) q.worries = q.worries.filter(function(x){return x!==w;});
   else if (q.worries.length < 3) q.worries.push(w);
-  saveState();
-  render();
-}
-
-function validateStep(step) {
-  var q = STATE.quiz, fr = STATE.lang === "fr";
-  if (step === 1) {
-    if (q.age < 18 || q.age > 80) return fr ? "\u00c2ge doit \u00eatre entre 18 et 80 ans." : "Age must be between 18 and 80.";
-    if (q.retAge <= q.age) return fr ? "L'\u00e2ge de retraite doit \u00eatre sup\u00e9rieur \u00e0 votre \u00e2ge actuel." : "Retirement age must be greater than current age.";
-  }
-  if (step === 3) {
-    if (q.income <= 0) return fr ? "Veuillez entrer un revenu valide." : "Please enter a valid income.";
-  }
-  return null;
-}
-
-function go(step) {
-  // Validate current step before advancing
-  if (step > STATE.step && step > 1) {
-    var err = validateStep(STATE.step);
-    if (err) { alert(err); return; }
-  }
-  STATE.step = step;
-  saveState();
-  window.scrollTo({top:0, behavior:"smooth"});
   render();
 }
 
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 // ============================================================
-// LOGO SVG (Warm Ember)
+// REPORT RENDERER (from essentiel-report-v4.jsx)
 // ============================================================
-function logoSVG(size, context) {
-  var isDark = context === "dark";
-  var tFill = isDark ? "#F0E4D4" : "#1A1A1A";
-  var s = size === "lg" ? 1.2 : size === "md" ? 0.85 : 0.55;
-  var w = Math.round(180 * s);
-  var h = Math.round(52 * s);
-  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 180 52" style="display:block">'
-    + '<defs><linearGradient id="emb'+size+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#C45A2C"/><stop offset="100%" stop-color="#E8A84C"/></linearGradient></defs>'
-    + '<path d="M14 46 C14 46 8 30 14 18 C20 6 26 12 26 22 C26 12 32 0 38 10 C44 22 38 32 38 32" stroke="url(#emb'+size+')" stroke-width="3" fill="none" stroke-linecap="round"/>'
-    + '<text x="48" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="'+tFill+'" letter-spacing="-1.2">build</text>'
-    + '<text x="131" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="url(#emb'+size+')" letter-spacing="-1.2">fi</text>'
-    + '</svg>';
-}
-
-
 function startCheckout() {
   var email = document.getElementById("buyer-email").value.trim();
-  var fr = STATE.lang === "fr";
-  if (!email || !validateEmail(email)) {
-    alert(fr ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+  if (!email || !email.includes("@")) {
+    alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
     return;
   }
   var btn = document.querySelector("#email-gate button");
   btn.disabled = true;
-  btn.textContent = fr ? "Redirection vers le paiement..." : "Redirecting to payment...";
+  btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
   fetch("/api/checkout", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
@@ -259,523 +686,110 @@ function startCheckout() {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert(fr ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
       btn.disabled = false;
-      btn.textContent = fr ? "Obtenir mon rapport complet \u2192" : "Get my full report \u2192";
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
     }
   })
   .catch(function() {
-    alert(fr ? "Erreur de connexion. V\u00e9rifiez votre connexion internet." : "Connection error. Check your internet connection.");
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
     btn.disabled = false;
-    btn.textContent = fr ? "Obtenir mon rapport complet \u2192" : "Get my full report \u2192";
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
   });
 }
+function renderPaywall(D, lang) {
+  var fr = lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  var gradeLabel = D.successPct >= 80 ? t("Votre plan est solide","Your plan is solid") : D.successPct >= 60 ? t("Votre plan a du potentiel","Your plan has potential") : t("Votre plan a besoin d'ajustements","Your plan needs adjustments");
 
-// ============================================================
-// RENDER
-// ============================================================
-function render() {
-  var app = document.getElementById("app");
-  var s = STATE;
+  var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:\'DM Sans\',sans-serif">';
 
-  if (s.step === 8) {
-    app.innerHTML = renderPaywall(s.lang, s.sampleTab);
-    return;
-  }
-
-  app.innerHTML = renderQuiz(s.step, s.quiz, s.lang);
-}
-
-// ============================================================
-// LOADING → PAYWALL TRANSITION
-// ============================================================
-function showLoading() {
-  STATE.step = 8;
-  var app = document.getElementById("app");
-  var fr = STATE.lang === "fr";
-  app.innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;padding:20px">'
-    + '<div style="font-size:48px;margin-bottom:24px">\ud83d\udd2e</div>'
-    + '<h2 style="font-size:20px;font-weight:700;color:var(--g)">' + (fr ? "Pr\u00e9paration de votre bilan..." : "Preparing your assessment...") + '</h2>'
-    + '<p style="color:var(--ts);margin:12px 0;font-size:14px">' + (fr ? "Vos r\u00e9ponses sont enregistr\u00e9es." : "Your answers have been saved.") + '</p>'
-    + '<div style="margin:24px 0"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
-  saveState();
-  setTimeout(function() { render(); }, 2000);
-}
-
-// ============================================================
-// QUIZ SCREENS
-// ============================================================
-function renderQuiz(step, q, lang) {
-  var fr = lang === "fr", t = function(f,e){return fr?f:e;};
-  var provNames = fr ? PROV_NAMES : PROV_NAMES_EN;
-  var wrap = function(inner) {
-    return '<div style="max-width:480px;margin:0 auto;padding:48px 20px 36px">'
-      + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/7</span><span>' + Math.round(step/7*100) + '%</span></div><div style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/7*100) + '%;transition:width .3s"></div></div></div>' : '')
-      + '<div class="qs" key="' + step + '">' + inner + '</div></div>';
-  };
-  var btn = function(label) {
-    return '<button class="pbtn" onclick="' + (step < 7 ? 'go(' + (step+1) + ')' : 'showLoading()') + '">' + label + '</button>';
-  };
-  var backBtn = step > 0 ? '<button class="back-btn" onclick="go(' + (step-1) + ')" style="margin-top:10px">' + t("Retour","Back") + '</button>' : '';
-
-  // === STEP 0: LANDING ===
-  if (step === 0) {
-    return '<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:520px;margin:0 auto;padding:40px 24px">'
-      + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:32px">'
-      + '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:4px 12px;border-radius:6px;border:' + (fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (fr?"var(--gbg)":"var(--bgc)") + ';font-size:10px;font-weight:700;cursor:pointer">FR</button>'
-      + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:4px 12px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:10px;font-weight:700;cursor:pointer">EN</button></div>'
-      + '<div style="text-align:center;margin-bottom:32px">'
-      + '<div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>'
-      + '<div style="font-size:10px;color:var(--tm);letter-spacing:1px;text-transform:uppercase;margin-top:8px">' + t("Bilan retraite personnalis\u00e9","Personalized retirement assessment") + '</div></div>'
-      + '<h1 style="font-size:24px;font-weight:700;line-height:1.3;text-align:center;margin:0 0 12px">'
-      + t("Est-ce que votre plan tient la route\u00a0?","Is your retirement plan on track?") + '</h1>'
-      + '<p style="font-size:14px;color:var(--ts);line-height:1.65;text-align:center;max-width:400px;margin:0 auto 28px">'
-      + t("Quelques questions, 5\u00a0000 sc\u00e9narios simul\u00e9s, un portrait clair \u2014 en langage que vous comprenez vraiment. Pas de jargon. Pas de rendez-vous. Environ 3 \u00e0 5 minutes.",
-         "A few questions, 5,000 simulated scenarios, a clear portrait \u2014 in language you actually understand. No jargon. No appointment. About 3 to 5 minutes.") + '</p>'
-      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;margin-bottom:24px">'
-      + '<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:10px">'
-      + t("Pour un portrait plus pr\u00e9cis, ayez sous la main\u00a0:","For a more accurate portrait, have handy:") + '</div>'
-      + '<div style="display:grid;gap:6px">'
-      + [{f:"Votre \u00e9pargne totale approximative",e:"Your approximate total savings"},
-         {f:"Votre cotisation mensuelle",e:"Your monthly contribution"},
-         {f:"Relev\u00e9 RRQ ou RPC (Mon dossier \u2014 rrq.gouv.qc.ca ou canada.ca)",e:"CPP/QPP statement (My Service Canada Account \u2014 canada.ca)"},
-         {f:"Votre solde hypoth\u00e9caire, si applicable",e:"Your mortgage balance, if applicable"},
-         {f:"Vos soldes de dettes, si applicable",e:"Your debt balances, if applicable"}
-        ].map(function(item) {
-          return '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ts)"><div style="width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;opacity:.6"></div>' + t(item.f, item.e) + '</div>';
-        }).join("")
-      + '</div>'
-      + '<div style="font-size:11px;color:var(--tm);margin-top:10px;font-style:italic">'
-      + t("Des estimations suffisent \u2014 le simulateur fait le reste.","Rough estimates are fine \u2014 the simulator does the rest.") + '</div></div>'
-      + '<div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:28px">'
-      + '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:13px;color:var(--ts);font-weight:500">\ud83c\udde8\ud83c\udde6 ' + t("Con\u00e7u pour le Canada","Built for Canada") + '</span>'
-      + '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:13px;color:var(--ts);font-weight:500">\ud83d\udd12 ' + t("Aucun compte requis","No account needed") + '</span>'
-      + '<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:13px;color:var(--ts);font-weight:500">\ud83d\udcca 5\u00a0000 simulations</span></div>'
-      + '<button class="pbtn" onclick="go(1)">' + t("Commencer mon bilan","Start my assessment") + '</button>'
-      + '</div>';
-  }
-
-  // === STEP 1: ABOUT YOU ===
-  if (step === 1) {
-    var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div class="card' + (q.sex===o.v?" sel":"") + '" onclick="uq(\'sex\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:14px"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    var provOptions = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"].map(function(p){return '<option value="'+p+'"'+(q.prov===p?' selected':'')+'>'+p+' \u2014 '+provNames[p]+'</option>';}).join("");
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Parlons de vous","About you") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("\u00c2ge actuel","Current age") + '</label>'
-      + '<input type="number" min="18" max="80" value="' + q.age + '" oninput="uqd(\'age\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("\u00c0 quel \u00e2ge aimeriez-vous prendre votre retraite\u00a0?","At what age would you like to retire?") + '</label>'
-      + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><input type="range" min="40" max="75" value="' + q.retAge + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:20px;font-weight:700;color:var(--g);min-width:36px;text-align:center">' + q.retAge + '</span></div>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px;margin-bottom:16px">' + sexCards + '</div>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">Province</label><select onchange="uq(\'prov\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:16px;background:var(--bgc)">' + provOptions + '</select>'
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 2: EMPLOYMENT ===
-  if (step === 2) {
-    var empCards = [{v:"gov",l:t("Gouvernement","Government"),d:t("Pension \u00e0 prestations d\u00e9termin\u00e9es","Defined benefit pension")},{v:"large",l:t("Grande entreprise","Large company"),d:t("R\u00e9gime de cotisations","Contribution matching")},{v:"tech",l:"Tech / Startup",d:t("Cotisations et options","Contributions and options")},{v:"small",l:t("PME / Travailleur autonome","Small business / Self-employed"),d:t("Pas de r\u00e9gime employeur","No employer plan")}].map(function(o){return '<div class="card' + (q.employer===o.v?" sel":"") + '" onclick="uq(\'employer\',\'' + o.v + '\')"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:12px;color:var(--ts);margin-top:2px">' + o.d + '</div></div>';}).join("");
-    var cplCards = [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div class="card' + (q.couple===o.v?" sel":"") + '" onclick="uq(\'couple\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Emploi et situation","Employment & situation") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Type d\u2019employeur","Employer type") + '</label>' + empCards
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Vivez-vous en couple\u00a0?","Do you live with a partner?") + '</label><div style="display:flex;gap:8px">' + cplCards + '</div>'
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 3: INCOME & SAVINGS ===
-  if (step === 3) {
-    var detailFields = '';
-    if (q.savingsDetail) {
-      detailFields = '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte de retraite enregistr\u00e9","Registered retirement account") + ' (RRSP/REER)</label>'
-        + '<input type="number" min="0" step="1000" value="' + (q.rrsp||0) + '" oninput="uqd(\'rrsp\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte d\u2019\u00e9pargne libre d\u2019imp\u00f4t","Tax-free savings account") + ' (TFSA/CELI)</label>'
-        + '<input type="number" min="0" step="1000" value="' + (q.tfsa||0) + '" oninput="uqd(\'tfsa\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Placements non enregistr\u00e9s","Non-registered investments") + '</label>'
-        + '<input type="number" min="0" step="1000" value="' + (q.nr||0) + '" oninput="uqd(\'nr\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px" />'
-        + '</div>';
-    }
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Revenus et \u00e9pargne","Income & savings") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Revenu annuel brut","Annual gross income") + ' ($)</label>'
-      + '<input type="number" min="0" max="500000" step="1000" value="' + q.income + '" oninput="uqd(\'income\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("\u00c9pargne totale",  "Total savings") + ' ($)</label>'
-      + '<input type="number" min="0" max="5000000" step="1000" value="' + q.totalSavings + '" oninput="uqd(\'totalSavings\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:8px" />'
-      + '<div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--g)"><input type="checkbox" ' + (q.savingsDetail?"checked":"") + ' onchange="uq(\'savingsDetail\',this.checked)" style="accent-color:var(--g)" />' + t("Je connais la r\u00e9partition entre mes comptes","I know the breakdown between my accounts") + '</label></div>'
-      + detailFields
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Cotisation mensuelle","Monthly contribution") + ' ($/'+t("mois","mo")+')</label>'
-      + '<input type="number" min="0" max="10000" step="50" value="' + q.monthlyContrib + '" oninput="uqd(\'monthlyContrib\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 4: DEBTS & PROPERTY ===
-  if (step === 4) {
-    var debtTypes = [{v:"cc",l:t("Carte de cr\u00e9dit","Credit card"),r:19.99},{v:"student",l:t("Pr\u00eat \u00e9tudiant","Student loan"),r:5.5},{v:"car",l:t("Pr\u00eat automobile","Car loan"),r:6.5},{v:"loc",l:t("Marge de cr\u00e9dit","Line of credit"),r:7.5}];
-    var debtInputs = debtTypes.map(function(dt) {
-      var d = q.debts.find(function(x){return x.type===dt.v;}) || {type:dt.v, amount:0, minPayment:0, rate:dt.r};
-      var curRate = d.rate != null && d.rate > 0 ? d.rate : dt.r;
-      return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:8px">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.01" value="' + curRate + '" oninput="setDebtField(\'' + dt.v + '\',\'rate\',this.value)" style="width:92px;padding:6px 8px;border-radius:6px;border:1px solid var(--bd);font-size:14px;font-family:monospace;text-align:right" /><span style="font-size:13px;color:var(--tm)">%</span></div></div>'
-        + '<div class="debt-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Solde","Balance") + ' ($)</label><input type="number" min="0" step="100" value="' + (d.amount||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'amount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
-        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Paiement min.","Min. payment") + ' ($/'+t("mois","mo")+')</label><input type="number" min="0" step="10" value="' + (d.minPayment||0) + '" oninput="setDebtField(\'' + dt.v + '\',\'minPayment\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
-        + '</div></div>';
-    }).join("");
-    var homeCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div class="card' + (q.homeowner===o.v?" sel":"") + '" onclick="uq(\'homeowner\',' + o.v + ')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    var homeInputs = q.homeowner ? '<label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Valeur de la propri\u00e9t\u00e9","Property value") + ' ($)</label><input type="number" min="0" step="10000" value="' + (q.homeValue||0) + '" oninput="uqd(\'homeValue\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Solde hypoth\u00e9caire","Mortgage balance") + ' ($)</label><input type="number" min="0" step="5000" value="' + (q.mortgage||0) + '" oninput="uqd(\'mortgage\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Ann\u00e9es restantes","Years remaining") + '</label><input type="number" min="1" max="30" value="' + (q.mortgageAmort||20) + '" oninput="uqd(\'mortgageAmort\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" />' : '';
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dettes et propri\u00e9t\u00e9","Debts & property") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos dettes actuelles","Your current debts") + '</label>'
-      + debtInputs
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:20px 0 8px">' + t("\u00cates-vous propri\u00e9taire\u00a0?","Are you a homeowner?") + '</label><div style="display:flex;gap:8px">' + homeCards + '</div>' + homeInputs
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 5: LIFESTYLE & RISK ===
-  if (step === 5) {
-    var lsPresets = [{v:3000,l:t("Tranquille","Cozy")},{v:5000,l:t("Actif","Active")},{v:7500,l:"Premium"}];
-    var lsCards = lsPresets.map(function(o){var sel=q.retSpending===o.v&&!q.retSpendingCustom;return '<div class="card' + (sel?" sel":"") + '" onclick="uq(\'retSpending\','+o.v+');uq(\'retSpendingCustom\',false)" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + f$(o.v) + '/'+t("mois","mo")+'</div></div>';}).join("");
-    var lsCustomCard = '<div class="card' + (q.retSpendingCustom?" sel":"") + '" onclick="uq(\'retSpendingCustom\',true)" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">' + t("Personnalis\u00e9","Custom") + '</div><div style="font-size:11px;color:var(--ts)">' + t("Mon montant","My amount") + '</div></div>';
-    var lsCustomInput = q.retSpendingCustom ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:8px"><label style="font-size:12px;color:var(--ts)">' + t("D\u00e9penses mensuelles souhait\u00e9es \u00e0 la retraite","Desired monthly retirement spending") + ' ($)</label><input type="number" min="1000" max="20000" step="100" value="' + (q.retSpending||5000) + '" oninput="uqd(\'retSpending\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-top:6px" /></div>' : '';
-
-    var riskPresets = [{v:50,l:t("Prudent","Conservative")},{v:70,l:t("\u00c9quilibr\u00e9","Balanced")},{v:85,l:t("Croissance","Growth")}];
-    var riskCards = riskPresets.map(function(o){var sel=q.equityPct===o.v&&!q.equityCustom;return '<div class="card' + (sel?" sel":"") + '" onclick="uq(\'equityPct\','+o.v+');uq(\'equityCustom\',false)" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.v + '% ' + t("actions","equity") + '</div></div>';}).join("");
-    var riskCustomCard = '<div class="card' + (q.equityCustom?" sel":"") + '" onclick="uq(\'equityCustom\',true)" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">' + t("Personnalis\u00e9","Custom") + '</div><div style="font-size:11px;color:var(--ts)">' + t("Mon %","My %") + '</div></div>';
-    var riskCustomInput = q.equityCustom ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:8px"><label style="font-size:12px;color:var(--ts)">' + t("Pourcentage en actions","Equity percentage") + '</label><div style="display:flex;align-items:center;gap:12px;margin-top:6px"><input type="range" min="10" max="100" value="' + (q.equityPct||70) + '" oninput="uq(\'equityPct\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:18px;font-weight:700;color:var(--g);min-width:50px;text-align:center">' + (q.equityPct||70) + '%</span></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tm);margin-top:4px"><span>' + t("Obligations","Bonds") + '</span><span>' + t("Actions","Equity") + '</span></div></div>' : '';
-
-    var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-\u00eatre","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div class="card' + (q.parttime===o.v?" sel":"") + '" onclick="uq(\'parttime\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div class="debt-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estim\u00e9","Estimated monthly income") + ' ($)</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uqd(\'parttimeAmount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\u2019ann\u00e9es","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uqd(\'parttimeYears\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:4px">' + t("D\u00e9penses mensuelles souhait\u00e9es \u00e0 la retraite","Desired monthly retirement spending") + '</label>'
-      + '<div style="font-size:12px;color:var(--tm);margin-bottom:8px;line-height:1.6">' + t("En dollars d\u2019aujourd\u2019hui. C\u2019est-\u00e0-dire\u00a0: si votre retraite commen\u00e7ait demain matin, combien voudriez-vous d\u00e9penser par mois\u00a0? Le simulateur ajuste ensuite ce montant pour l\u2019inflation chaque ann\u00e9e, afin que votre pouvoir d\u2019achat reste le m\u00eame.", "In today\u2019s dollars. That means: if your retirement started tomorrow morning, how much would you want to spend per month? The simulator then adjusts this amount for inflation each year, so your purchasing power stays the same.") + '</div>'
-      + '<div class="ls-grid4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">' + lsCards + lsCustomCard + '</div>' + lsCustomInput
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:18px 0 8px">' + t("R\u00e9partition de vos placements","Investment allocation") + '</label><div class="ls-grid4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">' + riskCards + riskCustomCard + '</div>' + riskCustomInput
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:18px 0 8px">' + t("Travail \u00e0 temps partiel en d\u00e9but de retraite\u00a0?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div>' + ptFields
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 6: WHAT MATTERS ===
-  if (step === 6) {
-    var worryOpts = [{v:"runout",l:t("Manquer d\u2019argent","Running out of money")},{v:"tax",l:t("Trop d\u2019imp\u00f4ts","Too many taxes")},{v:"inflation",l:t("L\u2019inflation","Inflation")},{v:"health",l:t("Co\u00fbts de sant\u00e9","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un h\u00e9ritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip' + (sel?" sel":"") + '" onclick="toggleWorry(\'' + o.v + '\')">' + o.l + '</span>';}).join("");
-    var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("\u00c9pargner r\u00e9guli\u00e8rement","Saving regularly")},{v:"investing",l:t("Commencer \u00e0 investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div class="card' + (q.win===o.v?" sel":"") + '" onclick="uq(\'win\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Ce qui compte pour vous","What matters to you") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos 3 plus grandes pr\u00e9occupations","Your 3 biggest concerns") + '</label><div style="margin-bottom:16px">' + worryOpts + '</div>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre plus grande victoire financi\u00e8re","Your biggest financial win") + '</label>' + winCards
-      + btn(t("Suivant","Next")) + backBtn);
-  }
-
-  // === STEP 7: FINAL QUESTIONS ===
-  if (step === 7) {
-    var fixCards = [{v:"save_more",l:t("\u00c9pargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d\u2019imp\u00f4ts","Pay less tax")},{v:"retire_early",l:t("Retraite plus t\u00f4t","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div class="card' + (q.fix===o.v?" sel":"") + '" onclick="uq(\'fix\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
-    var confLabels = {1:t("D\u00e9butant","Beginner"),2:t("Novice","Novice"),3:t("Interm\u00e9diaire","Intermediate"),4:t("Avanc\u00e9","Advanced"),5:t("Expert","Expert")};
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Derni\u00e8res questions","Final questions") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Si vous pouviez am\u00e9liorer une chose","If you could improve one thing") + '</label>' + fixCards
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Confiance financi\u00e8re (1-5)","Financial confidence (1-5)") + '</label>'
-      + '<input type="range" min="1" max="5" value="' + q.confidence + '" oninput="uq(\'confidence\',+this.value)" />'
-      + '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span>' + t("D\u00e9butant","Beginner") + '</span><span style="font-weight:700;color:var(--g)">' + q.confidence + '/5 \u2014 ' + (confLabels[q.confidence]||"") + '</span><span>' + t("Expert","Expert") + '</span></div>'
-      + btn(t("Voir mon rapport","See my report")) + backBtn);
-  }
-
-  return '';
-}
-// ============================================================
-// SAMPLE REPORT DATA (two personas)
-// ============================================================
-var SAMPLES = {
-marie: {
-  name:"Marie Tremblay", age:42, retAge:62, sex:"F", prov:"QC", sal:78000, deathAge:92, avgDeath:87,
-  totalSavings:85000, rrsp:38000, tfsa:30000, nr:17000, dcBal:24000,
-  retYearBalance:412000, successPct:78, grade:"B+", succ:0.78,
-  qppMonthly:1085, oasMonthly:742, dbPensionMonthly:0, govMonthly:1827,
-  gapMonthly:3173, retSpM:5000, withdrawalRatePct:4.6, coveragePct:37,
-  rMedF:185000, rP5F:-42000, rP25F:68000, rP75F:380000, rP95F:620000,
-  taxCurrentEffective:28, taxRetirementEffective:18, taxCurrentMarginal:42,
-  merWeighted:0.015, feeCostLifetime:89000,
-  qppAge:62, oasAge:65, inf:0.021, nSim:5000,
-  penType:"dc", hasPension:true, costDelay:34500, minReturn:4.8,
-  monthlyContrib:600, allocR:0.70,
-  debtBal:16200, mortBal:280000, homeVal:485000, mortAmort:22, mortFreeAge:64,
-  priorities:[
-    {name:"Cotisation employeur (contrepartie)",rate:"50-100%",why:"Rendement instantan\u00e9 de 50-100\u00a0%. G\u00e9n\u00e9ralement prioris\u00e9.",color:"#2A8C46"},
-    {name:"Carte de cr\u00e9dit (4\u00a0200\u00a0$)",rate:"19.99%",why:"Taux de 19,99\u00a0% garanti. Le remboursement est g\u00e9n\u00e9ralement prioris\u00e9.",color:"#CC4444"},
-    {name:"Compte d\u2019\u00e9pargne libre d\u2019imp\u00f4t",rate:"5.3%",why:"Taux marginal de 42,0\u00a0% \u2264 40\u00a0%. Souvent prioris\u00e9.",color:"#2A8C46"},
-    {name:"R\u00e9gime enregistr\u00e9 d\u2019\u00e9pargne-retraite",rate:"42.0%",why:"D\u00e9duction mod\u00e9r\u00e9e. Apr\u00e8s le compte libre d\u2019imp\u00f4t.",color:"#4680C0"},
-    {name:"Pr\u00eat automobile (12\u00a0000\u00a0$)",rate:"6.5%",why:"Taux > rendement apr\u00e8s imp\u00f4t. Le remboursement est g\u00e9n\u00e9ralement favoris\u00e9.",color:"#B89830"},
-    {name:"Hypoth\u00e8que (280\u00a0000\u00a0$)",rate:"5.5%",why:"Taux > rendement apr\u00e8s imp\u00f4t. Le remboursement acc\u00e9l\u00e9r\u00e9 est souvent favoris\u00e9.",color:"#B89830"}
-  ],
-  ai:{
-    snapshot_intro:"Votre habitude d\u2019\u00e9pargne r\u00e9guli\u00e8re est un atout consid\u00e9rable \u2014 elle constitue la base de votre s\u00e9curit\u00e9 financi\u00e8re \u00e0 long terme. Avec une note de B+ et 78\u00a0% de sc\u00e9narios r\u00e9ussis sur 5\u00a0000 simulations, votre plan pourrait b\u00e9n\u00e9ficier de quelques ajustements cibl\u00e9s pour atteindre une zone de confort plus \u00e9lev\u00e9e.",
-    debt_impact:"Votre carte de cr\u00e9dit \u00e0 19,99\u00a0% vous co\u00fbterait environ 3\u00a0420\u00a0$ en int\u00e9r\u00eats totaux si vous maintenez le paiement minimum. Chaque dollar de remboursement acc\u00e9l\u00e9r\u00e9 sur cette dette \u00e9quivaut \u00e0 un rendement garanti de 19,99\u00a0% \u2014 un rendement qu\u2019aucun placement ne peut offrir avec certitude.",
-    savings_context:"\u00c0 42 ans avec 85\u00a0000\u00a0$ d\u2019\u00e9pargne et des cotisations mensuelles de 600\u00a0$, votre patrimoine pourrait atteindre environ 412\u00a0000\u00a0$ \u00e0 votre retraite souhait\u00e9e de 62 ans. Ce montant serait constitu\u00e9 de vos cotisations et de la croissance compos\u00e9e de vos placements sur les 20 prochaines ann\u00e9es.",
-    gov_explanation:"Le R\u00e9gime de rentes du Qu\u00e9bec vous verserait environ 1\u00a0085\u00a0$ par mois \u00e0 partir de 62 ans \u2014 un montant r\u00e9duit par rapport au maximum de 65 ans, mais adapt\u00e9 \u00e0 votre objectif de retraite anticip\u00e9e. La Pension de la S\u00e9curit\u00e9 de la vieillesse ajouterait 742\u00a0$ par mois \u00e0 partir de 65 ans. Ensemble, ces prestations pourraient couvrir 37\u00a0% de vos d\u00e9penses pr\u00e9vues.",
-    tax_insight:"Votre taux effectif d\u2019imposition pourrait passer de 28\u00a0% en p\u00e9riode de travail \u00e0 environ 18\u00a0% \u00e0 la retraite. Cette diff\u00e9rence de 10 points signifie que chaque dollar plac\u00e9 dans votre r\u00e9gime enregistr\u00e9 aujourd\u2019hui b\u00e9n\u00e9ficierait d\u2019une d\u00e9duction \u00e0 28\u00a0% et serait impos\u00e9 \u00e0 environ 18\u00a0% au retrait \u2014 un avantage fiscal net d\u2019environ 10 cents par dollar.",
-    longevity_good:"Dans un sc\u00e9nario m\u00e9dian, vous pourriez terminer votre retraite avec environ 185\u00a0000\u00a0$ encore disponibles en dollars d\u2019aujourd\u2019hui. Dans les sc\u00e9narios plus optimistes (25\u00a0% des cas), ce montant pourrait atteindre 380\u00a0000\u00a0$, offrant une marge de s\u00e9curit\u00e9 confortable et un h\u00e9ritage potentiel.",
-    longevity_watch:"Dans les sc\u00e9narios plus difficiles (5\u00a0% des cas), votre \u00e9pargne pourrait \u00eatre \u00e9puis\u00e9e vers la fin de votre plan. Les ann\u00e9es entre 62 et 65 ans seraient les plus critiques, car elles pr\u00e9c\u00e8dent la Pension de la S\u00e9curit\u00e9 de la vieillesse. Un travail \u00e0 temps partiel de 1\u00a0200\u00a0$ par mois pendant ces ann\u00e9es pourrait significativement r\u00e9duire ce risque.",
-    obs_1:"Le taux de retrait annuel initial de 4,6\u00a0% pourrait l\u00e9g\u00e8rement d\u00e9passer le seuil de 4\u00a0% historiquement consid\u00e9r\u00e9 comme durable, mais vos prestations gouvernementales \u2014 qui couvriraient 37\u00a0% de vos d\u00e9penses \u2014 pourraient contribuer \u00e0 r\u00e9duire la pression sur votre portefeuille. Une augmentation de vos cotisations mensuelles de 100\u00a0$ pourrait r\u00e9duire ce taux sous les 4\u00a0%.",
-    obs_2:"Les programmes gouvernementaux couvriraient 37\u00a0% de vos d\u00e9penses mensuelles, laissant un \u00e9cart de 3\u00a0173\u00a0$ par mois \u00e0 financer par vos \u00e9conomies personnelles. Le r\u00e9gime \u00e0 cotisations d\u00e9termin\u00e9es de votre employeur pourrait ajouter un compl\u00e9ment, mais le montant d\u00e9pendrait des rendements de votre portefeuille de pension.",
-    obs_3:"Les frais de gestion pond\u00e9r\u00e9s de 1,50\u00a0% sur vos placements pourraient repr\u00e9senter environ 89\u00a0000\u00a0$ en co\u00fbts cumulatifs sur la dur\u00e9e de votre plan de retraite. Un passage \u00e0 des fonds indiciels \u00e0 frais r\u00e9duits (0,20-0,30\u00a0%) pourrait potentiellement r\u00e9cup\u00e9rer une part significative de ces frais.",
-    upgrade_hook:"Votre situation inclut un couple, une propri\u00e9t\u00e9 et des dettes \u2014 trois dimensions que le Rapport Interm\u00e9diaire analyse en profondeur avec le fractionnement de revenus, l\u2019optimisation hypoth\u00e9caire et la strat\u00e9gie d\u2019endettement personnalis\u00e9e."
-  }
-},
-jp: {
-  name:"Jean-Philippe C\u00f4t\u00e9", age:55, retAge:63, sex:"M", prov:"ON", sal:105000, deathAge:90, avgDeath:84,
-  totalSavings:320000, rrsp:195000, tfsa:85000, nr:40000, dcBal:0,
-  retYearBalance:580000, successPct:91, grade:"A", succ:0.91,
-  qppMonthly:1320, oasMonthly:742, dbPensionMonthly:2850, govMonthly:4912,
-  gapMonthly:2588, retSpM:7500, withdrawalRatePct:2.7, coveragePct:66,
-  rMedF:445000, rP5F:95000, rP25F:280000, rP75F:690000, rP95F:1020000,
-  taxCurrentEffective:31, taxRetirementEffective:22, taxCurrentMarginal:46,
-  merWeighted:0.015, feeCostLifetime:156000,
-  qppAge:63, oasAge:65, inf:0.021, nSim:5000,
-  penType:"db", hasPension:true, costDelay:52800, minReturn:3.2,
-  monthlyContrib:1200, allocR:0.70,
-  debtBal:8500, mortBal:95000, homeVal:720000, mortAmort:8, mortFreeAge:63,
-  priorities:[
-    {name:"R\u00e9gime enregistr\u00e9 d\u2019\u00e9pargne-retraite",rate:"46.0%",why:"Taux marginal de 46,0\u00a0% > 40\u00a0%. D\u00e9duction fiscale \u00e9lev\u00e9e.",color:"#4680C0"},
-    {name:"Compte d\u2019\u00e9pargne libre d\u2019imp\u00f4t",rate:"5.3%",why:"Croissance libre d\u2019imp\u00f4t. Apr\u00e8s le r\u00e9gime enregistr\u00e9.",color:"#2A8C46"},
-    {name:"Marge de cr\u00e9dit (8\u00a0500\u00a0$)",rate:"7.5%",why:"Taux > rendement apr\u00e8s imp\u00f4t. Le remboursement est g\u00e9n\u00e9ralement favoris\u00e9.",color:"#B89830"},
-    {name:"Hypoth\u00e8que (95\u00a0000\u00a0$)",rate:"5.5%",why:"Taux > rendement apr\u00e8s imp\u00f4t. Le remboursement acc\u00e9l\u00e9r\u00e9 est souvent favoris\u00e9.",color:"#B89830"}
-  ],
-  ai:{
-    snapshot_intro:"Votre acquisition immobili\u00e8re et votre stabilit\u00e9 d\u2019emploi au gouvernement constituent des piliers solides pour votre retraite. Avec une note de A et 91\u00a0% de sc\u00e9narios r\u00e9ussis, votre plan se situe dans une zone de confort \u00e9lev\u00e9e \u2014 les ajustements sugg\u00e9r\u00e9s visent principalement l\u2019optimisation fiscale plut\u00f4t que la survie du plan.",
-    savings_context:"\u00c0 55 ans avec 320\u00a0000\u00a0$ d\u2019\u00e9pargne, des cotisations mensuelles de 1\u00a0200\u00a0$ et une pension \u00e0 prestations d\u00e9termin\u00e9es, votre patrimoine financier pourrait atteindre environ 580\u00a0000\u00a0$ \u00e0 votre retraite souhait\u00e9e de 63 ans. Votre pension gouvernementale index\u00e9e constitue un filet de s\u00e9curit\u00e9 que la majorit\u00e9 des Canadiens n\u2019ont pas.",
-    gov_explanation:"Le R\u00e9gime de pensions du Canada vous verserait environ 1\u00a0320\u00a0$ par mois \u00e0 partir de 63 ans. La Pension de la S\u00e9curit\u00e9 de la vieillesse ajouterait 742\u00a0$ par mois \u00e0 65 ans. Votre pension d\u2019employeur \u00e0 prestations d\u00e9termin\u00e9es \u2014 environ 2\u00a0850\u00a0$ par mois \u2014 porterait vos revenus garantis \u00e0 4\u00a0912\u00a0$ par mois, couvrant 66\u00a0% de vos d\u00e9penses pr\u00e9vues.",
-    tax_insight:"Votre taux marginal actuel de 46\u00a0% cr\u00e9e une forte incitation \u00e0 maximiser vos cotisations au r\u00e9gime enregistr\u00e9 d\u2019\u00e9pargne-retraite. Chaque dollar cotis\u00e9 au r\u00e9gime enregistr\u00e9 vous ferait \u00e9conomiser 46 cents d\u2019imp\u00f4t maintenant, pour \u00eatre impos\u00e9 \u00e0 environ 22\u00a0% au retrait \u00e0 la retraite \u2014 un avantage net potentiel de 24 cents par dollar.",
-    longevity_good:"Dans un sc\u00e9nario m\u00e9dian, vous pourriez terminer votre retraite avec environ 445\u00a0000\u00a0$ encore disponibles en dollars d\u2019aujourd\u2019hui. Dans les sc\u00e9narios optimistes (25\u00a0% des cas), ce montant pourrait d\u00e9passer 690\u00a0000\u00a0$, offrant un h\u00e9ritage significatif pour votre famille.",
-    longevity_watch:"M\u00eame dans les sc\u00e9narios les plus difficiles (5\u00a0% des cas), votre \u00e9pargne pourrait conserver environ 95\u00a0000\u00a0$. Votre pension \u00e0 prestations d\u00e9termin\u00e9es index\u00e9e joue un r\u00f4le stabilisateur important, car elle continue de verser des revenus ind\u00e9pendamment des conditions de march\u00e9.",
-    obs_1:"Votre taux marginal de 46\u00a0% signifie que chaque dollar non optimis\u00e9 fiscalement co\u00fbte presque la moiti\u00e9 en imp\u00f4ts. Maximiser vos cotisations au r\u00e9gime enregistr\u00e9 cette ann\u00e9e et explorer le fractionnement de revenus de pension avec votre conjoint pourraient potentiellement r\u00e9duire votre facture fiscale \u00e0 la retraite.",
-    obs_2:"Vos revenus gouvernementaux et votre pension d\u2019employeur couvriraient ensemble 66\u00a0% de vos d\u00e9penses \u2014 un niveau de couverture \u00e9lev\u00e9 qui rend votre plan plus r\u00e9sistant aux chocs boursiers que la moyenne. Vos placements serviraient principalement de compl\u00e9ment et de r\u00e9serve.",
-    obs_3:"Les frais de gestion pond\u00e9r\u00e9s de 1,50\u00a0% pourraient repr\u00e9senter environ 156\u00a0000\u00a0$ en co\u00fbts cumulatifs sur la dur\u00e9e de votre retraite. Avec un portefeuille de cette taille, la diff\u00e9rence entre des frais de 1,50\u00a0% et 0,25\u00a0% pourrait repr\u00e9senter plus de 100\u00a0000\u00a0$ en patrimoine additionnel.",
-    upgrade_hook:"Avec votre pension \u00e0 prestations d\u00e9termin\u00e9es, votre propri\u00e9t\u00e9 et votre situation de couple, le Rapport Interm\u00e9diaire pourrait analyser le fractionnement optimal de vos revenus de pension, la strat\u00e9gie de d\u00e9caissement du r\u00e9gime enregistr\u00e9, et la planification successorale pour prot\u00e9ger votre h\u00e9ritage."
-  }
-}
-};
-
-// ============================================================
-// SAMPLE REPORT RENDERER
-// ============================================================
-function renderSampleReport(key) {
-  var D = SAMPLES[key], ai = D.ai;
-  var sC = gCol(D.successPct);
-  var circ = 2 * Math.PI * 48;
-  var dashVal = circ * (1 - D.succ);
-  var isQC = D.prov === "QC";
-  var gP = isQC ? "R\u00e9gime de rentes du Qu\u00e9bec" : "R\u00e9gime de pensions du Canada";
-  var oN = "Pension de la S\u00e9curit\u00e9 de la vieillesse";
-  var yrsToRet = D.retAge - D.age;
-  var planHorizon = D.deathAge - D.age;
-  var totalSav = D.totalSavings + (D.penType==="dc"?D.dcBal:0);
-
-  function secH(n,t){return '<div style="margin-bottom:42px"><div class="rpt-sec-h"><span class="rpt-sec-num">'+n+'</span>'+t+'</div>';}
-  function secE(){return '</div>';}
-  function card(inner,s){return '<div class="rpt-card" style="'+(s||'')+'">'+inner+'</div>';}
-  function kp(v,l,c,sub){return '<div class="rpt-kp" style="border-top:3px solid '+(c||'var(--g)')+'"><div style="font-family:monospace;font-size:20px;font-weight:700;color:'+(c||'var(--g)')+'">'+v+'</div><div style="font-size:11px;color:#666;margin-top:4px;font-weight:600">'+l+'</div>'+(sub?'<div style="font-size:10px;color:#999;margin-top:2px">'+sub+'</div>':'')+'</div>';}
-  function kvr(k,v){return '<div class="rpt-kvr"><span>'+k+'</span><span>'+v+'</span></div>';}
-  function co(inner,type){return '<div class="rpt-callout '+type+'">'+inner+'</div>';}
-  function aiB(text){return text?'<div class="rpt-ai">'+text+'</div>':'';}
-
-  var h = '';
-
-  // Header
-  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap"><div>' + logoSVG("md","light") + '<div style="font-size:13px;color:#888;margin-top:6px">Rapport Essentiel \u2014 Exemple \u2014 '+D.name+'</div></div><div style="text-align:right;font-size:10px;color:#bbb;line-height:1.8">'+D.nSim.toLocaleString()+' simulations<br>'+D.prov+'</div></div>';
-
-  // S1: GRADE
-  h += secH(1,"Votre note");
-  h += card('<div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap"><div style="position:relative;width:120px;height:120px;flex-shrink:0"><svg width="120" height="120" style="transform:rotate(-90deg)"><circle cx="60" cy="60" r="48" fill="none" stroke="var(--bd)" stroke-width="8"/><circle cx="60" cy="60" r="48" fill="none" stroke="'+sC+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+dashVal+'"/></svg><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:monospace;font-size:42px;font-weight:900;color:'+sC+'">'+D.grade+'</div></div><div style="flex:1;min-width:220px"><div style="display:inline-block;padding:5px 18px;border-radius:20px;font-weight:800;font-size:13px;color:#fff;background:'+sC+';margin-bottom:10px">'+D.grade+' \u2014 '+(D.successPct>=90?"Excellent":D.successPct>=75?"Solide":D.successPct>=50?"\u00c0 travailler":"Attention")+'</div><div style="font-size:14px;color:#555;line-height:1.8">'+ai.snapshot_intro+'</div></div></div>');
-  h += co("Tous les montants de ce rapport sont en dollars d\u2019aujourd\u2019hui \u2014 ajust\u00e9s pour l\u2019inflation projet\u00e9e \u00e0 "+(D.inf*100).toFixed(1)+"\u00a0% par ann\u00e9e.","info");
-  h += secE();
-
-  // S2: PROFILE
-  h += secH(2,"Votre profil");
-  var tlEv=[{a:D.age,l:"Aujourd\u2019hui",c:"#4680C0",on:true},{a:D.retAge,l:"Retraite",c:"#C4944A"},{a:D.qppAge,l:"Prestations gouv.",c:"#2A8C46"},{a:D.avgDeath,l:"\u00c2ge m\u00e9dian de d\u00e9c\u00e8s",c:"#888"}];
-  h += '<div style="position:relative;padding:28px 20px 16px;background:#FDFBF7;border:1px solid var(--bd);border-radius:10px;margin:14px 0"><div style="position:absolute;top:38px;left:50px;right:50px;height:3px;background:linear-gradient(90deg,#4680C0,#C4944A,#2A8C46,#888);border-radius:2px;opacity:.2"></div><div style="display:flex;justify-content:space-between;position:relative">';
-  tlEv.forEach(function(e){h+='<div style="text-align:center;z-index:1"><div style="width:'+(e.on?18:14)+'px;height:'+(e.on?18:14)+'px;border-radius:50%;background:'+(e.on?e.c:'#fff')+';border:2.5px solid '+e.c+';margin:0 auto 6px"></div><div style="font-family:monospace;font-size:14px;font-weight:700">'+e.a+' ans</div><div style="font-size:10px;color:#888;max-width:90px;margin:2px auto 0;line-height:1.4">'+e.l+'</div></div>';});
-  h += '</div></div>';
-  h += card(kvr("\u00c2ge",D.age+" ans")+kvr("Retraite pr\u00e9vue",D.retAge+" ans ("+yrsToRet+" ans)")+kvr("Revenu annuel",f$(D.sal))+kvr("Province",D.prov+" \u2014 "+(PROV_NAMES[D.prov]||D.prov))+kvr("D\u00e9penses pr\u00e9vues \u00e0 la retraite",f$(D.retSpM)+" $/mois")+(D.hasPension?kvr("R\u00e9gime de pension d\u2019employeur",D.penType==="dc"?"Cotisations d\u00e9termin\u00e9es ("+f$(D.dcBal)+")":"Prestations d\u00e9termin\u00e9es ("+f$(D.dbPensionMonthly)+" $/mois)"):''));
-  h += secE();
-
-  // S3: SAVINGS
-  h += secH(3,"Votre \u00e9pargne");
-  h += aiB(ai.savings_context);
-  h += '<div class="rpt-grid3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">'+kp(f$(totalSav),"\u00c9pargne totale",null,D.penType==="dc"?"incluant pension":null)+kp(f$(D.retYearBalance),"Projet\u00e9 \u00e0 la retraite","var(--gn)")+kp(D.withdrawalRatePct+"%","Taux de retrait annuel",D.withdrawalRatePct<=4?"var(--gn)":"var(--am)","r\u00e8gle des 4\u00a0% = rep\u00e8re")+'</div>';
-  h += card(kvr("Compte de retraite enregistr\u00e9 (REER)",f$(D.rrsp))+kvr("Compte d\u2019\u00e9pargne libre d\u2019imp\u00f4t (CELI)",f$(D.tfsa))+kvr("Placements non enregistr\u00e9s",f$(D.nr))+(D.penType==="dc"?kvr("R\u00e9gime \u00e0 cotisations d\u00e9termin\u00e9es",f$(D.dcBal)):''));
-  h += secE();
-
-  // S4: DEBT
-  var sn = 4;
-  if (D.debtBal > 0 || D.mortBal > 0) {
-    h += secH(sn,"Dette vs Investissement");
-    h += aiB(ai.debt_impact);
-    h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px">';
-    h += kp(D.taxCurrentMarginal+"%","Taux marginal");
-    h += kp(((D.allocR*0.07+(1-D.allocR)*0.035)*100).toFixed(1)+"%","Rend. esp\u00e9r\u00e9");
-    if (D.debtBal>0) h += kp(f$(D.debtBal),"Dettes totales","var(--rd)");
-    if (D.mortBal>0) h += kp(f$(D.mortBal),"Hypoth\u00e8que","var(--am)");
-    h += '</div>';
-    h += '<div style="font-size:13px;font-weight:700;color:var(--ts);margin:18px 0 10px;border-bottom:1px solid var(--bd);padding-bottom:6px">Ordre de priorit\u00e9 courant</div>';
-    D.priorities.forEach(function(p,i){
-      h += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--bdl)"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:'+p.color+';color:#fff;font-size:12px;font-weight:800;flex-shrink:0">'+(i+1)+'</span><div style="flex:1"><div style="font-weight:700;font-size:15px">'+p.name+'</div><div style="font-size:12px;color:var(--ts);margin-top:2px">'+p.why+'</div></div><span style="font-family:monospace;font-weight:700;font-size:15px;color:'+p.color+'">'+p.rate+'</span></div>';
-    });
-    h += secE(); sn++;
-  }
-
-  // S5: RETIREMENT INCOME
-  h += secH(sn,"Vos revenus \u00e0 la retraite");
-  h += aiB(ai.gov_explanation);
-  var gMo=D.govMonthly,sMo=D.gapMonthly,totMo=gMo+sMo||1,govPct=Math.round(gMo/totMo*100);
-  var dC2=2*Math.PI*70,gDash=govPct/100*dC2;
-  h += '<div class="rpt-donut" style="display:flex;align-items:center;gap:36px;flex-wrap:wrap;justify-content:center;padding:20px 0">';
-  h += '<svg width="180" height="180" viewBox="0 0 180 180"><circle cx="90" cy="90" r="70" fill="none" stroke="#2A8C46" stroke-width="22" stroke-dasharray="'+gDash+' '+(dC2-gDash)+'" transform="rotate(-90 90 90)" opacity=".85"/><circle cx="90" cy="90" r="70" fill="none" stroke="#C4944A" stroke-width="22" stroke-dasharray="'+(dC2-gDash)+' '+gDash+'" stroke-dashoffset="'+(-gDash)+'" transform="rotate(-90 90 90)" opacity=".85"/><text x="90" y="86" text-anchor="middle" font-size="22" font-weight="800" fill="#1A1A1A" font-family="monospace">'+f$(totMo).replace(" $","")+'</text><text x="90" y="104" text-anchor="middle" font-size="10" fill="#888">/mois</text></svg>';
-  h += '<div style="display:flex;flex-direction:column;gap:16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:14px;height:14px;border-radius:4px;background:#2A8C46;flex-shrink:0"></div><div><div style="font-size:14px;font-weight:700;color:#333">Prestations gouvernementales'+(D.dbPensionMonthly>0?' + pension':'')+'</div><div style="font-size:12px;color:#888;font-family:monospace">'+f$(gMo)+'/mois \u2014 '+govPct+'%</div></div></div>';
-  h += '<div style="display:flex;align-items:center;gap:10px"><div style="width:14px;height:14px;border-radius:4px;background:#C4944A;flex-shrink:0"></div><div><div style="font-size:14px;font-weight:700;color:#333">\u00c9pargne et placements</div><div style="font-size:12px;color:#888;font-family:monospace">'+f$(sMo)+'/mois \u2014 '+(100-govPct)+'%</div></div></div></div></div>';
-  h += card('<div style="padding:10px 0;border-bottom:1px solid var(--bdl)"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:14px;font-weight:600">'+gP+'</div><div style="font-size:11px;color:#999">D\u00e9but \u00e0 '+D.qppAge+' ans</div></div><span style="font-family:monospace;font-weight:700;font-size:15px">'+f$(D.qppMonthly)+'/mois</span></div></div><div style="padding:10px 0;border-bottom:1px solid var(--bdl)"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:14px;font-weight:600">'+oN+'</div><div style="font-size:11px;color:#999">D\u00e9but \u00e0 '+D.oasAge+' ans</div></div><span style="font-family:monospace;font-weight:700;font-size:15px">'+f$(D.oasMonthly)+'/mois</span></div></div>'+(D.dbPensionMonthly>0?kvr("Pension d\u2019employeur",f$(D.dbPensionMonthly)+"/mois"):'')+'<div style="padding:10px 0"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:14px;font-weight:600">D\u00e9penses mensuelles pr\u00e9vues</div><span style="font-family:monospace;font-weight:700;font-size:15px;color:var(--rd)">'+f$(D.retSpM)+'/mois</span></div></div>');
-  h += co("Les prestations gouvernementales pourraient couvrir "+govPct+"\u00a0% de vos d\u00e9penses pr\u00e9vues. Les "+(100-govPct)+"\u00a0% restants ("+f$(sMo)+" par mois) pourraient \u00eatre puis\u00e9s dans votre \u00e9pargne et vos placements.",govPct>=50?"insight":"warning");
-  h += secE(); sn++;
-
-  // S6: TAX
-  h += secH(sn,"Votre fiscalit\u00e9");
-  h += aiB(ai.tax_insight);
-  h += card('<div style="display:flex;flex-direction:column;gap:14px">'+[{l:"Taux marginal actuel",v:D.taxCurrentMarginal,c:"#CC4444"},{l:"Taux effectif actuel",v:D.taxCurrentEffective,c:"#B89830"},{l:"Taux effectif retraite",v:D.taxRetirementEffective,c:"#2A8C46"}].map(function(b){return '<div style="display:flex;align-items:center;gap:12px"><div class="rpt-tax-label" style="width:150px;font-size:12px;color:#666;text-align:right;flex-shrink:0">'+b.l+'</div><div style="flex:1;background:#F5F0E8;border-radius:4px;height:28px;overflow:hidden"><div style="width:'+b.v+'%;height:100%;background:'+b.c+';border-radius:4px;opacity:.8"></div></div><div style="font-family:monospace;font-size:15px;font-weight:700;color:'+b.c+';width:55px;text-align:right">'+b.v+'%</div></div>';}).join("")+'</div>');
-  var txSav=Math.round(D.retSpM*12*(D.taxCurrentEffective-D.taxRetirementEffective)/100);
-  if (txSav>0) h += co(D.taxCurrentEffective+"% \u2192 "+D.taxRetirementEffective+"% = ~"+f$(txSav)+"/an d\u2019\u00e9conomies potentielles.","insight");
-  h += secE(); sn++;
-
-  // S7: LONGEVITY
-  h += secH(sn,"Dur\u00e9e de vie de votre plan");
-  h += '<div class="rpt-grid3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">'+kp(f$(D.rP5F),"Sc\u00e9nario pessimiste","var(--rd)","Pire 5\u00a0% des cas")+kp(f$(D.rMedF),"Sc\u00e9nario m\u00e9dian","var(--g)","R\u00e9sultat le plus probable")+kp(f$(D.rP75F),"Sc\u00e9nario optimiste","var(--gn)","Meilleur 25\u00a0% des cas")+'</div>';
-  h += '<div class="rpt-grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0">';
-  h += card('<div style="font-size:11px;color:#2A8C46;font-weight:700;text-transform:uppercase;margin-bottom:6px">Sc\u00e9nario favorable</div><div style="font-size:13px;color:#444;line-height:1.75">'+ai.longevity_good+'</div>','border-top:3px solid #2A8C46;padding:16px');
-  h += card('<div style="font-size:11px;color:#B89830;font-weight:700;text-transform:uppercase;margin-bottom:6px">\u00c0 surveiller</div><div style="font-size:13px;color:#444;line-height:1.75">'+ai.longevity_watch+'</div>','border-top:3px solid #B89830;padding:16px');
-  h += '</div>';
-  h += secE(); sn++;
-
-  // S8: CRITICAL LEVERS
-  h += secH(sn,"Leviers critiques");
-  var cdColor=D.costDelay>50000?"var(--rd)":D.costDelay>20000?"var(--am)":"var(--ts)";
-  h += card('<div style="display:flex;align-items:flex-start;gap:16px"><div style="font-size:28px;flex-shrink:0">\u23f3</div><div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ts);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Co\u00fbt de l\u2019inaction (1 an)</div><div style="font-size:30px;font-weight:900;font-family:monospace;color:'+cdColor+';margin-bottom:8px">'+f$(D.costDelay)+'</div><div style="font-size:13px;color:var(--ts);line-height:1.75;margin-bottom:10px">Si vous attendez un an de plus avant de commencer \u00e0 \u00e9pargner, ce montant repr\u00e9sente la valeur future de vos cotisations manquantes \u2014 compos\u00e9e sur toute votre p\u00e9riode de retraite.</div><div style="font-size:12px;padding:10px 14px;background:var(--gbg);border-radius:8px;color:var(--ts)"><strong>Ce que cela signifie\u00a0:</strong> Chaque ann\u00e9e d\u2019attente co\u00fbte davantage que la pr\u00e9c\u00e9dente, car la croissance compos\u00e9e travaille contre vous. La meilleure action possible n\u2019est pas la plus grosse \u2014 c\u2019est la plus rapide.</div></div></div>','border-left:4px solid '+cdColor);
-  var mrColor=D.minReturn<=4?"var(--gn)":D.minReturn<=7?"var(--am)":"var(--rd)";
-  var mrLabel=D.minReturn<=3?"Tr\u00e8s accessible":D.minReturn<=5?"Accessible":D.minReturn<=7?"Exigeant":"Difficile \u00e0 atteindre";
-  h += card('<div style="display:flex;align-items:flex-start;gap:16px"><div style="font-size:28px;flex-shrink:0">\ud83d\udcca</div><div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ts);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Rendement minimum viable</div><div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px"><div style="font-size:30px;font-weight:900;font-family:monospace;color:'+mrColor+'">'+D.minReturn+'%</div><div style="font-size:12px;padding:3px 10px;border-radius:12px;background:'+mrColor+'20;color:'+mrColor+';font-weight:700">'+mrLabel+'</div></div><div style="font-size:13px;color:var(--ts);line-height:1.75;margin-bottom:10px">C\u2019est le rendement annuel minimum que votre portefeuille doit g\u00e9n\u00e9rer pour que votre plan ait au moins 50\u00a0% de chances de tenir toute la retraite \u2014 dans les conditions actuelles.</div><div style="font-size:12px;padding:10px 14px;background:var(--gbg);border-radius:8px;color:var(--ts)"><strong>Ce que cela signifie\u00a0:</strong> '+(D.minReturn<=4?"Un rendement de "+D.minReturn+"\u00a0% est r\u00e9aliste avec un portefeuille diversifi\u00e9. Votre plan est robuste face aux cycles de march\u00e9 normaux.":D.minReturn<=7?"Un rendement de "+D.minReturn+"\u00a0% est atteignable mais suppose de maintenir une exposition actions suffisante.":"Un rendement de "+D.minReturn+"\u00a0% exige une prise de risque importante.")+'</div></div></div>','border-left:4px solid '+mrColor);
-  h += secE(); sn++;
-
-  // S9: OBSERVATIONS
-  h += secH(sn,"Observations");
-  var obs=[
-    {t2:"Taux de retrait",tx:ai.obs_1,im:D.withdrawalRatePct+"%",c:"var(--g)",m:"La r\u00e8gle des 4\u00a0% sugg\u00e8re qu\u2019un retrait annuel de 4\u00a0% du portefeuille au d\u00e9but de la retraite a historiquement permis de maintenir les fonds pendant 30 ans et plus."},
-    {t2:"Couverture gouvernementale",tx:ai.obs_2,im:D.coveragePct+"%",c:"var(--gn)",m:"Plus la part couverte par les prestations est \u00e9lev\u00e9e, moins votre plan d\u00e9pend des rendements boursiers. \u00c0 "+D.coveragePct+"\u00a0%, vos placements devraient fournir "+f$(D.gapMonthly)+" par mois."},
-    {t2:"Frais de gestion",tx:ai.obs_3,im:f$(D.feeCostLifetime),c:"var(--bl)",m:"Les frais sont pr\u00e9lev\u00e9s chaque ann\u00e9e sur la valeur de vos placements. Sur "+planHorizon+" ans, m\u00eame un pourcentage qui semble faible s\u2019accumule de fa\u00e7on importante gr\u00e2ce aux int\u00e9r\u00eats compos\u00e9s."}
-  ];
-  obs.forEach(function(o,i){
-    h += card('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:800;color:#fff;background:'+o.c+'">'+(i+1)+'</span><span style="font-weight:700;font-size:15px">'+o.t2+'</span></div><span style="font-family:monospace;font-size:14px;font-weight:700;color:'+o.c+';background:'+o.c+'10;padding:4px 14px;border-radius:14px">'+o.im+'</span></div><div style="font-size:14px;color:#444;line-height:1.8;margin-bottom:8px">'+o.tx+'</div><div style="font-size:12px;color:#888;line-height:1.7;padding:10px 14px;background:#FDFBF7;border-radius:6px"><strong style="color:#666">Ce que cela signifie\u00a0: </strong>'+o.m+'</div>','border-left:4px solid '+o.c+';padding:18px 20px;margin-bottom:14px');
-  });
-  h += secE(); sn++;
-
-  // S10: METHODOLOGY
-  h += secH(sn,"M\u00e9thodologie");
-  h += card('<div style="line-height:1.85"><div style="margin-bottom:20px"><strong style="color:var(--g);font-size:15px">Simulation Monte Carlo</strong><div style="font-size:14px;color:#444;margin-top:6px">Plut\u00f4t que de pr\u00e9dire un seul avenir, nous en simulons '+D.nSim.toLocaleString()+'. Chaque simulation g\u00e9n\u00e8re une s\u00e9quence unique de rendements boursiers, de taux d\u2019inflation et de dur\u00e9e de vie \u2014 cr\u00e9ant '+D.nSim.toLocaleString()+' histoires \u00e9conomiques diff\u00e9rentes. Votre taux de r\u00e9ussite de '+D.successPct+'\u00a0% signifie que dans '+D.successPct+'\u00a0% de ces histoires, votre argent pourrait durer toute votre retraite.</div></div><div style="margin-bottom:20px"><strong style="color:var(--g);font-size:15px">Hypoth\u00e8ses cl\u00e9s</strong><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:8px;font-size:13px">'+kvr("Tables de mortalit\u00e9","CPM 2023 (Canada)")+kvr("Inflation projet\u00e9e",(D.inf*100).toFixed(1)+"% / an")+kvr("Rendements boursiers","Distribution historique")+kvr("Bar\u00e8mes d\u2019imp\u00f4ts",D.prov+" 2026")+kvr("Nombre de simulations",D.nSim.toLocaleString())+kvr("Mod\u00e8le de d\u00e9penses","Montant constant (ajust\u00e9 pour inflation)")+'</div></div><div style="margin-bottom:20px"><strong style="color:var(--g);font-size:15px">Approche heuristique</strong><div style="font-size:14px;color:#555;margin-top:6px">Certaines donn\u00e9es sont estim\u00e9es \u00e0 partir de vos r\u00e9ponses au questionnaire\u00a0: la r\u00e9partition entre vos diff\u00e9rents comptes, vos d\u00e9penses de retraite et la croissance de vos revenus. Ces estimations utilisent des moyennes statistiques canadiennes et peuvent diff\u00e9rer de votre situation r\u00e9elle. Le niveau Interm\u00e9diaire permet de pr\u00e9ciser chacun de ces param\u00e8tres pour des r\u00e9sultats plus fid\u00e8les.</div></div><div><strong style="color:var(--g);font-size:15px">Limitations</strong><div style="font-size:14px;color:#555;margin-top:6px">Ce mod\u00e8le ne tient pas compte de\u00a0: la vente de propri\u00e9t\u00e9, les h\u00e9ritages re\u00e7us, les changements majeurs de carri\u00e8re, les co\u00fbts de sant\u00e9 exceptionnels, les modifications l\u00e9gislatives futures, ni les revenus de location. Les rendements pass\u00e9s ne garantissent pas les rendements futurs. Les projections fiscales utilisent les bar\u00e8mes de 2026.</div></div></div>');
-  h += secE();
-
-  // DISCLAIMER
-  h += '<div style="background:#FDF3F3;border:1px solid #E8C8C8;border-radius:10px;padding:24px;font-size:13px;color:#666;line-height:1.85;text-align:center;margin-bottom:28px"><strong style="color:#CC4444;font-size:14px;display:block;margin-bottom:8px">AVERTISSEMENT IMPORTANT</strong>Ce rapport est un outil \u00e9ducatif bas\u00e9 sur des projections math\u00e9matiques. Il NE constitue PAS un conseil financier, fiscal ou juridique personnalis\u00e9. Les r\u00e9sultats sont des estimations qui peuvent ne pas refl\u00e9ter votre situation r\u00e9elle. Aucune garantie de rendement n\u2019est implicite ou explicite. Consultez un planificateur financier accr\u00e9dit\u00e9 pour des recommandations adapt\u00e9es \u00e0 votre situation. buildfi.ca n\u2019est pas un conseiller en placement inscrit au sens de la Loi sur les valeurs mobili\u00e8res.</div>';
-
-  // CTAs
-  h += '<div class="rpt-cta-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px">';
-  h += '<div style="background:linear-gradient(135deg,#7C60B8,#9B80D8);border-radius:10px;padding:20px;color:#fff;text-align:center"><div style="font-size:14px;font-weight:800;margin-bottom:8px">Rapport Interm\u00e9diaire</div><div style="font-size:12px;opacity:.9;line-height:1.65;margin-bottom:10px">16 sections sp\u00e9cialis\u00e9es. Analyses du r\u00e9gime de rentes, immobilier, couple, soci\u00e9t\u00e9 par actions.</div><div style="background:rgba(255,255,255,.2);border-radius:6px;padding:6px 14px;font-size:13px;font-weight:800;display:inline-block">69 $</div></div>';
-  h += '<div style="background:linear-gradient(135deg,#1A1208,#2C1F0A);border-radius:10px;padding:20px;color:#fff;text-align:center"><div style="display:flex;justify-content:center;margin-bottom:8px">' + logoSVG("sm","dark") + '</div><div style="font-size:14px;font-weight:800;margin-bottom:8px">Simulateur Expert</div><div style="font-size:12px;opacity:.85;line-height:1.65;margin-bottom:10px">Planification corporative, analyse successorale. 5 profils de risque distincts.</div><div style="background:var(--g);border-radius:6px;padding:6px 14px;font-size:13px;font-weight:800;display:inline-block;color:#1A1208">139 $</div></div>';
+  // Logo
+  h += '<div style="text-align:center;margin-bottom:32px">';
+  h += '<div style="display:flex;justify-content:center">' + logoSVG("md","light") + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Essentiel","Essentials Report") + '</div>';
+  h += '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Planifiez votre libert\u00e9 financi\u00e8re.","Plan your financial freedom.") + '</div>';
   h += '</div>';
 
-  // Footer
-  h += '<div style="text-align:center;padding-top:20px;border-top:1px solid var(--bd)"><div style="display:flex;justify-content:center">' + logoSVG("sm","light") + '</div><div style="font-size:10px;color:#bbb;margin-top:6px">Essentiel \u2014 '+D.nSim.toLocaleString()+' simulations \u2014 '+D.prov+'</div></div>';
-
-  return '<div style="font-family:DM Sans,-apple-system,sans-serif;color:var(--tx);background:var(--bg);max-width:820px;margin:0 auto;padding:32px 28px 56px;font-size:15px;line-height:1.7">' + h + '</div>';
-}
-
-// ============================================================
-// PAYWALL PAGE
-// ============================================================
-function renderPaywall(lang) {
-  var fr = lang === "fr", t = function(f,e){return fr?f:e;};
-  var tab = STATE.sampleTab || "marie";
-  var h = '<div style="max-width:820px;margin:0 auto;padding:32px 20px">';
-
-  // Language toggle
-  h += '<div class="no-print" style="display:flex;gap:6px;margin-bottom:20px;justify-content:center">';
-  h += '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:4px 12px;border-radius:6px;border:'+(fr?'2px solid var(--g)':'1px solid var(--bd)')+';background:'+(fr?'var(--gbg)':'var(--bgc)')+';font-size:10px;font-weight:700;cursor:pointer">FR</button>';
-  h += '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:4px 12px;border-radius:6px;border:'+(!fr?'2px solid var(--g)':'1px solid var(--bd)')+';background:'+(!fr?'var(--gbg)':'var(--bgc)')+';font-size:10px;font-weight:700;cursor:pointer">EN</button></div>';
-
-  // Back button at top
-  h += '<div class="no-print" style="margin-bottom:16px"><button class="back-btn" onclick="STATE.step=7;saveState();render()">\u2190 '+t("Modifier mes r\u00e9ponses","Edit my answers")+'</button></div>';
-
-  // Header
-  h += '<div style="text-align:center;margin-bottom:28px">';
-  h += '<div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>';
-  h += '<div style="font-size:11px;color:var(--am);font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-top:8px">'+t("BILAN RETRAITE PERSONNALIS\u00c9","PERSONALIZED RETIREMENT ASSESSMENT")+'</div></div>';
-
-  // Confirmation
-  h += '<div style="text-align:center;margin-bottom:28px">';
-  h += '<div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:8px">'+t("Vos r\u00e9ponses ont \u00e9t\u00e9 enregistr\u00e9es","Your answers have been recorded")+'</div>';
-  h += '<div style="font-size:14px;color:var(--ts);line-height:1.65">'+t("Voici un aper\u00e7u de ce que votre rapport personnalis\u00e9 contiendra. L\u2019exemple ci-dessous est bas\u00e9 sur un profil fictif \u2014 votre rapport sera calcul\u00e9 avec vos donn\u00e9es r\u00e9elles.","Here\u2019s a preview of what your personalized report will contain. The example below uses a fictional profile \u2014 your report will be calculated with your actual data.")+'</div></div>';
-
-  // Persona tabs
-  h += '<div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px">';
-  h += '<button class="tab-btn'+(tab==="marie"?" active":"")+'" onclick="STATE.sampleTab=\'marie\';render()">Marie, 42 '+t("ans","yrs")+' (QC)</button>';
-  h += '<button class="tab-btn'+(tab==="jp"?" active":"")+'" onclick="STATE.sampleTab=\'jp\';render()">Jean-Philippe, 55 '+t("ans","yrs")+' (ON)</button>';
+  // Grade card
+  h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
+  h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de scénarios réussis","of scenarios succeeded") + '</div>';
+  h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
   h += '</div>';
 
-  // "Report is below" hint
-  h += '<div style="text-align:center;margin-bottom:20px;padding:12px 16px;background:var(--gnbg);border:1px solid var(--gn);border-radius:10px">';
-  h += '<div style="font-size:13px;color:#2A8C46;font-weight:600">'+t("Votre formulaire de paiement et votre rapport se trouvent au bas de cette page, apr\u00e8s l\u2019aper\u00e7u.","Your payment form and report are at the bottom of this page, after the preview.")+'</div>';
-  h += '</div>';
-
-  // Sample report in scrollable frame
-  h += '<div class="sample-frame" style="margin-bottom:24px">';
-  h += '<div style="position:relative">';
-  h += renderSampleReport(tab);
-  h += '<div class="sample-fade"></div>';
-  h += '</div></div>';
-
-  // What's included
+  // What's in the report
   h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
-  h += '<div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:16px">'+t("Votre rapport complet inclut\u00a0:","Your full report includes:")+'</div>';
+  h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre rapport complet inclut :","Your full report includes:") + '</div>';
   var items = fr ? [
-    "Analyse d\u00e9taill\u00e9e de vos 5\u00a0000 sc\u00e9narios simul\u00e9s",
-    "Projection de vos revenus \u00e0 la retraite (avec analyse personnalis\u00e9e)",
-    "Strat\u00e9gie de remboursement de dettes optimis\u00e9e",
+    "Analyse détaillée de vos 5 000 scénarios simulés",
+    "Projection de vos revenus à la retraite (RRQ, PSV, épargne)",
+    "Stratégie de remboursement de dettes optimisée",
     "Analyse de vos frais de gestion et leur impact",
-    "Observations personnalis\u00e9es avec explications"
+    "Recommandations personnalisées pour améliorer votre note"
   ] : [
     "Detailed analysis of your 5,000 simulated scenarios",
-    "Retirement income projection (with personalized analysis)",
+    "Retirement income projection (QPP, OAS, savings)",
     "Optimized debt repayment strategy",
     "Management fee analysis and their impact",
-    "Personalized observations with explanations"
+    "Personalized recommendations to improve your grade"
   ];
-  items.forEach(function(item){
-    h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px"><div style="color:#2A8C46;font-size:16px;margin-top:1px">\u2713</div><div style="font-size:14px;color:#444;line-height:1.5">'+item+'</div></div>';
+  items.forEach(function(item) {
+    h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
+    h += '<div style="color:#1a7a4c;font-size:16px;margin-top:1px">✓</div>';
+    h += '<div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div>';
+    h += '</div>';
   });
   h += '</div>';
 
   // Price + CTA
   h += '<div style="text-align:center;margin-bottom:20px">';
-  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">'+t("Rapport personnalis\u00e9 \u2014 paiement unique","Personalized report \u2014 one-time payment")+'</div>';
-  h += '<div style="font-size:42px;font-weight:800;color:var(--tx);margin-bottom:4px">39 <span style="font-size:20px">$</span></div>';
-  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD \u2014 '+t("paiement unique","one-time payment")+'</div>';
-  h += '<div id="email-gate" style="max-width:400px;margin:0 auto;margin-bottom:16px">';
-  h += '<input id="buyer-email" type="email" placeholder="'+t("Votre adresse courriel","Your email address")+'" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
-  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
-  h += t("Obtenir mon rapport complet \u2192","Get my full report \u2192");
-  h += '</button></div>';
-  h += '<div style="font-size:12px;color:#aaa">'+t("Votre satisfaction est importante pour nous \u2014 ","Your satisfaction matters to us \u2014 ")+'<a href="mailto:support@buildfi.ca" style="color:var(--g)">support@buildfi.ca</a></div>';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
+  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">39 <span style="font-size:20px">$</span></div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
+  h += '<div id="email-gate" style="margin-bottom:16px">';
+  h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
+  h += t("Obtenir mon rapport complet →","Get my full report →");
+  h += '</button>';
   h += '</div>';
-
-  // Back link
-  h += '<div style="text-align:center;margin-top:16px;margin-bottom:80px"><button class="back-btn" onclick="STATE.step=7;saveState();render()">\u2190 '+t("Modifier mes r\u00e9ponses","Edit my answers")+'</button></div>';
-
-  // Sticky bottom CTA (mobile-friendly, always visible)
-  h += '<div class="no-print" style="position:fixed;bottom:0;left:0;right:0;background:rgba(254,252,249,.97);border-top:1px solid var(--bd);padding:12px 20px;z-index:100;backdrop-filter:blur(8px)">';
-  h += '<div style="max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px">';
-  h += '<div><span style="font-size:20px;font-weight:800">39 $</span> <span style="font-size:12px;color:#888">CAD</span></div>';
-  h += '<button onclick="document.getElementById(\'buyer-email\').scrollIntoView({behavior:\'smooth\',block:\'center\'});document.getElementById(\'buyer-email\').focus()" style="flex:1;max-width:280px;padding:12px 20px;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">'+t("Obtenir mon rapport \u2192","Get my report \u2192")+'</button>';
-  h += '</div></div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — livraison immédiate par courriel","One-time payment — instant delivery by email") + '</div>';
+  h += '</div>';
 
   h += '</div>';
   return h;
 }
+// renderReport() — REMOVED from thin client. Report renders server-side only.
+// The real report is generated in /lib/report-html.js after payment.
+
+
+// ============================================================
+// AI ON-DEMAND GENERATION
+// ============================================================
+// AI ANALYSIS — handled server-side, no client-side API call
+// ============================================================
+
+// ============================================================
+// KEYBOARD ACCESSIBILITY
+// ============================================================
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter"&&STATE.step>0&&STATE.step<8){
+    var tag=document.activeElement?document.activeElement.tagName:"";
+    if(tag==="TEXTAREA"||tag==="SELECT")return;
+    if(document.activeElement&&document.activeElement.classList.contains("card")){
+      document.activeElement.click();return;
+    }
+    var btn=document.querySelector(".pbtn");
+    if(btn&&!btn.disabled)btn.click();
+  }
+});
+document.addEventListener("keydown",function(e){
+  if((e.key==="Enter"||e.key===" ")&&document.activeElement&&document.activeElement.classList.contains("card")){
+    e.preventDefault();document.activeElement.click();
+  }
+});
 
 // ============================================================
 // BOOT
@@ -784,3 +798,8 @@ render();
 </script>
 </body>
 </html>
+
+
+
+
+
