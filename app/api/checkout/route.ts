@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       customer_email: email,
       metadata,
       // Stripe Tax: automatically calculates TPS/TVQ for QC
-      automatic_tax: { enabled: true },
+      // automatic_tax: disabled until tax registration configured
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://buildfi.ca"}/merci?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://buildfi.ca"}/quiz`,
     });
