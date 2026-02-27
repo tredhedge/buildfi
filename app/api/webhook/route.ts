@@ -12,7 +12,7 @@ import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-01-28.clover",
+  // apiVersion auto-detected from stripe package
 });
 
 // Vercel serverless: allow 60s for MC + PDF generation
