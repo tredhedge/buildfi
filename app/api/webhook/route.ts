@@ -1,24 +1,19 @@
 // /app/api/webhook/route.ts
-// Stripe webhook handler: payment confirmed → MC → PDF → Email
-// This is the core pipeline that turns quiz answers into a delivered report.
+// Stripe webhook handler: payment confirmed -> MC -> Report HTML -> Email
+// PDF generation disabled until Chromium resolved on Vercel
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { translateToMC } from "@/lib/quiz-translator";
 import { runMC } from "@/lib/engine";
 import { renderReportHTML, calcCostOfDelay, calcMinViableReturn, extractReportData } from "@/lib/report-html";
-import { generatePDF } from "@/lib/pdf-generator";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // apiVersion auto-detected from stripe package
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
-// Vercel serverless: allow 60s for MC + PDF generation
+// Vercel serverless: allow 60s for MC generation
 export const maxDuration = 60;
-
-// Stripe requires raw body for signature verification
 export const runtime = "nodejs";
 
 function reassembleQuizAnswers(metadata: Record<string, string>): Record<string, unknown> {
@@ -51,7 +46,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  // Only process completed checkout sessions
   if (event.type !== "checkout.session.completed") {
     return NextResponse.json({ received: true });
   }
@@ -60,7 +54,6 @@ export async function POST(req: NextRequest) {
   const metadata = session.metadata || {};
 
   try {
-    // ─── Step 1: Extract quiz answers from metadata ───
     const quizAnswers = reassembleQuizAnswers(metadata);
     const lang = (metadata.lang || "fr") as "fr" | "en";
     const email = metadata.email || session.customer_email || "";
@@ -73,47 +66,40 @@ export async function POST(req: NextRequest) {
 
     console.log(`[webhook] Processing ${tier} report for ${email} (${lang})`);
 
-    // ─── Step 2: Translate quiz → MC params ───
+    // Step 2: Translate quiz -> MC params
     const params = translateToMC(quizAnswers);
 
-    // ─── Step 3: Run Monte Carlo (5,000 simulations) ───
+    // Step 3: Run Monte Carlo (5,000 simulations)
     const mcStart = Date.now();
     const mc = runMC(params, 5000);
     console.log(`[webhook] MC completed in ${Date.now() - mcStart}ms`);
 
-    // ─── Step 4: Extract report data ───
+    // Step 4: Extract report data
     const D = extractReportData(mc, params);
 
-    // ─── Step 5: Render report HTML ───
+    // Step 5: Render report HTML
     const quiz = quizAnswers;
     const costDelay = calcCostOfDelay(params);
     const minReturn = calcMinViableReturn(params);
     const reportHTML = renderReportHTML(D, mc, quiz, lang, {}, costDelay, minReturn);
 
-    // ─── Step 6: Generate PDF via Puppeteer ───
-    const pdfStart = Date.now();
-    const pdfBuffer = await generatePDF(reportHTML);
-    console.log(`[webhook] PDF generated in ${Date.now() - pdfStart}ms (${Math.round(pdfBuffer.length / 1024)}KB)`);
-
-    // ─── Step 7: Upload to Vercel Blob (30-day expiry) ───
+    // Step 6: Upload HTML report to Vercel Blob (30-day expiry)
     const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.pdf`;
+    const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.html`;
 
-    const blob = await put(filename, pdfBuffer, {
+    const blob = await put(filename, reportHTML, {
       access: "public",
-      contentType: "application/pdf",
+      contentType: "text/html; charset=utf-8",
       addRandomSuffix: true,
     });
 
-    console.log(`[webhook] PDF uploaded: ${blob.url}`);
+    console.log(`[webhook] Report uploaded: ${blob.url}`);
 
-    // ─── Step 8: Send email with PDF ───
+    // Step 7: Send email with download link
     await sendReportEmail({
       to: email,
       lang,
       tier,
-      pdfBuffer,
-      pdfFilename: filename,
       downloadUrl: blob.url,
       grade: D.grade,
       successPct: D.successPct,
@@ -124,11 +110,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       received: true,
       email,
-      pdfUrl: blob.url,
+      reportUrl: blob.url,
     });
   } catch (err: unknown) {
     console.error("[webhook] Processing error:", err);
-    // Don't return 500 to Stripe — it would retry.
     return NextResponse.json({
       received: true,
       error: err instanceof Error ? err.message : "Processing failed",
