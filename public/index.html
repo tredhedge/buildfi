@@ -275,6 +275,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}.reveal-delay-5{transition-delay:.42s}
 input,select,textarea{font-size:16px}
 </style>
+<script src="/logo.js"></script>
 </head>
 <body>
 <a href="#main" class="skip-nav" id="skipNav">Aller au contenu</a>
@@ -680,7 +681,7 @@ input,select,textarea{font-size:16px}
           <span id="fq7">Quelle est votre politique après l'achat?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="faq-answer"><div class="faq-answer-inner" id="fa7">BuildFi est un produit numérique livré instantanément. Il n'y a pas de remboursement. Si une erreur technique empêche la livraison ou affecte la qualité de votre rapport, nous le corrigerons ou le reproduirons sans frais supplémentaires. Contactez-nous à support@buildfi.ca.</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa7">BuildFi est un produit numérique livré instantanément. Il n'y a pas de remboursement. Si une erreur technique empêche la livraison ou affecte la qualité de votre rapport, nous le corrigerons ou le reproduirons sans frais supplémentaires. Contactez-nous à <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4b383e3b3b24393f0b293e22272f2d2265282a">[email&#160;protected]</a>.</div></div>
       </div>
     </div>
   </div>
@@ -724,7 +725,7 @@ input,select,textarea{font-size:16px}
       <div class="footer-col">
         <div class="footer-col-title" id="footRes">Ressources</div>
         <a href="#faq" id="footFaq">FAQ</a>
-        <a href="mailto:support@buildfi.ca" id="footContact">Contact</a>
+        <a href="/cdn-cgi/l/email-protection#94e7e1e4e4fbe6e0d4f6e1fdf8f0f2fdbaf7f5" id="footContact">Contact</a>
       </div>
       <div class="footer-col">
         <div class="footer-col-title" id="footLegal">Légal</div>
@@ -743,7 +744,16 @@ input,select,textarea{font-size:16px}
 </footer>
 
 <!-- ═══ JAVASCRIPT ═══ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── Logo SVG injection ──
+(function(){
+  if (typeof logoSVG === 'function') {
+    var nav = document.querySelector('.nav-logo');
+    if (nav) nav.innerHTML = logoSVG('sm','light');
+    var footer = document.querySelector('.footer-brand');
+    if (footer) footer.innerHTML = logoSVG('sm','dark');
+  }
+})();
 (function(){
 'use strict';
 
@@ -1060,12 +1070,8 @@ function buildFaqSchema() {
   var el = document.getElementById('faqSchema');
   if (el) el.textContent = JSON.stringify(schema);
 }
-
-document.getElementById('langToggle').addEventListener('click', toggleLang);
-document.getElementById('footLangToggle').addEventListener('click', toggleLang);
-applyLang();
 buildFaqSchema();
-})();
+
 </script>
 </body>
 </html>
