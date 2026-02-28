@@ -41,10 +41,7 @@ export async function sendReportEmail(params: SendReportParams) {
     subject,
     html,
     ...(attachments.length > 0 ? { attachments } : {}),
-    tags: [
-      { name: "tier", value: tier },
-      { name: "grade", value: grade },
-    ],
+    // tags disabled temporarily
   });
 
   if (error) {
