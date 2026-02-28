@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.html`;
 
     const blob = await put(filename, reportHTML, {
-      access: "private",
+      access: "public",
       contentType: "text/html; charset=utf-8",
       addRandomSuffix: true,
     });
