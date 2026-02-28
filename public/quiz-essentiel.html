@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>buildfi.ca — Rapport Essentiel</title>
+<title>buildfi.ca � Rapport Essentiel</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -42,7 +42,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 @keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
 @media print{body{background:#fff}.no-print{display:none!important}}
 
-/* ═══ TABLET (768px+) ═══ */
+/* --- TABLET (768px+) --- */
 @media(min-width:768px){
   :root{--quiz-max:560px;--report-max:860px}
   body{font-size:16px}
@@ -56,7 +56,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
   input[type=range]::-webkit-slider-thumb{width:32px;height:32px}
 }
 
-/* ═══ DESKTOP (1024px+) ═══ */
+/* --- DESKTOP (1024px+) --- */
 @media(min-width:1024px){
   :root{--quiz-max:640px;--report-max:940px}
   body{font-size:17px}
@@ -71,12 +71,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
   .card div[style*="font-weight:600"]{font-size:16px!important}
 }
 
-/* ═══ LARGE DESKTOP (1440px+) ═══ */
+/* --- LARGE DESKTOP (1440px+) --- */
 @media(min-width:1440px){
   :root{--quiz-max:700px;--report-max:1000px}
 }
 
-/* ═══ MOBILE ≤640px ═══ */
+/* --- MOBILE =640px --- */
 @media(max-width:640px){
   .rpt-grid3{grid-template-columns:1fr!important}
   .rpt-grid2{grid-template-columns:1fr!important}
@@ -86,7 +86,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
   .rpt-cta-grid{grid-template-columns:1fr!important}
 }
 
-/* ═══ SMALL MOBILE ≤400px ═══ */
+/* --- SMALL MOBILE =400px --- */
 @media(max-width:400px){
   body{font-size:14px}
   h1{font-size:22px!important}
@@ -101,15 +101,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 <body>
 <div id="app"></div>
 <script>
-// ENGINE: sourced from planner.html v11.12.9 — DO NOT FORK
+// ENGINE: sourced from planner.html v11.12.9 � DO NOT FORK
 // For production: import from shared module, do not duplicate.
 
-// ══════════════════════════════════════════════════════════════════════
-// THIN CLIENT — No MC engine. All computation runs server-side.
-// Quiz answers are sent to /api/checkout → Stripe → webhook → MC → PDF → email
-// ══════════════════════════════════════════════════════════════════════
+// ----------------------------------------------------------------------
+// THIN CLIENT � No MC engine. All computation runs server-side.
+// Quiz answers are sent to /api/checkout ? Stripe ? webhook ? MC ? PDF ? email
+// ----------------------------------------------------------------------
 
-// ── Lightweight helpers for blurred preview (no real MC) ──
+// -- Lightweight helpers for blurred preview (no real MC) --
 var COL_ADJ = {QC:1, ON:1.15, BC:1.35, AB:1.05, MB:0.92, SK:0.90, NS:0.95, NB:0.88, NL:0.93, PE:0.87, NT:1.25, YT:1.20, NU:1.40};
 var PMED = {QC:380000, ON:620000, BC:850000, AB:440000, MB:320000, SK:310000, NS:360000, NB:260000, NL:270000, PE:280000, NT:400000, YT:420000, NU:380000};
 var DEBT_RATES = {cc:0.199, student:0.055, car:0.065, loc:0.075, other:0.07};
@@ -129,7 +129,7 @@ function defMinPay(type, bal) {
   return Math.max(Math.round(bal * 0.01), Math.round(bal * (DEBT_RATES[type] || 0.08) / 12));
 }
 
-// ── Mock report data for blurred paywall preview ──
+// -- Mock report data for blurred paywall preview --
 // This generates plausible-looking numbers WITHOUT running the real MC engine.
 // The real numbers come from the server after payment.
 function generateMockPreview(q) {
@@ -175,7 +175,7 @@ function generateMockPreview(q) {
   var fvSav = (tot + mc * 12 * yrs) * Math.pow(1.05, yrs) * 0.85; // conservative
   var retBal = Math.round(fvSav + dcBal);
 
-  // Rough success estimate (NOT real MC — just for preview appearance)
+  // Rough success estimate (NOT real MC � just for preview appearance)
   var wdRate = retBal > 0 ? (gapM * 12) / retBal : 99;
   var roughSucc;
   if (wdRate <= 0.03) roughSucc = 0.95;
@@ -234,13 +234,13 @@ function generateMockPreview(q) {
     ptYrs: q.parttime === "yes" ? (q.parttimeYears || 5) : q.parttime === "maybe" ? 3 : 0,
     qppAge:qppAge, oasAge:oasAge,
     inf:0.021, nSim:5000,
-    medRevData:[], // Empty — no real MC data
+    medRevData:[], // Empty � no real MC data
     expReturn: 0.06, afterTaxReturn: 0.04,
     _isMockPreview: true // Flag so UI knows this is not real
   };
 }
 
-// ── Lightweight translateToMC for _report passthrough (debt display only) ──
+// -- Lightweight translateToMC for _report passthrough (debt display only) --
 function translateToMC(a) {
   var debts = ((a.debts || []).filter(function(d){return (d.amount||0)>0;})).map(function(d){
     var bal = d.amount, rate = d.rate > 0 ? d.rate / 100 : DEBT_RATES[d.type] || 0.08;
@@ -272,7 +272,7 @@ function translateToMC(a) {
   };
 }
 
-// ── buildPriority for blurred preview ──
+// -- buildPriority for blurred preview --
 function buildPriority(D, p, fr) {
   var isQC = p.prov === "QC";
   var margRate = D.margRate || 0.30;
@@ -286,19 +286,19 @@ function buildPriority(D, p, fr) {
     priorities.push({
       name: fr ? "Cotisation employeur (contrepartie)" : "Employer match contribution",
       rate: "50-100%",
-      why: fr ? "Rendement instantané de 50-100%. Généralement priorisé." : "Instant 50-100% return. Generally considered first.",
+      why: fr ? "Rendement instantan� de 50-100%. G�n�ralement prioris�." : "Instant 50-100% return. Generally considered first.",
       color: "#2A8C46", priority: 1
     });
   }
 
   // 2. High-interest debts (>10%)
   (p._report.debts || []).filter(function(d){return d.rate >= 0.10;}).forEach(function(d) {
-    var tl = fr ? {cc:"Carte de crédit",student:"Prêt étudiant",car:"Prêt automobile",loc:"Marge de crédit"}
+    var tl = fr ? {cc:"Carte de cr�dit",student:"Pr�t �tudiant",car:"Pr�t automobile",loc:"Marge de cr�dit"}
                : {cc:"Credit card",student:"Student loan",car:"Car loan",loc:"Line of credit"};
     priorities.push({
       name: (tl[d.type] || d.type) + " (" + Math.round(d.bal).toLocaleString() + " $)",
       rate: pct(d.rate),
-      why: fr ? "Taux de " + pct(d.rate) + " garanti. Le remboursement est généralement priorisé."
+      why: fr ? "Taux de " + pct(d.rate) + " garanti. Le remboursement est g�n�ralement prioris�."
              : "Guaranteed " + pct(d.rate) + " rate. Repayment is often favoured.",
       color: "#CC4444", priority: 2
     });
@@ -307,42 +307,42 @@ function buildPriority(D, p, fr) {
   // 3. RRSP vs TFSA order depends on marginal rate
   if (margRate > 0.4) {
     priorities.push({
-      name: fr ? "Régime enregistré d'épargne-retraite" : "Registered Retirement Savings Plan",
+      name: fr ? "R�gime enregistr� d'�pargne-retraite" : "Registered Retirement Savings Plan",
       rate: pct(margRate),
-      why: fr ? "Taux marginal de " + pct(margRate) + " > 40%. Déduction fiscale élevée."
+      why: fr ? "Taux marginal de " + pct(margRate) + " > 40%. D�duction fiscale �lev�e."
              : "Marginal rate " + pct(margRate) + " > 40%. High tax deduction.",
       color: "#4680C0", priority: 3
     });
     priorities.push({
-      name: fr ? "Compte d'épargne libre d'impôt" : "Tax-Free Savings Account",
+      name: fr ? "Compte d'�pargne libre d'imp�t" : "Tax-Free Savings Account",
       rate: pct(expRet),
-      why: fr ? "Croissance libre d'impôt. Après le régime enregistré." : "Tax-free growth. After registered plan.",
+      why: fr ? "Croissance libre d'imp�t. Apr�s le r�gime enregistr�." : "Tax-free growth. After registered plan.",
       color: "#2A8C46", priority: 4
     });
   } else {
     priorities.push({
-      name: fr ? "Compte d'épargne libre d'impôt" : "Tax-Free Savings Account",
+      name: fr ? "Compte d'�pargne libre d'imp�t" : "Tax-Free Savings Account",
       rate: pct(expRet),
-      why: fr ? "Taux marginal de " + pct(margRate) + " ≤ 40%. Souvent priorisé." : "Marginal rate " + pct(margRate) + " ≤ 40%. Often favoured.",
+      why: fr ? "Taux marginal de " + pct(margRate) + " = 40%. Souvent prioris�." : "Marginal rate " + pct(margRate) + " = 40%. Often favoured.",
       color: "#2A8C46", priority: 3
     });
     priorities.push({
-      name: fr ? "Régime enregistré d'épargne-retraite" : "Registered Retirement Savings Plan",
+      name: fr ? "R�gime enregistr� d'�pargne-retraite" : "Registered Retirement Savings Plan",
       rate: pct(margRate),
-      why: fr ? "Déduction modérée. Après le compte libre d'impôt." : "Moderate deduction. After tax-free account.",
+      why: fr ? "D�duction mod�r�e. Apr�s le compte libre d'imp�t." : "Moderate deduction. After tax-free account.",
       color: "#4680C0", priority: 4
     });
   }
 
   // 4. Medium-rate debts (4-10%)
   (p._report.debts || []).filter(function(d){return d.rate >= 0.04 && d.rate < 0.10;}).forEach(function(d) {
-    var tl = fr ? {cc:"Carte de crédit",student:"Prêt étudiant",car:"Prêt automobile",loc:"Marge de crédit"}
+    var tl = fr ? {cc:"Carte de cr�dit",student:"Pr�t �tudiant",car:"Pr�t automobile",loc:"Marge de cr�dit"}
                : {cc:"Credit card",student:"Student loan",car:"Car loan",loc:"Line of credit"};
     priorities.push({
       name: (tl[d.type] || d.type) + " (" + Math.round(d.bal).toLocaleString() + " $)",
       rate: pct(d.rate),
       why: d.rate > afterTaxRet
-        ? (fr ? "Taux > rendement après impôt. Le remboursement est généralement favorisé." : "Rate > after-tax return. Repayment is generally favored.")
+        ? (fr ? "Taux > rendement apr�s imp�t. Le remboursement est g�n�ralement favoris�." : "Rate > after-tax return. Repayment is generally favored.")
         : (fr ? "Taux < rendement. Paiement minimum acceptable." : "Rate < return. Minimum payment acceptable."),
       color: "#B89830", priority: 5
     });
@@ -352,11 +352,11 @@ function buildPriority(D, p, fr) {
   if (p._report.mortBal > 0) {
     var mmr = 0.055;
     priorities.push({
-      name: fr ? "Hypothèque (" + Math.round(p._report.mortBal).toLocaleString() + " $)" : "Mortgage (" + Math.round(p._report.mortBal).toLocaleString() + " $)",
+      name: fr ? "Hypoth�que (" + Math.round(p._report.mortBal).toLocaleString() + " $)" : "Mortgage (" + Math.round(p._report.mortBal).toLocaleString() + " $)",
       rate: pct(mmr),
       why: mmr > afterTaxRet
-        ? (fr ? "Taux > rendement après impôt. Le remboursement accéléré est souvent favorisé." : "Rate > after-tax return. Accelerated repayment is often favored.")
-        : (fr ? "Taux < rendement après impôt. L'investissement est souvent favorisé." : "Rate < after-tax return. Investing is often favored."),
+        ? (fr ? "Taux > rendement apr�s imp�t. Le remboursement acc�l�r� est souvent favoris�." : "Rate > after-tax return. Accelerated repayment is often favored.")
+        : (fr ? "Taux < rendement apr�s imp�t. L'investissement est souvent favoris�." : "Rate < after-tax return. Investing is often favored."),
       color: "#B89830", priority: 6
     });
   }
@@ -371,11 +371,11 @@ function buildPriority(D, p, fr) {
 function buildAIPrompt(D, p, fr) {
   var q = p._quiz, rp = p._report;
   var isQC = p.prov === "QC";
-  var gP = fr ? (isQC ? "Régime de rentes du Québec" : "Régime de pensions du Canada") : (isQC ? "Quebec Pension Plan" : "Canada Pension Plan");
-  var oN = fr ? "Pension de la Sécurité de la vieillesse" : "Old Age Security";
+  var gP = fr ? (isQC ? "R�gime de rentes du Qu�bec" : "R�gime de pensions du Canada") : (isQC ? "Quebec Pension Plan" : "Canada Pension Plan");
+  var oN = fr ? "Pension de la S�curit� de la vieillesse" : "Old Age Security";
 
   var confInstr = q.confidence <= 2 ? "TONE: Extra warm, reassuring. Lead with positives." : q.confidence >= 4 ? "TONE: Data-forward, confident. Specific numbers." : "TONE: Balanced, professional.";
-  var winMap = {home:fr?"Ouvrir en reconnaissant l'achat immobilier.":"Open acknowledging home purchase.",debtfree:fr?"Ouvrir en soulignant l'absence de dettes.":"Open acknowledging debt-free status.",saving:fr?"Ouvrir en reconnaissant l'habitude d'épargne.":"Open acknowledging consistent saving.",investing:fr?"Ouvrir en reconnaissant les connaissances en investissement.":"Open acknowledging investing knowledge.",business:fr?"Ouvrir en reconnaissant l'esprit entrepreneurial.":"Open acknowledging entrepreneurial ability.",none:fr?"Ce rapport est un point de départ.":"This report is a starting point."};
+  var winMap = {home:fr?"Ouvrir en reconnaissant l'achat immobilier.":"Open acknowledging home purchase.",debtfree:fr?"Ouvrir en soulignant l'absence de dettes.":"Open acknowledging debt-free status.",saving:fr?"Ouvrir en reconnaissant l'habitude d'�pargne.":"Open acknowledging consistent saving.",investing:fr?"Ouvrir en reconnaissant les connaissances en investissement.":"Open acknowledging investing knowledge.",business:fr?"Ouvrir en reconnaissant l'esprit entrepreneurial.":"Open acknowledging entrepreneurial ability.",none:fr?"Ce rapport est un point de d�part.":"This report is a starting point."};
   var winInstr = "WIN: " + (winMap[q.win] || winMap.none);
   var fixMap = {save_more:"Lead obs_1 with savings rate.",debt:"Lead obs_1 with debt cost and payoff.",invest:"Lead obs_1 with fee impact.",tax:"Lead obs_1 with tax rate savings.",retire_early:"Lead obs_1 with withdrawal rate.",clarity:"Lead obs_1 with success rate."};
   var fixInstr = "FIX: " + (fixMap[q.fix] || "");
@@ -429,12 +429,12 @@ var STATE = {
   showReport: false, showPaywall: false, paid: false, costDelay: 0, minReturn: 0
 };
 
-// ── Province names (bilingual) ──
+// -- Province names (bilingual) --
 var PROV_NAMES_FR={"QC":"Qu\u00e9bec","ON":"Ontario","BC":"Colombie-Britannique","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nouvelle-\u00c9cosse","NB":"Nouveau-Brunswick","NL":"Terre-Neuve-et-Labrador","PE":"\u00cele-du-Prince-\u00c9douard","NT":"Territoires du Nord-Ouest","YT":"Yukon","NU":"Nunavut"};
 var PROV_NAMES_EN={"QC":"Quebec","ON":"Ontario","BC":"British Columbia","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nova Scotia","NB":"New Brunswick","NL":"Newfoundland and Labrador","PE":"Prince Edward Island","NT":"Northwest Territories","YT":"Yukon","NU":"Nunavut"};
 function provName(code){return(STATE.lang==="fr"?PROV_NAMES_FR:PROV_NAMES_EN)[code]||code;}
 
-// ── localStorage persistence ──
+// -- localStorage persistence --
 try{var saved=localStorage.getItem("buildfi_quiz_ess");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);}}}catch(e){}
 function saveState(){try{localStorage.setItem("buildfi_quiz_ess",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
 
@@ -446,17 +446,17 @@ function f$(n) {
 
 function gCol(s) { return s >= 0.9 ? "#2A8C46" : s >= 0.75 ? "#B89830" : "#CC4444"; }
 
-// ── Logo SVG (matches intermediaire) ──
-// Logo — inline fallback, overridden by /logo.js on server
+// -- Logo SVG (matches intermediaire) --
+// Logo � inline fallback, overridden by /logo.js on server
 if (typeof logoSVG === "undefined") {
 function logoSVG(size,context){var isDark=context==="dark";var tFill=isDark?"#F0E4D4":"#1A1A1A";var s=size==="lg"?1.2:size==="md"?0.85:0.55;var w=Math.round(180*s);var h=Math.round(52*s);var uid="emb"+size+Math.random().toString(36).slice(2,6);return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 180 52" style="display:block"><defs><linearGradient id="'+uid+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#C45A2C"/><stop offset="100%" stop-color="#E8A84C"/></linearGradient></defs><path d="M14 46 C14 46 8 30 14 18 C20 6 26 12 26 22 C26 12 32 0 38 10 C44 22 38 32 38 32" stroke="url(#'+uid+')" stroke-width="3" fill="none" stroke-linecap="round"/><text x="48" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="'+tFill+'" letter-spacing="-1.2">build</text><text x="131" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" fill="url(#'+uid+')" letter-spacing="-1.2">fi</text></svg>';}
 }
 
-// ── Debounced input (no re-render flicker on typing) ──
+// -- Debounced input (no re-render flicker on typing) --
 var _dTimer={};
 function uqd(key,rawVal){var n=parseFloat(rawVal);STATE.quiz[key]=isNaN(n)?(rawVal===""||rawVal==null?0:STATE.quiz[key]):n;clearTimeout(_dTimer[key]);_dTimer[key]=setTimeout(function(){saveState();},600);}
 
-// ── Validation ──
+// -- Validation --
 function validateStep(step){var q=STATE.quiz,fr=STATE.lang==="fr";if(step===1){if(q.age<18||q.age>80)return fr?"\u00c2ge doit \u00eatre entre 18 et 80.":"Age must be 18-80.";if(q.retAge<=q.age)return fr?"Retraite doit \u00eatre > \u00e2ge actuel.":"Retirement must be > current age.";}if(step===3){if(q.income<=0)return fr?"Revenu invalide.":"Invalid income.";}return null;}
 
 function render() {
@@ -504,7 +504,7 @@ function uq(key, val) { STATE.quiz[key] = val; render(); }
 // QUIZ SCREENS
 // ============================================================
 function renderLoading(fr) {
-  return '<div style="max-width:480px;margin:80px auto;text-align:center;padding:20px"><div style="font-size:48px;margin-bottom:24px">🔮</div><h2 style="font-size:20px;font-weight:700;color:var(--g)">' + (fr ? "Analyse en cours..." : "Analyzing...") + '</h2><p style="color:var(--ts);margin:12px 0;font-size:14px">' + (fr ? "5 000 scénarios économiques simulés" : "Simulating 5,000 economic scenarios") + '</p><div style="margin:24px 0"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
+  return '<div style="max-width:480px;margin:80px auto;text-align:center;padding:20px"><div style="font-size:48px;margin-bottom:24px">??</div><h2 style="font-size:20px;font-weight:700;color:var(--g)">' + (fr ? "Analyse en cours..." : "Analyzing...") + '</h2><p style="color:var(--ts);margin:12px 0;font-size:14px">' + (fr ? "5 000 sc�narios �conomiques simul�s" : "Simulating 5,000 economic scenarios") + '</p><div style="margin:24px 0"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
 }
 
 function renderQuiz(step, q, lang) {
@@ -520,7 +520,7 @@ function renderQuiz(step, q, lang) {
       + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
       + '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">FR</button>'
       + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
-      // Brand — SVG logo
+      // Brand � SVG logo
       + '<div style="text-align:center;margin-bottom:28px"><div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>'
       + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Essentiel","Essentials Report") + '</div>'
       + '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Planifiez votre libert\u00e9 financi\u00e8re.","Plan your financial freedom.") + '</div></div>'
@@ -528,7 +528,7 @@ function renderQuiz(step, q, lang) {
       + '<h1 style="font-size:28px;font-weight:800;line-height:1.25;text-align:center;margin:0 0 14px">'
       + t("Est-ce que votre plan<br>tient la route ?","Is your retirement plan<br>on track?")
       + '</h1>'
-      // Subhead — brand voice: warm, clear, confident
+      // Subhead � brand voice: warm, clear, confident
       + '<p style="font-size:15px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'
       + t("3 \u00e0 5 minutes. 8 sections d\u2019analyse. 5\u00a0000 sc\u00e9narios simul\u00e9s.",
          "3 to 5 minutes. 8 analysis sections. 5,000 simulated scenarios.")
@@ -553,9 +553,9 @@ function renderQuiz(step, q, lang) {
     var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card' + (q.sex===o.v?" sel":"") + '" onclick="uq(\'sex\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:14px"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
     var provOptions = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"].map(function(p){return '<option value="'+p+'"'+(q.prov===p?' selected':'')+'>'+provName(p)+'</option>';}).join("");
     return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Parlons de vous","About you") + '</h2>'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Âge actuel","Current age") + '</label>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("�ge actuel","Current age") + '</label>'
       + '<input type="number" min="18" max="80" value="' + q.age + '" oninput="uq(\'age\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("À quel âge aimeriez-vous prendre votre retraite ?","At what age would you like to retire?") + '</label>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("� quel �ge aimeriez-vous prendre votre retraite ?","At what age would you like to retire?") + '</label>'
       + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><input type="range" min="40" max="75" value="' + q.retAge + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:24px;font-weight:800;color:var(--g);min-width:42px;text-align:center">' + q.retAge + '</span></div>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px;margin-bottom:16px">' + sexCards + '</div>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">Province</label><select onchange="uq(\'prov\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:16px;background:var(--bgc)">' + provOptions + '</select>'
@@ -563,7 +563,7 @@ function renderQuiz(step, q, lang) {
   }
 
   if (step === 2) {
-    var empCards = [{v:"gov",l:t("Gouvernement","Government"),d:t("Pension à prestations déterminées","Defined benefit pension")},{v:"large",l:t("Grande entreprise","Large company"),d:t("Régime de cotisations","Contribution matching")},{v:"tech",l:"Tech / Startup",d:t("Cotisations et options","Contributions and options")},{v:"small",l:t("PME / Travailleur autonome","Small business / Self-employed"),d:t("Pas de régime employeur","No employer plan")}].map(function(o){return '<div tabindex="0" class="card' + (q.employer===o.v?" sel":"") + '" onclick="uq(\'employer\',\'' + o.v + '\')"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:12px;color:var(--ts);margin-top:2px">' + o.d + '</div></div>';}).join("");
+    var empCards = [{v:"gov",l:t("Gouvernement","Government"),d:t("Pension � prestations d�termin�es","Defined benefit pension")},{v:"large",l:t("Grande entreprise","Large company"),d:t("R�gime de cotisations","Contribution matching")},{v:"tech",l:"Tech / Startup",d:t("Cotisations et options","Contributions and options")},{v:"small",l:t("PME / Travailleur autonome","Small business / Self-employed"),d:t("Pas de r�gime employeur","No employer plan")}].map(function(o){return '<div tabindex="0" class="card' + (q.employer===o.v?" sel":"") + '" onclick="uq(\'employer\',\'' + o.v + '\')"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:12px;color:var(--ts);margin-top:2px">' + o.d + '</div></div>';}).join("");
     var cplCards = [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.couple===o.v?" sel":"") + '" onclick="uq(\'couple\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
     return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Emploi et situation","Employment & situation") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Type d'employeur","Employer type") + '</label>' + empCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Vivez-vous en couple ?","Do you live with a partner?") + '</label><div style="display:flex;gap:8px">' + cplCards + '</div>' + btn() + backBtn);
   }
@@ -572,20 +572,20 @@ function renderQuiz(step, q, lang) {
     var detailFields = '';
     if (q.savingsDetail) {
       detailFields = '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte de retraite enregistré","Registered retirement account") + ' (RRSP/REER)</label>'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte de retraite enregistr�","Registered retirement account") + ' (RRSP/REER)</label>'
         + '<input type="number" min="0" step="1000" value="' + (q.rrsp||0) + '" oninput="uq(\'rrsp\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte d\'épargne libre d\'impôt","Tax-free savings account") + ' (TFSA/CELI)</label>'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Compte d\'�pargne libre d\'imp�t","Tax-free savings account") + ' (TFSA/CELI)</label>'
         + '<input type="number" min="0" step="1000" value="' + (q.tfsa||0) + '" oninput="uq(\'tfsa\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:10px" />'
-        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Placements non enregistrés","Non-registered investments") + '</label>'
+        + '<label style="font-size:12px;color:var(--ts);display:block;margin-bottom:4px">' + t("Placements non enregistr�s","Non-registered investments") + '</label>'
         + '<input type="number" min="0" step="1000" value="' + (q.nr||0) + '" oninput="uq(\'nr\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px" />'
         + '</div>';
     }
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Revenus et épargne","Income & savings") + '</h2>'
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Revenus et �pargne","Income & savings") + '</h2>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Revenu annuel brut","Annual gross income") + ' ($)</label>'
       + '<input type="number" min="0" max="500000" step="1000" value="' + q.income + '" oninput="uq(\'income\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Épargne totale","Total savings") + ' ($)</label>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("�pargne totale","Total savings") + ' ($)</label>'
       + '<input type="number" min="0" max="5000000" step="1000" value="' + q.totalSavings + '" oninput="uq(\'totalSavings\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:8px" />'
-      + '<div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--g)"><input type="checkbox" ' + (q.savingsDetail?"checked":"") + ' onchange="uq(\'savingsDetail\',this.checked)" style="accent-color:var(--g)" />' + t("Je connais la répartition entre mes comptes","I know the breakdown between my accounts") + '</label></div>'
+      + '<div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--g)"><input type="checkbox" ' + (q.savingsDetail?"checked":"") + ' onchange="uq(\'savingsDetail\',this.checked)" style="accent-color:var(--g)" />' + t("Je connais la r�partition entre mes comptes","I know the breakdown between my accounts") + '</label></div>'
       + detailFields
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Cotisation mensuelle","Monthly contribution") + ' ($/'+t("mois","mo")+')</label>'
       + '<input type="number" min="0" max="10000" step="50" value="' + q.monthlyContrib + '" oninput="uq(\'monthlyContrib\',+this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
@@ -606,31 +606,31 @@ function renderQuiz(step, q, lang) {
     }).join("");
     var debtToggle = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.hasDebts===o.v?" sel":"") + '" onclick="uq(\'hasDebts\',' + o.v + ')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600">' + o.l + '</div></div>';}).join("");
     var homeCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.homeowner===o.v?" sel":"") + '" onclick="uq(\'homeowner\',' + o.v + ')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    var homeInputs = q.homeowner ? '<label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Valeur de la propriété","Property value") + ' ($)</label><input type="number" min="0" step="10000" value="' + (q.homeValue||0) + '" oninput="uq(\'homeValue\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Solde hypothécaire","Mortgage balance") + ' ($)</label><input type="number" min="0" step="5000" value="' + (q.mortgage||0) + '" oninput="uq(\'mortgage\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div><label style="font-size:12px;color:var(--ts)">' + t("Taux hypothécaire","Mortgage rate") + ' (%)</label><input type="number" min="0" max="15" step="0.1" value="' + parseFloat(q.mortgageRate||5.0).toFixed(1) + '" oninput="uq(\'mortgageRate\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:12px;color:var(--ts)">' + t("Années restantes","Years remaining") + '</label><input type="number" min="1" max="30" value="' + (q.mortgageAmort||20) + '" oninput="uq(\'mortgageAmort\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div>' : '';
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dettes et propriété","Debts & property") + '</h2>'
+    var homeInputs = q.homeowner ? '<label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Valeur de la propri�t�","Property value") + ' ($)</label><input type="number" min="0" step="10000" value="' + (q.homeValue||0) + '" oninput="uq(\'homeValue\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><label style="font-size:12px;color:var(--ts);display:block;margin-top:12px">' + t("Solde hypoth�caire","Mortgage balance") + ' ($)</label><input type="number" min="0" step="5000" value="' + (q.mortgage||0) + '" oninput="uq(\'mortgage\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px"><div><label style="font-size:12px;color:var(--ts)">' + t("Taux hypoth�caire","Mortgage rate") + ' (%)</label><input type="number" min="0" max="15" step="0.1" value="' + parseFloat(q.mortgageRate||5.0).toFixed(1) + '" oninput="uq(\'mortgageRate\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:12px;color:var(--ts)">' + t("Ann�es restantes","Years remaining") + '</label><input type="number" min="1" max="30" value="' + (q.mortgageAmort||20) + '" oninput="uq(\'mortgageAmort\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div>' : '';
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dettes et propri�t�","Debts & property") + '</h2>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Avez-vous des dettes ?","Do you have debts?") + '</label>'
       + '<div style="display:flex;gap:8px;margin-bottom:16px">' + debtToggle + '</div>'
       + (q.hasDebts ? debtInputs : '')
-      + '<label style="font-size:13px;color:var(--ts);display:block;margin:20px 0 8px">' + t("Êtes-vous propriétaire ?","Are you a homeowner?") + '</label><div style="display:flex;gap:8px">' + homeCards + '</div>' + homeInputs + btn() + backBtn);
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin:20px 0 8px">' + t("�tes-vous propri�taire ?","Are you a homeowner?") + '</label><div style="display:flex;gap:8px">' + homeCards + '</div>' + homeInputs + btn() + backBtn);
   }
 
   if (step === 5) {
     var lsCards = [{v:"cozy",l:t("Tranquille","Cozy"),d:t("~3 000 $/mois","~$3,000/mo")},{v:"active",l:t("Actif","Active"),d:t("~5 000 $/mois","~$5,000/mo")},{v:"premium",l:t("Premium","Premium"),d:t("~7 500 $/mois","~$7,500/mo")}].map(function(o){return '<div tabindex="0" class="card' + (q.lifestyle===o.v?" sel":"") + '" onclick="uq(\'lifestyle\',\'' + o.v + '\')"><div style="font-weight:700">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.d + '</div></div>';}).join("");
-    var riskCards = [{v:"conservative",l:t("Prudent","Conservative"),d:"50% " + t("actions","equity")},{v:"balanced",l:t("Équilibré","Balanced"),d:"70% " + t("actions","equity")},{v:"growth",l:t("Croissance","Growth"),d:"85% " + t("actions","equity")}].map(function(o){return '<div tabindex="0" class="card' + (q.risk===o.v?" sel":"") + '" onclick="uq(\'risk\',\'' + o.v + '\')"><div style="font-weight:700">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.d + '</div></div>';}).join("");
-    var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-être","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.parttime===o.v?" sel":"") + '" onclick="uq(\'parttime\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
-    var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estimé","Estimated monthly income") + ' ($)</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uq(\'parttimeAmount\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\'années","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uq(\'parttimeYears\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Style de retraite souhaité","Desired retirement lifestyle") + '</label>' + lsCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Tolérance au risque","Risk tolerance") + '</label>' + riskCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Travail à temps partiel en début de retraite ?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div>' + ptFields + btn() + backBtn);
+    var riskCards = [{v:"conservative",l:t("Prudent","Conservative"),d:"50% " + t("actions","equity")},{v:"balanced",l:t("�quilibr�","Balanced"),d:"70% " + t("actions","equity")},{v:"growth",l:t("Croissance","Growth"),d:"85% " + t("actions","equity")}].map(function(o){return '<div tabindex="0" class="card' + (q.risk===o.v?" sel":"") + '" onclick="uq(\'risk\',\'' + o.v + '\')"><div style="font-weight:700">' + o.l + '</div><div style="font-size:11px;color:var(--ts)">' + o.d + '</div></div>';}).join("");
+    var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-�tre","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card' + (q.parttime===o.v?" sel":"") + '" onclick="uq(\'parttime\',\'' + o.v + '\')" style="flex:1;text-align:center"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
+    var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estim�","Estimated monthly income") + ' ($)</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uq(\'parttimeAmount\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\'ann�es","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uq(\'parttimeYears\',+this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Style de retraite souhait�","Desired retirement lifestyle") + '</label>' + lsCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Tol�rance au risque","Risk tolerance") + '</label>' + riskCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Travail � temps partiel en d�but de retraite ?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div>' + ptFields + btn() + backBtn);
   }
 
   if (step === 6) {
-    var worryOpts = [{v:"runout",l:t("Manquer d'argent","Running out of money")},{v:"tax",l:t("Trop d'impôts","Too many taxes")},{v:"inflation",l:t("L'inflation","Inflation")},{v:"health",l:t("Coûts de santé","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un héritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip' + (sel?" sel":"") + '" onclick="toggleWorry(\'' + o.v + '\')">' + o.l + '</span>';}).join("");
-    var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("Épargner régulièrement","Saving regularly")},{v:"investing",l:t("Commencer à investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div tabindex="0" class="card' + (q.win===o.v?" sel":"") + '" onclick="uq(\'win\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Ce qui compte pour vous","What matters to you") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos 3 plus grandes préoccupations","Your 3 biggest concerns") + '</label><div style="margin-bottom:16px">' + worryOpts + '</div><label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre plus grande victoire financière","Your biggest financial win") + '</label>' + winCards + btn() + backBtn);
+    var worryOpts = [{v:"runout",l:t("Manquer d'argent","Running out of money")},{v:"tax",l:t("Trop d'imp�ts","Too many taxes")},{v:"inflation",l:t("L'inflation","Inflation")},{v:"health",l:t("Co�ts de sant�","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un h�ritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip' + (sel?" sel":"") + '" onclick="toggleWorry(\'' + o.v + '\')">' + o.l + '</span>';}).join("");
+    var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("�pargner r�guli�rement","Saving regularly")},{v:"investing",l:t("Commencer � investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div tabindex="0" class="card' + (q.win===o.v?" sel":"") + '" onclick="uq(\'win\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Ce qui compte pour vous","What matters to you") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos 3 plus grandes pr�occupations","Your 3 biggest concerns") + '</label><div style="margin-bottom:16px">' + worryOpts + '</div><label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre plus grande victoire financi�re","Your biggest financial win") + '</label>' + winCards + btn() + backBtn);
   }
 
   if (step === 7) {
-    var fixCards = [{v:"save_more",l:t("Épargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d'impôts","Pay less tax")},{v:"retire_early",l:t("Retraite plus tôt","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div tabindex="0" class="card' + (q.fix===o.v?" sel":"") + '" onclick="uq(\'fix\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
-    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dernières questions","Final questions") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Si vous pouviez améliorer une chose","If you could improve one thing") + '</label>' + fixCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Confiance financière (1-5)","Financial confidence (1-5)") + '</label><input type="range" min="1" max="5" value="' + q.confidence + '" oninput="uq(\'confidence\',+this.value)" /><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span>' + t("Débutant","Beginner") + '</span><span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--g)">' + q.confidence + '/5</span><span>' + t("Expert","Expert") + '</span></div>' + btn(t("Voir mon rapport \u2192","See my report \u2192")) + backBtn);
+    var fixCards = [{v:"save_more",l:t("�pargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d'imp�ts","Pay less tax")},{v:"retire_early",l:t("Retraite plus t�t","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div tabindex="0" class="card' + (q.fix===o.v?" sel":"") + '" onclick="uq(\'fix\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Derni�res questions","Final questions") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Si vous pouviez am�liorer une chose","If you could improve one thing") + '</label>' + fixCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Confiance financi�re (1-5)","Financial confidence (1-5)") + '</label><input type="range" min="1" max="5" value="' + q.confidence + '" oninput="uq(\'confidence\',+this.value)" /><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span>' + t("D�butant","Beginner") + '</span><span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--g)">' + q.confidence + '/5</span><span>' + t("Expert","Expert") + '</span></div>' + btn(t("Voir mon rapport \u2192","See my report \u2192")) + backBtn);
   }
 
   return '';
@@ -648,7 +648,7 @@ function setDebtField(type, field, rawVal) {
 }
 
 // Keep old helpers for backward compat
-function toggleDebt(type) { /* no-op now — all debts always visible */ }
+function toggleDebt(type) { /* no-op now � all debts always visible */ }
 function setDebtAmt(type, val) { setDebtField(type, 'amount', val); }
 
 function toggleWorry(w) {
@@ -716,7 +716,7 @@ function renderPaywall(D, lang) {
   h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
   h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
   h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
-  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de scénarios réussis","of scenarios succeeded") + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de sc�narios r�ussis","of scenarios succeeded") + '</div>';
   h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
   h += '</div>';
 
@@ -724,11 +724,11 @@ function renderPaywall(D, lang) {
   h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
   h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre rapport complet inclut :","Your full report includes:") + '</div>';
   var items = fr ? [
-    "Analyse détaillée de vos 5 000 scénarios simulés",
-    "Projection de vos revenus à la retraite (RRQ, PSV, épargne)",
-    "Stratégie de remboursement de dettes optimisée",
+    "Analyse d�taill�e de vos 5 000 sc�narios simul�s",
+    "Projection de vos revenus � la retraite (RRQ, PSV, �pargne)",
+    "Strat�gie de remboursement de dettes optimis�e",
     "Analyse de vos frais de gestion et leur impact",
-    "Recommandations personnalisées pour améliorer votre note"
+    "Recommandations personnalis�es pour am�liorer votre note"
   ] : [
     "Detailed analysis of your 5,000 simulated scenarios",
     "Retirement income projection (QPP, OAS, savings)",
@@ -738,7 +738,7 @@ function renderPaywall(D, lang) {
   ];
   items.forEach(function(item) {
     h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
-    h += '<div style="color:#1a7a4c;font-size:16px;margin-top:1px">✓</div>';
+    h += '<div style="color:#1a7a4c;font-size:16px;margin-top:1px">?</div>';
     h += '<div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div>';
     h += '</div>';
   });
@@ -746,29 +746,30 @@ function renderPaywall(D, lang) {
 
   // Price + CTA
   h += '<div style="text-align:center;margin-bottom:20px">';
-  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalis� � paiement unique","Personalized report � one-time payment") + '</div>';
   h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">39 <span style="font-size:20px">$</span></div>';
   h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
-  h += t("Obtenir mon rapport complet →","Get my full report →");
+  h += t("Obtenir mon rapport complet ?","Get my full report ?");
   h += '</button>';
   h += '</div>';
-  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — livraison immédiate par courriel","One-time payment — instant delivery by email") + '</div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique � livraison imm�diate par courriel","One-time payment � instant delivery by email") + '</div>';
+  h += '<div style="margin-top:20px;text-align:center"><button onclick="localStorage.clear();location.reload();" style="padding:10px 24px;background:transparent;border:1px solid #ccc;border-radius:8px;color:#888;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif">' + t('Recommencer le questionnaire','Restart questionnaire') + '</button></div>';
   h += '</div>';
 
   h += '</div>';
   return h;
 }
-// renderReport() — REMOVED from thin client. Report renders server-side only.
+// renderReport() � REMOVED from thin client. Report renders server-side only.
 // The real report is generated in /lib/report-html.js after payment.
 
 
 // ============================================================
 // AI ON-DEMAND GENERATION
 // ============================================================
-// AI ANALYSIS — handled server-side, no client-side API call
+// AI ANALYSIS � handled server-side, no client-side API call
 // ============================================================
 
 // ============================================================
