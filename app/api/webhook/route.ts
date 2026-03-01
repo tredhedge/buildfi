@@ -4,17 +4,49 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import Anthropic from "@anthropic-ai/sdk";
 import { translateToMC } from "@/lib/quiz-translator";
 import { runMC } from "@/lib/engine";
-import { renderReportHTML, calcCostOfDelay, calcMinViableReturn, extractReportData } from "@/lib/report-html";
+import { renderReportHTML, calcCostOfDelay, calcMinViableReturn, extractReportData, buildAIPrompt } from "@/lib/report-html";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
+import { sanitizeAISlots, type AINarration } from "@/lib/ai-constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 // Vercel serverless: allow 60s for MC generation
 export const maxDuration = 60;
 export const runtime = "nodejs";
+
+// AI narration: call Anthropic, return {} on any failure (report works without AI)
+async function callAnthropic(sys: string, usr: string): Promise<AINarration> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.log("[webhook] ANTHROPIC_API_KEY not set, skipping AI narration");
+    return {};
+  }
+  try {
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      system: sys,
+      messages: [{ role: "user", content: usr }],
+    });
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+    const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
+    const raw = JSON.parse(cleaned);
+    const slots = sanitizeAISlots(raw);
+    console.log(`[webhook] AI narration: ${Object.keys(slots).length} slots filled`);
+    return slots;
+  } catch (err) {
+    console.error("[webhook] AI narration failed, using fallbacks:", err);
+    return {};
+  }
+}
 
 function reassembleQuizAnswers(metadata: Record<string, string>): Record<string, unknown> {
   const chunks = parseInt(metadata.quiz_chunks || "1", 10);
@@ -77,11 +109,18 @@ export async function POST(req: NextRequest) {
     // Step 4: Extract report data
     const D = extractReportData(mc, params);
 
+    // Step 4.5: AI Narration
+    const fr = lang === "fr";
+    const aiStart = Date.now();
+    const prompt = buildAIPrompt(D, params, fr, quizAnswers);
+    const ai = await callAnthropic(prompt.sys, prompt.usr);
+    console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+
     // Step 5: Render report HTML
     const quiz = quizAnswers;
     const costDelay = calcCostOfDelay(params);
     const minReturn = calcMinViableReturn(params);
-    const reportHTML = renderReportHTML(D, mc, quiz, lang, {}, costDelay, minReturn);
+    const reportHTML = renderReportHTML(D, mc, quiz, lang, ai, costDelay, minReturn);
 
     // Step 6: Upload HTML report to Vercel Blob (30-day expiry)
     const timestamp = new Date().toISOString().slice(0, 10);
