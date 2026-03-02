@@ -207,7 +207,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 @media(max-width:600px){.compare-table{font-size:11px}.compare-table th,.compare-table td{padding:8px 10px}}
 
 /* ═══ WHY BUILDFI ═══ */
-.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px}
 .why-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:28px 24px;box-shadow:var(--shadow-sm);transition:all .3s}
 .why-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 .why-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--gold-wash-strong);border-radius:10px;margin-bottom:16px}
@@ -274,6 +274,23 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}.reveal-delay-5{transition-delay:.42s}
 input,select,textarea{font-size:16px}
+.engine-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:40px;text-align:center}
+.engine-item{padding:24px 20px}
+.engine-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--gold-wash-strong);border-radius:10px;margin:0 auto 14px}
+.engine-icon svg{width:22px;height:22px;color:var(--gold)}
+.engine-item-title{font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.engine-item-desc{font-size:13px;color:var(--text-secondary);line-height:1.6}
+@media(max-width:700px){.engine-grid{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}}
+.product-includes{margin-bottom:16px;padding:12px 0;border-top:1px solid var(--border-light)}
+.product-includes-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
+.product-card--expert .product-includes-label{color:rgba(255,255,255,.4)}
+.product-includes-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);padding:3px 0}
+.product-card--expert .product-includes-item{color:rgba(255,255,255,.65)}
+.products-anti{font-size:14px;font-weight:600;color:var(--text-muted);margin-top:12px;letter-spacing:.2px}
+.product-card--featured{border:2px solid var(--gold);box-shadow:var(--shadow-card),0 0 0 1px rgba(184,134,11,.08)}
+.product-card--featured:hover{box-shadow:var(--shadow-lg),var(--shadow-gold)}
+.product-guarantee{font-size:11px;color:var(--success);font-weight:600;margin-top:6px;text-align:center}
+.product-card--expert .product-guarantee{color:#5ce0a0}
 </style>
 <script src="/logo.js"></script>
 </head>
@@ -285,9 +302,9 @@ input,select,textarea{font-size:16px}
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#products" id="navProducts">Produits</a></li>
-      <li><a href="#why" id="navWhy">Pourquoi BuildFi</a></li>
+      <li><a href="#engine" id="navEngine">Comment ça marche</a></li>
       <li><a href="#preview" id="navPreview">Aperçu</a></li>
+      <li><a href="#products" id="navProducts">Produits</a></li>
       <li><a href="#faq" id="navFaq">FAQ</a></li>
     </ul>
     <div class="nav-right">
@@ -300,11 +317,11 @@ input,select,textarea{font-size:16px}
   </div>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="#products" id="drawerProducts">Produits</a>
-  <a href="#why" id="drawerWhy">Pourquoi BuildFi</a>
+  <a href="#engine" id="drawerEngine">Comment ça marche</a>
   <a href="#preview" id="drawerPreview">Aperçu</a>
+  <a href="#products" id="drawerProducts">Produits</a>
   <a href="#faq" id="drawerFaq">FAQ</a>
-  <a href="#products" class="nav-cta" id="drawerCta">Commencer</a>
+  <a href="/quiz-essentiel.html" class="nav-cta" id="drawerCta">Commencer</a>
 </div>
 
 <!-- ═══ SECTION 1: HERO ═══ -->
@@ -320,8 +337,9 @@ input,select,textarea{font-size:16px}
           BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d'abonnement. Pas de compte à créer.
         </p>
         <div class="hero-actions reveal reveal-delay-3">
-          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
+          <a href="/quiz-essentiel.html" class="btn btn-primary" id="heroCta" data-track="hero_cta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
           <span class="hero-actions-price" id="heroPrice">À partir de <strong>19,50 $</strong> · Paiement unique</span>
+          <a href="#products" class="btn btn-ghost" data-track="hero_compare" id="heroCompare">Voir tous les produits <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-trust reveal reveal-delay-4">
           <div class="hero-trust-item" id="trust1">
@@ -353,6 +371,80 @@ input,select,textarea{font-size:16px}
   </div>
 </section>
 
+<!-- ═══ SECTION 2: SOUS LE CAPOT ═══ -->
+<section class="section" id="engine" style="padding-top:clamp(48px,6vw,64px);padding-bottom:clamp(48px,6vw,64px)">
+  <div class="container" style="text-align:center">
+    <p class="section-label" id="engineLabel">Sous le capot</p>
+    <h2 class="section-title" id="engineTitle">Un moteur de simulation, pas un calculateur.</h2>
+    <div class="engine-grid">
+      <div class="engine-item reveal">
+        <div class="engine-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <h3 class="engine-item-title" id="eng1t">Simulation Monte Carlo corrélée</h3>
+        <p class="engine-item-desc" id="eng1d">Rendements, inflation, espérance de vie — tout varie simultanément dans chaque scénario. Pas un « rendement moyen de 6 % ».</p>
+      </div>
+      <div class="engine-item reveal reveal-delay-1">
+        <div class="engine-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7-7"/></svg>
+        </div>
+        <h3 class="engine-item-title" id="eng2t">Fiscalité fédérale + provinciale ligne par ligne</h3>
+        <p class="engine-item-desc" id="eng2d">Crédits pour l'âge, récupération de la PSV, fractionnement de pension. Barèmes 2026, 13 juridictions.</p>
+      </div>
+      <div class="engine-item reveal reveal-delay-2">
+        <div class="engine-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3 class="engine-item-title" id="eng3t">436 tests automatisés, 17 profils canary</h3>
+        <p class="engine-item-desc" id="eng3d">Employés, couples, fonctionnaires, incorporés — chaque profil est validé avant chaque mise à jour.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: PREVIEW ═══ -->
+<section class="section" id="preview" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container">
+    <div style="text-align:center">
+      <p class="section-label" id="previewLabel">Aperçu du rapport</p>
+      <h2 class="section-title" id="previewTitle">Ce que contient chaque rapport</h2>
+      <p class="section-subtitle" style="margin:0 auto" id="previewSubtitle">Présenté clairement, sans jargon financier. L'Intermédiaire inclut tout l'Essentiel.</p>
+    </div>
+
+    <div class="preview-grid">
+      <!-- ESSENTIEL COLUMN -->
+      <div class="preview-col">
+        <div class="preview-col-header" id="prevEssHeader">Rapport Essentiel</div>
+        <div class="preview-col-sub" id="prevEssSub">Plus de 10 sections · 4 graphiques · narration IA</div>
+        <div class="preview-items">
+          <div class="preview-item"><span class="preview-num">1</span><div><span class="preview-item-title" id="pe1">Votre diagnostic</span><span class="preview-item-desc" id="pe1d">Note de retraite (A+ à F), pourcentage de réussite et ce que cela signifie pour vous.</span></div></div>
+          <div class="preview-item"><span class="preview-num">2</span><div><span class="preview-item-title" id="pe2">Observations prioritaires</span><span class="preview-item-desc" id="pe2d">Jusqu'à 5 constats classés par impact, avec explication de ce que chaque élément signifie.</span></div></div>
+          <div class="preview-item"><span class="preview-num">3</span><div><span class="preview-item-title" id="pe3">Revenus à la retraite</span><span class="preview-item-desc" id="pe3d">Combien par mois de chaque source: RRQ/PSV, REER, CÉLI, non enregistré.</span></div></div>
+          <div class="preview-item"><span class="preview-num">4</span><div><span class="preview-item-title" id="pe4">Projection du patrimoine</span><span class="preview-item-desc" id="pe4d">Graphique année par année de l'évolution de vos épargnes.</span></div></div>
+          <div class="preview-item"><span class="preview-num">5</span><div><span class="preview-item-title" id="pe5">Analyse de risque</span><span class="preview-item-desc" id="pe5d">Comment votre plan résiste aux marchés baissiers, inflation, longévité.</span></div></div>
+          <div class="preview-item"><span class="preview-num">6</span><div><span class="preview-item-title" id="pe6">Portrait des comptes</span><span class="preview-item-desc" id="pe6d">Répartition REER, CÉLI, non enregistré. Contribution optimale.</span></div></div>
+          <div class="preview-item"><span class="preview-num">7</span><div><span class="preview-item-title" id="pe7">Narration IA</span><span class="preview-item-desc" id="pe7d">Résumé personnalisé — comme un ami qui comprend la finance.</span></div></div>
+          <div class="preview-item"><span class="preview-num">8</span><div><span class="preview-item-title" id="pe8">Méthodologie</span><span class="preview-item-desc" id="pe8d">Hypothèses, limites, sources. Transparence complète.</span></div></div>
+        </div>
+      </div>
+
+      <!-- INTERMÉDIAIRE COLUMN -->
+      <div class="preview-col preview-col--inter">
+        <div class="preview-col-header" id="prevInterHeader">L'Intermédiaire ajoute</div>
+        <div class="preview-col-sub" id="prevInterSub">6 sections supplémentaires · inclut tout l'Essentiel</div>
+        <div class="preview-items">
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi1">Analyse de couple</span><span class="preview-item-desc" id="pi1d">Revenus combinés, stratégie conjointe, impact du décès du premier conjoint.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi2">Portrait immobilier</span><span class="preview-item-desc" id="pi2d">Valeur nette, hypothèque, impact de la vente, scénario de location.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi3">Stratégie de décumulation</span><span class="preview-item-desc" id="pi3d">Ordre optimal de retrait: REER, CÉLI, non enregistré. Conversion REER accélérée.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi4">Score de résilience</span><span class="preview-item-desc" id="pi4d">4 jauges: longévité, marché, inflation, dépenses imprévues.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi5">Analyse CCPC</span><span class="preview-item-desc" id="pi5d">Salaire vs dividende, extraction corporative, impact sur votre plan.</span></div></div>
+          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi6">Héritage et succession</span><span class="preview-item-desc" id="pi6d">Ce que vous laisserez. Impôt successoral estimé. Frais d'homologation.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ SECTION 2: PRODUCTS (streamlined cards + compare table) ═══ -->
 <section class="section section--sand" id="products">
   <div class="container">
@@ -361,10 +453,12 @@ input,select,textarea{font-size:16px}
       <h2 class="section-title" id="productsTitle">Simple ou complet. Vous décidez.</h2>
       <p class="section-subtitle" style="margin:0 auto" id="productsSubtitle">Chaque rapport utilise le même moteur de simulation — jusqu'à 10 000 scénarios. La différence, c'est la profondeur de l'analyse.</p>
     </div>
+      <p class="products-anti" id="productsAnti">Pas un conseiller qui vend des fonds. Pas un calculateur simpliste. Pas un abonnement.</p>
 
     <div class="products-grid">
       <!-- ESSENTIEL -->
-      <div class="product-card reveal">
+      <div class="product-card product-card--featured reveal">
+        <div class="product-badge" id="prodEssBadge">Commencez ici</div>
         <div class="product-persona" id="prodEssPersona">Vous commencez à planifier</div>
         <div class="product-name" id="prodEssName">Essentiel</div>
         <div class="product-price">
@@ -375,18 +469,23 @@ input,select,textarea{font-size:16px}
         <p class="product-desc" id="prodEssDesc">
           Vous ne savez pas trop où vous en êtes — et les outils génériques ne vous disent rien d'utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.
         </p>
+        <div class="product-includes" id="prodEssIncludes">
+          <div class="product-includes-label" id="prodEssIncludesLabel">Inclus :</div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus1">Outil d'analyse des dettes (interactif)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus2">Guide 101 — Les bases de vos finances (PDF)</span></div>
+        </div>
         <div class="product-time" id="prodEssTime">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           5 à 8 minutes
         </div>
         <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="product_ess" id="prodEssCta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
-        <p class="product-process" id="prodEssProcess">Questionnaire → Rapport en ligne + PDF par courriel</p>
+        <p class="product-process" id="prodEssProcess">Questionnaire → Rapport en ligne + version imprimable</p>
+        <p class="product-guarantee" id="prodEssGuarantee">Erreur technique? On refait votre rapport sans frais.</p>
         <div class="product-for-tag" id="prodEssFor">Personnes seules</div>
       </div>
 
       <!-- INTERMÉDIAIRE -->
       <div class="product-card product-card--inter reveal reveal-delay-1">
-        <div class="product-badge" id="prodInterBadge">Populaire</div>
         <div class="product-persona" id="prodInterPersona">Vous voulez aller plus loin</div>
         <div class="product-name" id="prodInterName">Intermédiaire</div>
         <div class="product-price">
@@ -397,12 +496,19 @@ input,select,textarea{font-size:16px}
         <p class="product-desc" id="prodInterDesc">
           Vous épargnez déjà, vous êtes en couple ou propriétaire — et vous voulez savoir si votre stratégie tient la route. L'Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.
         </p>
+        <div class="product-includes" id="prodInterIncludes">
+          <div class="product-includes-label" id="prodInterIncludesLabel">Inclus :</div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus1">Tout l'Essentiel</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus2">Guide 201 — Optimiser votre retraite (PDF)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus3">Outil d'analyse des dettes (interactif)</span></div>
+        </div>
         <div class="product-time" id="prodInterTime">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           10 à 15 minutes
         </div>
         <a href="/intermediaire" class="btn btn-primary" data-track="product_inter" id="prodInterCta">Obtenir mon rapport <span aria-hidden="true">→</span></a>
-        <p class="product-process" id="prodInterProcess">Questionnaire → Rapport en ligne + PDF par courriel</p>
+        <p class="product-process" id="prodInterProcess">Questionnaire → Rapport en ligne + version imprimable</p>
+        <p class="product-guarantee" id="prodInterGuarantee">Erreur technique? On refait votre rapport sans frais.</p>
         <div class="product-for-tag" id="prodInterFor">Couples · Propriétaires · Profils complexes</div>
       </div>
 
@@ -422,8 +528,9 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           À votre rythme — sessions illimitées
         </div>
-        <a href="/expert" class="btn btn-primary" data-track="product_expert" id="prodExpCta">En savoir plus <span aria-hidden="true">→</span></a>
+        <a class="btn btn-primary" style="pointer-events:none;opacity:.6" id="prodExpCta">Bientôt disponible</a>
         <p class="product-process" id="prodExpProcess">Détails et fonctionnalités sur la page Expert</p>
+        <p class="product-guarantee" id="prodExpGuarantee">Erreur technique? On refait votre rapport sans frais.</p>
         <div class="product-for-tag product-for-tag--light" id="prodExpFor">Contrôle total</div>
       </div>
     </div>
@@ -436,53 +543,6 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           <span id="stripeLabel">Paiement sécurisé par Stripe</span>
         </div>
-      </div>
-    </div>
-
-    <!-- BONUS SECTION -->
-    <div class="bonus-section reveal">
-      <p class="section-label" id="bonusLabel">Inclus avec votre rapport</p>
-      <h2 class="section-title" id="bonusTitle">Des outils concrets, pas juste un PDF.</h2>
-      <div class="bonus-grid">
-
-        <div class="bonus-card">
-          <div class="bonus-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M7 10l3 3 7-7"/></svg>
-          </div>
-          <div class="bonus-card-type" id="bonusType1">Outil interactif</div>
-          <h3 class="bonus-card-title" id="bonusName1">Analyse des dettes</h3>
-          <p class="bonus-card-desc" id="bonusDesc1">Entrez vos dettes, comparez avalanche vs boule de neige, visualisez votre calendrier de remboursement mois par mois. Calcul des intérêts économisés en temps réel.</p>
-          <div class="bonus-card-tags">
-            <span class="bonus-tag bonus-tag--ess" id="bonusTag1a">Essentiel</span>
-            <span class="bonus-tag bonus-tag--inter" id="bonusTag1b">Intermédiaire</span>
-          </div>
-        </div>
-
-        <div class="bonus-card">
-          <div class="bonus-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
-          </div>
-          <div class="bonus-card-type" id="bonusType2">Guide PDF</div>
-          <h3 class="bonus-card-title" id="bonusName2">101 — Les bases de vos finances</h3>
-          <p class="bonus-card-desc" id="bonusDesc2">Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir — en langage clair, avec des exemples en dollars.</p>
-          <div class="bonus-card-tags">
-            <span class="bonus-tag bonus-tag--ess" id="bonusTag2a">Essentiel</span>
-            <span class="bonus-tag bonus-tag--inter" id="bonusTag2b">Intermédiaire</span>
-          </div>
-        </div>
-
-        <div class="bonus-card">
-          <div class="bonus-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h6M9 11h4M9 15h2"/></svg>
-          </div>
-          <div class="bonus-card-type" id="bonusType3">Guide PDF</div>
-          <h3 class="bonus-card-title" id="bonusName3">201 — Optimiser votre retraite</h3>
-          <p class="bonus-card-desc" id="bonusDesc3">Décaissement, fiscalité, protection PSV, fractionnement, meltdown REER, guardrails, immobilier, CCPC. 11 chapitres pour patrimoines établis.</p>
-          <div class="bonus-card-tags">
-            <span class="bonus-tag bonus-tag--inter" id="bonusTag3">Intermédiaire</span>
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -505,7 +565,7 @@ input,select,textarea{font-size:16px}
           <tr><td id="cr1">Note de retraite (A+ à F)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr2">Narration IA personnalisée</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr3">Monte Carlo (jusqu'à 10 000 scénarios)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
-          <tr><td id="cr4">Rapport PDF</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr4">Rapport en ligne + version imprimable</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr5">Outil interactif — Analyse des dettes</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
           <tr><td id="cr6">Guide 101 — Les bases de vos finances</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
           <tr><td id="cr6b">Guide 201 — Optimiser votre retraite</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td></tr>
@@ -551,20 +611,6 @@ input,select,textarea{font-size:16px}
         <h3 class="why-card-title" id="why2t">Vos vrais impôts. Pas une estimation.</h3>
         <p class="why-card-desc" id="why2d">On calcule vos impôts fédéraux et provinciaux ligne par ligne — crédits pour l'âge, pension, récupération de la PSV, fractionnement. Les 10 provinces et 3 territoires, barèmes 2026.</p>
       </div>
-      <div class="why-card reveal reveal-delay-2">
-        <div class="why-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-        </div>
-        <h3 class="why-card-title" id="why3t">Vous allez comprendre votre rapport.</h3>
-        <p class="why-card-desc" id="why3d">Chaque rapport inclut une analyse écrite par IA qui explique vos résultats comme un humain le ferait. Pas de tableaux incompréhensibles. Des observations concrètes, en français, sur votre situation à vous.</p>
-      </div>
-      <div class="why-card reveal">
-        <div class="why-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <h3 class="why-card-title" id="why4t">430 tests. Avant chaque mise à jour.</h3>
-        <p class="why-card-desc" id="why4d">Employés, couples, fonctionnaires, propriétaires d'entreprise — 17 profils testés automatiquement. Si un calcul casse, on le sait avant vous.</p>
-      </div>
       <div class="why-card reveal reveal-delay-1">
         <div class="why-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -578,49 +624,6 @@ input,select,textarea{font-size:16px}
         </div>
         <h3 class="why-card-title" id="why6t">On ne veut pas vos données.</h3>
         <p class="why-card-desc" id="why6d">Les calculs roulent dans votre navigateur. Rien n'est envoyé à nos serveurs. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre rapport. C'est tout.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SECTION 3: PREVIEW (Essentiel + Intermédiaire side by side) ═══ -->
-<section class="section" id="preview" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
-  <div class="container">
-    <div style="text-align:center">
-      <p class="section-label" id="previewLabel">Aperçu du rapport</p>
-      <h2 class="section-title" id="previewTitle">Ce que contient chaque rapport</h2>
-      <p class="section-subtitle" style="margin:0 auto" id="previewSubtitle">Présenté clairement, sans jargon financier. L'Intermédiaire inclut tout l'Essentiel.</p>
-    </div>
-
-    <div class="preview-grid">
-      <!-- ESSENTIEL COLUMN -->
-      <div class="preview-col">
-        <div class="preview-col-header" id="prevEssHeader">Rapport Essentiel</div>
-        <div class="preview-col-sub" id="prevEssSub">8 sections · 4 graphiques · narration IA · PDF</div>
-        <div class="preview-items">
-          <div class="preview-item"><span class="preview-num">1</span><div><span class="preview-item-title" id="pe1">Votre diagnostic</span><span class="preview-item-desc" id="pe1d">Note de retraite (A+ à F), pourcentage de réussite et ce que cela signifie pour vous.</span></div></div>
-          <div class="preview-item"><span class="preview-num">2</span><div><span class="preview-item-title" id="pe2">Observations prioritaires</span><span class="preview-item-desc" id="pe2d">Jusqu'à 5 constats classés par impact, avec explication de ce que chaque élément signifie.</span></div></div>
-          <div class="preview-item"><span class="preview-num">3</span><div><span class="preview-item-title" id="pe3">Revenus à la retraite</span><span class="preview-item-desc" id="pe3d">Combien par mois de chaque source: RRQ/PSV, REER, CÉLI, non enregistré.</span></div></div>
-          <div class="preview-item"><span class="preview-num">4</span><div><span class="preview-item-title" id="pe4">Projection du patrimoine</span><span class="preview-item-desc" id="pe4d">Graphique année par année de l'évolution de vos épargnes.</span></div></div>
-          <div class="preview-item"><span class="preview-num">5</span><div><span class="preview-item-title" id="pe5">Analyse de risque</span><span class="preview-item-desc" id="pe5d">Comment votre plan résiste aux marchés baissiers, inflation, longévité.</span></div></div>
-          <div class="preview-item"><span class="preview-num">6</span><div><span class="preview-item-title" id="pe6">Portrait des comptes</span><span class="preview-item-desc" id="pe6d">Répartition REER, CÉLI, non enregistré. Contribution optimale.</span></div></div>
-          <div class="preview-item"><span class="preview-num">7</span><div><span class="preview-item-title" id="pe7">Narration IA</span><span class="preview-item-desc" id="pe7d">Résumé personnalisé — comme un ami qui comprend la finance.</span></div></div>
-          <div class="preview-item"><span class="preview-num">8</span><div><span class="preview-item-title" id="pe8">Méthodologie</span><span class="preview-item-desc" id="pe8d">Hypothèses, limites, sources. Transparence complète.</span></div></div>
-        </div>
-      </div>
-
-      <!-- INTERMÉDIAIRE COLUMN -->
-      <div class="preview-col preview-col--inter">
-        <div class="preview-col-header" id="prevInterHeader">L'Intermédiaire ajoute</div>
-        <div class="preview-col-sub" id="prevInterSub">6 sections supplémentaires · inclut tout l'Essentiel</div>
-        <div class="preview-items">
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi1">Analyse de couple</span><span class="preview-item-desc" id="pi1d">Revenus combinés, stratégie conjointe, impact du décès du premier conjoint.</span></div></div>
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi2">Portrait immobilier</span><span class="preview-item-desc" id="pi2d">Valeur nette, hypothèque, impact de la vente, scénario de location.</span></div></div>
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi3">Stratégie de décumulation</span><span class="preview-item-desc" id="pi3d">Ordre optimal de retrait: REER, CÉLI, non enregistré. Conversion REER accélérée.</span></div></div>
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi4">Score de résilience</span><span class="preview-item-desc" id="pi4d">4 jauges: longévité, marché, inflation, dépenses imprévues.</span></div></div>
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi5">Analyse CCPC</span><span class="preview-item-desc" id="pi5d">Salaire vs dividende, extraction corporative, impact sur votre plan.</span></div></div>
-          <div class="preview-item"><span class="preview-num preview-num--gold">+</span><div><span class="preview-item-title" id="pi6">Héritage et succession</span><span class="preview-item-desc" id="pi6d">Ce que vous laisserez. Impôt successoral estimé. Frais d'homologation.</span></div></div>
-        </div>
       </div>
     </div>
   </div>
@@ -678,6 +681,20 @@ input,select,textarea{font-size:16px}
       </div>
       <div class="faq-item">
         <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq8">Quelle espérance de vie utilisez-vous?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa8">Nous utilisons les tables de mortalité canadiennes les plus récentes, ajustées pour refléter les tendances d'amélioration de la longévité. L'âge de décès varie d'un scénario à l'autre — votre plan est testé avec une durée de vie de 85 ans comme avec 98 ans. C'est une des variables stochastiques du modèle.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
+          <span id="fq9">Quel rendement supposez-vous?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa9">Aucun rendement fixe. Le moteur génère des distributions de rendements corrélés — actions, obligations, inflation — basées sur des données historiques. Chaque scénario a ses propres séquences de bonnes et mauvaises années. C'est ce qui différencie une simulation d'un calculateur qui suppose 6 % par année.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false" data-track="faq_open">
           <span id="fq7">Quelle est votre politique après l'achat?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -704,7 +721,7 @@ input,select,textarea{font-size:16px}
 <div class="sticky-cta" id="stickyCta">
   <div class="sticky-cta-inner">
     <div class="sticky-cta-text" id="stickyText">À partir de <span>19,50 $</span></div>
-    <a href="#products" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
+    <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
   </div>
 </div>
 
@@ -729,8 +746,8 @@ input,select,textarea{font-size:16px}
       </div>
       <div class="footer-col">
         <div class="footer-col-title" id="footLegal">Légal</div>
-        <span class="footer-soon" id="footPriv">Confidentialité</span>
-        <span class="footer-soon" id="footTerms">Conditions d'utilisation</span>
+        <a href="/privacy" id="footPriv">Confidentialité</a>
+        <a href="/terms" id="footTerms">Conditions d'utilisation</a>
       </div>
     </div>
     <div class="footer-disclaimer" id="footDisclaimer">
@@ -765,6 +782,7 @@ var T = {
   navWhy: { fr:'Pourquoi BuildFi', en:'Why BuildFi' },
   navPreview: { fr:'Aperçu', en:'Preview' },
   navFaq: { fr:'FAQ', en:'FAQ' },
+  navEngine: { fr:'Comment ça marche', en:'How it works' },
   navCta: { fr:'Commencer', en:'Get started' },
   langToggle: { fr:'EN', en:'FR' },
   skipNav: { fr:'Aller au contenu', en:'Skip to content' },
@@ -774,61 +792,83 @@ var T = {
   heroSub: { fr:"BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d\u2019abonnement. Pas de compte à créer.", en:"BuildFi analyzes your savings, income, and taxes across thousands of economic scenarios. You get a clear report with a grade, projections, and personalized observations. No subscription. No account to create." },
   heroCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   heroPrice: { fr:'À partir de <strong>19,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <strong>$19.50</strong> \u00b7 One-time payment' },
+  heroCompare: { fr:'Voir tous les produits \u2193', en:'See all products \u2193' },
   trust1: { fr:'Données jamais stockées', en:'Data never stored' },
   trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
   trust3: { fr:'Paiement unique', en:'One payment' },
   trust4: { fr:'10 provinces, 3 territoires', en:'10 provinces, 3 territories' },
   gradeLabel: { fr:'Votre note de retraite', en:'Your retirement grade' },
   gradePill: { fr:'En bonne voie', en:'On track' },
+  // Engine
+  engineLabel: { fr:'Sous le capot', en:'Under the hood' },
+  engineTitle: { fr:"Un moteur de simulation, pas un calculateur.", en:"A simulation engine, not a calculator." },
+  eng1t: { fr:'Simulation Monte Carlo corrélée', en:'Correlated Monte Carlo simulation' },
+  eng1d: { fr:"Rendements, inflation, espérance de vie \u2014 tout varie simultanément dans chaque scénario. Pas un \u00ab\u00a0rendement moyen de 6\u00a0%\u00a0\u00bb.", en:"Returns, inflation, life expectancy \u2014 everything varies simultaneously in each scenario. Not an \u201caverage 6% return.\u201d" },
+  eng2t: { fr:'Fiscalité fédérale + provinciale ligne par ligne', en:'Federal + provincial taxes, line by line' },
+  eng2d: { fr:"Crédits pour l\u2019\u00e2ge, récupération de la PSV, fractionnement de pension. Barèmes 2026, 13 juridictions.", en:"Age credits, OAS clawback, pension splitting. 2026 brackets, 13 jurisdictions." },
+  eng3t: { fr:'436 tests automatisés, 17 profils canary', en:'436 automated tests, 17 canary profiles' },
+  eng3d: { fr:"Employés, couples, fonctionnaires, incorporés \u2014 chaque profil est validé avant chaque mise à jour.", en:"Employees, couples, government workers, incorporated \u2014 every profile validated before every update." },
   // Products
   productsLabel: { fr:'Choisissez votre rapport', en:'Choose your report' },
   productsTitle: { fr:'Simple ou complet. Vous décidez.', en:'Simple or complete. You decide.' },
   productsSubtitle: { fr:"Chaque rapport utilise le même moteur de simulation \u2014 jusqu\u2019à 10\u00a0000 scénarios. La différence, c\u2019est la profondeur de l\u2019analyse.", en:"Every report uses the same simulation engine \u2014 up to 10,000 scenarios. The difference is the depth of the analysis." },
+  productsAnti: { fr:"Pas un conseiller qui vend des fonds. Pas un calculateur simpliste. Pas un abonnement.", en:"Not an advisor selling funds. Not a simplistic calculator. Not a subscription." },
+  prodEssBadge: { fr:'Commencez ici', en:'Start here' },
   prodEssPersona: { fr:'Vous commencez à planifier', en:"You\u2019re starting to plan" },
   prodEssName: { fr:'Essentiel', en:'Essential' },
   prodEssDesc: { fr:"Vous ne savez pas trop où vous en êtes \u2014 et les outils génériques ne vous disent rien d\u2019utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.", en:"You\u2019re not sure where you stand \u2014 and generic tools don\u2019t tell you much. In a few minutes, you get a clear portrait of your situation: your grade, projected income, risks, and personalized observations." },
+  prodEssIncludesLabel: { fr:'Inclus :', en:'Included:' },
+  prodEssBonus1: { fr:"Outil d\u2019analyse des dettes (interactif)", en:'Debt analysis tool (interactive)' },
+  prodEssBonus2: { fr:'Guide 101 \u2014 Les bases de vos finances (PDF)', en:'Guide 101 \u2014 The basics of your finances (PDF)' },
+  prodEssGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodInterPersona: { fr:'Vous voulez aller plus loin', en:'You want to go deeper' },
   prodInterName: { fr:'Intermédiaire', en:'Intermediate' },
-  prodInterBadge: { fr:'Populaire', en:'Popular' },
+  // prodInterBadge: { fr:'Populaire', en:'Popular' },  // moved badge to Essentiel
   prodInterDesc: { fr:"Vous épargnez déjà, vous êtes en couple ou propriétaire \u2014 et vous voulez savoir si votre stratégie tient la route. L\u2019Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.", en:"You\u2019re already saving, you\u2019re a couple or homeowner \u2014 and you want to know if your strategy holds up. Intermediate analyzes your complete situation: taxes, real estate, succession, and plan resilience." },
+  prodInterIncludesLabel: { fr:'Inclus :', en:'Included:' },
+  prodInterBonus1: { fr:"Tout l\u2019Essentiel", en:'Everything in Essential' },
+  prodInterBonus2: { fr:'Guide 201 \u2014 Optimiser votre retraite (PDF)', en:'Guide 201 \u2014 Optimize your retirement (PDF)' },
+  prodInterBonus3: { fr:"Outil d\u2019analyse des dettes (interactif)", en:'Debt analysis tool (interactive)' },
+  prodInterGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodExpPersona: { fr:'Tout ce que vous avez toujours cherché', en:"Everything you\u2019ve been looking for" },
   prodExpName: { fr:'Expert \u00b7 Simulateur', en:'Expert \u00b7 Simulator' },
   prodExpDesc: { fr:"Vous n\u2019avez jamais trouvé un seul outil qui fait tout. L\u2019Expert, c\u2019est ça \u2014 un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions \u2014 tout y est.", en:"You\u2019ve never found one tool that does it all. Expert is it \u2014 a simulator where you test, adjust, and explore every variable of your retirement. Incorporation, stress tests, pensions \u2014 it\u2019s all there." },
   prodEssCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   prodInterCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
-  prodExpCta: { fr:'En savoir plus \u2192', en:'Learn more \u2192' },
-  prodEssProcess: { fr:'Questionnaire \u2192 Rapport en ligne + PDF par courriel', en:'Questionnaire \u2192 Online report + PDF by email' },
-  prodInterProcess: { fr:'Questionnaire \u2192 Rapport en ligne + PDF par courriel', en:'Questionnaire \u2192 Online report + PDF by email' },
+  prodExpCta: { fr:'Bientôt disponible', en:'Coming soon' },
+  prodEssProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
+  prodInterProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
   prodExpProcess: { fr:'Détails et fonctionnalités sur la page Expert', en:'Details and features on the Expert page' },
+  prodExpGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodEssFor: { fr:'Personnes seules', en:'Individuals' },
   prodInterFor: { fr:'Couples \u00b7 Propriétaires \u00b7 Profils complexes', en:'Couples \u00b7 Homeowners \u00b7 Complex profiles' },
   prodExpFor: { fr:'Contrôle total', en:'Full control' },
   productsUpgrade: { fr:'Votre situation a changé? Passez au niveau suivant \u2014 nous créditons votre achat précédent.', en:'Your situation changed? Move to the next level \u2014 we credit your previous purchase.' },
   productsEarly: { fr:'Premiers 100 clients \u2014 50\u00a0% de rabais', en:'First 100 customers \u2014 50% off' },
   stripeLabel: { fr:'Paiement sécurisé par Stripe', en:'Secure payment via Stripe' },
-  // Bonus section
-  bonusLabel: { fr:'Inclus avec votre rapport', en:'Included with your report' },
-  bonusTitle: { fr:'Des outils concrets, pas juste un PDF.', en:'Real tools, not just a PDF.' },
-  bonusType1: { fr:'Outil interactif', en:'Interactive tool' },
-  bonusName1: { fr:'Analyse des dettes', en:'Debt analysis' },
-  bonusDesc1: { fr:"Entrez vos dettes, comparez avalanche vs boule de neige, visualisez votre calendrier de remboursement mois par mois. Calcul des intérêts économisés en temps réel.", en:"Enter your debts, compare avalanche vs snowball, visualize your month-by-month repayment schedule. Interest savings calculated in real time." },
-  bonusTag1a: { fr:'Essentiel', en:'Essential' },
-  bonusTag1b: { fr:'Intermédiaire', en:'Intermediate' },
-  bonusType2: { fr:'Guide PDF', en:'PDF guide' },
-  bonusName2: { fr:'101 \u2014 Les bases de vos finances', en:'101 \u2014 The basics of your finances' },
-  bonusDesc2: { fr:"Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir \u2014 en langage clair, avec des exemples en dollars.", en:"Budget, debt, credit, savings, RRSP vs TFSA, CPP, OAS, insurance. Everything you need to know \u2014 in plain language, with dollar examples." },
-  bonusTag2a: { fr:'Essentiel', en:'Essential' },
-  bonusTag2b: { fr:'Intermédiaire', en:'Intermediate' },
-  bonusType3: { fr:'Guide PDF', en:'PDF guide' },
-  bonusName3: { fr:'201 \u2014 Optimiser votre retraite', en:'201 \u2014 Optimize your retirement' },
-  bonusDesc3: { fr:"Décaissement, fiscalité, protection PSV, fractionnement, meltdown REER, guardrails, immobilier, CCPC. 11 chapitres pour patrimoines établis.", en:"Withdrawal strategy, taxation, OAS protection, income splitting, RRSP meltdown, guardrails, real estate, CCPC. 11 chapters for established portfolios." },
-  bonusTag3: { fr:'Intermédiaire', en:'Intermediate' },
+  // moved to product cards
+  // bonusLabel: { fr:'Inclus avec votre rapport', en:'Included with your report' },
+  // bonusTitle: { fr:'Des outils concrets, pas juste un PDF.', en:'Real tools, not just a PDF.' },
+  // bonusType1: { fr:'Outil interactif', en:'Interactive tool' },
+  // bonusName1: { fr:'Analyse des dettes', en:'Debt analysis' },
+  // bonusDesc1: { fr:"Entrez vos dettes, comparez avalanche vs boule de neige, visualisez votre calendrier de remboursement mois par mois. Calcul des intérêts économisés en temps réel.", en:"Enter your debts, compare avalanche vs snowball, visualize your month-by-month repayment schedule. Interest savings calculated in real time." },
+  // bonusTag1a: { fr:'Essentiel', en:'Essential' },
+  // bonusTag1b: { fr:'Intermédiaire', en:'Intermediate' },
+  // bonusType2: { fr:'Guide PDF', en:'PDF guide' },
+  // bonusName2: { fr:'101 \u2014 Les bases de vos finances', en:'101 \u2014 The basics of your finances' },
+  // bonusDesc2: { fr:"Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir \u2014 en langage clair, avec des exemples en dollars.", en:"Budget, debt, credit, savings, RRSP vs TFSA, CPP, OAS, insurance. Everything you need to know \u2014 in plain language, with dollar examples." },
+  // bonusTag2a: { fr:'Essentiel', en:'Essential' },
+  // bonusTag2b: { fr:'Intermédiaire', en:'Intermediate' },
+  // bonusType3: { fr:'Guide PDF', en:'PDF guide' },
+  // bonusName3: { fr:'201 \u2014 Optimiser votre retraite', en:'201 \u2014 Optimize your retirement' },
+  // bonusDesc3: { fr:"Décaissement, fiscalité, protection PSV, fractionnement, meltdown REER, guardrails, immobilier, CCPC. 11 chapitres pour patrimoines établis.", en:"Withdrawal strategy, taxation, OAS protection, income splitting, RRSP meltdown, guardrails, real estate, CCPC. 11 chapters for established portfolios." },
+  // bonusTag3: { fr:'Intermédiaire', en:'Intermediate' },
   compareText: { fr:'Comparer les fonctionnalités', en:'Compare features' },
   compFeat: { fr:'Fonctionnalité', en:'Feature' },
   cr1: { fr:'Note de retraite (A+ à F)', en:'Retirement grade (A+ to F)' },
   cr2: { fr:'Narration IA personnalisée', en:'Personalized AI narration' },
   cr3: { fr:'Monte Carlo (jusqu\u2019à 10\u00a0000 scénarios)', en:'Monte Carlo (up to 10,000 scenarios)' },
-  cr4: { fr:'Rapport PDF', en:'PDF report' },
+  cr4: { fr:'Rapport en ligne + version imprimable', en:'Online report + printable version' },
   cr5: { fr:'Outil interactif \u2014 Analyse des dettes', en:'Interactive tool \u2014 Debt analysis' },
   cr6: { fr:'Guide 101 \u2014 Les bases de vos finances', en:'Guide 101 \u2014 The basics of your finances' },
   cr6b: { fr:'Guide 201 \u2014 Optimiser votre retraite', en:'Guide 201 \u2014 Optimize your retirement' },
@@ -841,10 +881,10 @@ var T = {
   why1d: { fr:"Un calculateur vous dit \u00ab\u00a0vous aurez 800\u00a0000\u00a0$\u00a0\u00bb. Ça ne veut rien dire. BuildFi teste votre plan dans jusqu\u2019à 10\u00a0000 scénarios \u2014 bonnes années, mauvaises années, crises \u2014 et vous dit dans quel pourcentage votre argent dure.", en:"A calculator tells you \u201cyou\u2019ll have $800,000.\u201d That means nothing. BuildFi tests your plan across up to 10,000 scenarios \u2014 good years, bad years, crises \u2014 and tells you what percentage of the time your money lasts." },
   why2t: { fr:'Vos vrais impôts. Pas une estimation.', en:'Your real taxes. Not an estimate.' },
   why2d: { fr:"On calcule vos impôts fédéraux et provinciaux ligne par ligne \u2014 crédits pour l\u2019âge, pension, récupération de la PSV, fractionnement. Les 10 provinces et 3 territoires, barèmes 2026.", en:"We calculate your federal and provincial taxes line by line \u2014 age credits, pension, OAS clawback, income splitting. All 10 provinces and 3 territories, 2026 brackets." },
-  why3t: { fr:'Vous allez comprendre votre rapport.', en:'You\u2019ll actually understand your report.' },
-  why3d: { fr:"Chaque rapport inclut une analyse écrite par IA qui explique vos résultats comme un humain le ferait. Pas de tableaux incompréhensibles. Des observations concrètes, en français, sur votre situation à vous.", en:"Every report includes an AI-written analysis that explains your results like a human would. No incomprehensible tables. Concrete observations, in plain language, about your specific situation." },
-  why4t: { fr:'430 tests. Avant chaque mise à jour.', en:'430 tests. Before every update.' },
-  why4d: { fr:"Employés, couples, fonctionnaires, propriétaires d\u2019entreprise \u2014 17 profils testés automatiquement. Si un calcul casse, on le sait avant vous.", en:"Employees, couples, government workers, business owners \u2014 17 profiles tested automatically. If a calculation breaks, we know before you do." },
+  // why3t: { fr:'Vous allez comprendre votre rapport.', en:'You\u2019ll actually understand your report.' },  // moved to engine section
+  // why3d: { fr:"Chaque rapport inclut une analyse écrite par IA qui explique vos résultats comme un humain le ferait. Pas de tableaux incompréhensibles. Des observations concrètes, en français, sur votre situation à vous.", en:"Every report includes an AI-written analysis that explains your results like a human would. No incomprehensible tables. Concrete observations, in plain language, about your specific situation." },  // moved to engine section
+  // why4t: { fr:'430 tests. Avant chaque mise à jour.', en:'430 tests. Before every update.' },  // moved to engine section
+  // why4d: { fr:"Employés, couples, fonctionnaires, propriétaires d\u2019entreprise \u2014 17 profils testés automatiquement. Si un calcul casse, on le sait avant vous.", en:"Employees, couples, government workers, business owners \u2014 17 profiles tested automatically. If a calculation breaks, we know before you do." },  // moved to engine section
   why5t: { fr:'Canadien. Pas américain traduit.', en:'Canadian. Not a translated American tool.' },
   why5d: { fr:"RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR \u2014 chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.", en:"CPP, OAS, GIS, RRSP, TFSA, FHSA, RRIF \u2014 every government program is modeled. Built for Canadian taxation from the first line of code." },
   why6t: { fr:'On ne veut pas vos données.', en:'We don\u2019t want your data.' },
@@ -854,7 +894,7 @@ var T = {
   previewTitle: { fr:'Ce que contient chaque rapport', en:'What each report contains' },
   previewSubtitle: { fr:"Présenté clairement, sans jargon financier. L\u2019Intermédiaire inclut tout l\u2019Essentiel.", en:'Presented clearly, without financial jargon. Intermediate includes all of Essential.' },
   prevEssHeader: { fr:'Rapport Essentiel', en:'Essential Report' },
-  prevEssSub: { fr:'8 sections \u00b7 4 graphiques \u00b7 narration IA \u00b7 PDF', en:'8 sections \u00b7 4 charts \u00b7 AI narration \u00b7 PDF' },
+  prevEssSub: { fr:'Plus de 10 sections \u00b7 4 graphiques \u00b7 narration IA', en:'10+ sections \u00b7 4 charts \u00b7 AI narration' },
   prevInterHeader: { fr:'L\u2019Intermédiaire ajoute', en:'Intermediate adds' },
   prevInterSub: { fr:"6 sections supplémentaires \u00b7 inclut tout l\u2019Essentiel", en:'6 additional sections \u00b7 includes all of Essential' },
   pe1: { fr:'Votre diagnostic', en:'Your assessment' },
@@ -902,6 +942,10 @@ var T = {
   fa6: { fr:"Oui. Si votre situation évolue, nous créditons votre achat précédent vers le produit supérieur. Par exemple, si vous passez de l\u2019Essentiel à l\u2019Intermédiaire, vous payez uniquement la différence. Contactez-nous et nous activerons votre mise à niveau.", en:"Yes. If your situation changes, we credit your previous purchase toward the higher product. For example, if you move from Essential to Intermediate, you only pay the difference. Contact us and we\u2019ll activate your upgrade." },
   fq7: { fr:"Quelle est votre politique après l\u2019achat?", en:'What is your post-purchase policy?' },
   fa7: { fr:"BuildFi est un produit numérique livré instantanément. Il n\u2019y a pas de remboursement. Si une erreur technique empêche la livraison ou affecte la qualité de votre rapport, nous le corrigerons ou le reproduirons sans frais supplémentaires. Contactez-nous à support@buildfi.ca.", en:"BuildFi is a digital product delivered instantly. There are no refunds. If a technical error prevents delivery or affects your report quality, we will correct or reproduce it at no additional cost. Contact us at support@buildfi.ca." },
+  fq8: { fr:"Quelle espérance de vie utilisez-vous?", en:"What life expectancy do you use?" },
+  fa8: { fr:"Nous utilisons les tables de mortalité canadiennes les plus récentes, ajustées pour refléter les tendances d\u2019amélioration de la longévité. L\u2019\u00e2ge de décès varie d\u2019un scénario à l\u2019autre \u2014 votre plan est testé avec une durée de vie de 85 ans comme avec 98 ans. C\u2019est une des variables stochastiques du modèle.", en:"We use the most recent Canadian mortality tables, adjusted to reflect longevity improvement trends. The age of death varies across scenarios \u2014 your plan is tested with a lifespan of 85 as well as 98. It\u2019s one of the stochastic variables in the model." },
+  fq9: { fr:'Quel rendement supposez-vous?', en:'What return do you assume?' },
+  fa9: { fr:"Aucun rendement fixe. Le moteur génère des distributions de rendements corrélés \u2014 actions, obligations, inflation \u2014 basées sur des données historiques. Chaque scénario a ses propres séquences de bonnes et mauvaises années. C\u2019est ce qui différencie une simulation d\u2019un calculateur qui suppose 6\u00a0% par année.", en:"No fixed return. The engine generates correlated return distributions \u2014 equities, bonds, inflation \u2014 based on historical data. Each scenario has its own sequences of good and bad years. That\u2019s what differentiates a simulation from a calculator that assumes 6% per year." },
   // Final CTA
   finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
   finalSubtitle: { fr:'Un rapport complet, un paiement unique. Premiers 100 clients: 50\u00a0% de rabais.', en:'A complete report, one payment. First 100 customers: 50% off.' },
@@ -941,9 +985,9 @@ function applyLang() {
   if (lt) lt.textContent = lang === 'fr' ? 'EN' : 'FR';
   var flt = document.getElementById('footLangToggle');
   if (flt) flt.textContent = lang === 'fr' ? 'English' : 'Français';
-  var dd = document.getElementById('drawerProducts'); if (dd) dd.textContent = T.navProducts[lang];
-  var dw = document.getElementById('drawerWhy'); if (dw) dw.textContent = T.navWhy[lang];
+  var de = document.getElementById('drawerEngine'); if (de) de.textContent = T.navEngine[lang];
   var dv = document.getElementById('drawerPreview'); if (dv) dv.textContent = T.navPreview[lang];
+  var dd = document.getElementById('drawerProducts'); if (dd) dd.textContent = T.navProducts[lang];
   var df = document.getElementById('drawerFaq'); if (df) df.textContent = T.navFaq[lang];
   var dc = document.getElementById('drawerCta'); if (dc) dc.textContent = T.navCta[lang];
 }
@@ -987,12 +1031,14 @@ var revealObs = new IntersectionObserver(function(entries) {
 reveals.forEach(function(el) { revealObs.observe(el); });
 
 /* ─── GRADE CARD ─── */
-var grades = ['B+','A-','B','A','B+','A+','C+','B+'];
+var grades = ['B+','A-','B','A','B+','A+','B','B+'];
 var gradeIdx = 0;
 var gradeLetter = document.getElementById('gradeLetter');
 if (gradeLetter) {
-  setInterval(function() {
-    gradeIdx = (gradeIdx + 1) % grades.length;
+  gradeLetter.style.transition = 'opacity .2s, transform .2s';
+  var gradeInterval = setInterval(function() {
+    gradeIdx++;
+    if (gradeIdx >= grades.length) { clearInterval(gradeInterval); return; }
     gradeLetter.style.opacity = '0';
     gradeLetter.style.transform = 'translateY(-8px)';
     setTimeout(function() {
@@ -1001,7 +1047,6 @@ if (gradeLetter) {
       gradeLetter.style.transform = 'translateY(0)';
     }, 200);
   }, 2400);
-  gradeLetter.style.transition = 'opacity .2s, transform .2s';
 }
 
 /* ─── FAQ ─── */
@@ -1056,6 +1101,13 @@ if (productsSection) {
     if (entries[0].isIntersecting) { trackEvent('pricing_view'); productsObs.disconnect(); }
   }, { threshold: 0.3 });
   productsObs.observe(productsSection);
+}
+var engineSection = document.getElementById('engine');
+if (engineSection) {
+  var engineObs = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting) { trackEvent('engine_view'); engineObs.disconnect(); }
+  }, { threshold: 0.3 });
+  engineObs.observe(engineSection);
 }
 
 /* ─── FAQ SCHEMA ─── */
