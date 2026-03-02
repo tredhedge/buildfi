@@ -263,6 +263,7 @@ export default function DebtTool() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [showAllStrategies, setShowAllStrategies] = useState(false);
   const [expandedStrat, setExpandedStrat] = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const importRef = useRef(null);
 
   // ── Debt type labels (must be before derived values that reference them) ──
@@ -312,7 +313,7 @@ export default function DebtTool() {
     });
   }, [payableDebts, extraPay, lang]);
 
-  const basePayoff = useMemo(() => multiDebtPayoff(payableDebts, 0, "avalanche"), [payableDebts]);
+  const basePayoff = useMemo(() => multiDebtPayoff(payableDebts, 0, selectedStrategy), [payableDebts, selectedStrategy]);
   const selectedResult = useMemo(() => {
     const found = strategies.find(s => s.key === selectedStrategy);
     return found || { months: 0, totalInt: 0, order: [], timeline: [], feasible: true };
@@ -473,6 +474,11 @@ export default function DebtTool() {
     } catch (e) {}
   }, [debts, mortgages, income, prov, expReturn, coupleOn, lang, spouseIncome, spouseProv, selectedStrategy, extraPay, snowflakeAmt]);
 
+  // Auto-open advanced section if existing data present (import/localStorage)
+  useEffect(() => {
+    if (mortgages.length > 0 || income > 0 || coupleOn) setShowAdvanced(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Export/Import ──
   const exportData = () => {
     const data = JSON.stringify({ debts, mortgages, income, prov, expReturn, coupleOn, spouseIncome, spouseProv, selectedStrategy, extraPay, snowflakeAmt, version: 1 }, null, 2);
@@ -557,8 +563,9 @@ export default function DebtTool() {
     { id: 0, label: fr ? "Inventaire" : "Inventory" },
     { id: 1, label: fr ? "Stratégies" : "Strategies" },
     { id: 2, label: fr ? "Simulateur" : "Simulator" },
-    { id: 3, label: fr ? "Rembourser vs Investir" : "Repay vs Invest" },
     { id: 4, label: fr ? "Calendrier" : "Calendar" },
+    // — advanced tabs —
+    { id: 3, label: fr ? "Rembourser vs Investir" : "Repay vs Invest" },
     { id: 5, label: fr ? "Coût réel" : "True Cost" },
   ];
 
@@ -567,60 +574,19 @@ export default function DebtTool() {
   // ══════════════════════════════════════════════════════════
   const renderInventory = () => (
     <div>
-      {/* Context section */}
-      <SectionTitle>{fr ? "Contexte financier (optionnel)" : "Financial context (optional)"}</SectionTitle>
-      <Card>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          <InputRow label={fr ? "Revenu brut/an" : "Gross income/yr"} tip={fr ? "Permet de calculer votre taux marginal d'impôt" : "Used to calculate your marginal tax rate"}>
-            <NumInput value={income} onChange={setIncome} step={5000} />
-          </InputRow>
-          <InputRow label={fr ? "Province" : "Province"}>
-            <select value={prov} onChange={e => setProv(e.target.value)}
-              style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
-              {Object.keys(PROV_TAX).sort().map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </InputRow>
-          <InputRow label={fr ? "Rendement espéré" : "Expected return"} tip={fr ? "Rendement annuel brut de votre portefeuille. Entrez 6 pour 6%. Utilisé dans l'onglet Rembourser vs Investir." : "Gross annual portfolio return. Enter 6 for 6%. Used in the Repay vs Invest tab."}>
-            <NumInput value={Math.round(expReturn * 100 * 10) / 10} onChange={v => {
-              // Guard: if user types 0.06 instead of 6, auto-correct
-              const rate = v > 0 && v < 1 ? v : v / 100;
-              setExpReturn(Math.max(0, Math.min(0.15, rate)));
-            }} step={0.5} min={0} max={15} prefix="%" />
-          </InputRow>
-        </div>
-        {income > 0 && (
-          <div style={{ marginTop: 8, padding: "6px 10px", background: DK.accentBg, borderRadius: 6, fontSize: 12, color: DK.txDim }}>
-            {fr ? `Taux marginal estimé : ${pct(margRate)} · Rendement après impôt : ${pct(afterTaxRet)}` : `Estimated marginal rate: ${pct(margRate)} · After-tax return: ${pct(afterTaxRet)}`}
+      {/* Welcome banner — only when no debts and no mortgages */}
+      {activeDebts.length === 0 && mortgages.length === 0 && (
+        <Card style={{ borderLeft: `3px solid ${DK.accent}`, marginBottom: 16 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: DK.accent, marginBottom: 6 }}>
+            {fr ? "Reprenez le contrôle de vos dettes" : "Take control of your debt"}
           </div>
-        )}
-        {!income && (
-          <div style={{ marginTop: 8, padding: "6px 10px", background: DK.orangeBg, borderRadius: 6, fontSize: 12, color: DK.orange }}>
-            {fr ? `Sans revenu saisi, on utilise un taux marginal estimé de ${pct(margRate)}. Pour un calcul plus précis, entrez votre revenu ci-dessus.` : `Without income entered, we use an estimated marginal rate of ${pct(margRate)}. For a more accurate calculation, enter your income above.`}
+          <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6 }}>
+            {fr
+              ? "Ajoutez vos dettes ci-dessous — solde, taux et paiement mensuel suffisent. L'outil calcule automatiquement la meilleure stratégie, le calendrier de remboursement et le coût réel de chaque dette."
+              : "Add your debts below — balance, rate and monthly payment are enough. The tool automatically calculates the best strategy, payoff calendar, and true cost of each debt."}
           </div>
-        )}
-        {coupleOn && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
-            <InputRow label={fr ? "Revenu conjoint(e)/an" : "Spouse income/yr"} tip={fr ? "Pour calculer le taux marginal du conjoint (Smith Manoeuvre, Rembourser vs Investir)" : "For computing spouse's marginal rate (Smith Manoeuvre, Repay vs Invest)"}>
-              <NumInput value={spouseIncome} onChange={setSpouseIncome} step={5000} />
-            </InputRow>
-            <InputRow label={fr ? "Province conjoint(e)" : "Spouse province"}>
-              <select value={spouseProv} onChange={e => setSpouseProv(e.target.value)}
-                style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
-                {Object.keys(PROV_TAX).sort().map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </InputRow>
-          </div>
-        )}
-      </Card>
-
-      {/* Couple toggle */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, color: DK.txDim }}>
-          <input type="checkbox" checked={coupleOn} onChange={e => setCoupleOn(e.target.checked)}
-            style={{ accentColor: DK.accent }} />
-          {fr ? "Mode couple" : "Couple mode"}
-        </label>
-      </div>
+        </Card>
+      )}
 
       {/* Debts section */}
       <SectionTitle>{fr ? "Vos dettes" : "Your debts"}</SectionTitle>
@@ -737,64 +703,7 @@ export default function DebtTool() {
         + {fr ? "Ajouter une dette" : "Add a debt"}
       </button>
 
-      {/* Mortgages */}
-      <SectionTitle>{fr ? "Hypothèques" : "Mortgages"}</SectionTitle>
-      {mortgages.map((m, i) => (
-        <Card key={`m${i}`} style={{ borderLeft: `4px solid ${DK.orange}`, padding: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-              {coupleOn && (
-                <select value={m.owner || "me"} onChange={e => updateMortgage(i, "owner", e.target.value)}
-                  style={{ background: DK.bg, color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 4, padding: "2px 4px", fontSize: 11 }}>
-                  <option value="me">{fr ? "Moi" : "Me"}</option>
-                  <option value="spouse">{fr ? "Conjoint(e)" : "Spouse"}</option>
-                  <option value="joint">{fr ? "Les deux" : "Joint"}</option>
-                </select>
-              )}
-              <input type="text" value={m.name || ""} onChange={e => updateMortgage(i, "name", e.target.value)}
-                placeholder={fr ? "Nom (ex: Résidence principale)" : "Name (e.g. Primary home)"}
-                style={{ background: "transparent", color: DK.tx, border: "none", fontSize: 14, fontWeight: 600, flex: 1, outline: "none" }} />
-            </div>
-            <button onClick={() => removeMortgage(i)} style={{ background: "transparent", color: DK.red, border: "none", fontSize: 16, cursor: "pointer" }}>✕</button>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
-            <InputRow label={fr ? "Solde" : "Balance"} tip={fr ? "Le solde hypothécaire restant" : "Remaining mortgage balance"}><NumInput value={m.bal} onChange={v => updateMortgage(i, "bal", v)} step={5000} /></InputRow>
-            <InputRow label={fr ? "Taux %" : "Rate %"} tip={fr ? "Taux d'intérêt annuel actuel" : "Current annual interest rate"}><NumInput value={Math.round((m.rate || 0) * 10000) / 100} onChange={v => updateMortgage(i, "rate", v / 100)} step={0.1} prefix="%" /></InputRow>
-            <InputRow label={fr ? "Amortissement (ans)" : "Amortization (yrs)"} tip={fr ? "Durée totale de remboursement du prêt" : "Total loan repayment period"}><NumInput value={m.amort || 25} onChange={v => updateMortgage(i, "amort", v)} step={1} prefix="" /></InputRow>
-            <InputRow label={fr ? "Terme (ans)" : "Term (yrs)"} tip={fr ? "Durée avant le prochain renouvellement" : "Duration until next renewal"}><NumInput value={m.termYrs || 5} onChange={v => updateMortgage(i, "termYrs", v)} step={1} prefix="" /></InputRow>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8 }}>
-            <InputRow label={fr ? "Taux renouvellement estimé" : "Est. renewal rate"}>
-              <NumInput value={Math.round((m.renewalRate || 0) * 10000) / 100} onChange={v => updateMortgage(i, "renewalRate", v / 100)} step={0.1} prefix="%" />
-            </InputRow>
-            <InputRow label={fr ? "Type" : "Type"}>
-              <select value={m.type || "fixed"} onChange={e => updateMortgage(i, "type", e.target.value)}
-                style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
-                <option value="fixed">{fr ? "Fixe" : "Fixed"}</option>
-                <option value="variable">{fr ? "Variable" : "Variable"}</option>
-              </select>
-            </InputRow>
-            <InputRow label={fr ? "Fréquence" : "Frequency"}>
-              <select value={m.frequency || "monthly"} onChange={e => updateMortgage(i, "frequency", e.target.value)}
-                style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
-                <option value="monthly">{fr ? "Mensuel" : "Monthly"}</option>
-                <option value="biweekly">{fr ? "Aux 2 semaines" : "Biweekly"}</option>
-                <option value="acc_biweekly">{fr ? "Acc. aux 2 semaines" : "Acc. biweekly"}</option>
-              </select>
-            </InputRow>
-          </div>
-          <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontSize: 12, color: DK.txDim, marginTop: 6 }}>
-            <input type="checkbox" checked={m.deductible || false} onChange={e => updateMortgage(i, "deductible", e.target.checked)} style={{ accentColor: DK.accent }} />
-            {fr ? "Intérêts déductibles (Smith Manoeuvre)" : "Deductible interest (Smith Manoeuvre)"}
-          </label>
-        </Card>
-      ))}
-
-      <button onClick={addMortgage} style={{ width: "100%", padding: 10, background: "transparent", color: DK.orange, border: `2px dashed ${DK.orange}40`, borderRadius: 10, fontSize: 14, cursor: "pointer", fontWeight: 600 }}>
-        + {fr ? "Ajouter une hypothèque" : "Add a mortgage"}
-      </button>
-
-      {/* Summary dashboard */}
+      {/* Summary dashboard — moved up, right after debts */}
       {(activeDebts.length > 0 || mtgAnalyses.length > 0) && (
         <>
           <SectionTitle>{fr ? "Portrait global" : "Overview"}</SectionTitle>
@@ -808,6 +717,132 @@ export default function DebtTool() {
             <StatBox label={fr ? "Taux moyen pondéré" : "Weighted avg rate"} value={pct(wAvgRate)} color={DK.tx} />
           </div>
         </>
+      )}
+
+      {/* Advanced section toggle */}
+      <div
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        style={{
+          fontSize: 13, fontWeight: 600, color: DK.txDim, cursor: "pointer",
+          padding: "10px 0", marginTop: 12,
+          borderTop: `1px solid ${DK.border}`
+        }}>
+        {showAdvanced ? "\u25be" : "\u25b8"} {fr ? "Hypothèques, contexte financier et options avancées" : "Mortgages, financial context and advanced options"}
+      </div>
+
+      {showAdvanced && (
+        <div>
+          {/* Context section */}
+          <SectionTitle>{fr ? "Contexte financier (optionnel)" : "Financial context (optional)"}</SectionTitle>
+          <Card>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              <InputRow label={fr ? "Revenu brut/an" : "Gross income/yr"} tip={fr ? "Permet de calculer votre taux marginal d'impôt" : "Used to calculate your marginal tax rate"}>
+                <NumInput value={income} onChange={setIncome} step={5000} />
+              </InputRow>
+              <InputRow label={fr ? "Province" : "Province"}>
+                <select value={prov} onChange={e => setProv(e.target.value)}
+                  style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
+                  {Object.keys(PROV_TAX).sort().map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </InputRow>
+              <InputRow label={fr ? "Rendement espéré" : "Expected return"} tip={fr ? "Rendement annuel brut de votre portefeuille. Entrez 6 pour 6%. Utilisé dans l'onglet Rembourser vs Investir." : "Gross annual portfolio return. Enter 6 for 6%. Used in the Repay vs Invest tab."}>
+                <NumInput value={Math.round(expReturn * 100 * 10) / 10} onChange={v => {
+                  const rate = v > 0 && v < 1 ? v : v / 100;
+                  setExpReturn(Math.max(0, Math.min(0.15, rate)));
+                }} step={0.5} min={0} max={15} prefix="%" />
+              </InputRow>
+            </div>
+            {income > 0 && (
+              <div style={{ marginTop: 8, padding: "6px 10px", background: DK.accentBg, borderRadius: 6, fontSize: 12, color: DK.txDim }}>
+                {fr ? `Taux marginal estimé : ${pct(margRate)} · Rendement après impôt : ${pct(afterTaxRet)}` : `Estimated marginal rate: ${pct(margRate)} · After-tax return: ${pct(afterTaxRet)}`}
+              </div>
+            )}
+            {!income && (
+              <div style={{ marginTop: 8, padding: "6px 10px", background: DK.orangeBg, borderRadius: 6, fontSize: 12, color: DK.orange }}>
+                {fr ? `Sans revenu saisi, on utilise un taux marginal estimé de ${pct(margRate)}. Pour un calcul plus précis, entrez votre revenu ci-dessus.` : `Without income entered, we use an estimated marginal rate of ${pct(margRate)}. For a more accurate calculation, enter your income above.`}
+              </div>
+            )}
+            {coupleOn && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+                <InputRow label={fr ? "Revenu conjoint(e)/an" : "Spouse income/yr"} tip={fr ? "Pour calculer le taux marginal du conjoint (Smith Manoeuvre, Rembourser vs Investir)" : "For computing spouse's marginal rate (Smith Manoeuvre, Repay vs Invest)"}>
+                  <NumInput value={spouseIncome} onChange={setSpouseIncome} step={5000} />
+                </InputRow>
+                <InputRow label={fr ? "Province conjoint(e)" : "Spouse province"}>
+                  <select value={spouseProv} onChange={e => setSpouseProv(e.target.value)}
+                    style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
+                    {Object.keys(PROV_TAX).sort().map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </InputRow>
+              </div>
+            )}
+          </Card>
+
+          {/* Couple toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, color: DK.txDim }}>
+              <input type="checkbox" checked={coupleOn} onChange={e => setCoupleOn(e.target.checked)}
+                style={{ accentColor: DK.accent }} />
+              {fr ? "Mode couple" : "Couple mode"}
+            </label>
+          </div>
+
+          {/* Mortgages */}
+          <SectionTitle>{fr ? "Hypothèques" : "Mortgages"}</SectionTitle>
+          {mortgages.map((m, i) => (
+            <Card key={`m${i}`} style={{ borderLeft: `4px solid ${DK.orange}`, padding: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                  {coupleOn && (
+                    <select value={m.owner || "me"} onChange={e => updateMortgage(i, "owner", e.target.value)}
+                      style={{ background: DK.bg, color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 4, padding: "2px 4px", fontSize: 11 }}>
+                      <option value="me">{fr ? "Moi" : "Me"}</option>
+                      <option value="spouse">{fr ? "Conjoint(e)" : "Spouse"}</option>
+                      <option value="joint">{fr ? "Les deux" : "Joint"}</option>
+                    </select>
+                  )}
+                  <input type="text" value={m.name || ""} onChange={e => updateMortgage(i, "name", e.target.value)}
+                    placeholder={fr ? "Nom (ex: Résidence principale)" : "Name (e.g. Primary home)"}
+                    style={{ background: "transparent", color: DK.tx, border: "none", fontSize: 14, fontWeight: 600, flex: 1, outline: "none" }} />
+                </div>
+                <button onClick={() => removeMortgage(i)} style={{ background: "transparent", color: DK.red, border: "none", fontSize: 16, cursor: "pointer" }}>✕</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+                <InputRow label={fr ? "Solde" : "Balance"} tip={fr ? "Le solde hypothécaire restant" : "Remaining mortgage balance"}><NumInput value={m.bal} onChange={v => updateMortgage(i, "bal", v)} step={5000} /></InputRow>
+                <InputRow label={fr ? "Taux %" : "Rate %"} tip={fr ? "Taux d'intérêt annuel actuel" : "Current annual interest rate"}><NumInput value={Math.round((m.rate || 0) * 10000) / 100} onChange={v => updateMortgage(i, "rate", v / 100)} step={0.1} prefix="%" /></InputRow>
+                <InputRow label={fr ? "Amortissement (ans)" : "Amortization (yrs)"} tip={fr ? "Durée totale de remboursement du prêt" : "Total loan repayment period"}><NumInput value={m.amort || 25} onChange={v => updateMortgage(i, "amort", v)} step={1} prefix="" /></InputRow>
+                <InputRow label={fr ? "Terme (ans)" : "Term (yrs)"} tip={fr ? "Durée avant le prochain renouvellement" : "Duration until next renewal"}><NumInput value={m.termYrs || 5} onChange={v => updateMortgage(i, "termYrs", v)} step={1} prefix="" /></InputRow>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8 }}>
+                <InputRow label={fr ? "Taux renouvellement estimé" : "Est. renewal rate"}>
+                  <NumInput value={Math.round((m.renewalRate || 0) * 10000) / 100} onChange={v => updateMortgage(i, "renewalRate", v / 100)} step={0.1} prefix="%" />
+                </InputRow>
+                <InputRow label={fr ? "Type" : "Type"}>
+                  <select value={m.type || "fixed"} onChange={e => updateMortgage(i, "type", e.target.value)}
+                    style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
+                    <option value="fixed">{fr ? "Fixe" : "Fixed"}</option>
+                    <option value="variable">{fr ? "Variable" : "Variable"}</option>
+                  </select>
+                </InputRow>
+                <InputRow label={fr ? "Fréquence" : "Frequency"}>
+                  <select value={m.frequency || "monthly"} onChange={e => updateMortgage(i, "frequency", e.target.value)}
+                    style={{ width: "100%", background: DK.bg, color: DK.tx, border: `1px solid ${DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13 }}>
+                    <option value="monthly">{fr ? "Mensuel" : "Monthly"}</option>
+                    <option value="biweekly">{fr ? "Aux 2 semaines" : "Biweekly"}</option>
+                    <option value="acc_biweekly">{fr ? "Acc. aux 2 semaines" : "Acc. biweekly"}</option>
+                  </select>
+                </InputRow>
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontSize: 12, color: DK.txDim, marginTop: 6 }}>
+                <input type="checkbox" checked={m.deductible || false} onChange={e => updateMortgage(i, "deductible", e.target.checked)} style={{ accentColor: DK.accent }} />
+                {fr ? "Intérêts déductibles (Smith Manoeuvre)" : "Deductible interest (Smith Manoeuvre)"}
+              </label>
+            </Card>
+          ))}
+
+          <button onClick={addMortgage} style={{ width: "100%", padding: 10, background: "transparent", color: DK.orange, border: `2px dashed ${DK.orange}40`, borderRadius: 10, fontSize: 14, cursor: "pointer", fontWeight: 600 }}>
+            + {fr ? "Ajouter une hypothèque" : "Add a mortgage"}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -1047,6 +1082,25 @@ export default function DebtTool() {
             </div>
           )}
         </Card>
+
+        {/* Next step CTA */}
+        {payableDebts.length > 0 && (
+          <Card style={{ marginTop: 12, borderLeft: `3px solid ${DK.accent}`, background: DK.accentBg }}>
+            <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6 }}>
+              {fr
+                ? "Consultez le Calendrier pour voir votre plan mois par mois, ou explorez Rembourser vs Investir pour savoir si accélérer le remboursement est la meilleure utilisation de votre argent."
+                : "Check the Calendar for your month-by-month plan, or explore Repay vs Invest to see if accelerating payoff is the best use of your money."}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button onClick={() => setActiveTab(4)} style={{ fontSize: 13, padding: "6px 14px", background: DK.accent, color: DK.bg, border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+                {fr ? "Calendrier \u2192" : "Calendar \u2192"}
+              </button>
+              <button onClick={() => setActiveTab(3)} style={{ fontSize: 13, padding: "6px 14px", background: "transparent", color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+                {fr ? "Rembourser vs Investir \u2192" : "Repay vs Invest \u2192"}
+              </button>
+            </div>
+          </Card>
+        )}
       </div>
     );
   };
@@ -1068,7 +1122,7 @@ export default function DebtTool() {
 
         {/* Reference rates */}
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <StatBox small label={fr ? "Taux marginal" : "Marginal rate"} value={pct(margRate)} color={DK.tx} />
+          <StatBox small label={fr ? "Taux marginal (est.)" : "Marginal rate (est.)"} value={pct(margRate)} color={DK.tx} />
           <StatBox small label={fr ? "Rendement espéré" : "Expected return"} value={pct(expReturn)} color={DK.blue} />
           <StatBox small label={fr ? "Rendement après impôt" : "After-tax return"} value={pct(afterTaxRet)} color={DK.accent}
             sub={fr ? "(mixte GC/div/int)" : "(blended CG/div/int)"} />
@@ -1245,6 +1299,18 @@ export default function DebtTool() {
             </Card>
           </>
         )}
+
+        {/* Next step CTA */}
+        <Card style={{ marginTop: 12, borderLeft: `3px solid ${DK.accent}`, background: DK.accentBg }}>
+          <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6 }}>
+            {fr
+              ? "Pour comprendre combien vos dettes vous coûtent au-delà du solde affiché, consultez l'onglet Coût réel."
+              : "To understand what your debts cost beyond the balance on your statement, check the True Cost tab."}
+          </div>
+          <button onClick={() => setActiveTab(5)} style={{ fontSize: 13, padding: "6px 14px", background: "transparent", color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600, marginTop: 8 }}>
+            {fr ? "Coût réel \u2192" : "True Cost \u2192"}
+          </button>
+        </Card>
       </div>
     );
   };
@@ -1363,17 +1429,25 @@ export default function DebtTool() {
 
       {/* Tab bar */}
       <div style={{ display: "flex", gap: 2, padding: "6px 12px", overflowX: "auto", borderBottom: `1px solid ${DK.border}`, background: DK.card }}>
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
-            style={{
-              padding: "6px 12px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer",
-              whiteSpace: "nowrap", border: "none", letterSpacing: 0.3, transition: "all .15s",
-              background: activeTab === t.id ? DK.accentBg : "transparent",
-              color: activeTab === t.id ? DK.accent : DK.txDim,
-            }}>
-            {t.label}
-          </button>
-        ))}
+        {tabs.map((t, idx) => {
+          const isActive = activeTab === t.id;
+          const hasData = payableDebts.length > 0 || t.id === 0;
+          return (
+            <React.Fragment key={t.id}>
+              {idx === 4 && <span style={{ borderLeft: `1px solid ${DK.border}`, margin: "4px 4px" }} />}
+              <button onClick={() => setActiveTab(t.id)}
+                style={{
+                  padding: "6px 12px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  whiteSpace: "nowrap", border: "none", letterSpacing: 0.3, transition: "all .15s",
+                  background: isActive ? DK.accentBg : "transparent",
+                  color: isActive ? DK.accent : hasData ? DK.txDim : DK.txMuted,
+                  opacity: hasData ? 1 : 0.4,
+                }}>
+                {t.label}
+              </button>
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Content */}
