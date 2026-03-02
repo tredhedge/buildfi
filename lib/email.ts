@@ -34,7 +34,7 @@ export async function sendReportEmail(params: SendReportParams) {
     ? `Votre rapport ${tierName} buildfi.ca est prêt — Note ${grade}`
     : `Your buildfi.ca ${tierName} report is ready — Grade ${grade}`;
 
-  const html = buildEmailHTML({ lang, tierName, grade, successPct, downloadUrl });
+  const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl });
 
   const { data, error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
@@ -53,12 +53,13 @@ export async function sendReportEmail(params: SendReportParams) {
 
 function buildEmailHTML(params: {
   lang: "fr" | "en";
+  tier: string;
   tierName: string;
   grade: string;
   successPct: number;
   downloadUrl: string;
 }): string {
-  const { lang, tierName, grade, successPct, downloadUrl } = params;
+  const { lang, tier, tierName, grade, successPct, downloadUrl } = params;
   const fr = lang === "fr";
 
   // A-3: Dynamic preheader
@@ -88,8 +89,12 @@ function buildEmailHTML(params: {
     // E-1: "stratégies optimisées" → "approches possibles"
     // E-2: "Votre note pourrait changer" → "Une analyse plus détaillée..."
     upsellBody: fr
-      ? "Le rapport Interm\u00e9diaire analyse votre immobilier, votre couple, vos dettes en d\u00e9tail et explore 5\u00a0approches possibles. Une analyse plus d\u00e9taill\u00e9e pourrait r\u00e9v\u00e9ler un portrait diff\u00e9rent."
-      : "The Interm\u00e9diaire report analyzes your real estate, couple dynamics, and debts in detail, exploring 5\u00a0possible approaches. A more detailed analysis could reveal a different picture.",
+      ? (tier === "intermediaire"
+        ? "Le Simulateur Expert int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
+        : "Le rapport Interm\u00e9diaire analyse votre immobilier, votre couple, vos dettes en d\u00e9tail et explore 5\u00a0approches possibles. Une analyse plus d\u00e9taill\u00e9e pourrait r\u00e9v\u00e9ler un portrait diff\u00e9rent.")
+      : (tier === "intermediaire"
+        ? "The Expert Simulator includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers."
+        : "The Interm\u00e9diaire report analyzes your real estate, couple dynamics, and debts in detail, exploring 5\u00a0possible approaches. A more detailed analysis could reveal a different picture."),
     upsellCta: fr ? "En savoir plus\u00a0\u2192" : "Learn more\u00a0\u2192",
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
@@ -218,8 +223,8 @@ function buildEmailHTML(params: {
                Marketing decision pending: emailed assets vs online-only access for buyers.
                When ready, add a row here with a card similar to the upsell section below. -->
 
-          <!-- UPSELL -->
-          <tr>
+          <!-- UPSELL (hidden for expert tier — no higher tier) -->
+          ${tier === "expert" ? "" : `<tr>
             <td style="padding-bottom:28px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
                 <tr>
@@ -238,7 +243,7 @@ function buildEmailHTML(params: {
                       <!-- A-2: Upsell CTA link -->
                       <tr>
                         <td style="font-family:${FONT};font-size:13px;color:${GOLD};font-weight:700;padding-top:10px;">
-                          <a href="https://buildfi.ca?tier=intermediaire&amp;src=email-essentiel" style="color:${GOLD};text-decoration:none;">
+                          <a href="https://buildfi.ca?tier=${tier === "intermediaire" ? "expert" : "intermediaire"}&amp;src=email-${tier || "essentiel"}" style="color:${GOLD};text-decoration:none;">
                             ${s.upsellCta}
                           </a>
                         </td>
@@ -248,7 +253,7 @@ function buildEmailHTML(params: {
                 </tr>
               </table>
             </td>
-          </tr>
+          </tr>`}
 
           <!-- FOOTER -->
           <tr>
