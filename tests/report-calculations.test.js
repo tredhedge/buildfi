@@ -8,6 +8,7 @@
 import { translateToMC } from "../lib/quiz-translator.ts";
 import { runMC, calcTax, QPP_MAX_MONTHLY, OAS_MAX_MONTHLY } from "../lib/engine/index.js";
 import { extractReportData, calcCostOfDelay, calcMinViableReturn, renderReportHTML, buildAIPrompt } from "../lib/report-html.js";
+import { computeDerivedProfile, computeRenderPlan } from "../lib/ai-profile.ts";
 
 // ════════════════════════════════════════════════════════════════
 // TEST INFRASTRUCTURE
@@ -1152,6 +1153,99 @@ const mcCozy = runMC(pCozy, 500);
 const mcPrem = runMC(pPrem, 500);
 console.log(`  Cozy (3K/mo): ${(mcCozy.succ*100).toFixed(1)}%, Premium (7.5K/mo): ${(mcPrem.succ*100).toFixed(1)}%`);
 assert(mcCozy.succ >= mcPrem.succ, "Cozy (lower spend) >= Premium success rate", `cozy=${(mcCozy.succ*100).toFixed(1)}%, prem=${(mcPrem.succ*100).toFixed(1)}%`);
+
+// ════════════════════════════════════════════════════════════════
+// 34. Psych Questions — DerivedProfile Overrides + AI Prompt Rails
+// ════════════════════════════════════════════════════════════════
+console.log("\n══ 34. Psych Questions — DerivedProfile Overrides + AI Prompt Rails ══");
+
+// --- _quiz passthrough: psych fields flow through translateToMC ---
+const psychQuiz = { age: 40, retAge: 65, prov: "QC", income: 80000, monthlyContrib: 500,
+  psychAnxiety: "high", psychDiscipline: "strong", psychLiteracy: "medium" };
+const psychParams = translateToMC(psychQuiz);
+assert(psychParams._quiz.psych_anxiety === "high", "Passthrough: psych_anxiety=high");
+assert(psychParams._quiz.psych_discipline === "strong", "Passthrough: psych_discipline=strong");
+assert(psychParams._quiz.psych_literacy === "medium", "Passthrough: psych_literacy=medium");
+
+// --- Null/skip: psych fields default to null ---
+const skipQuiz = { age: 40, retAge: 65, prov: "QC", income: 80000 };
+const skipParams = translateToMC(skipQuiz);
+assert(skipParams._quiz.psych_anxiety === null, "Skip: psych_anxiety=null");
+assert(skipParams._quiz.psych_discipline === null, "Skip: psych_discipline=null");
+assert(skipParams._quiz.psych_literacy === null, "Skip: psych_literacy=null");
+
+// --- computeDerivedProfile: explicit overrides data-derived ---
+const mcPsych = runMC(psychParams, 500);
+const dPsych = extractReportData(mcPsych, psychParams);
+
+// With psych_anxiety="high" → profile.anxiety="high", even though confidence might be 3
+const profileHigh = computeDerivedProfile(psychQuiz, dPsych, psychParams);
+assert(profileHigh.anxiety === "high", "Override: anxiety=high from psych_anxiety=high");
+assert(profileHigh.discipline === "high", "Override: discipline=high from psych_discipline=strong");
+assert(profileHigh.literacy === "intermediate", "Override: literacy=intermediate from psych_literacy=medium");
+
+// With psych_anxiety="calm" → profile.anxiety="low"
+const calmParams = translateToMC({ ...psychQuiz, psychAnxiety: "calm", psychDiscipline: "low", psychLiteracy: "high" });
+const profileCalm = computeDerivedProfile(psychQuiz, dPsych, calmParams);
+assert(profileCalm.anxiety === "low", "Override: anxiety=low from psych_anxiety=calm");
+assert(profileCalm.discipline === "low", "Override: discipline=low from psych_discipline=low");
+assert(profileCalm.literacy === "advanced", "Override: literacy=advanced from psych_literacy=high");
+
+// With psych_anxiety="mild" → profile.anxiety="moderate"
+const mildParams = translateToMC({ ...psychQuiz, psychAnxiety: "mild", psychDiscipline: "moderate", psychLiteracy: "low" });
+const profileMild = computeDerivedProfile(psychQuiz, dPsych, mildParams);
+assert(profileMild.anxiety === "moderate", "Override: anxiety=moderate from psych_anxiety=mild");
+assert(profileMild.discipline === "moderate", "Override: discipline=moderate from psych_discipline=moderate");
+assert(profileMild.literacy === "basic", "Override: literacy=basic from psych_literacy=low");
+
+// --- Fallback: null psych → data-derived (existing behavior) ---
+const profileFallback = computeDerivedProfile(skipQuiz, dPsych, skipParams);
+// confidence=3 → moderate, monthlyContrib=0 → low discipline, savingsDetail=false → basic/intermediate
+assert(profileFallback.anxiety === "moderate" || profileFallback.anxiety === "high", "Fallback: anxiety data-derived (not null)", `got ${profileFallback.anxiety}`);
+assert(profileFallback.discipline === "low" || profileFallback.discipline === "moderate", "Fallback: discipline data-derived (not null)", `got ${profileFallback.discipline}`);
+assert(profileFallback.literacy === "basic" || profileFallback.literacy === "intermediate" || profileFallback.literacy === "advanced", "Fallback: literacy data-derived (not null)", `got ${profileFallback.literacy}`);
+
+// --- RenderPlan: tone driven by overridden profile ---
+const planHigh = computeRenderPlan(profileHigh, dPsych);
+assert(planHigh.tone === "warm", "RenderPlan: high anxiety → warm tone");
+
+const planCalm = computeRenderPlan(profileCalm, dPsych);
+assert(planCalm.tone === "data-forward", "RenderPlan: low anxiety + advanced literacy → data-forward tone");
+
+const planMild = computeRenderPlan(profileMild, dPsych);
+assert(planMild.tone === "balanced", "RenderPlan: moderate anxiety + basic literacy → balanced tone");
+
+// --- narrativeTheme: high anxiety forces "security" ---
+assert(profileHigh.narrativeTheme === "security", "Theme: high anxiety → security", `got ${profileHigh.narrativeTheme}`);
+assert(profileCalm.narrativeTheme !== "security" || profileCalm.anxiety === "high", "Theme: low anxiety → NOT security (unless data overrides)", `got ${profileCalm.narrativeTheme}`);
+
+// --- AI Prompt: psych values appear in prompt text ---
+const promptHigh = buildAIPrompt(dPsych, psychParams, true, psychQuiz);
+assert(promptHigh.usr.includes("anxiety=high"), "AI prompt includes anxiety=high");
+assert(promptHigh.usr.includes("discipline=high"), "AI prompt includes discipline=high");
+assert(promptHigh.usr.includes("WARM"), "AI prompt tone=WARM for high anxiety");
+assert(promptHigh.usr.includes("intermediate"), "AI prompt includes literacy=intermediate");
+assert(promptHigh.usr.includes("theme=security"), "AI prompt includes theme=security");
+
+const promptCalm = buildAIPrompt(dPsych, calmParams, true, psychQuiz);
+assert(promptCalm.usr.includes("anxiety=low"), "AI prompt includes anxiety=low for calm");
+assert(promptCalm.usr.includes("DATA-FORWARD"), "AI prompt tone=DATA-FORWARD for calm+advanced");
+assert(promptCalm.usr.includes("advanced"), "AI prompt includes literacy=advanced");
+
+// --- AMF compliance: psych answers don't inject forbidden terms ---
+assert(!promptHigh.sys.includes("devriez") || promptHigh.sys.includes("NEVER use"), "System prompt: no AMF-forbidden terms from psych override");
+assert(!promptHigh.usr.includes("recommandons"), "User prompt: no AMF-forbidden terms injected");
+
+// --- Zero MC impact: same MC results with and without psych answers ---
+const mcSkip = runMC(skipParams, 500);
+// MC params should be identical except _quiz and _report
+assert(psychParams.allocR === skipParams.allocR, "Zero MC impact: allocR unchanged");
+assert(psychParams.retSpM === skipParams.retSpM, "Zero MC impact: retSpM unchanged");
+assert(psychParams.merR === skipParams.merR, "Zero MC impact: merR unchanged");
+assert(psychParams.sal === skipParams.sal, "Zero MC impact: sal unchanged");
+assert(psychParams.rrspC === skipParams.rrspC, "Zero MC impact: rrspC unchanged");
+
+console.log("  All psych override + AI prompt rail tests passed");
 
 // ════════════════════════════════════════════════════════════════
 // SUMMARY

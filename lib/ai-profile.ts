@@ -42,33 +42,48 @@ export function computeDerivedProfile(
   const q = params._quiz || {};
   const rp = params._report || {};
 
-  // --- Anxiety: confidence + worry count ---
-  const confidence = q.confidence || 3;
+  // --- Anxiety: explicit quiz answer > data-derived fallback ---
   const worryCount = (q.worries || []).length;
   let anxiety: Anxiety;
-  if (confidence <= 2) anxiety = "high";
-  else if (confidence >= 4) anxiety = "low";
-  else anxiety = "moderate";
-  // Boost if many worries
-  if (worryCount >= 3 && anxiety !== "high") {
-    anxiety = anxiety === "low" ? "moderate" : "high";
+  if (q.psych_anxiety === "calm") anxiety = "low";
+  else if (q.psych_anxiety === "high") anxiety = "high";
+  else if (q.psych_anxiety === "mild") anxiety = "moderate";
+  else {
+    const confidence = q.confidence || 3;
+    if (confidence <= 2) anxiety = "high";
+    else if (confidence >= 4) anxiety = "low";
+    else anxiety = "moderate";
+    if (worryCount >= 3 && anxiety !== "high") {
+      anxiety = anxiety === "low" ? "moderate" : "high";
+    }
   }
 
-  // --- Discipline: savings rate ---
-  const income = quiz.income || 70000;
-  const monthlyContrib = quiz.monthlyContrib || 0;
-  const savingsRate = (monthlyContrib * 12) / Math.max(1, income);
+  // --- Discipline: explicit quiz answer > data-derived fallback ---
   let discipline: Discipline;
-  if (savingsRate >= 0.15) discipline = "high";
-  else if (savingsRate >= 0.05) discipline = "moderate";
-  else discipline = "low";
+  if (q.psych_discipline === "strong") discipline = "high";
+  else if (q.psych_discipline === "low") discipline = "low";
+  else if (q.psych_discipline === "moderate") discipline = "moderate";
+  else {
+    const income = quiz.income || 70000;
+    const monthlyContrib = quiz.monthlyContrib || 0;
+    const savingsRate = (monthlyContrib * 12) / Math.max(1, income);
+    if (savingsRate >= 0.15) discipline = "high";
+    else if (savingsRate >= 0.05) discipline = "moderate";
+    else discipline = "low";
+  }
 
-  // --- Literacy: financial sophistication signals ---
-  let litScore = 0;
-  if (q.savingsDetail) litScore += 2;
-  if (q.risk && q.risk !== "balanced") litScore += 1;
-  if (q.employer && q.employer !== "x" && q.employer !== "small") litScore += 1;
-  const literacy: Literacy = litScore >= 3 ? "advanced" : litScore >= 1 ? "intermediate" : "basic";
+  // --- Literacy: explicit quiz answer > data-derived fallback ---
+  let literacy: Literacy;
+  if (q.psych_literacy === "high") literacy = "advanced";
+  else if (q.psych_literacy === "low") literacy = "basic";
+  else if (q.psych_literacy === "medium") literacy = "intermediate";
+  else {
+    let litScore = 0;
+    if (q.savingsDetail) litScore += 2;
+    if (q.risk && q.risk !== "balanced") litScore += 1;
+    if (q.employer && q.employer !== "x" && q.employer !== "small") litScore += 1;
+    literacy = litScore >= 3 ? "advanced" : litScore >= 1 ? "intermediate" : "basic";
+  }
 
   // --- Complexity: count of active financial dimensions ---
   let complexity = 0;

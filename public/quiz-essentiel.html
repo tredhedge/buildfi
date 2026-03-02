@@ -423,7 +423,8 @@ var STATE = {
     debts:[], hasDebts:false, homeowner:false, homeValue:0, mortgage:0, mortgageRate:5.0, mortgageAmort:20,
     lifestyle:"active", risk:"balanced",
     parttime:"no", parttimeAmount:0, parttimeYears:0,
-    worries:[], win:"", fix:"", confidence:3, family:""
+    worries:[], win:"", fix:"", confidence:3, family:"",
+    psychAnxiety:null, psychDiscipline:null, psychLiteracy:null
   },
   mc: null, reportData: null, ai: {}, aiLoading: false, computed: false,
   showReport: false, showPaywall: false, paid: false, costDelay: 0, minReturn: 0
@@ -472,7 +473,7 @@ function render() {
     return;
   }
 
-  if (s.step === 8) {
+  if (s.step === 9) {
     // THIN CLIENT: Generate mock preview for blurred paywall, no real MC
     if (!s.computed) {
       s.computed = true;
@@ -509,8 +510,8 @@ function renderLoading(fr) {
 
 function renderQuiz(step, q, lang) {
   var fr = lang === "fr", t = function(f,e){return fr?f:e;};
-  var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/7</span><span>' + Math.round(step/7*100) + '%</span></div><div style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/7*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" key="' + step + '">' + inner + '</div></div>'; };
-  var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 7 ? step+1 : 8) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
+  var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/8</span><span>' + Math.round(step/8*100) + '%</span></div><div style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/8*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" key="' + step + '">' + inner + '</div></div>'; };
+  var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 8 ? step+1 : 9) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
   var backBtn = step > 0 ? '<button class="back-btn" onclick="go(' + (step-1) + ')" style="margin-top:10px;width:100%;text-align:center">' + t("Retour","Back") + '</button>' : '';
 
   // STEP 0: LANDING PAGE
@@ -623,12 +624,24 @@ function renderQuiz(step, q, lang) {
   }
 
   if (step === 6) {
+    var anxCards = [{v:"calm",l:t("Confiant(e) \u2014 j\u2019ai un plan","Confident \u2014 I have a plan")},{v:"mild",l:t("Un peu incertain(e)","A bit uncertain")},{v:"high",l:t("Pr\u00e9occup\u00e9(e) \u2014 j\u2019y pense souvent","Worried \u2014 I think about it often")}].map(function(o){return '<div tabindex="0" class="card' + (q.psychAnxiety===o.v?" sel":"") + '" onclick="uq(\'psychAnxiety\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    var discCards = [{v:"strong",l:t("Je mets de c\u00f4t\u00e9 chaque mois, sans exception","I save every month, without exception")},{v:"moderate",l:t("J\u2019\u00e9pargne quand je peux","I save when I can")},{v:"low",l:t("J\u2019ai du mal \u00e0 \u00e9pargner r\u00e9guli\u00e8rement","I struggle to save regularly")}].map(function(o){return '<div tabindex="0" class="card' + (q.psychDiscipline===o.v?" sel":"") + '" onclick="uq(\'psychDiscipline\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    var litCards = [{v:"high",l:t("Je comprends les REER, CELI, imp\u00f4ts","I understand RRSPs, TFSAs, taxes")},{v:"medium",l:t("Je connais les bases","I know the basics")},{v:"low",l:t("Je d\u00e9bute \u2014 aidez-moi \u00e0 comprendre","I\u2019m starting out \u2014 help me understand")}].map(function(o){return '<div tabindex="0" class="card' + (q.psychLiteracy===o.v?" sel":"") + '" onclick="uq(\'psychLiteracy\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
+    return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Pour personnaliser votre rapport","To personalize your report") + '</h2>'
+      + '<p style="font-size:13px;color:var(--tm);margin-bottom:20px">' + t("Ces questions aident \u00e0 adapter le ton et les explications de votre rapport.","These questions help tailor the tone and explanations of your report.") + '</p>'
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Quand vous pensez \u00e0 votre retraite, vous ressentez surtout\u2026","When you think about retirement, you mostly feel\u2026") + '</label>' + anxCards
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Comment d\u00e9cririez-vous vos habitudes d\u2019\u00e9pargne?","How would you describe your savings habits?") + '</label>' + discCards
+      + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre familiarit\u00e9 avec les finances personnelles?","Your familiarity with personal finance?") + '</label>' + litCards
+      + btn() + backBtn);
+  }
+
+  if (step === 7) {
     var worryOpts = [{v:"runout",l:t("Manquer d'argent","Running out of money")},{v:"tax",l:t("Trop d'impôts","Too many taxes")},{v:"inflation",l:t("L'inflation","Inflation")},{v:"health",l:t("Coûts de santé","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un héritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip' + (sel?" sel":"") + '" onclick="toggleWorry(\'' + o.v + '\')">' + o.l + '</span>';}).join("");
     var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("Épargner régulièrement","Saving regularly")},{v:"investing",l:t("Commencer à investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div tabindex="0" class="card' + (q.win===o.v?" sel":"") + '" onclick="uq(\'win\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
     return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Ce qui compte pour vous","What matters to you") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Vos 3 plus grandes préoccupations","Your 3 biggest concerns") + '</label><div style="margin-bottom:16px">' + worryOpts + '</div><label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Votre plus grande victoire financière","Your biggest financial win") + '</label>' + winCards + btn() + backBtn);
   }
 
-  if (step === 7) {
+  if (step === 8) {
     var fixCards = [{v:"save_more",l:t("Épargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d'impôts","Pay less tax")},{v:"retire_early",l:t("Retraite plus tôt","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div tabindex="0" class="card' + (q.fix===o.v?" sel":"") + '" onclick="uq(\'fix\',\'' + o.v + '\')" style="padding:12px"><div style="font-weight:600;font-size:13px">' + o.l + '</div></div>';}).join("");
     return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Dernières questions","Final questions") + '</h2><label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Si vous pouviez améliorer une chose","If you could improve one thing") + '</label>' + fixCards + '<label style="font-size:13px;color:var(--ts);display:block;margin:16px 0 8px">' + t("Confiance financière (1-5)","Financial confidence (1-5)") + '</label><input type="range" min="1" max="5" value="' + q.confidence + '" oninput="uq(\'confidence\',+this.value)" /><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span>' + t("Débutant","Beginner") + '</span><span style="font-family:monospace;font-size:18px;font-weight:800;color:var(--g)">' + q.confidence + '/5</span><span>' + t("Expert","Expert") + '</span></div>' + btn(t("Voir mon rapport \u2192","See my report \u2192")) + backBtn);
   }
@@ -776,7 +789,7 @@ function renderPaywall(D, lang) {
 // KEYBOARD ACCESSIBILITY
 // ============================================================
 document.addEventListener("keydown",function(e){
-  if(e.key==="Enter"&&STATE.step>0&&STATE.step<8){
+  if(e.key==="Enter"&&STATE.step>0&&STATE.step<9){
     var tag=document.activeElement?document.activeElement.tagName:"";
     if(tag==="TEXTAREA"||tag==="SELECT")return;
     if(document.activeElement&&document.activeElement.classList.contains("card")){

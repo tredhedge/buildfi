@@ -178,6 +178,9 @@ export function translateToMC(a: Record<string, any>) {
       family: a.family || "", risk: a.risk || "balanced",
       employer: a.employer || "", savingsDetail: a.savingsDetail || false,
       lifestyle: a.lifestyle || "active", parttime: a.parttime || "no",
+      psych_anxiety: a.psychAnxiety || null,
+      psych_discipline: a.psychDiscipline || null,
+      psych_literacy: a.psychLiteracy || null,
     },
     _report: {
       debts,
