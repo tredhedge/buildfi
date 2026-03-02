@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-01 — v4 (AI narration merged, report v6 polished, email template refactored, debt tool UX restructured)
+> Mis à jour: 2026-03-02 — v5 (Engine audit 20 bugs fixed, 3 psych questions, Intermédiaire backbone, 453 tests)
 
 ## PHASE ACTUELLE
-**P1.4 AI NARRATION MERGED + REPORT v6 POLISHED — Pipeline E2E complet avec AI narration wired (needs ANTHROPIC_API_KEY in Vercel). Report v6 with 15 rendering polish fixes. Debt tool UX restructured. Email template refactored. Reste infra blockers (Blob public, Resend DNS) + pages légales avant lancement Essentiel.**
+**P1.4+ ENGINE AUDIT COMPLETE — 20 bugs fixed in planner.html + engine/index.js (453/453 tests). 3 psychology questions added to quiz. Intermédiaire server backbone merged (4 new modules). Reste 3 infra blockers (Blob public, Resend DNS, ANTHROPIC_API_KEY) + pages légales avant lancement Essentiel.**
 
 ---
 
@@ -85,18 +85,35 @@
 - Marginal rate label shows "(est.)" in Repay vs Invest
 - 200 tests, 0 failures
 
-### Moteur MC — Planner v2
-- 436 tests, 53 catégories, 0 failures
+### Engine Audit — COMPLETED (2026-03-02)
+- **20 bugs fixed** in both planner.html and lib/engine/index.js (kept in sync)
+- Round 1 (14 bugs): calcTax retired→age>=65 (12 call sites), pension credit fr[0], EI rates 2026, revData.aRE ordering, unsorted arrays for medSimIdx, tfsaRoom shadowing, 3-way pension indexation, meltdown rrifMin, property pr.ri, blanked API key, QPP/OAS validation 60-70, TFSA threshold 7000, inflation off-by-one, calcOAS test args
+- Round 2 (6 bugs): remaining calcTax callers, cFhsa shadowing, spouse DB pension indexation in MC path (6 locations per file)
+- **17 new BugFix verification tests** added to test suite
+- **453 tests, 54 categories, 0 failures** (was 436/53)
+
+### Moteur MC — planner.html (source of truth)
+- 453 tests, 54 catégories, 0 failures
 - Syncé avec lib/engine/index.js (2,426 lignes, 38 exports)
 - Inclut optimizeDecum()
-- Tax parity vérifiée sur 10 provinces
+- Tax parity vérifiée sur 13 provinces
 
 ### Quiz Essentiel (thin client)
-- 805 lignes (était 3,227 — 75% de code retiré)
+- ~870 lignes (9 steps: 0-7 + paywall at 8)
 - Zero fonction MC côté client
+- **3 psychology questions** added (step 6): psychAnxiety, psychDiscipline, psychLiteracy
 - Mock preview pour paywall (generateMockPreview)
 - Stripe checkout intégré
 - Inline logo fallback + /logo.js
+
+### Intermédiaire Server Backbone — MERGED (2026-03-01)
+- `lib/quiz-translator-inter.ts`: 85 quiz fields → 120 MC params
+- `lib/strategies-inter.ts`: 5-strategy comparison engine (500 sims each)
+- `lib/ai-prompt-inter.ts`: 18 AI slots with DerivedProfile enrichment
+- `lib/report-html-inter.js`: 16-section HTML report with SVG charts (1,003 lines)
+- `lib/ai-constants.ts`: AI_SLOTS_INTER (16 slots) + sanitizeAISlotsInter()
+- `lib/email.ts`: tier-conditional upsell
+- Webhook wiring deferred to Phase B — Essentiel pipeline untouched
 
 ### Landing Page
 - ✅ Sur GitHub, servie via app/page.tsx → redirect("/index.html")
@@ -146,7 +163,7 @@
 ## STRUCTURE REPO GITHUB (actuelle)
 ```
 buildfi/
-├── planner_v2.html              ← moteur complet dev/test (436 tests, ~15,000 lignes)
+├── planner.html                 ← moteur complet dev/test (453 tests, ~15,600 lignes)
 ├── app/
 │   ├── page.tsx                 ✅ redirect("/index.html")
 │   ├── api/
@@ -157,16 +174,20 @@ buildfi/
 │   └── outils/
 │       └── dettes/page.jsx      ✅ Debt tool (1,475 lignes, React JSX)
 ├── lib/
-│   ├── ai-constants.ts          ✅ AI slot names, AMF forbidden terms, sanitization
-│   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan (behavioral signals)
-│   ├── engine/index.js          ✅ Syncé planner_v2 (2,426 lignes, 38 exports)
-│   ├── quiz-translator.ts       ✅
-│   ├── report-html.js           ✅ Report v6 (1,421 lignes) — extractReportData + buildAIPrompt + renderReport_v6
-│   ├── email.ts                 ✅ Table-based, bilingual, AMF compliant
+│   ├── ai-constants.ts          ✅ AI slot names (Ess 12 + Inter 16), AMF forbidden terms
+│   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan (psych overrides)
+│   ├── ai-prompt-inter.ts       ✅ Intermédiaire AI prompt (18 slots)
+│   ├── engine/index.js          ✅ Syncé planner.html (2,426 lignes, 38 exports)
+│   ├── quiz-translator.ts       ✅ Essentiel (psych fields passthrough)
+│   ├── quiz-translator-inter.ts ✅ Intermédiaire (85 fields → 120 MC params)
+│   ├── report-html.js           ✅ Report v6 (1,421 lignes)
+│   ├── report-html-inter.js     ✅ Intermédiaire report (1,003 lignes, 16 sections)
+│   ├── strategies-inter.ts      ✅ 5-strategy comparison engine
+│   ├── email.ts                 ✅ Table-based, bilingual, tier-aware
 │   └── pdf-generator.ts         ⚠️ DISABLED (Puppeteer incompatible Vercel)
 ├── public/
 │   ├── index.html               ✅ Landing page v9 + logo SVG
-│   ├── quiz-essentiel.html      ✅ Thin client (805 lignes)
+│   ├── quiz-essentiel.html      ✅ Thin client (~870 lignes, 9 steps + 3 psych Q)
 │   ├── logo.js                  ✅ Shared logoSVG()
 │   ├── logo-light.svg           ✅
 │   ├── logo-dark.svg            ✅
@@ -192,9 +213,26 @@ buildfi/
 
 ### AI narration architecture (2026-02-28)
 - Single API call, 12 JSON slots, claude-sonnet-4
-- DerivedProfile behavioral signals enrich prompts
+- DerivedProfile behavioral signals enrich prompts (now with psych overrides)
 - Fallback {} if no key or API error — report works without AI
 - AMF forbidden terms enforced in system prompt + sanitization
+
+### 3 Psychology questions (2026-03-02)
+- psychAnxiety (calm/mild/high), psychDiscipline (strong/moderate/low), psychLiteracy (high/medium/low)
+- Added as quiz step 6, optional (Next always available)
+- Override data-derived DerivedProfile signals in ai-profile.ts
+- Passed through quiz-translator.ts → params._quiz → computeDerivedProfile
+
+### Engine audit (2026-03-02)
+- 20 bugs found and fixed across 2 audit rounds (3 parallel agents per round)
+- All fixes applied to both planner.html AND lib/engine/index.js
+- 17 new BugFix verification tests → 453/453 total, 0 failures
+- Key fixes: calcTax age>=65 gating, pension credit fr[0], spouse DB pension indexation, meltdown rrifMin
+
+### Intermédiaire backbone (2026-03-01)
+- 4 new server-side modules: quiz-translator-inter, strategies-inter, ai-prompt-inter, report-html-inter
+- 2 modified: ai-constants.ts (16 Inter slots), email.ts (tier-aware upsell)
+- Webhook wiring deferred to Phase B — Essentiel untouched
 
 ### Report v6 polish (2026-03-01)
 - 15 CSS/HTML rendering improvements — no data layer changes
@@ -216,8 +254,10 @@ buildfi/
 | Anthropic API | Code complete, key NOT in Vercel env vars | ⚠️ Ajouter ANTHROPIC_API_KEY |
 
 ## PROCHAINE SESSION
-1. Fix Blob (public store) + Resend DNS → rapport accessible par lien
-2. Add ANTHROPIC_API_KEY to Vercel → test with Stripe test card
-3. 5 psycho questions (quiz enhancement)
-4. Pages légales (P0.7)
-5. Quiz Intermédiaire thin client
+1. Fix Blob (public store) → rapport accessible par lien
+2. Fix Resend DNS (DKIM/SPF) → email en inbox
+3. Add ANTHROPIC_API_KEY to Vercel → AI narration live
+4. E2E test with Stripe test card (full pipeline validation)
+5. Pages légales (P0.7) — conditions, confidentialité, avis AMF
+6. Audit R19-R20 → soft launch
+7. Quiz Intermédiaire thin client + webhook wiring (Phase B)

@@ -26,12 +26,16 @@ buildfi/
 │   │   └── tests.js               # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
-│   ├── ai-constants.ts            # AI slot names, AMF forbidden terms, sanitization
-│   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals)
+│   ├── ai-constants.ts            # AI slot names (Ess 12 + Inter 16), AMF forbidden terms, sanitization
+│   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals, psych overrides)
+│   ├── ai-prompt-inter.ts         # Intermédiaire AI prompt (18 slots, DerivedProfile enrichment)
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
-│   ├── quiz-translator.ts         # Quiz answers → MC params
-│   ├── report-html.js             # D → HTML report string + buildAIPrompt() (1,421 lines)
-│   ├── email.ts                   # Resend email templates (table-based, bilingual)
+│   ├── quiz-translator.ts         # Essentiel quiz answers → MC params
+│   ├── quiz-translator-inter.ts   # Intermédiaire 85 fields → 120 MC params
+│   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (1,421 lines)
+│   ├── report-html-inter.js       # Intermédiaire 16-section report (1,003 lines)
+│   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
+│   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
 │   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
 │   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
@@ -137,12 +141,15 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 ## Current Status (March 2026)
 - **P0.6 COMPLETED** — E2E pipeline validated
 - **P1.4 AI NARRATION MERGED** — buildAIPrompt + Anthropic call wired into webhook
-- **Report v6 MERGED + POLISHED** — 15 rendering improvements applied (grade colors, fan chart, TL;DR, print theme, tooltips, TOC, disclaimer restyle, mobile spacing, etc.)
-- **Debt tool UX restructured** — inventory reordered, progressive tabs, micro-CTAs, P0 fixes (basePayoff strategy, marginal rate label)
+- **Report v6 MERGED + POLISHED** — 15 rendering improvements applied
+- **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed in planner.html + engine/index.js, 17 new verification tests added (453/453 pass)
+- **3 psychology questions ADDED** — psychAnxiety, psychDiscipline, psychLiteracy in quiz step 6; override data-derived DerivedProfile signals
+- **Report test suite EXPANDED** — 277 tests / 33 categories in tests/report-calculations.test.js
+- **Intermédiaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js, checkout route multi-tier
+- **Debt tool UX restructured** — inventory reordered, progressive tabs, micro-CTAs
 - **Email template refactored** — table-based layout, AMF compliant, full bilingual
-- Essentiel tier: near launch, 2 infra blockers (Blob permissions, Resend DNS)
-- AI narration: code complete, needs ANTHROPIC_API_KEY in Vercel env vars to activate
-- Next: add ANTHROPIC_API_KEY to Vercel, test with Stripe test card, then 5 psycho questions
+- Essentiel tier: near launch, 3 infra blockers (Blob permissions, Resend DNS, ANTHROPIC_API_KEY)
+- Next: fix 3 infra blockers → E2E test with Stripe test card → pages légales → soft launch
 
 ## Commands
 ```bash

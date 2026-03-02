@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>buildfi.ca — Rapport Intermédiaire</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A1A1A}
+:root{
+  --g:#C4944A;--gl:#D4A85A;--gn:#2A8C46;--gnl:#3AA856;--am:#B89830;
+  --rd:#CC4444;--bl:#4680C0;--pr:#7C60B8;--tx:#1A1A1A;--ts:#555;--tm:#888;
+  --bg:#FEFCF9;--bgc:#fff;--bd:#E8E0D4;--bdl:#F0ECE4;
+  --gbg:rgba(196,148,74,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
+  --rdbg:rgba(204,68,68,.06);--bga:rgba(124,96,184,.04);
+  --blbg:rgba(70,128,192,.06);--cpbg:rgba(124,96,184,.06);
+}
+.qs{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bd);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
+.pbtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s}
+.pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,148,74,.25)}
+.pbtn-sec{display:block;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bgc);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:var(--ts);transition:border-color .2s}
+.pbtn-sec:hover{border-color:var(--g)}
+.card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.card:hover{border-color:var(--gl);background:#FDF8F0}
+.card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,148,74,.25);transform:scale(1.02)}
+.chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:13px;cursor:pointer;transition:all .2s;margin:3px}
+.chip:hover{border-color:var(--gl);background:#FDF8F0}
+.chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,148,74,.2)}
+.back-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:11px;font-weight:600;cursor:pointer;color:var(--ts)}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin:0 3px;animation:bounce .6s infinite alternate}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
+.fld-block{margin-bottom:18px}
+.fld-label{font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px;letter-spacing:.2px}
+.fld-sub{font-size:11px;color:var(--tm);margin-top:3px;line-height:1.5}
+.inp{width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--bd);font-size:15px;font-family:'DM Sans',sans-serif;background:var(--bgc);color:var(--tx);transition:border-color .15s}
+.inp:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,148,74,.1)}
+.inp-sm{padding:9px 11px;font-size:13px}
+.section-head{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;padding:14px 0 8px;border-bottom:2px solid var(--gbg);margin:20px 0 14px}
+.phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
+.info-box{background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.info-box-note{font-size:11px;color:var(--tm);font-style:italic;margin-top:8px}
+@media print{body{background:#fff}.no-print{display:none!important}}
+@media(min-width:900px){
+  body{font-size:16px}
+  .qs h2{font-size:24px!important}
+  .qs label{font-size:15px!important}
+  .pbtn{font-size:16px!important;padding:18px 20px!important}
+  .back-btn{font-size:13px!important;padding:10px 20px!important}
+}
+@media(max-width:640px){
+  .rpt-grid3{grid-template-columns:1fr 1fr!important}
+  .rpt-grid2{grid-template-columns:1fr!important}
+  .rpt-flex{flex-direction:column!important}
+  .rpt-donut{flex-direction:column!important;align-items:center!important;gap:16px!important}
+  .rpt-cta-grid{grid-template-columns:1fr!important}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:480px){
+  body{font-size:14px}
+  h1{font-size:22px!important}
+  h2{font-size:19px!important}
+  .rpt-grid3{grid-template-columns:1fr!important}
+}
+</style>
+<script src="/logo.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ============================================================
+// THIN CLIENT -- No MC engine. All computation runs server-side.
+// Quiz answers sent to /api/checkout -> Stripe -> webhook -> MC -> report -> email
+// ============================================================
+
+// -- Constants for quiz UI and mock preview --
+var DEBT_RATES = {cc:0.1999, student:0.055, car:0.065, loc:0.075};
+var COL_ADJ = {QC:1,ON:1.15,BC:1.35,AB:1.05,MB:0.92,SK:0.90,NS:0.95,NB:0.88,NL:0.93,PE:0.87,NT:1.25,YT:1.20,NU:1.40};
+var PMED = {QC:380000,ON:620000,BC:850000,AB:440000,MB:320000,SK:310000,NS:360000,NB:260000,NL:270000,PE:280000,NT:400000,YT:420000,NU:380000};
+
+function amortDebt(bal,rate,pay){
+  if(bal<=0)return{months:0,totalInt:0,feasible:true};
+  var mr=rate/12,b=bal,ti=0,mo=0;
+  if(pay<=b*mr&&mr>0)return{months:999,totalInt:Math.round(bal*rate*50),feasible:false};
+  while(b>0.01&&mo<600){var ii=b*mr;b-=Math.min(b,pay-ii);ti+=ii;mo++;}
+  return{months:mo,totalInt:Math.round(ti),feasible:true};
+}
+function defMinPay(type,bal){
+  if(type==="cc")return Math.max(Math.round(bal*0.02),25);
+  if(type==="student")return Math.max(Math.round(bal/120),50);
+  if(type==="car")return Math.max(Math.round(bal/60),100);
+  return Math.max(Math.round(bal*0.01),Math.round(bal*(DEBT_RATES[type]||0.08)/12));
+}
+
+// -- Mock report data for blurred paywall preview --
+function generateMockPreviewInter(q) {
+  var age = q.age || 35, retAge = q.retAge || 65, sex = q.sex || "M";
+  var prov = q.prov || "QC", sal = q.income || 70000;
+  var col = COL_ADJ[prov] || 1;
+  var rrsp = q.rrsp || 0, tfsa = q.tfsa || 0, nr = q.nr || 0;
+  var lira = q.lira || 0, dcBal = q.dcBal || 0, fhsaBal = q.fhsaBal || 0;
+  var mc = q.monthlyContrib || 0;
+  var cRrsp = 0, cTfsa = 0, cNr = 0, cLira = 0;
+  if (q.couple === "yes") { cRrsp = q.cRrsp || 0; cTfsa = q.cTfsa || 0; cNr = q.cNr || 0; cLira = q.cLira || 0; }
+  var tot = rrsp + tfsa + nr + lira + dcBal + fhsaBal + cRrsp + cTfsa + cNr + cLira;
+  var srcs = q.sources || ["employed"];
+  var ccpcIncome = 0;
+  if (srcs.indexOf("ccpc") >= 0) ccpcIncome = Math.max(0, (q.bizRevenue || 0) - (q.bizExpenses || 0));
+  var totalIncome = sal + ccpcIncome;
+  var retSpM;
+  if (q.lifestyle === "cozy") retSpM = Math.round(3000 * col);
+  else if (q.lifestyle === "premium") retSpM = Math.round(7500 * col);
+  else if (q.lifestyle === "custom" && q.retSpMCustom > 0) retSpM = q.retSpMCustom;
+  else retSpM = Math.round(5000 * col);
+  var penType = q.penType || "none", penM = 0;
+  var emp = q.employer || "x";
+  if (penType === "db") { penM = q.penM || Math.round(sal * 0.02 * Math.min(35, retAge - 25) / 12); }
+  else if (emp === "gov" && penType === "none") { penType = "db"; penM = Math.round(sal * 0.02 * Math.min(35, retAge - 25) / 12); }
+  else if (penType === "dc" || emp === "large" || emp === "tech") { if (!dcBal) dcBal = Math.round(sal * 0.06 * Math.min(20, Math.max(0, age - 25))); }
+  var qppAge = q.qppAge || Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
+  var oasAge = q.oasAge || Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
+  var qppM = Math.round(1508 * Math.min(1, (totalIncome / 74600)) * Math.min(1, Math.max(0, age - 18) / 40) * (qppAge <= 60 ? 0.64 : qppAge <= 65 ? 1.0 : 1.42));
+  var oasM = oasAge <= 65 ? 742 : Math.round(742 * 1.36);
+  var govM = qppM + oasM + penM;
+  var gapM = Math.max(0, retSpM - govM);
+  var yrs = Math.max(0, retAge - age);
+  var fvSav = (tot + mc * 12 * yrs) * Math.pow(1.05, yrs) * 0.85;
+  var retBal = Math.round(fvSav + dcBal);
+  var wdRate = retBal > 0 ? (gapM * 12) / retBal : 99;
+  var roughSucc;
+  if (wdRate <= 0.03) roughSucc = 0.95;
+  else if (wdRate <= 0.04) roughSucc = 0.85;
+  else if (wdRate <= 0.05) roughSucc = 0.70;
+  else if (wdRate <= 0.06) roughSucc = 0.55;
+  else if (wdRate <= 0.08) roughSucc = 0.35;
+  else roughSucc = 0.15;
+  var succPct = Math.round(roughSucc * 100);
+  var grade;
+  if (succPct >= 95) grade = "A+";
+  else if (succPct >= 90) grade = "A";
+  else if (succPct >= 85) grade = "A−";
+  else if (succPct >= 80) grade = "B+";
+  else if (succPct >= 75) grade = "B";
+  else if (succPct >= 70) grade = "B−";
+  else if (succPct >= 60) grade = "C+";
+  else if (succPct >= 50) grade = "C";
+  else if (succPct >= 40) grade = "D";
+  else grade = "F";
+  var debts = ((q.debts || []).filter(function(d){return (d.amount||0)>0;})).map(function(d){
+    var bal = d.amount, rate = d.rate > 0 ? d.rate / 100 : DEBT_RATES[d.type] || 0.08;
+    var minPay = d.minPayment > 0 ? d.minPayment : defMinPay(d.type, bal);
+    var am = amortDebt(bal, rate, minPay);
+    return {type:d.type, bal:bal, rate:rate, minPay:minPay, months:am.months, totalInt:am.totalInt, feasible:am.feasible, annualCost:Math.round(bal*rate)};
+  });
+  var deathAge = sex === "F" ? 92 : 90;
+  return {
+    age:age, retAge:retAge, sex:sex, prov:prov, sal:sal, deathAge:deathAge,
+    avgDeath: sex === "F" ? 87 : 84,
+    totalSavings: Math.round(tot),
+    rrsp:Math.round(rrsp), tfsa:Math.round(tfsa), nr:Math.round(nr),
+    lira:Math.round(lira), dcBal:Math.round(dcBal), fhsaBal:Math.round(fhsaBal),
+    retBal:retBal, retYearBalance:retBal,
+    qppMonthly:qppM, oasMonthly:oasM, dbPensionMonthly:penM,
+    govMonthly:govM, coveragePct:Math.min(100, Math.round(govM/Math.max(1,retSpM)*100)),
+    gapMonthly:gapM, retSpM:retSpM,
+    withdrawalRatePct: retBal > 0 ? Math.round(wdRate * 1000) / 10 : 99,
+    successPct:succPct, succ:roughSucc, grade:grade,
+    rMedF:Math.round(retBal * 0.4), rP5F:0, rP25F:Math.round(retBal*0.15),
+    rP75F:Math.round(retBal*0.6), rP95F:Math.round(retBal*0.9),
+    medRuin: roughSucc > 0.5 ? 999 : Math.round(retAge + (retBal / Math.max(1, gapM * 12))),
+    p5Ruin: roughSucc > 0.5 ? 999 : Math.round(retAge + (retBal / Math.max(1, gapM * 12)) * 0.7),
+    taxCurrentEffective: Math.round(Math.min(40, Math.max(15, totalIncome * 0.00003))),
+    taxRetirementEffective: Math.round(Math.min(30, Math.max(8, retSpM * 12 * 0.000025))),
+    taxCurrentMarginal: Math.round(Math.min(53, Math.max(28, totalIncome * 0.000035))),
+    margRate: Math.min(0.53, Math.max(0.28, totalIncome * 0.0000035)),
+    merWeighted: 0.015,
+    feeCostLifetime: Math.round(0.015 * retBal * (deathAge - retAge)),
+    penType:penType, hasPension: penType !== "none",
+    ptM: q.parttime === "yes" ? (q.parttimeAmount || 1500) : q.parttime === "maybe" ? 800 : 0,
+    ptYrs: q.parttime === "yes" ? (q.parttimeYears || 5) : q.parttime === "maybe" ? 3 : 0,
+    qppAge:qppAge, oasAge:oasAge,
+    inf:0.021, nSim:5000, medRevData:[],
+    expReturn: 0.06, afterTaxReturn: 0.04,
+    _isMockPreview: true
+  };
+}
+
+// -- Paywall renderer --
+function renderPaywall(D, lang) {
+  var fr = lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  var gradeLabel = D.successPct >= 80 ? t("Votre plan est solide","Your plan is solid") : D.successPct >= 60 ? t("Votre plan a du potentiel","Your plan has potential") : t("Votre plan a besoin d'ajustements","Your plan needs adjustments");
+  var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:DM Sans,sans-serif">';
+  h += '<div style="text-align:center;margin-bottom:32px">';
+  h += '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:22px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Intermédiaire","Intermediate Report") + '</div>';
+  h += '</div>';
+  h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
+  h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de scénarios réussis","of scenarios succeeded") + '</div>';
+  h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
+  h += '</div>';
+  h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
+  h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre rapport complet inclut :","Your full report includes:") + '</div>';
+  var items = fr ? [
+    "16 sections d'analyse approfondie",
+    "Comparaison de 5 stratégies de décaissement",
+    "Narration financière personnalisée par IA",
+    "Projections en éventail sur votre horizon de vie",
+    "Comparaisons avec les repères canadiens (StatCan)",
+    "Anatomie fiscale et cascade de priorités",
+    "Analyse de vos 5 000 scénarios simulés"
+  ] : [
+    "16 sections of in-depth analysis",
+    "5-strategy decumulation comparison",
+    "AI-powered personalized financial narration",
+    "Fan chart projections across your life horizon",
+    "Benchmark comparisons (StatCan data)",
+    "Tax anatomy and priority cascade",
+    "Analysis of your 5,000 simulated scenarios"
+  ];
+  items.forEach(function(item) {
+    h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
+    h += '<div style="color:#1a7a4c;font-size:16px;margin-top:1px">✔</div>';
+    h += '<div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<div style="text-align:center;margin-bottom:20px">';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
+  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">69 <span style="font-size:20px">$</span></div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
+  h += '<div id="email-gate" style="margin-bottom:16px">';
+  h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
+  h += t("Obtenir mon rapport complet — 69 $","Get my full report — $69");
+  h += '</button>';
+  h += '</div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — livraison immédiate par courriel","One-time payment — instant delivery by email") + '</div>';
+  h += '<div style="margin-top:20px;text-align:center"><button onclick="localStorage.removeItem(&quot;buildfi_quiz_inter&quot;);location.reload();" style="padding:10px 24px;background:transparent;border:1px solid #ccc;border-radius:8px;color:#888;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif">' + t("Recommencer le questionnaire","Restart questionnaire") + '</button></div>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
+// -- Stripe checkout --
+function startCheckout() {
+  var email = document.getElementById("buyer-email").value.trim();
+  if (!email || !email.includes("@")) {
+    alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+    return;
+  }
+  var btn = document.querySelector("#email-gate button");
+  btn.disabled = true;
+  btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
+  fetch("/api/checkout", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      quizAnswers: STATE.quiz,
+      lang: STATE.lang,
+      email: email,
+      tier: "intermediaire"
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
+      btn.disabled = false;
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 69 $" : "Get my full report — $69";
+    }
+  })
+  .catch(function() {
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
+    btn.disabled = false;
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 69 $" : "Get my full report — $69";
+  });
+}
+
+// ============================================================
+// APPLICATION STATE
+// ============================================================
+var STATE={
+  step:0,lang:"fr",
+  quiz:{
+    age:42,retAge:63,sex:"M",prov:"QC",couple:"no",cAge:0,cSex:"F",
+    sources:["employed"],employer:"large",income:80000,
+    cIncome:0,cSource:"employed",cEmployer:"",
+    rrsp:45000,tfsa:22000,nr:5000,lira:0,dcBal:0,monthlyContrib:600,
+    cRrsp:0,cTfsa:0,cNr:0,cLira:0,
+    debts:[],homeowner:false,homeValue:0,mortgage:0,mortgageAmort:20,
+    heloc:0,helocRate:6.5,hasRental:false,
+    rentalValue:0,rentalMortgage:0,rentalAmort:20,rentalIncome:0,rentalExpenses:0,
+    rentalDpaAccum:0,rentalSaleAge:0,
+    lifestyle:"active",retSpMCustom:0,risk:"balanced",allocCustom:70,retSpM:0,
+    parttime:"no",parttimeAmount:0,parttimeYears:0,
+    worries:[],objective:"",
+    confidence:3,decaissement:"minimal",
+    fhsaBal:0,fhsaContrib:0,fhsaForHome:false,fhsaHomeAge:0,
+    penType:"none",penM:0,penIdx:false,penBridge:false,penYrs:0,
+    cRetAge:63,cPenType:"none",cPenM:0,cQppAge:65,cOasAge:65,
+    downsizingAge:0,downsizingProceeds:0,dpaOn:false,
+    qppAge:65,oasAge:65,
+    lifeInsBenefit:0,lifeInsPremium:0,
+    cLifeInsBenefit:0,cLifeInsPremium:0,succObjective:"neutral",
+    bizRevenue:0,bizExpenses:0,bizBNR:0,bizRemun:"mix",bizSalaryPct:50,
+    bizGrowth:2,bizInvAlloc:40,bizExtractYrs:10,
+    bizDebt:0,bizSaleAge:0,bizSalePrice:0,bizACB:100,bizLCGE:false,
+    ippOn:false,ippBal:0
+  },
+  mc:null,reportData:null,computed:false,
+  showPaywall:false,
+  activeBlocks:[]
+};
+
+function detectBlocks(q){
+  var blocks=[];
+  if((q.lira||0)>0||(q.fhsaBal||0)>0||(q.fhsaContrib||0)>0)blocks.push("A");
+  if((q.penType&&q.penType!=="none")||q.employer==="gov")blocks.push("B");
+  if(q.couple==="yes")blocks.push("C");
+  if(q.homeowner)blocks.push("D");
+  if(q.hasRental)blocks.push("D2");
+  blocks.push("E");
+  var totalAssets=(q.rrsp||0)+(q.tfsa||0)+(q.nr||0)+(q.lira||0)+(q.dcBal||0)
+    +(q.homeValue||0)+(q.rentalValue||0)+(q.couple==="yes"?(q.cRrsp||0)+(q.cTfsa||0)+(q.cNr||0):0);
+  if(totalAssets>100000||(q.lifeInsBenefit||0)>0)blocks.push("F");
+  var srcs=q.sources||[q.source||"employed"];
+  if(srcs.indexOf("ccpc")>=0)blocks.push("G");
+  return blocks;
+}
+
+function f$(n){
+  if(n==null||isNaN(n))return"\u2014";
+  var s=(n<0?"-":"")+Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" $";
+  return s;
+}
+function fPct(n){if(n==null||isNaN(n))return"\u2014";return Math.round(n)+"%";}
+function gCol(s){return s>=0.9?"#2A8C46":s>=0.75?"#B89830":"#CC4444";}
+
+// -- localStorage persistence --
+try{var saved=localStorage.getItem("buildfi_quiz_inter");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);}}}catch(e){}
+function saveState(){try{localStorage.setItem("buildfi_quiz_inter",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
+
+// ============================================================
+// RENDER ROUTER
+// ============================================================
+function render(){
+  var app=document.getElementById("app");
+  var s=STATE,q=s.quiz,fr=s.lang==="fr";
+  document.documentElement.lang=s.lang;
+  document.title=fr?"buildfi.ca \u2014 Rapport Interm\u00e9diaire":"buildfi.ca \u2014 Intermediate Report";
+  saveState();
+
+  if(s.showPaywall&&s.reportData){
+    app.innerHTML=renderPaywall(s.reportData,s.lang);
+    return;
+  }
+  if(s.step==="loading"){
+    app.innerHTML=renderLoading(fr);
+    if(!s.computed){
+      s.computed=true;
+      STATE.reportData=generateMockPreviewInter(q);
+      STATE.showPaywall=true;
+      render();
+    }
+    return;
+  }
+  app.innerHTML=renderQuiz(s.step,q,s.lang,s.activeBlocks);
+}
+
+function go(step){
+  STATE.step=step;
+  saveState();
+  window.scrollTo({top:0,behavior:"smooth"});
+  render();
+}
+function uq(key,val){STATE.quiz[key]=val;render();}
+function setDebtField(type,field,val){
+  var q=STATE.quiz;
+  var d=q.debts.find(function(x){return x.type===type;});
+  if(!d){d={type:type,amount:0,minPayment:0,rate:(DEBT_RATES[type]||0.08)*100};q.debts.push(d);}
+  d[field]=val||0;
+  q.debts=q.debts.filter(function(x){return(x.amount||0)>0||(x.minPayment||0)>0;});
+  render();
+}
+function toggleWorry(w){
+  var q=STATE.quiz;
+  if(q.worries.indexOf(w)>=0)q.worries=q.worries.filter(function(x){return x!==w;});
+  else if(q.worries.length<3)q.worries.push(w);
+  render();
+}
+function goConditional(){
+  var blocks=STATE.activeBlocks=detectBlocks(STATE.quiz);
+  if(blocks.length===0){go("loading");return;}
+  go("B"+blocks[0]);
+}
+function goNextBlock(current){
+  var blocks=STATE.activeBlocks;
+  var idx=blocks.indexOf(current);
+  if(idx>=0&&idx<blocks.length-1)go("B"+blocks[idx+1]);
+  else go("loading");
+}
+function goPrevBlock(current){
+  var blocks=STATE.activeBlocks;
+  var idx=blocks.indexOf(current);
+  if(idx>0)go("B"+blocks[idx-1]);
+  else go(7);
+}
+function toggleSource(v){
+  var s=STATE.quiz.sources||["employed"];
+  var idx=s.indexOf(v);
+  if(v==="retired"){STATE.quiz.sources=["retired"];render();return;}
+  s=s.filter(function(x){return x!=="retired";});
+  if(idx>=0)s=s.filter(function(x){return x!==v;});
+  else s.push(v);
+  if(s.length===0)s=["employed"];
+  STATE.quiz.sources=s;render();
+}
+function renderLoading(fr){
+  return'<div style="max-width:520px;margin:80px auto;text-align:center;padding:24px">'
+    +'<div style="width:56px;height:56px;border-radius:50%;background:var(--gbg);border:2px solid var(--g);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:24px">📊</div>'
+    +'<h2 style="font-size:20px;font-weight:700;color:var(--g);margin-bottom:10px">'+(fr?"Analyse en cours…":"Analyzing…")+'</h2>'
+    +'<p style="color:var(--ts);font-size:14px;line-height:1.6;margin-bottom:6px">'+(fr?"5 000 scénarios économiques simulés sur votre horizon de vie.":"Simulating 5,000 economic scenarios across your life horizon.")+'</p>'
+    +'<p style="color:var(--tm);font-size:12px;margin-bottom:24px">'+(fr?"Cela prend généralement 3 à 8 secondes.":"This usually takes 3 to 8 seconds.")+'</p>'
+    +'<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
+}
+
+function renderQuiz(step,q,lang,activeBlocks){
+  var fr=lang==="fr",t=function(f,e){return fr?f:e;};
+  var totalSteps=7+(activeBlocks||[]).length;
+  function progressBar(stepNum){
+    if(stepNum<=0)return'';
+    var pct=Math.round(stepNum/totalSteps*100);
+    return'<div style="margin-bottom:28px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px">'
+      +'<span style="font-weight:600">'+(fr?"Étape":"Step")+' '+stepNum+' / '+totalSteps+'</span>'
+      +'<span style="font-weight:700;color:var(--g)">'+pct+'%</span></div>'
+      +'<div style="height:4px;background:var(--bdl);border-radius:2px">'
+      +'<div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:'+pct+'%;transition:width .3s"></div>'
+      +'</div></div>';
+  }
+  function blockStepNum(blockKey){
+    return 7+(activeBlocks||[]).indexOf(blockKey)+1;
+  }
+  function wrap(inner,sn){
+    return'<div style="max-width:560px;margin:0 auto;padding:40px 20px 40px">'
+      +progressBar(typeof sn==="number"?sn:blockStepNum(sn))
+      +'<div class="qs">'+inner+'</div>'
+      +'</div>';
+  }
+  function backBtn(target){
+    return'<button class="back-btn" onclick="go(\''+target+'\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>';
+  }
+
+  // ── STEP 0 ─────────────────────────────────────────────────
+  if(step===0){
+    return'<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:580px;margin:0 auto;padding:40px 24px">'
+      +'<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
+      +'<button onclick="STATE.lang=\'fr\';render()" style="padding:5px 14px;border-radius:6px;border:'+(fr?"2px solid var(--g)":"1px solid var(--bd)")+';background:'+(fr?"var(--gbg)":"var(--bgc)")+';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">FR</button>'
+      +'<button onclick="STATE.lang=\'en\';render()" style="padding:5px 14px;border-radius:6px;border:'+(!fr?"2px solid var(--g)":"1px solid var(--bd)")+';background:'+(!fr?"var(--gbg)":"var(--bgc)")+';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
+      +'<div style="text-align:center;margin-bottom:28px">'
+      +'<div style="font-size:22px;font-weight:800;color:var(--g);letter-spacing:-.5px;margin-bottom:4px">buildfi.ca</div>'
+      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Rapport Intermédiaire — 69 $","Intermediate Report — $69")+'</div>'
+      +'</div>'
+      +'<h1 style="font-size:26px;font-weight:800;line-height:1.25;text-align:center;margin-bottom:14px">'+t("Un portrait financier complet.<br>En langage clair.","A complete financial portrait.<br>In plain language.")+'</h1>'
+      +'<p style="font-size:14px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'+t("8 à 12 minutes après avoir réuni vos informations. 16 sections d'analyse. 5 000 scénarios simulés.","8 to 12 minutes once you have your information ready. 16 sections of analysis. 5,000 simulated scenarios.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:14px;padding:20px 22px;margin-bottom:24px">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px">'+t("Préparez ces documents pour un portrait précis :","Have these documents handy for accuracy:")+'</div>'
+      +'<div style="display:grid;gap:8px">'
+      +[
+        {f:"Derniers relevés REER, CELI et placements non enregistrés",e:"Latest RRSP, TFSA and non-registered statements"},
+        {f:fr&&q.prov==="QC"?"Relevé RRQ (Mon dossier RRQ — rrq.gouv.qc.ca)":"Relevé RPC/RRQ (Mon dossier Service Canada — canada.ca/fr/emploi-developpement-social)",e:"CPP/QPP statement (My Service Canada Account — canada.ca/en/employment-social-development)"},
+        {f:"Relevé de régime de retraite employeur, si applicable",e:"Employer pension plan statement, if applicable"},
+        {f:"Solde hypothécaire et amortissement restant",e:"Mortgage balance and remaining amortization"},
+        {f:"Soldes de dettes avec taux et paiements minimum",e:"Debt balances with rates and minimum payments"},
+        {f:"Pour les incorporé·e·s : bénéfices non répartis et rémunération",e:"For incorporated: retained earnings and compensation"}
+      ].map(function(item){
+        return'<div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ts)">'
+          +'<div style="width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0;margin-top:6px;opacity:.7"></div>'
+          +t(item.f,item.e)+'</div>';
+      }).join("")
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:12px;padding-top:10px;border-top:1px solid var(--bdl)">'+t("Des estimations raisonnables suffisent — le simulateur tient compte de l'incertitude.","Reasonable estimates are fine — the simulator accounts for uncertainty.")+'</div>'
+      +'</div>'
+      +'<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:28px">'
+      +'<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:12px;color:var(--ts)">🇨🇦 '+t("Conçu pour le Canada","Built for Canada")+'</span>'
+      +'<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:12px;color:var(--ts)">📊 5 000 sims</span>'
+      +'<span style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;background:var(--bgc);border:1px solid var(--bd);font-size:12px;color:var(--ts)">🔒 '+t("Aucun compte requis","No account required")+'</span>'
+      +'</div>'
+      +'<button class="pbtn" onclick="go(1)">'+t("Commencer mon bilan →","Start my assessment →")+'</button>'
+      +'</div>';
+  }
+
+  // ── STEP 1: Profil ────────────────────────────────────────
+  if(step===1){
+    var provOpts=["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"]
+      .map(function(p){return'<option value="'+p+'"'+(q.prov===p?" selected":"")+'>'+p+'</option>';}).join("");
+    var cAgeField=q.couple==="yes"?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">'
+      +'<div><label style="font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px">'+t("Âge du/de la conjoint·e","Partner age")+'</label>'
+      +'<input class="inp" type="number" min="18" max="80" value="'+(q.cAge||35)+'" oninput="uq(\'cAge\',+this.value)" /></div>'
+      +'<div><label style="font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px">'+t("Sexe du/de la conjoint·e","Partner sex")+'</label>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){
+        return'<div class="card'+(q.cSex===o.v?" sel":"")+'" onclick="uq(\'cSex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+      }).join("")+'</div></div></div>':'';
+
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 1 sur 3 — Votre profil","Phase 1 of 3 — Your profile")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Informations de base","Basic information")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces données déterminent les tables de mortalité, les taux d'imposition et les paramètres de pension gouvernementale.","These determine mortality tables, tax rates, and government pension parameters.")+'</p>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Âge actuel","Current age")+'</label>'
+      +'<input class="inp" type="number" min="18" max="80" value="'+q.age+'" oninput="uq(\'age\',+this.value)" /></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Âge cible de retraite","Target retirement age")+'</label>'
+      +'<div style="display:flex;align-items:center;gap:14px">'
+      +'<input type="range" min="45" max="75" value="'+q.retAge+'" oninput="uq(\'retAge\',+this.value)" style="flex:1" />'
+      +'<span style="font-family:monospace;font-size:22px;font-weight:800;color:var(--g);min-width:42px;text-align:center">'+q.retAge+'</span>'
+      +'</div></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Sexe biologique","Biological sex")+'</label>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){
+        return'<div class="card'+(q.sex===o.v?" sel":"")+'" onclick="uq(\'sex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';
+      }).join("")+'</div>'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Utilisé pour les tables actuarielles CPM-2014.","Used for CPM-2014 actuarial tables.")+'</div></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Province de résidence","Province of residence")+'</label>'
+      +'<select class="inp" onchange="uq(\'prov\',this.value)">'+provOpts+'</select></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Situation conjugale","Relationship status")+'</label>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:"no",l:t("Seul·e","Single"),d:t("Situation individuelle","Individual situation")},{v:"yes",l:t("En couple","With a partner"),d:t("Ménage à deux revenus","Dual-income household")}].map(function(o){
+        return'<div class="card'+(q.couple===o.v?" sel":"")+'" onclick="uq(\'couple\',\''+o.v+'\')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600;font-size:14px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';
+      }).join("")+'</div></div>'
+      +cAgeField
+      +'<button class="pbtn" onclick="go(2)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(0),1);
+  }
+
+  // ── STEP 2: Revenus ──────────────────────────────────────
+  if(step===2){
+    var srcs=q.sources||["employed"];
+    var srcOpts=[
+      {v:"employed",l:t("Employé·e salarié·e","Salaried employee"),d:t("T4 / RL-1","T4 / RL-1"),icon:"💼"},
+      {v:"self",l:t("Travailleur·se autonome","Self-employed"),d:t("Revenus non incorporés","Unincorporated"),icon:"🔧"},
+      {v:"ccpc",l:t("Incorporé·e — CCPC / SPA","Incorporated — CCPC / SPC"),d:t("Société par actions, BNR, dividendes","Corporation, RE, dividends"),icon:"🏢"},
+      {v:"retired",l:t("Déjà à la retraite","Already retired"),d:t("Pensions, FERR, PSV","Pensions, RRIF, OAS"),icon:"🌿"}
+    ];
+    var srcCards=srcOpts.map(function(o){
+      var sel=srcs.indexOf(o.v)>=0;
+      return'<div class="card'+(sel?" sel":"")+'" onclick="toggleSource(\''+o.v+'\')" style="padding:14px;display:flex;align-items:center;gap:12px">'
+        +'<span style="font-size:20px;flex-shrink:0">'+o.icon+'</span>'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>'
+        +'<div style="width:20px;height:20px;border-radius:50%;border:2px solid '+(sel?"var(--g)":"var(--bd)")+';background:'+(sel?"var(--g)":"transparent")+';flex-shrink:0;display:flex;align-items:center;justify-content:center">'
+        +(sel?'<div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>':'')
+        +'</div></div>';
+    }).join("");
+
+    var empBlock=srcs.indexOf("employed")>=0?'<div class="fld-block"><label class="fld-label">'+t("Type d'employeur","Employer type")+'</label>'
+      +[{v:"gov",l:t("Gouvernement / secteur public","Government / public sector"),d:t("Régime à prestations déterminées typique","Typically DB pension")},
+        {v:"large",l:t("Grande entreprise privée","Large private company"),d:t("Régime CD ou contrepartie possible","DC plan or matching possible")},
+        {v:"tech",l:"Tech / Startup",d:t("Options, rémunération variable","Options, variable compensation")},
+        {v:"small",l:t("PME / sans régime","SME / no plan"),d:t("Pas de régime collectif","No group plan")}]
+      .map(function(o){return'<div class="card'+(q.employer===o.v?" sel":"")+'" onclick="uq(\'employer\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("")+'</div>':'';
+
+    var cIncBlock=q.couple==="yes"?'<div style="background:var(--cpbg);border:1px solid rgba(124,96,184,.15);border-radius:10px;padding:16px;margin-top:4px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--pr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">'+t("Conjoint·e","Partner")+'</div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Revenu annuel brut du/de la conjoint·e","Partner gross annual income")+' ($)</label>'
+      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.cIncome||0)+'" oninput="uq(\'cIncome\',+this.value)" /></div></div>':'';
+
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 1 sur 3 — Revenus","Phase 1 of 3 — Income")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Revenus et situation professionnelle","Income and professional situation")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Sélectionnez toutes vos sources de revenu actuelles. Vous pouvez en choisir plusieurs.","Select all your current income sources. You can choose more than one.")+'</p>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Sources de revenu","Income sources")+'</label>'
+      +'<div style="font-size:11px;color:var(--tm);margin-bottom:8px">'+t("Sélection multiple permise","Multiple selection allowed")+'</div>'
+      +srcCards+'</div>'
+      +empBlock
+      +'<div class="fld-block"><label class="fld-label">'+t("Revenu annuel brut total","Total gross annual income")+' ($)</label>'
+      +'<input class="inp" type="number" min="0" max="2000000" step="1000" value="'+q.income+'" oninput="uq(\'income\',+this.value)" />'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Salaire + toute rémunération imposable. Avant impôts.","Salary + all taxable compensation. Before taxes.")+'</div></div>'
+      +cIncBlock
+      +'<button class="pbtn" onclick="go(3)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(1),2);
+  }
+
+  // ── STEP 3: Épargne ──────────────────────────────────────
+  if(step===3){
+    var cSavBlock=q.couple==="yes"?'<div style="background:var(--cpbg);border:1px solid rgba(124,96,184,.15);border-radius:10px;padding:16px;margin-top:4px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--pr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">'+t("Épargne du/de la conjoint·e","Partner savings")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">REER ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cRrsp||0)+'" oninput="uq(\'cRrsp\',+this.value)" /></div>'
+      +'<div><label class="fld-label">CELI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cTfsa||0)+'" oninput="uq(\'cTfsa\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Non enregistré","Non-reg")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cNr||0)+'" oninput="uq(\'cNr\',+this.value)" /></div>'
+      +'<div><label class="fld-label">CRI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cLira||0)+'" oninput="uq(\'cLira\',+this.value)" /></div>'
+      +'</div></div>':'';
+
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 1 sur 3 — Épargne","Phase 1 of 3 — Savings")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Comptes et épargne actuels","Current accounts and savings")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("La répartition entre les comptes influence directement la stratégie de décaissement et l'impôt à la retraite.","The split between accounts directly influences withdrawal strategy and retirement taxation.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Comptes enregistrés","Registered accounts")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("REER — Régime enregistré d'épargne-retraite","RRSP — Registered Retirement Savings Plan")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.rrsp+'" oninput="uq(\'rrsp\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("CELI — Compte d'épargne libre d'impôt","TFSA — Tax-Free Savings Account")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.tfsa+'" oninput="uq(\'tfsa\',+this.value)" /></div>'
+      +'</div></div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Autres comptes","Other accounts")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Placements non enregistrés","Non-registered investments")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.nr+'" oninput="uq(\'nr\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("CRI — Compte de retraite immobilisé","LIRA — Locked-in Retirement Account")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uq(\'lira\',+this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:3px">'+t("Provenant d'un régime employeur précédent","From a previous employer plan")+'</div></div>'
+      +'<div><label class="fld-label">'+t("Régime DC / REER collectif","DC plan / Group RRSP")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.dcBal||0)+'" oninput="uq(\'dcBal\',+this.value)" /></div>'
+      +'</div></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Cotisation mensuelle totale actuelle","Total current monthly contribution")+' ($/'+t("mois","mo")+')</label>'
+      +'<input class="inp" type="number" min="0" max="20000" step="50" value="'+q.monthlyContrib+'" oninput="uq(\'monthlyContrib\',+this.value)" />'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Tous comptes confondus. Sera réparti selon votre situation fiscale.","All accounts combined. Allocated based on your tax situation.")+'</div></div>'
+      +cSavBlock
+      +'<button class="pbtn" onclick="go(4)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(2),3);
+  }
+
+  // ── STEP 4: Dettes ───────────────────────────────────────
+  if(step===4){
+    var debtTypes=[{v:"cc",l:t("Carte de crédit","Credit card"),r:19.99},
+      {v:"loc",l:t("Marge de crédit personnelle","Personal line of credit"),r:7.5},
+      {v:"car",l:t("Prêt automobile","Car loan"),r:6.5},
+      {v:"student",l:t("Prêt étudiant","Student loan"),r:5.5}];
+
+    var debtInputs=debtTypes.map(function(dt){
+      var d=q.debts.find(function(x){return x.type===dt.v;})||{type:dt.v,amount:0,minPayment:0,rate:dt.r};
+      return'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:8px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        +'<span style="font-weight:700;font-size:13px">'+dt.l+'</span>'
+        +'<div style="display:flex;align-items:center;gap:4px">'
+        +'<input type="number" min="0" max="30" step="0.1" value="'+(d.rate||dt.r)+'" oninput="setDebtField(\''+dt.v+'\',\'rate\',+this.value)" style="width:56px;padding:5px 7px;border-radius:6px;border:1px solid var(--bd);font-size:12px;font-family:\'DM Sans\',sans-serif;text-align:right" />'
+        +'<span style="font-size:11px;color:var(--tm)">%</span></div></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        +'<div><label class="fld-label">'+t("Solde","Balance")+' ($)</label>'
+        +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(d.amount||0)+'" oninput="setDebtField(\''+dt.v+'\',\'amount\',+this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Paiement min.","Min. payment")+' ($/'+t("mois","mo")+')</label>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(d.minPayment||0)+'" oninput="setDebtField(\''+dt.v+'\',\'minPayment\',+this.value)" /></div>'
+        +'</div></div>';
+    }).join("");
+
+    var homeBlock=q.homeowner?'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-top:12px">'
+      +'<div class="section-head">'+t("Résidence principale","Primary residence")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Valeur estimée actuelle","Estimated current value")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.homeValue||0)+'" oninput="uq(\'homeValue\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Solde hypothécaire","Mortgage balance")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.mortgage||0)+'" oninput="uq(\'mortgage\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Amortissement restant","Remaining amortization")+' ('+t("années","years")+')</label>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.mortgageAmort||20)+'" oninput="uq(\'mortgageAmort\',+this.value)" /></div>'
+      +'<div><label class="fld-label">HELOC ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.heloc||0)+'" oninput="uq(\'heloc\',+this.value)" /></div>'
+      +'</div></div>':'';
+
+    var rentalQ='<div class="fld-block" style="margin-top:16px"><label class="fld-label">'+t("Êtes-vous propriétaire d'un bien locatif ?","Do you own a rental property?")+'</label>'
+      +'<div style="font-size:11px;color:var(--tm);margin-bottom:6px">'+t("Condo, duplex, chalet ou immeuble à revenus","Condo, duplex, cottage or income property")+'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:true,l:t("Oui","Yes"),d:t("Un bloc séparé vous sera présenté","A separate section will follow")},{v:false,l:t("Non","No"),d:""}].map(function(o){
+        return'<div class="card'+(q.hasRental===o.v?" sel":"")+'" onclick="uq(\'hasRental\','+o.v+')" style="flex:1;padding:12px 14px;text-align:center">'
+          +'<div style="font-weight:600;font-size:14px">'+o.l+'</div>'
+          +(o.d?'<div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div>':'')
+          +'</div>';
+      }).join("")+'</div></div>';
+
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 2 sur 3 — Actifs et dettes","Phase 2 of 3 — Assets and debts")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Dettes et propriété","Debts and property")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Les dettes réduisent la capacité d'épargne. L'immobilier est intégré dans le bilan net et la stratégie de décaissement.","Debts reduce savings capacity. Real estate is integrated into net worth and withdrawal strategy.")+'</p>'
+      +'<div class="section-head">'+t("Vos dettes actuelles","Your current debts")+'</div>'
+      +debtInputs
+      +'<div class="fld-block" style="margin-top:16px"><label class="fld-label">'+t("Êtes-vous propriétaire d'une résidence principale ?","Do you own a primary residence?")+'</label>'
+      +'<div style="display:flex;gap:8px;margin-top:4px">'
+      +[{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){
+        return'<div class="card'+(q.homeowner===o.v?" sel":"")+'" onclick="uq(\'homeowner\','+o.v+')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600">'+o.l+'</div></div>';
+      }).join("")+'</div></div>'
+      +homeBlock
+      +rentalQ
+      +'<button class="pbtn" onclick="go(5)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(3),4);
+  }
+
+  // ── STEP 5: Style de vie ─────────────────────────────────
+  if(step===5){
+    var lsCards=[
+      {v:"cozy",l:t("Sobre","Modest"),d:t("~3 000 $/mois","~$3,000/mo"),note:t("Dépenses essentielles, peu de voyages","Essential expenses, minimal travel")},
+      {v:"active",l:t("Actif","Active"),d:t("~5 000 $/mois","~$5,000/mo"),note:t("Voyages, loisirs, sorties régulières","Travel, leisure, regular outings")},
+      {v:"premium",l:t("Aisé","Affluent"),d:t("~7 500 $/mois","~$7,500/mo"),note:t("Voyages fréquents, style de vie premium","Frequent travel, premium lifestyle")},
+      {v:"custom",l:t("Personnalisé","Custom"),d:t("Je saisis mon propre montant","I'll enter my own amount"),note:t("Pour les situations atypiques (10 k$, 15 k$/mois…)","For atypical situations ($10k, $15k/mo…)")}
+    ].map(function(o){return'<div class="card'+(q.lifestyle===o.v?" sel":"")+'" onclick="uq(\'lifestyle\',\''+o.v+'\')" style="padding:14px 16px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:14px">'+o.l+'</span><span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--g)">'+o.d+'</span></div>'
+      +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.note+'</div></div>';}).join("");
+    var lsCustom=q.lifestyle==="custom"?'<div style="background:var(--gbg);border-radius:10px;padding:14px;margin-top:8px">'
+      +'<label class="fld-label">'+t("Revenu mensuel souhaité à la retraite","Desired monthly retirement income")+' ($)</label>'
+      +'<input class="inp" type="number" min="500" max="100000" step="500" value="'+(q.retSpMCustom||5000)+'" oninput="uq(\'retSpMCustom\',+this.value)" />'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Avant impôts, en dollars d'aujourd'hui. Les calculs tiennent compte de l'inflation.","Before tax, in today's dollars. Calculations account for inflation.")+'</div></div>':'';
+
+    var rkCards=[
+      {v:"conservative",l:t("Prudent·e","Conservative"),d:"50% "+t("actions","equity"),note:t("Moins de volatilité, rendement attendu plus faible","Less volatility, lower expected return")},
+      {v:"balanced",l:t("Équilibré·e","Balanced"),d:"70% "+t("actions","equity"),note:t("Approche traditionnelle, volatilité modérée","Traditional approach, moderate volatility")},
+      {v:"growth",l:t("Croissance","Growth"),d:"85% "+t("actions","equity"),note:t("Rendement potentiel élevé, volatilité importante","Higher potential return, significant volatility")},
+      {v:"custom",l:t("Personnalisé","Custom"),d:t("Je fixe mon % d'actions","I set my equity %"),note:t("Portefeuille sur mesure — vous connaissez votre allocation","Custom portfolio — you know your allocation")}
+    ].map(function(o){return'<div class="card'+(q.risk===o.v?" sel":"")+'" onclick="uq(\'risk\',\''+o.v+'\')" style="padding:14px 16px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:14px">'+o.l+'</span><span style="font-size:12px;color:var(--ts)">'+o.d+'</span></div>'
+      +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.note+'</div></div>';}).join("");
+    var rkCustom=q.risk==="custom"?'<div style="background:var(--gbg);border-radius:10px;padding:14px;margin-top:8px">'
+      +'<label class="fld-label">'+t("Part d'actions dans votre portefeuille","Equity allocation in your portfolio")+' — '+(q.allocCustom||70)+'%</label>'
+      +'<input type="range" min="0" max="100" value="'+(q.allocCustom||70)+'" oninput="uq(\'allocCustom\',+this.value)" style="margin-top:8px;width:100%" />'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm);margin-top:4px">'
+      +'<span>0% '+t("(obligations pures)","(bonds only)")+'</span>'
+      +'<span style="font-weight:700;color:var(--g)">'+(q.allocCustom||70)+'% '+t("actions","equity")+'</span>'
+      +'<span>100% '+t("(actions pures)","(equity only)")+'</span></div></div>':'';
+    var ptCards=[{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-être","Maybe")},{v:"no",l:t("Non","No")}]
+      .map(function(o){return'<div class="card'+(q.parttime===o.v?" sel":"")+'" onclick="uq(\'parttime\',\''+o.v+'\')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var ptFields=(q.parttime==="yes"||q.parttime==="maybe")?'<div style="background:var(--gbg);border-radius:10px;padding:14px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +'<div><label class="fld-label">'+t("Revenu mensuel estimé","Est. monthly income")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.parttimeAmount||0)+'" oninput="uq(\'parttimeAmount\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Nombre d\'années","Number of years")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="1" max="20" value="'+(q.parttimeYears||3)+'" oninput="uq(\'parttimeYears\',+this.value)" /></div>'
+      +'</div></div>':'';
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 2 sur 3 — Retraite","Phase 2 of 3 — Retirement")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Style de vie et investissement","Lifestyle and investment")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces paramètres définissent votre besoin de revenu à la retraite et le profil de rendement attendu de votre portefeuille.","These parameters define your retirement income need and expected portfolio return profile.")+'</p>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Style de vie souhaité à la retraite","Desired retirement lifestyle")+'</label>'+lsCards+lsCustom+'</div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Profil d\'investissement","Investment profile")+'</label>'+rkCards+rkCustom+'</div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Travail à temps partiel en début de retraite ?","Part-time work in early retirement?")+'</label>'
+      +'<div style="display:flex;gap:8px">'+ptCards+'</div>'+ptFields+'</div>'
+      +'<button class="pbtn" onclick="go(6)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(4),5);
+  }
+
+  // ── STEP 6: Priorités ────────────────────────────────────
+  if(step===6){
+    var wOpts=[
+      {v:"runout",l:t("Manquer d'argent","Running out of money")},
+      {v:"tax",l:t("Trop d'impôts","Too much tax")},
+      {v:"inflation",l:t("L'inflation","Inflation")},
+      {v:"health",l:t("Coûts de santé","Health costs")},
+      {v:"market",l:t("Krachs boursiers","Market crashes")},
+      {v:"legacy",l:t("Laisser un héritage","Leaving a legacy")}
+    ].map(function(o){
+      return'<span class="chip'+(q.worries.indexOf(o.v)>=0?" sel":"")+'" onclick="toggleWorry(\''+o.v+'\')">'+o.l+'</span>';
+    }).join("");
+    var objCards=[
+      {v:"enjoy",l:t("Profiter pleinement","Enjoy fully"),d:t("Maximiser le revenu disponible","Maximize available income")},
+      {v:"legacy",l:t("Léguer","Leave a legacy"),d:t("Préserver le patrimoine","Preserve wealth")},
+      {v:"protect",l:t("Protéger","Protect"),d:t("Sécurité avant tout","Security first")},
+      {v:"optimize",l:t("Optimiser fiscalement","Tax optimize"),d:t("Minimiser l'impôt viager","Minimize lifetime tax")},
+      {v:"early",l:t("Retraite hâtive","Early retirement"),d:t("Maximiser la durée","Maximize duration")}
+    ].map(function(o){return'<div class="card'+(q.objective===o.v?" sel":"")+'" onclick="uq(\'objective\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 2 sur 3 — Priorités","Phase 2 of 3 — Priorities")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Ce qui compte pour vous","What matters to you")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces informations personnalisent la narration du rapport et orientent l'analyse IA.","This personalizes the report narrative and guides the AI analysis.")+'</p>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Vos 3 préoccupations principales (max. 3)","Your top 3 concerns (max. 3)")+'</label>'
+      +'<div style="margin-top:6px">'+wOpts+'</div></div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Votre objectif principal à la retraite","Primary retirement objective")+'</label>'+objCards+'</div>'
+      +'<button class="pbtn" onclick="go(7)">'+t("Continuer","Continue")+'</button>'
+      +backBtn(5),6);
+  }
+
+  // ── STEP 7: Stratégie ────────────────────────────────────
+  if(step===7){
+    var decCards=[
+      {v:"minimal",l:t("Retraits minimums","Minimums only"),d:t("Retirer le strict nécessaire — préserver le capital","Withdraw only what's needed — preserve capital")},
+      {v:"meltdown",l:t("Décaissement REER graduel avant 71 ans","Gradual RRSP drawdown before 71"),d:t("Réduire le REER pour minimiser l'impôt au FERR","Reduce RRSP to minimize RRIF taxation")},
+      {v:"needs",l:t("Selon les besoins","As needed"),d:t("Retirer selon les dépenses effectives","Withdraw based on actual expenses")}
+    ].map(function(o){return'<div class="card'+(q.decaissement===o.v?" sel":"")+'" onclick="uq(\'decaissement\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+    var confLabels=[t("Peu informé·e","Beginner"),t("Quelques notions","Some knowledge"),t("Raisonnablement informé·e","Informed"),t("Bien informé·e","Well-informed"),t("Expert·e","Expert")];
+    return wrap(
+      '<div class="phase-badge">'+t("Phase 3 sur 3 — Stratégie","Phase 3 of 3 — Strategy")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Stratégie de décaissement","Withdrawal strategy")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("La stratégie de décaissement détermine l'ordre et le rythme des retraits — avec des implications fiscales importantes.","Withdrawal strategy determines the order and pace of drawdowns — with significant tax implications.")+'</p>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Approche souhaitée","Desired approach")+'</label>'+decCards+'</div>'
+      +'<div class="fld-block"><label class="fld-label">'+t("Niveau de connaissance financière","Financial knowledge level")+'</label>'
+      +'<input type="range" min="1" max="5" value="'+q.confidence+'" oninput="uq(\'confidence\',+this.value)" style="margin-top:8px" />'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm);margin-top:4px">'
+      +'<span>'+confLabels[0]+'</span>'
+      +'<span style="font-weight:700;color:var(--g)">'+confLabels[q.confidence-1]+'</span>'
+      +'<span>'+confLabels[4]+'</span></div>'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:6px">'+t("Calibre la profondeur des explications dans le rapport.","Calibrates the depth of explanations in the report.")+'</div></div>'
+      +'<div style="background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px;margin-top:4px">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:6px">'+t("Prochaine étape","Next step")+'</div>'
+      +'<p style="font-size:12px;color:var(--ts);line-height:1.6">'+t("Le simulateur vérifiera si des sections spécialisées s'appliquent à votre profil (retraite employeur, conjoint·e, immobilier, CCPC) avant de lancer les calculs.","The simulator will check if specialized sections apply to your profile (employer pension, partner, real estate, CCPC) before running calculations.")+'</p>'
+      +'</div>'
+      +'<button class="pbtn" onclick="STATE.activeBlocks=detectBlocks(STATE.quiz);goConditional()">'+t("Continuer vers les sections spécialisées →","Continue to specialized sections →")+'</button>'
+      +backBtn(6),7);
+  }
+
+
+  // ── BLOC A: CRI / FHSA ──────────────────────────────────
+  if(step==="BA"){
+    return wrap(
+      '<div class="phase-badge">'+t("Comptes spécialisés","Specialized accounts")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("CRI et CELIAPP","LIRA and FHSA")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces comptes ont des règles de retrait particulières qui influencent la stratégie de décaissement optimale.","These accounts have specific withdrawal rules that influence optimal decumulation strategy.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">CRI / REER immobilisé</div>'
+      +'<label class="fld-label">'+t("Solde actuel","Current balance")+' ($)</label>'
+      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uq(\'lira\',+this.value)" />'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Compte immobilisé converti en FRV à la retraite. Retraits annuels limités.","Locked account converted to LIF at retirement. Annual withdrawals limited.")+'</div></div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("CELIAPP — Compte d'épargne libre d'impôt pour l'achat d'une première propriété","FHSA — First Home Savings Account")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Solde actuel","Current balance")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.fhsaBal||0)+'" oninput="uq(\'fhsaBal\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Cotisation annuelle","Annual contribution")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" max="8000" step="500" value="'+(q.fhsaContrib||0)+'" oninput="uq(\'fhsaContrib\',+this.value)" /></div>'
+      +'</div>'
+      +'<div style="margin-top:12px"><label class="fld-label">'+t("Achat prévu ?","Purchase planned?")+'</label>'
+      +'<div style="display:flex;gap:8px;margin-top:4px">'
+      +[{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){
+        return'<div class="card'+(q.fhsaForHome===o.v?" sel":"")+'" onclick="uq(\'fhsaForHome\','+o.v+')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+      }).join("")+'</div>'
+      +(q.fhsaForHome?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge d\'achat prévu","Planned purchase age")+'</label>'
+        +'<input class="inp" type="number" min="18" max="70" value="'+(q.fhsaHomeAge||q.age+3)+'" oninput="uq(\'fhsaHomeAge\',+this.value)" /></div>':'')
+      +'</div></div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'A\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="go(7)" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"A");
+  }
+
+  // ── BLOC B: Pension employeur ────────────────────────────
+  if(step==="BB"){
+    var dbFields=q.penType==="db"?'<div style="background:var(--bgc);border:1px solid var(--bdl);border-radius:8px;padding:14px;margin-top:12px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Rente mensuelle estimée à la retraite","Est. monthly pension at retirement")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.penM||0)+'" oninput="uq(\'penM\',+this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:3px">'+t("Selon votre relevé de participation","As shown on participation statement")+'</div></div>'
+      +'<div><label class="fld-label">'+t("Années de service","Years of service")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="0" max="45" value="'+(q.penYrs||0)+'" oninput="uq(\'penYrs\',+this.value)" /></div>'
+      +'</div>'
+      +'<div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">'
+      +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ts)">'
+      +'<input type="checkbox" '+(q.penIdx?"checked":"")+' onchange="uq(\'penIdx\',this.checked)" style="accent-color:var(--g)" />'
+      +t("Rente indexée à l'inflation","Inflation-indexed pension")+'</label>'
+      +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ts)">'
+      +'<input type="checkbox" '+(q.penBridge?"checked":"")+' onchange="uq(\'penBridge\',this.checked)" style="accent-color:var(--g)" />'
+      +t("Prestation-pont avant 65 ans","Bridge benefit before age 65")+'</label>'
+      +'</div></div>':'';
+    return wrap(
+      '<div class="phase-badge">'+t("Régime de retraite employeur","Employer pension")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Votre régime de retraite","Your pension plan")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Le type de régime détermine si vous aurez un revenu garanti ou un portefeuille à décaisser à la retraite.","The plan type determines whether you'll have guaranteed income or a portfolio to decumulate at retirement.")+'</p>'
+      +'<div class="fld-block">'
+      +[{v:"db",l:t("Prestations déterminées (PD)","Defined benefit (DB)"),d:t("Rente garantie — régime public ou syndiqué","Guaranteed pension — public or union plan")},
+        {v:"dc",l:t("Cotisations déterminées (CD)","Defined contribution (DC)"),d:t("Solde accumulé — rendement variable","Accumulated balance — variable return")},
+        {v:"none",l:t("Aucun régime employeur","No employer plan"),d:t("Pas de régime de retraite collectif","No group retirement plan")}]
+      .map(function(o){return'<div class="card'+(q.penType===o.v?" sel":"")+'" onclick="uq(\'penType\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("")+'</div>'
+      +dbFields
+      +'<button class="pbtn" onclick="goNextBlock(\'B\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'B\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"B");
+  }
+
+  // ── BLOC C: Conjoint·e ───────────────────────────────────
+  if(step==="BC"){
+    return wrap(
+      '<div class="phase-badge">'+t("Analyse conjugale","Couple analysis")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Situation du/de la conjoint·e","Partner situation")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Pour modéliser le ménage complet, le fractionnement de revenu et les scénarios de survie.","To model the full household, income splitting, and survivor scenarios.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Retraite du/de la conjoint·e","Partner retirement")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Âge cible de retraite","Target retirement age")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="45" max="75" value="'+(q.cRetAge||63)+'" oninput="uq(\'cRetAge\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Âge de début RRQ/RPC","QPP/CPP start age")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="60" max="70" value="'+(q.cQppAge||65)+'" oninput="uq(\'cQppAge\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Âge de début PSV","OAS start age")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="65" max="70" value="'+(q.cOasAge||65)+'" oninput="uq(\'cOasAge\',+this.value)" /></div>'
+      +'</div></div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Régime de retraite du/de la conjoint·e","Partner pension plan")+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +[{v:"none",l:t("Aucun","None")},{v:"db",l:t("PD","DB")},{v:"dc",l:t("CD","DC")}].map(function(o){
+        return'<div class="card'+(q.cPenType===o.v?" sel":"")+'" onclick="uq(\'cPenType\',\''+o.v+'\')" style="flex:1;min-width:80px;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+      }).join("")+'</div>'
+      +(q.cPenType==="db"?'<div style="margin-top:10px"><label class="fld-label">'+t("Rente mensuelle estimée","Est. monthly pension")+' ($)</label>'
+        +'<input class="inp" type="number" min="0" step="100" value="'+(q.cPenM||0)+'" oninput="uq(\'cPenM\',+this.value)" /></div>':'')
+      +'</div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'C\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'C\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"C");
+  }
+
+  // ── BLOC D: Immobilier ───────────────────────────────────
+  if(step==="BD"){
+    return wrap(
+      '<div class="phase-badge">'+t("Analyse immobilière","Real estate analysis")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Stratégie immobilière","Real estate strategy")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Downsizing, HELOC et revenus locatifs peuvent modifier significativement le patrimoine à la retraite.","Downsizing, HELOC use, and rental income can significantly alter retirement wealth.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Stratégie de downsizing","Downsizing strategy")+'</div>'
+      +'<label class="fld-label">'+t("Downsizing prévu ?","Downsizing planned?")+'</label>'
+      +'<div style="display:flex;gap:8px;margin-top:4px">'
+      +[{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){
+        return'<div class="card'+(q.downsizingAge>0===o.v?" sel":"")+'" onclick="uq(\'downsizingAge\','+(o.v?q.retAge+5:0)+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+      }).join("")+'</div>'
+      +(q.downsizingAge>0?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'
+        +'<div><label class="fld-label">'+t("Âge prévu de la vente","Planned sale age")+'</label>'
+        +'<input class="inp inp-sm" type="number" min="50" max="85" value="'+q.downsizingAge+'" oninput="uq(\'downsizingAge\',+this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Produit net après réinstallation","Net proceeds after move")+' ($)</label>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.downsizingProceeds||0)+'" oninput="uq(\'downsizingProceeds\',+this.value)" /></div>'
+        +'</div>':'')
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--ts)">'
+      +'<input type="checkbox" '+(q.dpaOn?"checked":"")+' onchange="uq(\'dpaOn\',this.checked)" style="accent-color:var(--g);width:16px;height:16px" />'
+      +t("Stratégie de rente hypothécaire DPA (Smith Manoeuvre ou similaire)","DPA mortgage strategy (Smith Manoeuvre or similar)")+'</label></div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'D\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'D\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"D");
+  }
+
+  // ── BLOC D2: Bien locatif ────────────────────────────────
+  if(step==="BD2"){
+    return wrap(
+      '<div class="phase-badge">'+t("Analyse — Bien locatif","Analysis — Rental property")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Votre bien locatif","Your rental property")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Les revenus, charges et la stratégie de vente de votre bien locatif sont intégrés dans la simulation de retraite et l'analyse fiscale.","Rental income, expenses, and your exit strategy are fully integrated in the retirement simulation and tax analysis.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Valeur et financement","Value and financing")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Valeur marchande estimée","Estimated market value")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalValue||0)+'" oninput="uq(\'rentalValue\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Solde hypothécaire","Mortgage balance")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalMortgage||0)+'" oninput="uq(\'rentalMortgage\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Amortissement restant","Remaining amortization")+' ('+t("années","years")+')</label>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.rentalAmort||20)+'" oninput="uq(\'rentalAmort\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("DPA (déduction pour amortissement) accumulée","Accumulated CCA")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.rentalDpaAccum||0)+'" oninput="uq(\'rentalDpaAccum\',+this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Si vous avez réclamé la DPA dans vos déclarations","If you've claimed CCA on your returns")+'</div></div>'
+      +'</div></div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Revenus et charges annuels","Annual income and expenses")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Revenu locatif brut","Gross rental income")+' ($/'+t("an","yr")+')</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalIncome||0)+'" oninput="uq(\'rentalIncome\',+this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Loyers perçus avant dépenses","Rents received before expenses")+'</div></div>'
+      +'<div><label class="fld-label">'+t("Charges déductibles","Deductible expenses")+' ($/'+t("an","yr")+')</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalExpenses||0)+'" oninput="uq(\'rentalExpenses\',+this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Entretien, taxes, assurance, intérêts","Maintenance, taxes, insurance, interest")+'</div></div>'
+      +'</div>'
+      +(q.rentalIncome>0||q.rentalExpenses>0?'<div style="margin-top:10px;padding:10px 12px;background:var(--gbg);border-radius:7px;font-size:13px">'
+        +'<strong>'+t("Revenu net locatif estimé :","Est. net rental income:")+'</strong> '+f$((q.rentalIncome||0)-(q.rentalExpenses||0))+t("/an","/yr")
+        +' ('+f$(Math.round(((q.rentalIncome||0)-(q.rentalExpenses||0))/12))+t("/mois","/mo")+')</div>':'')
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Stratégie de sortie","Exit strategy")+'</div>'
+      +'<label class="fld-label">'+t("Vente planifiée ?","Sale planned?")+'</label>'
+      +'<div style="display:flex;gap:8px;margin-top:4px">'
+      +[{v:true,l:t("Oui","Yes")},{v:false,l:t("Non / au décès","No / at death")}].map(function(o){
+        return'<div class="card'+(q.rentalSaleAge>0===o.v?" sel":"")+'" onclick="uq(\'rentalSaleAge\','+(o.v?q.retAge+5:0)+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+      }).join("")+'</div>'
+      +(q.rentalSaleAge>0?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge de vente prévu","Planned sale age")+'</label>'
+        +'<input class="inp" type="number" min="40" max="90" value="'+q.rentalSaleAge+'" oninput="uq(\'rentalSaleAge\',+this.value)" /></div>':'')
+      +'<div style="font-size:11px;color:var(--tm);margin-top:10px">'+t("Le gain en capital sera calculé selon le prix de vente estimé, la valeur actuelle et la DPA accumulée.","Capital gain will be calculated based on estimated sale price, current value, and accumulated CCA.")+'</div>'
+      +'</div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'D2\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'D2\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"D2");
+  }
+
+  // ── BLOC E: Gouvernemental ───────────────────────────────
+  if(step==="BE"){
+    return wrap(
+      '<div class="phase-badge">'+t("Stratégie gouvernementale","Government strategy")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("RRQ/RPC et PSV — Âge de début des prestations","QPP/CPP and OAS — Benefit start age")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("L'âge de début des prestations gouvernementales est l'une des décisions les plus importantes. Différer à 70 ans augmente la rente de 42%.","The government benefit start age is one of the most important decisions. Deferring to 70 increases the benefit by 42%.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Régime de rentes du Québec (RRQ) / Régime de pensions du Canada (RPC)","Quebec Pension Plan (QPP) / Canada Pension Plan (CPP)")+'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:60,d:t("−36%","−36%")},{v:65,d:t("référence","reference")},{v:70,d:t("+42%","+42%")}].map(function(o){
+        return'<div class="card'+(q.qppAge===o.v?" sel":"")+'" onclick="uq(\'qppAge\','+o.v+')" style="flex:1;text-align:center;padding:14px">'
+          +'<div style="font-size:20px;font-weight:800">'+o.v+'</div>'
+          +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.d+'</div></div>';
+      }).join("")+'</div>'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:10px">'+t("Le simulateur calculera le seuil de rentabilité pour chaque option selon votre espérance de vie.","The simulator will calculate the break-even point for each option based on your life expectancy.")+'</div>'
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Pension de la Sécurité de la vieillesse (PSV) — Old Age Security (OAS)","Old Age Security (OAS) / Pension de la Sécurité de la vieillesse (PSV)")+'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +[{v:65,d:t("référence","reference")},{v:70,d:t("+36%","+36%")}].map(function(o){
+        return'<div class="card'+(q.oasAge===o.v?" sel":"")+'" onclick="uq(\'oasAge\','+o.v+')" style="flex:1;text-align:center;padding:14px">'
+          +'<div style="font-size:20px;font-weight:800">'+o.v+'</div>'
+          +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.d+'</div></div>';
+      }).join("")+'</div></div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'E\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'E\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"E");
+  }
+
+  // ── BLOC F: Succession ───────────────────────────────────
+  if(step==="BF"){
+    return wrap(
+      '<div class="phase-badge">'+t("Succession et protection","Estate and protection")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Assurance-vie et planification successorale","Life insurance and estate planning")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces données permettent de calculer la succession nette et d'identifier les impacts fiscaux au décès.","These allow calculation of net estate and identification of tax impacts at death.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Assurance-vie","Life insurance")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Prestation au décès","Death benefit")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.lifeInsBenefit||0)+'" oninput="uq(\'lifeInsBenefit\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Prime mensuelle","Monthly premium")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.lifeInsPremium||0)+'" oninput="uq(\'lifeInsPremium\',+this.value)" /></div>'
+      +'</div>'
+      +(q.couple==="yes"?'<div style="border-top:1px solid var(--bdl);margin-top:12px;padding-top:12px">'
+        +'<div style="font-size:11px;font-weight:700;color:var(--pr);margin-bottom:8px">'+t("Conjoint·e","Partner")+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        +'<div><label class="fld-label">'+t("Prestation au décès","Death benefit")+' ($)</label>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.cLifeInsBenefit||0)+'" oninput="uq(\'cLifeInsBenefit\',+this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Prime mensuelle","Monthly premium")+' ($)</label>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.cLifeInsPremium||0)+'" oninput="uq(\'cLifeInsPremium\',+this.value)" /></div>'
+        +'</div></div>':'')
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Objectif successoral","Estate objective")+'</div>'
+      +[{v:"maximize",l:t("Maximiser la succession","Maximize estate"),d:t("Préserver pour les héritiers","Preserve for heirs")},
+        {v:"neutral",l:t("Pas de préférence","No preference"),d:t("Équilibre consommation/succession","Balance consumption/estate")},
+        {v:"consume",l:t("Consommer les actifs","Consume assets"),d:t("Profiter au maximum, léguer le résiduel","Enjoy fully, bequeath remainder")}]
+      .map(function(o){return'<div class="card'+(q.succObjective===o.v?" sel":"")+'" onclick="uq(\'succObjective\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("")
+      +'</div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'F\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'F\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"F");
+  }
+
+  // ── BLOC G: CCPC ─────────────────────────────────────────
+  if(step==="BG"){
+    var remunCards=[
+      {v:"salary",l:t("Salaire pur","Salary only"),d:t("100% salaire, cotisations RRQ max.","100% salary, max QPP contributions")},
+      {v:"dividend",l:t("Dividendes purs","Dividends only"),d:t("100% dividendes, pas de cotisation RRQ","100% dividends, no QPP contribution")},
+      {v:"mix",l:t("Mixte","Mixed"),d:t("Combinaison optimale salaire/dividendes","Optimal salary/dividend combination")}
+    ].map(function(o){return'<div class="card'+(q.bizRemun===o.v?" sel":"")+'" onclick="uq(\'bizRemun\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">'+t("Analyse corporative — CCPC","Corporate analysis — CCPC")+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Votre société par actions","Your corporation")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("La planification corporative influence la rémunération optimale, la croissance des BNR et la stratégie de sortie.","Corporate planning influences optimal compensation, retained earnings growth, and exit strategy.")+'</p>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Revenus et BNR","Revenue and RE")+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      +'<div><label class="fld-label">'+t("Revenus bruts annuels","Annual gross revenue")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizRevenue||0)+'" oninput="uq(\'bizRevenue\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Dépenses annuelles","Annual expenses")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizExpenses||0)+'" oninput="uq(\'bizExpenses\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Bénéfices non répartis (BNR)","Retained earnings (RE)")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.bizBNR||0)+'" oninput="uq(\'bizBNR\',+this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Croissance annuelle prévue (%)","Expected annual growth (%)")+'</label>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.bizGrowth||2)+'" oninput="uq(\'bizGrowth\',+this.value)" /></div>'
+      +'</div></div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Stratégie de rémunération","Compensation strategy")+'</div>'
+      +remunCards
+      +(q.bizRemun==="mix"?'<div style="margin-top:12px"><label class="fld-label">'+t("Portion en salaire","Salary portion")+' — '+q.bizSalaryPct+'%</label>'
+        +'<input type="range" min="10" max="90" value="'+q.bizSalaryPct+'" oninput="uq(\'bizSalaryPct\',+this.value)" style="margin-top:6px" /></div>':'')
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">RRI / IPP</div>'
+      +'<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--ts);margin-bottom:10px">'
+      +'<input type="checkbox" '+(q.ippOn?"checked":"")+' onchange="uq(\'ippOn\',this.checked)" style="accent-color:var(--g);width:16px;height:16px" />'
+      +t("Régime de retraite individuel (RRI/IPP) en place","Individual Pension Plan (IPP) in place")+'</label>'
+      +(q.ippOn?'<label class="fld-label">'+t("Solde actuel du RRI","Current IPP balance")+' ($)</label>'
+        +'<input class="inp" type="number" min="0" step="10000" value="'+(q.ippBal||0)+'" oninput="uq(\'ippBal\',+this.value)" />':'')
+      +'</div>'
+      +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      +'<div class="section-head">'+t("Vente d'entreprise","Business sale")+'</div>'
+      +'<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--ts);margin-bottom:10px">'
+      +'<input type="checkbox" '+(q.bizSaleAge>0?"checked":"")+' onchange="uq(\'bizSaleAge\',this.checked?q.retAge:0)" style="accent-color:var(--g);width:16px;height:16px" />'
+      +t("Vente d'entreprise planifiée","Business sale planned")+'</label>'
+      +(q.bizSaleAge>0?'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">'
+        +'<div><label class="fld-label">'+t("Âge prévu","Age")+'</label><input class="inp inp-sm" type="number" min="40" max="80" value="'+(q.bizSaleAge||q.retAge)+'" oninput="uq(\'bizSaleAge\',+this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Prix estimé","Est. price")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="50000" value="'+(q.bizSalePrice||0)+'" oninput="uq(\'bizSalePrice\',+this.value)" /></div>'
+        +'<div><label class="fld-label">PBR ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.bizACB||100)+'" oninput="uq(\'bizACB\',+this.value)" /></div>'
+        +'</div>'
+        +'<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--ts);margin-top:8px">'
+        +'<input type="checkbox" '+(q.bizLCGE?"checked":"")+' onchange="uq(\'bizLCGE\',this.checked)" style="accent-color:var(--g)" />'
+        +t("ECGC disponible (1 250 000 $ en 2026)","LCGE available ($1,250,000 in 2026)")+'</label>':'')
+      +'</div>'
+      +'<div style="background:var(--ambg);border:1px solid rgba(184,152,48,.3);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#5a4a00;line-height:1.6">'
+      +'<strong>'+t("Note","Note")+'</strong> — '+t("Les analyses corporatives sont à titre éducatif. Consultez un CPA pour toute décision de rémunération.","Corporate analyses are for educational purposes. Consult a CPA for compensation decisions.")+'</div>'
+      +'<button class="pbtn" onclick="goNextBlock(\'G\')">'+t("Générer mon rapport →","Generate my report →")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'G\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"G");
+  }
+
+  return'';
+}
+
+// ============================================================
+// KEYBOARD ACCESSIBILITY
+// ============================================================
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter"&&STATE.step>0&&STATE.step<8){
+    var tag=document.activeElement?document.activeElement.tagName:"";
+    if(tag==="TEXTAREA"||tag==="SELECT")return;
+    if(document.activeElement&&document.activeElement.classList.contains("card")){
+      document.activeElement.click();return;
+    }
+    var btn=document.querySelector(".pbtn");
+    if(btn&&!btn.disabled)btn.click();
+  }
+});
+document.addEventListener("keydown",function(e){
+  if((e.key==="Enter"||e.key===" ")&&document.activeElement&&document.activeElement.classList.contains("card")){
+    e.preventDefault();document.activeElement.click();
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>
