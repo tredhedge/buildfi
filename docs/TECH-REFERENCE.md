@@ -1,18 +1,18 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-02-28 — v8.0 (thin client, engine sync 436 tests, pipeline E2E, pivot PDF→HTML, webhook documenté)
+> Mis à jour: 2026-03-01 — v9.0 (AI narration merged, report v6 polished, debt tool UX restructured, email template refactored)
 
 ---
 
 ## 1. ARCHITECTURE
 
 ### Important: Le moteur MC existe dans 2 endroits
-- `planner.html` — moteur complet dev/test (~15,000 lignes, 436 tests embarqués)
+- `planner_v2.html` — moteur complet dev/test (~15,000 lignes, 436 tests embarqués)
 - `lib/engine/index.js` — moteur extrait pour production (2,426 lignes, 38 exports)
 
-**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner.html est la source de vérité.
+**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner_v2.html est la source de vérité.
 
-### Structure planner.html (planner_v2)
+### Structure planner_v2.html
 ```
 Lignes 1–50          : HTML head, meta, styles
 Lignes 50–500        : CSS (tokens FS/CL/SP, responsive)
@@ -33,10 +33,61 @@ Quiz thin client (805 lignes, zero IP)
   → translateToMC(quizAnswers)      — ~40 heuristiques, smart defaults
   → runMC(params, 5000)             — t-Student df=5, fat tails (~2.3s serverless)
   → extractReportData(mc, params)   — objet D
-  → renderReportHTML(D, mc, quiz, lang, {}, costDelay, minReturn) — {} = AI placeholder
+  → buildAIPrompt(D, params, fr, quiz) → {sys, usr}
+  → callAnthropic(sys, usr)         — claude-sonnet-4, 12 JSON slots (or {} if no key/error)
+  → renderReportHTML(D, mc, quiz, lang, ai, costDelay, minReturn) — report v6
   → put() → Vercel Blob (rapport HTML)
   → sendReportEmail() → Resend (lien vers rapport)
   → Client redirigé vers /merci
+```
+
+### AI Narration Flow
+```
+buildAIPrompt(D, params, lang, quiz)
+  → DerivedProfile (anxiety, discipline, literacy, friction, theme)
+  → RenderPlan (behavioral signals from ai-profile.ts)
+  → System prompt: AMF compliance, anti-hallucination, micro-structure
+  → User prompt: enriched with D data + quiz answers
+  → Anthropic API call (claude-sonnet-4)
+  → Parse JSON → sanitizeAISlots() (ai-constants.ts)
+  → 12 slots: snapshot_intro, savings_context, debt_impact, gov_explanation,
+    gap_explanation, tax_insight, longevity_good, longevity_watch,
+    obs_1, obs_2, obs_3, upgrade_hook
+  → Fallback: {} if ANTHROPIC_API_KEY missing or API fails
+  → /api/ai-narrate exists as standalone test endpoint (not called by webhook)
+```
+
+### Report HTML v6 (lib/report-html.js — 1,421 lignes)
+```
+Key functions:
+  extractReportData(mc, params)    → objet D (all computed data)
+  buildAIPrompt(D, params, lang, quiz) → {sys, usr} prompts
+  buildWhatIf(D, mc, params)       → what-if scenarios
+  buildSnapshot5yr(D)              → 5-year projection table
+  buildHeuristics(D)               → heuristics disclosure
+  buildPDfallback(D)               → fan chart SVG (progressive spread)
+  calcCostOfDelay(D, params)       → cost of delay calculation
+  calcMinViableReturn(D, params)   → minimum viable return
+  buildPriority(D)                 → priority items
+  gradeInfo(D)                     → grade ring (A+ to F) with colors/labels
+  renderReport_v6(D, mc, quiz, lang, ai) → full HTML string
+  renderReportHTML(...)            → wrapper that selects v5/v6
+
+v6 features (March 2026 polish):
+  - Grade ring with --amr amber-ring color, client-friendly labels
+  - Fan chart with progressive spread (yearFrac accumulation)
+  - TL;DR 3 data-driven bullets (vulnYrs, withdrawalRatePct, debts)
+  - KPI cards, donut income chart, what-if scenarios
+  - 5-year snapshot table with QPP start row highlight (green bg + badge)
+  - Heuristics disclosure, cost of delay, min viable return
+  - Mini TOC with 7 section pill anchors (hidden in print)
+  - Hover tooltips on jargon (Pessimiste P5, taux effectif, taux marginal)
+  - Print theme: gold→brown, break-inside:avoid, orphans/widows
+  - tabular-nums on all numeric elements
+  - Disclaimer restyled: cream bg + left border, left-aligned
+  - "Données utilisées" + version footer block
+  - Mobile spacing (@media max-width:600px)
+  - Upsell → "Prochaine étape" with expected result text
 ```
 
 ### Quiz thin client — quiz-essentiel.html
@@ -55,23 +106,35 @@ maxDuration: 60s
 runtime: nodejs
 Signature Stripe vérifiée
 Quiz answers reassemblées depuis metadata chunks
+AI narration: calls Anthropic API (claude-sonnet-4) → 12 JSON slots
+  → Falls back to {} if ANTHROPIC_API_KEY missing or API error
 PDF generation: DÉSACTIVÉ (@sparticuz/chromium incompatible Vercel)
-AI narration: SKIPPÉ (passe {} — données MC brutes seulement)
 Email tags: DÉSACTIVÉS (erreur validation ASCII)
 Blob access: "private" (store privé — à migrer vers public)
 ```
 
-### Composants standalone (bonus)
+### Debt Tool (app/outils/dettes/page.jsx — 1,475 lignes)
 ```
-debt-tool.jsx
-  → Composant React autonome ("use client")
-  → Stratégies: snowball, avalanche, hybride
-  → Comparateur Rembourser vs Investir
-  → Calendrier de remboursement mensuel
-  → Export/Import JSON
-  → 200 tests, 161 paires bilingues
-  → Chemin: app/outils/dettes/page.tsx
-  → Protégé: Disallow /outils/ dans robots.txt
+Standalone React SPA, dark theme (DK palette), bilingual FR/EN
+"use client" — no SSR
+
+UX Structure (March 2026 restructure):
+  - Welcome banner (no debts state)
+  - Inventory: debts → portrait global → collapsible "Aller plus loin"
+    (mortgages, financial context, couple mode)
+  - showAdvanced auto-opens on mount if existing data (useEffect)
+  - 6 tabs: [Inventaire, Stratégies, Simulateur, Calendrier | Rembourser vs Investir, Coût réel]
+  - Separator at index 4 (core path vs advanced)
+  - Tabs grayed (opacity 0.4) when no payable debts
+  - Micro-CTAs at end of Simulator → Calendar, Calendar → True Cost
+
+7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
+basePayoff uses selectedStrategy (not hardcoded avalanche)
+Marginal rate label shows "(est.)" in Repay vs Invest
+localStorage: buildfi_debts_v1, export/import JSON
+Components: Card, StatBox, InputRow, NumInput, SectionTitle, DebtChart — no new ones
+Protégé: Disallow /outils/ dans robots.txt
+200 tests (tests/debt-tool-tests.js), 0 failures required
 ```
 
 ### Guides éducatifs (bonus)
@@ -166,27 +229,31 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 |----|----------|--------|
 | DT-001 | Architecture: quiz HTML thin client + Next.js API backend | Actif |
 | DT-002 | Monte Carlo 5,000 sims t-Student df=5 | Actif, non négociable |
-| DT-003 | Web Worker pour calcul MC off-thread (planner.html seulement) | Actif |
+| DT-003 | Web Worker pour calcul MC off-thread (planner_v2.html seulement) | Actif |
 | DT-004 | setTimeout(300) + _mcProfileDirty — race condition React (R6) | Actif, disparaît en P4 |
 | DT-005 | Engine clamps — le moteur est son propre garde-fou | Actif, non négociable |
 | DT-006 | Tests embarqués dans le HTML — 436 tests, 53 catégories | Actif |
 | DT-007 | Langage observationnel AMF — grep automatique dans tests | Actif, non négociable |
-| DT-008 | Rapport HTML hébergé (Vercel Blob) — PDF côté client via window.print() | **NOUVEAU** — remplace Puppeteer |
-| DT-009 | Single API call narrator — 10 slots JSON, 2s vs 15s | Actif |
+| DT-008 | Rapport HTML hébergé (Vercel Blob) — PDF côté client via window.print() | Actif — remplace Puppeteer |
+| DT-009 | Single API call narrator — 12 slots JSON, claude-sonnet-4 | Actif |
 | DT-010 | Conditionnel obligatoire FR/EN | Actif, non négociable |
 | DT-011 | Zéro acronyme Essentiel, province-aware | Actif |
 | DT-012 | Fan chart interpolé en demo — vraies données MC en prod | Temporaire |
-| DT-013 | Upsell soft en fin de rapport uniquement | Actif |
-| DT-014 | AI narration: placeholder {} — à intégrer server-side | **MIS À JOUR** |
-| DT-015 | Quiz thin client — zero MC côté client | **MIS À JOUR** — était all-in-one |
+| DT-013 | Upsell soft en fin de rapport uniquement — "Prochaine étape" | Actif |
+| DT-014 | AI narration: buildAIPrompt + DerivedProfile + sanitizeAISlots, fallback {} | **COMPLÉTÉ** |
+| DT-015 | Quiz thin client — zero MC côté client | Actif |
 | DT-016 | Clé API Anthropic JAMAIS dans le code — Vercel env vars uniquement | Actif, non négociable |
 | DT-017 | Debt tool React standalone — "use client", pas de SSR | Actif |
 | DT-018 | Guides PDF générés via Python/reportlab — sources versionnées | Actif |
 | DT-019 | /outils/ protégé par robots.txt — bonus clients seulement | Actif |
-| DT-020 | Stripe webhook URL: www.buildfi.ca (pas buildfi.ca — 307 redirect) | **NOUVEAU** |
-| DT-021 | Stripe automatic_tax: désactivé — prix tax-inclusive | **NOUVEAU** |
-| DT-022 | app/page.tsx: redirect() (pas permanentRedirect — évite cache browser) | **NOUVEAU** |
-| DT-023 | Engine syncé: lib/engine/index.js = planner_v2 (2,426 lignes, 38 exports) | **NOUVEAU** |
+| DT-020 | Stripe webhook URL: www.buildfi.ca (pas buildfi.ca — 307 redirect) | Actif |
+| DT-021 | Stripe automatic_tax: désactivé — prix tax-inclusive | Actif |
+| DT-022 | app/page.tsx: redirect() (pas permanentRedirect — évite cache browser) | Actif |
+| DT-023 | Engine syncé: lib/engine/index.js = planner_v2 (2,426 lignes, 38 exports) | Actif |
+| DT-024 | Report v6 with progressive fan chart spread (yearFrac accumulation) | **NOUVEAU** |
+| DT-025 | Debt tool progressive disclosure: welcome → debts → portrait → collapsible advanced | **NOUVEAU** |
+| DT-026 | Debt tool tab graying when no payable debts (opacity 0.4) | **NOUVEAU** |
+| DT-027 | Email template table-based layout for email client compatibility | **NOUVEAU** |
 
 ---
 
@@ -204,7 +271,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DB-010 | TPS/TVQ reportée jusqu'au seuil $30K | Décidé |
 | DB-011 | Aucun remboursement — produit numérique, livraison instantanée | Décidé, non négociable |
 | DB-012 | Bonus livrés par email post-achat (guide PDF + lien debt tool) | Décidé |
-| DB-013 | Rapport livré par lien web (pas PDF attaché) — standard industrie SaaS | **NOUVEAU** |
+| DB-013 | Rapport livré par lien web (pas PDF attaché) — standard industrie SaaS | Actif |
 
 ---
 
@@ -276,6 +343,10 @@ recommandation(s) / recommendation(s)
 | 2026-02-27 | **Guides 101 + 201/301** — audit AMF 0 infraction | ✅ |
 | 2026-02-27 | **Engine sync** — lib/engine/index.js = planner_v2, 436 tests, optimizeDecum ajouté | ✅ |
 | 2026-02-27 | **Pipeline E2E** — Quiz→Stripe→Webhook→MC→Blob→Email validé en prod | ✅ |
+| 2026-02-28 | **AI narration P1.4** — buildAIPrompt + DerivedProfile + sanitizeAISlots + Anthropic call wired in webhook | ✅ |
+| 2026-03-01 | **Report v6 polish** — 15 rendering fixes (grade ring, fan chart, TL;DR, print theme, tooltips, TOC, mobile) | ✅ |
+| 2026-03-01 | **Debt tool UX restructure** — progressive disclosure, tab graying, micro-CTAs, basePayoff fix, marginal rate label | ✅ |
+| 2026-03-01 | **Email template refactor** — table-based, bilingual, AMF compliant | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
@@ -300,3 +371,5 @@ recommandation(s) / recommendation(s)
 - **Vercel env vars**: toujours redéployer après modification (les vars ne sont pas hot-reloaded).
 - **Stripe webhook URL**: utiliser www.buildfi.ca (buildfi.ca fait 307 redirect → perd le POST body).
 - **DNS propagation**: les records Resend (DKIM, SPF) peuvent prendre 24h — ne pas paniquer si la vérification échoue immédiatement.
+- **P0 fixes can be lost if working from stale file versions** — always verify critical fixes (basePayoff strategy, marginal rate label) are present after editing.
+- **OneDrive can lock .next/ files** — run `rm -rf .next` before build if EPERM errors occur.

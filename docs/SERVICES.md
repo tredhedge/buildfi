@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-02-28 — v3 (Stripe E2E validé, Resend DNS failed, Blob private, pipeline documenté)
+> Mis à jour: 2026-03-01 — v4 (AI narration code complete, report v6 polished, email template refactored)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -75,11 +75,11 @@
 
 | Template | Contenu | Status |
 |----------|---------|--------|
-| Livraison Essentiel | Grade + lien rapport HTML + bonus | ✅ V1 fonctionne — design à améliorer |
+| Livraison Essentiel | Grade + lien rapport HTML + bonus | ✅ V2 — table-based, bilingual, AMF compliant |
 | Livraison Intermédiaire | Grade + lien rapport HTML + bonus | ❌ À créer |
 | Livraison Expert | Grade + lien rapport + accès simulateur | ❌ À créer |
 
-**Email template v1 actuel**: texte "buildfi.ca" (pas logo SVG), grade card dark, bouton "Consulter mon rapport", upsell Intermédiaire, disclaimer AMF, footer Montréal. Reçu en spam (domaine non vérifié).
+**Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", upsell Intermédiaire, bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Reçu en spam (domaine non vérifié).
 
 ---
 
@@ -100,10 +100,12 @@
 
 ### Anthropic API — Narration AI
 - URL: console.anthropic.com
-- Statut: Clé disponible, **NON INTÉGRÉE** dans le webhook
-- Usage prévu: Narration AI dans les rapports (1 appel, 10 slots JSON)
-- Modèle recommandé: claude-haiku (rapide, ~$0.17/rapport)
-- Le webhook passe actuellement {} pour les observations AI
+- Statut: **CODE COMPLETE** — buildAIPrompt() + Anthropic call wired in webhook
+- Modèle: claude-sonnet-4 (12 JSON slots, single API call)
+- Fallback: {} if ANTHROPIC_API_KEY missing or API fails → report uses hardcoded text
+- AI files: `lib/ai-constants.ts` (slot names, AMF forbidden terms), `lib/ai-profile.ts` (DerivedProfile)
+- Test endpoint: `/api/ai-narrate` (standalone, not called by webhook)
+- **Activation**: add ANTHROPIC_API_KEY to Vercel env vars → AI narration goes live
 
 ---
 
@@ -127,7 +129,7 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | `RESEND_FROM` | Expéditeur email | ✅ "BuildFi <rapport@buildfi.ca>" |
 | `BLOB_READ_WRITE_TOKEN` | Upload Vercel Blob | ✅ Configurée |
 | `BLOBFI_READ_WRITE_TOKEN` | Alias (nom auto du store) | ✅ Configurée |
-| `ANTHROPIC_API_KEY` | Narration AI server-side | ❌ Non configurée |
+| `ANTHROPIC_API_KEY` | Narration AI server-side | ❌ Non configurée — code complete, needs key to activate |
 | `NEXT_PUBLIC_POSTHOG_KEY` | Analytics client-side | ✅ Configurée |
 
 ---
@@ -143,17 +145,18 @@ Client complète quiz (805 lignes, thin client, zero IP)
   → Stripe envoie checkout.session.completed → www.buildfi.ca/api/webhook
   → Webhook vérifie signature, extrait quiz answers de session.metadata
   → translateToMC(quizAnswers) → runMC(params, 5000) (~2.3s)
-  → extractReportData(mc, params) → renderReportHTML()
+  → extractReportData(mc, params) → buildAIPrompt → callAnthropic (12 slots, or {} fallback)
+  → renderReportHTML() — report v6
   → Upload rapport HTML sur Vercel Blob
   → Envoyer email via Resend avec lien vers rapport
   → Client redirigé vers /merci
 ```
 
-**⚠️ ÉLÉMENTS NON IMPLÉMENTÉS DANS LE FLUX:**
+**⚠️ ÉLÉMENTS NON IMPLÉMENTÉS / BLOQUÉS DANS LE FLUX:**
 - PDF en pièce jointe (Puppeteer désactivé)
 - Bonus en pièce jointe (Guide PDF, lien debt tool)
-- AI narration (passe {} actuellement)
-- Rapport accessible (Blob private → "Forbidden")
+- AI narration: code complete, needs ANTHROPIC_API_KEY in Vercel env vars to activate
+- Rapport accessible (Blob private → "Forbidden" — recréer store public)
 - Email en inbox (domaine Resend non vérifié → spam)
 
 ---

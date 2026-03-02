@@ -1,13 +1,13 @@
 # ROADMAP.md
 > Phases du projet, sous-étapes, statuts, critères go/no-go.
-> Mis à jour: 2026-02-28 — v3 (P0.6 E2E validé, pivot PDF→HTML, pipeline prod fonctionnel)
+> Mis à jour: 2026-03-01 — v4 (P1.4 AI narration merged, report v6 polished, debt tool UX restructured, email template refactored)
 
 ## VUE D'ENSEMBLE
 
 | Phase | Titre | Statut | Durée |
 |-------|-------|--------|-------|
 | P0 | Infrastructure Web | ✅ Complétée (P0.7 en attente) | 1 sem |
-| P1 | Quiz + Rapport Essentiel + Landing | 🔄 En cours | 2–3 sem |
+| P1 | Quiz + Rapport Essentiel + Landing | 🔄 En cours — near launch | 2–3 sem |
 | P2 | Rapport Intermédiaire + Upsell | ⏳ Planifiée | 2–3 sem |
 | P3 | Marketing + Légal | ⏳ Planifiée | 3–4 sem |
 | P4 | Migration Next.js | ⏳ Future | 4–8 sem |
@@ -36,7 +36,6 @@
 - Report HTML render + upload Vercel Blob (private store → "Forbidden" à corriger)
 - Email envoyé via Resend (arrive en spam — domaine non vérifié)
 - PDF désactivé (Puppeteer/@sparticuz/chromium incompatible Vercel serverless)
-- AI narration skippée (passe {} — données MC brutes seulement)
 
 ---
 
@@ -48,13 +47,13 @@
 |-------|--------|-------|
 | P1.1 Quiz 7 écrans (thin client) | ✅ | 805 lignes, zero IP exposé, Stripe intégré |
 | P1.2 Smart defaults translator | ✅ | translateToMC() server-side |
-| P1.3 Rapport Essentiel | ✅ | 8 sections, 4 SVG, AI placeholder |
-| P1.4 Paiement Stripe + livraison email | ✅ | **Pipeline E2E validé** — 3 fixes infra restants |
+| P1.3 Rapport Essentiel v6 | ✅ | **v6 + 15 polish fixes** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme |
+| P1.4 AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired in webhook — needs ANTHROPIC_API_KEY in Vercel |
 | P1.4a Blob store public | ❌ | Recréer store PUBLIC sur Vercel Storage |
 | P1.4b Resend DNS vérifié | ❌ | DKIM/SPF sur Cloudflare à corriger |
-| P1.4c Email template v2 | ❌ | Logo, couleurs, bonus inclusions |
+| P1.4c Email template | ✅ | Table-based, bilingual, AMF compliant, grade card, upsell |
 | P1.5 Landing page | ✅ | v9 livrée, audit AMF/BSIF complété, logo SVG |
-| P1.5.1 Outil gestion de dettes (bonus) | ✅ | debt-tool.jsx, 200 tests |
+| P1.5.1 Outil gestion de dettes (bonus) | ✅ | **UX restructured** — 1,475 lignes, 6 tabs, progressive disclosure, 200 tests |
 | P1.5.2 Guide 101 "Les bases de vos finances" | ✅ | 13p PDF — bonus Essentiel |
 | P1.5.3 Guide 201+301 "Optimiser votre retraite" | ✅ | 19p PDF — bonus Intermédiaire + Expert |
 | P1.6 Audit qualité R19-R20 | ❌ | Obligatoire avant lancement |
@@ -62,9 +61,9 @@
 
 ### Prochaines actions P1 (par priorité)
 1. Fix Blob public + Resend DNS → rapport accessible par lien dans l'email
-2. Email template v2 (logo SVG, couleurs brand, bonus: guide PDF + lien debt tool)
-3. Pages légales (P0.7) — conditions, confidentialité, avis AMF
-4. AI narration integration (Anthropic API dans webhook)
+2. Add ANTHROPIC_API_KEY to Vercel → test E2E with Stripe test card (AI narration live)
+3. 5 psycho questions (quiz enhancement)
+4. Pages légales (P0.7) — conditions, confidentialité, avis AMF
 5. Audit R19-R20
 
 ---
@@ -77,7 +76,7 @@
 |-------|--------|-------|
 | P2.1 Questionnaire étendu (thin client) | ❌ | 80+ fields, 8 étapes, UX immersive |
 | P2.2 Sections rapport additionnelles | ❌ | |
-| P2.3 Upgrade hooks dans Essentiel | ❌ | Upsell avec chiffres de l'utilisateur |
+| P2.3 Upgrade hooks dans Essentiel | ✅ | Upsell "Prochaine étape" in report v6 with dynamic triggers |
 | P2.4 Audit qualité R21 | ❌ | Chemins immo + CCPC avec CPA |
 | P2.5 Score résilience 4 jauges | ❌ | |
 | P2.6 Thermomètre risque séquence | ❌ | |
@@ -107,7 +106,7 @@
 | P4.2 Composants React modulaires | Feature par feature |
 | P4.3 Tests UI automatisés | Playwright/Cypress |
 | P4.4 CI/CD GitHub Actions | |
-| P4.5 API routes server-side | ✅ Déjà fait: checkout, webhook |
+| P4.5 API routes server-side | ✅ Déjà fait: checkout, webhook, ai-narrate |
 
 ---
 

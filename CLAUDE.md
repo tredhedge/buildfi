@@ -20,23 +20,30 @@ buildfi/
 │   │   ├── ai-narrate/route.ts    # Standalone AI narration test endpoint
 │   │   ├── checkout/route.ts      # Stripe checkout session
 │   │   └── webhook/route.ts       # Stripe webhook → MC → AI → report → email
-│   ├── outils/dettes/page.tsx     # Debt tool (bonus)
+│   ├── merci/                     # Post-purchase thank you page
+│   ├── outils/dettes/
+│   │   ├── page.jsx               # Debt tool (1,475 lines, React JSX)
+│   │   └── tests.js               # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
 │   ├── ai-constants.ts            # AI slot names, AMF forbidden terms, sanitization
 │   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals)
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
 │   ├── quiz-translator.ts         # Quiz answers → MC params
-│   ├── report-data.ts             # MC results → report data object (D) [unused, kept for ref]
-│   ├── report-html.js             # D → HTML report string + buildAIPrompt()
-│   ├── email.ts                   # Resend email templates
-│   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible)
+│   ├── report-html.js             # D → HTML report string + buildAIPrompt() (1,421 lines)
+│   ├── email.ts                   # Resend email templates (table-based, bilingual)
+│   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
-│   ├── quiz-essentiel.html        # Thin client quiz (805 lines)
+│   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
 │   ├── index.html                 # Landing page
 │   ├── logo.js                    # Shared SVG logo
-│   └── outils/dettes/             # Debt tool assets
+│   ├── logo-dark.svg, logo-light.svg
+│   └── robots.txt
+├── tests/
+│   └── debt-tool-tests.js         # Debt tool test suite (200 tests)
 ├── planner_v2.html                # Source of truth (~15,000 lines, 436 tests)
+├── quiz-essentiel.html            # Root copy (legacy)
+├── quiz-intermediaire.html        # Intermédiaire quiz (WIP)
 └── CLAUDE.md                      # This file
 ```
 
@@ -63,6 +70,25 @@ Quiz thin client (zero IP exposed)
 - 12 AI slots: `snapshot_intro`, `savings_context`, `debt_impact`, `gov_explanation`, `gap_explanation`, `tax_insight`, `longevity_good`, `longevity_watch`, `obs_1`, `obs_2`, `obs_3`, `upgrade_hook`
 - `/api/ai-narrate` exists as a standalone test endpoint (not called by webhook)
 
+### Report HTML (lib/report-html.js)
+- **Active version**: v6 (`REPORT_VERSION = 'v6'`), v5 preserved as fallback
+- **Key functions**: `extractReportData()`, `buildWhatIf()`, `buildSnapshot5yr()`, `buildHeuristics()`, `buildPDfallback()`, `buildAIPrompt()`, `calcCostOfDelay()`, `calcMinViableReturn()`, `buildPriority()`, `gradeInfo()`, `renderReport_v6()`, `renderReportHTML()`
+- **v6 features**: Grade ring (A+ to F), fan chart (progressive spread), TL;DR 3 bullets, KPI cards, donut income chart, what-if scenarios, 5-year snapshot table, heuristics disclosure, cost of delay, min viable return, upsell CTAs
+- **Polish (March 2026)**: `--amr` amber-ring color, client-friendly grade labels (B="Correct, à renforcer"), mini TOC with section anchors, hover tooltips on jargon, print theme (gold→brown), tabular-nums, QPP row highlight in snapshot, disclaimer restyled (cream + left border), mobile spacing, "Données utilisées" footer block
+
+### Debt Tool (app/outils/dettes/page.jsx)
+- Standalone React SPA, dark theme (DK palette), bilingual FR/EN
+- 6 tabs: Inventaire, Stratégies, Simulateur, Calendrier, Rembourser vs Investir, Coût réel
+- Tab order: core path [Inventaire → Stratégies → Simulateur → Calendrier] + separator + advanced [Repay vs Invest, True Cost]
+- Inventory layout: welcome banner → debts → portrait global → collapsible "Aller plus loin" (mortgages, financial context, couple mode)
+- Tabs grayed (opacity 0.4) when no payable debts
+- Micro-CTAs at end of Simulator and Calendar guide to next tabs
+- 7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
+- `basePayoff` uses `selectedStrategy` (not hardcoded avalanche)
+- Marginal rate label shows "(est.)" in Repay vs Invest
+- localStorage: `buildfi_debts_v1`, export/import JSON
+- **Test suite**: `tests/debt-tool-tests.js` — 200 tests, 0 failures required
+
 ## Critical Rules — READ BEFORE EVERY TASK
 
 ### The Golden Rule
@@ -79,7 +105,7 @@ Quiz thin client (zero IP exposed)
 
 ### Code Quality
 - Target: 12/10 — never "good enough"
-- No emoji in UI text, labels, or plans
+- No emoji in UI text, labels, or plans (report icons like ✅⚠️🎯 in data-driven TL;DR are OK)
 - Grade 10 reading level for all client-facing text
 - Zero acronyms in Essentiel tier — write "Régime de rentes du Québec" not RRQ
 - Province-aware: RRQ (QC) vs RPC (other provinces), CÉLI vs TFSA
@@ -99,23 +125,43 @@ Quiz thin client (zero IP exposed)
 - Quiz thin client: zero MC functions client-side
 - Stripe webhook URL: www.buildfi.ca (not buildfi.ca — 307 redirect loses POST body)
 
+### Debt Tool Rules
+- **200 tests, 0 failures required** (`node tests/debt-tool-tests.js`)
+- Balance brackets after every edit — { } ( ) [ ] must all match
+- No new components — reuse Card, StatBox, InputRow, NumInput, SectionTitle, DebtChart
+- `showAdvanced` auto-opens on mount if mortgages/income/couple data exists (useEffect)
+
 ## Brand Voice
 Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchoring ("a planner would charge $1,500") inside the tool — that's for marketing only.
 
 ## Current Status (March 2026)
-- P0.6 COMPLETED — E2E pipeline validated
-- P1.4 AI NARRATION MERGED — buildAIPrompt + Anthropic call wired into webhook
+- **P0.6 COMPLETED** — E2E pipeline validated
+- **P1.4 AI NARRATION MERGED** — buildAIPrompt + Anthropic call wired into webhook
+- **Report v6 MERGED + POLISHED** — 15 rendering improvements applied (grade colors, fan chart, TL;DR, print theme, tooltips, TOC, disclaimer restyle, mobile spacing, etc.)
+- **Debt tool UX restructured** — inventory reordered, progressive tabs, micro-CTAs, P0 fixes (basePayoff strategy, marginal rate label)
+- **Email template refactored** — table-based layout, AMF compliant, full bilingual
 - Essentiel tier: near launch, 2 infra blockers (Blob permissions, Resend DNS)
 - AI narration: code complete, needs ANTHROPIC_API_KEY in Vercel env vars to activate
-- Template fixes applied: disclaimer (AMF), priority section title, scenario isolation note, CTA acronyms, CPM 2023 label, mobile responsive
 - Next: add ANTHROPIC_API_KEY to Vercel, test with Stripe test card, then 5 psycho questions
 
 ## Commands
 ```bash
-npm run dev          # Local dev server
-npm run build        # Production build
-npm test             # Run tests (if configured)
-vercel --prod        # Manual deploy
+npm run dev                    # Local dev server
+npm run build                  # Production build
+node tests/debt-tool-tests.js  # Debt tool tests (200 tests)
+vercel --prod                  # Manual deploy
+```
+
+### Validation checks before commit
+```bash
+# AMF compliance (zero tolerance)
+grep -rn "devriez\|recommandons\|vous devez\|il faut que" lib/ public/
+
+# Debt tool tests
+node tests/debt-tool-tests.js   # expect 200/200
+
+# Build
+npm run build
 ```
 
 ## Key Environment Variables

@@ -1,6 +1,6 @@
 # STRATEGY.md
 > Brand, positionnement, marketing, compétiteurs, pricing, copy.
-> Mis à jour: 2026-02-28 — v4 (pipeline E2E validé, pivot PDF→HTML, compétiteurs mis à jour)
+> Mis à jour: 2026-03-01 — v4 (pipeline E2E validé, pivot PDF→HTML, compétiteurs mis à jour, report v6 polished)
 
 ---
 

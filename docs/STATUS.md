@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-02-28 — Post E2E Stripe test session
+> Mis à jour: 2026-03-01 — v4 (AI narration merged, report v6 polished, email template refactored, debt tool UX restructured)
 
 ## PHASE ACTUELLE
-**P0.6 COMPLÉTÉ — Pipeline E2E fonctionnel: Quiz → Stripe → Webhook → MC 5000 sims → Report HTML → Blob → Email. Reste à stabiliser l'infra (Blob public, Resend DNS, email template) avant lancement Essentiel.**
+**P1.4 AI NARRATION MERGED + REPORT v6 POLISHED — Pipeline E2E complet avec AI narration wired (needs ANTHROPIC_API_KEY in Vercel). Report v6 with 15 rendering polish fixes. Debt tool UX restructured. Email template refactored. Reste infra blockers (Blob public, Resend DNS) + pages légales avant lancement Essentiel.**
 
 ---
 
@@ -28,16 +28,67 @@
 | Stripe Checkout | ✅ | POST /api/checkout → Stripe redirect, 39$ CAD |
 | Stripe Webhook | ✅ | POST /api/webhook, signature vérifiée |
 | Monte Carlo | ✅ | 5000 sims en ~2.3s sur Vercel serverless |
-| Report HTML render | ✅ | renderReportHTML() avec 8 sections, 4 SVG charts |
+| Report HTML render | ✅ | **v6** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, heuristics, tooltips, mini TOC |
+| AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired in webhook — needs ANTHROPIC_API_KEY in Vercel |
 | Blob upload | ✅ | Upload OK, mais store PRIVATE → "Forbidden" en accès direct |
-| Email envoi | ✅ | Resend envoie, arrive en spam (domaine non vérifié) |
+| Email envoi | ✅ | Table-based template, bilingual, AMF compliant — arrives in spam (domain unverified) |
 | PDF generation | ❌ DÉSACTIVÉ | @sparticuz/chromium ne fonctionne pas sur Vercel. Remplacé par lien HTML |
-| AI narration | ❌ SKIPPÉ | Passe {} pour observations — rapport contient données MC brutes seulement |
+
+### AI Narration (P1.4) — CODE COMPLETE
+- `buildAIPrompt()` in `report-html.js` builds system + user prompts enriched with DerivedProfile
+- DerivedProfile: anxiety, discipline, literacy, friction, theme (from `lib/ai-profile.ts`)
+- System prompt enforces: AMF compliance, anti-hallucination, micro-structure (chiffre → implication → nuance)
+- Webhook calls Anthropic directly (claude-sonnet-4), parses JSON, sanitizes via `sanitizeAISlots()`
+- 12 AI slots: snapshot_intro, savings_context, debt_impact, gov_explanation, gap_explanation, tax_insight, longevity_good, longevity_watch, obs_1, obs_2, obs_3, upgrade_hook
+- Fallback: if ANTHROPIC_API_KEY missing or API fails → returns {} → report uses hardcoded fallback text
+- `/api/ai-narrate` exists as standalone test endpoint (not called by webhook)
+- AI constants + AMF forbidden terms in `lib/ai-constants.ts`
+- **Activation**: add ANTHROPIC_API_KEY to Vercel env vars → AI narration goes live
+
+### Report v6 — POLISHED (15 fixes, 2026-03-01)
+- REPORT_VERSION = 'v6', v5 preserved as fallback
+- Grade ring (A+ to F) with `--amr` amber-ring color for B/C grades
+- Client-friendly grade labels: B="Correct, à renforcer", C="À risque"
+- Fan chart with progressive spread (yearFrac accumulation)
+- TL;DR 3 data-driven bullets after Note section
+- KPI cards, donut income chart, what-if scenarios, 5-year snapshot table
+- QPP start row highlighted (green bg + badge) in snapshot
+- Heuristics disclosure, cost of delay, min viable return
+- Mini TOC with 7 section pill anchors (hidden in print)
+- Hover tooltips on jargon (Pessimiste P5, taux effectif, taux marginal)
+- Print theme: gold→brown, break-inside:avoid, orphans/widows
+- tabular-nums on all numeric elements
+- Disclaimer restyled: cream bg + left border, left-aligned
+- "Données utilisées" + version footer block
+- Mobile spacing (@media max-width:600px)
+- Upsell → "Prochaine étape" with expected result text
+
+### Email Template — REFACTORED
+- Table-based layout (email client compatible)
+- Bilingual FR/EN
+- AMF compliant disclaimers
+- Grade card dark theme
+- Bouton "Consulter mon rapport"
+- Upsell Intermédiaire
+- Footer Montréal + disclaimer
+
+### Debt Tool — UX RESTRUCTURED (2026-03-01)
+- 6 tabs: Inventaire, Stratégies, Simulateur, Calendrier | Rembourser vs Investir, Coût réel
+- Tab separator at index 4 (core path vs advanced)
+- Welcome banner when no debts
+- Inventory reordered: debts → portrait global → collapsible "Aller plus loin" (mortgages, financial context, couple)
+- `showAdvanced` auto-opens on mount if existing data (useEffect)
+- Tabs grayed (opacity 0.4) when no payable debts
+- Micro-CTAs at end of Simulator and Calendar guide to next tabs
+- 7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
+- `basePayoff` uses `selectedStrategy` (not hardcoded avalanche)
+- Marginal rate label shows "(est.)" in Repay vs Invest
+- 200 tests, 0 failures
 
 ### Moteur MC — Planner v2
 - 436 tests, 53 catégories, 0 failures
 - Syncé avec lib/engine/index.js (2,426 lignes, 38 exports)
-- Inclut optimizeDecum() (ajouté dans cette session)
+- Inclut optimizeDecum()
 - Tax parity vérifiée sur 10 provinces
 
 ### Quiz Essentiel (thin client)
@@ -52,7 +103,7 @@
 - ✅ Logo SVG avec flame (via logo.js injection)
 - ✅ Accents UTF-8 corrects
 - ✅ buildfi.ca → 307 → www.buildfi.ca → landing page
-- Note: app/page.tsx utilise redirect() (pas permanentRedirect) pour éviter cache browser
+- ✅ Audit AMF/BSIF v9 complété
 
 ### Logo Unifié
 - /public/logo.js — logoSVG(size, context) shared function
@@ -75,24 +126,17 @@
 - La clé DKIM a été recréée — s'assurer que Cloudflare a la bonne valeur
 - Email arrive en spam tant que le domaine n'est pas vérifié
 
-### 3. Email template — mise à jour
-- Logo SVG au lieu du texte "buildfi.ca"
-- Couleurs alignées brand
-- Inclusions bonus: Guide 101 PDF, lien debt tool
-- Texte adapté (plus de mention PDF, c'est un lien HTML)
+### 3. ANTHROPIC_API_KEY → Vercel env vars
+- Code complete — just needs the key added to Vercel
+- Test with Stripe test card after adding
 
-### 4. AI narration (optionnel MVP)
-- Webhook passe {} pour observations AI
-- Rapport contient données MC brutes — pas de narration personnalisée
-- Intégrer Anthropic API pour enrichir le rapport
-
-### 5. Pages légales (P0.7)
+### 4. Pages légales (P0.7)
 - Conditions d'utilisation
 - Politique de confidentialité
 - Avis AMF
 - Besoin: nom légal de l'entreprise, email contact
 
-### 6. Quiz Intermédiaire
+### 5. Quiz Intermédiaire
 - Thin client à construire (comme Essentiel)
 - 80+ fields, 8 étapes
 - UX immersive demandée (cards, transitions, score cinématique)
@@ -102,56 +146,65 @@
 ## STRUCTURE REPO GITHUB (actuelle)
 ```
 buildfi/
-├── planner.html                 ← moteur complet dev/test (436 tests)
+├── planner_v2.html              ← moteur complet dev/test (436 tests, ~15,000 lignes)
 ├── app/
 │   ├── page.tsx                 ✅ redirect("/index.html")
-│   ├── api/checkout/route.ts    ✅ Stripe session (automatic_tax disabled)
-│   ├── api/webhook/route.ts     ✅ MC → Blob HTML → Email (PDF disabled)
+│   ├── api/
+│   │   ├── ai-narrate/route.ts  ✅ Standalone AI narration test endpoint
+│   │   ├── checkout/route.ts    ✅ Stripe session (automatic_tax disabled)
+│   │   └── webhook/route.ts     ✅ MC → AI → Blob HTML → Email
 │   ├── merci/page.tsx           ✅ Page de remerciement
 │   └── outils/
-│       └── dettes/page.jsx      ✅ Debt tool
+│       └── dettes/page.jsx      ✅ Debt tool (1,475 lignes, React JSX)
 ├── lib/
-│   ├── engine/index.js          ✅ Syncé planner_v2 (2,426 lignes)
+│   ├── ai-constants.ts          ✅ AI slot names, AMF forbidden terms, sanitization
+│   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan (behavioral signals)
+│   ├── engine/index.js          ✅ Syncé planner_v2 (2,426 lignes, 38 exports)
 │   ├── quiz-translator.ts       ✅
-│   ├── report-data.ts           ✅
-│   ├── report-html.js           ✅
-│   ├── email.ts                 ✅ (tags disabled, PDF optional)
-│   └── pdf-generator.ts         ⚠️ chromium-min (non fonctionnel sur Vercel)
+│   ├── report-html.js           ✅ Report v6 (1,421 lignes) — extractReportData + buildAIPrompt + renderReport_v6
+│   ├── email.ts                 ✅ Table-based, bilingual, AMF compliant
+│   └── pdf-generator.ts         ⚠️ DISABLED (Puppeteer incompatible Vercel)
 ├── public/
 │   ├── index.html               ✅ Landing page v9 + logo SVG
 │   ├── quiz-essentiel.html      ✅ Thin client (805 lignes)
 │   ├── logo.js                  ✅ Shared logoSVG()
 │   ├── logo-light.svg           ✅
-│   └── logo-dark.svg            ✅
+│   ├── logo-dark.svg            ✅
+│   └── robots.txt               ✅
+├── tests/
+│   └── debt-tool-tests.js       ✅ 200 tests
 ├── assets/
 │   ├── guide-101-les-bases-de-vos-finances.pdf
 │   └── guide-201-optimiser-votre-retraite.pdf
 └── docs/
-    ├── STATUS.md
-    ├── ROADMAP.md
-    ├── TECH-REFERENCE.md
-    ├── SERVICES.md
-    ├── STRATEGY.md
+    ├── STATUS.md, ROADMAP.md, TECH-REFERENCE.md
+    ├── SERVICES.md, STRATEGY.md
     └── [handoff docs]
 ```
 
-## DÉCISIONS ARCHITECTURALES CETTE SESSION
+## DÉCISIONS ARCHITECTURALES RÉCENTES
 
-### PDF → HTML (pivot)
+### PDF → HTML (pivot, 2026-02-27)
 - Puppeteer + @sparticuz/chromium ne fonctionne pas sur Vercel serverless
 - Solution: rapport HTML hébergé sur Vercel Blob, lien envoyé par email
-- Le client clique le lien → voit le rapport dans le navigateur
 - window.print() dans le rapport pour export PDF côté client (à ajouter)
 - Approche standard dans l'industrie SaaS (Wealthsimple, Questrade, etc.)
 
-### Stripe automatic_tax → désactivé
-- Requiert immatriculation fiscale sur Stripe Tax
-- Pour l'instant: prix $39 tax-in
-- À réactiver quand numéros TPS/TVQ configurés
+### AI narration architecture (2026-02-28)
+- Single API call, 12 JSON slots, claude-sonnet-4
+- DerivedProfile behavioral signals enrich prompts
+- Fallback {} if no key or API error — report works without AI
+- AMF forbidden terms enforced in system prompt + sanitization
 
-### app/page.tsx → redirect (pas permanentRedirect)
-- permanentRedirect causait un cache browser impossible à invalider
-- redirect() est temporaire et ne cache pas
+### Report v6 polish (2026-03-01)
+- 15 CSS/HTML rendering improvements — no data layer changes
+- Progressive fan chart spread, grade ring colors, client-friendly labels
+- Print theme with brown overrides, tooltips, mini TOC, mobile spacing
+
+### Debt tool UX restructure (2026-03-01)
+- Progressive disclosure: welcome → debts → portrait → collapsible advanced
+- Tab graying when no payable debts, separator between core/advanced tabs
+- Micro-CTAs guide navigation flow between tabs
 
 ## SERVICES EXTERNES — ÉTAT
 | Service | Config | État |
@@ -160,10 +213,11 @@ buildfi/
 | Resend | Clé API active, domaine FAILED | ⚠️ DNS à corriger |
 | Vercel Blob | Store "buildfi-blob" private | ⚠️ Recréer en public |
 | Cloudflare DNS | A record → Vercel, CNAME www → Vercel, + Resend records | ✅ |
+| Anthropic API | Code complete, key NOT in Vercel env vars | ⚠️ Ajouter ANTHROPIC_API_KEY |
 
 ## PROCHAINE SESSION
 1. Fix Blob (public store) + Resend DNS → rapport accessible par lien
-2. Email template v2 (logo, couleurs, bonus inclusions)
-3. Pages légales (P0.7)
-4. Quiz Intermédiaire thin client
-5. AI narration integration (Anthropic API)
+2. Add ANTHROPIC_API_KEY to Vercel → test with Stripe test card
+3. 5 psycho questions (quiz enhancement)
+4. Pages légales (P0.7)
+5. Quiz Intermédiaire thin client
