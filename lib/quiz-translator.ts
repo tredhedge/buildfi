@@ -89,7 +89,7 @@ export function translateToMC(a: Record<string, any>) {
     const projSal = sal * Math.pow(1.021, Math.max(0, retAge - age));
     penM = Math.round((projSal * 0.02 * projYrs) / 12);
   } else if (emp === "large" || emp === "tech") {
-    penType = "dc";
+    penType = "cd";
     dcBal = Math.round(sal * 0.06 * Math.min(20, Math.max(0, age - 25)));
   }
 
