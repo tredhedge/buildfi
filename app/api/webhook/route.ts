@@ -6,11 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import Anthropic from "@anthropic-ai/sdk";
 import { translateToMC } from "@/lib/quiz-translator";
+import { translateToMCInter } from "@/lib/quiz-translator-inter";
 import { runMC } from "@/lib/engine";
-import { renderReportHTML, calcCostOfDelay, calcMinViableReturn, extractReportData, buildAIPrompt } from "@/lib/report-html";
+import { renderReportHTML, calcCostOfDelay as calcCostOfDelayEss, calcMinViableReturn as calcMinViableReturnEss, extractReportData, buildAIPrompt } from "@/lib/report-html";
+import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
+import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
+import { buildAIPromptInter } from "@/lib/ai-prompt-inter";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, type AINarration } from "@/lib/ai-constants";
+import { sanitizeAISlots, sanitizeAISlotsInter } from "@/lib/ai-constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -19,11 +23,15 @@ export const maxDuration = 60;
 export const runtime = "nodejs";
 
 // AI narration: call Anthropic, return {} on any failure (report works without AI)
-async function callAnthropic(sys: string, usr: string): Promise<AINarration> {
+async function callAnthropic<T extends Record<string, string | undefined>>(
+  sys: string,
+  usr: string,
+  sanitizer: (raw: Record<string, any>) => T
+): Promise<T> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.log("[webhook] ANTHROPIC_API_KEY not set, skipping AI narration");
-    return {};
+    return {} as T;
   }
   try {
     const client = new Anthropic({ apiKey });
@@ -39,12 +47,12 @@ async function callAnthropic(sys: string, usr: string): Promise<AINarration> {
       .join("");
     const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
     const raw = JSON.parse(cleaned);
-    const slots = sanitizeAISlots(raw);
+    const slots = sanitizer(raw);
     console.log(`[webhook] AI narration: ${Object.keys(slots).length} slots filled`);
     return slots;
   } catch (err) {
     console.error("[webhook] AI narration failed, using fallbacks:", err);
-    return {};
+    return {} as T;
   }
 }
 
@@ -98,30 +106,62 @@ export async function POST(req: NextRequest) {
 
     console.log(`[webhook] Processing ${tier} report for ${email} (${lang})`);
 
-    // Step 2: Translate quiz -> MC params
-    const params = translateToMC(quizAnswers);
-
-    // Step 3: Run Monte Carlo (5,000 simulations)
-    const mcStart = Date.now();
-    const mc = runMC(params, 5000);
-    console.log(`[webhook] MC completed in ${Date.now() - mcStart}ms`);
-
-    // Step 4: Extract report data
-    const D = extractReportData(mc, params);
-
-    // Step 4.5: AI Narration
     const fr = lang === "fr";
-    const aiStart = Date.now();
-    const prompt = buildAIPrompt(D, params, fr, quizAnswers);
-    const ai = await callAnthropic(prompt.sys, prompt.usr);
-    console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+    let reportHTML: string;
+    let D: Record<string, any>;
 
-    // Step 5: Render report HTML
-    const quiz = quizAnswers;
-    const costDelay = calcCostOfDelay(params);
-    const minReturn = calcMinViableReturn(params);
-    const reportHTML = renderReportHTML(D, mc, quiz, lang, ai, costDelay, minReturn);
+    if (tier === "intermediaire") {
+      // ── Intermédiaire pipeline ────────────────────────────────
+      // Step 2: Translate quiz → MC params (Inter — 85 fields → 120 params)
+      const params = translateToMCInter(quizAnswers);
 
+      // Step 3: Run MC (5,000 sims) + 5 strategies (5×500 sims)
+      const mcStart = Date.now();
+      const mc = runMC(params, 5000);
+      const stratData = run5Strategies(params as any);
+      const costDelay = calcCostOfDelay(params as any);
+      const minReturn = calcMinViableReturn(params as any);
+      console.log(`[webhook] MC + strategies completed in ${Date.now() - mcStart}ms`);
+
+      // Step 4: Extract report data (Inter — 16 sections)
+      D = extractReportDataInter(mc, params);
+
+      // Step 4.5: AI Narration (Inter — 18 slots)
+      const aiStart = Date.now();
+      const quiz = params._quiz || {};
+      const prompt = buildAIPromptInter(D, params, fr, quiz, stratData);
+      const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsInter);
+      console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+
+      // Step 5: Render report HTML (Inter)
+      reportHTML = renderReportHTMLInter(D, mc, stratData, params, lang, ai, costDelay, minReturn);
+
+    } else {
+      // ── Essentiel pipeline (unchanged) ────────────────────────
+      // Step 2: Translate quiz → MC params
+      const params = translateToMC(quizAnswers);
+
+      // Step 3: Run Monte Carlo (5,000 simulations)
+      const mcStart = Date.now();
+      const mc = runMC(params, 5000);
+      console.log(`[webhook] MC completed in ${Date.now() - mcStart}ms`);
+
+      // Step 4: Extract report data
+      D = extractReportData(mc, params);
+
+      // Step 4.5: AI Narration
+      const aiStart = Date.now();
+      const prompt = buildAIPrompt(D, params, fr, quizAnswers);
+      const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots);
+      console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+
+      // Step 5: Render report HTML
+      const costDelay = calcCostOfDelayEss(params);
+      const minReturn = calcMinViableReturnEss(params);
+      reportHTML = renderReportHTML(D, mc, quizAnswers, lang, ai, costDelay, minReturn);
+    }
+
+    // ── Shared Steps 6-7 (both tiers) ──────────────────────────
     // Step 6: Upload HTML report to Vercel Blob (30-day expiry)
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.html`;

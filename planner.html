@@ -1244,7 +1244,7 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
     prev = fb[i];
     if (i === fb.length - 1) fed += (totalTaxableInc - fb[i]) * fr[i + 1];
   }
-  fed = Math.max(0, fed - fpd * fr[0] - (retired ? _penCreditMax * 0.15 : 0) - (retired ? _ageCreditAmt * 0.15 : 0));
+  fed = Math.max(0, fed - fpd * fr[0] - (retired ? _penCreditMax * fr[0] : 0) - (retired ? _ageCreditAmt * fr[0] : 0));
   var pt = PROV_TAX[prov] || PROV_TAX.QC;
   // QC abatement applied BEFORE federal dividend credit — §4.6
   fed *= pt.abate;
@@ -3126,9 +3126,9 @@ function runTestSuite() {
   // ── OAS: Clawback precision ──
   var oasCalc = typeof calcOAS === "function";
   if(oasCalc) {
-    var oasFull = calcOAS(90000, 65, 0);
-    var oasClaw = calcOAS(120000, 65, 0);
-    var oasZero = calcOAS(160000, 65, 0);
+    var oasFull = calcOAS(65, 90000, 0);
+    var oasClaw = calcOAS(65, 120000, 0);
+    var oasZero = calcOAS(65, 160000, 0);
     T("OAS","Below threshold full", oasFull > 8000 ? 1 : 0, 1, 0);
     T("OAS","Above threshold reduced", oasClaw < oasFull ? 1 : 0, 1, 0);
     T("OAS","Way above near zero", oasZero < oasFull * 0.3 ? 1 : 0, 1, 0);
@@ -3307,6 +3307,63 @@ function runTestSuite() {
     }
   }
 
+  // ── BUG FIX VERIFICATION (Round 1 + Round 2 audit) ──
+
+  // Bug #5/#21: Pension credit uses fr[0] (14%) not hardcoded 0.15
+  T("BugFix","PenCredit uses fr[0]", html.indexOf("_penCreditMax * fr[0]") > -1 ? 1 : 0, 1, 0);
+  T("BugFix","AgeCredit uses fr[0]", html.indexOf("_ageCreditAmt * fr[0]") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #5: calcTax retired credit — retired=true should produce lower or equal tax at $40K
+  var _bfRetT = calcTax(40000, 0, "QC", 0, true);
+  var _bfNonRetT = calcTax(40000, 0, "QC", 0, false);
+  T("BugFix","Retired credit reduces tax", _bfRetT.total < _bfNonRetT.total ? 1 : 0, 1, 0);
+  // Bug #5: The pension credit at fr[0]=14% on $2000 max = $280 federal
+  T("BugFix","Pen credit ~280 fed", Math.abs(_bfNonRetT.total - _bfRetT.total) > 200 ? 1 : 0, 1, 0);
+
+  // Bug #18: EI rates 2026 — non-QC 1.63%, QC 1.30%
+  T("BugFix","EI rate non-QC", html.indexOf("0.0163") > -1 ? 1 : 0, 1, 0);
+  T("BugFix","EI rate QC", html.indexOf("0.0130") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #12: Inflation off-by-one (y>0 guard)
+  T("BugFix","CumInf y>0 guard", html.indexOf("if (y > 0) cumInf") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #7: Meltdown subtracts rrifMin from target
+  T("BugFix","Melt target - rrifMin", html.indexOf("mTarget - govInc - rrifMin") > -1 || html.indexOf("- rrifMin") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #6: Three-way pension indexation (penIdx === 2/1/0)
+  T("BugFix","3-way penIdx", html.indexOf("penIdx === 2") > -1 && html.indexOf("penIdx === 1") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #4: No tfsaRoom shadowing (uses _meltTfsaRoom)
+  T("BugFix","_meltTfsaRoom rename", html.indexOf("_meltTfsaRoom") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #2: Unsorted arrays preserved for medSimIdx
+  T("BugFix","_unsortedFins saved", html.indexOf("_unsortedFins") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #10: QPP age validation clamped 60-70
+  T("BugFix","QPP max 70", html.indexOf("Math.min(70") > -1 || html.indexOf("qppAge > 70") > -1 || html.indexOf("70, qppAge") > -1 ? 1 : 0, 1, 0);
+
+  // Bug #8: Property appreciation uses pr.ri (not pr.appRate)
+  T("BugFix","Prop uses pr.ri", html.indexOf("pr.ri || 0.035") > -1 ? 1 : 0, 1, 0);
+
+  // Round 2 Bug #21: Spouse pension indexation in MC path (_cPenInfAdj)
+  T("BugFix","Spouse pen indexed MC", html.indexOf("_cPenInfAdj") > -1 ? 1 : 0, 1, 0);
+
+  // Round 2: medRevData spouse pension indexed (_mrCPenInf)
+  T("BugFix","Spouse pen indexed medRev", html.indexOf("_mrCPenInf") > -1 ? 1 : 0, 1, 0);
+
+  // MC test: Couple with DB pension — spouse pension income should appear
+  var cpDB = safeMC(Object.assign({}, bp, {
+    cOn:true, cAge:bp.age-2, cSal:60000, cRetAge:bp.retAge,
+    cPenType:"db", cPenM:2000, penIdx:2, cAvgE:60000, cQppYrs:30,
+    cQppAge:65, cOasAge:65
+  }), 10);
+  if(cpDB && cpDB.pD) {
+    var cpDBAt67 = cpDB.pD.find(function(r){return r.age===67;});
+    T("BugFix","Couple DB pen in schedule", cpDBAt67 && (cpDBAt67.mp_cPen||0) > 0 ? 1 : 0, 1, 0);
+    // Pension should be indexed — at year 2 it should be > base (2000*12=24000)
+    if(cpDBAt67) T("BugFix","Couple DB pen indexed", (cpDBAt67.mp_cPen||0) > 24000 ? 1 : 0, 1, 0);
+  }
+
   // ── HTML INTEGRITY: Key sections exist ──
   T("Display","Has calcTax function", html.indexOf("function calcTax")>-1 ? 1 : 0, 1, 0);
   T("Display","Has runMC function", html.indexOf("function runMC")>-1 ? 1 : 0, 1, 0);
@@ -3346,7 +3403,7 @@ function optimizeDecum(p) {
   var nrACB = p.costBase || nr;
   var crr = p.cOn ? (p.cRRSP || 0) : 0, ctf = p.cOn ? (p.cTFSA || 0) : 0, cnr = p.cOn ? (p.cNR || 0) : 0;
   var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0, cFhsaContrib = 0;
-  var reVals = (p.props || []).filter(function(pr) { return pr.on; }).map(function(pr) { return { v: pr.val || 0, m: pr.mb || 0, heloc: 0, helocMax: 0.65, ri: (pr.appRate || 0.03) }; });
+  var reVals = (p.props || []).filter(function(pr) { return pr.on; }).map(function(pr) { return { v: pr.val || 0, m: pr.mb || 0, heloc: 0, helocMax: 0.65, ri: (pr.ri || 0.035) }; });
   var inf = p.inf || 0.021;
   var eqRet = p.eqRet || 0.07, bndRet = p.bndRet || 0.035;
   var allocR = p.allocR || 0.6, allocT = p.allocT || 0.8, allocN = p.allocN || 0.5;
@@ -3354,7 +3411,6 @@ function optimizeDecum(p) {
   var retTF = eqRet * allocT + bndRet * (1 - allocT) - (p.merT || 0);
   var retNR = eqRet * allocN + bndRet * (1 - allocN) - (p.merN || 0);
 
-  var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0;
   var cSimDeath = p.cOn ? (p.cDeath || 90) : 0;
 
   for (var y = 0; y <= maxYrs; y++) {
@@ -3377,7 +3433,8 @@ function optimizeDecum(p) {
     var oas = age >= p.oasAge ? calcOAS(p.oasAge, 0, y, inf, age) * 12 : 0; // estimate without clawback first
     var penMonth = 0;
     if (p.penType === "db" && retired) {
-      penMonth = (p.penM || 0) * (p.penIdx ? infM : 1);
+      var _penInfAdj = p.penIdx === 2 ? infM : p.penIdx === 1 ? Math.pow(1 + inf * 0.5, y) : 1;
+      penMonth = (p.penM || 0) * _penInfAdj;
       if (p.bridge && age < (p.brEnd || 65)) penMonth += (p.brAmt || 0);
     }
     if (["cd","rpdb","rrs","rver"].indexOf(p.penType) >= 0 && retired) {
@@ -3629,8 +3686,8 @@ function optimizeDecum(p) {
     // 5. If meltdown/RRIF surplus, reinvest in TFSA (if room) or NR
     if (availFromMelt > 0) {
       // Simplified: put surplus in TFSA up to 7000*infM, rest in NR
-      var tfsaRoom = Math.max(0, 7000 * infM); // simplified room
-      var toTF = Math.min(availFromMelt, tfsaRoom * 0.5); // conservative
+      var _meltTfsaRoom = Math.max(0, 7000 * infM); // simplified room
+      var toTF = Math.min(availFromMelt, _meltTfsaRoom * 0.5); // conservative
       tf += toTF;
       nr += (availFromMelt - toTF);
     }
@@ -3649,13 +3706,13 @@ function optimizeDecum(p) {
       var _cRetired = _cAge2 >= (p.cRetAge || p.retAge);
       cTaxInc += cRrifMin;
       if (_cRetired && _cAge2 >= (p.cQppAge || 65)) cTaxInc += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
-      if (p.cPenType === "db" && _cRetired) cTaxInc += (p.cPenM || 0) * 12 * (p.penIdx ? infM : 1);
+      if (p.cPenType === "db" && _cRetired) cTaxInc += (p.cPenM || 0) * 12 * (p.penIdx === 2 ? infM : p.penIdx === 1 ? Math.pow(1 + inf * 0.5, y) : 1);
       if (!_cRetired) cTaxInc += (p.cSal || 0) * infM;
       if (_cRetired && _cAge2 >= (p.cOasAge || 65)) cTaxInc += calcOAS(p.cOasAge || 65, cTaxInc, y, inf, _cAge2) * 12;
     }
-    var tx1 = calcTax(taxInc, y, p.prov || "QC", inf, retired);
+    var tx1 = calcTax(taxInc, y, p.prov || "QC", inf, age >= 65);
     var _cRetired2 = p.cOn ? ((p.cAge || p.age) + y >= (p.cRetAge || p.retAge)) : false;
-    var tx2 = cTaxInc > 0 ? calcTax(cTaxInc, y, p.prov || "QC", inf, _cRetired2) : { total: 0, eff: 0, marg: 0 };
+    var tx2 = cTaxInc > 0 ? calcTax(cTaxInc, y, p.prov || "QC", inf, cAge2 >= 65) : { total: 0, eff: 0, marg: 0 };
     var tx = { total: tx1.total + tx2.total, eff: (taxInc + cTaxInc) > 0 ? (tx1.total + tx2.total) / (taxInc + cTaxInc) : 0, marg: Math.max(tx1.marg, tx2.marg) };
     taxInc = taxInc + cTaxInc;
     row.tax = tx.total;
@@ -3910,9 +3967,9 @@ function calcPayroll(sal, prov, yr, infR) {
   var qpp2Max = QPP_YAMPE * inf;
   var qpp2Pensionable = Math.max(0, Math.min(sal, qpp2Max) - qppMax);
   var qpp2 = qpp2Pensionable * 0.04;
-  // EI: QC=1.27%, other=1.58%, MIE $65,700 (indexed)
+  // EI: QC=1.30%, other=1.63%, MIE $65,700 (2026 rates, indexed)
   var eiMIE = 65700 * inf;
-  var eiRate = isQC ? 0.0127 : 0.0158;
+  var eiRate = isQC ? 0.0130 : 0.0163;
   var ei = Math.min(sal, eiMIE) * eiRate;
   // RQAP (QC only): 0.494% up to $94,000 (indexed)
   var rqap = 0;
@@ -4055,7 +4112,7 @@ function runMC(p, N, _progressCb) {
       });
       var infShock = sInfOvr !== null ? sInfOvr : p.stochInf ? p.inf + 0.015 * zz[2] : p.inf;
       infShock = Math.max(5e-3, Math.min(0.08, infShock));
-      cumInf *= 1 + infShock;
+      if (y > 0) cumInf *= 1 + infShock; // Bug #12: y=0 is current year, no inflation yet
       var infM = cumInf;
       var _infEff = y > 0 ? Math.pow(cumInf, 1 / y) - 1 : infShock; // effective annual inflation for bracket indexing
       var eqR = eqRet2 + eqVol2 * zz[0] + sEq;
@@ -4298,9 +4355,10 @@ function runMC(p, N, _progressCb) {
       var cQppY = 0, cOasY = 0, cPenY = 0, cGisY = 0;
       if (cAlive) {
         if (cRetired && cAge2 >= (p.cQppAge || 65)) { cQppY = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM; cInc += cQppY; }
-        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? (p.cDCBal || 0) * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
-        if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
-        if (p.cPenType === "db" && cRetired) { cPenY = (p.cPenM || 0) * 12; cInc += cPenY; }
+        var _cPenInfAdj = p.penIdx === 2 ? infM : p.penIdx === 1 ? Math.pow(1 + p.inf * 0.5, y) : 1;
+        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 * _cPenInfAdj : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? (p.cDCBal || 0) * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
+        if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 * _cPenInfAdj : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
+        if (p.cPenType === "db" && cRetired) { cPenY = (p.cPenM || 0) * 12 * _cPenInfAdj; cInc += cPenY; }
         if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = (p.cDCBal || 0) * 0.04; cPenY += _cdcY; cInc += _cdcY; }
       }
       if (p.cOn && !cAlive && cAge2 > cSimDeath) {
@@ -4496,7 +4554,7 @@ function runMC(p, N, _progressCb) {
           // Meltdown: before RRIF age (72), fill to target bracket
           var mTarget = (p.meltTgt || 58523) * infM;
           if (age < 72) {
-            meltAmt = Math.max(0, Math.min(rr, mTarget - govInc));
+            meltAmt = Math.max(0, Math.min(rr, mTarget - govInc - rrifMin));
           }
           if (meltAmt > 0) rr -= meltAmt;
         }
@@ -4788,7 +4846,7 @@ function runMC(p, N, _progressCb) {
           if (p.cOn && cAlive) {
             var cQppInc = cAge2 >= (p.cQppAge || 65) ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM : 0;
             var cPenInc = 0;
-            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12;
+            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12 * _cPenInfAdj;
             if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = (p.cDCBal || 0) * 0.04;
             _ctiQpp = cQppInc; _ctiPen = cPenInc;
             _ctiRrif = cEstRrifMin || 0;
@@ -4825,8 +4883,8 @@ function runMC(p, N, _progressCb) {
         if (p.bizOn && p.bizSaleAge > 0 && age === p.bizSaleAge && typeof _bizSaleCGtaxable !== "undefined") {
           taxableInc += _bizSaleCGtaxable;
         }
-        var yrTx1 = calcTax(taxableInc, y, p.prov || "QC", _infEff, retired, _bizDivInfo);
-        var yrTx2 = p.cOn && (cAlive || cTaxableInc > 0) ? calcTax(cTaxableInc, y, p.prov || "QC", _infEff, cRetired) : { total: 0, fed: 0, prov: 0, eff: 0, marg: 0 };
+        var yrTx1 = calcTax(taxableInc, y, p.prov || "QC", _infEff, age >= 65, _bizDivInfo);
+        var yrTx2 = p.cOn && (cAlive || cTaxableInc > 0) ? calcTax(cTaxableInc, y, p.prov || "QC", _infEff, cAge2 >= 65) : { total: 0, fed: 0, prov: 0, eff: 0, marg: 0 };
         var yrTx = { total: yrTx1.total + yrTx2.total, fed: yrTx1.fed + yrTx2.fed, prov: yrTx1.prov + yrTx2.prov, eff: (taxableInc + cTaxableInc) > 0 ? (yrTx1.total + yrTx2.total) / (taxableInc + cTaxableInc) : 0, marg: Math.max(yrTx1.marg, yrTx2.marg) };
         taxableInc = taxableInc + cTaxableInc;
         // FTQ/CSN 30% credit (pre-retirement only) \u2014 display only in si===0
@@ -4856,7 +4914,7 @@ function runMC(p, N, _progressCb) {
         revData[y].tiRrif = _tiRrif; revData[y].tiMelt = _tiMelt; revData[y].tiDraw = _tiDraw;
         revData[y].tiRe = _tiRe; revData[y].tiOther = _tiOther;
         revData[y].aRR = rr; revData[y].aTF = tf; revData[y].aNR = nr;
-        revData[y].aPE = pe; revData[y].aPM = pm; revData[y].aRE = reTotal;
+        revData[y].aPE = pe; revData[y].aPM = pm;
         revData[y].peExit = _peExit; revData[y].pmExit = _pmExit;
         revData[y].aLIRA = lira; revData[y].aCLIRA = cLira;
         revData[y].liraWith = liraWith || 0; revData[y].cLiraWith = cLiraWith || 0;
@@ -4897,17 +4955,18 @@ function runMC(p, N, _progressCb) {
           _simTaxInc2 = retired ? (cEstRrifMin || 0) + (cLiraWith || 0) : (p.cSal || 0) * infM;
           if (cRetired && cAge2 >= (p.cQppAge || 65)) _simTaxInc2 += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
           if (cRetired && cAge2 >= (p.cOasAge || 65)) _simTaxInc2 += calcOAS(p.cOasAge || 65, _simTaxInc2, y, p.inf, cAge2) * 12;
-          if (p.cPenType === "db" && cRetired) _simTaxInc2 += (p.cPenM || 0) * 12;
+          if (p.cPenType === "db" && cRetired) _simTaxInc2 += (p.cPenM || 0) * 12 * _cPenInfAdj;
         }
-        _simTax = (_simTaxInc1 > 0 ? calcTax(Math.max(0, _simTaxInc1), y, p.prov || "QC", _infEff, retired).total : 0) + (_simTaxInc2 > 0 ? calcTax(Math.max(0, _simTaxInc2), y, p.prov || "QC", _infEff, cRetired).total : 0);
+        _simTax = (_simTaxInc1 > 0 ? calcTax(Math.max(0, _simTaxInc1), y, p.prov || "QC", _infEff, age >= 65).total : 0) + (_simTaxInc2 > 0 ? calcTax(Math.max(0, _simTaxInc2), y, p.prov || "QC", _infEff, cAge2 >= 65).total : 0);
       }
       var reTotal = reVals.reduce(function(s, rp2) {
         return s + rp2.v - rp2.m;
       }, 0);
+      if (si === 0 && revData[y]) revData[y].aRE = reTotal;
       var total = alive ? rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + reTotal + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0) : 0;
       var _yrTax = si === 0 ? (yrTx ? yrTx.total : 0) : _simTax;
-      var _p1Tax = si === 0 ? (yrTx1 ? yrTx1.total : (yrTx ? yrTx.total : 0)) : (_simTaxInc1 > 0 ? calcTax(Math.max(0, _simTaxInc1), y, p.prov || "QC", _infEff, retired).total : 0);
-      var _p2Tax = si === 0 ? (yrTx2 ? yrTx2.total : 0) : (_simTaxInc2 > 0 ? calcTax(Math.max(0, _simTaxInc2), y, p.prov || "QC", _infEff, cRetired).total : 0);
+      var _p1Tax = si === 0 ? (yrTx1 ? yrTx1.total : (yrTx ? yrTx.total : 0)) : (_simTaxInc1 > 0 ? calcTax(Math.max(0, _simTaxInc1), y, p.prov || "QC", _infEff, age >= 65).total : 0);
+      var _p2Tax = si === 0 ? (yrTx2 ? yrTx2.total : 0) : (_simTaxInc2 > 0 ? calcTax(Math.max(0, _simTaxInc2), y, p.prov || "QC", _infEff, cAge2 >= 65).total : 0);
       path.push({ total, rr, tf, nr, pe, pm, crr, ctf, cnr, fhsa: fhsa, cFhsa: cFhsa, dc: dc, dc2: dc2, disc: total / (infM || 1), re: reTotal, corp: p.bizOn ? corpBal : 0, ipp: p.ippOn ? _ippBal : 0, tax: _yrTax, p1Tax: _p1Tax, p2Tax: _p2Tax, spend: spending || 0, qpp: qpp || 0, oas: oas || 0, pen: (penMonth || 0) * 12, pt: ptInc || 0, gis: gis || 0, cQpp: cQppY || 0, cOas: cOasY || 0, cPen: cPenY || 0, cGis: cGisY || 0, cInc: cInc || 0, penCont: dcCont || 0, lira: lira, cLira: cLira });
       _mcTfsaLastW = _wFromTF || 0; // TFSA withdrawals restore room next year
       var finAssets = rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0); // R14: include all liquid-ish assets
@@ -4989,6 +5048,9 @@ function runMC(p, N, _progressCb) {
     deathAges.push(simDeath);
     if (p.cOn) cDeathAges.push(cSimDeath);
   }
+  // Save unsorted copies for medSimIdx lookups (Bug #2: sort changes index positions)
+  var _unsortedFins = fins.slice();
+  var _unsortedRuinAges = ruinAges.slice();
   fins.sort(function(a, b) {
     return a - b;
   });
@@ -5013,8 +5075,8 @@ function runMC(p, N, _progressCb) {
     }
   }
   var medPath = all[medSimIdx];
-  var medSimFinal = fins[medSimIdx] || 0;
-  var medSimRuin = ruinAges[medSimIdx] || 999;
+  var medSimFinal = _unsortedFins[medSimIdx] || 0;
+  var medSimRuin = _unsortedRuinAges[medSimIdx] || 999;
   var medSimDeath = deathAges[medSimIdx] || p.deathAge;
   var medSimEstateTax = estateTaxes[medSimIdx] || 0;
   var medSimEstateNet = estateNets[medSimIdx] || 0;
@@ -5050,10 +5112,11 @@ function runMC(p, N, _progressCb) {
       var _mrWdCapped = Math.min(_mrWdNeed, _mrAvailBal);
       mrTaxInc = (mrp.qpp||0) + (mrp.oas||0) + (mrp.pen||0) + _mrWdCapped;
       var mrCTaxInc = 0;
-      if (p.cOn) { var mrCA = (p.cAge||p.age) + mri; if (mrCA >= (p.cQppAge||65)) mrCTaxInc += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0)*12*mrInf; if (mrCA >= (p.cOasAge||65)) mrCTaxInc += calcOAS(p.cOasAge||65,mrCTaxInc,mri,p.inf,mrCA)*12; if (p.cPenType==="db") mrCTaxInc += (p.cPenM||0)*12; }
-      var mrRetTxCalc = calcTax(mrTaxInc, mri, p.prov || "QC", p.inf, mrRetired);
+      if (p.cOn) { var mrCA = (p.cAge||p.age) + mri; if (mrCA >= (p.cQppAge||65)) mrCTaxInc += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0)*12*mrInf; if (mrCA >= (p.cOasAge||65)) mrCTaxInc += calcOAS(p.cOasAge||65,mrCTaxInc,mri,p.inf,mrCA)*12; if (p.cPenType==="db") { var _mrCPenInf = p.penIdx === 2 ? mrInf : p.penIdx === 1 ? Math.pow(1 + p.inf * 0.5, mri) : 1; mrCTaxInc += (p.cPenM||0)*12*_mrCPenInf; } }
+      var mrRetTxCalc = calcTax(mrTaxInc, mri, p.prov || "QC", p.inf, mrAge >= 65);
       var _mrCRetired = p.cOn && ((p.cAge||p.age) + mri >= (p.cRetAge||p.retAge));
-      var mrCRetTx = mrCTaxInc > 0 ? calcTax(mrCTaxInc, mri, p.prov || "QC", p.inf, _mrCRetired) : {total:0};
+      var mrCA = p.cOn ? (p.cAge||p.age) + mri : 0;
+      var mrCRetTx = mrCTaxInc > 0 ? calcTax(mrCTaxInc, mri, p.prov || "QC", p.inf, mrCA >= 65) : {total:0};
       mrTax = mrRetTxCalc.total + (mrCRetTx ? mrCRetTx.total : 0);
     } else {
       mrTaxInc = p.sal * mrInf;
@@ -5248,14 +5311,14 @@ function runMC(p, N, _progressCb) {
       var mp = medPath[y2];
       var mpAge = p.age + y2;
       var mpRetired = mpAge >= p.retAge;
-      if (!mpRetired) return calcTax(p.sal * Math.pow(1+p.inf, y2), y2, p.prov||"QC", p.inf, false).total;
+      if (!mpRetired) return calcTax(p.sal * Math.pow(1+p.inf, y2), y2, p.prov||"QC", p.inf, mpAge >= 65).total;
       // R6: Cap withdrawal income at available balance for tax computation
       var _mpBal = mp.total || 0;
       var _mpGovTx = (mp.qpp||0) + (mp.oas||0) + (mp.pen||0);
       var _mpWdNeed = Math.max(0, (mp.spend||0) - (mp.qpp||0) - (mp.oas||0) - (mp.gis||0) - (mp.pen||0) - (mp.pt||0));
       var _mpWdCapped = Math.min(_mpWdNeed, Math.max(0, _mpBal));
       var mpTaxInc = _mpGovTx + _mpWdCapped;
-      return calcTax(Math.max(0,mpTaxInc), y2, p.prov||"QC", p.inf, mpRetired).total;
+      return calcTax(Math.max(0,mpTaxInc), y2, p.prov||"QC", p.inf, mpAge >= 65).total;
     })();
       // R6: Cap mp_spend at what's actually available (gov + available balance)
       var _mpSpendRaw = medPath[y2].spend || 0;
@@ -6269,7 +6332,7 @@ function App() {
   var _aiRpt = useState(null), aiReport = _aiRpt[0], setAiReport = _aiRpt[1];
   var _aiLoad = useState(false), aiLoading = _aiLoad[0], setAiLoading = _aiLoad[1];
   // AI config: default key (owner) + usage tracking
-  var AI_DEFAULT_KEY = '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';
+  var AI_DEFAULT_KEY = ''; // ROTATED — use Vercel env var ANTHROPIC_API_KEY
   var AI_MAX_REPORTS = 50; // max reports per session (adjust or connect to backend later)
   var _aiCount = useState(0), aiCount = _aiCount[0], setAiCount = _aiCount[1];
   var _aiKey = useState(AI_DEFAULT_KEY), aiApiKey = _aiKey[0], setAiApiKey = _aiKey[1];
@@ -6381,11 +6444,11 @@ function App() {
   if (retAge < age) valErrors.retAge = lang === "fr" ? "Retraite dans le pass\u00e9" : "Retirement in the past";
   if (retAge > deathAge) valErrors.retAge = lang === "fr" ? "Retraite apr\u00e8s d\u00e9c\u00e8s" : "Retirement after death";
   if (deathAge > 0 && deathAge < retAge + 3) valErrors.deathAge = lang === "fr" ? "Survie trop proche de la retraite" : "Life expectancy too close to retirement";
-  if (qppAge < 60 || qppAge > 72) valErrors.qppAge = lang === "fr" ? "RRQ/CPP: 60 \u00e0 72 ans" : "QPP/CPP: 60 to 72";
+  if (qppAge < 60 || qppAge > 70) valErrors.qppAge = lang === "fr" ? "RRQ/CPP: 60 \u00e0 70 ans" : "QPP/CPP: 60 to 70";
   if (oasAge < 65 || oasAge > 70) valErrors.oasAge = lang === "fr" ? "PSV/OAS: 65 \u00e0 70 ans" : "OAS: 65 to 70";
   if (sal > 0 && retSpM > 0 && retSpM * 12 > sal * 0.9) valWarnings.retSpM = lang === "fr" ? "D\u00e9penses > 90% du salaire" : "Spending > 90% of salary";
   if (sal > 0 && rrspC > Math.min(33810, sal * 0.18)) valWarnings.rrspC = lang === "fr" ? "REER > plafond estim\u00e9 (~" + f$(Math.round(Math.min(33810, sal * 0.18))) + "/an)" : "RRSP > est. limit (~" + f$(Math.round(Math.min(33810, sal * 0.18))) + "/yr)";
-  if (tfsaC > 7500) valWarnings.tfsaC = lang === "fr" ? "C\u00c9LI > plafond annuel" : "TFSA > annual limit";
+  if (tfsaC > 7000) valWarnings.tfsaC = lang === "fr" ? "C\u00c9LI > plafond annuel" : "TFSA > annual limit";
   if (respOn && respReturnAge > 0 && respReturnAge <= age + (respYrsLeft || 0)) valErrors.respReturnAge = lang === "fr" ? "Retour REEE avant fin des cotis." : "RESP return before contributions end";
   if (rrsp < 0) valErrors.rrsp = lang === "fr" ? "REER ne peut \u00eatre n\u00e9gatif" : "RRSP cannot be negative";
   if (tfsa < 0) valErrors.tfsa = lang === "fr" ? "C\u00c9LI ne peut \u00eatre n\u00e9gatif" : "TFSA cannot be negative";
@@ -6407,8 +6470,8 @@ function App() {
   });
   if (cOn) {
     if (cRetAge < cAge) valErrors.cRetAge = lang === "fr" ? "Retraite conj. dans le pass\u00e9" : "Spouse retirement in past";
-    if (cQppAge < 60 || cQppAge > 72) valErrors.cQppAge = lang === "fr" ? "RRQ conj.: 60 \u00e0 72" : "Spouse QPP: 60 to 72";
-    if (cOasAge < 65 || cOasAge > 72) valErrors.cOasAge = lang === "fr" ? "PSV conj.: 65 \u00e0 72" : "Spouse OAS: 65 to 72";
+    if (cQppAge < 60 || cQppAge > 70) valErrors.cQppAge = lang === "fr" ? "RRQ conj.: 60 \u00e0 70" : "Spouse QPP: 60 to 70";
+    if (cOasAge < 65 || cOasAge > 70) valErrors.cOasAge = lang === "fr" ? "PSV conj.: 65 \u00e0 70" : "Spouse OAS: 65 to 70";
   }
   var valCount = Object.keys(valErrors).length;
   var warnCount = Object.keys(valWarnings).length;

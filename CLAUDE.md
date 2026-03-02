@@ -41,7 +41,7 @@ buildfi/
 │   └── robots.txt
 ├── tests/
 │   └── debt-tool-tests.js         # Debt tool test suite (200 tests)
-├── planner_v2.html                # Source of truth (~15,000 lines, 436 tests)
+├── planner.html                   # Source of truth (~15,600 lines, 453 tests)
 ├── quiz-essentiel.html            # Root copy (legacy)
 ├── quiz-intermediaire.html        # Intermédiaire quiz (WIP)
 └── CLAUDE.md                      # This file
@@ -113,8 +113,8 @@ Quiz thin client (zero IP exposed)
 - Static fallbacks if Anthropic API fails — report must work without AI
 
 ### Engine Rules
-- **planner_v2.html is source of truth** — if bug found, fix BOTH planner_v2.html AND lib/engine/index.js
-- **436 tests, 53 categories, 0 failures required**
+- **planner.html is source of truth** — if bug found, fix BOTH planner.html AND lib/engine/index.js
+- **453 tests, 54 categories, 0 failures required**
 - Engine clamps > UI validation — the engine is its own guardrail
 - Never inline calcTax() or calcQPP() in JSX
 - Always display rMedF (real) not medF (nominal)
