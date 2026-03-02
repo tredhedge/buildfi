@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-01 — v4 (AI narration code complete, report v6 polished, email template refactored)
+> Mis à jour: 2026-03-02 — v5 (Engine audit 453 tests, 3 psych questions, Intermédiaire backbone)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -163,7 +163,7 @@ Client complète quiz (805 lignes, thin client, zero IP)
 
 ## SÉCURITÉ
 
-- Aucune clé API dans le code source (leçon apprise)
+- Aucune clé API dans le code source (hardcoded key found and blanked in engine audit 2026-03-02)
 - Toutes les clés dans Vercel env vars (prod) et .env.local (local, jamais committé)
 - .gitignore inclut: `.env.local`
 - Repo GitHub privé — moteur MC protégé

@@ -24,7 +24,7 @@
 ### Pipeline E2E — VALIDÉ EN PROD (2026-02-27)
 | Étape | Status | Détails |
 |-------|--------|---------|
-| Quiz thin client | ✅ | 805 lignes, zero IP exposé côté client |
+| Quiz thin client | ✅ | ~870 lignes (9 steps incl. 3 psych Q), zero IP exposé côté client |
 | Stripe Checkout | ✅ | POST /api/checkout → Stripe redirect, 39$ CAD |
 | Stripe Webhook | ✅ | POST /api/webhook, signature vérifiée |
 | Monte Carlo | ✅ | 5000 sims en ~2.3s sur Vercel serverless |

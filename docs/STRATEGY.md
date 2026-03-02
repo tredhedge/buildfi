@@ -1,6 +1,6 @@
 # STRATEGY.md
 > Brand, positionnement, marketing, compétiteurs, pricing, copy.
-> Mis à jour: 2026-03-01 — v4 (pipeline E2E validé, pivot PDF→HTML, compétiteurs mis à jour, report v6 polished)
+> Mis à jour: 2026-03-02 — v5 (engine audited 453 tests, 3 psych questions, Intermédiaire backbone ready)
 
 ---
 
@@ -190,6 +190,11 @@ La plupart des SaaS financiers (Wealthsimple, Questrade, etc.) envoient un **lie
 - Aligné avec les pratiques de l'industrie SaaS financière
 
 ### Thin client architecture
-- Quiz ne contient ZERO logique MC côté client (805 lignes vs 3,227)
+- Quiz ne contient ZERO logique MC côté client (~870 lignes, 9 steps incl. 3 psych Q)
 - Tout le calcul est server-side post-paiement
 - Protège la propriété intellectuelle du moteur
+
+### Engine audit (2026-03-02)
+- 20 bugs fixed across 2 rounds of parallel-agent audit
+- 453/453 tests, 0 failures — highest engine confidence since project start
+- Intermédiaire server backbone merged (4 new modules) — webhook wiring deferred

@@ -232,7 +232,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 |----|----------|--------|
 | DT-001 | Architecture: quiz HTML thin client + Next.js API backend | Actif |
 | DT-002 | Monte Carlo 5,000 sims t-Student df=5 | Actif, non négociable |
-| DT-003 | Web Worker pour calcul MC off-thread (planner_v2.html seulement) | Actif |
+| DT-003 | Web Worker pour calcul MC off-thread (planner.html seulement) | Actif |
 | DT-004 | setTimeout(300) + _mcProfileDirty — race condition React (R6) | Actif, disparaît en P4 |
 | DT-005 | Engine clamps — le moteur est son propre garde-fou | Actif, non négociable |
 | DT-006 | Tests embarqués dans le HTML — 453 tests, 54 catégories | Actif |
@@ -347,7 +347,7 @@ recommandation(s) / recommendation(s)
 | 2026-02-27 | **Landing v9 audit AMF/BSIF** — 0 terme interdit | ✅ |
 | 2026-02-27 | **Debt tool** — 200 tests, 161 paires bilingues, 0 accent manquant | ✅ |
 | 2026-02-27 | **Guides 101 + 201/301** — audit AMF 0 infraction | ✅ |
-| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner_v2, 436 tests, optimizeDecum ajouté | ✅ |
+| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner.html, 436 tests, optimizeDecum ajouté | ✅ |
 | 2026-02-27 | **Pipeline E2E** — Quiz→Stripe→Webhook→MC→Blob→Email validé en prod | ✅ |
 | 2026-02-28 | **AI narration P1.4** — buildAIPrompt + DerivedProfile + sanitizeAISlots + Anthropic call wired in webhook | ✅ |
 | 2026-03-01 | **Report v6 polish** — 15 rendering fixes (grade ring, fan chart, TL;DR, print theme, tooltips, TOC, mobile) | ✅ |

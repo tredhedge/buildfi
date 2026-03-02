@@ -1,6 +1,6 @@
 # ROADMAP.md
 > Phases du projet, sous-étapes, statuts, critères go/no-go.
-> Mis à jour: 2026-03-01 — v4 (P1.4 AI narration merged, report v6 polished, debt tool UX restructured, email template refactored)
+> Mis à jour: 2026-03-02 — v5 (Engine audit 20 bugs, 3 psych questions, Intermédiaire backbone, 453 tests)
 
 ## VUE D'ENSEMBLE
 
@@ -45,13 +45,15 @@
 
 | Étape | Statut | Notes |
 |-------|--------|-------|
-| P1.1 Quiz 7 écrans (thin client) | ✅ | 805 lignes, zero IP exposé, Stripe intégré |
-| P1.2 Smart defaults translator | ✅ | translateToMC() server-side |
+| P1.1 Quiz 9 steps (thin client) | ✅ | ~870 lignes, 9 steps (incl. 3 psych Q), zero IP exposé, Stripe intégré |
+| P1.2 Smart defaults translator | ✅ | translateToMC() server-side, psych fields passthrough |
 | P1.3 Rapport Essentiel v6 | ✅ | **v6 + 15 polish fixes** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme |
 | P1.4 AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired in webhook — needs ANTHROPIC_API_KEY in Vercel |
 | P1.4a Blob store public | ❌ | Recréer store PUBLIC sur Vercel Storage |
 | P1.4b Resend DNS vérifié | ❌ | DKIM/SPF sur Cloudflare à corriger |
-| P1.4c Email template | ✅ | Table-based, bilingual, AMF compliant, grade card, upsell |
+| P1.4c Email template | ✅ | Table-based, bilingual, AMF compliant, grade card, tier-aware upsell |
+| P1.4d Engine audit | ✅ | **20 bugs fixed**, 17 new tests, 453/453 pass |
+| P1.4e 3 psych questions | ✅ | psychAnxiety/Discipline/Literacy override DerivedProfile |
 | P1.5 Landing page | ✅ | v9 livrée, audit AMF/BSIF complété, logo SVG |
 | P1.5.1 Outil gestion de dettes (bonus) | ✅ | **UX restructured** — 1,475 lignes, 6 tabs, progressive disclosure, 200 tests |
 | P1.5.2 Guide 101 "Les bases de vos finances" | ✅ | 13p PDF — bonus Essentiel |
@@ -60,11 +62,12 @@
 | P1.7 Soft launch organique | ❌ | Reddit, LinkedIn, cercle privé |
 
 ### Prochaines actions P1 (par priorité)
-1. Fix Blob public + Resend DNS → rapport accessible par lien dans l'email
-2. Add ANTHROPIC_API_KEY to Vercel → test E2E with Stripe test card (AI narration live)
-3. 5 psycho questions (quiz enhancement)
-4. Pages légales (P0.7) — conditions, confidentialité, avis AMF
-5. Audit R19-R20
+1. Fix Blob public → rapport accessible par lien
+2. Fix Resend DNS (DKIM/SPF) → email en inbox
+3. Add ANTHROPIC_API_KEY to Vercel → AI narration live
+4. E2E test with Stripe test card (full pipeline validation)
+5. Pages légales (P0.7) — conditions, confidentialité, avis AMF
+6. Audit R19-R20 → soft launch
 
 ---
 
@@ -74,8 +77,10 @@
 
 | Étape | Statut | Notes |
 |-------|--------|-------|
+| P2.0 Server backbone | ✅ | 4 new modules merged: translator, strategies, ai-prompt, report-html |
 | P2.1 Questionnaire étendu (thin client) | ❌ | 80+ fields, 8 étapes, UX immersive |
-| P2.2 Sections rapport additionnelles | ❌ | |
+| P2.1a Webhook wiring (Phase B) | ❌ | Wire Inter modules into webhook route |
+| P2.2 Sections rapport additionnelles | ❌ | 16-section report-html-inter.js ready |
 | P2.3 Upgrade hooks dans Essentiel | ✅ | Upsell "Prochaine étape" in report v6 with dynamic triggers |
 | P2.4 Audit qualité R21 | ❌ | Chemins immo + CCPC avec CPA |
 | P2.5 Score résilience 4 jauges | ❌ | |
@@ -98,11 +103,11 @@
 
 ## P4 — Migration Next.js ⏳
 
-**Note**: Migration partiellement avancée — engine déjà en lib/engine/index.js, routes API fonctionnelles. Reste: quiz HTML → React, tests Vitest, CI/CD.
+**Note**: Migration partiellement avancée — engine déjà en lib/engine/index.js (audited, 453 tests), routes API fonctionnelles, Intermédiaire backend modules ready. Reste: quiz HTML → React, tests Vitest, CI/CD.
 
 | Étape | Notes |
 |-------|-------|
-| P4.1 Extraction moteur → TypeScript | Moteur déjà en lib/engine/index.js (2,426 lignes) |
+| P4.1 Extraction moteur → TypeScript | Moteur déjà en lib/engine/index.js (2,426 lignes, audited) |
 | P4.2 Composants React modulaires | Feature par feature |
 | P4.3 Tests UI automatisés | Playwright/Cypress |
 | P4.4 CI/CD GitHub Actions | |
