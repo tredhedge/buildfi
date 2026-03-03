@@ -386,13 +386,24 @@ function go(step){
   render();
 }
 function uq(key,val){STATE.quiz[key]=val;render();}
+
+// -- Debounced input (no re-render flicker on typing) --
+var _dTimer={};
+function uqd(key,rawVal){
+  var n=parseFloat(rawVal);
+  STATE.quiz[key]=isNaN(n)?(rawVal===""||rawVal==null?0:STATE.quiz[key]):n;
+  clearTimeout(_dTimer[key]);
+  _dTimer[key]=setTimeout(function(){saveState();},600);
+}
+
 function setDebtField(type,field,val){
   var q=STATE.quiz;
   var d=q.debts.find(function(x){return x.type===type;});
   if(!d){d={type:type,amount:0,minPayment:0,rate:(DEBT_RATES[type]||0.08)*100};q.debts.push(d);}
   d[field]=val||0;
   q.debts=q.debts.filter(function(x){return(x.amount||0)>0||(x.minPayment||0)>0;});
-  render();
+  clearTimeout(_dTimer["debt_"+type+"_"+field]);
+  _dTimer["debt_"+type+"_"+field]=setTimeout(function(){saveState();},600);
 }
 function toggleWorry(w){
   var q=STATE.quiz;
@@ -508,7 +519,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       .map(function(p){return'<option value="'+p+'"'+(q.prov===p?" selected":"")+'>'+p+'</option>';}).join("");
     var cAgeField=q.couple==="yes"?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">'
       +'<div><label style="font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px">'+t("Âge du/de la conjoint·e","Partner age")+'</label>'
-      +'<input class="inp" type="number" min="18" max="80" value="'+(q.cAge||35)+'" oninput="uq(\'cAge\',+this.value)" /></div>'
+      +'<input class="inp" type="number" min="18" max="80" value="'+(q.cAge||35)+'" oninput="uqd(\'cAge\',this.value)" /></div>'
       +'<div><label style="font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px">'+t("Sexe du/de la conjoint·e","Partner sex")+'</label>'
       +'<div style="display:flex;gap:8px">'
       +[{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){
@@ -520,7 +531,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Informations de base","Basic information")+'</h2>'
       +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Ces données déterminent les tables de mortalité, les taux d'imposition et les paramètres de pension gouvernementale.","These determine mortality tables, tax rates, and government pension parameters.")+'</p>'
       +'<div class="fld-block"><label class="fld-label">'+t("Âge actuel","Current age")+'</label>'
-      +'<input class="inp" type="number" min="18" max="80" value="'+q.age+'" oninput="uq(\'age\',+this.value)" /></div>'
+      +'<input class="inp" type="number" min="18" max="80" value="'+q.age+'" oninput="uqd(\'age\',this.value)" /></div>'
       +'<div class="fld-block"><label class="fld-label">'+t("Âge cible de retraite","Target retirement age")+'</label>'
       +'<div style="display:flex;align-items:center;gap:14px">'
       +'<input type="range" min="45" max="75" value="'+q.retAge+'" oninput="uq(\'retAge\',+this.value)" style="flex:1" />'
@@ -573,7 +584,7 @@ function renderQuiz(step,q,lang,activeBlocks){
     var cIncBlock=q.couple==="yes"?'<div style="background:var(--cpbg);border:1px solid rgba(124,96,184,.15);border-radius:10px;padding:16px;margin-top:4px">'
       +'<div style="font-size:11px;font-weight:700;color:var(--pr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">'+t("Conjoint·e","Partner")+'</div>'
       +'<div class="fld-block"><label class="fld-label">'+t("Revenu annuel brut du/de la conjoint·e","Partner gross annual income")+' ($)</label>'
-      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.cIncome||0)+'" oninput="uq(\'cIncome\',+this.value)" /></div></div>':'';
+      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.cIncome||0)+'" oninput="uqd(\'cIncome\',this.value)" /></div></div>':'';
 
     return wrap(
       '<div class="phase-badge">'+t("Phase 1 sur 3 — Revenus","Phase 1 of 3 — Income")+'</div>'
@@ -584,7 +595,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +srcCards+'</div>'
       +empBlock
       +'<div class="fld-block"><label class="fld-label">'+t("Revenu annuel brut total","Total gross annual income")+' ($)</label>'
-      +'<input class="inp" type="number" min="0" max="2000000" step="1000" value="'+q.income+'" oninput="uq(\'income\',+this.value)" />'
+      +'<input class="inp" type="number" min="0" max="2000000" step="1000" value="'+q.income+'" oninput="uqd(\'income\',this.value)" />'
       +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Salaire + toute rémunération imposable. Avant impôts.","Salary + all taxable compensation. Before taxes.")+'</div></div>'
       +cIncBlock
       +'<button class="pbtn" onclick="go(3)">'+t("Continuer","Continue")+'</button>'
@@ -596,10 +607,10 @@ function renderQuiz(step,q,lang,activeBlocks){
     var cSavBlock=q.couple==="yes"?'<div style="background:var(--cpbg);border:1px solid rgba(124,96,184,.15);border-radius:10px;padding:16px;margin-top:4px">'
       +'<div style="font-size:11px;font-weight:700;color:var(--pr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">'+t("Épargne du/de la conjoint·e","Partner savings")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
-      +'<div><label class="fld-label">REER ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cRrsp||0)+'" oninput="uq(\'cRrsp\',+this.value)" /></div>'
-      +'<div><label class="fld-label">CELI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cTfsa||0)+'" oninput="uq(\'cTfsa\',+this.value)" /></div>'
-      +'<div><label class="fld-label">'+t("Non enregistré","Non-reg")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cNr||0)+'" oninput="uq(\'cNr\',+this.value)" /></div>'
-      +'<div><label class="fld-label">CRI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cLira||0)+'" oninput="uq(\'cLira\',+this.value)" /></div>'
+      +'<div><label class="fld-label">REER ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cRrsp||0)+'" oninput="uqd(\'cRrsp\',this.value)" /></div>'
+      +'<div><label class="fld-label">CELI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cTfsa||0)+'" oninput="uqd(\'cTfsa\',this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("Non enregistré","Non-reg")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cNr||0)+'" oninput="uqd(\'cNr\',this.value)" /></div>'
+      +'<div><label class="fld-label">CRI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.cLira||0)+'" oninput="uqd(\'cLira\',this.value)" /></div>'
       +'</div></div>':'';
 
     return wrap(
@@ -610,23 +621,23 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Comptes enregistrés","Registered accounts")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("REER — Régime enregistré d'épargne-retraite","RRSP — Registered Retirement Savings Plan")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.rrsp+'" oninput="uq(\'rrsp\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.rrsp+'" oninput="uqd(\'rrsp\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("CELI — Compte d'épargne libre d'impôt","TFSA — Tax-Free Savings Account")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.tfsa+'" oninput="uq(\'tfsa\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.tfsa+'" oninput="uqd(\'tfsa\',this.value)" /></div>'
       +'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Autres comptes","Other accounts")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Placements non enregistrés","Non-registered investments")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.nr+'" oninput="uq(\'nr\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+q.nr+'" oninput="uqd(\'nr\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("CRI — Compte de retraite immobilisé","LIRA — Locked-in Retirement Account")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uq(\'lira\',+this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uqd(\'lira\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:3px">'+t("Provenant d'un régime employeur précédent","From a previous employer plan")+'</div></div>'
       +'<div><label class="fld-label">'+t("Régime DC / REER collectif","DC plan / Group RRSP")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.dcBal||0)+'" oninput="uq(\'dcBal\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.dcBal||0)+'" oninput="uqd(\'dcBal\',this.value)" /></div>'
       +'</div></div>'
       +'<div class="fld-block"><label class="fld-label">'+t("Cotisation mensuelle totale actuelle","Total current monthly contribution")+' ($/'+t("mois","mo")+')</label>'
-      +'<input class="inp" type="number" min="0" max="20000" step="50" value="'+q.monthlyContrib+'" oninput="uq(\'monthlyContrib\',+this.value)" />'
+      +'<input class="inp" type="number" min="0" max="20000" step="50" value="'+q.monthlyContrib+'" oninput="uqd(\'monthlyContrib\',this.value)" />'
       +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Tous comptes confondus. Sera réparti selon votre situation fiscale.","All accounts combined. Allocated based on your tax situation.")+'</div></div>'
       +cSavBlock
       +'<button class="pbtn" onclick="go(4)">'+t("Continuer","Continue")+'</button>'
@@ -660,13 +671,13 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Résidence principale","Primary residence")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Valeur estimée actuelle","Estimated current value")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.homeValue||0)+'" oninput="uq(\'homeValue\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.homeValue||0)+'" oninput="uqd(\'homeValue\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Solde hypothécaire","Mortgage balance")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.mortgage||0)+'" oninput="uq(\'mortgage\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.mortgage||0)+'" oninput="uqd(\'mortgage\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Amortissement restant","Remaining amortization")+' ('+t("années","years")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.mortgageAmort||20)+'" oninput="uq(\'mortgageAmort\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.mortgageAmort||20)+'" oninput="uqd(\'mortgageAmort\',this.value)" /></div>'
       +'<div><label class="fld-label">HELOC ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.heloc||0)+'" oninput="uq(\'heloc\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.heloc||0)+'" oninput="uqd(\'heloc\',this.value)" /></div>'
       +'</div></div>':'';
 
     var rentalQ='<div class="fld-block" style="margin-top:16px"><label class="fld-label">'+t("Êtes-vous propriétaire d'un bien locatif ?","Do you own a rental property?")+'</label>'
@@ -708,7 +719,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.note+'</div></div>';}).join("");
     var lsCustom=q.lifestyle==="custom"?'<div style="background:var(--gbg);border-radius:10px;padding:14px;margin-top:8px">'
       +'<label class="fld-label">'+t("Revenu mensuel souhaité à la retraite","Desired monthly retirement income")+' ($)</label>'
-      +'<input class="inp" type="number" min="500" max="100000" step="500" value="'+(q.retSpMCustom||5000)+'" oninput="uq(\'retSpMCustom\',+this.value)" />'
+      +'<input class="inp" type="number" min="500" max="100000" step="500" value="'+(q.retSpMCustom||5000)+'" oninput="uqd(\'retSpMCustom\',this.value)" />'
       +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Avant impôts, en dollars d'aujourd'hui. Les calculs tiennent compte de l'inflation.","Before tax, in today's dollars. Calculations account for inflation.")+'</div></div>':'';
 
     var rkCards=[
@@ -730,9 +741,9 @@ function renderQuiz(step,q,lang,activeBlocks){
       .map(function(o){return'<div class="card'+(q.parttime===o.v?" sel":"")+'" onclick="uq(\'parttime\',\''+o.v+'\')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
     var ptFields=(q.parttime==="yes"||q.parttime==="maybe")?'<div style="background:var(--gbg);border-radius:10px;padding:14px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
       +'<div><label class="fld-label">'+t("Revenu mensuel estimé","Est. monthly income")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.parttimeAmount||0)+'" oninput="uq(\'parttimeAmount\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.parttimeAmount||0)+'" oninput="uqd(\'parttimeAmount\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Nombre d\'années","Number of years")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="1" max="20" value="'+(q.parttimeYears||3)+'" oninput="uq(\'parttimeYears\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="1" max="20" value="'+(q.parttimeYears||3)+'" oninput="uqd(\'parttimeYears\',this.value)" /></div>'
       +'</div></div>':'';
     return wrap(
       '<div class="phase-badge">'+t("Phase 2 sur 3 — Retraite","Phase 2 of 3 — Retirement")+'</div>'
@@ -814,15 +825,15 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">CRI / REER immobilisé</div>'
       +'<label class="fld-label">'+t("Solde actuel","Current balance")+' ($)</label>'
-      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uq(\'lira\',+this.value)" />'
+      +'<input class="inp" type="number" min="0" step="1000" value="'+(q.lira||0)+'" oninput="uqd(\'lira\',this.value)" />'
       +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Compte immobilisé converti en FRV à la retraite. Retraits annuels limités.","Locked account converted to LIF at retirement. Annual withdrawals limited.")+'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("CELIAPP — Compte d'épargne libre d'impôt pour l'achat d'une première propriété","FHSA — First Home Savings Account")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Solde actuel","Current balance")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.fhsaBal||0)+'" oninput="uq(\'fhsaBal\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.fhsaBal||0)+'" oninput="uqd(\'fhsaBal\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Cotisation annuelle","Annual contribution")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="8000" step="500" value="'+(q.fhsaContrib||0)+'" oninput="uq(\'fhsaContrib\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="8000" step="500" value="'+(q.fhsaContrib||0)+'" oninput="uqd(\'fhsaContrib\',this.value)" /></div>'
       +'</div>'
       +'<div style="margin-top:12px"><label class="fld-label">'+t("Achat prévu ?","Purchase planned?")+'</label>'
       +'<div style="display:flex;gap:8px;margin-top:4px">'
@@ -830,7 +841,7 @@ function renderQuiz(step,q,lang,activeBlocks){
         return'<div class="card'+(q.fhsaForHome===o.v?" sel":"")+'" onclick="uq(\'fhsaForHome\','+o.v+')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
       }).join("")+'</div>'
       +(q.fhsaForHome?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge d\'achat prévu","Planned purchase age")+'</label>'
-        +'<input class="inp" type="number" min="18" max="70" value="'+(q.fhsaHomeAge||q.age+3)+'" oninput="uq(\'fhsaHomeAge\',+this.value)" /></div>':'')
+        +'<input class="inp" type="number" min="18" max="70" value="'+(q.fhsaHomeAge||q.age+3)+'" oninput="uqd(\'fhsaHomeAge\',this.value)" /></div>':'')
       +'</div></div>'
       +'<button class="pbtn" onclick="goNextBlock(\'A\')">'+t("Continuer","Continue")+'</button>'
       +'<button class="back-btn" onclick="go(7)" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
@@ -842,10 +853,10 @@ function renderQuiz(step,q,lang,activeBlocks){
     var dbFields=q.penType==="db"?'<div style="background:var(--bgc);border:1px solid var(--bdl);border-radius:8px;padding:14px;margin-top:12px">'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Rente mensuelle estimée à la retraite","Est. monthly pension at retirement")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.penM||0)+'" oninput="uq(\'penM\',+this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="100" value="'+(q.penM||0)+'" oninput="uqd(\'penM\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:3px">'+t("Selon votre relevé de participation","As shown on participation statement")+'</div></div>'
       +'<div><label class="fld-label">'+t("Années de service","Years of service")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="45" value="'+(q.penYrs||0)+'" oninput="uq(\'penYrs\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="45" value="'+(q.penYrs||0)+'" oninput="uqd(\'penYrs\',this.value)" /></div>'
       +'</div>'
       +'<div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">'
       +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ts)">'
@@ -880,11 +891,11 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Retraite du/de la conjoint·e","Partner retirement")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Âge cible de retraite","Target retirement age")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="45" max="75" value="'+(q.cRetAge||63)+'" oninput="uq(\'cRetAge\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="45" max="75" value="'+(q.cRetAge||63)+'" oninput="uqd(\'cRetAge\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Âge de début RRQ/RPC","QPP/CPP start age")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="60" max="70" value="'+(q.cQppAge||65)+'" oninput="uq(\'cQppAge\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="60" max="70" value="'+(q.cQppAge||65)+'" oninput="uqd(\'cQppAge\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Âge de début PSV","OAS start age")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="65" max="70" value="'+(q.cOasAge||65)+'" oninput="uq(\'cOasAge\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="65" max="70" value="'+(q.cOasAge||65)+'" oninput="uqd(\'cOasAge\',this.value)" /></div>'
       +'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Régime de retraite du/de la conjoint·e","Partner pension plan")+'</div>'
@@ -893,7 +904,7 @@ function renderQuiz(step,q,lang,activeBlocks){
         return'<div class="card'+(q.cPenType===o.v?" sel":"")+'" onclick="uq(\'cPenType\',\''+o.v+'\')" style="flex:1;min-width:80px;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
       }).join("")+'</div>'
       +(q.cPenType==="db"?'<div style="margin-top:10px"><label class="fld-label">'+t("Rente mensuelle estimée","Est. monthly pension")+' ($)</label>'
-        +'<input class="inp" type="number" min="0" step="100" value="'+(q.cPenM||0)+'" oninput="uq(\'cPenM\',+this.value)" /></div>':'')
+        +'<input class="inp" type="number" min="0" step="100" value="'+(q.cPenM||0)+'" oninput="uqd(\'cPenM\',this.value)" /></div>':'')
       +'</div>'
       +'<button class="pbtn" onclick="goNextBlock(\'C\')">'+t("Continuer","Continue")+'</button>'
       +'<button class="back-btn" onclick="goPrevBlock(\'C\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
@@ -915,9 +926,9 @@ function renderQuiz(step,q,lang,activeBlocks){
       }).join("")+'</div>'
       +(q.downsizingAge>0?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'
         +'<div><label class="fld-label">'+t("Âge prévu de la vente","Planned sale age")+'</label>'
-        +'<input class="inp inp-sm" type="number" min="50" max="85" value="'+q.downsizingAge+'" oninput="uq(\'downsizingAge\',+this.value)" /></div>'
+        +'<input class="inp inp-sm" type="number" min="50" max="85" value="'+q.downsizingAge+'" oninput="uqd(\'downsizingAge\',this.value)" /></div>'
         +'<div><label class="fld-label">'+t("Produit net après réinstallation","Net proceeds after move")+' ($)</label>'
-        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.downsizingProceeds||0)+'" oninput="uq(\'downsizingProceeds\',+this.value)" /></div>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.downsizingProceeds||0)+'" oninput="uqd(\'downsizingProceeds\',this.value)" /></div>'
         +'</div>':'')
       +'</div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
@@ -939,23 +950,23 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Valeur et financement","Value and financing")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Valeur marchande estimée","Estimated market value")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalValue||0)+'" oninput="uq(\'rentalValue\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalValue||0)+'" oninput="uqd(\'rentalValue\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Solde hypothécaire","Mortgage balance")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalMortgage||0)+'" oninput="uq(\'rentalMortgage\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalMortgage||0)+'" oninput="uqd(\'rentalMortgage\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Amortissement restant","Remaining amortization")+' ('+t("années","years")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.rentalAmort||20)+'" oninput="uq(\'rentalAmort\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.rentalAmort||20)+'" oninput="uqd(\'rentalAmort\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("DPA (déduction pour amortissement) accumulée","Accumulated CCA")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.rentalDpaAccum||0)+'" oninput="uq(\'rentalDpaAccum\',+this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.rentalDpaAccum||0)+'" oninput="uqd(\'rentalDpaAccum\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Si vous avez réclamé la DPA dans vos déclarations","If you've claimed CCA on your returns")+'</div></div>'
       +'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Revenus et charges annuels","Annual income and expenses")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Revenu locatif brut","Gross rental income")+' ($/'+t("an","yr")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalIncome||0)+'" oninput="uq(\'rentalIncome\',+this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalIncome||0)+'" oninput="uqd(\'rentalIncome\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Loyers perçus avant dépenses","Rents received before expenses")+'</div></div>'
       +'<div><label class="fld-label">'+t("Charges déductibles","Deductible expenses")+' ($/'+t("an","yr")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalExpenses||0)+'" oninput="uq(\'rentalExpenses\',+this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalExpenses||0)+'" oninput="uqd(\'rentalExpenses\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Entretien, taxes, assurance, intérêts","Maintenance, taxes, insurance, interest")+'</div></div>'
       +'</div>'
       +(q.rentalIncome>0||q.rentalExpenses>0?'<div style="margin-top:10px;padding:10px 12px;background:var(--gbg);border-radius:7px;font-size:13px">'
@@ -970,7 +981,7 @@ function renderQuiz(step,q,lang,activeBlocks){
         return'<div class="card'+(q.rentalSaleAge>0===o.v?" sel":"")+'" onclick="uq(\'rentalSaleAge\','+(o.v?q.retAge+5:0)+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
       }).join("")+'</div>'
       +(q.rentalSaleAge>0?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge de vente prévu","Planned sale age")+'</label>'
-        +'<input class="inp" type="number" min="40" max="90" value="'+q.rentalSaleAge+'" oninput="uq(\'rentalSaleAge\',+this.value)" /></div>':'')
+        +'<input class="inp" type="number" min="40" max="90" value="'+q.rentalSaleAge+'" oninput="uqd(\'rentalSaleAge\',this.value)" /></div>':'')
       +'<div style="font-size:11px;color:var(--tm);margin-top:10px">'+t("Le gain en capital sera calculé selon le prix de vente estimé, la valeur actuelle et la DPA accumulée.","Capital gain will be calculated based on estimated sale price, current value, and accumulated CCA.")+'</div>'
       +'</div>'
       +'<button class="pbtn" onclick="goNextBlock(\'D2\')">'+t("Continuer","Continue")+'</button>'
@@ -1017,17 +1028,17 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Assurance-vie","Life insurance")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Prestation au décès","Death benefit")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.lifeInsBenefit||0)+'" oninput="uq(\'lifeInsBenefit\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.lifeInsBenefit||0)+'" oninput="uqd(\'lifeInsBenefit\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Prime mensuelle","Monthly premium")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.lifeInsPremium||0)+'" oninput="uq(\'lifeInsPremium\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.lifeInsPremium||0)+'" oninput="uqd(\'lifeInsPremium\',this.value)" /></div>'
       +'</div>'
       +(q.couple==="yes"?'<div style="border-top:1px solid var(--bdl);margin-top:12px;padding-top:12px">'
         +'<div style="font-size:11px;font-weight:700;color:var(--pr);margin-bottom:8px">'+t("Conjoint·e","Partner")+'</div>'
         +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
         +'<div><label class="fld-label">'+t("Prestation au décès","Death benefit")+' ($)</label>'
-        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.cLifeInsBenefit||0)+'" oninput="uq(\'cLifeInsBenefit\',+this.value)" /></div>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.cLifeInsBenefit||0)+'" oninput="uqd(\'cLifeInsBenefit\',this.value)" /></div>'
         +'<div><label class="fld-label">'+t("Prime mensuelle","Monthly premium")+' ($)</label>'
-        +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.cLifeInsPremium||0)+'" oninput="uq(\'cLifeInsPremium\',+this.value)" /></div>'
+        +'<input class="inp inp-sm" type="number" min="0" step="10" value="'+(q.cLifeInsPremium||0)+'" oninput="uqd(\'cLifeInsPremium\',this.value)" /></div>'
         +'</div></div>':'')
       +'</div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
@@ -1057,13 +1068,13 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div class="section-head">'+t("Revenus et BNR","Revenue and RE")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Revenus bruts annuels","Annual gross revenue")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizRevenue||0)+'" oninput="uq(\'bizRevenue\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizRevenue||0)+'" oninput="uqd(\'bizRevenue\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Dépenses annuelles","Annual expenses")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizExpenses||0)+'" oninput="uq(\'bizExpenses\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.bizExpenses||0)+'" oninput="uqd(\'bizExpenses\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Bénéfices non répartis (BNR)","Retained earnings (RE)")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.bizBNR||0)+'" oninput="uq(\'bizBNR\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="10000" value="'+(q.bizBNR||0)+'" oninput="uqd(\'bizBNR\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Croissance annuelle prévue (%)","Expected annual growth (%)")+'</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.bizGrowth||2)+'" oninput="uq(\'bizGrowth\',+this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.bizGrowth||2)+'" oninput="uqd(\'bizGrowth\',this.value)" /></div>'
       +'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Stratégie de rémunération","Compensation strategy")+'</div>'
@@ -1077,7 +1088,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<input type="checkbox" '+(q.ippOn?"checked":"")+' onchange="uq(\'ippOn\',this.checked)" style="accent-color:var(--g);width:16px;height:16px" />'
       +t("Régime de retraite individuel (RRI/IPP) en place","Individual Pension Plan (IPP) in place")+'</label>'
       +(q.ippOn?'<label class="fld-label">'+t("Solde actuel du RRI","Current IPP balance")+' ($)</label>'
-        +'<input class="inp" type="number" min="0" step="10000" value="'+(q.ippBal||0)+'" oninput="uq(\'ippBal\',+this.value)" />':'')
+        +'<input class="inp" type="number" min="0" step="10000" value="'+(q.ippBal||0)+'" oninput="uqd(\'ippBal\',this.value)" />':'')
       +'</div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Vente d'entreprise","Business sale")+'</div>'
@@ -1085,9 +1096,9 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<input type="checkbox" '+(q.bizSaleAge>0?"checked":"")+' onchange="uq(\'bizSaleAge\',this.checked?q.retAge:0)" style="accent-color:var(--g);width:16px;height:16px" />'
       +t("Vente d'entreprise planifiée","Business sale planned")+'</label>'
       +(q.bizSaleAge>0?'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">'
-        +'<div><label class="fld-label">'+t("Âge prévu","Age")+'</label><input class="inp inp-sm" type="number" min="40" max="80" value="'+(q.bizSaleAge||q.retAge)+'" oninput="uq(\'bizSaleAge\',+this.value)" /></div>'
-        +'<div><label class="fld-label">'+t("Prix estimé","Est. price")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="50000" value="'+(q.bizSalePrice||0)+'" oninput="uq(\'bizSalePrice\',+this.value)" /></div>'
-        +'<div><label class="fld-label">PBR ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.bizACB||100)+'" oninput="uq(\'bizACB\',+this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Âge prévu","Age")+'</label><input class="inp inp-sm" type="number" min="40" max="80" value="'+(q.bizSaleAge||q.retAge)+'" oninput="uqd(\'bizSaleAge\',this.value)" /></div>'
+        +'<div><label class="fld-label">'+t("Prix estimé","Est. price")+' ($)</label><input class="inp inp-sm" type="number" min="0" step="50000" value="'+(q.bizSalePrice||0)+'" oninput="uqd(\'bizSalePrice\',this.value)" /></div>'
+        +'<div><label class="fld-label">PBR ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.bizACB||100)+'" oninput="uqd(\'bizACB\',this.value)" /></div>'
         +'</div>'
         +'<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--ts);margin-top:8px">'
         +'<input type="checkbox" '+(q.bizLCGE?"checked":"")+' onchange="uq(\'bizLCGE\',this.checked)" style="accent-color:var(--g)" />'
