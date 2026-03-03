@@ -259,11 +259,16 @@ export function translateToMCInter(a: Record<string, any>) {
   params._quiz = {
     couple: a.couple || "no", sources: srcs2, source: srcs2[0] || "employed",
     employer: a.employer || "",
+    risk: a.risk || "balanced", savingsDetail: a.savingsDetail || false,
+    lifestyle: a.lifestyle || "active",
     parttime: a.parttime || "no", worries: a.worries || [],
     objective: a.objective || "", confidence: a.confidence || 3,
     decaissement: a.decaissement || "minimal",
     homeowner: a.homeowner || false, hasRental: a.hasRental || false,
     succObjective: a.succObjective || "neutral",
+    psych_anxiety: a.psychAnxiety || null,
+    psych_discipline: a.psychDiscipline || null,
+    psych_literacy: a.psychLiteracy || null,
   };
 
   // Report metadata (for report-html.js, not MC)

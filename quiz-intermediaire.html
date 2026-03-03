@@ -1994,15 +1994,16 @@ function runMC(p, N, _progressCb) {
   });
   // Build histogram of final wealth
   var _histBins = [];
-  if (fins.length > 0) {
-    var _hMin = fins[0], _hMax = fins[fins.length - 1];
+  var _cleanFins = fins.filter(function(f) { return isFinite(f); });
+  if (_cleanFins.length > 0) {
+    var _hMin = _cleanFins[0], _hMax = _cleanFins[_cleanFins.length - 1];
     var _hRange = _hMax - _hMin || 1;
     var _nBins = Math.min(20, Math.max(8, Math.ceil(Math.sqrt(N))));
     var _bw = _hRange / _nBins;
     for (var _bi = 0; _bi < _nBins; _bi++) {
       _histBins.push({ lo: _hMin + _bi * _bw, hi: _hMin + (_bi + 1) * _bw, count: 0 });
     }
-    fins.forEach(function(f) {
+    _cleanFins.forEach(function(f) {
       var idx = Math.min(_nBins - 1, Math.max(0, Math.floor((f - _hMin) / _bw)));
       _histBins[idx].count++;
     });
