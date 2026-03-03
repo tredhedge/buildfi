@@ -208,7 +208,7 @@ function buildEmailHTML(params: {
           <!-- A-1: Plaintext fallback link below CTA -->
           <tr>
             <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;padding-top:12px;padding-bottom:4px;">
-              ${s.fallbackLink} <a href="${downloadUrl}" style="color:${GOLD};text-decoration:underline;word-break:break-all;">${downloadUrl}</a>
+              ${s.fallbackLink} <a href="${downloadUrl}" style="color:${GOLD};text-decoration:underline;">${fr ? "Ouvrir mon rapport directement" : "Open my report directly"}</a>
             </td>
           </tr>
 
@@ -243,7 +243,7 @@ function buildEmailHTML(params: {
                       <!-- A-2: Upsell CTA link -->
                       <tr>
                         <td style="font-family:${FONT};font-size:13px;color:${GOLD};font-weight:700;padding-top:10px;">
-                          <a href="https://buildfi.ca?tier=${tier === "intermediaire" ? "expert" : "intermediaire"}&amp;src=email-${tier || "essentiel"}" style="color:${GOLD};text-decoration:none;">
+                          <a href="https://www.buildfi.ca/index.html#products" style="color:${GOLD};text-decoration:none;">
                             ${s.upsellCta}
                           </a>
                         </td>

@@ -1,16 +1,25 @@
 # CLAUDE.md — BuildFi (buildfi.ca)
 
 ## What is this project?
-BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Three tiers: Essentiel $39, Intermédiaire $69, Expert $139. One-time payments, no subscriptions. Anti-bullshit, anti-generic.
+BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Three tiers: Essentiel $29, Intermediaire $59, Expert $129. One-time payments (Expert renews $29/year). Anti-bullshit, anti-generic.
 
 ## Tech Stack
 - **Framework**: Next.js 16 on Vercel (auto-deploy from main)
 - **Payments**: Stripe Checkout (hosted), webhook at /api/webhook
 - **Email**: Resend (buildfi.ca domain, DNS needs DKIM/SPF fix)
-- **Storage**: Vercel Blob (reports), Vercel KV (data)
+- **Storage**: Vercel Blob (reports), Vercel KV (data/profiles)
 - **MC Engine**: Custom Monte Carlo, 5000 sims, t-Student df=5, ~2.3s serverless
-- **AI Narration**: Anthropic API (server-side ONLY, key in Vercel env vars)
+- **AI Narration**: Anthropic API claude-sonnet-4 (server-side ONLY, key in Vercel env vars)
 - **Analytics**: PostHog
+
+## Pricing (confirmed 2026-03-02)
+| Tier | Price | Model |
+|------|-------|-------|
+| Essentiel | $29 one-time | 1 report, 8 sections, AI narration |
+| Intermediaire | $59 one-time | 1 report, 16 sections, couple, immo, fiscal |
+| Expert | $129 one-time | Simulator unlimited + 5 AI exports |
+| Expert renewal | $29/year | Simulator + 3 AI exports + Bilan Annuel |
+| Export AI addon | $14.99 | 1 additional AI report |
 
 ## Repository Structure
 ```
@@ -18,7 +27,7 @@ buildfi/
 ├── app/
 │   ├── api/
 │   │   ├── ai-narrate/route.ts    # Standalone AI narration test endpoint
-│   │   ├── checkout/route.ts      # Stripe checkout session
+│   │   ├── checkout/route.ts      # Stripe checkout session (multi-tier)
 │   │   └── webhook/route.ts       # Stripe webhook → MC → AI → report → email
 │   ├── merci/                     # Post-purchase thank you page
 │   ├── outils/dettes/
@@ -28,30 +37,54 @@ buildfi/
 ├── lib/
 │   ├── ai-constants.ts            # AI slot names (Ess 12 + Inter 16), AMF forbidden terms, sanitization
 │   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals, psych overrides)
-│   ├── ai-prompt-inter.ts         # Intermédiaire AI prompt (18 slots, DerivedProfile enrichment)
+│   ├── ai-prompt-inter.ts         # Intermediaire AI prompt (18 slots, DerivedProfile enrichment)
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
 │   ├── quiz-translator.ts         # Essentiel quiz answers → MC params
-│   ├── quiz-translator-inter.ts   # Intermédiaire 85 fields → 120 MC params
+│   ├── quiz-translator-inter.ts   # Intermediaire 85 fields → 120 MC params
 │   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (1,421 lines)
-│   ├── report-html-inter.js       # Intermédiaire 16-section report (1,003 lines)
+│   ├── report-html-inter.js       # Intermediaire 16-section report (1,003 lines)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
 │   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
 │   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
 │   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
-│   ├── index.html                 # Landing page
+│   ├── index.html                 # Landing page v9
 │   ├── logo.js                    # Shared SVG logo
 │   ├── logo-dark.svg, logo-light.svg
 │   └── robots.txt
 ├── tests/
 │   └── debt-tool-tests.js         # Debt tool test suite (200 tests)
+├── docs/                          # Project documentation (10 files)
+│   ├── STATUS.md                  # Current state — read first each session
+│   ├── SERVICES.md                # Accounts, DNS, credentials, payment flows
+│   ├── TECH-REFERENCE.md          # Architecture, code standards, audits, AMF compliance
+│   ├── STRATEGY.md                # Brand, positioning, marketing, competitors, pricing
+│   ├── ROADMAP.md                 # Phases, milestones, go/no-go criteria
+│   ├── ARCHITECTURE.md            # Dependency graph, 60+ components, 80+ connections
+│   ├── STRATEGY-EXPERT-PLAN.md    # Expert tier bible — product, pricing, segments, bilan annuel
+│   ├── EXPERT-EXECUTION-PLAN.md   # Expert build sessions S1-S14, audits, manual steps
+│   ├── EXPERT-IDENTITY-ALIGNMENT.md # Brand conformity grids per Expert component
+│   └── buildfi-infra-map.jsx      # Interactive infrastructure visualization (React)
 ├── planner.html                   # Source of truth (~15,600 lines, 453 tests)
 ├── quiz-essentiel.html            # Root copy (legacy)
-├── quiz-intermediaire.html        # Intermédiaire quiz (WIP)
+├── quiz-intermediaire.html        # Intermediaire quiz (WIP)
 └── CLAUDE.md                      # This file
 ```
 
-## Pipeline (Production)
+## Documentation Guide
+| Doc | Purpose | When to read |
+|-----|---------|-------------|
+| **STATUS.md** | What's done, what's blocked, next actions | Start of every session |
+| **SERVICES.md** | DNS, Stripe, Resend, Blob, env vars | Infra/deployment tasks |
+| **TECH-REFERENCE.md** | Code standards, audit history, AMF rules | Before writing code |
+| **STRATEGY.md** | Brand voice, competitors, landing page | Marketing/copy tasks |
+| **ROADMAP.md** | Phase sequencing, go/no-go gates | Planning/prioritization |
+| **ARCHITECTURE.md** | Component dependency graph (60+ nodes) | Before modifying a component |
+| **STRATEGY-EXPERT-PLAN.md** | Expert tier spec (22 sections) — the bible | Expert tier development |
+| **EXPERT-EXECUTION-PLAN.md** | Session-by-session build plan (S1-S14) | Expert tier execution |
+| **EXPERT-IDENTITY-ALIGNMENT.md** | Brand conformity grids per surface | Building visible UI |
+
+## Pipeline (Production — Essentiel/Intermediaire)
 ```
 Quiz thin client (zero IP exposed)
   → POST /api/checkout → Stripe
@@ -66,32 +99,16 @@ Quiz thin client (zero IP exposed)
   → Resend email with link
 ```
 
-### AI Narration Flow
-- `buildAIPrompt()` in `report-html.js` builds system + user prompts enriched with DerivedProfile (anxiety, discipline, literacy, friction, theme)
-- System prompt enforces: AMF compliance, anti-hallucination (numbers from DATA only), micro-structure (chiffre → implication → nuance)
-- Webhook calls Anthropic directly (claude-sonnet-4), parses JSON, sanitizes via `sanitizeAISlots()`
-- **Fallback**: if `ANTHROPIC_API_KEY` is missing or API fails → returns `{}` → report uses hardcoded fallback text
-- 12 AI slots: `snapshot_intro`, `savings_context`, `debt_impact`, `gov_explanation`, `gap_explanation`, `tax_insight`, `longevity_good`, `longevity_watch`, `obs_1`, `obs_2`, `obs_3`, `upgrade_hook`
-- `/api/ai-narrate` exists as a standalone test endpoint (not called by webhook)
-
-### Report HTML (lib/report-html.js)
-- **Active version**: v6 (`REPORT_VERSION = 'v6'`), v5 preserved as fallback
-- **Key functions**: `extractReportData()`, `buildWhatIf()`, `buildSnapshot5yr()`, `buildHeuristics()`, `buildPDfallback()`, `buildAIPrompt()`, `calcCostOfDelay()`, `calcMinViableReturn()`, `buildPriority()`, `gradeInfo()`, `renderReport_v6()`, `renderReportHTML()`
-- **v6 features**: Grade ring (A+ to F), fan chart (progressive spread), TL;DR 3 bullets, KPI cards, donut income chart, what-if scenarios, 5-year snapshot table, heuristics disclosure, cost of delay, min viable return, upsell CTAs
-- **Polish (March 2026)**: `--amr` amber-ring color, client-friendly grade labels (B="Correct, à renforcer"), mini TOC with section anchors, hover tooltips on jargon, print theme (gold→brown), tabular-nums, QPP row highlight in snapshot, disclaimer restyled (cream + left border), mobile spacing, "Données utilisées" footer block
-
-### Debt Tool (app/outils/dettes/page.jsx)
-- Standalone React SPA, dark theme (DK palette), bilingual FR/EN
-- 6 tabs: Inventaire, Stratégies, Simulateur, Calendrier, Rembourser vs Investir, Coût réel
-- Tab order: core path [Inventaire → Stratégies → Simulateur → Calendrier] + separator + advanced [Repay vs Invest, True Cost]
-- Inventory layout: welcome banner → debts → portrait global → collapsible "Aller plus loin" (mortgages, financial context, couple mode)
-- Tabs grayed (opacity 0.4) when no payable debts
-- Micro-CTAs at end of Simulator and Calendar guide to next tabs
-- 7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
-- `basePayoff` uses `selectedStrategy` (not hardcoded avalanche)
-- Marginal rate label shows "(est.)" in Repay vs Invest
-- localStorage: `buildfi_debts_v1`, export/import JSON
-- **Test suite**: `tests/debt-tool-tests.js` — 200 tests, 0 failures required
+## Expert Tier — Key Concepts
+- **Thesis**: Essentiel/Inter sell the answer. Expert sells the capacity to explore.
+- **Simulator**: Unlimited recalculations, MC 1000 sims (screening) or 5000 (formal exports)
+- **3 Workflows**: "Tester une decision" / "Optimiser automatiquement" / "Bilan Annuel"
+- **Progressive disclosure**: Tabs activated by quiz data + mode guided by segment (Couple/CCPC/Pre-retraite/FIRE)
+- **Auth**: Magic link + Vercel KV, token-based, rate-limited
+- **Exports**: 5 AI exports (year 1), 3 (renewal). Resume 1-page unlimited. Bilan Annuel hors quota.
+- **Bilan Annuel**: January check-up — 7 fields input → MC → 9-page comparative report
+- **Full spec**: docs/STRATEGY-EXPERT-PLAN.md (22 sections)
+- **Build plan**: docs/EXPERT-EXECUTION-PLAN.md (10 pre-launch + 4 post-launch sessions)
 
 ## Critical Rules — READ BEFORE EVERY TASK
 
@@ -100,19 +117,20 @@ Quiz thin client (zero IP exposed)
 
 ### AMF/OSFI Compliance (NON-NEGOTIABLE)
 - **Conditional tense** for ALL projections: pourrait/serait/atteindrait (FR), could/would/might (EN)
-- **Present tense OK** for facts from data: "Votre taux de réussite est 72 %"
-- **NEVER use**: devriez, recommandons, conseillons, il faut, devez, assurez-vous, considérez, optimisez, priorisez, plan d'action, recommandation(s)
-- **Approved replacements**: "Cette analyse suggère", "Les données indiquent", "Il serait parfois pertinent de"
+- **Present tense OK** for facts from data: "Votre taux de reussite est 72 %"
+- **NEVER use**: devriez, recommandons, conseillons, il faut, devez, assurez-vous, considerez, optimisez, priorisez, plan d'action, recommandation(s)
+- **Approved replacements**: "Cette analyse suggere", "Les donnees indiquent", "Il serait parfois pertinent de"
 - **Observational language ONLY** — describe what numbers show, never prescribe actions
 - **No debt shaming** — state mathematical cost only
 - **Grep test**: run `grep -rn "devriez\|recommandons\|vous devez\|il faut que" lib/ public/` before committing — must return 0 results
+- **Full forbidden terms list**: docs/TECH-REFERENCE.md §6
 
 ### Code Quality
 - Target: 12/10 — never "good enough"
-- No emoji in UI text, labels, or plans (report icons like ✅⚠️🎯 in data-driven TL;DR are OK)
+- No emoji in UI text, labels, or plans (report icons like data-driven TL;DR are OK)
 - Grade 10 reading level for all client-facing text
-- Zero acronyms in Essentiel tier — write "Régime de rentes du Québec" not RRQ
-- Province-aware: RRQ (QC) vs RPC (other provinces), CÉLI vs TFSA
+- Zero acronyms in Essentiel tier — write "Regime de rentes du Quebec" not RRQ
+- Province-aware: RRQ (QC) vs RPC (other provinces), CELI vs TFSA
 - Bilingual FR/EN in all text
 - Static fallbacks if Anthropic API fails — report must work without AI
 
@@ -122,12 +140,14 @@ Quiz thin client (zero IP exposed)
 - Engine clamps > UI validation — the engine is its own guardrail
 - Never inline calcTax() or calcQPP() in JSX
 - Always display rMedF (real) not medF (nominal)
+- **Minimum 1,000 sims** for any MC computation. Formal reports = 5,000.
 
 ### Architecture Rules
 - **API key NEVER in client-side code** — Vercel env vars only (DT-016)
 - AI narration calls go through /api/ backend route, never browser fetch
 - Quiz thin client: zero MC functions client-side
 - Stripe webhook URL: www.buildfi.ca (not buildfi.ca — 307 redirect loses POST body)
+- **MC always server-side** — the engine never runs in the browser (Expert simulator uses /api/simulate)
 
 ### Debt Tool Rules
 - **200 tests, 0 failures required** (`node tests/debt-tool-tests.js`)
@@ -138,18 +158,24 @@ Quiz thin client (zero IP exposed)
 ## Brand Voice
 Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchoring ("a planner would charge $1,500") inside the tool — that's for marketing only.
 
+### Vocabulary (Expert-specific)
+- "bilan" / "assessment" — NOT "rapport" / "report" (except formal context)
+- "simulateur" / "laboratoire" — NOT "dashboard" / "outil" / "platform"
+- "observations" / "constats" — NOT "recommandations" / "conseils"
+- "leviers identifies" — NOT "plan d'action" / "optimisez"
+- Full vocabulary grid: docs/EXPERT-IDENTITY-ALIGNMENT.md §3.1
+
 ## Current Status (March 2026)
 - **P0.6 COMPLETED** — E2E pipeline validated
 - **P1.4 AI NARRATION MERGED** — buildAIPrompt + Anthropic call wired into webhook
 - **Report v6 MERGED + POLISHED** — 15 rendering improvements applied
-- **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed in planner.html + engine/index.js, 17 new verification tests added (453/453 pass)
-- **3 psychology questions ADDED** — psychAnxiety, psychDiscipline, psychLiteracy in quiz step 6; override data-derived DerivedProfile signals
-- **Report test suite EXPANDED** — 277 tests / 33 categories in tests/report-calculations.test.js
-- **Intermédiaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js, checkout route multi-tier
-- **Debt tool UX restructured** — inventory reordered, progressive tabs, micro-CTAs
-- **Email template refactored** — table-based layout, AMF compliant, full bilingual
-- Essentiel tier: near launch, 3 infra blockers (Blob permissions, Resend DNS, ANTHROPIC_API_KEY)
-- Next: fix 3 infra blockers → E2E test with Stripe test card → pages légales → soft launch
+- **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed, 17 new tests (453/453 pass)
+- **Intermediaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js
+- **Debt tool UX restructured** — progressive tabs, micro-CTAs, 200 tests pass
+- **Email template refactored** — table-based, AMF compliant, bilingual
+- **Expert planning COMPLETE** — STRATEGY-EXPERT-PLAN v4, EXECUTION-PLAN, IDENTITY-ALIGNMENT all documented
+- Essentiel: near launch, 3 infra blockers (Blob public, Resend DNS, ANTHROPIC_API_KEY)
+- Next: fix infra blockers → E2E test → pages legales → soft launch Essentiel → Expert build (S1-S10)
 
 ## Commands
 ```bash
@@ -174,6 +200,8 @@ npm run build
 ## Key Environment Variables
 ```
 STRIPE_SECRET_KEY, STRIPE_PRICE_ESSENTIEL, STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT          # To configure
+STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON   # To configure
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, NEXT_PUBLIC_BASE_URL
 RESEND_API_KEY, RESEND_FROM
 BLOB_READ_WRITE_TOKEN

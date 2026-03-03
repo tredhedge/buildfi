@@ -42,6 +42,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;heigh
 .inp{width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--bd);font-size:15px;font-family:'DM Sans',sans-serif;background:var(--bgc);color:var(--tx);transition:border-color .15s}
 .inp:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,148,74,.1)}
 .inp-sm{padding:9px 11px;font-size:13px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 .section-head{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;padding:14px 0 8px;border-bottom:2px solid var(--gbg);margin:20px 0 14px}
 .phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
 .info-box{background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
@@ -80,7 +82,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;heigh
 // ============================================================
 
 // -- Constants for quiz UI and mock preview --
-var DEBT_RATES = {cc:0.1999, student:0.055, car:0.065, loc:0.075};
+var DEBT_RATES = {cc:0.199, student:0.055, car:0.065, loc:0.075};
 var COL_ADJ = {QC:1,ON:1.15,BC:1.35,AB:1.05,MB:0.92,SK:0.90,NS:0.95,NB:0.88,NL:0.93,PE:0.87,NT:1.25,YT:1.20,NU:1.40};
 var PMED = {QC:380000,ON:620000,BC:850000,AB:440000,MB:320000,SK:310000,NS:360000,NB:260000,NL:270000,PE:280000,NT:400000,YT:420000,NU:380000};
 
@@ -126,7 +128,7 @@ function generateMockPreviewInter(q) {
   var qppAge = q.qppAge || Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
   var oasAge = q.oasAge || Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
   var qppM = Math.round(1508 * Math.min(1, (totalIncome / 74600)) * Math.min(1, Math.max(0, age - 18) / 40) * (qppAge <= 60 ? 0.64 : qppAge <= 65 ? 1.0 : 1.42));
-  var oasM = oasAge <= 65 ? 742 : Math.round(742 * 1.36);
+  var oasM = oasAge <= 65 ? 742 : Math.round(742 * (1 + 0.072 * (oasAge - 65)));
   var govM = qppM + oasM + penM;
   var gapM = Math.max(0, retSpM - govM);
   var yrs = Math.max(0, retAge - age);
@@ -646,7 +648,7 @@ function renderQuiz(step,q,lang,activeBlocks){
 
   // ── STEP 4: Dettes ───────────────────────────────────────
   if(step===4){
-    var debtTypes=[{v:"cc",l:t("Carte de crédit","Credit card"),r:19.99},
+    var debtTypes=[{v:"cc",l:t("Carte de crédit","Credit card"),r:19.9},
       {v:"loc",l:t("Marge de crédit personnelle","Personal line of credit"),r:7.5},
       {v:"car",l:t("Prêt automobile","Car loan"),r:6.5},
       {v:"student",l:t("Prêt étudiant","Student loan"),r:5.5}];
@@ -1008,7 +1010,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Pension de la Sécurité de la vieillesse (PSV) — Old Age Security (OAS)","Old Age Security (OAS) / Pension de la Sécurité de la vieillesse (PSV)")+'</div>'
       +'<div style="display:flex;gap:8px">'
-      +[{v:65,d:t("référence","reference")},{v:70,d:t("+36%","+36%")}].map(function(o){
+      +[{v:65,d:t("référence","reference")},{v:67,d:"+14.4%"},{v:70,d:"+36%"}].map(function(o){
         return'<div class="card'+(q.oasAge===o.v?" sel":"")+'" onclick="uq(\'oasAge\','+o.v+')" style="flex:1;text-align:center;padding:14px">'
           +'<div style="font-size:20px;font-weight:800">'+o.v+'</div>'
           +'<div style="font-size:11px;color:var(--ts);margin-top:4px">'+o.d+'</div></div>';

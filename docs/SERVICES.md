@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-02 — v5 (Engine audit 453 tests, 3 psych questions, Intermédiaire backbone)
+> Mis à jour: 2026-03-02 — v5 (pricing $29/$59/$129, nouveaux produits Stripe, coupons, referral)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -45,16 +45,22 @@
 - Compte: BuildFi | Mode actuel: **TEST** (pas encore live)
 - Produits:
 
-| Produit | Prix | Price ID |
-|---------|------|----------|
-| Rapport Essentiel | $39 CAD one-time (tax-in) | STRIPE_PRICE_ESSENTIEL (Vercel env var) |
-| Rapport Intermédiaire | $69 CAD one-time | À configurer |
-| Rapport Expert | $139 CAD one-time | À configurer |
+| Produit | Prix | Price ID | Status |
+|---------|------|----------|--------|
+| Rapport Essentiel | **$29 CAD** one-time | STRIPE_PRICE_ESSENTIEL | ⚠️ Mettre à jour prix ($39→$29) |
+| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ❌ À configurer |
+| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ❌ À configurer |
+| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ❌ À configurer |
+| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ❌ À configurer |
 
-- **automatic_tax**: DÉSACTIVÉ — requiert immatriculation fiscale Stripe Tax. Prix tax-inclusive pour l'instant.
+- **Coupons Stripe:**
+  - `SECOND50` : 50% off, single-use, lié à l'email du premier achat (2e rapport)
+  - `REFERRAL15` : 15% off, single-use, généré dynamiquement par lien referral
+
+- **automatic_tax**: DÉSACTIVÉ. Prix HT affiché, taxes ajoutées au checkout quand inscription TPS/TVQ active.
 - **Webhook**: builfi-webhook (actif)
   - URL: `https://www.buildfi.ca/api/webhook` (IMPORTANT: www, pas buildfi.ca — sinon 307)
-  - Event: `checkout.session.completed`
+  - Events: `checkout.session.completed`, `customer.subscription.updated` (AJOUTER pour renouvellement)
   - Signing secret: dans Vercel env var STRIPE_WEBHOOK_SECRET
   - Status: ✅ Fonctionne — signature vérifiée, MC exécuté
 - ⚠️ **AUCUN REMBOURSEMENT** — produit numérique, livraison instantanée. Erreur technique → correction sans frais.
@@ -75,11 +81,18 @@
 
 | Template | Contenu | Status |
 |----------|---------|--------|
-| Livraison Essentiel | Grade + lien rapport HTML + bonus | ✅ V2 — table-based, bilingual, AMF compliant |
-| Livraison Intermédiaire | Grade + lien rapport HTML + bonus | ❌ À créer |
+| Livraison Essentiel | Grade + lien rapport HTML + bonus + offre 2e rapport 50% | ✅ V2 — table-based, bilingual, AMF compliant. ⚠️ Ajouter offre 2e rapport |
+| Livraison Intermédiaire | Grade + lien rapport HTML + bonus + offre 2e rapport 50% | ❌ À créer |
 | Livraison Expert | Grade + lien rapport + accès simulateur | ❌ À créer |
+| Feedback J+3 | "Comment était votre bilan?" + étoiles + NPS + coupon 50% débloqué | ❌ À créer |
+| Témoignage J+7 | "Seriez-vous d'accord pour un témoignage?" (si rating ≥4 ET NPS Oui) | ❌ À créer |
+| 2e rapport offre | "Un 2e bilan à 50%" + lien checkout coupon | ❌ À créer |
+| Referral notification | "Quelqu'un a utilisé votre lien" + statut récompenses | ❌ À créer |
+| Renouvellement J-30 | "Votre accès expire dans 30 jours" | ❌ À créer |
+| Renouvellement J-7 | Rappel + résumé valeur reçue | ❌ À créer |
+| Pré-suppression J-30 | "Téléchargez votre profil avant suppression" | ❌ À créer |
 
-**Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", upsell Intermédiaire, bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Reçu en spam (domaine non vérifié).
+**Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", upsell Intermédiaire ($59), bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Reçu en spam (domaine non vérifié).
 
 ---
 
@@ -121,7 +134,11 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | Variable | Usage | Status |
 |----------|-------|--------|
 | `STRIPE_SECRET_KEY` | Checkout + Webhook | ✅ Configurée |
-| `STRIPE_PRICE_ESSENTIEL` | Price ID Stripe | ✅ Configurée |
+| `STRIPE_PRICE_ESSENTIEL` | Price ID Essentiel $29 | ⚠️ Mettre à jour ($39→$29) |
+| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ❌ À ajouter |
+| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ❌ À ajouter |
+| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ❌ À ajouter |
+| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ❌ À ajouter |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhook signature | ✅ Configurée (whsec_...) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout client-side | ✅ Configurée |
 | `NEXT_PUBLIC_BASE_URL` | URLs dans le code | ✅ Configurée |
@@ -148,8 +165,8 @@ Client complète quiz (805 lignes, thin client, zero IP)
   → extractReportData(mc, params) → buildAIPrompt → callAnthropic (12 slots, or {} fallback)
   → renderReportHTML() — report v6
   → Upload rapport HTML sur Vercel Blob
-  → Envoyer email via Resend avec lien vers rapport
-  → Client redirigé vers /merci
+  → Envoyer email via Resend avec lien vers rapport + offre 2e rapport 50%
+  → Client redirigé vers /merci (+ lien referral)
 ```
 
 **⚠️ ÉLÉMENTS NON IMPLÉMENTÉS / BLOQUÉS DANS LE FLUX:**
@@ -158,12 +175,14 @@ Client complète quiz (805 lignes, thin client, zero IP)
 - AI narration: code complete, needs ANTHROPIC_API_KEY in Vercel env vars to activate
 - Rapport accessible (Blob private → "Forbidden" — recréer store public)
 - Email en inbox (domaine Resend non vérifié → spam)
+- Offre 2e rapport 50% dans email livraison (coupon SECOND50)
+- Lien referral sur page /merci
 
 ---
 
 ## SÉCURITÉ
 
-- Aucune clé API dans le code source (hardcoded key found and blanked in engine audit 2026-03-02)
+- Aucune clé API dans le code source (leçon apprise)
 - Toutes les clés dans Vercel env vars (prod) et .env.local (local, jamais committé)
 - .gitignore inclut: `.env.local`
 - Repo GitHub privé — moteur MC protégé

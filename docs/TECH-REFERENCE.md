@@ -1,24 +1,24 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-02 — v10.0 (Engine audit 20 bugs, 3 psych questions, Intermédiaire backbone, 453 tests)
+> Mis à jour: 2026-03-01 — v9.0 (AI narration merged, report v6 polished, debt tool UX restructured, email template refactored)
 
 ---
 
 ## 1. ARCHITECTURE
 
 ### Important: Le moteur MC existe dans 2 endroits
-- `planner.html` — moteur complet dev/test (~15,600 lignes, 453 tests embarqués)
+- `planner_v2.html` — moteur complet dev/test (~15,000 lignes, 436 tests embarqués)
 - `lib/engine/index.js` — moteur extrait pour production (2,426 lignes, 38 exports)
 
-**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner.html est la source de vérité.
+**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner_v2.html est la source de vérité.
 
-### Structure planner.html
+### Structure planner_v2.html
 ```
 Lignes 1–50          : HTML head, meta, styles
 Lignes 50–500        : CSS (tokens FS/CL/SP, responsive)
-Lignes 500–5,560     : MOTEUR (calcTax, calcQPP, calcOAS, calcGIS, optimizeDecum, runMC)
-Lignes 5,560–15,000  : UI REACT (sidebar, 30+ tabs, charts, résumés)
-Lignes 15,000–15,600 : TESTS EMBARQUÉS (453 engine tests, 54 catégories, 0 failures)
+Lignes 500–4,572     : MOTEUR (calcTax, calcQPP, calcOAS, calcGIS, optimizeDecum, runMC)
+Lignes 4,572–14,500  : UI REACT (sidebar, 30+ tabs, charts, résumés)
+Lignes 14,500–15,157 : TESTS EMBARQUÉS (436 engine tests, 53 catégories, 0 failures)
 ```
 
 ### Pipeline Quiz → Paiement → Rapport (PRODUCTION)
@@ -92,11 +92,8 @@ v6 features (March 2026 polish):
 
 ### Quiz thin client — quiz-essentiel.html
 ```
-~870 lignes total (9 steps: 0-7 + paywall at 8)
+805 lignes total (était 3,227 — 75% retiré)
 Zero fonction MC côté client
-Step 6: 3 psychology questions (psychAnxiety, psychDiscipline, psychLiteracy) — optional
-  → Passed through quiz-translator.ts → params._quiz → computeDerivedProfile()
-  → Override data-derived anxiety/discipline/literacy signals for AI narration
 generateMockPreview() pour paywall (données fake)
 Stripe checkout intégré via fetch /api/checkout
 Quiz answers envoyées dans session.metadata (chunked si >500 chars)
@@ -207,7 +204,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 ### DON'T
 - Jamais inline `calcTax()` ou `calcQPP()` dans le JSX
 - Jamais de langage directif (should, devriez, recommandons, il faut)
-- Jamais toucher au moteur sans vérifier les 453 tests
+- Jamais toucher au moteur sans vérifier les 436 tests
 - Jamais d'emoji dans les labels, textes UI, ou plans
 - Jamais de big bang — feature par feature
 - Jamais plier sous la pression — défendre les positions techniques
@@ -232,10 +229,10 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 |----|----------|--------|
 | DT-001 | Architecture: quiz HTML thin client + Next.js API backend | Actif |
 | DT-002 | Monte Carlo 5,000 sims t-Student df=5 | Actif, non négociable |
-| DT-003 | Web Worker pour calcul MC off-thread (planner.html seulement) | Actif |
+| DT-003 | Web Worker pour calcul MC off-thread (planner_v2.html seulement) | Actif |
 | DT-004 | setTimeout(300) + _mcProfileDirty — race condition React (R6) | Actif, disparaît en P4 |
 | DT-005 | Engine clamps — le moteur est son propre garde-fou | Actif, non négociable |
-| DT-006 | Tests embarqués dans le HTML — 453 tests, 54 catégories | Actif |
+| DT-006 | Tests embarqués dans le HTML — 436 tests, 53 catégories | Actif |
 | DT-007 | Langage observationnel AMF — grep automatique dans tests | Actif, non négociable |
 | DT-008 | Rapport HTML hébergé (Vercel Blob) — PDF côté client via window.print() | Actif — remplace Puppeteer |
 | DT-009 | Single API call narrator — 12 slots JSON, claude-sonnet-4 | Actif |
@@ -250,16 +247,13 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-018 | Guides PDF générés via Python/reportlab — sources versionnées | Actif |
 | DT-019 | /outils/ protégé par robots.txt — bonus clients seulement | Actif |
 | DT-020 | Stripe webhook URL: www.buildfi.ca (pas buildfi.ca — 307 redirect) | Actif |
-| DT-021 | Stripe automatic_tax: désactivé — prix tax-inclusive | Actif |
+| DT-021 | Stripe automatic_tax: désactivé — prix HT, taxes au checkout quand inscription TPS/TVQ active | Actif |
 | DT-022 | app/page.tsx: redirect() (pas permanentRedirect — évite cache browser) | Actif |
-| DT-023 | Engine syncé: lib/engine/index.js = planner.html (2,426 lignes, 38 exports) | Actif |
-| DT-024 | Report v6 with progressive fan chart spread (yearFrac accumulation) | Actif |
-| DT-025 | Debt tool progressive disclosure: welcome → debts → portrait → collapsible advanced | Actif |
-| DT-026 | Debt tool tab graying when no payable debts (opacity 0.4) | Actif |
-| DT-027 | Email template table-based layout for email client compatibility | Actif |
-| DT-028 | 3 psych questions override DerivedProfile (anxiety/discipline/literacy) | **NOUVEAU** |
-| DT-029 | Engine audit: 20 bugs fixed, 17 BugFix tests, 453/453 pass | **NOUVEAU** |
-| DT-030 | Intermédiaire server backbone: 4 modules (translator, strategies, ai-prompt, report-html) | **NOUVEAU** |
+| DT-023 | Engine syncé: lib/engine/index.js = planner_v2 (2,426 lignes, 38 exports) | Actif |
+| DT-024 | Report v6 with progressive fan chart spread (yearFrac accumulation) | **NOUVEAU** |
+| DT-025 | Debt tool progressive disclosure: welcome → debts → portrait → collapsible advanced | **NOUVEAU** |
+| DT-026 | Debt tool tab graying when no payable debts (opacity 0.4) | **NOUVEAU** |
+| DT-027 | Email template table-based layout for email client compatibility | **NOUVEAU** |
 
 ---
 
@@ -270,14 +264,18 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DB-001 | One-time payment — différenciateur vs ffPro.ca | Décidé |
 | DB-002 | Québec FR en premier | Décidé |
 | DB-003 | Organique d'abord, pubs ensuite | Décidé |
-| DB-004 | Expert $139 one-time, renouvellement $29/an | Décidé |
+| DB-004 | Ess $29, Inter $59, Expert $129 one-time, renouvellement $29/an | Décidé |
 | DB-005 | Entreprise individuelle (CCPC si >30K$/an) | Décidé |
 | DB-007 | Stripe Checkout hébergé | Décidé |
 | DB-009 | Compte bancaire séparé dès jour 1 | Décidé, non négociable |
-| DB-010 | TPS/TVQ reportée jusqu'au seuil $30K | Décidé |
+| DB-010 | TPS/TVQ : prix HT, taxes au checkout quand inscription active | Décidé |
 | DB-011 | Aucun remboursement — produit numérique, livraison instantanée | Décidé, non négociable |
 | DB-012 | Bonus livrés par email post-achat (guide PDF + lien debt tool) | Décidé |
 | DB-013 | Rapport livré par lien web (pas PDF attaché) — standard industrie SaaS | Actif |
+| DB-014 | 2e rapport à 50% — coupon Stripe 90 jours, même tier ou inférieur | Décidé |
+| DB-015 | Programme referral — 50% off référent / 15% off référé / paliers 3-5 | Décidé |
+| DB-016 | Alertes marché retirées — pas l'ADN BuildFi, risque AMF | Décidé |
+| DB-017 | Veille réglementaire interne → articles SEO + bannière in-app (pas push email) | Décidé |
 
 ---
 
@@ -327,11 +325,11 @@ recommandation(s) / recommendation(s)
 
 ## 7. HISTORIQUE DES AUDITS
 
-**Score actuel: 95/100 — 453 tests moteur, 54 catégories, 0 failures**
+**Score actuel: 92/100 — 436 tests moteur, 53 catégories, 0 failures**
 
 | Audit | Contenu | Résultat |
 |-------|---------|---------|
-| R1–R5 | calcTax 13 provinces, QPP/RRQ, OAS, GIS, withdrawal, couple, estate | 342→436→453 tests, fiables |
+| R1–R5 | calcTax 13 provinces, QPP/RRQ, OAS, GIS, withdrawal, couple, estate | 342→436 tests, fiables |
 | R6 | Race condition React → setTimeout(300) + _mcProfileDirty flag | Fix critique |
 | R7 | Phantom withdrawals — 8 paths affichaient retraits quand patrimoine = 0$ | Fix |
 | R8 | Display audit exhaustif — 17/17 data paths engine→screen | Fix |
@@ -347,18 +345,12 @@ recommandation(s) / recommendation(s)
 | 2026-02-27 | **Landing v9 audit AMF/BSIF** — 0 terme interdit | ✅ |
 | 2026-02-27 | **Debt tool** — 200 tests, 161 paires bilingues, 0 accent manquant | ✅ |
 | 2026-02-27 | **Guides 101 + 201/301** — audit AMF 0 infraction | ✅ |
-| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner.html, 436 tests, optimizeDecum ajouté | ✅ |
+| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner_v2, 436 tests, optimizeDecum ajouté | ✅ |
 | 2026-02-27 | **Pipeline E2E** — Quiz→Stripe→Webhook→MC→Blob→Email validé en prod | ✅ |
 | 2026-02-28 | **AI narration P1.4** — buildAIPrompt + DerivedProfile + sanitizeAISlots + Anthropic call wired in webhook | ✅ |
 | 2026-03-01 | **Report v6 polish** — 15 rendering fixes (grade ring, fan chart, TL;DR, print theme, tooltips, TOC, mobile) | ✅ |
 | 2026-03-01 | **Debt tool UX restructure** — progressive disclosure, tab graying, micro-CTAs, basePayoff fix, marginal rate label | ✅ |
 | 2026-03-01 | **Email template refactor** — table-based, bilingual, AMF compliant | ✅ |
-| 2026-03-01 | **Intermédiaire backbone** — 4 new server modules (translator, strategies, ai-prompt, report-html) | ✅ |
-| 2026-03-02 | **3 psych questions** — psychAnxiety/Discipline/Literacy override DerivedProfile signals | ✅ |
-| 2026-03-02 | **Report test suite expanded** — 277 tests / 33 categories in tests/report-calculations.test.js | ✅ |
-| 2026-03-02 | **Engine audit Round 1** — 14 bugs fixed (calcTax age>=65, pension credit fr[0], EI rates, var shadowing, inflation off-by-one, etc.) | ✅ |
-| 2026-03-02 | **Engine audit Round 2** — 6 more bugs (remaining calcTax callers, cFhsa shadowing, spouse DB pension indexation 6 locations) | ✅ |
-| 2026-03-02 | **BugFix test suite** — 17 new verification tests → 453/453 total, 54 categories | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
@@ -385,6 +377,3 @@ recommandation(s) / recommendation(s)
 - **DNS propagation**: les records Resend (DKIM, SPF) peuvent prendre 24h — ne pas paniquer si la vérification échoue immédiatement.
 - **P0 fixes can be lost if working from stale file versions** — always verify critical fixes (basePayoff strategy, marginal rate label) are present after editing.
 - **OneDrive can lock .next/ files** — run `rm -rf .next` before build if EPERM errors occur.
-- **Engine audit: parallel agents catch more** — 3 agents scanning different file sections in parallel found 20 bugs that sequential review missed.
-- **`var` hoisting causes subtle bugs** — shadowed variables (_meltTfsaRoom, cFhsa), out-of-order reads (reTotal, medSimIdx) all from `var` hoisting. Name prefixes with `_` help avoid collisions.
-- **Spouse pension indexation is easy to miss** — DB pension appears in 6+ locations per file (income, OAS estimate, GIS estimate, pension income, sim tax, medRevData). Must check ALL locations when fixing indexation.

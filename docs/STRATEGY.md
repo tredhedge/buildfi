@@ -1,6 +1,6 @@
 # STRATEGY.md
 > Brand, positionnement, marketing, compétiteurs, pricing, copy.
-> Mis à jour: 2026-03-02 — v5 (engine audited 453 tests, 3 psych questions, Intermédiaire backbone ready)
+> Mis à jour: 2026-03-02 — v5 (vision long terme, projections revenus, compétiteurs enrichis, pain points marché validés)
 
 ---
 
@@ -34,6 +34,64 @@
 | Planificateurs financiers | $1,500–5,000, gatekeeping |
 | ffPro.ca | Construit pour actuaires, pas le grand public |
 | Feuilles de calcul | DIY hell, aucune confiance |
+
+---
+
+## 1B. VISION LONG TERME
+
+### Objectif fondateur
+Remplacer un salaire d'économiste au gouvernement fédéral. Avoir le choix — rester, partir, ou combiner.
+
+### Trajectoires possibles
+
+**Trajectoire A — Lifestyle business solo (plancher)**
+Produit consumer optimisé, zéro employé, marges 85%+, 20-25h/semaine.
+- An 1 : $15K–$40K (calibration ads, témoignages, itération)
+- An 2 : $40K–$80K (SEO porte fruit, referral actif, CAC connu)
+- An 3 : $80K–$130K (3 tiers matures, Bilan Annuel récurrent)
+- An 5 : $150K–$250K (marque établie, traffic organique 40-50%)
+- An 8 : $200K–$350K (plafond solo atteint, produit en pilote automatique)
+
+**Trajectoire B — Expansion B2B planificateurs (accélérateur)**
+Tier Pro white-label à $99/mois par siège. Mêmes rapports, branding planificateur.
+~15,000 planificateurs financiers certifiés au Canada. Cible : 200-500 sièges.
+- An 3 : Lancement tier Pro
+- An 5 : $400K–$600K (consumer + 200-300 sièges pro)
+- An 8 : $500K–$800K (consumer + 500 sièges pro + Bilan Annuel récurrent)
+Requiert : portail pro, multi-tenant, white-label, possiblement 1 employé (ventes/support).
+
+**Trajectoire C — Exit (optionnel)**
+Multiples SaaS fintech niche : 3-5x revenus annuels récurrents.
+- $400K ARR × 4 = $1.6M
+- $800K ARR × 4 = $3.2M
+Acquéreurs potentiels : Wealthsimple, banques canadiennes, Optiml, firmes de planification.
+
+### Décision clé (année 2-3)
+Rester en lifestyle solo (A) ou pousser le B2B (B). Les deux sont valides. Le moteur MC, les rapports, et la fiscalité supportent les deux. C'est une décision de vie, pas une décision technique.
+
+### Hypothèses de modélisation revenus
+- Mix conservateur : 60% Ess ($29), 30% Inter ($59), 10% Expert ($129) → moyenne $46/client
+- Mix optimiste : 40% Ess, 35% Inter, 25% Expert → moyenne $58/client
+- Taux de conversion landing→achat : 2% (standard industrie)
+- Trafic requis pour $100K/an : 8,500-10,800 visiteurs/mois
+- Revenus additionnels : 2e rapport 50% ($14.50-$64.50), exports Expert $14.99, renouvellements $29/an
+- Coûts opérationnels : Vercel (~$20/mois), Resend (~$0), Anthropic API (~$0.03-0.10/rapport), Stripe 2.9%+30¢
+
+### Marché adressable
+- 55% des Canadiens actifs n'ont PAS de plan de retraite (CPP Investments, oct. 2025)
+- ~11M d'adultes sans plan × taux de pénétration 0.01% = 1,100 clients/an minimum
+- Québec francophone (8.5M) : zéro compétiteur bilingue FR/EN au niveau consommateur
+- Le segment "entre le calculateur gratuit et le planificateur à $3,000" est quasi vide au Canada
+
+### Pain points marché validés (forums, Reddit, Canadian Money Forum, RFD, 2024-2025)
+1. **"Rien entre trop simple et trop complexe"** — Les outils sont soit des calculateurs à 3 champs, soit des plateformes intimidantes. BuildFi Essentiel à $29 comble ce trou.
+2. **"Tout est fait pour les Américains"** — 401(k), Roth IRA, Social Security. Les Canadiens adaptent ou abandonnent. BuildFi est Canada-native, 13 provinces.
+3. **"Les outils canadiens meurent ou coûtent trop cher"** — Retireware fermé (2021). Naviplan $2,000+/an. Conquest B2B only. Optiml $99-600/an. BuildFi Essentiel = $29 one-time.
+4. **"Le séquencement RRSP/TFSA/NR est LE problème"** — Sujet #1 sur tous les forums. Quand prendre le RPC? Dans quel ordre décaisser? BuildFi Intermédiaire/Expert y répond avec la waterfall + optimiseur.
+5. **"Je ne fais pas confiance aux résultats"** — Les gens comparent 3-4 outils et obtiennent des résultats différents. Fan chart MC + méthodologie transparente + tooltips "Ce que cela signifie" = confiance.
+6. **"55% des Canadiens n'ont pas de plan"** — Marché énorme, sous-desservi.
+7. **"Le français n'existe pas"** — Zéro outil de planification retraite bilingue FR/EN au niveau consommateur.
+8. **"J'ai payé $3,000 un planificateur et je ne comprends toujours pas"** — BuildFi = même analyse, langage clair, fraction du prix.
 
 ---
 
@@ -166,18 +224,36 @@ Produit numérique, livraison instantanée. Si erreur technique → correction/r
 
 ---
 
-## 9. COMPÉTITEURS
+## 9. COMPÉTITEURS (mis à jour 2026-03-02)
 
-| Compétiteur | Prix | Notre avantage |
-|-------------|------|----------------|
-| ProjectionLab | $120/an | Taxes CA + rapport clair + one-time |
-| Boldin | $144/an | Simple + canadien + one-time |
-| **ffPro.ca** | **$135/an** | **Plus simple + one-time + bilingue** |
-| Wealthsimple | Gratuit (lead gen) | Profondeur MC + rapport détaillé |
-| Optiml.ca | $99–492/an | MC 5,000 vs 50 scénarios + one-time + bilingue |
+| Compétiteur | Prix | Modèle | Langue | Notre avantage |
+|-------------|------|--------|--------|----------------|
+| **Optiml.ca** | $99–$600/an (sub) | Self-serve plateforme | EN only | One-time + FR + rapport livré + prix 3-12x moins |
+| **ProjectionLab** | $109/an ou $799 lifetime | Self-serve plateforme | EN (presets CA) | Canada-native vs preset + FR + simplicité |
+| **Boldin** | $144/an | Self-serve plateforme | EN only | Canadien + FR + one-time |
+| **ffPro.ca** | $135/an | Plateforme technique | EN only | Lisibilité + FR + one-time |
+| **Adviice.ca** | $108/an ($9/mois) | Self-serve + AI | EN only | FR + one-time + rapport clair |
+| **MayRetire.com** | Gratuit | Calculateur web | EN only | MC 5K vs déterministe + FR + profondeur |
+| **Wealthsimple** | Gratuit (lead gen) | Calculateur basique | EN/FR | Profondeur MC + indépendant + pas de vente de produits |
+| **Calculateur Canada.ca** | Gratuit | Formulaire 30 min | EN/FR | 5 min vs 30 min + MC + insights + narration AI |
+| **Planificateur financier** | $1,500–$5,000 | Consultation humaine | Bilingue | 10-100x moins cher + résultats en 5 min vs 2-4 semaines |
+| **Snap Projections** | $60-$200/mois/siège | B2B advisors only | EN only | Consumer-accessible + FR (B2B = Phase 5) |
 
-### Livraison du rapport — note compétitive
-La plupart des SaaS financiers (Wealthsimple, Questrade, etc.) envoient un **lien web** vers le rapport, pas un PDF attaché. Notre approche (rapport HTML hébergé + lien email) est standard dans l'industrie. Le PDF est un nice-to-have, pas un must-have pour le lancement.
+### Avantages compétitifs BuildFi (validés par data marché)
+1. **Seul bilingue FR/EN** au niveau consommateur
+2. **One-time $29** vs subscriptions $99-600/an — impulse buy vs commitment
+3. **Rapport livré** vs plateforme self-serve — tangible, partageable, archivable
+4. **AI narration sur-mesure** (DerivedProfile) — personne ne fait ça
+5. **MC robuste** (5K sims, fat tails t-Student, mortalité stochastique CPM 2023)
+6. **Canada-native** (13 provinces, 173 constantes) vs presets internationaux
+7. **Bilan Annuel** (Phase 3) — check-up annuel unique dans le marché
+
+### Faiblesses honnêtes vs compétiteurs
+- Pas de self-serve interactif (Ess/Inter = rapport statique, Expert = simulateur)
+- Pas d'account linking (Optiml a Wealthica)
+- Pas d'accumulation phase en profondeur (focus décumulation)
+- Pas de communauté (Optiml a support, ProjectionLab a Discord)
+- Pas encore lancé (Optiml = 10,000+ clients, 3 ans d'avance en marché)
 
 ---
 
@@ -190,11 +266,6 @@ La plupart des SaaS financiers (Wealthsimple, Questrade, etc.) envoient un **lie
 - Aligné avec les pratiques de l'industrie SaaS financière
 
 ### Thin client architecture
-- Quiz ne contient ZERO logique MC côté client (~870 lignes, 9 steps incl. 3 psych Q)
+- Quiz ne contient ZERO logique MC côté client (805 lignes vs 3,227)
 - Tout le calcul est server-side post-paiement
 - Protège la propriété intellectuelle du moteur
-
-### Engine audit (2026-03-02)
-- 20 bugs fixed across 2 rounds of parallel-agent audit
-- 453/453 tests, 0 failures — highest engine confidence since project start
-- Intermédiaire server backbone merged (4 new modules) — webhook wiring deferred
