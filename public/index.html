@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Votre bilan retraite personnalisé | Jusqu'à 10 000 scénarios</title>
-<meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. À partir de 19,50$.">
+<meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. À partir de 29$.">
 <meta property="og:title" content="buildfi.ca — Savoir si votre argent va durer">
 <meta property="og:description" content="Planification de retraite canadienne. Des milliers de scénarios, un rapport clair, un paiement unique.">
 <meta property="og:type" content="website">
@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BuildFi","url":"https://buildfi.ca","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"AggregateOffer","lowPrice":"19.50","highPrice":"139","priceCurrency":"CAD"},"description":"Savoir si votre argent va durer. Planification de retraite canadienne par simulation Monte Carlo. 10 provinces et 3 territoires, bilingue.","inLanguage":["fr","en"]}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BuildFi","url":"https://buildfi.ca","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"AggregateOffer","lowPrice":"29","highPrice":"129","priceCurrency":"CAD"},"description":"Savoir si votre argent va durer. Planification de retraite canadienne par simulation Monte Carlo. 10 provinces et 3 territoires, bilingue.","inLanguage":["fr","en"]}
 </script>
 <script id="faqSchema" type="application/ld+json"></script>
 <style>
@@ -254,6 +254,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .sticky-cta-text{font-size:14px;font-weight:600;color:var(--navy)}.sticky-cta-text span{color:var(--gold);font-family:var(--font-data);font-weight:800}
 .sticky-cta .btn-primary{padding:12px 24px;font-size:14px;border-radius:10px;white-space:nowrap}
 @media(max-width:900px){.sticky-cta{display:block}body{padding-bottom:72px}}
+@media(max-width:700px){.hiw-grid{grid-template-columns:1fr!important;max-width:400px;margin-left:auto;margin-right:auto}}
 
 /* ═══ FOOTER ═══ */
 .footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
@@ -338,7 +339,7 @@ input,select,textarea{font-size:16px}
         </p>
         <div class="hero-actions reveal reveal-delay-3">
           <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Choisir mon rapport <span aria-hidden="true">→</span></a>
-          <span class="hero-actions-price" id="heroPrice">À partir de <strong>19,50 $</strong> · Paiement unique</span>
+          <span class="hero-actions-price" id="heroPrice">À partir de <strong>29 $</strong> · Paiement unique</span>
           <a href="#products" class="btn btn-ghost" data-track="hero_compare" id="heroCompare">Voir tous les produits <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-trust reveal reveal-delay-4">
@@ -366,6 +367,65 @@ input,select,textarea{font-size:16px}
         <div class="grade-card-pct">78 %</div>
         <div class="grade-card-pill grade-card-pill--success" id="gradePill">En bonne voie</div>
         <div class="grade-card-brand">buildfi.ca</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMMENT ÇA MARCHE ═══ -->
+<section class="section" id="howItWorks" style="background:var(--sand);padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container" style="text-align:center">
+    <p class="section-label" id="hiwLabel">Comment ça marche</p>
+    <h2 class="section-title" id="hiwTitle">3 étapes. 5 minutes. Zéro compte à créer.</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto" class="hiw-grid">
+      <div class="reveal" style="text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep1Label">Étape 1</div>
+        <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep1Title">Répondez au quiz</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep1Desc">5 à 10 minutes. Revenus, épargne, dettes, objectifs. Aucune donnée stockée.</p>
+      </div>
+      <div class="reveal reveal-delay-1" style="text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep2Label">Étape 2</div>
+        <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep2Title">Recevez votre bilan</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep2Desc">5 000 scénarios simulés. Rapport personnalisé livré par courriel en quelques minutes.</p>
+      </div>
+      <div class="reveal reveal-delay-2" style="text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep3Label">Étape 3</div>
+        <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep3Title">Décisions éclairées</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep3Desc">Note, projections, observations. Vous savez exactement où vous en êtes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOCIAL PROOF ═══ -->
+<section class="section" id="socialProof" style="padding-top:clamp(48px,6vw,64px);padding-bottom:clamp(48px,6vw,64px)">
+  <div class="container" style="text-align:center">
+    <p class="section-label" id="spLabel">Témoignages</p>
+    <h2 class="section-title" id="spTitle">Ce qu'en disent nos utilisateurs</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;max-width:900px;margin-left:auto;margin-right:auto" class="hiw-grid">
+      <div class="reveal" style="background:var(--sand);border-radius:12px;padding:24px;border:1px solid #e8e0d4;text-align:left">
+        <div style="display:flex;gap:4px;margin-bottom:12px;color:var(--gold);font-size:18px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;font-style:italic" id="sp1Text">Premiers bilans en cours. Témoignages à venir.</p>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)" id="sp1Author">&mdash; Bientôt disponible</div>
+      </div>
+      <div class="reveal reveal-delay-1" style="background:var(--sand);border-radius:12px;padding:24px;border:1px solid #e8e0d4;text-align:left">
+        <div style="display:flex;gap:4px;margin-bottom:12px;color:var(--gold);font-size:18px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;font-style:italic" id="sp2Text">Premiers bilans en cours. Témoignages à venir.</p>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)" id="sp2Author">&mdash; Bientôt disponible</div>
+      </div>
+      <div class="reveal reveal-delay-2" style="background:var(--sand);border-radius:12px;padding:24px;border:1px solid #e8e0d4;text-align:left">
+        <div style="display:flex;gap:4px;margin-bottom:12px;color:var(--gold);font-size:18px">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;font-style:italic" id="sp3Text">Premiers bilans en cours. Témoignages à venir.</p>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted)" id="sp3Author">&mdash; Bientôt disponible</div>
       </div>
     </div>
   </div>
@@ -462,10 +522,9 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodEssPersona">Vous commencez à planifier</div>
         <div class="product-name" id="prodEssName">Essentiel</div>
         <div class="product-price">
-          <span class="product-price-original" id="prodEssOrig">39 $</span>
-          <span class="product-price-current" id="prodEssCurr">19,<small>50</small> $</span>
+          <span class="product-price-current" id="prodEssCurr">29 $</span>
         </div>
-        <div class="product-price-note" id="prodEssNote">paiement unique · prix de lancement</div>
+        <div class="product-price-note" id="prodEssNote">paiement unique</div>
         <p class="product-desc" id="prodEssDesc">
           Vous ne savez pas trop où vous en êtes — et les outils génériques ne vous disent rien d'utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.
         </p>
@@ -489,10 +548,9 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodInterPersona">Vous voulez aller plus loin</div>
         <div class="product-name" id="prodInterName">Intermédiaire</div>
         <div class="product-price">
-          <span class="product-price-original" id="prodInterOrig">69 $</span>
-          <span class="product-price-current" id="prodInterCurr">34,<small>50</small> $</span>
+          <span class="product-price-current" id="prodInterCurr">59 $</span>
         </div>
-        <div class="product-price-note" id="prodInterNote">paiement unique · prix de lancement</div>
+        <div class="product-price-note" id="prodInterNote">paiement unique</div>
         <p class="product-desc" id="prodInterDesc">
           Vous épargnez déjà, vous êtes en couple ou propriétaire — et vous voulez savoir si votre stratégie tient la route. L'Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.
         </p>
@@ -517,10 +575,9 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodExpPersona">Tout ce que vous avez toujours cherché</div>
         <div class="product-name" id="prodExpName">Expert · Simulateur</div>
         <div class="product-price">
-          <span class="product-price-original" id="prodExpOrig">139 $</span>
-          <span class="product-price-current" id="prodExpCurr">69,<small>50</small> $</span>
+          <span class="product-price-current" id="prodExpCurr">129 $</span>
         </div>
-        <div class="product-price-note" id="prodExpNote">paiement unique · prix de lancement</div>
+        <div class="product-price-note" id="prodExpNote">paiement unique · renouvellement 29 $/an</div>
         <p class="product-desc" id="prodExpDesc">
           Vous n'avez jamais trouvé un seul outil qui fait tout. L'Expert, c'est ça — un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions — tout y est.
         </p>
@@ -528,8 +585,8 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           À votre rythme — sessions illimitées
         </div>
-        <a class="btn btn-primary" style="pointer-events:none;opacity:.6" id="prodExpCta">Bientôt disponible</a>
-        <p class="product-process" id="prodExpProcess">Détails et fonctionnalités sur la page Expert</p>
+        <a href="/expert" class="btn btn-primary" data-track="product_expert" id="prodExpCta">Découvrir le Simulateur Expert <span aria-hidden="true">→</span></a>
+        <p class="product-process" id="prodExpProcess">Quiz → Simulateur illimité + 5 exports AI</p>
         <p class="product-guarantee" id="prodExpGuarantee">Erreur technique? On refait votre rapport sans frais.</p>
         <div class="product-for-tag product-for-tag--light" id="prodExpFor">Contrôle total</div>
       </div>
@@ -538,7 +595,7 @@ input,select,textarea{font-size:16px}
     <div class="products-meta reveal">
       <p class="products-upgrade" id="productsUpgrade">Votre situation a changé? Passez au niveau suivant — nous créditons votre achat précédent.</p>
       <div class="products-meta-row">
-        <div class="products-early" id="productsEarly">Premiers 100 clients — 50 % de rabais</div>
+        <div class="products-early" id="productsEarly" style="display:none"></div>
         <div class="products-stripe" id="productsStripe">
           <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           <span id="stripeLabel">Paiement sécurisé par Stripe</span>
@@ -634,7 +691,7 @@ input,select,textarea{font-size:16px}
   <div class="container">
     <div style="text-align:center">
       <p class="section-label" id="faqLabel">Questions fréquentes</p>
-      <h2 class="section-title" id="faqTitle">Tout ce que vous devez savoir</h2>
+      <h2 class="section-title" id="faqTitle">Tout savoir sur votre retraite</h2>
     </div>
     <div class="faq-list" id="faqList">
       <div class="faq-item">
@@ -708,7 +765,7 @@ input,select,textarea{font-size:16px}
 <section class="section section--navy final-cta" id="finalCta">
   <div class="container" style="text-align:center">
     <h2 class="section-title" id="finalTitle">Vous méritez de savoir où vous en êtes.</h2>
-    <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un rapport complet, un paiement unique. Premiers 100 clients: 50 % de rabais.</p>
+    <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un rapport complet, un paiement unique.</p>
     <div class="final-cta-actions">
       <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Obtenir mon rapport <span aria-hidden="true">→</span></a>
       <a href="#products" class="btn btn-secondary" data-track="final_compare" id="finalCtaSec">Voir les produits <span aria-hidden="true">↑</span></a>
@@ -720,7 +777,7 @@ input,select,textarea{font-size:16px}
 <!-- STICKY MOBILE CTA -->
 <div class="sticky-cta" id="stickyCta">
   <div class="sticky-cta-inner">
-    <div class="sticky-cta-text" id="stickyText">À partir de <span>19,50 $</span></div>
+    <div class="sticky-cta-text" id="stickyText">À partir de <span>29 $</span></div>
     <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
   </div>
 </div>
@@ -746,8 +803,9 @@ input,select,textarea{font-size:16px}
       </div>
       <div class="footer-col">
         <div class="footer-col-title" id="footLegal">Légal</div>
-        <a href="/privacy" id="footPriv">Confidentialité</a>
-        <a href="/terms" id="footTerms">Conditions d'utilisation</a>
+        <a href="/confidentialite" id="footPriv">Confidentialité</a>
+        <a href="/conditions" id="footTerms">Conditions d'utilisation</a>
+        <a href="/avis-legal" id="footDisc">Avis légal</a>
       </div>
     </div>
     <div class="footer-disclaimer" id="footDisclaimer">
@@ -791,7 +849,7 @@ var T = {
   heroTitle: { fr:'Savoir si votre argent<br>va durer.', en:'Know if your money<br>will last.' },
   heroSub: { fr:"BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d\u2019abonnement. Pas de compte à créer.", en:"BuildFi analyzes your savings, income, and taxes across thousands of economic scenarios. You get a clear report with a grade, projections, and personalized observations. No subscription. No account to create." },
   heroCta: { fr:'Choisir mon rapport \u2192', en:'Choose my report \u2192' },
-  heroPrice: { fr:'À partir de <strong>19,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <strong>$19.50</strong> \u00b7 One-time payment' },
+  heroPrice: { fr:'À partir de <strong>29\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <strong>$29</strong> \u00b7 One-time payment' },
   heroCompare: { fr:'Voir tous les produits \u2193', en:'See all products \u2193' },
   trust1: { fr:'Données jamais stockées', en:'Data never stored' },
   trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
@@ -799,6 +857,27 @@ var T = {
   trust4: { fr:'10 provinces, 3 territoires', en:'10 provinces, 3 territories' },
   gradeLabel: { fr:'Votre note de retraite', en:'Your retirement grade' },
   gradePill: { fr:'En bonne voie', en:'On track' },
+  // How it works
+  hiwLabel: { fr:'Comment \u00e7a marche', en:'How it works' },
+  hiwTitle: { fr:'3 \u00e9tapes. 5 minutes. Z\u00e9ro compte \u00e0 cr\u00e9er.', en:'3 steps. 5 minutes. No account needed.' },
+  hiwStep1Label: { fr:'\u00c9tape 1', en:'Step 1' },
+  hiwStep1Title: { fr:'R\u00e9pondez au quiz', en:'Take the quiz' },
+  hiwStep1Desc: { fr:'5 \u00e0 10 minutes. Revenus, \u00e9pargne, dettes, objectifs. Aucune donn\u00e9e stock\u00e9e.', en:'5 to 10 minutes. Income, savings, debts, goals. No data stored.' },
+  hiwStep2Label: { fr:'\u00c9tape 2', en:'Step 2' },
+  hiwStep2Title: { fr:'Recevez votre bilan', en:'Get your report' },
+  hiwStep2Desc: { fr:'5\u00a0000 sc\u00e9narios simul\u00e9s. Rapport personnalis\u00e9 livr\u00e9 par courriel en quelques minutes.', en:'5,000 scenarios simulated. Personalized report delivered by email in minutes.' },
+  hiwStep3Label: { fr:'\u00c9tape 3', en:'Step 3' },
+  hiwStep3Title: { fr:'D\u00e9cisions \u00e9clair\u00e9es', en:'Informed decisions' },
+  hiwStep3Desc: { fr:'Note, projections, observations. Vous savez exactement o\u00f9 vous en \u00eates.', en:'Grade, projections, observations. You know exactly where you stand.' },
+  // Social proof
+  spLabel: { fr:'T\u00e9moignages', en:'Testimonials' },
+  spTitle: { fr:"Ce qu\u2019en disent nos utilisateurs", en:'What our users say' },
+  sp1Text: { fr:'Premiers bilans en cours. T\u00e9moignages \u00e0 venir.', en:'First reports in progress. Testimonials coming soon.' },
+  sp1Author: { fr:'\u2014 Bient\u00f4t disponible', en:'\u2014 Coming soon' },
+  sp2Text: { fr:'Premiers bilans en cours. T\u00e9moignages \u00e0 venir.', en:'First reports in progress. Testimonials coming soon.' },
+  sp2Author: { fr:'\u2014 Bient\u00f4t disponible', en:'\u2014 Coming soon' },
+  sp3Text: { fr:'Premiers bilans en cours. T\u00e9moignages \u00e0 venir.', en:'First reports in progress. Testimonials coming soon.' },
+  sp3Author: { fr:'\u2014 Bient\u00f4t disponible', en:'\u2014 Coming soon' },
   // Engine
   engineLabel: { fr:'Sous le capot', en:'Under the hood' },
   engineTitle: { fr:"Un moteur de simulation, pas un calculateur.", en:"A simulation engine, not a calculator." },
@@ -835,16 +914,16 @@ var T = {
   prodExpDesc: { fr:"Vous n\u2019avez jamais trouvé un seul outil qui fait tout. L\u2019Expert, c\u2019est ça \u2014 un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions \u2014 tout y est.", en:"You\u2019ve never found one tool that does it all. Expert is it \u2014 a simulator where you test, adjust, and explore every variable of your retirement. Incorporation, stress tests, pensions \u2014 it\u2019s all there." },
   prodEssCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   prodInterCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
-  prodExpCta: { fr:'Bientôt disponible', en:'Coming soon' },
+  prodExpCta: { fr:'Découvrir le Simulateur Expert →', en:'Discover the Expert Simulator →' },
   prodEssProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
   prodInterProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
-  prodExpProcess: { fr:'Détails et fonctionnalités sur la page Expert', en:'Details and features on the Expert page' },
+  prodExpProcess: { fr:'Quiz → Simulateur illimité + 5 exports AI', en:'Quiz → Unlimited simulator + 5 AI exports' },
   prodExpGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodEssFor: { fr:'Personnes seules', en:'Individuals' },
   prodInterFor: { fr:'Couples \u00b7 Propriétaires \u00b7 Profils complexes', en:'Couples \u00b7 Homeowners \u00b7 Complex profiles' },
   prodExpFor: { fr:'Contrôle total', en:'Full control' },
   productsUpgrade: { fr:'Votre situation a changé? Passez au niveau suivant \u2014 nous créditons votre achat précédent.', en:'Your situation changed? Move to the next level \u2014 we credit your previous purchase.' },
-  productsEarly: { fr:'Premiers 100 clients \u2014 50\u00a0% de rabais', en:'First 100 customers \u2014 50% off' },
+  productsEarly: { fr:'', en:'' },
   stripeLabel: { fr:'Paiement sécurisé par Stripe', en:'Secure payment via Stripe' },
   // moved to product cards
   // bonusLabel: { fr:'Inclus avec votre rapport', en:'Included with your report' },
@@ -856,7 +935,7 @@ var T = {
   // bonusTag1b: { fr:'Intermédiaire', en:'Intermediate' },
   // bonusType2: { fr:'Guide PDF', en:'PDF guide' },
   // bonusName2: { fr:'101 \u2014 Les bases de vos finances', en:'101 \u2014 The basics of your finances' },
-  // bonusDesc2: { fr:"Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout ce que vous devez savoir \u2014 en langage clair, avec des exemples en dollars.", en:"Budget, debt, credit, savings, RRSP vs TFSA, CPP, OAS, insurance. Everything you need to know \u2014 in plain language, with dollar examples." },
+  // bonusDesc2: { fr:"Budget, dettes, crédit, épargne, REER vs CÉLI, RRQ, PSV, assurances. Tout savoir \u2014 en langage clair, avec des exemples en dollars.", en:"Budget, debt, credit, savings, RRSP vs TFSA, CPP, OAS, insurance. Everything you need to know \u2014 in plain language, with dollar examples." },
   // bonusTag2a: { fr:'Essentiel', en:'Essential' },
   // bonusTag2b: { fr:'Intermédiaire', en:'Intermediate' },
   // bonusType3: { fr:'Guide PDF', en:'PDF guide' },
@@ -927,7 +1006,7 @@ var T = {
   pi6d: { fr:"Ce que vous laisserez. Impôt successoral estimé. Frais d\u2019homologation.", en:'What you\u2019ll leave behind. Estimated estate tax. Probate fees.' },
   // FAQ
   faqLabel: { fr:'Questions fréquentes', en:'Frequently asked questions' },
-  faqTitle: { fr:'Tout ce que vous devez savoir', en:'Everything you need to know' },
+  faqTitle: { fr:'Tout savoir sur votre retraite', en:'Everything you need to know' },
   fq1: { fr:'Est-ce un conseil financier?', en:'Is this financial advice?' },
   fa1: { fr:"Non. BuildFi est un outil éducatif qui produit des projections statistiques basées sur les données que vous fournissez. Ce n\u2019est pas un conseil financier, fiscal ou juridique. Les résultats utilisent le conditionnel (\u00ab\u00a0vous pourriez\u00a0\u00bb) et ne remplacent pas l\u2019avis d\u2019un professionnel certifié. Consultez un planificateur financier ou un fiscaliste avant de prendre des décisions importantes.", en:"No. BuildFi is an educational tool that produces statistical projections based on the data you provide. It is not financial, tax, or legal advice. Results use conditional language and do not replace the advice of a certified professional. Consult a financial planner or tax specialist before making important decisions." },
   fq2: { fr:'Combien de temps ça prend?', en:'How long does it take?' },
@@ -948,11 +1027,11 @@ var T = {
   fa9: { fr:"Aucun rendement fixe. Le moteur génère des distributions de rendements corrélés \u2014 actions, obligations, inflation \u2014 basées sur des données historiques. Chaque scénario a ses propres séquences de bonnes et mauvaises années. C\u2019est ce qui différencie une simulation d\u2019un calculateur qui suppose 6\u00a0% par année.", en:"No fixed return. The engine generates correlated return distributions \u2014 equities, bonds, inflation \u2014 based on historical data. Each scenario has its own sequences of good and bad years. That\u2019s what differentiates a simulation from a calculator that assumes 6% per year." },
   // Final CTA
   finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
-  finalSubtitle: { fr:'Un rapport complet, un paiement unique. Premiers 100 clients: 50\u00a0% de rabais.', en:'A complete report, one payment. First 100 customers: 50% off.' },
+  finalSubtitle: { fr:'Un rapport complet, un paiement unique.', en:'A complete report, one payment.' },
   finalCtaPrimary: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   finalCtaSec: { fr:'Voir les produits \u2191', en:'See products \u2191' },
   finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non conservées', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never stored' },
-  stickyText: { fr:'À partir de <span>19,50\u00a0$</span>', en:'Starting at <span>$19.50</span>' },
+  stickyText: { fr:'À partir de <span>29\u00a0$</span>', en:'Starting at <span>$29</span>' },
   stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },
   footerTagline: { fr:'Planification de retraite canadienne. Propulsé par la simulation Monte Carlo.', en:'Canadian retirement planning. Powered by Monte Carlo simulation.' },
   footProd: { fr:'Produits', en:'Products' },
@@ -964,6 +1043,7 @@ var T = {
   footFaq: { fr:'FAQ', en:'FAQ' },
   footPriv: { fr:'Confidentialité', en:'Privacy' },
   footTerms: { fr:"Conditions d\u2019utilisation", en:'Terms of use' },
+  footDisc: { fr:'Avis légal', en:'Legal disclaimer' },
   footContact: { fr:'Contact', en:'Contact' },
   footDisclaimer: { fr:"BuildFi n\u2019est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques basées sur la méthode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifié avant de prendre des décisions financières. BuildFi est un produit de BuildFi Technologies inc.", en:"BuildFi is not a financial, tax, or legal advisor. Projections are statistical estimates based on the Monte Carlo method and do not constitute guarantees of future performance. Consult a certified professional before making financial decisions. BuildFi is a product of BuildFi Technologies inc." },
 };
@@ -1127,6 +1207,30 @@ document.getElementById('langToggle').addEventListener('click', toggleLang);
 document.getElementById('footLangToggle').addEventListener('click', toggleLang);
 applyLang();
 buildFaqSchema();
+
+/* ─── REFERRAL DETECTION ─── */
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref') || sessionStorage.getItem('bf_ref');
+  if (!ref) return;
+  sessionStorage.setItem('bf_ref', ref);
+  trackEvent('referral_landing', { ref: ref });
+  // Show referral badge
+  var badge = document.createElement('div');
+  badge.style.cssText = 'position:fixed;top:80px;right:16px;z-index:999;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow-md);animation:fadeIn .4s ease-out';
+  badge.textContent = lang === 'fr' ? '15\u00a0% de rabais appliqué' : '15% discount applied';
+  document.body.appendChild(badge);
+  setTimeout(function(){ badge.style.opacity='0'; badge.style.transition='opacity .5s'; }, 5000);
+  // Append ref to all quiz / checkout links
+  document.querySelectorAll('a[href*="quiz-"], a[href*="/expert"], a[href*="/api/checkout"]').forEach(function(a) {
+    try {
+      var u = new URL(a.href, window.location.origin);
+      u.searchParams.set('ref', ref);
+      a.href = u.toString();
+    } catch(e) {}
+  });
+})();
+
 })();
 </script>
 </body>

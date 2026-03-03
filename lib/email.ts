@@ -20,6 +20,7 @@ interface SendReportParams {
   downloadUrl: string;
   grade: string;
   successPct: number;
+  feedbackToken?: string;
 }
 
 export async function sendReportEmail(params: SendReportParams) {
@@ -34,7 +35,7 @@ export async function sendReportEmail(params: SendReportParams) {
     ? `Votre rapport ${tierName} buildfi.ca est prêt — Note ${grade}`
     : `Your buildfi.ca ${tierName} report is ready — Grade ${grade}`;
 
-  const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl });
+  const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken });
 
   const { data, error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
@@ -58,8 +59,9 @@ function buildEmailHTML(params: {
   grade: string;
   successPct: number;
   downloadUrl: string;
+  feedbackToken?: string;
 }): string {
-  const { lang, tier, tierName, grade, successPct, downloadUrl } = params;
+  const { lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken } = params;
   const fr = lang === "fr";
 
   // A-3: Dynamic preheader
@@ -218,10 +220,64 @@ function buildEmailHTML(params: {
             </td>
           </tr>
 
-          <!-- BONUS SECTION — placeholder for Guide 101 / debt tool -->
-          <!-- TODO: Add bonus resources here (Guide 101 PDF link, debt tool access, etc.)
-               Marketing decision pending: emailed assets vs online-only access for buyers.
-               When ready, add a row here with a card similar to the upsell section below. -->
+          <!-- BONUS RESOURCES -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+                <tr>
+                  <td style="padding:18px 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">
+                          ${fr ? "Ressources incluses" : "Included resources"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)<br>
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-optimiser-votre-retraite.pdf" : "guide-201-optimize-your-retirement.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201+301 : Optimiser et ma\u00eetriser votre retraite" : "Guide 201+301: Optimize & Master Your Retirement"}</a> (PDF)<br>
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- FEEDBACK LINK -->
+          ${feedbackToken ? `<tr>
+            <td align="center" style="padding-bottom:28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+                <tr>
+                  <td style="padding:16px 24px;text-align:center;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="font-family:${FONT};font-size:13px;font-weight:600;color:${DARK};padding-bottom:6px;">
+                          ${fr ? "Votre avis compte" : "Your feedback matters"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.6;padding-bottom:8px;">
+                          ${fr ? "Notez votre rapport en un clic \u2014 cela nous aide \u00e0 am\u00e9liorer buildfi.ca." : "Rate your report in one click \u2014 it helps us improve buildfi.ca."}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="font-family:${FONT};font-size:13px;padding-top:4px;">
+                          <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca"}/api/feedback?token=${feedbackToken}&rating=5" style="color:${GOLD};text-decoration:none;font-size:24px;padding:0 3px;">&#9733;</a>
+                          <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca"}/api/feedback?token=${feedbackToken}&rating=4" style="color:${GOLD};text-decoration:none;font-size:24px;padding:0 3px;">&#9733;</a>
+                          <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca"}/api/feedback?token=${feedbackToken}&rating=3" style="color:#d4cec4;text-decoration:none;font-size:24px;padding:0 3px;">&#9733;</a>
+                          <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca"}/api/feedback?token=${feedbackToken}&rating=2" style="color:#d4cec4;text-decoration:none;font-size:24px;padding:0 3px;">&#9733;</a>
+                          <a href="${process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca"}/api/feedback?token=${feedbackToken}&rating=1" style="color:#d4cec4;text-decoration:none;font-size:24px;padding:0 3px;">&#9733;</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
 
           <!-- UPSELL (hidden for expert tier — no higher tier) -->
           ${tier === "expert" ? "" : `<tr>
@@ -259,6 +315,15 @@ function buildEmailHTML(params: {
           <tr>
             <td style="border-top:1px solid ${BORDER};padding-top:24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
+                    <a href="https://www.buildfi.ca/conditions" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="https://www.buildfi.ca/confidentialite" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="https://www.buildfi.ca/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+                  </td>
+                </tr>
                 <tr>
                   <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
                     ${s.disclaimer}

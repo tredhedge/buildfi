@@ -80,7 +80,7 @@ export function run5Strategies(baseParams: MCParams): StrategyResult[] {
   return strats.map(function (s): StrategyResult {
     var p: MCParams = Object.assign({}, baseParams, s.p);
     Object.keys(p).forEach(function (k) { if (p[k] === undefined) delete p[k]; });
-    var mc = runMC(p, 500);
+    var mc = runMC(p, 1000);
     return {
       key: s.key, fr: s.fr, en: s.en,
       succ: mc ? mc.succ : 0,

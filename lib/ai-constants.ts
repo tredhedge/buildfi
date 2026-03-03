@@ -44,7 +44,7 @@ export type AINarrationInter = Partial<Record<AISlotKeyInter, string>>;
 
 // AMF/OSFI forbidden prescriptive terms + scenario combination
 export const FORBIDDEN_TERMS =
-  /devriez|recommandons|conseillons|vous devez|il faut que|assurez-vous|we recommend|you should|you must|combiner les|combine the/i;
+  /\bdevriez\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b/i;
 
 /**
  * Sanitize raw AI output into safe, compliant slot values.
@@ -85,6 +85,110 @@ export function sanitizeAISlotsInter(raw: Record<string, any>): AINarrationInter
         result[key] = clean;
       } else {
         console.warn(`[ai-constants] Compliance violation in slot "${key}" (inter), dropping`);
+      }
+    }
+  }
+  return result;
+}
+
+// ─── Expert tier section-based slots ────────────────────────────────────
+// Expert uses section-based AI (not flat slots) — each section = 1 prompt batch
+export const EXPERT_SECTIONS_BASE = [
+  "sommaire_executif",
+  "diagnostic_robustesse",
+  "revenus_retraite",
+  "projection_patrimoine",
+  "analyse_fiscale",
+  "priorites_action",
+  "observations_detaillees",
+  "hypotheses_methodo",
+  "disclaimers",
+] as const;
+
+export const EXPERT_SECTIONS_CONDITIONAL = [
+  "couple",
+  "immobilier",
+  "pension_db",
+  "corporatif",
+  "remuneration",
+  "dettes",
+  "decaissement",
+  "stress_tests",
+  "assurance",
+  "resp",
+] as const;
+
+export const EXPERT_SECTIONS_EXCLUSIVE = [
+  "comparaison_scenarios",
+  "driver_attribution",
+  "pour_professionnel",
+  "questions_fiscaliste",
+  "historique_modifications",
+] as const;
+
+export type ExpertSectionKey =
+  | (typeof EXPERT_SECTIONS_BASE)[number]
+  | (typeof EXPERT_SECTIONS_CONDITIONAL)[number]
+  | (typeof EXPERT_SECTIONS_EXCLUSIVE)[number];
+
+export type ExpertAINarration = Partial<Record<ExpertSectionKey, string>>;
+
+/**
+ * Determine which Expert sections are active based on profile.
+ */
+export function getActiveExpertSections(profile: {
+  couple?: boolean;
+  homeowner?: boolean;
+  pensionDB?: boolean;
+  ccpc?: boolean;
+  hasDebt?: boolean;
+  hasInsurance?: boolean;
+  hasRESP?: boolean;
+  grade?: string;
+  sophistication?: string;
+  hasScenarios?: boolean;
+  hasChangelog?: boolean;
+}): ExpertSectionKey[] {
+  const sections: ExpertSectionKey[] = [...EXPERT_SECTIONS_BASE];
+
+  if (profile.couple) sections.push("couple");
+  if (profile.homeowner) sections.push("immobilier");
+  if (profile.pensionDB) sections.push("pension_db");
+  if (profile.ccpc) { sections.push("corporatif"); sections.push("remuneration"); }
+  if (profile.hasDebt) sections.push("dettes");
+  if (profile.sophistication !== "rapide") sections.push("decaissement");
+  if (profile.grade && ["C+", "C", "D", "F"].includes(profile.grade)) sections.push("stress_tests");
+  if (profile.hasInsurance) sections.push("assurance");
+  if (profile.hasRESP) sections.push("resp");
+
+  // Exclusive Expert sections
+  if (profile.hasScenarios) sections.push("comparaison_scenarios");
+  sections.push("driver_attribution");
+  sections.push("pour_professionnel");
+  sections.push("questions_fiscaliste");
+  if (profile.hasChangelog) sections.push("historique_modifications");
+
+  return sections;
+}
+
+/**
+ * Sanitize raw AI output for Expert tier (section-based).
+ * Same compliance logic as other tiers.
+ */
+export function sanitizeAISlotsExpert(
+  raw: Record<string, any>,
+  activeSections: ExpertSectionKey[]
+): ExpertAINarration {
+  const result: ExpertAINarration = {};
+  for (const key of activeSections) {
+    const val = raw[key];
+    if (val && typeof val === "string") {
+      // Expert sections can be longer — 2000 char max
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, 2000);
+      if (!FORBIDDEN_TERMS.test(clean)) {
+        result[key] = clean;
+      } else {
+        console.warn(`[ai-constants] Compliance violation in Expert section "${key}", dropping`);
       }
     }
   }

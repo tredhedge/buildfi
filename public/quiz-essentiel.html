@@ -40,6 +40,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 .loading-dot:nth-child(2){animation-delay:.2s}
 .loading-dot:nth-child(3){animation-delay:.4s}
 @keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
+@keyframes microFade{0%{opacity:0;transform:scale(.97)}20%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.97)}}
+.micro-copy{font-size:14px;color:#666;font-style:italic;text-align:center;animation:microFade 1.2s ease-in-out forwards}
 @media print{body{background:#fff}.no-print{display:none!important}}
 
 /* --- TABLET (768px+) --- */
@@ -491,7 +493,31 @@ function render() {
   app.innerHTML = renderQuiz(s.step, q, s.lang);
 }
 
+var MICRO_COPY = {
+  1: ["Parfait\u00a0! On a une bonne base.", "Great! We have a solid starting point."],
+  2: ["C\u2019est le nerf de la guerre. Continuons.", "This is the key factor. Let\u2019s keep going."],
+  3: ["Vous \u00eates plus loin que vous pensez.", "You\u2019re further ahead than you think."],
+  4: ["Presque termin\u00e9 \u2014 derni\u00e8re ligne droite.", "Almost done \u2014 final stretch."],
+  6: ["Merci\u00a0! Votre bilan sera adapt\u00e9 \u00e0 votre profil.", "Thanks! Your assessment will be tailored to you."],
+  7: ["Tout est pr\u00eat. On g\u00e9n\u00e8re vos 5\u00a0000 sc\u00e9narios.", "All set. We\u2019re generating your 5,000 scenarios."]
+};
+
 function go(step) {
+  var prev = STATE.step;
+  // Show micro-copy interstitial when advancing forward
+  if (step > prev && prev > 0 && MICRO_COPY[prev]) {
+    var fr = STATE.lang === "fr";
+    var msg = MICRO_COPY[prev][fr ? 0 : 1];
+    app.innerHTML = '<div style="max-width:var(--quiz-max);margin:80px auto;text-align:center;padding:40px 24px">'
+      + '<p class="micro-copy">' + msg + '</p></div>';
+    setTimeout(function() {
+      STATE.step = step;
+      saveState();
+      window.scrollTo({top:0, behavior:"smooth"});
+      render();
+    }, 1200);
+    return;
+  }
   STATE.step = step;
   saveState();
   window.scrollTo({top:0, behavior:"smooth"});
@@ -510,7 +536,7 @@ function renderLoading(fr) {
 
 function renderQuiz(step, q, lang) {
   var fr = lang === "fr", t = function(f,e){return fr?f:e;};
-  var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/8</span><span>' + Math.round(step/8*100) + '%</span></div><div style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/8*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" key="' + step + '">' + inner + '</div></div>'; };
+  var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/8</span><span>' + Math.round(step/8*100) + '%</span></div><div role="progressbar" aria-valuenow="' + step + '" aria-valuemin="0" aria-valuemax="8" aria-label="' + t("Progression du quiz","Quiz progress") + '" style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/8*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" aria-live="polite" key="' + step + '">' + inner + '</div></div>'; };
   var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 8 ? step+1 : 9) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
   var backBtn = step > 0 ? '<button class="back-btn" onclick="go(' + (step-1) + ')" style="margin-top:10px;width:100%;text-align:center">' + t("Retour","Back") + '</button>' : '';
 
@@ -687,12 +713,12 @@ function startCheckout() {
   fetch("/api/checkout", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
+    body: JSON.stringify(Object.assign({
       quizAnswers: STATE.quiz,
       lang: STATE.lang,
       email: email,
       tier: "essentiel"
-    })
+    }, sessionStorage.getItem("bf_ref") ? { referralCode: sessionStorage.getItem("bf_ref") } : {}))
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -741,13 +767,13 @@ function renderPaywall(D, lang) {
     "Projection de vos revenus à la retraite (RRQ, PSV, épargne)",
     "Stratégie de remboursement de dettes optimisée",
     "Analyse de vos frais de gestion et leur impact",
-    "Recommandations personnalisées pour améliorer votre note"
+    "Observations personnalisées pour améliorer votre note"
   ] : [
     "Detailed analysis of your 5,000 simulated scenarios",
     "Retirement income projection (QPP, OAS, savings)",
     "Optimized debt repayment strategy",
     "Management fee analysis and their impact",
-    "Personalized recommendations to improve your grade"
+    "Personalized observations to improve your grade"
   ];
   items.forEach(function(item) {
     h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
@@ -810,6 +836,16 @@ document.addEventListener("keydown",function(e){
 // ============================================================
 render();
 </script>
+<style>
+html:lang(en) .amf-fr{display:none!important}
+html:lang(en) .amf-en{display:inline!important}
+html:lang(fr) .amf-en{display:none!important}
+html:lang(fr) .amf-fr{display:inline!important}
+</style>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
+<span class="amf-fr">buildfi.ca fournit des projections à titre informatif seulement. Ce service ne constitue pas du conseil financier, fiscal ou juridique. Consultez un professionnel qualifié avant de prendre des décisions financières. Québec, Canada.</span>
+<span class="amf-en" style="display:none">buildfi.ca provides projections for informational purposes only. This service does not constitute financial, tax, or legal advice. Consult a qualified professional before making financial decisions. Quebec, Canada.</span>
+</div>
 </body>
 </html>
 

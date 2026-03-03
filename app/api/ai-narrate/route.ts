@@ -1,15 +1,20 @@
 // /app/api/ai-narrate/route.ts
-// Standalone test endpoint for AI narration (curl/Postman)
-// The webhook calls Anthropic directly — this route is for independent testing.
+// AI narration endpoint — requires Expert auth + rate limiting
+// The webhook calls Anthropic directly — this route is for Expert simulator exports.
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { sanitizeAISlots } from "@/lib/ai-constants";
+import { authenticateAndRateLimit } from "@/lib/api-helpers";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Auth + rate limit (export tier: 20/day)
+  const authResult = await authenticateAndRateLimit(req, "export");
+  if (authResult instanceof NextResponse) return authResult;
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.warn("[ai-narrate] ANTHROPIC_API_KEY not set, returning empty");

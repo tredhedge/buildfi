@@ -1,6 +1,6 @@
 # STRATEGY.md
 > Brand, positionnement, marketing, compétiteurs, pricing, copy.
-> Mis à jour: 2026-03-02 — v5 (vision long terme, projections revenus, compétiteurs enrichis, pain points marché validés)
+> Mis à jour: 2026-03-03 — v6 (pricing confirmé $29/$59/$129, post-audit)
 
 ---
 
@@ -111,26 +111,19 @@ Rester en lifestyle solo (A) ou pousser le B2B (B). Les deux sont valides. Le mo
 
 ## 4. PRICING
 
-### Prix régulier
-| Produit | Prix |
-|---------|------|
-| Essentiel | $39 CAD |
-| Intermédiaire | $69 CAD |
-| Expert | $139 CAD |
+### Structure confirmée (2026-03-02)
+| Produit | Prix | Modèle |
+|---------|------|--------|
+| Essentiel | **$29 CAD** | One-time, 1 rapport |
+| Intermédiaire | **$59 CAD** | One-time, 1 rapport |
+| Expert | **$129 CAD** | One-time, simulateur + 5 exports AI |
+| Expert renouvellement | **$29/an** | Simulateur + 3 exports + Bilan Annuel |
+| Export AI additionnel | **$14.99** | 1 rapport avec narration IA |
 
-**Note Stripe**: automatic_tax désactivé. Prix tax-inclusive ($39 TTC) jusqu'à configuration TPS/TVQ.
-
-### Early Adopter (confirmé 2026-02-26)
-| Tranche | Rabais | Ess | Inter | Expert |
-|---------|--------|-----|-------|--------|
-| Premiers 100 | 50% | $19.50 | $34.50 | $69.50 |
-| 101–200 | 25% | $29.25 | $51.75 | $104.25 |
-| 201+ | 0% | $39 | $69 | $139 |
-
-**Affichage**: "Offre de lancement — 50 % de rabais" + prix barrés. PAS de compteur de places (fake scarcity supprimée).
+**Note Stripe**: automatic_tax désactivé. Prix HT, taxes ajoutées au checkout quand inscription TPS/TVQ active.
 
 ### Psychologie
-- Decoy: $69 entre $39 et $139. Marqué "POPULAIRE".
+- Decoy: $59 entre $29 et $129. Marqué "POPULAIRE".
 - Upgrade credit: nous créditons l'achat précédent vers le niveau supérieur.
 
 ### ⚠️ POLITIQUE DE REMBOURSEMENT — AUCUN REMBOURSEMENT

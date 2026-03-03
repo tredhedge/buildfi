@@ -1,13 +1,13 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-01 — v9.0 (AI narration merged, report v6 polished, debt tool UX restructured, email template refactored)
+> Mis à jour: 2026-03-03 — v10 (post-audit 453 tests, 21 correctifs, S1 Expert infra, CSP headers, admin alerts)
 
 ---
 
 ## 1. ARCHITECTURE
 
 ### Important: Le moteur MC existe dans 2 endroits
-- `planner_v2.html` — moteur complet dev/test (~15,000 lignes, 436 tests embarqués)
+- `planner_v2.html` — moteur complet dev/test (~15,000 lignes, 453 tests embarqués)
 - `lib/engine/index.js` — moteur extrait pour production (2,426 lignes, 38 exports)
 
 **Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner_v2.html est la source de vérité.
@@ -18,7 +18,7 @@ Lignes 1–50          : HTML head, meta, styles
 Lignes 50–500        : CSS (tokens FS/CL/SP, responsive)
 Lignes 500–4,572     : MOTEUR (calcTax, calcQPP, calcOAS, calcGIS, optimizeDecum, runMC)
 Lignes 4,572–14,500  : UI REACT (sidebar, 30+ tabs, charts, résumés)
-Lignes 14,500–15,157 : TESTS EMBARQUÉS (436 engine tests, 53 catégories, 0 failures)
+Lignes 14,500–15,157 : TESTS EMBARQUÉS (436 engine tests, 54 catégories, 0 failures)
 ```
 
 ### Pipeline Quiz → Paiement → Rapport (PRODUCTION)
@@ -204,7 +204,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 ### DON'T
 - Jamais inline `calcTax()` ou `calcQPP()` dans le JSX
 - Jamais de langage directif (should, devriez, recommandons, il faut)
-- Jamais toucher au moteur sans vérifier les 436 tests
+- Jamais toucher au moteur sans vérifier les 453 tests
 - Jamais d'emoji dans les labels, textes UI, ou plans
 - Jamais de big bang — feature par feature
 - Jamais plier sous la pression — défendre les positions techniques
@@ -232,7 +232,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-003 | Web Worker pour calcul MC off-thread (planner_v2.html seulement) | Actif |
 | DT-004 | setTimeout(300) + _mcProfileDirty — race condition React (R6) | Actif, disparaît en P4 |
 | DT-005 | Engine clamps — le moteur est son propre garde-fou | Actif, non négociable |
-| DT-006 | Tests embarqués dans le HTML — 436 tests, 53 catégories | Actif |
+| DT-006 | Tests embarqués dans le HTML — 453 tests, 54 catégories | Actif |
 | DT-007 | Langage observationnel AMF — grep automatique dans tests | Actif, non négociable |
 | DT-008 | Rapport HTML hébergé (Vercel Blob) — PDF côté client via window.print() | Actif — remplace Puppeteer |
 | DT-009 | Single API call narrator — 12 slots JSON, claude-sonnet-4 | Actif |
@@ -325,11 +325,11 @@ recommandation(s) / recommendation(s)
 
 ## 7. HISTORIQUE DES AUDITS
 
-**Score actuel: 92/100 — 436 tests moteur, 53 catégories, 0 failures**
+**Score actuel: 453 tests moteur, 54 catégories, 0 failures + 200 tests debt tool**
 
 | Audit | Contenu | Résultat |
 |-------|---------|---------|
-| R1–R5 | calcTax 13 provinces, QPP/RRQ, OAS, GIS, withdrawal, couple, estate | 342→436 tests, fiables |
+| R1–R5 | calcTax 13 provinces, QPP/RRQ, OAS, GIS, withdrawal, couple, estate | 342→453 tests, fiables |
 | R6 | Race condition React → setTimeout(300) + _mcProfileDirty flag | Fix critique |
 | R7 | Phantom withdrawals — 8 paths affichaient retraits quand patrimoine = 0$ | Fix |
 | R8 | Display audit exhaustif — 17/17 data paths engine→screen | Fix |
@@ -345,12 +345,17 @@ recommandation(s) / recommendation(s)
 | 2026-02-27 | **Landing v9 audit AMF/BSIF** — 0 terme interdit | ✅ |
 | 2026-02-27 | **Debt tool** — 200 tests, 161 paires bilingues, 0 accent manquant | ✅ |
 | 2026-02-27 | **Guides 101 + 201/301** — audit AMF 0 infraction | ✅ |
-| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner_v2, 436 tests, optimizeDecum ajouté | ✅ |
+| 2026-02-27 | **Engine sync** — lib/engine/index.js = planner_v2, 453 tests, optimizeDecum ajouté | ✅ |
 | 2026-02-27 | **Pipeline E2E** — Quiz→Stripe→Webhook→MC→Blob→Email validé en prod | ✅ |
 | 2026-02-28 | **AI narration P1.4** — buildAIPrompt + DerivedProfile + sanitizeAISlots + Anthropic call wired in webhook | ✅ |
 | 2026-03-01 | **Report v6 polish** — 15 rendering fixes (grade ring, fan chart, TL;DR, print theme, tooltips, TOC, mobile) | ✅ |
 | 2026-03-01 | **Debt tool UX restructure** — progressive disclosure, tab graying, micro-CTAs, basePayoff fix, marginal rate label | ✅ |
 | 2026-03-01 | **Email template refactor** — table-based, bilingual, AMF compliant | ✅ |
+| 2026-03-02 | **S1 Expert infra** — KV Upstash, auth magic link, rate limiting, checkout multi-tier, webhook Expert | ✅ |
+| 2026-03-03 | **Audit complet 11 phases** — 9 blockers, 12 high-priority, 21 correctifs appliqués | ✅ |
+| 2026-03-03 | **Panel 12 experts** — score moyen 71.1/100 YELLOW, GO conditionnel soft launch | ✅ |
+| 2026-03-03 | **Engine audit** — 17 nouveaux tests (436→453), GIS/QC bracket fixes, sync 3 files | ✅ |
+| 2026-03-03 | **Security hardening** — CSP headers, rate limiting magic-link, admin alerts, HTTP 500 on errors | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"

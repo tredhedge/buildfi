@@ -27,8 +27,11 @@ buildfi/
 ├── app/
 │   ├── api/
 │   │   ├── ai-narrate/route.ts    # Standalone AI narration test endpoint
-│   │   ├── checkout/route.ts      # Stripe checkout session (multi-tier)
-│   │   └── webhook/route.ts       # Stripe webhook → MC → AI → report → email
+│   │   ├── auth/verify/route.ts   # GET — token verification → profile summary
+│   │   ├── auth/magic-link/route.ts # POST — send fresh magic link email
+│   │   ├── checkout/route.ts      # Stripe checkout (report/addon/second types)
+│   │   ├── referral/generate/route.ts # GET — referral link + stats
+│   │   └── webhook/route.ts       # Stripe webhook → MC/Expert/addon/referral/renewal
 │   ├── merci/                     # Post-purchase thank you page
 │   ├── outils/dettes/
 │   │   ├── page.jsx               # Debt tool (1,475 lines, React JSX)
@@ -45,6 +48,10 @@ buildfi/
 │   ├── report-html-inter.js       # Intermediaire 16-section report (1,003 lines)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
 │   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
+│   ├── email-expert.ts            # Expert emails: magic link + report delivery
+│   ├── kv.ts                      # Upstash Redis — Expert profiles, referrals, idempotency
+│   ├── auth.ts                    # Token verification (query param + Bearer header)
+│   ├── rate-limit.ts              # Sliding-window rate limiting (exports 20/day, recalcs 100/day)
 │   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
 │   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
@@ -53,18 +60,17 @@ buildfi/
 │   ├── logo-dark.svg, logo-light.svg
 │   └── robots.txt
 ├── tests/
-│   └── debt-tool-tests.js         # Debt tool test suite (200 tests)
-├── docs/                          # Project documentation (10 files)
-│   ├── STATUS.md                  # Current state — read first each session
-│   ├── SERVICES.md                # Accounts, DNS, credentials, payment flows
+│   ├── debt-tool-tests.js         # Debt tool test suite (200 tests)
+│   └── s1-infrastructure.test.ts  # S1 Expert infra tests (23 tests)
+├── docs/                          # Project documentation (8 files)
+│   ├── STATUS.md                  # Current state + roadmap — read first each session
+│   ├── SERVICES.md                # Accounts, DNS, credentials, env vars, payment flows
 │   ├── TECH-REFERENCE.md          # Architecture, code standards, audits, AMF compliance
 │   ├── STRATEGY.md                # Brand, positioning, marketing, competitors, pricing
-│   ├── ROADMAP.md                 # Phases, milestones, go/no-go criteria
 │   ├── ARCHITECTURE.md            # Dependency graph, 60+ components, 80+ connections
 │   ├── STRATEGY-EXPERT-PLAN.md    # Expert tier bible — product, pricing, segments, bilan annuel
 │   ├── EXPERT-EXECUTION-PLAN.md   # Expert build sessions S1-S14, audits, manual steps
-│   ├── EXPERT-IDENTITY-ALIGNMENT.md # Brand conformity grids per Expert component
-│   └── buildfi-infra-map.jsx      # Interactive infrastructure visualization (React)
+│   └── EXPERT-IDENTITY-ALIGNMENT.md # Brand conformity grids per Expert component
 ├── planner.html                   # Source of truth (~15,600 lines, 453 tests)
 ├── quiz-essentiel.html            # Root copy (legacy)
 ├── quiz-intermediaire.html        # Intermediaire quiz (WIP)
@@ -74,11 +80,10 @@ buildfi/
 ## Documentation Guide
 | Doc | Purpose | When to read |
 |-----|---------|-------------|
-| **STATUS.md** | What's done, what's blocked, next actions | Start of every session |
-| **SERVICES.md** | DNS, Stripe, Resend, Blob, env vars | Infra/deployment tasks |
+| **STATUS.md** | What's done, what's blocked, roadmap, next actions | Start of every session |
+| **SERVICES.md** | DNS, Stripe, Resend, Blob, env vars, payment flows | Infra/deployment tasks |
 | **TECH-REFERENCE.md** | Code standards, audit history, AMF rules | Before writing code |
-| **STRATEGY.md** | Brand voice, competitors, landing page | Marketing/copy tasks |
-| **ROADMAP.md** | Phase sequencing, go/no-go gates | Planning/prioritization |
+| **STRATEGY.md** | Brand voice, competitors, pricing, landing page | Marketing/copy tasks |
 | **ARCHITECTURE.md** | Component dependency graph (60+ nodes) | Before modifying a component |
 | **STRATEGY-EXPERT-PLAN.md** | Expert tier spec (22 sections) — the bible | Expert tier development |
 | **EXPERT-EXECUTION-PLAN.md** | Session-by-session build plan (S1-S14) | Expert tier execution |
@@ -174,8 +179,9 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **Debt tool UX restructured** — progressive tabs, micro-CTAs, 200 tests pass
 - **Email template refactored** — table-based, AMF compliant, bilingual
 - **Expert planning COMPLETE** — STRATEGY-EXPERT-PLAN v4, EXECUTION-PLAN, IDENTITY-ALIGNMENT all documented
+- **SESSION S1 COMPLETE (2026-03-02)** — Expert infrastructure: KV (Upstash Redis), auth (magic link), rate limiting, checkout (report/addon/second), webhook (Expert/addon/referral/renewal), email templates, 23 tests pass
 - Essentiel: near launch, 3 infra blockers (Blob public, Resend DNS, ANTHROPIC_API_KEY)
-- Next: fix infra blockers → E2E test → pages legales → soft launch Essentiel → Expert build (S1-S10)
+- Next: S2 (Quiz Expert) → S3 (API simulate/optimize)
 
 ## Commands
 ```bash
@@ -200,11 +206,12 @@ npm run build
 ## Key Environment Variables
 ```
 STRIPE_SECRET_KEY, STRIPE_PRICE_ESSENTIEL, STRIPE_WEBHOOK_SECRET
-STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT          # To configure
-STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON   # To configure
+STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT
+STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, NEXT_PUBLIC_BASE_URL
 RESEND_API_KEY, RESEND_FROM
 BLOB_READ_WRITE_TOKEN
+KV_REST_API_URL, KV_REST_API_TOKEN  # Upstash Redis (Expert profiles, auth, rate limiting)
 ANTHROPIC_API_KEY              # Server-side only — add to Vercel to activate AI narration
 NEXT_PUBLIC_POSTHOG_KEY
 ```

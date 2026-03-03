@@ -250,7 +250,7 @@ def make_credit_scale():
         (600, 650, HexColor('#e8a040'), "Passable"),
         (650, 700, GOLD, "Bon"),
         (700, 760, FOREST, "Très bon"),
-        (760, 900, HexColor('#0e6930'), "Excellent"),
+        (760, 900, FOREST, "Excellent"),
     ]
     total = 900 - 300
     for lo, hi, col, label in segs:
@@ -323,7 +323,7 @@ def make_compound_interest_chart():
 
     # Parameters
     lw = 100
-    bw = CW - lw - 50
+    bw = CW - lw - 70
     max_val = 149745  # 10K at 7% for 40 years
 
     scenarios = [
@@ -362,7 +362,7 @@ def make_reer_vs_celi_chart():
     d.add(String(CW/2, 102, "REER vs CÉLI — Qui gagne?", fontSize=8.5, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
     lw = 155
-    bw = CW - lw - 10
+    bw = CW - lw - 75
 
     scenarios = [
         ("Taux baisse à la retraite", "REER gagne", 0.72, MARINE, "Ex: 45 % → 30 %"),
@@ -396,7 +396,7 @@ def make_avalanche_vs_snowball():
     d.add(String(CW/2, 88, "3 dettes (carte 19,99 %, auto 6,5 %, ligne 9 %) — Remboursement en 3 ans", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
     lw = 130
-    bw = CW - lw - 80
+    bw = CW - lw - 120  # more right margin for annotations
     max_int = 4800  # scale
 
     items = [
@@ -413,8 +413,11 @@ def make_avalanche_vs_snowball():
         w = interest / max_int * bw
         d.add(Rect(lw, y, w, 18, fillColor=col, strokeColor=None))
         val_str = f"{interest:,} $ d'intérêts".replace(",", "\u202f")
-        d.add(String(lw + w + 6, y+3, val_str, fontSize=8, fontName='BodyBold', fillColor=col))
-        d.add(String(lw + w + 6 + len(val_str)*5 + 20, y+3, note, fontSize=7, fontName='Body', fillColor=TEXT_MED))
+        # Value label right of bar
+        tx = lw + w + 6
+        d.add(String(tx, y+6, val_str, fontSize=8, fontName='BodyBold', fillColor=col))
+        # Annotation below the value, same x position
+        d.add(String(tx, y-3, note, fontSize=7, fontName='Body', fillColor=TEXT_MED))
 
     return d
 
@@ -587,6 +590,11 @@ def build():
         "</font>", S['body']))
     story.append(Spacer(1, 16))
 
+    story.append(PullQuote("Seulement 31\u00a0% des Canadiens ont un plan financier écrit. Ce guide vous donne les outils pour faire partie de ce groupe."))
+    story.append(Paragraph(
+        "<font name='Body' size='7' color='#888888'>— FP Canada, Sondage sur la planification financière, 2023</font>",
+        ParagraphStyle('src', fontName='Body', fontSize=7, textColor=TEXT_LIGHT, leading=9, alignment=TA_RIGHT, spaceBefore=0, spaceAfter=8)))
+
     # ═══ CH 1 — PORTRAIT ═══
     story.append(KeepTogether([
         ChapterHeader("1", "Votre portrait financier", "Savoir où vous en êtes — en 5 minutes"),
@@ -659,7 +667,7 @@ def build():
 
     story.append(Paragraph("Le piège du paiement minimum", S['h2']))
     story.append(make_debt_comparison())
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Deux stratégies de remboursement", S['h2']))
     story.append(Paragraph(
@@ -683,6 +691,7 @@ def build():
     ]))
 
     # ═══ CH 4 — CRÉDIT ═══
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("4", "Le crédit — le score invisible", "Celui qui décide si vous obtenez cette hypothèque"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -691,7 +700,7 @@ def build():
         "et parfois vos perspectives d'emploi.", S['body_intro']))
 
     story.append(make_credit_scale())
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Ce qui fait monter (ou descendre) votre cote", S['h2']))
     story.append(Paragraph(
@@ -718,7 +727,7 @@ def build():
         "sur 25 ans. Votre cote a un prix réel.", S['body']))
 
     # ═══ CH 5 — CASCADE ÉPARGNE ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("5", "L'épargne — la cascade de vos dollars", "Chaque dollar a une place optimale"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -757,7 +766,14 @@ def build():
         "La différence? 10 ans de croissance composée de plus. C'est pourquoi le meilleur moment "
         "pour commencer à épargner est maintenant.", S['body']))
 
-    story.append(Spacer(1, 16))
+    story.append(InfoBox('attention', 'L\'ennemi silencieux — l\'inflation', [
+        'Une inflation de 3\u00a0% par année réduit votre pouvoir d\'achat de moitié en 24 ans. '
+        '100\u00a0$ aujourd\'hui ne vaudront que 50\u00a0$ en pouvoir d\'achat réel en 2050. '
+        'C\'est pourquoi l\'argent qui dort dans un compte chèques perd de la valeur chaque jour — '
+        'et pourquoi investir, même modestement, est essentiel pour préserver ce que vous avez.',
+    ]))
+
+    story.append(Spacer(1, 24))
 
     # ═══ CH 6 — COMPTES ═══
     story.append(ChapterHeader("6", "Vos comptes expliqués", "REER, CÉLI, CELIAPP — sans jargon"))
@@ -803,7 +819,7 @@ def build():
         'Vous produisez <font name="BodyBold">deux déclarations</font> (fédérale + provinciale). Taux marginaux parmi les plus élevés au Canada — le REER y est particulièrement avantageux pour les hauts revenus. Les règles des comptes enregistrés sont les mêmes partout — c\'est la fiscalité qui varie.',
     ]))
 
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 24))
 
     # ═══ CH 7 — GOUVERNEMENT ═══
     story.append(ChapterHeader("7", "Le gouvernement et vous", "Ce que vous recevrez — et quand"))
@@ -815,7 +831,7 @@ def build():
     story.append(InfoBox('quebec', 'QUÉBEC vs RESTE DU CANADA', [
         'Au Québec\u00a0: <font name="BodyBold">Régime de rentes du Québec (RRQ)</font>. Ailleurs\u00a0: <font name="BodyBold">Régime de pensions du Canada (RPC)</font>. Les règles sont similaires, mais les montants et calculs diffèrent légèrement. Si vous avez travaillé aux deux endroits, vos cotisations sont consolidées.',
     ]))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Le RRQ / RPC — Le choix de l'âge change tout", S['h2']))
     story.append(make_rrq_chart())
@@ -851,7 +867,7 @@ def build():
         '• <font name="BodyBold">SRG</font> — Revenus modestes, jusqu\'à 1\u202f109\u00a0$/mois, non imposable. Le CÉLI le protège.',
     ]))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 24))
 
     # ═══ CH 8 — ASSURANCES ═══
     story.append(KeepTogether([
@@ -920,7 +936,7 @@ def build():
         story.append(Spacer(1, 4))
 
     # ═══ CH 9 — PROCHAIN PAS ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("9", "Votre prochain pas", "5 actions concrètes — cette semaine"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -945,7 +961,9 @@ def build():
     story.append(GoldRule(80, 1))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
-        "Ce guide vous a donné les bases. Votre Bilan BuildFi va plus loin\u00a0:", S['body']))
+        "Vous connaissez maintenant les règles. La question\u00a0: "
+        "<font name='BodyBold'>comment s'appliquent-elles à votre situation exacte?</font> "
+        "Votre Bilan BuildFi le calcule — pour vous, votre province, votre couple.", S['body']))
 
     story.append(InfoBox('dollars', 'CE QUE VOTRE BILAN VOUS DONNE', [
         '<font name="BodyBold">Note de préparation</font> — Un score de 0 à 100 qui résume votre situation.',
@@ -953,7 +971,7 @@ def build():
         '<font name="BodyBold">Simulation Monte Carlo</font> — 5\u202f000 scénarios de marché testés sur votre plan, pas des moyennes génériques.',
     ]))
 
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 10))
 
     # ═══ PRINCIPES BUILDFI ═══
     story.append(InfoBox('bon', 'Les 3 principes BuildFi', [
@@ -962,9 +980,9 @@ def build():
         '<font name="BodyBold">3. Simplicité avant sophistication.</font> Un plan simple que vous suivez bat un plan complexe que vous abandonnez.',
     ]))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
     story.append(GoldRule(CW - 60, 0.5))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     # ═══ SOURCES ═══
     story.append(Paragraph("<font name='BodyBold' size='7.5'>Sources</font>", S['disclaimer']))
@@ -973,6 +991,7 @@ def build():
         "Agence du revenu du Canada (ARC)\u00a0: plafonds REER, CÉLI, CELIAPP 2026. "
         "Service Canada\u00a0: montants PSV, SRG, seuils de récupération Q1\u00a02026. "
         "Retraite Québec / Régime de pensions du Canada\u00a0: rentes RRQ/RPC 2026. "
+        "FP Canada (2023)\u00a0: sondage sur la planification financière. "
         "Angus Reid Institute (2022)\u00a0: sondage sur les dépenses imprévues. "
         "Association canadienne des compagnies d'assurances de personnes (CLHIA)\u00a0: statistiques d'invalidité. "
         "Equifax Canada / TransUnion\u00a0: échelle de cotes de crédit.", S['disclaimer']))

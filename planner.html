@@ -1171,7 +1171,7 @@ var FED_PERSONAL = 16452; // 2026 basic personal amount
 var OAS_CLAWBACK_THR = 95323; // 2026 OAS recovery threshold
 var OAS_MAX_MONTHLY = 742.31;
 var GIS_MAX_SINGLE = 1105.43; // 2026 Q1
-var GIS_MAX_COUPLE = 665.41; // 2026 Q1 (spouse receives full OAS)
+var GIS_MAX_COUPLE = 667.41; // 2026 Q1 (spouse receives full OAS)
 var QPP_MAX_MONTHLY = 1507.65; // 2026 CPP/QPP max monthly at 65 (incl. enhancement)
 var QPP_MGA = 74600; // 2026 YMPE
 var QPP_YAMPE = 85000; // 2026 YAMPE
@@ -1191,7 +1191,7 @@ var TFSA_LIMIT_2026 = 7000;
 var PROV_TAX = {
   // eligDivCr / nonEligDivCr: provincial dividend tax credit rates (% of grossed-up amount)
   // Ref: PASSATION_CCPC_MODULE.md §2.4 — RCGT / EY 2025-2026 tables
-  QC: { b: [54345, 108730, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362 , ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
+  QC: { b: [54345, 108680, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362 , ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
   ON: { b: [53891, 107785, 15e4, 22e4], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863 , ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
   BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196 , ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
   AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218 , ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
@@ -9241,7 +9241,7 @@ React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, textTransfo
     2: fr ? "Vos sources de revenus \u00e0 la retraite : gouvernement, retraits et pension. Les montants sont m\u00e9dians sur " + nSim + " simulations." : "Your retirement income sources: government, withdrawals and pension. Amounts are median across " + nSim + " simulations.",
     3: fr ? "Sensibilit\u00e9 de votre plan aux hypoth\u00e8ses cl\u00e9s. D\u00e9placez un curseur pour voir l'impact sur le taux de succ\u00e8s." : "Plan sensitivity to key assumptions. Adjust a slider to see the impact on success rate.",
     4: fr ? "Visualisez votre taux marginal et l'impact fiscal de vos d\u00e9cisions. L'alpha fiscal mesure les \u00e9conomies de votre strat\u00e9gie." : "See your marginal rates and the tax impact of your decisions. Tax alpha measures your strategy's savings.",
-    5: fr ? "Score global de votre plan. Les recommandations sont class\u00e9es par impact. Cliquez sur une action pour l'appliquer." : "Your plan's overall score. Recommendations are ranked by impact. Click an action to apply it.",
+    5: fr ? "Score global de votre plan. Les observations sont class\u00e9es par impact. Cliquez sur une action pour l'appliquer." : "Your plan's overall score. Observations are ranked by impact. Click an action to apply it.",
     6: fr ? "Testez la r\u00e9silience de votre plan face aux krachs, inflation et long\u00e9vit\u00e9. Chaque stress test relance " + nSim + " simulations." : "Test your plan's resilience against crashes, inflation and longevity. Each stress test reruns " + nSim + " simulations.",
     7: fr ? "Projection ann\u00e9e par ann\u00e9e de vos finances. Basculez entre Famille, Principal et Conjoint." : "Year-by-year projection of your finances. Switch between Family, Primary and Spouse views.",
     8: fr ? "Estimation de l'h\u00e9ritage net apr\u00e8s imp\u00f4ts au d\u00e9c\u00e8s, droits de succession et frais d'homologation." : "Net estate estimate after taxes at death, succession duties and probate fees.",
@@ -10312,7 +10312,7 @@ StratBadge(true), React.createElement("div", { style: { marginTop: 10, backgroun
       E("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 } },
         E("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
           E("span", { style: { fontSize: FS.lg } }, ""),
-          E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, letterSpacing: -0.3 } }, fr ? "Recommandations" : "Recommendations")
+          E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, letterSpacing: -0.3 } }, fr ? "Observations" : "Observations")
         ),
         E("div", { style: { fontSize: FS.md, color: CL.dm, padding: "6px 16px", background: CL.cd, borderRadius: RAD.lg + 4, border: "1px solid " + CL.bd } }, recos.length + (fr ? " identifi\u00e9es" : " identified"))
       ),
@@ -10331,7 +10331,7 @@ StratBadge(true), React.createElement("div", { style: { marginTop: 10, backgroun
           );
         })
       ),
-      E("div", { style: { marginTop: 10, fontSize: FS.xs, color: CL.dm, textAlign: "center", opacity: 0.6 } }, fr ? "\u26a0\ufe0f Recommandations auto-g\u00e9n\u00e9r\u00e9es. Ne constituent pas un avis financier." : "\u26a0\ufe0f Auto-generated. Not personalized financial advice.")
+      E("div", { style: { marginTop: 10, fontSize: FS.xs, color: CL.dm, textAlign: "center", opacity: 0.6 } }, fr ? "\u26a0\ufe0f Observations auto-g\u00e9n\u00e9r\u00e9es. Ne constituent pas un avis financier." : "\u26a0\ufe0f Auto-generated observations. Not personalized financial advice.")
     ) : E("div", { style: { marginBottom: 16, padding: 16, background: "rgba(56,152,90,0.06)", borderRadius: RAD.md + 4, border: "1px solid rgba(56,152,90,0.2)", textAlign: "center" } }, E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac } }, fr ? "Plan bien optimis\u00e9" : "Well optimized")),
 
     // \u2550 SECTION 3: RISK DASHBOARD \u2550
@@ -10839,7 +10839,7 @@ snapshots.length > 0 && (tab === 5 || tab === 23 || tab === 24) && mc && React.c
         (function() {
           var top = mc.sens[0];
           var impact = Math.max(Math.abs(top.lo), Math.abs(top.hi));
-          if (impact > 15) return lang === "fr" ? "Votre plan est tr\u00e8s sensible \u00e0 " + top.name + ". Un \u00e9cart de \u00b11 \u00e9cart-type change votre succ\u00e8s de " + impact.toFixed(0) + " points. Priorisez la gestion de ce facteur." : "Your plan is highly sensitive to " + top.name + ". A \u00b11 std dev shift changes success by " + impact.toFixed(0) + " points. Prioritize managing this factor.";
+          if (impact > 15) return lang === "fr" ? "Votre plan est tr\u00e8s sensible \u00e0 " + top.name + ". Un \u00e9cart de \u00b11 \u00e9cart-type change votre succ\u00e8s de " + impact.toFixed(0) + " points. Ce facteur m\u00e9rite une attention particuli\u00e8re." : "Your plan is highly sensitive to " + top.name + ". A \u00b11 std dev shift changes success by " + impact.toFixed(0) + " points. This factor warrants particular attention.";
           if (impact > 8) return lang === "fr" ? "Sensibilit\u00e9 mod\u00e9r\u00e9e \u00e0 " + top.name + " (\u00b1" + impact.toFixed(0) + " pts). Votre plan r\u00e9siste raisonnablement aux variations, mais restez vigilant." : "Moderate sensitivity to " + top.name + " (\u00b1" + impact.toFixed(0) + " pts). Your plan holds up reasonably, but stay vigilant.";
           return lang === "fr" ? "Faible sensibilit\u00e9 globale (\u00b1" + impact.toFixed(0) + " pts max). Votre plan est robuste face aux variations de param\u00e8tres." : "Low overall sensitivity (\u00b1" + impact.toFixed(0) + " pts max). Your plan is robust against parameter variations.";
         })()
@@ -11894,8 +11894,8 @@ tab === 12 && (function() {
             E("div", { style: { fontSize: FS.sm, color: CL.dm } }, _sf > 0 ? (fr ? "Manque" : "Shortfall") : (fr ? "Surplus" : "Surplus")))
         ),
         _sf > 0 ? E("div", { style: { fontSize: FS.sm, color: CL.dm, marginTop: 8, lineHeight: 1.5 } },
-          fr ? "Il faut ~" + f$(_pvG) + " d'\u00e9pargne (VA) pour combler l'\u00e9cart. Vous avez " + f$(_curS) + "."
-             : "Need ~" + f$(_pvG) + " in savings (PV) to fill the gap. You have " + f$(_curS) + ".") : null
+          fr ? "Environ " + f$(_pvG) + " d'\u00e9pargne (VA) serait n\u00e9cessaire pour combler l'\u00e9cart. Vous avez " + f$(_curS) + "."
+             : "Approximately " + f$(_pvG) + " in savings (PV) would be needed to fill the gap. You have " + f$(_curS) + ".") : null
       ) : E("div", { style: { marginBottom: 14, padding: 10, background: "rgba(56,152,90,.04)", borderRadius: RAD.md, border: "1px solid rgba(56,152,90,.2)", textAlign: "center" } },
         E("div", { style: { fontSize: FS.md, color: CL.gn } }, fr ? "Revenus garantis couvrent 100%+ des d\u00e9penses" : "Guaranteed income covers 100%+ of spending"));
     }()),
@@ -12842,9 +12842,9 @@ tab === 18 && (function() {
         E("div", { style: { fontSize: FS.xs, color: CL.dm } }, lang === "fr" ? "Hypoth\u00e8ques" : "Mortgages")))
     ,
 
-    // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 SECTION 2: PERSONALIZED RECOMMENDATIONS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+    // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 SECTION 2: PERSONALIZED OBSERVATIONS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
     recs.length > 0 && E(F, null,
-      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2], marginTop: 8, borderBottom: "1px solid " + CL.bd, paddingBottom: 4 } }, lang === "fr" ? "Recommandations personnalis\u00e9es" : "Personalized Recommendations"),
+      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2], marginTop: 8, borderBottom: "1px solid " + CL.bd, paddingBottom: 4 } }, lang === "fr" ? "Observations personnalis\u00e9es" : "Personalized Observations"),
       recs.map(function(r, i) {
         return E("div", { key: "rec" + i, style: { display: "flex", gap: 10, padding: "10px 12px", marginBottom: 6, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, borderLeft: "4px solid " + sevColor(r.severity) } },
           E("div", { style: { fontSize: FS.lg, flexShrink: 0 } }, r.icon),
@@ -12883,7 +12883,7 @@ tab === 18 && (function() {
           // Verdict explanation
           E("div", { style: { fontSize: FS.base, color: CL.dm, lineHeight: 1.5, marginBottom: 6 } },
             da.dvi.breakeven === "pay_debt"
-              ? (lang === "fr" ? "Taux effectif (" + pct(da.effRate) + ") > rendement apr\u00e8s imp\u00f4t (" + pct(afterTaxRet) + "). Chaque dollar rembours\u00e9 = " + pct(da.effRate) + " garanti. Priorisez le remboursement." : "Effective rate (" + pct(da.effRate) + ") > after-tax return (" + pct(afterTaxRet) + "). Every dollar repaid = " + pct(da.effRate) + " guaranteed. Prioritize payoff.")
+              ? (lang === "fr" ? "Taux effectif (" + pct(da.effRate) + ") > rendement apr\u00e8s imp\u00f4t (" + pct(afterTaxRet) + "). Chaque dollar rembours\u00e9 = " + pct(da.effRate) + " garanti. Le remboursement pourrait \u00eatre math\u00e9matiquement avantageux." : "Effective rate (" + pct(da.effRate) + ") > after-tax return (" + pct(afterTaxRet) + "). Every dollar repaid = " + pct(da.effRate) + " guaranteed. Payoff could be mathematically advantageous.")
               : (lang === "fr" ? "Taux effectif (" + pct(da.effRate) + ") < rendement apr\u00e8s imp\u00f4t (" + pct(afterTaxRet) + "). Paiement minimum + investir le surplus." : "Effective rate (" + pct(da.effRate) + ") < after-tax return (" + pct(afterTaxRet) + "). Minimum payment + invest the surplus.")),
           // Toggle amortization
           E("button", { onClick: function() { setShowAmort(isOpen ? -1 : i); }, style: { background: "transparent", border: "1px solid " + CL.bd, color: CL.ac, borderRadius: RAD.sm, padding: "4px 10px", fontSize: FS.base, cursor: "pointer" } },
@@ -14591,7 +14591,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
       E("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 } },
         [
           [fr ? "1. Remplir le wizard" : "1. Complete the wizard", fr ? "Entrez vos informations de base: \u00e2ge, revenus, \u00e9pargne, province. Si vous \u00eates entrepreneur incorpor\u00e9, activez le module Entreprise dans Modules actifs." : "Enter your basic info: age, income, savings, province. If you're an incorporated business owner, enable the Business module in Active Modules.", CL.ac],
-          [fr ? "2. Lire votre Diagnostic" : "2. Read your Diagnostic", fr ? "Votre note, vos indicateurs cl\u00e9s et des recommandations personnalis\u00e9es." : "Your grade, key indicators and personalized recommendations.", CL.gn],
+          [fr ? "2. Lire votre Diagnostic" : "2. Read your Diagnostic", fr ? "Votre note, vos indicateurs cl\u00e9s et des observations personnalis\u00e9es." : "Your grade, key indicators and personalized observations.", CL.gn],
           [fr ? "3. Explorer les onglets" : "3. Explore the tabs", fr ? "Revenus, Projection, Patrimoine \u2014 chaque onglet montre un aspect de votre plan." : "Income, Projection, Wealth \u2014 each tab shows a different aspect of your plan.", CL.bl],
           [fr ? "4. Ajuster et re-simuler" : "4. Adjust and re-simulate", fr ? "Modifiez vos param\u00e8tres dans la barre lat\u00e9rale (\u00e0 gauche), puis cliquez Simuler." : "Change your parameters in the sidebar (left panel), then click Simulate.", CL.or]
         ].map(function(s, i) { return E("div", { key: i, style: { padding: 12, background: CL.s2 || CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd } },
@@ -14660,7 +14660,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
       Hd(fr ? "Les onglets de l'outil" : "The tool's tabs"),
       P(fr ? "Les onglets visibles d\u00e9pendent de votre mode (Essentiel, Standard, Expert). Voici ce que chacun contient:" : "Visible tabs depend on your mode (Essential, Standard, Expert). Here's what each contains:"),
       [
-        [fr ? "Diagnostic" : "Diagnostic", fr ? "Tableau de bord principal. Note de A+ \u00e0 F, indicateurs cl\u00e9s, recommandations personnalis\u00e9es et distribution Monte Carlo." : "Main dashboard. Grade from A+ to F, key indicators, personalized recommendations and Monte Carlo distribution.", "essentiel"],
+        [fr ? "Diagnostic" : "Diagnostic", fr ? "Tableau de bord principal. Note de A+ \u00e0 F, indicateurs cl\u00e9s, observations personnalis\u00e9es et distribution Monte Carlo." : "Main dashboard. Grade from A+ to F, key indicators, personalized observations and Monte Carlo distribution.", "essentiel"],
         [fr ? "Revenus" : "Income", fr ? "D\u00e9composition de vos revenus \u00e0 la retraite: RRQ/PSV, pension, retraits REER/CELI. Inclut le diagramme Sankey (flux visuels), le cash-flow annuel et la strat\u00e9gie de d\u00e9caissement." : "Breakdown of retirement income: QPP/OAS, pension, RRSP/TFSA withdrawals. Includes Sankey diagram (visual flows), annual cash flow and decumulation strategy.", "essentiel"],
         [fr ? "Projection" : "Projection", fr ? "\u00c9volution de votre patrimoine ann\u00e9e par ann\u00e9e avec l'\u00e9ventail de sc\u00e9narios (fan chart P5\u2013P95)." : "Year-by-year wealth evolution with scenario fan chart (P5\u2013P95).", "essentiel"],
         [fr ? "Patrimoine" : "Wealth", fr ? "D\u00e9tail de vos comptes (REER, CELI, NR), bilan net et estimation de l'imp\u00f4t au d\u00e9c\u00e8s." : "Account detail (RRSP, TFSA, non-reg), net balance and estate tax estimation.", "essentiel"],
@@ -15056,8 +15056,8 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
           ]),
           E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.7, marginTop: 8 } },
             lang === "fr"
-              ? "Recommandations : 1 000\u20142 000 pour l'exploration et les ajustements rapides. 5 000+ pour la validation finale d'un plan. Au-del\u00e0 de 3 000, le calcul prend quelques secondes suppl\u00e9mentaires. La trajectoire P50 affich\u00e9e dans les projections est la moyenne des ~1% de simulations les plus proches de la m\u00e9diane finale, ce qui lisse le bruit stochastique tout en pr\u00e9servant la coh\u00e9rence entre les comptes."
-              : "Recommendations: 1,000\u20142,000 for exploration and quick adjustments. 5,000+ for final plan validation. Above 3,000, computation takes a few extra seconds. The P50 path shown in projections averages the ~1% of simulations closest to the median final value, which smooths stochastic noise while preserving inter-account coherence.")
+              ? "Lignes directrices : 1 000\u20142 000 pour l'exploration et les ajustements rapides. 5 000+ pour la validation finale d'un plan. Au-del\u00e0 de 3 000, le calcul prend quelques secondes suppl\u00e9mentaires. La trajectoire P50 affich\u00e9e dans les projections est la moyenne des ~1% de simulations les plus proches de la m\u00e9diane finale, ce qui lisse le bruit stochastique tout en pr\u00e9servant la coh\u00e9rence entre les comptes."
+              : "Guidelines: 1,000\u20142,000 for exploration and quick adjustments. 5,000+ for final plan validation. Above 3,000, computation takes a few extra seconds. The P50 path shown in projections averages the ~1% of simulations closest to the median final value, which smooths stochastic noise while preserving inter-account coherence.")
         )
       )
     ),

@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-02 — v5 (pricing $29/$59/$129, nouveaux produits Stripe, coupons, referral)
+> Mis à jour: 2026-03-03 — v6 (post-audit, env vars consolidé, pricing confirmé)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -47,11 +47,11 @@
 
 | Produit | Prix | Price ID | Status |
 |---------|------|----------|--------|
-| Rapport Essentiel | **$29 CAD** one-time | STRIPE_PRICE_ESSENTIEL | ⚠️ Mettre à jour prix ($39→$29) |
-| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ❌ À configurer |
-| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ❌ À configurer |
-| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ❌ À configurer |
-| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ❌ À configurer |
+| Rapport Essentiel | **$29 CAD** one-time | STRIPE_PRICE_ESSENTIEL | ✅ Configuré |
+| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ⚠️ À configurer en live |
+| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ⚠️ À configurer en live |
+| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ⚠️ À configurer en live |
+| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ⚠️ À configurer en live |
 
 - **Coupons Stripe:**
   - `SECOND50` : 50% off, single-use, lié à l'email du premier achat (2e rapport)
@@ -134,11 +134,11 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | Variable | Usage | Status |
 |----------|-------|--------|
 | `STRIPE_SECRET_KEY` | Checkout + Webhook | ✅ Configurée |
-| `STRIPE_PRICE_ESSENTIEL` | Price ID Essentiel $29 | ⚠️ Mettre à jour ($39→$29) |
-| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ❌ À ajouter |
-| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ❌ À ajouter |
-| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ❌ À ajouter |
-| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ❌ À ajouter |
+| `STRIPE_PRICE_ESSENTIEL` | Price ID Essentiel $29 | ✅ Configurée |
+| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ⚠️ À ajouter en live |
+| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ⚠️ À ajouter en live |
+| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ⚠️ À ajouter en live |
+| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ⚠️ À ajouter en live |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhook signature | ✅ Configurée (whsec_...) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout client-side | ✅ Configurée |
 | `NEXT_PUBLIC_BASE_URL` | URLs dans le code | ✅ Configurée |
@@ -147,7 +147,18 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | `BLOB_READ_WRITE_TOKEN` | Upload Vercel Blob | ✅ Configurée |
 | `BLOBFI_READ_WRITE_TOKEN` | Alias (nom auto du store) | ✅ Configurée |
 | `ANTHROPIC_API_KEY` | Narration AI server-side | ❌ Non configurée — code complete, needs key to activate |
+| `KV_REST_API_URL` | Upstash Redis URL | ⚠️ À ajouter (Expert profiles, auth, rate limiting) |
+| `KV_REST_API_TOKEN` | Upstash Redis token | ⚠️ À ajouter |
+| `ADMIN_EMAIL` | Admin alert recipient | Optionnel — fallback support@buildfi.ca |
 | `NEXT_PUBLIC_POSTHOG_KEY` | Analytics client-side | ✅ Configurée |
+
+### Notes critiques env vars
+1. `NEXT_PUBLIC_BASE_URL` doit être `https://www.buildfi.ca` (pas `buildfi.ca` — le 307 redirect perd le POST body)
+2. Stripe webhook URL dans Stripe Dashboard doit aussi pointer vers `https://www.buildfi.ca/api/webhook`
+3. `ANTHROPIC_API_KEY` doit être ajoutée pour activer la narration AI — sans elle, rapports fonctionnent avec texte statique
+4. `BLOB_READ_WRITE_TOKEN` doit avoir accès public read pour que les URLs rapport fonctionnent
+5. Resend DNS: DKIM/SPF records doivent être configurés sur buildfi.ca pour la délivrabilité email
+6. Toujours redéployer après modification des vars (pas de hot-reload)
 
 ---
 

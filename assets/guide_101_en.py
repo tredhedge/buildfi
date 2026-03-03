@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-BuildFi — Guide 101 EN: Your Financial Basics
-English translation — 1:1 port from French v8.
+BuildFi — Guide 101 EN FINAL: Your Financial Basics
+English translation — 1:1 port from French FINAL v8.
+All formatting fixes applied: margin overflow, FOREST color standardization,
+spacing normalization, complete content parity.
 """
 
 from reportlab.lib.pagesizes import letter
@@ -81,15 +83,15 @@ class GoldRule(Flowable):
 class InfoBox(Flowable):
     BOX_CFG = {
         'dollars':   (GOLD_BG,   GOLD,   GOLD),
-        'didyouknow':(MARINE_BG, MARINE, MARINE),
-        'caution':   (BRICK_BG,  BRICK,  BRICK),
-        'goodtoknow':(FOREST_BG, FOREST, FOREST),
+        'saviez':    (MARINE_BG, MARINE, MARINE),
+        'attention': (BRICK_BG,  BRICK,  BRICK),
+        'bon':       (FOREST_BG, FOREST, FOREST),
         'quebec':    (MARINE_BG, QC_BLUE,QC_BLUE),
         'brief':     (SAND_LIGHT,GOLD,   GOLD),
     }
     LABELS = {
-        'dollars': 'IN DOLLARS', 'didyouknow': 'DID YOU KNOW?',
-        'caution': 'CAUTION', 'goodtoknow': 'GOOD TO KNOW',
+        'dollars': 'IN DOLLARS', 'saviez': 'DID YOU KNOW?',
+        'attention': 'CAUTION', 'bon': 'GOOD TO KNOW',
         'quebec': 'QUEBEC', 'brief': 'IN BRIEF',
     }
 
@@ -102,7 +104,7 @@ class InfoBox(Flowable):
         self._calc()
 
     def _cfg(self):
-        return self.BOX_CFG.get(self.box_type, self.BOX_CFG['didyouknow'])
+        return self.BOX_CFG.get(self.box_type, self.BOX_CFG['saviez'])
 
     def _calc(self):
         bg, accent, tc = self._cfg()
@@ -188,10 +190,13 @@ class PullQuote(Flowable):
         return (aw, self.height)
     def draw(self):
         c = self.canv
+        # top line
         c.setStrokeColor(GOLD_LIGHT); c.setLineWidth(1)
         mid = self._aw / 2
         c.line(mid-50, self.height-4, mid+50, self.height-4)
+        # text
         self._p.drawOn(c, 30, 10)
+        # bottom line
         c.line(mid-50, 6, mid+50, 6)
 
 
@@ -202,12 +207,15 @@ def make_budget_chart():
     d = Drawing(CW, 60)
     bar_y, bar_h = 20, 28
     w_need = CW * 0.50; w_want = CW * 0.30; w_future = CW * 0.20
+    # bars
     d.add(Rect(0, bar_y, w_need, bar_h, fillColor=MARINE, strokeColor=None))
     d.add(Rect(w_need, bar_y, w_want, bar_h, fillColor=GOLD, strokeColor=None))
     d.add(Rect(w_need+w_want, bar_y, w_future, bar_h, fillColor=FOREST, strokeColor=None))
+    # labels inside
     d.add(String(w_need/2, bar_y+9, "Needs \u2014 50%", fontSize=9, fontName='BodyBold', fillColor=white, textAnchor='middle'))
     d.add(String(w_need+w_want/2, bar_y+9, "Wants \u2014 30%", fontSize=9, fontName='BodyBold', fillColor=white, textAnchor='middle'))
     d.add(String(w_need+w_want+w_future/2, bar_y+9, "Future \u2014 20%", fontSize=8, fontName='BodyBold', fillColor=white, textAnchor='middle'))
+    # amounts below
     d.add(String(w_need/2, 4, "$2,100", fontSize=8, fontName='Mono', fillColor=MARINE, textAnchor='middle'))
     d.add(String(w_need+w_want/2, 4, "$1,260", fontSize=8, fontName='Mono', fillColor=GOLD, textAnchor='middle'))
     d.add(String(w_need+w_want+w_future/2, 4, "$840", fontSize=8, fontName='Mono', fillColor=FOREST, textAnchor='middle'))
@@ -216,31 +224,35 @@ def make_budget_chart():
 def make_debt_comparison():
     """Min payment vs fixed payment comparison - horizontal bars"""
     d = Drawing(CW, 80)
-    lw = 140
+    lw = 140  # label width
     bw = CW - lw - 10
+    # Row 1 - minimum
     y1 = 48
     d.add(String(0, y1+4, "Minimum payment", fontSize=8.5, fontName='BodyBold', fillColor=BRICK))
-    bar1_w = bw
+    bar1_w = bw  # full = 30 years
     d.add(Rect(lw, y1, bar1_w, 18, fillColor=BRICK_BG, strokeColor=BRICK, strokeWidth=0.5))
     d.add(String(lw+bar1_w/2, y1+4, "30+ years  \u2022  $12,000 in interest", fontSize=8, fontName='Body', fillColor=BRICK, textAnchor='middle'))
+    # Row 2 - fixed 200
     y2 = 16
     d.add(String(0, y2+4, "$200/mo (fixed)", fontSize=8.5, fontName='BodyBold', fillColor=FOREST))
-    bar2_w = bw * (2.67/30)
+    bar2_w = bw * (2.67/30)  # 2.67 years out of 30
     d.add(Rect(lw, y2, bar2_w, 18, fillColor=FOREST_BG, strokeColor=FOREST, strokeWidth=0.5))
     d.add(String(lw+bar2_w+8, y2+4, "2 years 8 months  \u2022  $1,500 in interest", fontSize=8, fontName='Body', fillColor=FOREST))
+    # Title
     d.add(String(CW/2, 74, "$5,000 in debt at 19.99%", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
     return d
 
 def make_credit_scale():
-    """Visual credit score scale"""
+    """Visual credit score scale — FOREST standardized"""
     d = Drawing(CW, 55)
     bar_y, bar_h = 22, 16
+    # Segments — FOREST (#1a7a4c) used consistently for green segments
     segs = [
         (300, 600, BRICK, "Poor"),
         (600, 650, HexColor('#e8a040'), "Fair"),
         (650, 700, GOLD, "Good"),
         (700, 760, FOREST, "Very Good"),
-        (760, 900, HexColor('#0e6930'), "Excellent"),
+        (760, 900, FOREST, "Excellent"),
     ]
     total = 900 - 300
     for lo, hi, col, label in segs:
@@ -248,9 +260,11 @@ def make_credit_scale():
         w = (hi - lo) / total * CW
         d.add(Rect(x, bar_y, w, bar_h, fillColor=col, strokeColor=None))
         d.add(String(x + w/2, bar_y + 3, label, fontSize=7, fontName='BodyBold', fillColor=white, textAnchor='middle'))
+    # Tick marks below
     for val in [300, 600, 650, 700, 760, 900]:
         x = (val - 300) / total * CW
         d.add(String(x, 10, str(val), fontSize=7, fontName='Mono', fillColor=TEXT_MED, textAnchor='middle'))
+    # Title
     d.add(String(CW/2, 46, "Canadian Credit Score (Equifax / TransUnion)", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
     return d
 
@@ -270,7 +284,7 @@ def make_rrq_chart():
         d.add(String(0, y+5, label, fontSize=9, fontName='BodyBold', fillColor=col))
         bar_w = val / max_val * bw
         d.add(Rect(lw, y, bar_w, 18, fillColor=col, strokeColor=None, rx=3, ry=3))
-        d.add(String(lw + bar_w + 6, y+4, f"${val:,}/mo".replace(",", ","), fontSize=8.5, fontName='Mono', fillColor=col))
+        d.add(String(lw + bar_w + 6, y+4, f"${val:,}/mo", fontSize=8.5, fontName='Mono', fillColor=col))
     d.add(String(CW/2, 80, "Estimated monthly pension by starting age", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
     return d
 
@@ -309,9 +323,10 @@ def make_compound_interest_chart():
     d = Drawing(CW, 130)
     d.add(String(CW/2, 122, "$10,000 invested once \u2014 7%/year return", fontSize=8.5, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
+    # Parameters — right margin matches FR (70px)
     lw = 100
-    bw = CW - lw - 50
-    max_val = 149745
+    bw = CW - lw - 70
+    max_val = 149745  # 10K at 7% for 40 years
 
     scenarios = [
         ("At 25 (40 years)", 10000 * (1.07**40), 40, FOREST),
@@ -322,13 +337,20 @@ def make_compound_interest_chart():
     for i, (label, final_val, years, col) in enumerate(scenarios):
         y = 88 - i * 32
         d.add(String(0, y+5, label, fontSize=8, fontName='BodyBold', fillColor=col))
+
+        # Bar
         w = final_val / max_val * bw
         d.add(Rect(lw, y, w, 22, fillColor=col, strokeColor=None))
+
+        # Initial amount marker
         w_init = 10000 / max_val * bw
         d.add(Rect(lw, y, w_init, 22, fillColor=None, strokeColor=white, strokeWidth=1))
+
+        # Value label
         val_str = f"${final_val:,.0f}"
         d.add(String(lw + w + 6, y+5, val_str, fontSize=9, fontName='BodyBold', fillColor=col))
 
+    # Legend
     d.add(String(lw, 8, "$10,000 initial", fontSize=7, fontName='Body', fillColor=TEXT_MED))
     d.add(Line(lw+72, 12, lw+90, 12, strokeColor=white, strokeWidth=1.5))
     d.add(String(lw+95, 8, "= initial amount", fontSize=7, fontName='Body', fillColor=TEXT_LIGHT))
@@ -341,8 +363,9 @@ def make_rrsp_vs_tfsa_chart():
     d = Drawing(CW, 110)
     d.add(String(CW/2, 102, "RRSP vs TFSA \u2014 Who wins?", fontSize=8.5, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
+    # Right margin matches FR (75px)
     lw = 155
-    bw = CW - lw - 10
+    bw = CW - lw - 75
 
     scenarios = [
         ("Rate drops at retirement", "RRSP wins", 0.72, MARINE, "E.g. 45% \u2192 30%"),
@@ -355,6 +378,7 @@ def make_rrsp_vs_tfsa_chart():
         d.add(String(0, y+8, label, fontSize=8, fontName='BodyBold', fillColor=TEXT_DARK))
         d.add(String(0, y-2, example, fontSize=7, fontName='Body', fillColor=TEXT_MED))
 
+        # Stacked bar: RRSP portion vs TFSA portion
         rrsp_w = rrsp_frac * bw
         tfsa_w = (1 - rrsp_frac) * bw
         d.add(Rect(lw, y, rrsp_w, 20, fillColor=MARINE, strokeColor=None))
@@ -374,9 +398,10 @@ def make_avalanche_vs_snowball():
     d = Drawing(CW, 95)
     d.add(String(CW/2, 88, "3 debts (card 19.99%, car 6.5%, LOC 9%) \u2014 Repaid over 3 years", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
+    # Right margin matches FR (120px)
     lw = 130
-    bw = CW - lw - 80
-    max_int = 4800
+    bw = CW - lw - 120
+    max_int = 4800  # scale
 
     items = [
         ("Avalanche", "(highest rate first)", 3200, FOREST, "Costs less"),
@@ -392,8 +417,11 @@ def make_avalanche_vs_snowball():
         w = interest / max_int * bw
         d.add(Rect(lw, y, w, 18, fillColor=col, strokeColor=None))
         val_str = f"${interest:,} in interest"
-        d.add(String(lw + w + 6, y+3, val_str, fontSize=8, fontName='BodyBold', fillColor=col))
-        d.add(String(lw + w + 6 + len(val_str)*5 + 20, y+3, note, fontSize=7, fontName='Body', fillColor=TEXT_MED))
+        # Value label right of bar — matches FR positioning
+        tx = lw + w + 6
+        d.add(String(tx, y+6, val_str, fontSize=8, fontName='BodyBold', fillColor=col))
+        # Annotation below the value, same x position
+        d.add(String(tx, y-3, note, fontSize=7, fontName='Body', fillColor=TEXT_MED))
 
     return d
 
@@ -431,6 +459,7 @@ def make_accounts_table():
         ('BOTTOMPADDING', (0,0), (-1,-1), 5),
         ('LEFTPADDING', (0,0), (-1,-1), 6),
         ('RIGHTPADDING', (0,0), (-1,-1), 6),
+        # Alternate row shading
         ('BACKGROUND', (1,2), (-1,2), HexColor('#f8f6f2')),
         ('BACKGROUND', (1,4), (-1,4), HexColor('#f8f6f2')),
         ('BACKGROUND', (1,6), (-1,6), HexColor('#f8f6f2')),
@@ -481,13 +510,13 @@ def cover_page(canvas, doc):
         "need to know, with real dollar examples.",
     ]:
         canvas.drawString(ML+10, y, line); y -= 15
-
+    
     # Key highlights section
     y -= 20
     canvas.setStrokeColor(GOLD_LIGHT); canvas.setLineWidth(0.5)
     canvas.line(ML+10, y, ML+150, y)
     y -= 18
-
+    
     highlights = [
         ("Budget", "The 50/30/20 method in 3 minutes"),
         ("Debt", "Why paying it off comes before saving"),
@@ -504,14 +533,14 @@ def cover_page(canvas, doc):
     canvas.setFont('Body', 8.5); canvas.setFillColor(TEXT_LIGHT)
     canvas.drawString(ML+10, 72, "Included with your BuildFi Essential Report")
     canvas.setFont('Body', 7.5)
-    canvas.drawString(ML+10, 58, "Up-to-date figures \u2014 2026 Tax Year  \u2022  Adapted for Quebec and Canada")
+    canvas.drawString(ML+10, 58, "Up-to-date figures \u2014 2026 Tax Year  \u2022  Adapted for Canada")
     canvas.setFillColor(GOLD); canvas.rect(0, 0, W, 4, fill=1, stroke=0)
     canvas.restoreState()
 
 # ═══ BUILD DOCUMENT ═══
 
 def build():
-    path = "/home/claude/guide-101-your-financial-basics.pdf"
+    path = "/home/claude/guide-101-EN-FINAL.pdf"
     doc = BaseDocTemplate(path, pagesize=letter,
         leftMargin=ML, rightMargin=MR, topMargin=MT, bottomMargin=MB,
         title="BuildFi \u2014 Your Financial Basics (101)",
@@ -549,7 +578,7 @@ def build():
             f'&nbsp;&nbsp;<font name="BodyBold" size="9.5" color="#1a2744">{title}</font>'
             f'&nbsp;&nbsp;<font name="Body" size="8" color="#888888">\u2014 {sub}</font>', S['toc_item']))
     story.append(Spacer(1, 16))
-    story.append(InfoBox('didyouknow', 'WHERE TO START?', [
+    story.append(InfoBox('saviez', 'WHERE TO START?', [
         '<font name="BodyBold">High-interest debt?</font> \u2192 Chapter 3. '
         '<font name="BodyBold">Already saving?</font> \u2192 Chapter 5. '
         '<font name="BodyBold">Close to retirement?</font> \u2192 Chapters 6\u20137. '
@@ -564,6 +593,11 @@ def build():
         "and may not be suitable for your situation. Consult a certified professional before making any decision."
         "</font>", S['body']))
     story.append(Spacer(1, 16))
+
+    story.append(PullQuote("Only 31% of Canadians have a written financial plan. This guide gives you the tools to be part of that group."))
+    story.append(Paragraph(
+        "<font name='Body' size='7' color='#888888'>\u2014 FP Canada, Financial Planning Survey, 2023</font>",
+        ParagraphStyle('src', fontName='Body', fontSize=7, textColor=TEXT_LIGHT, leading=9, alignment=TA_RIGHT, spaceBefore=0, spaceAfter=8)))
 
     # ═══ CH 1 — PORTRAIT ═══
     story.append(KeepTogether([
@@ -580,7 +614,7 @@ def build():
         '<font name="BodyBold">Net worth: $110,400</font> \u2014 That\u2019s your starting point. The goal: move that number up, month after month.',
     ]))
     story.append(Spacer(1, 10))
-    story.append(InfoBox('goodtoknow', 'GOOD TO KNOW', [
+    story.append(InfoBox('bon', 'GOOD TO KNOW', [
         'A negative net worth early in your career (student loans, recent mortgage) is normal. What matters is the <font name="BodyBold">trend</font>: is it going up every year?',
     ]))
 
@@ -607,13 +641,13 @@ def build():
         "<font name='BodyBold'>Future (20%)</font> \u2014 accelerated debt repayment, savings, investments. "
         "This is the category most people \u201cforget\u201d \u2014 and it\u2019s the one that builds your freedom.", S['body']))
 
-    story.append(InfoBox('caution', 'CAUTION \u2014 The silent leak', [
+    story.append(InfoBox('attention', 'CAUTION \u2014 The silent leak', [
         'The average Canadian pays $100 to $200/month in recurring subscriptions (streaming, gym, apps, cloud). '
         'That\u2019s $1,200 to $2,400/year \u2014 the equivalent of a vacation or a year of TFSA contributions.',
         '<font name="BodyBold">Exercise:</font> Open your last 3 statements. Highlight every recurring payment. Add them up. Multiply by 12.',
     ]))
     story.append(Spacer(1, 10))
-    story.append(InfoBox('didyouknow', 'DID YOU KNOW? \u2014 The cost in work hours', [
+    story.append(InfoBox('saviez', 'DID YOU KNOW? \u2014 The cost in work hours', [
         'At $25/hr net: a $6 coffee = <font name="BodyBold">15 minutes of work</font>. '
         'A $150 dinner = <font name="BodyBold">6 hours</font>. '
         'A $45,000 new car = <font name="BodyBold">1,800 hours \u2014 almost a full year</font>. '
@@ -637,7 +671,7 @@ def build():
 
     story.append(Paragraph("The minimum payment trap", S['h2']))
     story.append(make_debt_comparison())
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Two repayment strategies", S['h2']))
     story.append(Paragraph(
@@ -649,7 +683,7 @@ def build():
     story.append(make_avalanche_vs_snowball())
     story.append(Spacer(1, 6))
 
-    story.append(InfoBox('goodtoknow', 'GOOD TO KNOW \u2014 The 7% rule', [
+    story.append(InfoBox('bon', 'GOOD TO KNOW \u2014 The 7% rule', [
         'As a general rule, it may be advantageous to pay off any debt above 7% <font name="BodyBold">before</font> saving for retirement. Why? 7% is roughly the historical average market return. By eliminating a 20% debt, you get the equivalent of a 20% return with zero market risk. Every situation is different \u2014 taxes, risk tolerance, and liquidity also matter.',
         '<font name="BodyBold">Exception:</font> your employer\u2019s RRSP match \u2014 the money your employer adds when you contribute (an instant 50\u2013100% return). Contribute enough to get the full match, even if you have debt.',
     ]))
@@ -661,6 +695,7 @@ def build():
     ]))
 
     # ═══ CH 4 — CREDIT ═══
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("4", "Credit \u2014 the invisible score", "The one that decides if you get that mortgage"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -669,7 +704,7 @@ def build():
         "and sometimes your job prospects.", S['body_intro']))
 
     story.append(make_credit_scale())
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("What makes your score go up (or down)", S['h2']))
     story.append(Paragraph(
@@ -680,12 +715,12 @@ def build():
         "<font name='BodyBold'>Other factors (~35%)</font> \u2014 account age (don\u2019t close your oldest cards), "
         "credit mix, number of recent inquiries.", S['body']))
 
-    story.append(InfoBox('goodtoknow', 'GOOD TO KNOW \u2014 Check for free', [
+    story.append(InfoBox('bon', 'GOOD TO KNOW \u2014 Check for free', [
         'Equifax and TransUnion offer free annual access. Borrowell and Credit Karma too. '
         '<font name="BodyBold">Checking your own score does not affect it</font> \u2014 it\u2019s a \u201csoft\u201d inquiry.',
     ]))
     story.append(Spacer(1, 10))
-    story.append(InfoBox('caution', 'CAUTION \u2014 Common myth', [
+    story.append(InfoBox('attention', 'CAUTION \u2014 Common myth', [
         '<font name="BodyBold">\u201cCarrying a balance improves your score.\u201d</font> False. You never need to pay interest to build credit. '
         'Pay your balance in full every month \u2014 that\u2019s the best strategy.',
     ]))
@@ -696,7 +731,7 @@ def build():
         "over 25 years. Your score has a real price.", S['body']))
 
     # ═══ CH 5 — SAVINGS CASCADE ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("5", "Savings \u2014 the cascade for your dollars", "Every dollar has an optimal home"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -711,7 +746,7 @@ def build():
         "readily accessible account (TFSA high-interest savings). This isn\u2019t an investment \u2014 "
         "it\u2019s a safety net that keeps you from falling back into 20% debt when an emergency hits.", S['body']))
 
-    story.append(InfoBox('didyouknow', 'DID YOU KNOW?', [
+    story.append(InfoBox('saviez', 'DID YOU KNOW?', [
         'Half of Canadians (51%) say they can\u2019t cover an unexpected $1,000 expense without borrowing (Angus Reid, 2022). The emergency fund is what separates stability from a downward spiral.',
     ]))
     story.append(Spacer(1, 4))
@@ -735,7 +770,14 @@ def build():
         "The difference? 10 more years of compound growth. That\u2019s why the best time "
         "to start saving is now.", S['body']))
 
-    story.append(Spacer(1, 16))
+    story.append(InfoBox('attention', 'The silent enemy \u2014 inflation', [
+        'Inflation at 3% per year cuts your purchasing power in half in 24 years. '
+        '$100 today will only be worth $50 in real purchasing power by 2050. '
+        'That\u2019s why money sitting in a chequing account loses value every day \u2014 '
+        'and why investing, even modestly, is essential to preserve what you have.',
+    ]))
+
+    story.append(Spacer(1, 24))
 
     # ═══ CH 6 — ACCOUNTS ═══
     story.append(ChapterHeader("6", "Your accounts explained", "RRSP, TFSA, FHSA \u2014 no jargon"))
@@ -773,7 +815,7 @@ def build():
         "When in doubt: the TFSA is often a good starting point \u2014 its flexibility (tax-free withdrawals, "
         "no impact on government benefits) makes it the most versatile account.", S['body']))
 
-    story.append(InfoBox('caution', 'CAUTION \u2014 The oversized RRSP trap', [
+    story.append(InfoBox('attention', 'CAUTION \u2014 The oversized RRSP trap', [
         'A $2 million RRSP at age 71 = mandatory RRIF withdrawals of ~$106,000/year. This income can trigger OAS clawback and push you into a high tax bracket. Guide 201 covers strategies to avoid this trap.',
     ]))
 
@@ -781,7 +823,7 @@ def build():
         'You file <font name="BodyBold">two tax returns</font> (federal + provincial). Marginal rates among the highest in Canada \u2014 the RRSP is particularly advantageous for high earners there. Registered account rules are the same everywhere \u2014 it\u2019s the tax rates that vary.',
     ]))
 
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 24))
 
     # ═══ CH 7 — GOVERNMENT ═══
     story.append(ChapterHeader("7", "The government and you", "What you\u2019ll receive \u2014 and when"))
@@ -793,7 +835,7 @@ def build():
     story.append(InfoBox('quebec', 'QUEBEC vs REST OF CANADA', [
         'In Quebec: <font name="BodyBold">Quebec Pension Plan (QPP)</font>. Elsewhere: <font name="BodyBold">Canada Pension Plan (CPP)</font>. The rules are similar, but amounts and calculations differ slightly. If you\u2019ve worked in both places, your contributions are consolidated.',
     ]))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("QPP / CPP \u2014 The age you start changes everything", S['h2']))
     story.append(make_rrq_chart())
@@ -811,7 +853,7 @@ def build():
         "Paid to most Canadians starting at age 65 (40 years of residency for the full amount). "
         "Maximum Q1 2026: $742/month (age 65\u201374), $817/month (75+). "
         "OAS is indexed quarterly to inflation \u2014 your purchasing power is protected.", S['body']))
-    story.append(InfoBox('caution', 'CAUTION \u2014 OAS clawback', [
+    story.append(InfoBox('attention', 'CAUTION \u2014 OAS clawback', [
         'Net income above <font name="BodyBold">$95,323</font> in 2026? The government claws back 15\u00a2 per dollar above that threshold. At ~$152,000, your OAS drops to zero. Over 20\u201325 years = potentially <font name="BodyBold">$100,000+ in lost benefits</font>. Guide 201 covers strategies to protect your OAS.',
     ]))
     story.append(Spacer(1, 10))
@@ -829,7 +871,7 @@ def build():
         '\u2022 <font name="BodyBold">GIS</font> \u2014 Low income, up to $1,109/mo, non-taxable. The TFSA protects it.',
     ]))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 24))
 
     # ═══ CH 8 — INSURANCE ═══
     story.append(KeepTogether([
@@ -838,7 +880,7 @@ def build():
         Paragraph(
             "A financial plan without protection is a house of cards. "
             "If your income disappeared tomorrow, everything collapses.", S['body_intro']),
-        InfoBox('didyouknow', 'DID YOU KNOW?', [
+        InfoBox('saviez', 'DID YOU KNOW?', [
             'One in three Canadians will be disabled for 90 days or more before age 65 (CLHIA). People insure their cars but not their ability to earn an income \u2014 which is by far their most valuable asset.',
         ]),
     ]))
@@ -857,7 +899,7 @@ def build():
         "<font name='BodyBold'>3. Critical illness</font> \u2014 Lump sum if diagnosed with a covered condition (cancer, stroke, heart attack). "
         "Covers non-medical expenses: mortgage, groceries, transportation during recovery.", S['body']))
 
-    story.append(InfoBox('goodtoknow', 'GOOD TO KNOW \u2014 Check before you buy', [
+    story.append(InfoBox('bon', 'GOOD TO KNOW \u2014 Check before you buy', [
         'Many Canadians are already covered by their employer without knowing it. Before buying individual insurance, check your group coverage \u2014 it could cover 60\u201370% of your salary in case of disability.',
     ]))
 
@@ -898,7 +940,7 @@ def build():
         story.append(Spacer(1, 4))
 
     # ═══ CH 9 — NEXT STEP ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("9", "Your next step", "5 concrete actions \u2014 this week"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -923,7 +965,9 @@ def build():
     story.append(GoldRule(80, 1))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
-        "This guide gave you the basics. Your BuildFi Report goes further:", S['body']))
+        "You now know the rules. The question: "
+        "<font name='BodyBold'>how do they apply to your exact situation?</font> "
+        "Your BuildFi Report calculates it \u2014 for you, your province, your household.", S['body']))
 
     story.append(InfoBox('dollars', 'WHAT YOUR REPORT GIVES YOU', [
         '<font name="BodyBold">Readiness score</font> \u2014 A 0 to 100 score that summarizes your situation.',
@@ -931,18 +975,18 @@ def build():
         '<font name="BodyBold">Monte Carlo simulation</font> \u2014 5,000 market scenarios tested on your plan, not generic averages.',
     ]))
 
-    story.append(Spacer(1, 16))
+    story.append(Spacer(1, 10))
 
     # ═══ BUILDFI PRINCIPLES ═══
-    story.append(InfoBox('goodtoknow', 'The 3 BuildFi principles', [
+    story.append(InfoBox('bon', 'The 3 BuildFi principles', [
         '<font name="BodyBold">1. Safety before returns.</font> A solid emergency fund is worth more than a 12% return on a fragile portfolio.',
         '<font name="BodyBold">2. Liquidity before tax optimization.</font> Cash you can access in an emergency comes before the perfect tax strategy.',
         '<font name="BodyBold">3. Simplicity before sophistication.</font> A simple plan you follow beats a complex plan you abandon.',
     ]))
 
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 10))
     story.append(GoldRule(CW - 60, 0.5))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     # ═══ SOURCES ═══
     story.append(Paragraph("<font name='BodyBold' size='7.5'>Sources</font>", S['disclaimer']))
@@ -951,6 +995,7 @@ def build():
         "Canada Revenue Agency (CRA): RRSP, TFSA, FHSA contribution limits 2026. "
         "Service Canada: OAS, GIS amounts, clawback thresholds Q1 2026. "
         "Retraite Qu\u00e9bec / Canada Pension Plan: QPP/CPP pension amounts 2026. "
+        "FP Canada (2023): Financial Planning Survey. "
         "Angus Reid Institute (2022): survey on unexpected expenses. "
         "Canadian Life and Health Insurance Association (CLHIA): disability statistics. "
         "Equifax Canada / TransUnion: credit score scale.", S['disclaimer']))

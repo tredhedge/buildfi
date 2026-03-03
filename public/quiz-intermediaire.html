@@ -36,6 +36,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;heigh
 .loading-dot:nth-child(2){animation-delay:.2s}
 .loading-dot:nth-child(3){animation-delay:.4s}
 @keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
+@keyframes microFade{0%{opacity:0;transform:scale(.97)}20%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.97)}}
+.micro-copy{font-size:14px;color:#666;font-style:italic;text-align:center;animation:microFade 1.2s ease-in-out forwards}
 .fld-block{margin-bottom:18px}
 .fld-label{font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px;letter-spacing:.2px}
 .fld-sub{font-size:11px;color:var(--tm);margin-top:3px;line-height:1.5}
@@ -238,12 +240,12 @@ function renderPaywall(D, lang) {
   h += '</div>';
   h += '<div style="text-align:center;margin-bottom:20px">';
   h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
-  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">69 <span style="font-size:20px">$</span></div>';
+  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">59 <span style="font-size:20px">$</span></div>';
   h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
-  h += t("Obtenir mon rapport complet — 69 $","Get my full report — $69");
+  h += t("Obtenir mon rapport complet — 59 $","Get my full report — $59");
   h += '</button>';
   h += '</div>';
   h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — livraison immédiate par courriel","One-time payment — instant delivery by email") + '</div>';
@@ -266,12 +268,12 @@ function startCheckout() {
   fetch("/api/checkout", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
+    body: JSON.stringify(Object.assign({
       quizAnswers: STATE.quiz,
       lang: STATE.lang,
       email: email,
       tier: "intermediaire"
-    })
+    }, sessionStorage.getItem("bf_ref") ? { referralCode: sessionStorage.getItem("bf_ref") } : {}))
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -280,13 +282,13 @@ function startCheckout() {
     } else {
       alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
       btn.disabled = false;
-      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 69 $" : "Get my full report — $69";
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 59 $" : "Get my full report — $59";
     }
   })
   .catch(function() {
     alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
     btn.disabled = false;
-    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 69 $" : "Get my full report — $69";
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 59 $" : "Get my full report — $59";
   });
 }
 
@@ -381,7 +383,46 @@ function render(){
   app.innerHTML=renderQuiz(s.step,q,s.lang,s.activeBlocks);
 }
 
+function validateStep(step){
+  var q=STATE.quiz,fr=STATE.lang==="fr";
+  if(step===1){
+    if(q.age<18||q.age>80)return fr?"\u00c2ge doit \u00eatre entre 18 et 80.":"Age must be 18\u201380.";
+    if(q.retAge<=q.age)return fr?"Retraite doit \u00eatre > \u00e2ge actuel.":"Retirement must be > current age.";
+  }
+  if(step===2){if(q.income<=0)return fr?"Revenu invalide.":"Invalid income.";}
+  return null;
+}
+var MICRO_COPY_INTER = {
+  1: ["Bonne base. On entre dans le d\u00e9tail.", "Good foundation. Let\u2019s dive deeper."],
+  2: ["Chaque source de revenu compte.", "Every income source matters."],
+  3: ["Votre \u00e9pargne travaille pour vous \u2014 voyons comment.", "Your savings are working for you \u2014 let\u2019s see how."],
+  4: ["Les pensions sont souvent sous-estim\u00e9es.", "Pensions are often underestimated."],
+  5: ["L\u2019immobilier change tout. On int\u00e8gre \u00e7a.", "Real estate changes everything. We\u2019re factoring it in."],
+  6: ["Vos objectifs sont clairs. Derni\u00e8re \u00e9tape.", "Your goals are clear. Final step."],
+  7: ["Profil complet\u00a0! Votre bilan sera tr\u00e8s d\u00e9taill\u00e9.", "Complete profile! Your assessment will be very detailed."]
+};
+
 function go(step){
+  // Validate current step before advancing
+  var prev=STATE.step;
+  if(typeof step==="number"&&step>prev){
+    var err=validateStep(prev);
+    if(err){alert(err);return;}
+  }
+  // Show micro-copy interstitial when advancing from a numbered step
+  if(typeof step==="number"&&typeof prev==="number"&&step>prev&&prev>0&&MICRO_COPY_INTER[prev]){
+    var fr=STATE.lang==="fr";
+    var msg=MICRO_COPY_INTER[prev][fr?0:1];
+    app.innerHTML='<div style="max-width:480px;margin:80px auto;text-align:center;padding:40px 24px">'
+      +'<p class="micro-copy">'+msg+'</p></div>';
+    setTimeout(function(){
+      STATE.step=step;
+      saveState();
+      window.scrollTo({top:0,behavior:"smooth"});
+      render();
+    },1200);
+    return;
+  }
   STATE.step=step;
   saveState();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -459,7 +500,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px">'
       +'<span style="font-weight:600">'+(fr?"Étape":"Step")+' '+stepNum+' / '+totalSteps+'</span>'
       +'<span style="font-weight:700;color:var(--g)">'+pct+'%</span></div>'
-      +'<div style="height:4px;background:var(--bdl);border-radius:2px">'
+      +'<div role="progressbar" aria-valuenow="'+stepNum+'" aria-valuemin="0" aria-valuemax="'+totalSteps+'" aria-label="'+(fr?"Progression du quiz":"Quiz progress")+'" style="height:4px;background:var(--bdl);border-radius:2px">'
       +'<div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:'+pct+'%;transition:width .3s"></div>'
       +'</div></div>';
   }
@@ -469,7 +510,7 @@ function renderQuiz(step,q,lang,activeBlocks){
   function wrap(inner,sn){
     return'<div style="max-width:560px;margin:0 auto;padding:40px 20px 40px">'
       +progressBar(typeof sn==="number"?sn:blockStepNum(sn))
-      +'<div class="qs">'+inner+'</div>'
+      +'<div class="qs" aria-live="polite">'+inner+'</div>'
       +'</div>';
   }
   function backBtn(target){
@@ -484,7 +525,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<button onclick="STATE.lang=\'en\';render()" style="padding:5px 14px;border-radius:6px;border:'+(!fr?"2px solid var(--g)":"1px solid var(--bd)")+';background:'+(!fr?"var(--gbg)":"var(--bgc)")+';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
       +'<div style="text-align:center;margin-bottom:28px">'
       +'<div style="font-size:22px;font-weight:800;color:var(--g);letter-spacing:-.5px;margin-bottom:4px">buildfi.ca</div>'
-      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Rapport Intermédiaire — 69 $","Intermediate Report — $69")+'</div>'
+      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Rapport Intermédiaire — 59 $","Intermediate Report — $59")+'</div>'
       +'</div>'
       +'<h1 style="font-size:26px;font-weight:800;line-height:1.25;text-align:center;margin-bottom:14px">'+t("Un portrait financier complet.<br>En langage clair.","A complete financial portrait.<br>In plain language.")+'</h1>'
       +'<p style="font-size:14px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'+t("8 à 12 minutes après avoir réuni vos informations. 16 sections d'analyse. 5 000 scénarios simulés.","8 to 12 minutes once you have your information ready. 16 sections of analysis. 5,000 simulated scenarios.")+'</p>'
@@ -1141,5 +1182,15 @@ document.addEventListener("keydown",function(e){
 // ============================================================
 render();
 </script>
+<style>
+html:lang(en) .amf-fr{display:none!important}
+html:lang(en) .amf-en{display:inline!important}
+html:lang(fr) .amf-en{display:none!important}
+html:lang(fr) .amf-fr{display:inline!important}
+</style>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
+<span class="amf-fr">buildfi.ca fournit des projections à titre informatif seulement. Ce service ne constitue pas du conseil financier, fiscal ou juridique. Consultez un professionnel qualifié avant de prendre des décisions financières. Québec, Canada.</span>
+<span class="amf-en" style="display:none">buildfi.ca provides projections for informational purposes only. This service does not constitute financial, tax, or legal advice. Consult a qualified professional before making financial decisions. Quebec, Canada.</span>
+</div>
 </body>
 </html>

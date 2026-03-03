@@ -6,15 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "qa:full": "npx tsx tests/s10-audit.test.ts && npm run lint:amf && npm run build",
+    "lint:amf": "bash -c \"! grep -rn 'devriez\\|recommandons\\|vous devez\\|il faut que\\|conseillons\\|assurez-vous\\|priorisez\\|plan d.action' lib/ public/ app/ --include='*.ts' --include='*.tsx' --include='*.js' --include='*.html' | grep -vi 'NEVER use\\|forbidden\\|interdits\\|lint:amf\\|grep\\|devez savoir\\|/devriez\\|ai-prompt\\|ai-constants'\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@sparticuz/chromium": "^143.0.4",
-    "@sparticuz/chromium-min": "^143.0.4",
+    "@upstash/redis": "^1.36.3",
     "@vercel/blob": "^2.3.0",
     "next": "16.1.6",
-    "puppeteer-core": "^24.37.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.9.2",

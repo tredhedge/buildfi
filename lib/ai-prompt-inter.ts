@@ -1,4 +1,4 @@
-// lib/ai-prompt-inter.ts — AI prompt builder for Intermediaire tier ($69)
+// lib/ai-prompt-inter.ts — AI prompt builder for Intermediaire tier ($59)
 // Ported from quiz-intermediaire.html generateAI() lines 3381-3421
 // Enhanced with DerivedProfile (matching Essentiel pattern in report-html.js)
 
@@ -76,7 +76,7 @@ export function buildAIPromptInter(
   }
 
   // === SYSTEM PROMPT ===
-  const sys = "You narrate buildfi.ca Intermediaire reports ($69 tier).\n"
+  const sys = "You narrate buildfi.ca Intermediaire reports ($59 tier).\n"
     + "\n=== COMPLIANCE (AMF / OSFI) ===\n"
     + "This is an EDUCATIONAL tool, NOT financial advice.\n"
     + "1. Facts from DATA may use present tense.\n"

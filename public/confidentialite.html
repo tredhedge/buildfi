@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title id="pageTitle">Politique de confidentialite — buildfi.ca</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://buildfi.ca/confidentialite">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1a2744;--gold:#b8860b;--gold-light:#d4a520;
+  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
+  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
+  --border:#e8e0d4;--border-light:#f0ece4;
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --max-narrow:720px;--radius-md:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
+.topnav{position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-light);padding:14px 0}
+.topnav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:0 24px}
+.topnav-brand{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--navy);text-decoration:none}
+.topnav-brand span{color:var(--gold)}
+.lang-btn{font-size:12px;font-weight:700;color:var(--text-muted);border:1px solid var(--border);padding:4px 10px;border-radius:8px;cursor:pointer;background:transparent}
+.lang-btn:hover{border-color:var(--gold);color:var(--gold)}
+.legal-wrap{max-width:var(--max-narrow);margin:0 auto;padding:clamp(48px,6vw,80px) 24px clamp(64px,8vw,96px)}
+.legal-wrap h1{font-family:var(--font-display);font-size:clamp(28px,3.5vw,38px);font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.15}
+.legal-date{font-size:13px;color:var(--text-muted);margin-bottom:40px}
+.legal-wrap h2{font-size:18px;font-weight:700;color:var(--navy);margin:36px 0 12px;padding-top:12px;border-top:1px solid var(--border-light)}
+.legal-wrap h2:first-of-type{border-top:none;margin-top:0}
+.legal-wrap p,.legal-wrap li{color:var(--text-secondary);margin-bottom:12px}
+.legal-wrap ul{padding-left:24px;margin-bottom:16px}
+.legal-wrap li{margin-bottom:6px}
+.legal-wrap strong{color:var(--text-primary)}
+.foot{text-align:center;padding:32px 24px;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border-light)}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="/" class="topnav-brand">build<span>fi</span></a>
+    <button class="lang-btn" onclick="toggleLang()">English</button>
+  </div>
+</nav>
+
+<div class="legal-wrap">
+  <h1 id="lTitle">Politique de confidentialite</h1>
+  <p class="legal-date" id="lDate">Derniere mise a jour : 1er mars 2026</p>
+
+  <h2 id="h1">1. Responsable du traitement</h2>
+  <p id="p1">BuildFi Technologies inc., operant le site buildfi.ca, est responsable de la collecte et du traitement de vos renseignements personnels conformement a la Loi sur la protection des renseignements personnels et les documents electroniques (LPRPDE) et a la Loi 25 du Quebec (Loi modernisant des dispositions legislatives en matiere de protection des renseignements personnels).</p>
+
+  <h2 id="h2">2. Donnees collectees</h2>
+  <p id="p2a">Nous collectons les categories de donnees suivantes :</p>
+  <ul>
+    <li id="p2b"><strong>Courriel</strong> : utilise pour la livraison des bilans, l'authentification Expert et les communications de service</li>
+    <li id="p2c"><strong>Reponses au questionnaire</strong> : donnees financieres saisies dans le quiz (age, revenu, epargne, etc.) — utilisees exclusivement pour generer votre simulation</li>
+    <li id="p2d"><strong>Donnees de paiement</strong> : traitees directement par Stripe. buildfi.ca ne stocke aucun numero de carte</li>
+    <li id="p2e"><strong>Donnees de navigation</strong> : cookies analytiques (PostHog) — langue, pages visitees, interactions anonymisees</li>
+  </ul>
+
+  <h2 id="h3">3. Finalites du traitement</h2>
+  <p id="p3">Vos donnees sont utilisees pour : generer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, credits, historique), et ameliorer le service par des analyses anonymisees.</p>
+
+  <h2 id="h4">4. Base juridique</h2>
+  <p id="p4">Le traitement repose sur l'execution du contrat (generation du bilan/simulation commande) et le consentement implicite (navigation, cookies analytiques). Vous pouvez retirer votre consentement pour les cookies en desactivant le suivi dans votre navigateur.</p>
+
+  <h2 id="h5">5. Stockage et securite</h2>
+  <p id="p5a">Les donnees sont stockees sur des infrastructures securisees :</p>
+  <ul>
+    <li id="p5b"><strong>Vercel KV</strong> (Upstash Redis) : profils Expert, tokens d'authentification — centres de donnees nord-americains, chiffrement en transit et au repos</li>
+    <li id="p5c"><strong>Vercel Blob</strong> : bilans generes (HTML) — stockage securise, acces par URL unique</li>
+    <li id="p5d"><strong>Stripe</strong> : donnees de paiement — certifie PCI DSS Niveau 1</li>
+  </ul>
+
+  <h2 id="h6">6. Retention des donnees</h2>
+  <p id="p6a">Les donnees sont conservees selon les durees suivantes :</p>
+  <ul>
+    <li id="p6b"><strong>Bilans Essentiel/Intermediaire</strong> : 12 mois apres generation</li>
+    <li id="p6c"><strong>Profils Expert</strong> : 12 mois apres expiration de l'abonnement</li>
+    <li id="p6d"><strong>Donnees de paiement</strong> : selon les politiques de retention de Stripe</li>
+    <li id="p6e"><strong>Donnees analytiques</strong> : 12 mois (PostHog), anonymisees</li>
+  </ul>
+
+  <h2 id="h7">7. Partage et vente de donnees</h2>
+  <p id="p7"><strong>buildfi.ca ne vend, ne loue et ne partage jamais vos renseignements personnels a des tiers a des fins commerciales ou publicitaires.</strong> Les donnees sont partagees uniquement avec les sous-traitants techniques necessaires au fonctionnement du service (Stripe, Vercel, Resend, Anthropic, PostHog), dans le cadre strict de leurs fonctions.</p>
+
+  <h2 id="h8">8. Vos droits</h2>
+  <p id="p8a">Conformement a la LPRPDE et a la Loi 25, vous disposez des droits suivants :</p>
+  <ul>
+    <li id="p8b"><strong>Acces</strong> : obtenir une copie de vos donnees personnelles</li>
+    <li id="p8c"><strong>Rectification</strong> : corriger des donnees inexactes</li>
+    <li id="p8d"><strong>Suppression</strong> : demander la suppression de vos donnees (sauf obligations legales de retention)</li>
+    <li id="p8e"><strong>Portabilite</strong> : recevoir vos donnees dans un format structure (JSON)</li>
+    <li id="p8f"><strong>Desindexation</strong> : demander le retrait de vos informations des moteurs de recherche</li>
+  </ul>
+  <p id="p8g">Les utilisateurs Expert peuvent telecharger leurs donnees et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>. Delai de reponse : 30 jours.</p>
+
+  <h2 id="h9">9. Cookies et suivi</h2>
+  <p id="p9">buildfi.ca utilise des cookies analytiques (PostHog) pour mesurer l'utilisation du site. Ces cookies ne collectent aucune donnee financiere personnelle. Vous pouvez les desactiver via les parametres de votre navigateur ou un bloqueur de publicites.</p>
+
+  <h2 id="h10">10. Transfert international</h2>
+  <p id="p10">Certains sous-traitants (Stripe, Vercel, Anthropic) peuvent traiter des donnees aux Etats-Unis. Ces transferts sont encadres par des clauses contractuelles adequates et des certifications de securite.</p>
+
+  <h2 id="h11">11. Incident de confidentialite</h2>
+  <p id="p11">En cas d'incident de confidentialite presentant un risque serieux de prejudice, buildfi.ca avisera les personnes concernees et la Commission d'acces a l'information du Quebec dans les meilleurs delais, conformement a la Loi 25.</p>
+
+  <h2 id="h12">12. Responsable de la protection des renseignements</h2>
+  <p id="p12">Pour toute question relative a la confidentialite : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a></p>
+
+  <h2 id="h13">13. Modification de la politique</h2>
+  <p id="p13">Cette politique peut etre mise a jour periodiquement. La date de derniere mise a jour est indiquee en haut de cette page.</p>
+</div>
+
+<div class="foot" id="footCopy">&copy; 2026 buildfi.ca — Tous droits reserves</div>
+
+<script>
+var lang = "fr";
+var T = {
+  pageTitle: { fr:"Politique de confidentialite — buildfi.ca", en:"Privacy Policy — buildfi.ca" },
+  lTitle: { fr:"Politique de confidentialite", en:"Privacy Policy" },
+  lDate: { fr:"Derniere mise a jour : 1er mars 2026", en:"Last updated: March 1, 2026" },
+  h1: { fr:"1. Responsable du traitement", en:"1. Data Controller" },
+  p1: { fr:"BuildFi Technologies inc., operant le site buildfi.ca, est responsable de la collecte et du traitement de vos renseignements personnels conformement a la Loi sur la protection des renseignements personnels et les documents electroniques (LPRPDE) et a la Loi 25 du Quebec (Loi modernisant des dispositions legislatives en matiere de protection des renseignements personnels).", en:"BuildFi Technologies inc., operating buildfi.ca, is responsible for collecting and processing your personal information in accordance with the Personal Information Protection and Electronic Documents Act (PIPEDA) and Quebec's Law 25 (Act to Modernize Legislative Provisions as Regards the Protection of Personal Information)." },
+  h2: { fr:"2. Donnees collectees", en:"2. Data Collected" },
+  p2a: { fr:"Nous collectons les categories de donnees suivantes :", en:"We collect the following categories of data:" },
+  p2b: { fr:"<strong>Courriel</strong> : utilise pour la livraison des bilans, l'authentification Expert et les communications de service", en:"<strong>Email</strong>: used for assessment delivery, Expert authentication, and service communications" },
+  p2c: { fr:"<strong>Reponses au questionnaire</strong> : donnees financieres saisies dans le quiz (age, revenu, epargne, etc.) — utilisees exclusivement pour generer votre simulation", en:"<strong>Quiz responses</strong>: financial data entered in the quiz (age, income, savings, etc.) — used exclusively to generate your simulation" },
+  p2d: { fr:"<strong>Donnees de paiement</strong> : traitees directement par Stripe. buildfi.ca ne stocke aucun numero de carte", en:"<strong>Payment data</strong>: processed directly by Stripe. buildfi.ca does not store any card numbers" },
+  p2e: { fr:"<strong>Donnees de navigation</strong> : cookies analytiques (PostHog) — langue, pages visitees, interactions anonymisees", en:"<strong>Browsing data</strong>: analytics cookies (PostHog) — language, pages visited, anonymized interactions" },
+  h3: { fr:"3. Finalites du traitement", en:"3. Purpose of Processing" },
+  p3: { fr:"Vos donnees sont utilisees pour : generer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, credits, historique), et ameliorer le service par des analyses anonymisees.", en:"Your data is used to: generate your assessments and simulations, deliver purchases by email, manage your Expert account (authentication, credits, history), and improve the service through anonymized analytics." },
+  h4: { fr:"4. Base juridique", en:"4. Legal Basis" },
+  p4: { fr:"Le traitement repose sur l'execution du contrat (generation du bilan/simulation commande) et le consentement implicite (navigation, cookies analytiques). Vous pouvez retirer votre consentement pour les cookies en desactivant le suivi dans votre navigateur.", en:"Processing is based on contract performance (generating the ordered assessment/simulation) and implied consent (browsing, analytics cookies). You can withdraw your consent for cookies by disabling tracking in your browser." },
+  h5: { fr:"5. Stockage et securite", en:"5. Storage and Security" },
+  p5a: { fr:"Les donnees sont stockees sur des infrastructures securisees :", en:"Data is stored on secure infrastructure:" },
+  p5b: { fr:"<strong>Vercel KV</strong> (Upstash Redis) : profils Expert, tokens d'authentification — centres de donnees nord-americains, chiffrement en transit et au repos", en:"<strong>Vercel KV</strong> (Upstash Redis): Expert profiles, authentication tokens — North American data centers, encrypted in transit and at rest" },
+  p5c: { fr:"<strong>Vercel Blob</strong> : bilans generes (HTML) — stockage securise, acces par URL unique", en:"<strong>Vercel Blob</strong>: generated assessments (HTML) — secure storage, access via unique URL" },
+  p5d: { fr:"<strong>Stripe</strong> : donnees de paiement — certifie PCI DSS Niveau 1", en:"<strong>Stripe</strong>: payment data — PCI DSS Level 1 certified" },
+  h6: { fr:"6. Retention des donnees", en:"6. Data Retention" },
+  p6a: { fr:"Les donnees sont conservees selon les durees suivantes :", en:"Data is retained for the following periods:" },
+  p6b: { fr:"<strong>Bilans Essentiel/Intermediaire</strong> : 12 mois apres generation", en:"<strong>Essential/Intermediate assessments</strong>: 12 months after generation" },
+  p6c: { fr:"<strong>Profils Expert</strong> : 12 mois apres expiration de l'abonnement", en:"<strong>Expert profiles</strong>: 12 months after subscription expiry" },
+  p6d: { fr:"<strong>Donnees de paiement</strong> : selon les politiques de retention de Stripe", en:"<strong>Payment data</strong>: per Stripe's retention policies" },
+  p6e: { fr:"<strong>Donnees analytiques</strong> : 12 mois (PostHog), anonymisees", en:"<strong>Analytics data</strong>: 12 months (PostHog), anonymized" },
+  h7: { fr:"7. Partage et vente de donnees", en:"7. Data Sharing and Sale" },
+  p7: { fr:"<strong>buildfi.ca ne vend, ne loue et ne partage jamais vos renseignements personnels a des tiers a des fins commerciales ou publicitaires.</strong> Les donnees sont partagees uniquement avec les sous-traitants techniques necessaires au fonctionnement du service (Stripe, Vercel, Resend, Anthropic, PostHog), dans le cadre strict de leurs fonctions.", en:"<strong>buildfi.ca never sells, rents, or shares your personal information with third parties for commercial or advertising purposes.</strong> Data is shared only with technical subprocessors necessary for service operation (Stripe, Vercel, Resend, Anthropic, PostHog), strictly within the scope of their functions." },
+  h8: { fr:"8. Vos droits", en:"8. Your Rights" },
+  p8a: { fr:"Conformement a la LPRPDE et a la Loi 25, vous disposez des droits suivants :", en:"Under PIPEDA and Law 25, you have the following rights:" },
+  p8b: { fr:"<strong>Acces</strong> : obtenir une copie de vos donnees personnelles", en:"<strong>Access</strong>: obtain a copy of your personal data" },
+  p8c: { fr:"<strong>Rectification</strong> : corriger des donnees inexactes", en:"<strong>Rectification</strong>: correct inaccurate data" },
+  p8d: { fr:"<strong>Suppression</strong> : demander la suppression de vos donnees (sauf obligations legales de retention)", en:"<strong>Deletion</strong>: request deletion of your data (except where legally required to retain)" },
+  p8e: { fr:"<strong>Portabilite</strong> : recevoir vos donnees dans un format structure (JSON)", en:"<strong>Portability</strong>: receive your data in a structured format (JSON)" },
+  p8f: { fr:"<strong>Desindexation</strong> : demander le retrait de vos informations des moteurs de recherche", en:"<strong>De-indexing</strong>: request removal of your information from search engines" },
+  p8g: { fr:"Les utilisateurs Expert peuvent telecharger leurs donnees et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Delai de reponse : 30 jours.", en:"Expert users can download their data and request account deletion directly from the portal. For other requests: <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Response time: 30 days." },
+  h9: { fr:"9. Cookies et suivi", en:"9. Cookies and Tracking" },
+  p9: { fr:"buildfi.ca utilise des cookies analytiques (PostHog) pour mesurer l'utilisation du site. Ces cookies ne collectent aucune donnee financiere personnelle. Vous pouvez les desactiver via les parametres de votre navigateur ou un bloqueur de publicites.", en:"buildfi.ca uses analytics cookies (PostHog) to measure site usage. These cookies do not collect personal financial data. You can disable them through your browser settings or an ad blocker." },
+  h10: { fr:"10. Transfert international", en:"10. International Transfer" },
+  p10: { fr:"Certains sous-traitants (Stripe, Vercel, Anthropic) peuvent traiter des donnees aux Etats-Unis. Ces transferts sont encadres par des clauses contractuelles adequates et des certifications de securite.", en:"Some subprocessors (Stripe, Vercel, Anthropic) may process data in the United States. These transfers are governed by adequate contractual clauses and security certifications." },
+  h11: { fr:"11. Incident de confidentialite", en:"11. Privacy Incident" },
+  p11: { fr:"En cas d'incident de confidentialite presentant un risque serieux de prejudice, buildfi.ca avisera les personnes concernees et la Commission d'acces a l'information du Quebec dans les meilleurs delais, conformement a la Loi 25.", en:"In case of a privacy incident presenting a serious risk of harm, buildfi.ca will notify affected individuals and the Quebec Access to Information Commission promptly, in accordance with Law 25." },
+  h12: { fr:"12. Responsable de la protection des renseignements", en:"12. Privacy Officer" },
+  p12: { fr:"Pour toute question relative a la confidentialite : <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>", en:"For any privacy-related questions: <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>" },
+  h13: { fr:"13. Modification de la politique", en:"13. Policy Changes" },
+  p13: { fr:"Cette politique peut etre mise a jour periodiquement. La date de derniere mise a jour est indiquee en haut de cette page.", en:"This policy may be updated periodically. The last update date is shown at the top of this page." },
+  footCopy: { fr:"\u00a9 2026 buildfi.ca — Tous droits reserves", en:"\u00a9 2026 buildfi.ca — All rights reserved" }
+};
+function applyLang(){
+  for(var id in T){var el=document.getElementById(id);if(el){el.innerHTML=T[id][lang];}}
+  if(lang==="fr")document.title=T.pageTitle.fr;else document.title=T.pageTitle.en;
+  document.documentElement.lang=lang;
+}
+function toggleLang(){
+  lang=lang==="fr"?"en":"fr";
+  document.querySelector(".lang-btn").textContent=lang==="fr"?"English":"Francais";
+  applyLang();
+  history.replaceState(null,"",lang==="en"?"?lang=en":location.pathname);
+}
+if(new URLSearchParams(location.search).get("lang")==="en"){lang="en";document.querySelector(".lang-btn").textContent="Francais";applyLang();}
+</script>
+</body>
+</html>

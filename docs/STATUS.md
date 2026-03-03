@@ -1,9 +1,9 @@
 # STATUS.md
-> État actuel du projet. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-02 — v5 (pricing $29/$59/$129, nouveaux produits Stripe à configurer)
+> État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
+> Mis à jour: 2026-03-03 — v6 (post-audit complet, S1 Expert infra complétée, 21 correctifs appliqués, panel 12 experts)
 
 ## PHASE ACTUELLE
-**P1.4 AI NARRATION MERGED + REPORT v6 POLISHED — Pipeline E2E complet avec AI narration wired (needs ANTHROPIC_API_KEY in Vercel). Report v6 with 15 rendering polish fixes. Debt tool UX restructured. Email template refactored. Reste infra blockers (Blob public, Resend DNS) + pages légales avant lancement Essentiel.**
+**POST-AUDIT + S1 EXPERT INFRA COMPLÉTÉE — Audit 11 phases complété (9 blockers, 12 high-priority). 21 correctifs appliqués au code. Panel de 12 experts passé (score moyen 71.1/100 YELLOW — GO conditionnel pour soft launch). Session S1 Expert terminée (KV Upstash, auth magic link, rate limiting, checkout multi-tier, webhook Expert/addon/referral/renewal). Reste blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel) + pages légales avant lancement Essentiel.**
 
 ---
 
@@ -14,214 +14,224 @@
 |---------|--------|-------|
 | Domaine buildfi.ca | ✅ | Cloudflare DNS, pointe vers Vercel |
 | Vercel | ✅ | Auto-deploy, Next.js 16.1.6 |
-| GitHub tredhedge/buildfi | ✅ | main branch |
-| Stripe | ✅ | Test mode, produit Essentiel $29 CAD (⚠️ mettre à jour, était $39). Inter $59, Expert $129, Renewal $29, Addon $14.99 à configurer, webhook configuré |
+| GitHub tredhedge/buildfi | ✅ | main branch, privé |
+| Stripe | ✅ | Test mode. Essentiel $29, Inter $59, Expert $129, Renewal $29/an, Addon $14.99. Webhook configuré |
 | Resend | ⚠️ | Clé API OK, domaine buildfi.ca DNS FAILED — DKIM/SPF à revérifier |
 | PostHog | ✅ | |
-| Vercel Blob | ⚠️ | Store "buildfi-blob" PRIVATE — rapports uploadés mais Forbidden en accès direct |
-| Variables Vercel | ✅ | STRIPE_SECRET_KEY, STRIPE_PRICE_ESSENTIEL, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY, RESEND_FROM, BLOB_READ_WRITE_TOKEN, NEXT_PUBLIC_BASE_URL, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY |
+| Vercel Blob | ⚠️ | Store "buildfi-blob" PRIVATE — rapports Forbidden en accès direct |
+| Vercel KV (Upstash) | ✅ | Redis — profils Expert, auth, rate limiting, referral |
+| Variables Vercel | ⚠️ | Manque: ANTHROPIC_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN |
 
 ### Pipeline E2E — VALIDÉ EN PROD (2026-02-27)
 | Étape | Status | Détails |
 |-------|--------|---------|
 | Quiz thin client | ✅ | 805 lignes, zero IP exposé côté client |
-| Stripe Checkout | ✅ | POST /api/checkout → Stripe redirect, 29$ CAD |
-| Stripe Webhook | ✅ | POST /api/webhook, signature vérifiée |
+| Stripe Checkout | ✅ | POST /api/checkout → Stripe redirect, $29 CAD |
+| Stripe Webhook | ✅ | POST /api/webhook, signature vérifiée, idempotency, admin alerts |
 | Monte Carlo | ✅ | 5000 sims en ~2.3s sur Vercel serverless |
-| Report HTML render | ✅ | **v6** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, heuristics, tooltips, mini TOC |
-| AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired in webhook — needs ANTHROPIC_API_KEY in Vercel |
+| Report HTML render | ✅ | **v6** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot |
+| AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired — needs ANTHROPIC_API_KEY |
 | Blob upload | ✅ | Upload OK, mais store PRIVATE → "Forbidden" en accès direct |
-| Email envoi | ✅ | Table-based template, bilingual, AMF compliant — arrives in spam (domain unverified) |
-| PDF generation | ❌ DÉSACTIVÉ | @sparticuz/chromium ne fonctionne pas sur Vercel. Remplacé par lien HTML |
+| Email envoi | ✅ | Table-based template, bilingual, AMF compliant — arrives in spam |
+| PDF generation | ❌ DÉSACTIVÉ | Puppeteer incompatible Vercel. Remplacé par lien HTML |
 
-### AI Narration (P1.4) — CODE COMPLETE
-- `buildAIPrompt()` in `report-html.js` builds system + user prompts enriched with DerivedProfile
-- DerivedProfile: anxiety, discipline, literacy, friction, theme (from `lib/ai-profile.ts`)
-- System prompt enforces: AMF compliance, anti-hallucination, micro-structure (chiffre → implication → nuance)
-- Webhook calls Anthropic directly (claude-sonnet-4), parses JSON, sanitizes via `sanitizeAISlots()`
-- 12 AI slots: snapshot_intro, savings_context, debt_impact, gov_explanation, gap_explanation, tax_insight, longevity_good, longevity_watch, obs_1, obs_2, obs_3, upgrade_hook
-- Fallback: if ANTHROPIC_API_KEY missing or API fails → returns {} → report uses hardcoded fallback text
-- `/api/ai-narrate` exists as standalone test endpoint (not called by webhook)
-- AI constants + AMF forbidden terms in `lib/ai-constants.ts`
-- **Activation**: add ANTHROPIC_API_KEY to Vercel env vars → AI narration goes live
+### Audit complet (2026-03-03) — 21 CORRECTIFS
+| Correctif | Catégorie | Statut |
+|-----------|-----------|--------|
+| Webhook idempotency timing | B1 Critical | ✅ FIXED |
+| Webhook errors → HTTP 500 | B2 Critical | ✅ FIXED |
+| Admin alerting (sendAdminAlert) | B9 Critical | ✅ FIXED |
+| Rate limit magic-link (5 req/15min) | H1 Security | ✅ FIXED |
+| Delete root quiz-intermediaire.html | H8 Security | ✅ FIXED |
+| CSP headers (middleware.ts) | H11 Security | ✅ FIXED |
+| GIS_MAX_COUPLE 665.41→667.41 | H6 Financial | ✅ FIXED (3 files) |
+| QC bracket 108730→108680 | H7 Financial | ✅ FIXED (3 files) |
+| Simulateur 2026 brackets | H4 Financial | ✅ FIXED |
+| Debt tool 2026 brackets | H5 Financial | ✅ FIXED |
+| Health check no Anthropic call | H2 Code | ✅ FIXED |
+| Quiz validation (validateStep) | H3 Code | ✅ FIXED |
+| Remove Puppeteer deps | H9 Code | ✅ FIXED |
+| Layout metadata "BuildFi" | H12 Code | ✅ FIXED |
+| Webhook signature verification | B4 Security | ✅ VERIFIED |
+| Base URL www.buildfi.ca | B8 Env | ✅ FIXED |
+| Vercel env vars documented | B3/B5/B6 Env | 📋 DOCUMENTED (manual) |
+| Commit Expert tier files | B7 Git | 📋 PENDING (manual git) |
 
-### Report v6 — POLISHED (15 fixes, 2026-03-01)
-- REPORT_VERSION = 'v6', v5 preserved as fallback
-- Grade ring (A+ to F) with `--amr` amber-ring color for B/C grades
-- Client-friendly grade labels: B="Correct, à renforcer", C="À risque"
-- Fan chart with progressive spread (yearFrac accumulation)
-- TL;DR 3 data-driven bullets after Note section
-- KPI cards, donut income chart, what-if scenarios, 5-year snapshot table
-- QPP start row highlighted (green bg + badge) in snapshot
-- Heuristics disclosure, cost of delay, min viable return
-- Mini TOC with 7 section pill anchors (hidden in print)
-- Hover tooltips on jargon (Pessimiste P5, taux effectif, taux marginal)
-- Print theme: gold→brown, break-inside:avoid, orphans/widows
-- tabular-nums on all numeric elements
-- Disclaimer restyled: cream bg + left border, left-aligned
-- "Données utilisées" + version footer block
-- Mobile spacing (@media max-width:600px)
-- Upsell → "Prochaine étape" with expected result text
+### Expert Tier — Session S1 Complétée (2026-03-02)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Vercel KV (Upstash Redis) | ✅ | Profils, auth, rate limiting, referral, idempotency |
+| Auth magic link | ✅ | Token-based, rate-limited |
+| Rate limiting | ✅ | Sliding window — exports 20/day, recalcs 100/day |
+| Checkout multi-tier | ✅ | report/addon/second types, coupons |
+| Webhook Expert | ✅ | Expert/addon/referral/renewal paths |
+| Email Expert | ✅ | Magic link + report delivery templates |
+| Tests S1 | ✅ | 23 tests passent |
 
-### Email Template — REFACTORED
-- Table-based layout (email client compatible)
-- Bilingual FR/EN
-- AMF compliant disclaimers
-- Grade card dark theme
-- Bouton "Consulter mon rapport"
-- Upsell Intermédiaire
-- Footer Montréal + disclaimer
-
-### Debt Tool — UX RESTRUCTURED (2026-03-01)
-- 6 tabs: Inventaire, Stratégies, Simulateur, Calendrier | Rembourser vs Investir, Coût réel
-- Tab separator at index 4 (core path vs advanced)
-- Welcome banner when no debts
-- Inventory reordered: debts → portrait global → collapsible "Aller plus loin" (mortgages, financial context, couple)
-- `showAdvanced` auto-opens on mount if existing data (useEffect)
-- Tabs grayed (opacity 0.4) when no payable debts
-- Micro-CTAs at end of Simulator and Calendar guide to next tabs
-- 7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
-- `basePayoff` uses `selectedStrategy` (not hardcoded avalanche)
-- Marginal rate label shows "(est.)" in Repay vs Invest
-- 200 tests, 0 failures
-
-### Moteur MC — Planner v2
-- 436 tests, 53 catégories, 0 failures
+### Moteur MC — 453 tests, 54 catégories, 0 failures
 - Syncé avec lib/engine/index.js (2,426 lignes, 38 exports)
+- 17 nouveaux tests ajoutés lors de l'audit (436→453)
 - Inclut optimizeDecum()
 - Tax parity vérifiée sur 10 provinces
 
-### Quiz Essentiel (thin client)
-- 805 lignes (était 3,227 — 75% de code retiré)
-- Zero fonction MC côté client
-- Mock preview pour paywall (generateMockPreview)
-- Stripe checkout intégré
-- Inline logo fallback + /logo.js
+### Intermediaire Server Backbone — MERGED
+- `lib/ai-prompt-inter.ts` — 18 AI slots, DerivedProfile
+- `lib/quiz-translator-inter.ts` — 85 champs → 120 MC params
+- `lib/report-html-inter.js` — 16 sections, 1,003 lignes
+- `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
 
-### Landing Page
-- ✅ Sur GitHub, servie via app/page.tsx → redirect("/index.html")
-- ✅ Logo SVG avec flame (via logo.js injection)
-- ✅ Accents UTF-8 corrects
-- ✅ buildfi.ca → 307 → www.buildfi.ca → landing page
-- ✅ Audit AMF/BSIF v9 complété
-
-### Logo Unifié
-- /public/logo.js — logoSVG(size, context) shared function
-- /public/logo-light.svg, logo-dark.svg — versions statiques
-- Intégré dans: quiz-essentiel.html (inline fallback), landing page (JS injection)
+### Autres composants complétés
+- **Report v6** — Grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme
+- **Email template** — Table-based, bilingual, AMF compliant, grade card dark
+- **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
+- **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
+- **Landing page v9** — Logo SVG, audit AMF/BSIF complété
+- **Quiz Essentiel** — Thin client 805 lignes, Stripe intégré
+- **Logo** — SVG flame, shared logo.js, light/dark variants
 
 ---
 
-## BLOQUANTS AVANT LANCEMENT ESSENTIEL — PRIORITÉ HAUTE
+## BLOQUANTS AVANT LANCEMENT ESSENTIEL
 
-### 1. Vercel Blob → PUBLIC
-- Store actuel "buildfi-blob" est PRIVATE
-- Rapports uploadés OK mais lien retourne "Forbidden"
-- Fix: recréer un store PUBLIC sur Vercel Storage, mettre à jour BLOB_READ_WRITE_TOKEN
-- OU: utiliser signed URLs (plus complexe)
+### 1. Vercel Blob → PUBLIC [MANUAL]
+- Store "buildfi-blob" est PRIVATE → rapports "Forbidden"
+- Fix: recréer store PUBLIC sur Vercel Storage, mettre à jour BLOB_READ_WRITE_TOKEN
 
-### 2. Resend DNS → VÉRIFIÉ
+### 2. Resend DNS → VÉRIFIÉ [MANUAL]
 - Domaine buildfi.ca status: FAILED
-- Records DNS ajoutés sur Cloudflare: DKIM (TXT resend._domainkey), SPF (TXT send), MX (send)
-- La clé DKIM a été recréée — s'assurer que Cloudflare a la bonne valeur
-- Email arrive en spam tant que le domaine n'est pas vérifié
+- Fix: copier nouvelle clé DKIM depuis Resend → mettre à jour TXT resend._domainkey sur Cloudflare
 
-### 3. ANTHROPIC_API_KEY → Vercel env vars
-- Code complete — just needs the key added to Vercel
-- Test with Stripe test card after adding
+### 3. ANTHROPIC_API_KEY → Vercel [MANUAL]
+- Code complete — ajouter la clé dans Vercel env vars → AI narration goes live
 
 ### 4. Pages légales (P0.7)
-- Conditions d'utilisation
-- Politique de confidentialité
-- Avis AMF
+- Conditions d'utilisation, politique de confidentialité, avis AMF
+- Templates HTML créés (public/conditions.html, confidentialite.html, avis-legal.html)
 - Besoin: nom légal de l'entreprise, email contact
 
-### 5. Quiz Intermédiaire
-- Thin client à construire (comme Essentiel)
-- 80+ fields, 8 étapes
-- UX immersive demandée (cards, transitions, score cinématique)
+### 5. Commit Expert tier files [MANUAL]
+- ~30 fichiers Expert non commités
+- Single commit: "feat: add Expert tier (quiz, translator, API, report, email)"
 
 ---
 
-## STRUCTURE REPO GITHUB (actuelle)
+## ROADMAP
+
+### Vue d'ensemble
+| Phase | Titre | Statut |
+|-------|-------|--------|
+| P0 | Infrastructure Web | ✅ Complétée (P0.7 légal en attente) |
+| P1 | Quiz + Rapport Essentiel + Landing | 🔄 Near launch — 3 blockers infra |
+| P2 | Rapport Intermédiaire + Upsell | ⏳ Server backbone merged, quiz à construire |
+| P3 | Marketing + Légal | ⏳ |
+| P4 | Migration Next.js | ⏳ Partiellement avancée (engine + API déjà en place) |
+| P5 | Scale Consumer | ⏳ An 2-3 |
+| P6 | B2B Planificateurs | ⏳ An 3-5, décision de vie |
+| P7 | Maturité | ⏳ An 5-8 |
+
+**Principe directeur**: Vendre d'abord, migrer ensuite.
+
+### P1 — Prochaines actions (par priorité)
+1. Fix Blob public + Resend DNS → rapport accessible par lien
+2. Add ANTHROPIC_API_KEY to Vercel → test E2E avec Stripe test card
+3. Pages légales (P0.7) — conditions, confidentialité, avis AMF
+4. Commit Expert files + audit R19-R20
+5. Soft launch organique (Reddit, LinkedIn, cercle privé)
+
+### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
+- Quiz Intermédiaire thin client (80+ fields, 8 étapes) — à construire
+- Server backbone already merged (translator, report, AI prompt, strategies)
+- Score résilience 4 jauges, thermomètre risque séquence — à construire
+
+### Expert — Sessions S2-S14
+- S1 Infra ✅ | S2 Quiz Expert | S3 API simulate/optimize | S4 Simulateur
+- S5 3 Workflows | S6 Report pipeline | S7 Exports/portail | S8 Landing/upgrade
+- S9 Compliance | S10 Full audit | S11-S14 Post-launch
+- Détails: docs/EXPERT-EXECUTION-PLAN.md
+
+### Jalons financiers
+| Jalon | Cible |
+|-------|-------|
+| Première vente | Semaine du lancement |
+| 100 clients | An 1, mois 6-8 |
+| $1,000/mois récurrent | An 1, mois 8-12 |
+| Remplacer 50% salaire gov | An 2 (~$50K/an) |
+| Remplacer 100% salaire gov | An 3 (~$100K/an) |
+
+---
+
+## STRUCTURE REPO GITHUB
 ```
 buildfi/
-├── planner_v2.html              ← moteur complet dev/test (436 tests, ~15,000 lignes)
+├── planner.html                  ← moteur complet dev/test (453 tests, ~15,600 lignes)
 ├── app/
-│   ├── page.tsx                 ✅ redirect("/index.html")
+│   ├── page.tsx                  ✅ redirect("/index.html")
+│   ├── layout.tsx                ✅ BuildFi metadata
 │   ├── api/
-│   │   ├── ai-narrate/route.ts  ✅ Standalone AI narration test endpoint
-│   │   ├── checkout/route.ts    ✅ Stripe session (automatic_tax disabled)
-│   │   └── webhook/route.ts     ✅ MC → AI → Blob HTML → Email
-│   ├── merci/page.tsx           ✅ Page de remerciement
-│   └── outils/
-│       └── dettes/page.jsx      ✅ Debt tool (1,475 lignes, React JSX)
+│   │   ├── ai-narrate/route.ts   ✅ Standalone AI narration test
+│   │   ├── auth/magic-link/route.ts ✅ Magic link + rate limiting
+│   │   ├── auth/verify/route.ts   ✅ Token verification
+│   │   ├── checkout/route.ts      ✅ Stripe (report/addon/second)
+│   │   ├── health/route.ts       ✅ Health check (no Anthropic call)
+│   │   ├── referral/generate/route.ts ✅ Referral link + stats
+│   │   ├── simulate/route.ts     ✅ MC simulation
+│   │   └── webhook/route.ts      ✅ MC → AI → Blob → Email (idempotent, admin alerts)
+│   ├── merci/page.tsx            ✅ Thank you page
+│   ├── expert/page.tsx           ✅ Expert redirect
+│   └── outils/dettes/page.jsx   ✅ Debt tool (1,475 lignes)
 ├── lib/
-│   ├── ai-constants.ts          ✅ AI slot names, AMF forbidden terms, sanitization
-│   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan (behavioral signals)
-│   ├── engine/index.js          ✅ Syncé planner_v2 (2,426 lignes, 38 exports)
-│   ├── quiz-translator.ts       ✅
-│   ├── report-html.js           ✅ Report v6 (1,421 lignes) — extractReportData + buildAIPrompt + renderReport_v6
-│   ├── email.ts                 ✅ Table-based, bilingual, AMF compliant
-│   └── pdf-generator.ts         ⚠️ DISABLED (Puppeteer incompatible Vercel)
+│   ├── ai-constants.ts           ✅ AI slots (Ess 12 + Inter 16), AMF forbidden terms
+│   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan
+│   ├── ai-prompt-inter.ts       ✅ Inter AI prompt (18 slots)
+│   ├── ai-prompt-expert.ts      ✅ Expert AI prompt
+│   ├── api-helpers.ts            ✅ Shared API utilities
+│   ├── auth.ts                   ✅ Token verification
+│   ├── email.ts                  ✅ Ess/Inter email templates
+│   ├── email-expert.ts           ✅ Expert emails (magic link + report)
+│   ├── engine/index.js           ✅ MC engine (2,426 lignes, 38 exports)
+│   ├── kv.ts                     ✅ Upstash Redis (profiles, auth, rate limit)
+│   ├── quiz-translator.ts        ✅ Essentiel translator
+│   ├── quiz-translator-inter.ts  ✅ Inter translator (85→120 params)
+│   ├── quiz-translator-expert.ts ✅ Expert translator
+│   ├── rate-limit.ts             ✅ Sliding window rate limiting
+│   ├── report-html.js            ✅ Essentiel report v6 (1,421 lignes)
+│   ├── report-html-inter.js      ✅ Inter report (1,003 lignes)
+│   ├── report-html-expert.ts     ✅ Expert report
+│   ├── strategies-inter.ts       ✅ 5-strategy comparison
+│   └── tracking.ts               ✅ PostHog tracking
 ├── public/
-│   ├── index.html               ✅ Landing page v9 + logo SVG
-│   ├── quiz-essentiel.html      ✅ Thin client (805 lignes)
-│   ├── logo.js                  ✅ Shared logoSVG()
-│   ├── logo-light.svg           ✅
-│   ├── logo-dark.svg            ✅
-│   └── robots.txt               ✅
-├── tests/
-│   └── debt-tool-tests.js       ✅ 200 tests
-├── assets/
-│   ├── guide-101-les-bases-de-vos-finances.pdf
-│   └── guide-201-optimiser-votre-retraite.pdf
-└── docs/
-    ├── STATUS.md, ROADMAP.md, TECH-REFERENCE.md
-    ├── SERVICES.md, STRATEGY.md
-    └── [handoff docs]
+│   ├── index.html                ✅ Landing page v9
+│   ├── expert.html               ✅ Expert landing page
+│   ├── quiz-essentiel.html       ✅ Thin client (805 lignes)
+│   ├── quiz-intermediaire.html   ✅ Inter quiz
+│   ├── quiz-expert.html          ✅ Expert quiz
+│   ├── avis-legal.html           ✅ Avis AMF
+│   ├── conditions.html           ✅ Conditions d'utilisation
+│   ├── confidentialite.html      ✅ Politique de confidentialité
+│   ├── logo.js, logo-*.svg       ✅ Logo système
+│   └── robots.txt                ✅ Disallow /outils/
+├── middleware.ts                  ✅ CSP headers
+├── tests/                        ✅ 453 MC + 200 debt = 653 tests
+├── docs/                         8 fichiers de référence
+└── CLAUDE.md                     Instructions Claude Code
 ```
 
-## DÉCISIONS ARCHITECTURALES RÉCENTES
+## SERVICES EXTERNES
+| Service | État |
+|---------|------|
+| Stripe | ✅ Test mode, webhook fonctionne |
+| Resend | ⚠️ DNS FAILED, email en spam |
+| Vercel Blob | ⚠️ PRIVATE, rapports Forbidden |
+| Anthropic API | ⚠️ Code complete, key pas dans Vercel |
+| Cloudflare DNS | ✅ |
+| PostHog | ✅ |
+| Upstash Redis | ✅ KV Expert profiles |
 
-### PDF → HTML (pivot, 2026-02-27)
-- Puppeteer + @sparticuz/chromium ne fonctionne pas sur Vercel serverless
-- Solution: rapport HTML hébergé sur Vercel Blob, lien envoyé par email
-- window.print() dans le rapport pour export PDF côté client (à ajouter)
-- Approche standard dans l'industrie SaaS (Wealthsimple, Questrade, etc.)
-
-### AI narration architecture (2026-02-28)
-- Single API call, 12 JSON slots, claude-sonnet-4
-- DerivedProfile behavioral signals enrich prompts
-- Fallback {} if no key or API error — report works without AI
-- AMF forbidden terms enforced in system prompt + sanitization
-
-### Report v6 polish (2026-03-01)
-- 15 CSS/HTML rendering improvements — no data layer changes
-- Progressive fan chart spread, grade ring colors, client-friendly labels
-- Print theme with brown overrides, tooltips, mini TOC, mobile spacing
-
-### Debt tool UX restructure (2026-03-01)
-- Progressive disclosure: welcome → debts → portrait → collapsible advanced
-- Tab graying when no payable debts, separator between core/advanced tabs
-- Micro-CTAs guide navigation flow between tabs
-
-## SERVICES EXTERNES — ÉTAT
-| Service | Config | État |
-|---------|--------|------|
-| Stripe | Test mode, webhook → www.buildfi.ca/api/webhook | ✅ Fonctionne |
-| Resend | Clé API active, domaine FAILED | ⚠️ DNS à corriger |
-| Vercel Blob | Store "buildfi-blob" private | ⚠️ Recréer en public |
-| Cloudflare DNS | A record → Vercel, CNAME www → Vercel, + Resend records | ✅ |
-| Anthropic API | Code complete, key NOT in Vercel env vars | ⚠️ Ajouter ANTHROPIC_API_KEY |
+Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
-1. Fix Blob (public store) + Resend DNS → rapport accessible par lien
-2. Add ANTHROPIC_API_KEY to Vercel → test with Stripe test card
-3. 5 psycho questions (quiz enhancement)
-4. Pages légales (P0.7)
-5. Quiz Intermédiaire thin client
-6. Configurer produits Stripe : Inter $59, Expert $129, Renewal $29, Addon $14.99
-7. Créer coupons Stripe : SECOND50, REFERRAL15
-8. Ajouter variables Vercel : STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT, STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON
-9. Mettre à jour prix landing page ($39→$29, $69→$59, $139→$129)
+1. Fix Blob (public store) + Resend DNS → rapport accessible
+2. Add ANTHROPIC_API_KEY to Vercel → test E2E
+3. Pages légales (P0.7) — finaliser avec nom légal + email contact
+4. Commit Expert tier files (~30 fichiers)
+5. Quiz Intermédiaire thin client (S2 Expert)

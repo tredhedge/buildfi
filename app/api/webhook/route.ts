@@ -1,32 +1,58 @@
 // /app/api/webhook/route.ts
-// Stripe webhook handler: payment confirmed -> MC -> Report HTML -> Email
-// PDF generation disabled until Chromium resolved on Vercel
+// Stripe webhook handler — routes to tier-specific pipelines
+// Events: checkout.session.completed, customer.subscription.updated
+// Expert additions: KV profile creation, magic link, referral tracking, addon credits
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import Anthropic from "@anthropic-ai/sdk";
 import { translateToMC } from "@/lib/quiz-translator";
 import { translateToMCInter } from "@/lib/quiz-translator-inter";
+import { translateToMCExpert } from "@/lib/quiz-translator-expert";
 import { runMC } from "@/lib/engine";
-import { renderReportHTML, calcCostOfDelay as calcCostOfDelayEss, calcMinViableReturn as calcMinViableReturnEss, extractReportData, buildAIPrompt } from "@/lib/report-html";
+import {
+  renderReportHTML,
+  calcCostOfDelay as calcCostOfDelayEss,
+  calcMinViableReturn as calcMinViableReturnEss,
+  extractReportData,
+  buildAIPrompt,
+} from "@/lib/report-html";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
 import { buildAIPromptInter } from "@/lib/ai-prompt-inter";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, sanitizeAISlotsInter } from "@/lib/ai-constants";
+import { sanitizeAISlots, sanitizeAISlotsInter, sanitizeAISlotsExpert } from "@/lib/ai-constants";
+import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
+import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
+import type { ExpertAINarration } from "@/lib/ai-constants";
+import {
+  createExpertProfile,
+  getExpertProfile,
+  updateExpertProfile,
+  setTokenIndex,
+  incrementReferralConversion,
+  renewExpertProfile,
+  markProcessed,
+  createFeedbackRecord,
+} from "@/lib/kv";
+import { randomUUID } from "crypto";
+import { sendMagicLinkEmail, sendAdminAlert } from "@/lib/email-expert";
+import { sendReferralConversionEmail } from "@/lib/email-feedback";
+import { buildMagicLinkUrl } from "@/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
-// Vercel serverless: allow 60s for MC generation
-export const maxDuration = 60;
+// Vercel serverless: allow 120s for Expert pipeline (MC + 4 AI batches)
+export const maxDuration = 120;
 export const runtime = "nodejs";
 
-// AI narration: call Anthropic, return {} on any failure (report works without AI)
+// ── AI narration ──────────────────────────────────────────
+
 async function callAnthropic<T extends Record<string, string | undefined>>(
   sys: string,
   usr: string,
-  sanitizer: (raw: Record<string, any>) => T
+  sanitizer: (raw: Record<string, unknown>) => T
 ): Promise<T> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -37,7 +63,7 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
+      max_tokens: 4000,
       system: sys,
       messages: [{ role: "user", content: usr }],
     });
@@ -56,7 +82,11 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
   }
 }
 
-function reassembleQuizAnswers(metadata: Record<string, string>): Record<string, unknown> {
+// ── Quiz reassembly ───────────────────────────────────────
+
+function reassembleQuizAnswers(
+  metadata: Record<string, string>
+): Record<string, unknown> {
   const chunks = parseInt(metadata.quiz_chunks || "1", 10);
   let json = "";
   for (let i = 0; i < chunks; i++) {
@@ -64,6 +94,8 @@ function reassembleQuizAnswers(metadata: Record<string, string>): Record<string,
   }
   return JSON.parse(json);
 }
+
+// ── Main webhook handler ──────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -81,88 +113,119 @@ export async function POST(req: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Webhook signature verification failed";
+    const message =
+      err instanceof Error ? err.message : "Webhook signature verification failed";
     console.error("Webhook sig error:", message);
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  if (event.type !== "checkout.session.completed") {
-    return NextResponse.json({ received: true });
+  // ── Route by event type ─────────────────────────────────
+  if (event.type === "checkout.session.completed") {
+    return handleCheckoutCompleted(event);
   }
 
+  if (event.type === "customer.subscription.updated") {
+    return handleSubscriptionUpdated(event);
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+// ── Checkout completed ────────────────────────────────────
+
+async function handleCheckoutCompleted(
+  event: Stripe.Event
+): Promise<NextResponse> {
   const session = event.data.object as Stripe.Checkout.Session;
   const metadata = session.metadata || {};
+  const type = metadata.type || "report";
+  const tier = metadata.tier || "essentiel";
+  const email = metadata.email || session.customer_email || "";
 
+  if (!email) {
+    console.error("No email found in session", session.id);
+    return NextResponse.json({ error: "No email" }, { status: 400 });
+  }
+
+  // Idempotency: skip if already processed (read-only check + atomic set on success)
+  const isNew = await markProcessed(session.id);
+  if (!isNew) {
+    console.log(`[webhook] Session ${session.id} already processed, skipping`);
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // Referral tracking (applies to any purchase, non-blocking)
+  if (metadata.referralCode) {
+    await handleReferralConversion(metadata.referralCode, email).catch((err) =>
+      console.error("[webhook] Referral tracking error (non-blocking):", err)
+    );
+  }
+
+  // Route by checkout type
+  if (type === "addon") {
+    return handleExportAddon(email, session.id);
+  }
+
+  if (tier === "expert" && type === "report") {
+    return handleExpertPurchase(email, metadata, session.id);
+  }
+
+  // ── Essentiel / Intermediaire pipeline ──────────────────
   try {
     const quizAnswers = reassembleQuizAnswers(metadata);
     const lang = (metadata.lang || "fr") as "fr" | "en";
-    const email = metadata.email || session.customer_email || "";
-    const tier = metadata.tier || "essentiel";
-
-    if (!email) {
-      console.error("No email found in session", session.id);
-      return NextResponse.json({ error: "No email" }, { status: 400 });
-    }
 
     console.log(`[webhook] Processing ${tier} report for ${email} (${lang})`);
 
     const fr = lang === "fr";
     let reportHTML: string;
-    let D: Record<string, any>;
+    let D: Record<string, unknown>;
+
+    // Generate feedback token for star ratings in report + email
+    const feedbackToken = randomUUID();
+    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "expert");
 
     if (tier === "intermediaire") {
-      // ── Intermédiaire pipeline ────────────────────────────────
-      // Step 2: Translate quiz → MC params (Inter — 85 fields → 120 params)
+      // ── Intermédiaire pipeline ──────────────────────────
       const params = translateToMCInter(quizAnswers);
-
-      // Step 3: Run MC (5,000 sims) + 5 strategies (5×500 sims)
       const mcStart = Date.now();
       const mc = runMC(params, 5000);
       const stratData = run5Strategies(params as any);
-      const costDelay = calcCostOfDelay(params as any);
+      const costDelayVal = calcCostOfDelay(params as any);
       const minReturn = calcMinViableReturn(params as any);
       console.log(`[webhook] MC + strategies completed in ${Date.now() - mcStart}ms`);
 
-      // Step 4: Extract report data (Inter — 16 sections)
       D = extractReportDataInter(mc, params);
 
-      // Step 4.5: AI Narration (Inter — 18 slots)
       const aiStart = Date.now();
       const quiz = params._quiz || {};
       const prompt = buildAIPromptInter(D, params, fr, quiz, stratData);
       const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsInter);
       console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
 
-      // Step 5: Render report HTML (Inter)
-      reportHTML = renderReportHTMLInter(D, mc, stratData, params, lang, ai, costDelay, minReturn);
-
+      reportHTML = renderReportHTMLInter(
+        D, mc, stratData, params, lang, ai, costDelayVal, minReturn, feedbackToken
+      );
     } else {
-      // ── Essentiel pipeline (unchanged) ────────────────────────
-      // Step 2: Translate quiz → MC params
+      // ── Essentiel pipeline (default) ────────────────────
       const params = translateToMC(quizAnswers);
-
-      // Step 3: Run Monte Carlo (5,000 simulations)
       const mcStart = Date.now();
       const mc = runMC(params, 5000);
       console.log(`[webhook] MC completed in ${Date.now() - mcStart}ms`);
 
-      // Step 4: Extract report data
       D = extractReportData(mc, params);
 
-      // Step 4.5: AI Narration
       const aiStart = Date.now();
       const prompt = buildAIPrompt(D, params, fr, quizAnswers);
       const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots);
       console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
 
-      // Step 5: Render report HTML
       const costDelay = calcCostOfDelayEss(params);
       const minReturn = calcMinViableReturnEss(params);
-      reportHTML = renderReportHTML(D, mc, quizAnswers, lang, ai, costDelay, minReturn);
+      reportHTML = renderReportHTML(D, mc, quizAnswers, lang, ai, costDelay, minReturn, feedbackToken);
     }
 
-    // ── Shared Steps 6-7 (both tiers) ──────────────────────────
-    // Step 6: Upload HTML report to Vercel Blob (30-day expiry)
+    // ── Upload + email (shared) ───────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.html`;
 
@@ -174,28 +237,341 @@ export async function POST(req: NextRequest) {
 
     console.log(`[webhook] Report uploaded: ${blob.url}`);
 
-    // Step 7: Send email with download link
     await sendReportEmail({
       to: email,
-      lang,
+      lang: (metadata.lang || "fr") as "fr" | "en",
       tier,
       downloadUrl: blob.url,
-      grade: D.grade,
-      successPct: D.successPct,
+      grade: (D as Record<string, string>).grade,
+      successPct: (D as Record<string, number>).successPct,
+      feedbackToken,
     });
 
     console.log(`[webhook] Email sent to ${email}`);
 
+    return NextResponse.json({ received: true, email, reportUrl: blob.url });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Processing failed";
+    console.error("[webhook] Processing error:", err);
+    await sendAdminAlert(
+      `${tier} pipeline failed`,
+      `Email: ${email}\nSession: ${session.id}\nTier: ${tier}\nError: ${msg}`
+    );
+    return NextResponse.json(
+      { received: true, error: msg },
+      { status: 500 }
+    );
+  }
+}
+
+// ── Expert purchase handler ───────────────────────────────
+
+async function handleExpertPurchase(
+  email: string,
+  metadata: Record<string, string>,
+  sessionId: string
+): Promise<NextResponse> {
+  try {
+    const lang = (metadata.lang || "fr") as "fr" | "en";
+    const quizAnswers = reassembleQuizAnswers(metadata);
+
+    console.log(`[webhook] Processing Expert purchase for ${email}`);
+
+    // Check if profile already exists (upgrade scenario)
+    const existing = await getExpertProfile(email);
+    let profile;
+
+    if (existing) {
+      // Upgrade: update existing profile
+      profile = await updateExpertProfile(email, {
+        exportsAI: 5,
+        expiry: new Date(Date.now() + 365 * 86400000).toISOString(),
+        quizData: quizAnswers,
+        upgradedFrom: (metadata.upgrade_from as "essentiel" | "intermediaire") || existing.upgradedFrom,
+        changelog: [
+          ...existing.changelog,
+          {
+            date: new Date().toISOString(),
+            action: existing.upgradedFrom ? "re_upgrade" : "upgrade",
+            details: { from: metadata.upgrade_from || "direct", sessionId },
+          },
+        ],
+      });
+    } else {
+      // New account
+      profile = await createExpertProfile(email, {
+        upgradedFrom: (metadata.upgrade_from as "essentiel" | "intermediaire") || null,
+        quizData: quizAnswers,
+      });
+    }
+
+    if (!profile) {
+      throw new Error("Failed to create/update Expert profile");
+    }
+
+    // Send magic link email
+    await sendMagicLinkEmail({
+      to: email,
+      lang,
+      token: profile.token,
+      isNewAccount: !existing,
+    });
+
+    console.log(`[webhook] Expert profile created for ${email}, magic link sent`);
+
+    // Generate initial Expert report (S6 pipeline)
+    try {
+      const fr = lang === "fr";
+      const { mcParams } = translateToMCExpert(quizAnswers as Record<string, any>);
+      const mcStart = Date.now();
+      const mc = runMC(mcParams, 5000) as Record<string, any>;
+      if (!mc) throw new Error("MC engine returned null");
+      console.log(`[webhook] Expert initial MC completed in ${Date.now() - mcStart}ms`);
+
+      const D = extractReportDataExpert(mc, mcParams);
+      const grade = String(D.grade);
+      const activeSections = detectExpertSections(mcParams, mc, grade);
+      const quiz = mcParams._quiz || {};
+      const batches = buildExpertPromptBatches(D, mc, mcParams, quiz, activeSections);
+
+      // Run AI batches in parallel
+      const aiStart = Date.now();
+      // NOTE: Intermediate batch results are intentionally unsanitized (identity cast).
+      // Post-hoc sanitizeAISlotsExpert() call below handles AMF compliance for all merged slots.
+      const batchResults = await Promise.all(
+        batches.map(b => callAnthropic(b.sys, b.usr, (raw) => raw as Record<string, string>))
+      );
+      const mergedRaw: Record<string, any> = {};
+      for (const result of batchResults) {
+        Object.assign(mergedRaw, result);
+      }
+      const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
+      console.log(`[webhook] Expert AI: ${Object.keys(ai).length}/${activeSections.length} sections in ${Date.now() - aiStart}ms`);
+
+      // Generate feedback token for expert report
+      const expertFeedbackToken = randomUUID();
+      await createFeedbackRecord(expertFeedbackToken, email, "expert");
+
+      const reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, expertFeedbackToken);
+
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `bilan-expert-${timestamp}-${sessionId.slice(-8)}.html`;
+      const blob = await put(filename, reportHTML, {
+        access: "public",
+        contentType: "text/html; charset=utf-8",
+        addRandomSuffix: true,
+      });
+
+      console.log(`[webhook] Expert initial report uploaded: ${blob.url}`);
+
+      await sendReportEmail({
+        to: email,
+        lang,
+        tier: "expert",
+        downloadUrl: blob.url,
+        grade,
+        successPct: D.successPct,
+        feedbackToken: expertFeedbackToken,
+      });
+
+      console.log(`[webhook] Expert initial report email sent to ${email}`);
+    } catch (reportErr) {
+      // Non-fatal: profile + magic link already sent, report is a bonus
+      console.error("[webhook] Expert initial report generation failed (non-fatal):", reportErr);
+    }
+
     return NextResponse.json({
       received: true,
       email,
-      reportUrl: blob.url,
+      tier: "expert",
+      magicLinkSent: true,
+      referralCode: profile.referralCode,
     });
-  } catch (err: unknown) {
-    console.error("[webhook] Processing error:", err);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Expert processing failed";
+    console.error("[webhook] Expert purchase error:", err);
+    await sendAdminAlert(
+      "Expert purchase pipeline failed",
+      `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
+    );
+    return NextResponse.json(
+      { received: true, error: msg },
+      { status: 500 }
+    );
+  }
+}
+
+// ── Export addon handler ──────────────────────────────────
+
+async function handleExportAddon(email: string, sessionId: string): Promise<NextResponse> {
+  try {
+    const profile = await getExpertProfile(email);
+    if (!profile) {
+      console.error(`[webhook] Export addon: no profile for ${email}`);
+      return NextResponse.json(
+        { received: true, error: "No expert profile" },
+        { status: 400 }
+      );
+    }
+
+    await updateExpertProfile(email, {
+      exportsAI: profile.exportsAI + 1,
+      changelog: [
+        ...profile.changelog,
+        {
+          date: new Date().toISOString(),
+          action: "addon_purchased",
+          details: { credits_added: 1, new_total: profile.exportsAI + 1 },
+        },
+      ],
+    });
+
+    console.log(
+      `[webhook] Export addon for ${email}, new total: ${profile.exportsAI + 1}`
+    );
+
     return NextResponse.json({
       received: true,
-      error: err instanceof Error ? err.message : "Processing failed",
+      email,
+      exportsAI: profile.exportsAI + 1,
     });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Addon processing failed";
+    console.error("[webhook] Export addon error:", err);
+    await sendAdminAlert(
+      "Export addon failed",
+      `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
+    );
+    return NextResponse.json(
+      { received: true, error: msg },
+      { status: 500 }
+    );
+  }
+}
+
+// ── Referral conversion handler ───────────────────────────
+
+async function handleReferralConversion(
+  code: string,
+  buyerEmail: string
+): Promise<void> {
+  const updated = await incrementReferralConversion(code);
+  if (!updated) {
+    console.warn(`[webhook] Referral code ${code} not found`);
+    return;
+  }
+
+  // Prevent self-referral
+  if (updated.referrerEmail === buyerEmail.toLowerCase().trim()) {
+    console.warn(`[webhook] Self-referral blocked: ${buyerEmail}`);
+    return;
+  }
+
+  console.log(
+    `[webhook] Referral ${code}: conversion #${updated.conversions} by ${buyerEmail}`
+  );
+
+  // Notify referrer
+  await sendReferralConversionEmail({
+    to: updated.referrerEmail,
+    lang: "fr",
+    conversions: updated.conversions,
+  }).catch((err) =>
+    console.error("[webhook] Referral notification email failed:", err)
+  );
+
+  // Check reward tiers
+  const referrerProfile = await getExpertProfile(updated.referrerEmail);
+
+  if (updated.conversions === 1) {
+    console.log(`[webhook] Referral ${code}: tier 1 reward unlocked (50% off next purchase)`);
+    // Coupon generated dynamically via Stripe when referrer checks out
+  }
+
+  if (updated.conversions === 3 && referrerProfile) {
+    // Free AI export credit
+    await updateExpertProfile(updated.referrerEmail, {
+      exportsAI: referrerProfile.exportsAI + 1,
+      changelog: [
+        ...referrerProfile.changelog,
+        {
+          date: new Date().toISOString(),
+          action: "referral_reward_tier2",
+          details: { code, conversions: 3 },
+        },
+      ],
+    });
+    console.log(`[webhook] Referral ${code}: tier 2 reward applied (free export)`);
+  }
+
+  if (updated.conversions === 5 && referrerProfile) {
+    // Free Expert upgrade (1 year extension)
+    const newExpiry = new Date(
+      Math.max(new Date(referrerProfile.expiry).getTime(), Date.now()) +
+        365 * 86400000
+    ).toISOString();
+
+    await updateExpertProfile(updated.referrerEmail, {
+      expiry: newExpiry,
+      changelog: [
+        ...referrerProfile.changelog,
+        {
+          date: new Date().toISOString(),
+          action: "referral_reward_tier3",
+          details: { code, conversions: 5, newExpiry },
+        },
+      ],
+    });
+    console.log(`[webhook] Referral ${code}: tier 3 reward applied (1 year extension)`);
+  }
+}
+
+// ── Subscription renewal handler ──────────────────────────
+
+async function handleSubscriptionUpdated(
+  event: Stripe.Event
+): Promise<NextResponse> {
+  const subscription = event.data.object as Stripe.Subscription;
+
+  try {
+    const customer = await stripe.customers.retrieve(
+      subscription.customer as string
+    );
+    const email = (customer as Stripe.Customer).email;
+
+    if (!email) {
+      console.error("[webhook] Subscription update: no customer email");
+      return NextResponse.json({ received: true });
+    }
+
+    if (subscription.status === "active") {
+      console.log(`[webhook] Renewal successful for ${email}`);
+      const renewed = await renewExpertProfile(email);
+
+      if (renewed) {
+        // Send new magic link
+        const lang = (renewed.quizData?.lang as "fr" | "en") || "fr";
+        await sendMagicLinkEmail({
+          to: email,
+          lang,
+          token: renewed.token,
+          isNewAccount: false,
+        });
+        console.log(`[webhook] Renewal magic link sent to ${email}`);
+      }
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Subscription processing failed";
+    console.error("[webhook] Subscription update error:", err);
+    await sendAdminAlert(
+      "Subscription renewal failed",
+      `Subscription: ${subscription.id}\nError: ${msg}`
+    );
+    return NextResponse.json(
+      { received: true, error: msg },
+      { status: 500 }
+    );
   }
 }

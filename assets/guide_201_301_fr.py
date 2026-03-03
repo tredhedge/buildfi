@@ -235,9 +235,9 @@ def make_meltdown_chart():
     # Row 2 - Meltdown
     y2 = 28
     d.add(String(0, y2+4, "Meltdown optimisé", fontSize=8.5, fontName='BodyBold', fillColor=FOREST))
-    bar2_w = bw * 0.45
+    bar2_w = bw * 0.60
     d.add(Rect(lw, y2, bar2_w, 18, fillColor=FOREST_BG, strokeColor=FOREST, strokeWidth=0.5))
-    d.add(String(lw+bar2_w+8, y2+4, "Retraits lissés 60-72  •  Taux ~30 %  •  PSV protégée", fontSize=7.5, fontName='Body', fillColor=FOREST))
+    d.add(String(lw+bar2_w/2, y2+4, "Retraits lissés 60-72  •  Taux ~30 %  •  PSV protégée", fontSize=7, fontName='Body', fillColor=FOREST, textAnchor='middle'))
     # Savings callout
     d.add(String(CW/2, 6, "Économie potentielle estimée* : 40 000 à 120 000 $ sur 25 ans", fontSize=8.5, fontName='BodyBold', fillColor=GOLD, textAnchor='middle'))
     return d
@@ -290,10 +290,10 @@ def make_oas_clawback_chart():
 def make_tax_bracket_chart():
     """Federal + provincial combined marginal rates"""
     d = Drawing(CW, 95)
-    lw = 120; bw = CW - lw - 10
+    lw = 120; bw = CW - lw - 60
     d.add(String(CW/2, 88, "Taux marginal combiné (fédéral + Québec) — 2026", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
     brackets = [
-        ("0 – 57 375 $", 27.5, HexColor('#4ade80')),
+        ("0 – 57 375 $", 27.5, FOREST),
         ("57 375 – 114 750 $", 37.1, GOLD),
         ("114 750 – 177 882 $", 45.7, HexColor('#e8a040')),
         ("177 882 – 253 414 $", 49.97, BRICK),
@@ -362,7 +362,7 @@ def make_effective_marginal_chart():
 def make_fee_impact_chart():
     """MER impact over 30 years"""
     d = Drawing(CW, 90)
-    lw = 130; bw = CW - lw - 10
+    lw = 130; bw = CW - lw - 70
     d.add(String(CW/2, 82, "Impact des frais de gestion (MER) sur 30 ans — 200 000 $ investis", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
     items = [
         ("FNB 0,20 %", 578000, FOREST),
@@ -392,9 +392,9 @@ def make_splitting_chart():
     d.add(String(lw+bar1_w/2, y1+4, "Un seul contribuable taxé  •  Taux marginal élevé", fontSize=7.5, fontName='Body', fillColor=BRICK, textAnchor='middle'))
     y2 = 12
     d.add(String(0, y2+4, "Avec fractionnement", fontSize=8.5, fontName='BodyBold', fillColor=FOREST))
-    bar2_w = bw * 0.45
+    bar2_w = bw * 0.60
     d.add(Rect(lw, y2, bar2_w, 18, fillColor=FOREST_BG, strokeColor=FOREST, strokeWidth=0.5))
-    d.add(String(lw+bar2_w+8, y2+4, "50 % transféré au conjoint  •  2 paliers bas utilisés", fontSize=7.5, fontName='Body', fillColor=FOREST))
+    d.add(String(lw+bar2_w/2, y2+4, "50 % transféré au conjoint  •  2 paliers bas utilisés", fontSize=7, fontName='Body', fillColor=FOREST, textAnchor='middle'))
     return d
 
 
@@ -445,7 +445,7 @@ def make_sequence_risk_chart():
 def make_property_sale_timing():
     """Impact of selling rental property before vs after retirement"""
     d = Drawing(CW, 110)
-    lw = 135; bw = CW - lw - 10
+    lw = 135; bw = CW - lw - 65
     d.add(String(CW/2, 102, "Vente d'immeuble locatif — Impact fiscal selon le moment", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
     # Scenario: 200K gain + 80K recapture
@@ -531,7 +531,7 @@ def make_smith_manoeuvre_diagram():
 def make_salary_vs_dividend_chart():
     """Salary vs dividend effective combined rate comparison"""
     d = Drawing(CW, 100)
-    lw = 135; bw = CW - lw - 10
+    lw = 135; bw = CW - lw - 50
     d.add(String(CW/2, 92, "Salaire vs Dividende — Taux effectif combiné (corporatif + personnel)", fontSize=8, fontName='BodyBold', fillColor=TEXT_MED, textAnchor='middle'))
 
     max_rate = 55
@@ -773,12 +773,6 @@ def build():
     ]))
     story.append(Spacer(1, 10))
 
-    story.append(Paragraph("Par où commencer?", S['h2']))
-    story.append(Paragraph(
-        "Vous n'avez pas besoin de lire ce guide de A à Z. Commencez par la section "
-        "qui correspond à votre situation\u00a0:", S['body']))
-    story.append(Spacer(1, 4))
-
     nav_hs = ParagraphStyle('NavH', fontName='BodyBold', fontSize=8, textColor=white, leading=10, alignment=TA_CENTER)
     nav_s = ParagraphStyle('NavS', fontName='Body', fontSize=8, textColor=TEXT_DARK, leading=11)
     nav_b = ParagraphStyle('NavB', fontName='BodyBold', fontSize=8, textColor=MARINE, leading=11)
@@ -807,12 +801,18 @@ def build():
         ('BACKGROUND', (0,4), (-1,4), HexColor('#f8f6f2')),
         ('BACKGROUND', (0,6), (-1,6), HexColor('#f8f6f2')),
     ]))
-    story.append(nav_t)
-    story.append(Spacer(1, 6))
-    story.append(Paragraph(
-        "<font name='Body' size='8' color='#888888'>"
-        "Chaque chapitre est autonome. Les renvois entre chapitres vous guident si un sujet en complète un autre."
-        "</font>", S['body']))
+    story.append(KeepTogether([
+        Paragraph("Par où commencer?", S['h2']),
+        Paragraph(
+            "Vous n'avez pas besoin de lire ce guide de A à Z. Commencez par la section "
+            "qui correspond à votre situation\u00a0:", S['body']),
+        Spacer(1, 4),
+        nav_t, Spacer(1, 6),
+        Paragraph(
+            "<font name='Body' size='8' color='#888888'>"
+            "Chaque chapitre est autonome. Les renvois entre chapitres vous guident si un sujet en complète un autre."
+            "</font>", S['body']),
+    ]))
 
     # ════════════════════════════════════════
     #  PARTIE 201 — STRATÉGIES INTERMÉDIAIRES
@@ -831,7 +831,7 @@ def build():
     ]))
 
     story.append(PullQuote("La retraite n'est pas un solde. C'est la gestion stratégique d'un flux de revenus sur 30 ans."))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Le principe fondamental", S['h2']))
     story.append(Paragraph(
@@ -845,7 +845,7 @@ def build():
         "<font name='Body' size='7' color='#888888'>* Estimation basée sur des profils types. "
         "Les résultats réels varient selon la province, le taux marginal, la taille des comptes et la situation conjugale.</font>",
         ParagraphStyle('fn', fontName='Body', fontSize=7, textColor=TEXT_LIGHT, leading=9, spaceBefore=2, spaceAfter=4)))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Les quatre phases du décaissement", S['h2']))
     story.append(make_decumulation_table())
@@ -864,7 +864,7 @@ def build():
     ]))
 
     # ═══ CH 2 — FISCALITÉ ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("2", "La fiscalité à la retraite", "Ce que le gouvernement reprend — et comment limiter les dégâts"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -889,7 +889,7 @@ def build():
         'devient 69\u202f000\u00a0$ de revenu imposable. Même si le crédit d\'impôt réduit l\'impôt réel, '
         'ce revenu majoré peut déclencher le clawback PSV. En période de décaissement, ce piège est fréquent.',
     ]))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("Le crédit pour revenu de pension", S['h2']))
     story.append(Paragraph(
@@ -927,7 +927,7 @@ def build():
     ]))
 
     # ═══ CH 3 — PROTÉGER PSV ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("3", "Protéger votre PSV", "Le clawback — et comment l'éviter"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -969,7 +969,7 @@ def build():
     ]))
 
     # ═══ CH 4 — ÂGE RRQ ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("4", "Choisir votre âge RRQ/RPC", "60, 65 ou 70 — une décision permanente"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1002,7 +1002,7 @@ def build():
     ]))
 
     # ═══ CH 5 — FRACTIONNEMENT ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("5", "Le fractionnement du revenu", "Diviser pour économiser — en couple"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1036,7 +1036,7 @@ def build():
     ]))
 
     # ═══ CH 6 — FRAIS ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("6", "Les frais de gestion", "Le coût invisible qui gruge votre patrimoine"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1071,7 +1071,7 @@ def build():
     ]))
 
     # ═══ CH 7 — RISQUES ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("7", "Les risques que personne ne mentionne", "Longévité, inflation, séquence — les trois ennemis invisibles"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1139,7 +1139,7 @@ def build():
         'les pièges à connaître — pour que vos conversations avec vos professionnels soient '
         'plus productives et que votre Bilan BuildFi prenne tout son sens.',
     ]))
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 24))
 
     # ═══ CH 8 — MELTDOWN ═══
     story.append(ChapterHeader("8", "Le meltdown REER en détail", "Vidange stratégique — le levier le plus puissant"))
@@ -1182,7 +1182,7 @@ def build():
     ]))
 
     # ═══ CH 9 — GUARDRAILS ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("9", "Guardrails — dépenser sans tomber", "Ajuster vos retraits en fonction du marché"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1220,7 +1220,7 @@ def build():
     ]))
 
     # ═══ CH 10 — IMMOBILIER ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("10", "L'immobilier dans le plan de retraite", "DPA, Smith Manoeuvre et timing de vente"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
@@ -1295,7 +1295,7 @@ def build():
         'L\'ARC peut contester la déduction si le lien entre l\'emprunt et le revenu n\'est pas clair. '
         'Cette stratégie convient aux investisseurs avec un horizon long (10+ ans) et une tolérance au risque élevée.',
     ]))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 10))
 
     story.append(Paragraph("HELOC comme réserve de dernier recours", S['h2']))
     story.append(Paragraph(
@@ -1312,7 +1312,7 @@ def build():
     ]))
 
     # ═══ CH 11 — ENTREPRENEUR ═══
-    story.append(Spacer(1, 22))
+    story.append(Spacer(1, 24))
     story.append(ChapterHeader("11", "L'entreprise incorporée et la retraite", "CCPC, extraction et optimisation"))
     story.append(GoldRule(50, 1.5)); story.append(Spacer(1, 10))
     story.append(Paragraph(
