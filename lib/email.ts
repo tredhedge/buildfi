@@ -37,11 +37,17 @@ export async function sendReportEmail(params: SendReportParams) {
 
   const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken });
 
+  const text = fr
+    ? `${subject}\n\nVotre bilan personnalise est pret.\nNote: ${grade} | Taux de reussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\n\nCe lien est valide 30 jours.\n\nCet outil est fourni a titre informatif et educatif seulement. Il ne constitue pas un avis financier personnalise.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour personalized assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\n\nThis link is valid for 30 days.\n\nThis tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { data, error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

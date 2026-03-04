@@ -214,8 +214,8 @@ function StatBox({ label, value, color = EK.tx, sub }: { label: string; value: s
   );
 }
 
-function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", isDefault = false, style: sx }: {
-  value: number; onChange: (v: number) => void; step?: number; min?: number; max?: number; prefix?: string; isDefault?: boolean; style?: React.CSSProperties;
+function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", isDefault = false, style: sx, "aria-label": ariaLabel }: {
+  value: number; onChange: (v: number) => void; step?: number; min?: number; max?: number; prefix?: string; isDefault?: boolean; style?: React.CSSProperties; "aria-label"?: string;
 }) {
   const [local, setLocal] = useState(String(value ?? ""));
   const [isFocused, setIsFocused] = useState(false);
@@ -230,6 +230,7 @@ function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", isD
       {prefix && <span style={{ fontSize: 12, color: EK.txDim }}>{prefix}</span>}
       <input
         type="number" value={local} step={step} min={min} max={max}
+        aria-label={ariaLabel}
         onChange={e => setLocal(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => {
@@ -256,10 +257,11 @@ function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", isD
   );
 }
 
-function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+function SelectInput({ value, onChange, options, "aria-label": ariaLabel }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; "aria-label"?: string }) {
   return (
     <select
       value={value} onChange={e => onChange(e.target.value)}
+      aria-label={ariaLabel}
       style={{ flex: 1, background: EK.bg, color: EK.tx, border: `1px solid ${EK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", cursor: "pointer" }}
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -703,7 +705,7 @@ function SimulateurContent() {
       .catch(() => setAuthStatus("denied"));
   }, [tokenFromUrl]);
 
-  // ── Planner iframe postMessage bridge ──
+  // ── Planner iframe postMessage bridge (bidirectional) ──
   useEffect(() => {
     if (viewMode !== "planner" || !quizParamsForPlanner) return;
 
@@ -715,6 +717,11 @@ function SimulateurContent() {
           { type: "buildfi-load-params", params: quizParamsForPlanner },
           window.location.origin
         );
+      }
+      // Receive param updates from planner → merge into React state
+      if (e.data?.type === "buildfi-params-update" && e.data.params) {
+        const updated = e.data.params as Record<string, unknown>;
+        setParams(prev => ({ ...prev, ...updated }));
       }
     };
     window.addEventListener("message", handleMessage);
@@ -1008,14 +1015,40 @@ function SimulateurContent() {
               optimizeResults={optimizeResults} optimizeStatus={optimizeStatus}
               onRun={runOptimize} lang={lang}
               onExplore={(axis, value) => {
-                // Navigate to relevant param when user clicks "Explorer"
-                if (axis === "retAge") setParam("retAge", Number(value));
-                else if (axis === "qppAge") setParam("qppAge", Number(value));
-                else if (axis === "oasAge") setParam("oasAge", Number(value));
-                else if (axis === "retSpM") setParam("retSpM", Number(value));
-                else if (axis === "melt") setParam("melt", value === "On");
-                else if (axis === "strat") setParam("wStrat", value);
+                // Apply the best scenario's params for this lever, then switch to diagnostic
+                if (optimizeResults?.top10?.[0]?.params_changed) {
+                  const best = optimizeResults.top10[0].params_changed;
+                  for (const [k, v] of Object.entries(best)) {
+                    if (k === "splitP") {
+                      setParam("split", (v as number) > 0);
+                      setParam("splitP", v);
+                    } else if (k === "strat") {
+                      setParam("wStrat", v);
+                    } else {
+                      setParam(k, v);
+                    }
+                  }
+                } else {
+                  // Fallback: apply single lever
+                  if (axis === "retAge") setParam("retAge", Number(value));
+                  else if (axis === "qppAge") setParam("qppAge", Number(value));
+                  else if (axis === "oasAge") setParam("oasAge", Number(value));
+                  else if (axis === "retSpM") setParam("retSpM", Number(value));
+                  else if (axis === "melt") setParam("melt", value === "On");
+                  else if (axis === "strat") setParam("wStrat", value);
+                  else if (axis === "splitP") { setParam("split", value !== "Off"); setParam("splitP", parseFloat(value) / 100 || 0); }
+                  else if (axis === "ptWork") {
+                    if (value === "Off") { setParam("ptM", 0); setParam("ptYrs", 0); }
+                    else {
+                      const m = value.match(/^(\d+)\/m/);
+                      const y = value.match(/x\s*(\d+)y/);
+                      if (m) setParam("ptM", Number(m[1]));
+                      if (y) setParam("ptYrs", Number(y[1]));
+                    }
+                  }
+                }
                 setActiveWorkflow("none");
+                setActiveTab("diagnostic");
               }}
             />
           )}
@@ -1232,10 +1265,14 @@ function SimulateurContent() {
         <main style={{ flex: 1, padding: "16px 24px", overflowY: "auto", minWidth: 0 }}>
 
           {/* ── Tab bar ── */}
-          <div style={{ display: "flex", gap: 4, overflowX: "auto", marginBottom: 16, paddingBottom: 4, borderBottom: `1px solid ${EK.border}` }}>
+          <div role="tablist" aria-label={fr ? "Sections du simulateur" : "Simulator sections"} style={{ display: "flex", gap: 4, overflowX: "auto", marginBottom: 16, paddingBottom: 4, borderBottom: `1px solid ${EK.border}` }}>
             {activeTabs.map(tab => (
               <button
                 key={tab} onClick={() => setActiveTab(tab)}
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`tabpanel-${tab}`}
+                id={`tab-${tab}`}
                 style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: activeTab === tab ? 700 : 500,
                   color: activeTab === tab ? EK.gold : EK.txDim,
@@ -1251,7 +1288,9 @@ function SimulateurContent() {
           </div>
 
           {/* ── Tab content ── */}
-          {renderTab(activeTab, results, simStatus, simError, params, lang, disclosure)}
+          <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+            {renderTab(activeTab, results, simStatus, simError, params, lang, disclosure)}
+          </div>
         </main>
       </div>
 

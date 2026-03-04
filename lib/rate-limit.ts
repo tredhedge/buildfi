@@ -23,42 +23,60 @@ export async function checkRateLimit(
   type: "export" | "recalc"
 ): Promise<RateLimitResult> {
   const key = KEYS.rateLimit(type, token);
-  const now = Date.now();
-
-  // Get existing timestamps, prune older than 24h
-  const timestamps: number[] = (await redis.get<number[]>(key)) || [];
-  const recent = timestamps.filter((t) => now - t < DAY_MS);
-
+  const lockKey = `${key}:lock`;
   const maxPerDay = type === "export" ? LIMITS.export.perDay : LIMITS.recalc.perDay;
 
-  // Check daily limit
-  if (recent.length >= maxPerDay) {
-    const oldest = Math.min(...recent);
+  // Acquire short-lived lock (2s) to prevent concurrent read-check-write races
+  const lockAcquired = await redis.set(lockKey, "1", { nx: true, ex: 2 });
+  if (lockAcquired !== "OK") {
+    // Another request is in-flight — reject with cooldown
     return {
       allowed: false,
-      remaining: 0,
-      retryAfterMs: oldest + DAY_MS - now,
-      reason: `Daily limit of ${maxPerDay} ${type}s reached`,
+      remaining: maxPerDay,
+      retryAfterMs: 2000,
+      reason: `Concurrent ${type} request in progress`,
     };
   }
 
-  // Check cooldown (export only: 1 per 2 min)
-  if (type === "export" && recent.length > 0) {
-    const last = Math.max(...recent);
-    const elapsed = now - last;
-    if (elapsed < LIMITS.export.cooldownMs) {
+  try {
+    const now = Date.now();
+
+    // Get existing timestamps, prune older than 24h
+    const timestamps: number[] = (await redis.get<number[]>(key)) || [];
+    const recent = timestamps.filter((t) => now - t < DAY_MS);
+
+    // Check daily limit
+    if (recent.length >= maxPerDay) {
+      const oldest = Math.min(...recent);
       return {
         allowed: false,
-        remaining: maxPerDay - recent.length,
-        retryAfterMs: LIMITS.export.cooldownMs - elapsed,
-        reason: `Export cooldown: wait ${Math.ceil((LIMITS.export.cooldownMs - elapsed) / 1000)}s`,
+        remaining: 0,
+        retryAfterMs: oldest + DAY_MS - now,
+        reason: `Daily limit of ${maxPerDay} ${type}s reached`,
       };
     }
+
+    // Check cooldown (export only: 1 per 2 min)
+    if (type === "export" && recent.length > 0) {
+      const last = Math.max(...recent);
+      const elapsed = now - last;
+      if (elapsed < LIMITS.export.cooldownMs) {
+        return {
+          allowed: false,
+          remaining: maxPerDay - recent.length,
+          retryAfterMs: LIMITS.export.cooldownMs - elapsed,
+          reason: `Export cooldown: wait ${Math.ceil((LIMITS.export.cooldownMs - elapsed) / 1000)}s`,
+        };
+      }
+    }
+
+    // Allow: record timestamp before releasing lock
+    recent.push(now);
+    await redis.set(key, recent, { ex: 86400 }); // TTL 24h auto-cleanup
+
+    return { allowed: true, remaining: maxPerDay - recent.length };
+  } finally {
+    // Release lock
+    await redis.del(lockKey).catch(() => {});
   }
-
-  // Allow: record timestamp
-  recent.push(now);
-  await redis.set(key, recent, { ex: 86400 }); // TTL 24h auto-cleanup
-
-  return { allowed: true, remaining: maxPerDay - recent.length };
 }

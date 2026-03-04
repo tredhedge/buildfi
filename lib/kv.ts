@@ -6,6 +6,8 @@ import { Redis } from "@upstash/redis";
 import { randomUUID, randomBytes } from "crypto";
 import { ENGINE_VERSION } from "@/lib/api-helpers";
 
+export const KV_SCHEMA_VERSION = "1.0";
+
 // ── Redis client ──────────────────────────────────────────
 
 const redis = new Redis({

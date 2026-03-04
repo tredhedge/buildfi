@@ -32,6 +32,7 @@ buildfi/
 │   │   ├── checkout/route.ts      # Stripe checkout (report/addon/second types)
 │   │   ├── referral/generate/route.ts # GET — referral link + stats
 │   │   └── webhook/route.ts       # Stripe webhook → MC/Expert/addon/referral/renewal
+│   ├── expert/                    # Expert tier pages (simulateur, portail, landing)
 │   ├── merci/                     # Post-purchase thank you page
 │   ├── outils/dettes/
 │   │   ├── page.jsx               # Debt tool (1,475 lines, React JSX)
@@ -44,6 +45,8 @@ buildfi/
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
 │   ├── quiz-translator.ts         # Essentiel quiz answers → MC params
 │   ├── quiz-translator-inter.ts   # Intermediaire 85 fields → 120 MC params
+│   ├── quiz-translator-expert.ts  # Expert translator
+│   ├── ai-prompt-expert.ts        # Expert AI prompt
 │   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (1,421 lines)
 │   ├── report-html-inter.js       # Intermediaire 16-section report (1,003 lines)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
@@ -55,13 +58,20 @@ buildfi/
 │   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
 │   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
+│   ├── quiz-intermediaire.html    # Intermediaire quiz
+│   ├── quiz-expert.html           # Expert quiz (1,323 lines)
 │   ├── index.html                 # Landing page v9
+│   ├── expert.html                # Expert landing page
+│   ├── planner-expert.html        # Expert planner (source of truth for Expert engine)
 │   ├── logo.js                    # Shared SVG logo
 │   ├── logo-dark.svg, logo-light.svg
 │   └── robots.txt
 ├── tests/
 │   ├── debt-tool-tests.js         # Debt tool test suite (200 tests)
-│   └── s1-infrastructure.test.ts  # S1 Expert infra tests (23 tests)
+│   ├── s1-infrastructure.test.ts  # S1 Expert infra tests (29 tests)
+│   ├── s3-api.test.ts             # S3 API simulate/optimize tests (103 tests)
+│   ├── s10-audit.test.ts          # S10 full audit tests (91 tests)
+│   └── quiz-translator-expert.test.ts  # Expert translator tests (87 tests)
 ├── docs/                          # Project documentation (8 files)
 │   ├── STATUS.md                  # Current state + roadmap — read first each session
 │   ├── SERVICES.md                # Accounts, DNS, credentials, env vars, payment flows
@@ -179,9 +189,12 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **Debt tool UX restructured** — progressive tabs, micro-CTAs, 200 tests pass
 - **Email template refactored** — table-based, AMF compliant, bilingual
 - **Expert planning COMPLETE** — STRATEGY-EXPERT-PLAN v4, EXECUTION-PLAN, IDENTITY-ALIGNMENT all documented
-- **SESSION S1 COMPLETE (2026-03-02)** — Expert infrastructure: KV (Upstash Redis), auth (magic link), rate limiting, checkout (report/addon/second), webhook (Expert/addon/referral/renewal), email templates, 23 tests pass
+- **EXPERT S1-S10 COMPLETE (2026-03-04)** — All 10 pre-launch Expert sessions done (29+87+103+91 tests)
+- **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation
+- **Cookie consent on quiz pages** — Law 25 compliance, localStorage gate, bilingual
+- **Privacy officer** — "Le dirigeant de BuildFi Technologies inc." designated (Law 25 §3.5)
 - Essentiel: near launch, 3 infra blockers (Blob public, Resend DNS, ANTHROPIC_API_KEY)
-- Next: S2 (Quiz Expert) → S3 (API simulate/optimize)
+- Next: S11-S14 post-launch (feedback, A/B, bilan annuel crons, admin)
 
 ## Commands
 ```bash
@@ -189,6 +202,14 @@ npm run dev                    # Local dev server
 npm run build                  # Production build
 node tests/debt-tool-tests.js  # Debt tool tests (200 tests)
 vercel --prod                  # Manual deploy
+```
+
+### Expert test commands
+```bash
+npx jest tests/s1-infrastructure.test.ts   # S1 infra (29 tests)
+npx jest tests/s3-api.test.ts              # S3 API simulate/optimize (103 tests)
+npx jest tests/s10-audit.test.ts           # S10 full audit (91 tests)
+npx jest tests/quiz-translator-expert.test.ts  # Expert translator (87 tests)
 ```
 
 ### Validation checks before commit

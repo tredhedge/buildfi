@@ -71,6 +71,14 @@ export async function POST(req: NextRequest) {
 
     const checkoutType = type || "report";
 
+    // Terms acceptance required for report and second (not addon — user already accepted at initial purchase)
+    if (checkoutType !== "addon" && !body.termsAccepted) {
+      return NextResponse.json(
+        { error: "Terms acceptance required" },
+        { status: 400 }
+      );
+    }
+
     // ── Export AI addon ($14.99) ─────────────────────────
     if (checkoutType === "addon") {
       const priceId = process.env.STRIPE_PRICE_EXPORT_ADDON;

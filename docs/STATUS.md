@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-04 — v7 (launch pricing, cookie consent, Expert landing, S2 Quiz Expert tests, constants auto-update)
+> Mis à jour: 2026-03-04 — v8 (S1-S10 Expert complete, terms acceptance checkbox, cookie consent on quiz pages, legal P07 gaps fixed)
 
 ## PHASE ACTUELLE
-**PRE-LAUNCH FINAL — Launch pricing (50% off) deployed on all surfaces. Cookie consent banner (Law 25) added. Expert landing page built at /expert/landing. Constants auto-update system (cron + drift tests). S2 Quiz Expert translator tested (87/87). Legal pages updated. Reste 3 blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel).**
+**PRE-LAUNCH FINAL — Expert S1-S10 complete (29+87+103+91 tests). Terms acceptance checkbox on all quiz pages + server validation (Quebec CPA). Cookie consent banner on all pages (Law 25). Launch pricing deployed. Constants auto-update system. Reste 3 blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel).**
 
 ---
 
@@ -80,12 +80,27 @@
 - `lib/report-html-inter.js` — 16 sections, 1,003 lignes
 - `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
 
-### Session S2 — Quiz Expert (2026-03-04)
+### Expert Tier — Sessions S1-S10 Complétées (2026-03-02 → 2026-03-04)
+| Session | Composant | Tests | Statut |
+|---------|-----------|-------|--------|
+| S1 | Infrastructure (KV, auth, rate limiting, checkout, webhook) | 29 | ✅ |
+| S2 | Quiz Expert (translator, paywall pricing) | 87 | ✅ |
+| S3 | API simulate/optimize endpoints | 103 | ✅ |
+| S4 | Simulateur UI | — | ✅ |
+| S5 | 3 Workflows (Tester/Optimiser/Bilan Annuel) | — | ✅ |
+| S6 | Report pipeline (Expert report HTML) | — | ✅ |
+| S7 | Exports/portail | — | ✅ |
+| S8 | Landing/upgrade paths | — | ✅ |
+| S9 | Compliance (AMF, Law 25) | — | ✅ |
+| S10 | Full audit | 91 | ✅ |
+
+### Legal & Compliance (2026-03-04)
 | Composant | Statut | Détails |
 |-----------|--------|---------|
-| Quiz Expert paywall pricing | ✅ | Launch pricing (~~129 $~~ 64,50 $) on all price refs |
-| Translator Expert tests | ✅ | 87 tests, 5 profiles (couple/CCPC/preretiree/FIRE/baseline) |
-| Quiz Expert quiz + translator | ✅ PRE-EXISTING | 1,323 + 466 lines, all fields mapped |
+| Terms acceptance checkbox | ✅ | 3 quiz pages + checkout API server validation (Quebec CPA) |
+| Cookie consent on quiz pages | ✅ | Law 25 — localStorage gate, bilingual, all quiz pages |
+| Privacy officer designation | ✅ | "Le dirigeant de BuildFi Technologies inc." in confidentialite.html |
+| Legal pages P07 gaps | ✅ | Age minimum, CPM-2023, Stripe PCI, processors list |
 
 ### Pre-launch polish (2026-03-04)
 | Composant | Statut | Détails |
@@ -126,7 +141,8 @@
 - Conditions, confidentialité, avis légal — mis à jour 2026-03-04
 - Launch pricing ajouté dans conditions
 - Consent banner référencé dans confidentialité
-- [Nom du responsable] placeholder dans confidentialité (Law 25) — à remplir manuellement
+- Privacy officer: "Le dirigeant de BuildFi Technologies inc." ✅ DONE
+- Terms acceptance checkbox on all quiz pages ✅ DONE
 
 ### 5. Commit + push [MANUAL]
 - All files ready to commit
@@ -162,10 +178,10 @@
 - Server backbone already merged (translator, report, AI prompt, strategies)
 - Score résilience 4 jauges, thermomètre risque séquence — à construire
 
-### Expert — Sessions S2-S14
-- S1 Infra ✅ | S2 Quiz Expert ✅ | S3 API simulate/optimize | S4 Simulateur
-- S5 3 Workflows | S6 Report pipeline | S7 Exports/portail | S8 Landing/upgrade
-- S9 Compliance | S10 Full audit | S11-S14 Post-launch
+### Expert — Sessions S1-S10 ✅ COMPLETE | S11-S14 Post-launch
+- S1 Infra ✅ | S2 Quiz ✅ | S3 API ✅ | S4 Simulateur ✅ | S5 Workflows ✅
+- S6 Reports ✅ | S7 Exports ✅ | S8 Landing ✅ | S9 Compliance ✅ | S10 Audit ✅
+- S11-S14: Post-launch (feedback pipeline, A/B, bilan annuel crons, admin dashboard)
 - Détails: docs/EXPERT-EXECUTION-PLAN.md
 
 ### Jalons financiers
@@ -230,7 +246,7 @@ buildfi/
 │   ├── logo.js, logo-*.svg       ✅ Logo système
 │   └── robots.txt                ✅ Disallow /outils/
 ├── middleware.ts                  ✅ CSP headers
-├── tests/                        ✅ 453 MC + 200 debt + 87 Expert translator = 740 tests
+├── tests/                        ✅ 453 MC + 200 debt + 87 Expert translator + 103 S3 + 91 S10 = 934 tests
 ├── docs/                         8 fichiers de référence
 └── CLAUDE.md                     Instructions Claude Code
 ```
@@ -251,7 +267,7 @@ Détails complets: docs/SERVICES.md
 ## PROCHAINE SESSION
 1. Fix Blob (public store) + Resend DNS → rapport accessible
 2. Add ANTHROPIC_API_KEY to Vercel → test E2E
-3. Remplir [Nom du responsable] dans confidentialite.html
-4. Create og-image.png (1200x630) for OG tags
-5. Commit + push all changes
-6. S3 Expert: API simulate/optimize endpoints
+3. Create og-image.png (1200x630) for OG tags
+4. Commit + push all changes
+5. Soft launch organique (Reddit, LinkedIn, cercle privé)
+6. S11 Expert post-launch: feedback pipeline, A/B testing

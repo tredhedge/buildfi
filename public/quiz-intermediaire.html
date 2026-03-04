@@ -244,6 +244,10 @@ function renderPaywall(D, lang) {
   h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
+  h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
+  h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#b8860b">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#b8860b">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#b8860b">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#b8860b">Legal notice</a>.');
+  h += '</label>';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
   h += t("Obtenir mon rapport complet — 59 $","Get my full report — $59");
   h += '</button>';
@@ -257,6 +261,10 @@ function renderPaywall(D, lang) {
 
 // -- Stripe checkout --
 function startCheckout() {
+  if (!document.getElementById("terms-accept").checked) {
+    alert(t("Veuillez accepter les conditions pour continuer.", "Please accept the terms to continue."));
+    return;
+  }
   var email = document.getElementById("buyer-email").value.trim();
   if (!email || !email.includes("@")) {
     alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
@@ -272,7 +280,8 @@ function startCheckout() {
       quizAnswers: STATE.quiz,
       lang: STATE.lang,
       email: email,
-      tier: "intermediaire"
+      tier: "intermediaire",
+      termsAccepted: true
     }, sessionStorage.getItem("bf_ref") ? { referralCode: sessionStorage.getItem("bf_ref") } : {}))
   })
   .then(function(r) { return r.json(); })
@@ -1180,6 +1189,26 @@ document.addEventListener("keydown",function(e){
 // ============================================================
 // INIT
 // ============================================================
+
+/* ─── COOKIE CONSENT (Law 25) ─── */
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var cl = STATE.lang === 'fr'
+    ? 'Ce site utilise des temoins analytiques pour ameliorer l\u2019experience.'
+    : 'This site uses analytics cookies to improve the experience.';
+  var aLbl = STATE.lang === 'fr' ? 'Accepter' : 'Accept';
+  var dLbl = STATE.lang === 'fr' ? 'Refuser' : 'Decline';
+  var bar = document.createElement('div');
+  bar.id = 'consentBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>' + cl + '</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">' + aLbl + '</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + dLbl + '</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
+
 render();
 </script>
 <style>

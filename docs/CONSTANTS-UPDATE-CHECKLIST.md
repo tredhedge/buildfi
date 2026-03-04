@@ -6,6 +6,21 @@
 
 ---
 
+## Automated Monitoring (added 2026-03-03)
+
+An automated constants-check system supplements this manual process:
+
+- **Registry**: `lib/constants-registry.ts` — master registry of 200+ fiscal constants with CRA/SCA source URLs
+- **Cron scraper**: `app/api/cron/constants-check/route.ts` — fetches CRA pages, parses values, compares to registry, emails diff
+- **Schedule**: Jan 10 + Feb 10 at 14:00 UTC (`0 14 10 1,2 *` in `vercel.json`)
+- **Manual trigger**: `GET /api/cron/constants-check?secret=<CRON_SECRET>`
+- **Email**: Sends diff to `CONSTANTS_NOTIFY_EMAIL` env var (defaults to tredhedge@gmail.com)
+- **Scrapes**: Federal brackets, CPP/QPP, OAS, GIS, TFSA, RRSP, EI
+
+**Workflow**: When the cron detects drift, you receive an email with the diffs. Then follow the manual checklist below to update engine/index.js + planner.html + quiz-translators + constants-registry.ts.
+
+---
+
 ## Pre-flight
 
 - [ ] Confirm CRA has published the T1 General for the new tax year

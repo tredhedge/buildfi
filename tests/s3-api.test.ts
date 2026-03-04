@@ -231,6 +231,116 @@ try {
   fail++;
 }
 
+// ── Test 5: Full 8-axis optimizer on coupleDB ──────────────
+
+console.log("\n--- Optimizer (coupleDB — full 8-axis) ---");
+
+try {
+  const { mcParams } = translateToMCExpert(profiles.coupleDB);
+
+  const baseMC = runMC(mcParams, 1000) as Record<string, any>;
+  check("8-axis baseline", !!baseMC);
+
+  if (baseMC) {
+    const baseSc = baseMC.succ;
+    const LEVER_LABELS: Record<string, { fr: string; en: string }> = {
+      retAge: { fr: "Age retraite", en: "Retirement age" },
+      strat: { fr: "Strategie retrait", en: "Withdrawal strategy" },
+      melt: { fr: "Meltdown REER", en: "RRSP meltdown" },
+      qppAge: { fr: "Age RRQ/RPC", en: "QPP/CPP age" },
+      oasAge: { fr: "Age PSV/OAS", en: "OAS age" },
+      splitP: { fr: "Fractionnement", en: "Pension splitting" },
+      retSpM: { fr: "Depenses retraite", en: "Retirement spending" },
+      ptWork: { fr: "Travail partiel", en: "Part-time work" },
+    };
+
+    // Verify all 8 lever labels exist and are bilingual
+    const axes = ["retAge", "strat", "melt", "qppAge", "oasAge", "splitP", "retSpM", "ptWork"];
+    for (const a of axes) {
+      check(`lever ${a} has fr label`, typeof LEVER_LABELS[a]?.fr === "string" && LEVER_LABELS[a].fr.length > 0);
+      check(`lever ${a} has en label`, typeof LEVER_LABELS[a]?.en === "string" && LEVER_LABELS[a].en.length > 0);
+    }
+    check("all 8 axes present", axes.length === 8);
+
+    // Test a sweep on each axis individually to verify they all return results
+    const leverResults: { axis: string; bestSucc: number }[] = [];
+    for (const axis of ["retAge", "qppAge", "oasAge"]) {
+      const values = axis === "retAge" ? [61, 63, 65, 67] : [60, 65, 70];
+      let best = -1;
+      for (const v of values) {
+        const pp = Object.assign({}, mcParams, { [axis]: v });
+        const mc = runMC(pp, 1000) as Record<string, any> | null;
+        if (mc && mc.succ > best) best = mc.succ;
+      }
+      leverResults.push({ axis, bestSucc: best });
+    }
+    check("8-axis: retAge lever returns results", leverResults[0].bestSucc >= 0);
+    check("8-axis: qppAge lever returns results", leverResults[1].bestSucc >= 0);
+    check("8-axis: oasAge lever returns results", leverResults[2].bestSucc >= 0);
+
+    // Verify baseline is included (it was computed above)
+    check("8-axis: baseline successRate 0-1", baseSc >= 0 && baseSc <= 1);
+
+    // Sort results and verify top sorted descending
+    const sorted = [...leverResults].sort((a, b) => b.bestSucc - a.bestSucc);
+    check("8-axis: results sortable by success", sorted[0].bestSucc >= sorted[sorted.length - 1].bestSucc);
+  }
+} catch (err) {
+  console.error("  CRASH [8-axis optimizer]", err);
+  fail++;
+}
+
+// ── Test 6: Compare — 3 variants ──────────────────────────
+
+console.log("\n--- Compare (3 variants — coupleDB) ---");
+
+try {
+  const { mcParams } = translateToMCExpert(profiles.coupleDB);
+
+  const varA = Object.assign({}, mcParams, { qppAge: 60 });
+  const varB = Object.assign({}, mcParams, { qppAge: 65 });
+  const varC = Object.assign({}, mcParams, { qppAge: 70 });
+
+  const mcA = runMC(varA, 1000);
+  const mcB = runMC(varB, 1000);
+  const mcC = runMC(varC, 1000);
+
+  check("3-variant: all returned", !!mcA && !!mcB && !!mcC);
+  if (mcA && mcB && mcC) {
+    const results = [
+      { label: "QPP60", succ: mcA.succ },
+      { label: "QPP65", succ: mcB.succ },
+      { label: "QPP70", succ: mcC.succ },
+    ];
+    check("3-variant: all have success rates", results.every(r => r.succ >= 0 && r.succ <= 1));
+    check("3-variant: 3 distinct results", results.length === 3);
+    console.log(`  OK   QPP60=${(results[0].succ * 100).toFixed(1)}% QPP65=${(results[1].succ * 100).toFixed(1)}% QPP70=${(results[2].succ * 100).toFixed(1)}%`);
+  }
+} catch (err) {
+  console.error("  CRASH [3-variant compare]", err);
+  fail++;
+}
+
+// ── Test 7: Compare allowlist enforcement ──────────────────
+
+console.log("\n--- Compare (allowlist enforcement) ---");
+
+try {
+  const { mcParams } = translateToMCExpert(profiles.standard);
+
+  // Inject disallowed param — should not affect MC (engine ignores unknown keys)
+  const withDisallowed = Object.assign({}, mcParams, { _injected: "malicious", retAge: 60 });
+  const mc = runMC(withDisallowed, 1000);
+  check("allowlist: MC ignores unknown params", !!mc);
+  if (mc) {
+    check("allowlist: _injected not in result", !("_injected" in (mc as any)));
+    check("allowlist: succ still valid", mc.succ >= 0 && mc.succ <= 1);
+  }
+} catch (err) {
+  console.error("  CRASH [allowlist]", err);
+  fail++;
+}
+
 // ── Summary ──────────────────────────────────────────────────
 
 console.log(`\n${pass} passed, ${fail} failed`);

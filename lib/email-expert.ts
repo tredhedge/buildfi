@@ -160,11 +160,17 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
 </body>
 </html>`;
 
+  const text = fr
+    ? `${subject}\n\n${isNewAccount ? "Bienvenue dans le Simulateur Expert." : "Votre lien d'acces."}\n\nAcceder a mon simulateur: ${magicUrl}\n\nCe lien expire dans 24h. Si vous n'avez pas demande cet acces, ignorez ce courriel.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\n${isNewAccount ? "Welcome to the Expert Simulator." : "Your access link."}\n\nAccess my simulator: ${magicUrl}\n\nThis link expires in 24h. If you did not request this access, ignore this email.\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -369,11 +375,17 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
 </body>
 </html>`;
 
+  const text = fr
+    ? `${subject}\n\nVotre bilan Expert est pret.\nNote: ${grade} | Taux de reussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\nOuvrir mon simulateur: ${magicLinkUrl}\n\nCe lien est valide 30 jours.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour Expert assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\nOpen my simulator: ${magicLinkUrl}\n\nThis link is valid for 30 days.\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -393,12 +405,15 @@ export async function sendAdminAlert(subject: string, body: string) {
   try {
     await resend.emails.send({
       from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+      replyTo: "support@buildfi.ca",
       to: [adminEmail],
       subject: `[BuildFi ALERT] ${subject}`,
       html: `<pre style="font-family:monospace;font-size:13px;white-space:pre-wrap;">${body}</pre>`,
+      text: `[BuildFi ALERT] ${subject}\n\n${body}`,
       headers: {
         "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        "X-Priority": "1",
       },
     });
   } catch (err) {
@@ -635,11 +650,17 @@ export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
     infoNote: null,
   });
 
+  const text = fr
+    ? `${subject}\n\nVotre simulateur Expert expire le ${expFormatted}.\nRenouvelez pour 29 $/an: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour Expert simulator expires on ${expFormatted}.\nRenew for $29/year: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -696,11 +717,17 @@ export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
       : "After expiration, your data will be preserved for 12 months in read-only mode.",
   });
 
+  const text = fr
+    ? `${subject}\n\nPlus que 7 jours. Renouvelez pour conserver votre simulateur.\nRenouveler: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nOnly 7 days left. Renew to keep your simulator.\nRenew: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -760,11 +787,17 @@ export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
       : "If you do not renew, your data will be kept for 12 months then deleted.",
   });
 
+  const text = fr
+    ? `${subject}\n\nDernier jour d'acces complet. Renouvelez pour continuer.\nRenouveler: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nLast day of full access. Renew to continue.\nRenew: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -833,11 +866,17 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
       : "Your data will be preserved for 12 months after expiration. No action needed to keep them.",
   });
 
+  const text = fr
+    ? `${subject}\n\nVos donnees sont preservees. Reactivez votre simulateur.\nReactiver: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour data is preserved. Reactivate your simulator.\nReactivate: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -975,11 +1014,17 @@ export async function sendAnniversaryReminderEmail(params: AnniversaryReminderPa
 </body>
 </html>`;
 
+  const text = fr
+    ? `${subject}\n\n6 mois depuis votre dernier calcul. Il est peut-etre temps de recalculer.\n\nOuvrir mon simulateur: ${magicUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\n6 months since your last calculation. It may be time to recalculate.\n\nOpen my simulator: ${magicUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -1083,11 +1128,17 @@ export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
 </body>
 </html>`;
 
+  const text = fr
+    ? `${subject}\n\n1 an d'acces Expert gratuit grace a vos 3 references!\nValide jusqu'au ${expiryFormatted}. 3 exports AI supplementaires inclus.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\n1 free year of Expert access thanks to your 3 referrals!\nValid until ${expiryFormatted}. 3 additional AI exports included.\n\nsupport@buildfi.ca | buildfi.ca`;
+
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
+    text,
     headers: {
       "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

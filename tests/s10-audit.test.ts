@@ -288,7 +288,7 @@ import { resolve } from "path";
 const root = resolve(import.meta.dirname || __dirname, "..");
 const requiredFiles = [
   "public/index.html",
-  "public/expert.html",
+  "app/expert/page.tsx",
   "public/conditions.html",
   "public/confidentialite.html",
   "public/avis-legal.html",

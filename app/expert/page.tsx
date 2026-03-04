@@ -49,6 +49,12 @@ interface GeneratedReport {
   blobUrl: string;
   aiStatus: "full" | "fallback";
 }
+interface FeedbackSummary {
+  rating: number | null;
+  nps: boolean | null;
+  couponUnlocked: boolean;
+  token: string;
+}
 
 // ── Helpers ────────────────────────────────────────────────────────
 function fDate(iso: string, fr: boolean): string {
@@ -74,6 +80,8 @@ function PortalContent() {
   const [renameValue, setRenameValue] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackSummary | null>(null);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const tokenRef = useRef(tokenParam);
 
   const fr = lang === "fr";
@@ -174,6 +182,7 @@ function PortalContent() {
       .then(d => {
         if (d.authenticated && d.profile) {
           setProfile(d.profile as ExpertProfile);
+          if (d.feedback) setFeedback(d.feedback as FeedbackSummary);
           setAuthStatus("ok");
           // Remove token from URL for security
           const url = new URL(window.location.href);
@@ -601,6 +610,73 @@ function PortalContent() {
             </button>
           </div>
         </section>
+
+        {/* Satisfaction */}
+        {reports.length > 0 && (
+          <section style={{ marginBottom: 32 }}>
+            <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
+              {t("Satisfaction", "Satisfaction")}
+            </h2>
+            <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 24px" }}>
+              {feedback?.rating ? (
+                <div>
+                  <div style={{ fontSize: 14, color: EK.tx, marginBottom: 8 }}>
+                    {t("Merci pour votre evaluation!", "Thank you for your rating!")}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <span key={s} style={{ fontSize: 24, color: s <= feedback.rating! ? EK.gold : EK.border }}>&#9733;</span>
+                    ))}
+                    <span style={{ fontSize: 14, color: EK.txDim, marginLeft: 8, alignSelf: "center" }}>{feedback.rating}/5</span>
+                  </div>
+                  {feedback.couponUnlocked && (
+                    <div style={{ fontSize: 12, color: EK.green, fontWeight: 600 }}>
+                      {t("Coupon de renouvellement debloque", "Renewal coupon unlocked")}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 14, color: EK.txDim, marginBottom: 12 }}>
+                    {t("Comment evaluez-vous votre experience BuildFi?", "How would you rate your BuildFi experience?")}
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <button
+                        key={s}
+                        disabled={ratingSubmitting}
+                        onClick={async () => {
+                          if (!feedback?.token) return;
+                          setRatingSubmitting(true);
+                          try {
+                            const res = await fetch(`/api/feedback/${feedback.token}`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ rating: s, source: "page" }),
+                            });
+                            if (res.ok) setFeedback({ ...feedback, rating: s, couponUnlocked: true });
+                          } catch {} finally { setRatingSubmitting(false); }
+                        }}
+                        style={{
+                          background: "none", border: `2px solid ${EK.border}`, borderRadius: 8,
+                          padding: "8px 12px", fontSize: 22, cursor: ratingSubmitting ? "wait" : "pointer",
+                          color: EK.gold, transition: "border-color 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.borderColor = EK.gold)}
+                        onMouseLeave={e => (e.currentTarget.style.borderColor = EK.border)}
+                      >
+                        &#9733;
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: EK.txMuted, marginTop: 8 }}>
+                    {t("Evaluez pour debloquer un coupon de renouvellement.", "Rate to unlock a renewal coupon.")}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Account details */}
         <section>

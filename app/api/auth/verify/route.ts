@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { getFeedbackByEmail } from "@/lib/kv";
 
 export async function GET(req: NextRequest) {
   const result = await verifyToken(req);
@@ -17,6 +18,10 @@ export async function GET(req: NextRequest) {
 
   const p = result.profile;
   const sophistication = (p.quizData?.sophistication as string) || "rapide";
+
+  // Fetch feedback record if exists (non-blocking — null if none)
+  const feedback = await getFeedbackByEmail(result.email!).catch(() => null);
+
   return NextResponse.json({
     authenticated: true,
     email: result.email,
@@ -35,6 +40,13 @@ export async function GET(req: NextRequest) {
       constantsYear: p.constantsYear,
       quizData: p.quizData,
     },
+    // Feedback summary for portal
+    feedback: feedback ? {
+      rating: feedback.rating,
+      nps: feedback.nps,
+      couponUnlocked: feedback.couponUnlocked,
+      token: feedback.token,
+    } : null,
     // Summary fields (kept for backward compat with simulator auth gate)
     tier: p.tier,
     exportsAI: p.exportsAI,

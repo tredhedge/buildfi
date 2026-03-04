@@ -7,12 +7,12 @@
 ## 1. ARCHITECTURE
 
 ### Important: Le moteur MC existe dans 2 endroits
-- `planner_v2.html` — moteur complet dev/test (~15,000 lignes, 453 tests embarqués)
+- `planner.html` — moteur complet dev/test (~15,000 lignes, 453 tests embarqués)
 - `lib/engine/index.js` — moteur extrait pour production (2,426 lignes, 38 exports)
 
-**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner_v2.html est la source de vérité.
+**Si un bug moteur est corrigé, le corriger dans les 2 fichiers.** planner.html est la source de vérité.
 
-### Structure planner_v2.html
+### Structure planner.html
 ```
 Lignes 1–50          : HTML head, meta, styles
 Lignes 50–500        : CSS (tokens FS/CL/SP, responsive)
@@ -229,7 +229,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 |----|----------|--------|
 | DT-001 | Architecture: quiz HTML thin client + Next.js API backend | Actif |
 | DT-002 | Monte Carlo 5,000 sims t-Student df=5 | Actif, non négociable |
-| DT-003 | Web Worker pour calcul MC off-thread (planner_v2.html seulement) | Actif |
+| DT-003 | Web Worker pour calcul MC off-thread (planner.html seulement) | Actif |
 | DT-004 | setTimeout(300) + _mcProfileDirty — race condition React (R6) | Actif, disparaît en P4 |
 | DT-005 | Engine clamps — le moteur est son propre garde-fou | Actif, non négociable |
 | DT-006 | Tests embarqués dans le HTML — 453 tests, 54 catégories | Actif |
@@ -357,6 +357,10 @@ recommandation(s) / recommendation(s)
 | 2026-03-03 | **Engine audit** — 17 nouveaux tests (436→453), GIS/QC bracket fixes, sync 3 files | ✅ |
 | 2026-03-03 | **Security hardening** — CSP headers, rate limiting magic-link, admin alerts, HTTP 500 on errors | ✅ |
 
+| 2026-03-04 | **S2-S10 Expert sessions** — Quiz Expert, API simulate/optimize, Simulateur, Workflows, Reports, Exports, Landing, Compliance, Full audit | ✅ |
+| 2026-03-04 | **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation | ✅ |
+| 2026-03-04 | **Cookie consent on quiz pages** — Law 25, localStorage gate, bilingual consent bar | ✅ |
+
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
 - **R20** (P1.6): Rapport Essentiel — 10 profils, chaque $ tracé au moteur, grep AMF (liste élargie)
@@ -364,7 +368,27 @@ recommandation(s) / recommendation(s)
 
 ---
 
-## 8. LEÇONS APPRISES
+## 8. COMPLIANCE DECISIONS
+
+### Terms Acceptance Checkbox (Quebec Consumer Protection Act)
+- **Why**: Quebec CPA requires clear acceptance of terms before purchase of digital goods. Without it, the "no refund" policy (conditions.html §5) and liability cap (avis-legal.html §6) are legally unenforceable.
+- **Where**: All 3 quiz pages (quiz-essentiel.html, quiz-intermediaire.html, quiz-expert.html) + server validation in `app/api/checkout/route.ts`
+- **What**: Checkbox between email input and checkout button, links to conditions.html + avis-legal.html. `termsAccepted: true` sent in fetch body. Server rejects non-addon requests without it.
+- **Addon exemption**: `type=addon` skipped because user already accepted terms at initial Expert purchase.
+
+### Cookie Consent (Law 25 — Quebec)
+- **Why**: Law 25 (Act respecting the protection of personal information in the private sector) requires explicit consent before collecting personal information via analytics cookies. PostHog fires on page load without consent = violation.
+- **Where**: index.html + expert.html + all 3 quiz pages
+- **How**: `localStorage['buildfi_consent']` gate. Consent bar shown on first visit. PostHog init and capture gated on `consent === 'yes'`.
+- **Pattern**: IIFE checks localStorage, creates fixed-bottom bar with Accept/Decline buttons, sets localStorage value.
+
+### Privacy Officer (Law 25 §3.5)
+- **Requirement**: Law 25 requires designation of a person responsible for protection of personal information.
+- **Designated**: "Le dirigeant de BuildFi Technologies inc." in confidentialite.html.
+
+---
+
+## 9. LEÇONS APPRISES
 
 - Audit moteur sans audit display = incomplet. Les deux sont requis.
 - Les profils qui échouent révèlent plus de bugs que ceux qui réussissent.

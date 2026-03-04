@@ -345,13 +345,24 @@ async function handleExpertPurchase(
       const quiz = mcParams._quiz || {};
       const batches = buildExpertPromptBatches(D, mc, mcParams, quiz, activeSections);
 
-      // Run AI batches in parallel
+      // Run AI batches in parallel with 90s timeout (Vercel max 120s)
       const aiStart = Date.now();
       // NOTE: Intermediate batch results are intentionally unsanitized (identity cast).
       // Post-hoc sanitizeAISlotsExpert() call below handles AMF compliance for all merged slots.
-      const batchResults = await Promise.all(
-        batches.map(b => callAnthropic(b.sys, b.usr, (raw) => raw as Record<string, string>))
-      );
+      let batchResults: Record<string, string>[];
+      try {
+        batchResults = await Promise.race([
+          Promise.all(
+            batches.map(b => callAnthropic(b.sys, b.usr, (raw) => raw as Record<string, string>))
+          ),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("AI batch timeout (90s)")), 90_000)
+          ),
+        ]);
+      } catch (timeoutErr) {
+        console.warn("[webhook] Expert AI batch timed out, using fallback (numeric-only report)");
+        batchResults = [];
+      }
       const mergedRaw: Record<string, any> = {};
       for (const result of batchResults) {
         Object.assign(mergedRaw, result);

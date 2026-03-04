@@ -183,6 +183,7 @@ export async function POST(req: NextRequest) {
 
     // ── Pass 1: sweep ────────────────────────────────────────
     const pass1: Pass1Result[] = [];
+    let skippedCount = 0;
     for (const c of combos) {
       try {
         const pp = Object.assign({}, params, {
@@ -207,9 +208,11 @@ export async function POST(req: NextRequest) {
             estTax: r.medEstateTax || 0,
             estNet: r.medEstateNet || 0,
           });
+        } else {
+          skippedCount++;
         }
       } catch (_) {
-        // Skip failed combos
+        skippedCount++;
       }
     }
 
@@ -268,6 +271,7 @@ export async function POST(req: NextRequest) {
         meta: {
           totalTested: combos.length,
           pass2Count: 0,
+          skippedCount,
           durationMs: Date.now() - start,
         },
       });
@@ -319,7 +323,7 @@ export async function POST(req: NextRequest) {
         else if (d === "strat") k = r.c.strat;
         else if (d === "retSpM") k = String(r.c.retSpM);
         else if (d === "ptWork")
-          k = r.c.ptM > 0 ? `${r.c.ptM}/m x ${r.c.ptYrs}y` : "Off";
+          k = r.c.ptM > 0 ? `${r.c.ptM}/m${r.c.ptYrs ? ` x ${r.c.ptYrs}y` : ""}` : "Off";
         else k = String((r.c as unknown as Record<string, unknown>)[d]);
 
         if (!byVal[k]) byVal[k] = [];
@@ -350,7 +354,7 @@ export async function POST(req: NextRequest) {
         currentVal = params.split ? Math.round((params.splitP || 0) * 100) + "%" : "Off";
       else if (d === "retSpM") currentVal = String(retSpM);
       else if (d === "ptWork")
-        currentVal = params.ptM > 0 ? `${params.ptM}/m x ${params.ptYrs || 0}y` : "Off";
+        currentVal = params.ptM > 0 ? `${params.ptM}/m${params.ptYrs ? ` x ${params.ptYrs}y` : ""}` : "Off";
       else currentVal = "?";
 
       levers.push({
@@ -405,6 +409,7 @@ export async function POST(req: NextRequest) {
       meta: {
         totalTested: combos.length,
         pass2Count: confirmed.length,
+        skippedCount,
         durationMs,
         engineVersion: ENGINE_VERSION,
         constantsYear: CONSTANTS_YEAR,
