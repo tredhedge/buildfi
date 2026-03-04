@@ -120,7 +120,7 @@ function buildBilanPrompt(
   const fr = lang === "fr";
 
   const sys = fr
-    ? `Tu es un analyste financier quantitatif pour BuildFi, un outil de planification de retraite canadien. Tu rediges le Bilan Annuel — un check-up fiscal comparatif. REGLES: (1) Conditionnel obligatoire pour toute projection. (2) Langage observationnel uniquement — decris les chiffres, ne prescris pas d'actions. (3) JAMAIS utiliser: devriez, recommandons, il faut, plan d'action. (4) Utilise plutot: "les donnees indiquent", "le modele suggere", "il serait pertinent de considerer". (5) Renvoie a un professionnel qualifie pour toute decision. Reponds en JSON avec les cles exactes demandees. Pas de markdown, pas de backticks.`
+    ? `Tu es un analyste financier quantitatif pour BuildFi, un outil de planification de retraite canadien. Tu rédiges le Bilan Annuel — un check-up fiscal comparatif. RÈGLES: (1) Conditionnel obligatoire pour toute projection. (2) Langage observationnel uniquement — décris les chiffres, ne prescris pas d'actions. (3) JAMAIS utiliser: devriez, recommandons, il faut, plan d'action. (4) Utilise plutôt: "les données indiquent", "le modèle suggère", "il serait pertinent de considérer". (5) Renvoie à un professionnel qualifié pour toute décision. Réponds en JSON avec les clés exactes demandées. Pas de markdown, pas de backticks.`
     : `You are a quantitative financial analyst for BuildFi, a Canadian retirement planning tool. You write the Annual Assessment — a comparative fiscal check-up. RULES: (1) Conditional tense mandatory for all projections. (2) Observational language only — describe what numbers show, never prescribe actions. (3) NEVER use: should, recommend, must, action plan. (4) Use instead: "the data indicates", "the model suggests", "it could be worth considering". (5) Refer to a qualified professional for all decisions. Respond in JSON with the exact keys requested. No markdown, no backticks.`;
 
   const successPct = Math.round(comparison.current.successRate * 100);
@@ -132,20 +132,20 @@ function buildBilanPrompt(
     ? bilanHistory : comparison.history;
   const historyStr = historyData.length >= 2
     ? (fr
-        ? `\nHistorique multi-annees (${historyData.length} ans):\n${historyData.map(h => `  ${h.year}: taux ${Math.round(h.successRate * 100)}%, note ${h.grade}${h.totalAssets > 0 ? `, actifs ${h.totalAssets}$` : ""}`).join("\n")}`
+        ? `\nHistorique multi-années (${historyData.length} ans):\n${historyData.map(h => `  ${h.year}: taux ${Math.round(h.successRate * 100)}%, note ${h.grade}${h.totalAssets > 0 ? `, actifs ${h.totalAssets}$` : ""}`).join("\n")}`
         : `\nMulti-year history (${historyData.length} years):\n${historyData.map(h => `  ${h.year}: rate ${Math.round(h.successRate * 100)}%, grade ${h.grade}${h.totalAssets > 0 ? `, assets $${h.totalAssets}` : ""}`).join("\n")}`)
     : "";
 
   const usr = fr
-    ? `Bilan Annuel pour un client. Profil: age ${params.age}, retraite ${params.retAge}, province ${params.prov}, salaire ${params.sal}$.
-Taux de reussite: ${successPct}%${prevPct !== null ? ` (precedent: ${prevPct}%, delta: ${deltaPct > 0 ? "+" : ""}${deltaPct} pts)` : ""}.
-Note: ${comparison.current.grade}${comparison.previous ? ` (precedente: ${comparison.previous.grade})` : ""}.
-Patrimoine median a la retraite: ${Math.round(comparison.current.medianWealth)}$${comparison.previous ? ` (precedent: ${Math.round(comparison.previous.medianWealth)}$)` : ""}.
-Actifs totaux: ${comparison.current.totalAssets}$${comparison.previous ? ` (precedents: ${comparison.previous.totalAssets}$, delta: ${comparison.deltas ? (comparison.deltas.assets >= 0 ? "+" : "") + comparison.deltas.assets + "$" : ""})` : ""}.${historyStr}
+    ? `Bilan Annuel pour un client. Profil: âge ${params.age}, retraite ${params.retAge}, province ${params.prov}, salaire ${params.sal}$.
+Taux de réussite: ${successPct}%${prevPct !== null ? ` (précédent: ${prevPct}%, delta: ${deltaPct > 0 ? "+" : ""}${deltaPct} pts)` : ""}.
+Note: ${comparison.current.grade}${comparison.previous ? ` (précédente: ${comparison.previous.grade})` : ""}.
+Patrimoine médian à la retraite: ${Math.round(comparison.current.medianWealth)}$${comparison.previous ? ` (précédent: ${Math.round(comparison.previous.medianWealth)}$)` : ""}.
+Actifs totaux: ${comparison.current.totalAssets}$${comparison.previous ? ` (précédents: ${comparison.previous.totalAssets}$, delta: ${comparison.deltas ? (comparison.deltas.assets >= 0 ? "+" : "") + comparison.deltas.assets + "$" : ""})` : ""}.${historyStr}
 REER: ${bilanFields.rrsp}$, CELI: ${bilanFields.tfsa}$, NR: ${bilanFields.nr}$.
 Cotisations: REER ${bilanFields.rrspC}$/an, CELI ${bilanFields.tfsaC}$/an, NR ${bilanFields.nrC}$/an.
-Depenses retraite: ${bilanFields.retSpM}$/mois.
-Hypotheque: ${bilanFields.mortgageBalance}$ a ${bilanFields.mortgageRate}%.
+Dépenses retraite: ${bilanFields.retSpM}$/mois.
+Hypothèque: ${bilanFields.mortgageBalance}$ à ${bilanFields.mortgageRate}%.
 Evenements: ${bilanFields.events || "Aucun"}.
 Changements: ${bilanFields.changes || "Aucun"}.
 
@@ -157,7 +157,7 @@ Genere un JSON avec ces cles (chaque valeur est un paragraphe de 2-4 phrases en 
   "governmentAI": "Observation sur les prestations gouvernementales (RRQ, PSV, seuils)",
   "taxAI": "Observation sur l'optimisation fiscale (fractionnement, taux marginal)",
   "realEstateAI": "Observation sur l'immobilier (si applicable)",
-  "successionAI": "Observation sur la succession (impot deces, roulement conjoint)",
+  "successionAI": "Observation sur la succession (impôt décès, roulement conjoint)",
   "questionsAI": "3-5 questions personnalisees a poser a un fiscaliste, avec contexte chiffre"
 }`
     : `Annual Assessment for a client. Profile: age ${params.age}, retirement ${params.retAge}, province ${params.prov}, salary $${params.sal}.
@@ -259,13 +259,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0">
     ${kpiBox(fr ? "Note" : "Grade", grade, comparison.deltas ? comparison.deltas.grade : undefined)}
     ${kpiBox(
-      fr ? "Taux de reussite" : "Success rate",
+      fr ? "Taux de réussite" : "Success rate",
       `${successPct}%`,
       prevPct !== null ? `${deltaPct >= 0 ? "+" : ""}${deltaPct} pts` : undefined,
       successPct >= 80 ? "#1a7a4c" : successPct >= 60 ? "#b8860b" : "#b91c1c"
     )}
     ${kpiBox(
-      fr ? "Patrimoine median" : "Median wealth",
+      fr ? "Patrimoine médian" : "Median wealth",
       f$(comparison.current.medianWealth),
       comparison.deltas ? `${comparison.deltas.wealth >= 0 ? "+" : ""}${f$(comparison.deltas.wealth)}` : undefined
     )}
@@ -282,7 +282,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
 ${aiSection(
   fr ? "Le chemin parcouru" : "The path traveled",
   "comparisonAI",
-  fr ? "Premiere annee de bilan — les donnees de reference seront etablies pour les comparaisons futures." : "First year of assessment — baseline data will be established for future comparisons."
+  fr ? "Première année de bilan — les données de référence seront établies pour les comparaisons futures." : "First year of assessment — baseline data will be established for future comparisons."
 )}
 
 <!-- BUG 18: Multi-year comparison table (3-year history) -->
@@ -292,10 +292,10 @@ ${comparison.history.length >= 2 ? `
   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
     <thead>
       <tr style="border-bottom:2px solid #b8860b">
-        <th style="text-align:left;padding:8px;color:#666">${fr ? "Annee" : "Year"}</th>
-        <th style="text-align:center;padding:8px;color:#666">${fr ? "Taux de reussite" : "Success rate"}</th>
+        <th style="text-align:left;padding:8px;color:#666">${fr ? "Année" : "Year"}</th>
+        <th style="text-align:center;padding:8px;color:#666">${fr ? "Taux de réussite" : "Success rate"}</th>
         <th style="text-align:center;padding:8px;color:#666">${fr ? "Note" : "Grade"}</th>
-        ${comparison.history.some(h => h.medianWealth > 0) ? `<th style="text-align:center;padding:8px;color:#666">${fr ? "Patrimoine median" : "Median wealth"}</th>` : ""}
+        ${comparison.history.some(h => h.medianWealth > 0) ? `<th style="text-align:center;padding:8px;color:#666">${fr ? "Patrimoine médian" : "Median wealth"}</th>` : ""}
         ${comparison.history.some(h => h.totalAssets > 0) ? `<th style="text-align:center;padding:8px;color:#666">${fr ? "Actifs totaux" : "Total assets"}</th>` : ""}
       </tr>
     </thead>
@@ -324,9 +324,9 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #1a2744;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#1a2744;color:#fff;font-size:12px;font-weight:800">A</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Sequencement des retraits" : "Withdrawal sequencing"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Séquencement des retraits" : "Withdrawal sequencing"}</span>
       </div>
-      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.withdrawalAI || (fr ? "Le modele explore differentes sequences de retraits entre vos comptes enregistres et non-enregistres." : "The model explores different withdrawal sequences between your registered and non-registered accounts."))}</div>
+      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.withdrawalAI || (fr ? "Le modèle explore différentes séquences de retraits entre vos comptes enregistrés et non-enregistrés." : "The model explores different withdrawal sequences between your registered and non-registered accounts."))}</div>
     </div>
 
     <!-- Card B: Government benefits -->
@@ -335,7 +335,7 @@ ${comparison.history.length >= 2 ? `
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#1a7a4c;color:#fff;font-size:12px;font-weight:800">B</span>
         <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Prestations gouvernementales" : "Government benefits"}</span>
       </div>
-      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.governmentAI || (fr ? `Le modele a explore les seuils de prestations gouvernementales selon votre profil dans la province de ${params.prov}.` : `The model explored government benefit thresholds based on your profile in ${params.prov}.`))}</div>
+      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.governmentAI || (fr ? `Le modèle a exploré les seuils de prestations gouvernementales selon votre profil dans la province de ${params.prov}.` : `The model explored government benefit thresholds based on your profile in ${params.prov}.`))}</div>
     </div>
 
     <!-- Card C: Tax optimization -->
@@ -344,7 +344,7 @@ ${comparison.history.length >= 2 ? `
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#b8860b;color:#fff;font-size:12px;font-weight:800">C</span>
         <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Optimisation fiscale" : "Tax optimization"}</span>
       </div>
-      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.taxAI || (fr ? "Le modele a analyse les strategies fiscales disponibles selon votre situation." : "The model analyzed available tax strategies based on your situation."))}</div>
+      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.taxAI || (fr ? "Le modèle a analysé les stratégies fiscales disponibles selon votre situation." : "The model analyzed available tax strategies based on your situation."))}</div>
     </div>
 
     <!-- Card D: Real estate -->
@@ -354,8 +354,8 @@ ${comparison.history.length >= 2 ? `
         <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Immobilier" : "Real estate"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.realEstateAI || (bilanFields.mortgageBalance > 0
-        ? (fr ? `Hypotheque de ${f$(bilanFields.mortgageBalance)} a ${bilanFields.mortgageRate}%. Le modele a explore les implications sur votre plan.` : `Mortgage of ${f$(bilanFields.mortgageBalance)} at ${bilanFields.mortgageRate}%. The model explored implications for your plan.`)
-        : (fr ? "Aucune hypotheque declaree. Le modele a neanmoins evalue les implications immobilieres potentielles sur votre plan de retraite." : "No mortgage declared. The model nonetheless evaluated potential real estate implications on your retirement plan.")))}</div>
+        ? (fr ? `Hypothèque de ${f$(bilanFields.mortgageBalance)} à ${bilanFields.mortgageRate}%. Le modèle a exploré les implications sur votre plan.` : `Mortgage of ${f$(bilanFields.mortgageBalance)} at ${bilanFields.mortgageRate}%. The model explored implications for your plan.`)
+        : (fr ? "Aucune hypothèque déclarée. Le modèle a néanmoins évalué les implications immobilières potentielles sur votre plan de retraite." : "No mortgage declared. The model nonetheless evaluated potential real estate implications on your retirement plan.")))}</div>
     </div>
 
     <!-- Card E: Estate planning -->
@@ -364,7 +364,7 @@ ${comparison.history.length >= 2 ? `
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#b91c1c;color:#fff;font-size:12px;font-weight:800">E</span>
         <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Succession" : "Estate planning"}</span>
       </div>
-      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.successionAI || (fr ? "Le modele a evalue les implications fiscales au deces selon vos actifs actuels." : "The model evaluated tax implications at death based on your current assets."))}</div>
+      <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.successionAI || (fr ? "Le modèle a évalué les implications fiscales au décès selon vos actifs actuels." : "The model evaluated tax implications at death based on your current assets."))}</div>
     </div>
 
   </div>
@@ -372,10 +372,10 @@ ${comparison.history.length >= 2 ? `
 
 <!-- Page 7: Questions for professional -->
 <div style="${sectionStyle}">
-  <h2 style="${h2Style}">${fr ? "Questions a poser a votre fiscaliste" : "Questions for your tax professional"}</h2>
+  <h2 style="${h2Style}">${fr ? "Questions à poser à votre fiscaliste" : "Questions for your tax professional"}</h2>
   <div style="${bodyStyle}">
     ${ai.questionsAI || (fr
-      ? "1. Quel est l'ordre de retrait optimal entre mes comptes REER, CELI et non-enregistre?\n2. Est-ce que je devrais considerer un meltdown REER avant la retraite?\n3. Quelles strategies de fractionnement de revenu seraient pertinentes pour ma situation?"
+      ? "1. Quel est l'ordre de retrait optimal entre mes comptes REER, CELI et non-enregistré?\n2. Est-ce que je devrais considérer un meltdown REER avant la retraite?\n3. Quelles stratégies de fractionnement de revenu seraient pertinentes pour ma situation?"
       : "1. What is the optimal withdrawal order between my RRSP, TFSA, and non-registered accounts?\n2. Should I consider an RRSP meltdown before retirement?\n3. What income splitting strategies could be relevant for my situation?"
     ).split("\n").map((q: string) => `<p style="margin:8px 0;padding:8px 12px;background:#faf8f4;border-radius:6px">${escapeHTML(q)}</p>`).join("")}
   </div>
@@ -401,11 +401,11 @@ ${comparison.history.length >= 2 ? `
   <h2 style="${h2Style}">${fr ? "Avertissements" : "Disclaimers"}</h2>
   <div style="font-size:12px;color:#666;line-height:1.7">
     <p>${fr
-      ? "Ce bilan est genere a titre informatif seulement et ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont basees sur des hypotheses et des simulations Monte Carlo qui comportent une marge d'incertitude inherente. Les resultats passes ne garantissent pas les resultats futurs."
+      ? "Ce bilan est généré à titre informatif seulement et ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont basées sur des hypothèses et des simulations Monte Carlo qui comportent une marge d'incertitude inhérente. Les résultats passés ne garantissent pas les résultats futurs."
       : "This assessment is generated for informational purposes only and does not constitute financial, tax, or legal advice. Projections are based on assumptions and Monte Carlo simulations that carry inherent uncertainty. Past results do not guarantee future results."
     }</p>
     <p style="margin-top:8px">${fr
-      ? "Consultez un planificateur financier certifie ou un fiscaliste pour toute decision financiere. BuildFi n'est pas un conseiller financier enregistre aupres de l'Autorite des marches financiers (AMF) ou de tout autre organisme de reglementation."
+      ? "Consultez un planificateur financier certifié ou un fiscaliste pour toute décision financière. BuildFi n'est pas un conseiller financier enregistré auprès de l'Autorité des marchés financiers (AMF) ou de tout autre organisme de réglementation."
       : "Consult a certified financial planner or tax professional for any financial decision. BuildFi is not a financial advisor registered with any securities regulatory authority."
     }</p>
   </div>

@@ -161,7 +161,7 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\n${isNewAccount ? "Bienvenue dans le Simulateur Expert." : "Votre lien d'acces."}\n\nAcceder a mon simulateur: ${magicUrl}\n\nCe lien expire dans 24h. Si vous n'avez pas demande cet acces, ignorez ce courriel.\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\n${isNewAccount ? "Bienvenue dans le Simulateur Expert." : "Votre lien d'accès."}\n\nAccéder à mon simulateur: ${magicUrl}\n\nCe lien expire dans 24h. Si vous n'avez pas demandé cet accès, ignorez ce courriel.\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\n${isNewAccount ? "Welcome to the Expert Simulator." : "Your access link."}\n\nAccess my simulator: ${magicUrl}\n\nThis link expires in 24h. If you did not request this access, ignore this email.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
@@ -376,7 +376,7 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\nVotre bilan Expert est pret.\nNote: ${grade} | Taux de reussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\nOuvrir mon simulateur: ${magicLinkUrl}\n\nCe lien est valide 30 jours.\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\nVotre bilan Expert est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\nOuvrir mon simulateur: ${magicLinkUrl}\n\nCe lien est valide 30 jours.\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\nYour Expert assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\nOpen my simulator: ${magicLinkUrl}\n\nThis link is valid for 30 days.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
@@ -463,12 +463,12 @@ function buildRenewalHtml(opts: {
   infoNote: string | null;
 }): string {
   const fr = opts.lang === "fr";
-  const tagline = fr ? "Planification financiere accessible" : "Accessible financial planning";
+  const tagline = fr ? "Planification financière accessible" : "Accessible financial planning";
   const disclaimer = fr
-    ? "Cet outil est fourni a titre informatif et educatif seulement. Il ne constitue pas un avis financier personnalise."
+    ? "Cet outil est fourni à titre informatif et éducatif seulement. Il ne constitue pas un avis financier personnalisé."
     : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.";
   const contact = fr ? "Une question\u00a0?" : "Questions?";
-  const location = fr ? "Quebec, Canada" : "Quebec, Canada";
+  const location = fr ? "Québec, Canada" : "Quebec, Canada";
 
   const bodyHtml = opts.bodyParagraphs
     .map((p, i) => `<p style="margin:0${i < opts.bodyParagraphs.length - 1 ? " 0 14px 0" : ""};">${p}</p>`)
@@ -563,9 +563,9 @@ ${infoBox}
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
               <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialite" : "Privacy"}</a>
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialité" : "Privacy"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis legal" : "Legal"}</a>
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis légal" : "Legal"}</a>
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${disclaimer}</td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
@@ -573,7 +573,7 @@ ${infoBox}
               <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${location}
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
-              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se desabonner" : "Unsubscribe"}</a>
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se désabonner" : "Unsubscribe"}</a>
             </td></tr>
           </table>
         </td></tr>
@@ -605,23 +605,23 @@ export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
     : "30 days until expiration";
 
   const bodyP1 = fr
-    ? `Votre acces au Simulateur Expert expire le ${expFormatted}.`
+    ? `Votre accès au Simulateur Expert expire le ${expFormatted}.`
     : `Your Expert Simulator access expires on ${expFormatted}.`;
 
   const bodyP2 = fr
-    ? "Le renouvellement est de 29\u00a0$/an et inclut l\u2019acces continu au simulateur, 3 exports AI personnalises et le Bilan Annuel."
+    ? "Le renouvellement est de 29\u00a0$/an et inclut l\u2019accès continu au simulateur, 3 exports AI personnalisés et le Bilan Annuel."
     : "Renewal is $29/year and includes continued simulator access, 3 personalized AI exports, and the Annual Assessment.";
 
   // Value summary card
   const valueLines: string[] = [];
   if (reportsCount > 0) {
     valueLines.push(fr
-      ? `${reportsCount} bilan${reportsCount > 1 ? "s" : ""} genere${reportsCount > 1 ? "s" : ""}`
+      ? `${reportsCount} bilan${reportsCount > 1 ? "s" : ""} généré${reportsCount > 1 ? "s" : ""}`
       : `${reportsCount} report${reportsCount > 1 ? "s" : ""} generated`);
   }
   if (profilesCount > 0) {
     valueLines.push(fr
-      ? `${profilesCount} profil${profilesCount > 1 ? "s" : ""} sauvegarde${profilesCount > 1 ? "s" : ""}`
+      ? `${profilesCount} profil${profilesCount > 1 ? "s" : ""} sauvegardé${profilesCount > 1 ? "s" : ""}`
       : `${profilesCount} saved profile${profilesCount > 1 ? "s" : ""}`);
   }
   valueLines.push(fr ? "Recalculs illimites" : "Unlimited recalculations");
@@ -684,7 +684,7 @@ export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
   const simUrl = `${base}/acces?token=${token}`;
 
   const subject = fr
-    ? "Rappel : votre acces Expert expire dans 7 jours"
+    ? "Rappel : votre accès Expert expire dans 7 jours"
     : "Reminder: your Expert access expires in 7 days";
 
   const heading = fr
@@ -692,11 +692,11 @@ export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
     : "7 days remaining";
 
   const bodyP1 = fr
-    ? `Votre acces au Simulateur Expert expire le ${expFormatted}. Apres cette date, le simulateur passera en lecture seule.`
+    ? `Votre accès au Simulateur Expert expire le ${expFormatted}. Après cette date, le simulateur passera en lecture seule.`
     : `Your Expert Simulator access expires on ${expFormatted}. After that date, the simulator will switch to read-only mode.`;
 
   const bodyP2 = fr
-    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} seront conserves 12 mois. Le renouvellement a 29\u00a0$/an reactive immediatement l\u2019ensemble de vos outils.`
+    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} seront conservés 12 mois. Le renouvellement à 29\u00a0$/an réactive immédiatement l\u2019ensemble de vos outils.`
     : `Your ${profilesCount} profile${profilesCount !== 1 ? "s" : ""} and ${reportsCount} report${reportsCount !== 1 ? "s" : ""} will be preserved for 12 months. Renewal at $29/year reactivates all your tools immediately.`;
 
   const html = buildRenewalHtml({
@@ -713,7 +713,7 @@ export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
     secondaryCtaUrl: simUrl,
     secondaryCtaLabel: fr ? "Ouvrir mon simulateur" : "Open my simulator",
     infoNote: fr
-      ? "Apres expiration, vos donnees seront conservees 12 mois en lecture seule."
+      ? "Après expiration, vos données seront conservées 12 mois en lecture seule."
       : "After expiration, your data will be preserved for 12 months in read-only mode.",
   });
 
@@ -750,19 +750,19 @@ export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
   const simUrl = `${base}/acces?token=${token}`;
 
   const subject = fr
-    ? "Votre acces Expert expire aujourd\u2019hui"
+    ? "Votre accès Expert expire aujourd\u2019hui"
     : "Your Expert access expires today";
 
   const heading = fr
-    ? "Votre acces expire aujourd\u2019hui"
+    ? "Votre accès expire aujourd\u2019hui"
     : "Your access expires today";
 
   const bodyP1 = fr
-    ? "Votre acces au Simulateur Expert arrive a echeance. Une periode de grace de quelques jours vous permet encore de naviguer et de consulter vos donnees."
+    ? "Votre accès au Simulateur Expert arrive à échéance. Une période de grâce de quelques jours vous permet encore de naviguer et de consulter vos données."
     : "Your Expert Simulator access is expiring. A short grace period still allows you to browse and view your data.";
 
   const bodyP2 = fr
-    ? "Pour continuer a recalculer vos scenarios et generer des bilans AI, le renouvellement a 29\u00a0$/an reactive instantanement votre simulateur complet."
+    ? "Pour continuer à recalculer vos scénarios et générer des bilans AI, le renouvellement à 29\u00a0$/an réactive instantanément votre simulateur complet."
     : "To continue recalculating your scenarios and generating AI assessments, renewal at $29/year instantly reactivates your full simulator.";
 
   const bodyP3 = fr
@@ -773,7 +773,7 @@ export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
     lang,
     subject,
     preheader: fr
-      ? "Dernier jour d\u2019acces complet. Renouvelez pour continuer."
+      ? "Dernier jour d\u2019accès complet. Renouvelez pour continuer."
       : "Last day of full access. Renew to continue.",
     heading,
     bodyParagraphs: [bodyP1, bodyP2, bodyP3],
@@ -781,14 +781,14 @@ export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
     ctaUrl: checkoutUrl,
     ctaLabel: fr ? "Renouveler maintenant \u2014 29\u00a0$/an" : "Renew now \u2014 $29/year",
     secondaryCtaUrl: simUrl,
-    secondaryCtaLabel: fr ? "Consulter mes donnees" : "View my data",
+    secondaryCtaLabel: fr ? "Consulter mes données" : "View my data",
     infoNote: fr
-      ? "Si vous ne renouvelez pas, vos donnees seront conservees 12 mois puis supprimees."
+      ? "Si vous ne renouvelez pas, vos données seront conservées 12 mois puis supprimées."
       : "If you do not renew, your data will be kept for 12 months then deleted.",
   });
 
   const text = fr
-    ? `${subject}\n\nDernier jour d'acces complet. Renouvelez pour continuer.\nRenouveler: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\nDernier jour d'accès complet. Renouvelez pour continuer.\nRenouveler: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\nLast day of full access. Renew to continue.\nRenew: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
@@ -827,15 +827,15 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
     : "Your simulator is in read-only mode";
 
   const bodyP1 = fr
-    ? `Votre acces Expert a expire le ${expFormatted}. Le simulateur est maintenant en mode lecture seule\u00a0: vous pouvez consulter vos bilans existants, mais les recalculs et les exports AI ne sont plus disponibles.`
+    ? `Votre accès Expert a expiré le ${expFormatted}. Le simulateur est maintenant en mode lecture seule\u00a0: vous pouvez consulter vos bilans existants, mais les recalculs et les exports AI ne sont plus disponibles.`
     : `Your Expert access expired on ${expFormatted}. The simulator is now in read-only mode: you can view your existing assessments, but recalculations and AI exports are no longer available.`;
 
   const bodyP2 = fr
-    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} sont preserves pendant 12 mois. Rien n\u2019est perdu.`
+    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} sont préservés pendant 12 mois. Rien n\u2019est perdu.`
     : `Your ${profilesCount} profile${profilesCount !== 1 ? "s" : ""} and ${reportsCount} report${reportsCount !== 1 ? "s" : ""} are preserved for 12 months. Nothing is lost.`;
 
   const bodyP3 = fr
-    ? "Le renouvellement a 29\u00a0$/an reactive instantanement votre simulateur complet, avec 3 exports AI et le Bilan Annuel inclus."
+    ? "Le renouvellement à 29\u00a0$/an réactive instantanément votre simulateur complet, avec 3 exports AI et le Bilan Annuel inclus."
     : "Renewal at $29/year instantly reactivates your full simulator, with 3 AI exports and the Annual Assessment included.";
 
   // Value reminder card
@@ -843,10 +843,10 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Ce que le renouvellement inclut" : "What renewal includes"}</td></tr>
                 <tr><td style="font-family:${FONT};font-size:13px;color:${GRAY};line-height:2;">
-                  &bull; ${fr ? "Simulateur illimite avec recalcul instantane" : "Unlimited simulator with instant recalculation"}<br/>
-                  &bull; ${fr ? "3 exports AI personnalises" : "3 personalized AI exports"}<br/>
-                  &bull; ${fr ? "Bilan Annuel (verification de janvier)" : "Annual Assessment (January check-up)"}<br/>
-                  &bull; ${fr ? "Tous vos profils et donnees existants" : "All your existing profiles and data"}
+                  &bull; ${fr ? "Simulateur illimité avec recalcul instantané" : "Unlimited simulator with instant recalculation"}<br/>
+                  &bull; ${fr ? "3 exports AI personnalisés" : "3 personalized AI exports"}<br/>
+                  &bull; ${fr ? "Bilan Annuel (vérification de janvier)" : "Annual Assessment (January check-up)"}<br/>
+                  &bull; ${fr ? "Tous vos profils et données existants" : "All your existing profiles and data"}
                 </td></tr>
               </table>`;
 
@@ -854,20 +854,20 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
     lang,
     subject,
     preheader: fr
-      ? "Vos donnees sont preservees. Reactivez votre simulateur."
+      ? "Vos données sont préservées. Réactivez votre simulateur."
       : "Your data is preserved. Reactivate your simulator.",
     heading,
     bodyParagraphs: [bodyP1, bodyP2, bodyP3],
     cardContent,
     ctaUrl: checkoutUrl,
-    ctaLabel: fr ? "Reactiver mon simulateur \u2014 29\u00a0$/an" : "Reactivate my simulator \u2014 $29/year",
+    ctaLabel: fr ? "Réactiver mon simulateur \u2014 29\u00a0$/an" : "Reactivate my simulator \u2014 $29/year",
     infoNote: fr
-      ? "Vos donnees seront conservees 12 mois apres expiration. Aucune action requise pour les preserver."
+      ? "Vos données seront conservées 12 mois après expiration. Aucune action requise pour les préserver."
       : "Your data will be preserved for 12 months after expiration. No action needed to keep them.",
   });
 
   const text = fr
-    ? `${subject}\n\nVos donnees sont preservees. Reactivez votre simulateur.\nReactiver: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\nVos données sont préservées. Réactivez votre simulateur.\nRéactiver: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\nYour data is preserved. Reactivate your simulator.\nReactivate: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
@@ -1129,7 +1129,7 @@ export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\n1 an d'acces Expert gratuit grace a vos 3 references!\nValide jusqu'au ${expiryFormatted}. 3 exports AI supplementaires inclus.\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\n1 an d'accès Expert gratuit grâce à vos 3 références!\nValide jusqu'au ${expiryFormatted}. 3 exports AI supplémentaires inclus.\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\n1 free year of Expert access thanks to your 3 referrals!\nValid until ${expiryFormatted}. 3 additional AI exports included.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({

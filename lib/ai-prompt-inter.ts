@@ -16,9 +16,9 @@ export function buildAIPromptInter(
 
   // Province-aware full names (zero acronyms)
   const isQC = params.prov === "QC";
-  const gP = fr ? (isQC ? "Regime de rentes du Quebec" : "Regime de pensions du Canada")
+  const gP = fr ? (isQC ? "Régime de rentes du Québec" : "Régime de pensions du Canada")
                 : (isQC ? "Quebec Pension Plan" : "Canada Pension Plan");
-  const oN = fr ? "Pension de la Securite de la vieillesse" : "Old Age Security";
+  const oN = fr ? "Pension de la Sécurité de la vieillesse" : "Old Age Security";
 
   // DerivedProfile + RenderPlan (replaces simple confidence-based tone)
   const profile = computeDerivedProfile(quiz || {}, D, params);
@@ -86,7 +86,7 @@ export function buildAIPromptInter(
     + "4. Observational language only. Describe what numbers show; do not prescribe actions.\n"
     + "5. Do not shame debt. State the mathematical cost only.\n"
     + "6. NEVER suggest combining scenarios or adding their effects together.\n"
-    + "7. Use 'Cette analyse suggere' or 'Les donnees indiquent', never directive language.\n"
+    + "7. Use 'Cette analyse suggère' or 'Les données indiquent', never directive language.\n"
     + "\n=== NUMERIC SAFETY ===\n"
     + "- Use ONLY numbers that appear in the DATA block. Do NOT invent, round, estimate, or extrapolate any figure.\n"
     + "- No external averages, no typical ranges, no invented thresholds.\n"

@@ -730,13 +730,13 @@ function startCheckout() {
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
       btn.disabled = false;
       btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
     }
   })
   .catch(function() {
-    alert(STATE.lang === "fr" ? "Erreur. Veuillez reessayer." : "Error. Please try again.");
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
     btn.disabled = false;
     btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet" : "Get my full report";
   });
@@ -848,7 +848,7 @@ document.addEventListener("keydown",function(e){
 (function() {
   if (localStorage.getItem('buildfi_consent')) return;
   var cl = STATE.lang === 'fr'
-    ? 'Ce site utilise des temoins analytiques pour ameliorer l\u2019experience.'
+    ? 'Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.'
     : 'This site uses analytics cookies to improve the experience.';
   var aLbl = STATE.lang === 'fr' ? 'Accepter' : 'Accept';
   var dLbl = STATE.lang === 'fr' ? 'Refuser' : 'Decline';

@@ -163,9 +163,9 @@ function PortalContent() {
           return { ...prev, reportsGenerated: updated };
         });
       }
-      alert(t("Bilan regenere avec succes. Le lien sera mis a jour sous peu.", "Assessment regenerated successfully. The link will be updated shortly."));
+      alert(t("Bilan régénéré avec succès. Le lien sera mis à jour sous peu.", "Assessment regenerated successfully. The link will be updated shortly."));
     } catch (err: any) {
-      alert(err.message || t("Erreur lors de la regeneration", "Regeneration failed"));
+      alert(err.message || t("Erreur lors de la régénération", "Regeneration failed"));
     } finally {
       setRegeneratingId(null);
     }
@@ -307,7 +307,7 @@ function PortalContent() {
             {t("Votre portail Expert", "Your Expert Portal")}
           </h1>
           <p style={{ fontSize: 14, color: EK.txDim }}>
-            {t("Gerez vos bilans, vos profils et vos credits.", "Manage your assessments, profiles, and credits.")}
+            {t("Gérez vos bilans, vos profils et vos crédits.", "Manage your assessments, profiles, and credits.")}
           </p>
         </div>
 
@@ -321,12 +321,12 @@ function PortalContent() {
           {/* Reports */}
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 16px", textAlign: "center", borderTop: `3px solid ${EK.marine}` }}>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 28, fontWeight: 800, color: EK.marine }}>{reports.length}</div>
-            <div style={{ fontSize: 12, color: EK.txDim, marginTop: 4 }}>{t("Bilans generes", "Assessments generated")}</div>
+            <div style={{ fontSize: 12, color: EK.txDim, marginTop: 4 }}>{t("Bilans générés", "Assessments generated")}</div>
           </div>
           {/* Profiles */}
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 16px", textAlign: "center", borderTop: `3px solid ${EK.green}` }}>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 28, fontWeight: 800, color: EK.green }}>{profiles.length}<span style={{ fontSize: 14, color: EK.txMuted }}>/5</span></div>
-            <div style={{ fontSize: 12, color: EK.txDim, marginTop: 4 }}>{t("Profils sauvegardes", "Saved profiles")}</div>
+            <div style={{ fontSize: 12, color: EK.txDim, marginTop: 4 }}>{t("Profils sauvegardés", "Saved profiles")}</div>
           </div>
           {/* Expiry */}
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 16px", textAlign: "center", borderTop: `3px solid ${daysLeft < 30 ? EK.red : EK.green}` }}>
@@ -344,7 +344,7 @@ function PortalContent() {
             <span style={{ fontSize: 24 }}>&#9881;</span>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Ouvrir le Simulateur", "Open Simulator")}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{t("Recalculs illimites", "Unlimited recalculations")}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{t("Recalculs illimités", "Unlimited recalculations")}</div>
             </div>
           </a>
           {profile.exportsAI > 0 ? (
@@ -354,7 +354,7 @@ function PortalContent() {
             }}>
               <span style={{ fontSize: 24 }}>&#128196;</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Generer un bilan Expert", "Generate Expert Assessment")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Générer un bilan Expert", "Generate Expert Assessment")}</div>
                 <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)" }}>{profile.exportsAI} {t("credit(s) restant(s)", "credit(s) remaining")}</div>
               </div>
             </a>
@@ -365,7 +365,7 @@ function PortalContent() {
             }}>
               <span style={{ fontSize: 24 }}>&#128196;</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Aucun credit restant", "No credits remaining")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Aucun crédit restant", "No credits remaining")}</div>
                 <div style={{ fontSize: 12, color: EK.txMuted }}>
                   <button
                     onClick={async () => {
@@ -396,7 +396,7 @@ function PortalContent() {
           </h2>
           {reports.length === 0 ? (
             <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: 24, textAlign: "center", color: EK.txDim, fontSize: 14 }}>
-              {t("Aucun bilan genere pour le moment. Utilisez le simulateur pour generer votre premier bilan Expert.",
+              {t("Aucun bilan généré pour le moment. Utilisez le simulateur pour générer votre premier bilan Expert.",
                 "No assessments generated yet. Use the simulator to generate your first Expert assessment.")}
             </div>
           ) : (
@@ -432,7 +432,7 @@ function PortalContent() {
                       <button
                         onClick={() => regenerateReport(r.id)}
                         disabled={regeneratingId === r.id}
-                        title={t("Regenerer la narration AI", "Regenerate AI narration")}
+                        title={t("Régénérer la narration AI", "Regenerate AI narration")}
                         style={{
                           background: "none", border: `1px solid ${EK.gold}`, color: EK.gold,
                           padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700,
@@ -443,7 +443,7 @@ function PortalContent() {
                       >
                         {regeneratingId === r.id
                           ? (t("En cours...", "Working..."))
-                          : (t("Regenerer avec AI", "Regenerate with AI"))}
+                          : (t("Régénérer avec AI", "Regenerate with AI"))}
                       </button>
                     )}
                     <a href={r.blobUrl} target="_blank" rel="noopener noreferrer" style={{
@@ -462,11 +462,11 @@ function PortalContent() {
         {/* Saved profiles */}
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
-            {t("Profils sauvegardes", "Saved profiles")}
+            {t("Profils sauvegardés", "Saved profiles")}
           </h2>
           {profiles.length === 0 ? (
             <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: 24, textAlign: "center", color: EK.txDim, fontSize: 14 }}>
-              {t("Aucun profil sauvegarde. Les profils sont crees automatiquement dans le simulateur.",
+              {t("Aucun profil sauvegardé. Les profils sont créés automatiquement dans le simulateur.",
                 "No saved profiles. Profiles are created automatically in the simulator.")}
             </div>
           ) : (
@@ -587,7 +587,7 @@ function PortalContent() {
             </div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 16 }}>
               {t(
-                "Chaque referral qui souscrit a l'Expert vous offre un 2e bilan a 50%. 3 referrals = 1 an gratuit.",
+                "Chaque referral qui souscrit à l'Expert vous offre un 2e bilan à 50%. 3 referrals = 1 an gratuit.",
                 "Each Expert referral gives you a second assessment at 50%. 3 referrals = 1 free year."
               )}
             </div>
@@ -621,7 +621,7 @@ function PortalContent() {
               {feedback?.rating ? (
                 <div>
                   <div style={{ fontSize: 14, color: EK.tx, marginBottom: 8 }}>
-                    {t("Merci pour votre evaluation!", "Thank you for your rating!")}
+                    {t("Merci pour votre évaluation!", "Thank you for your rating!")}
                   </div>
                   <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
                     {[1, 2, 3, 4, 5].map(s => (
@@ -631,14 +631,14 @@ function PortalContent() {
                   </div>
                   {feedback.couponUnlocked && (
                     <div style={{ fontSize: 12, color: EK.green, fontWeight: 600 }}>
-                      {t("Coupon de renouvellement debloque", "Renewal coupon unlocked")}
+                      {t("Coupon de renouvellement débloqué", "Renewal coupon unlocked")}
                     </div>
                   )}
                 </div>
               ) : (
                 <div>
                   <div style={{ fontSize: 14, color: EK.txDim, marginBottom: 12 }}>
-                    {t("Comment evaluez-vous votre experience BuildFi?", "How would you rate your BuildFi experience?")}
+                    {t("Comment évaluez-vous votre expérience BuildFi?", "How would you rate your BuildFi experience?")}
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
                     {[1, 2, 3, 4, 5].map(s => (
@@ -670,7 +670,7 @@ function PortalContent() {
                     ))}
                   </div>
                   <div style={{ fontSize: 11, color: EK.txMuted, marginTop: 8 }}>
-                    {t("Evaluez pour debloquer un coupon de renouvellement.", "Rate to unlock a renewal coupon.")}
+                    {t("Évaluez pour débloquer un coupon de renouvellement.", "Rate to unlock a renewal coupon.")}
                   </div>
                 </div>
               )}
@@ -681,14 +681,14 @@ function PortalContent() {
         {/* Account details */}
         <section>
           <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
-            {t("Details du compte", "Account details")}
+            {t("Détails du compte", "Account details")}
           </h2>
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: 20 }}>
             {[
               [t("Courriel", "Email"), profile.email],
               [t("Expiration", "Expiry"), fDate(profile.expiry, fr) + ` (${daysLeft} ${t("jours", "days")})`],
               [t("Credits AI", "AI credits"), String(profile.exportsAI)],
-              [t("Bilan Annuel", "Annual Assessment"), profile.bilanUsed ? t("Utilise", "Used") : t("Disponible", "Available")],
+              [t("Bilan Annuel", "Annual Assessment"), profile.bilanUsed ? t("Utilisé", "Used") : t("Disponible", "Available")],
               [t("Code referral", "Referral code"), profile.referralCode],
             ].map(([k, v], i) => (
               <div key={i} style={{
@@ -708,7 +708,7 @@ function PortalContent() {
         textAlign: "center", padding: "20px 24px", fontSize: 11, color: EK.txMuted,
         borderTop: `1px solid ${EK.sable}`,
       }}>
-        buildfi.ca &middot; {t("A titre informatif seulement", "For informational purposes only")}
+        buildfi.ca &middot; {t("À titre informatif seulement", "For informational purposes only")}
       </footer>
     </div>
   );

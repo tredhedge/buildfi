@@ -586,6 +586,9 @@ input,select,textarea{font-size:16px}
         <p class="product-desc" id="prodExpDesc">
           Vous n'avez jamais trouvé un seul outil qui fait tout. L'Expert, c'est ça — un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions — tout y est.
         </p>
+        <div class="product-includes" id="prodExpIncludes">
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodExpSpec1">1 000 – 5 000 scénarios Monte Carlo en temps réel</span></div>
+        </div>
         <div class="product-time" id="prodExpTime">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           À votre rythme — sessions illimitées
@@ -626,7 +629,7 @@ input,select,textarea{font-size:16px}
         <tbody id="compBody">
           <tr><td id="cr1">Note de retraite (A+ à F)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr2">Narration IA personnalisée</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
-          <tr><td id="cr3">Monte Carlo (5 000 scénarios)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr3">Simulation Monte Carlo</td><td id="crE3">5 000 scénarios</td><td id="crI3">5 000 scénarios</td><td id="crX3" class="cx">1 000 – 5 000 en temps réel</td></tr>
           <tr><td id="cr4">Rapport en ligne + version imprimable</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr5">Outil interactif — Analyse des dettes</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
           <tr><td id="cr6">Guide 101 — Les bases de vos finances</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
@@ -916,6 +919,7 @@ var T = {
   prodExpPersona: { fr:'Tout ce que vous avez toujours cherché', en:"Everything you\u2019ve been looking for" },
   prodExpName: { fr:'Expert \u00b7 Simulateur', en:'Expert \u00b7 Simulator' },
   prodExpDesc: { fr:"Vous n\u2019avez jamais trouvé un seul outil qui fait tout. L\u2019Expert, c\u2019est ça \u2014 un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions \u2014 tout y est.", en:"You\u2019ve never found one tool that does it all. Expert is it \u2014 a simulator where you test, adjust, and explore every variable of your retirement. Incorporation, stress tests, pensions \u2014 it\u2019s all there." },
+  prodExpSpec1: { fr:'1\u00a0000 \u2013 5\u00a0000 sc\u00e9narios Monte Carlo en temps r\u00e9el', en:'1,000 \u2013 5,000 Monte Carlo scenarios in real time' },
   prodEssCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   prodInterCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   prodExpCta: { fr:'Découvrir le Simulateur \u2192', en:'Discover the Simulator \u2192' },
@@ -956,7 +960,10 @@ var T = {
   compFeat: { fr:'Fonctionnalité', en:'Feature' },
   cr1: { fr:'Note de retraite (A+ à F)', en:'Retirement grade (A+ to F)' },
   cr2: { fr:'Narration IA personnalisée', en:'Personalized AI narration' },
-  cr3: { fr:'Monte Carlo (5\u00a0000 scénarios)', en:'Monte Carlo (5,000 scenarios)' },
+  cr3: { fr:'Simulation Monte Carlo', en:'Monte Carlo simulation' },
+  crE3: { fr:'5\u00a0000 sc\u00e9narios', en:'5,000 scenarios' },
+  crI3: { fr:'5\u00a0000 sc\u00e9narios', en:'5,000 scenarios' },
+  crX3: { fr:'1\u00a0000 \u2013 5\u00a0000 en temps r\u00e9el', en:'1,000 \u2013 5,000 in real time' },
   cr4: { fr:'Rapport en ligne + version imprimable', en:'Online report + printable version' },
   cr5: { fr:'Outil interactif \u2014 Analyse des dettes', en:'Interactive tool \u2014 Debt analysis' },
   cr6: { fr:'Guide 101 \u2014 Les bases de vos finances', en:'Guide 101 \u2014 The basics of your finances' },
@@ -1186,7 +1193,7 @@ function trackEvent(name, props) {
 (function() {
   if (localStorage.getItem('buildfi_consent')) return;
   var cl = lang === 'fr'
-    ? 'Ce site utilise des temoins analytiques pour ameliorer l\u2019experience.'
+    ? 'Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.'
     : 'This site uses analytics cookies to improve the experience.';
   var aLbl = lang === 'fr' ? 'Accepter' : 'Accept';
   var dLbl = lang === 'fr' ? 'Refuser' : 'Decline';

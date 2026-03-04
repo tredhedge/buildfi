@@ -37,16 +37,16 @@ const T = (fr: string, en: string, lang: Lang) => (lang === "fr" ? fr : en);
 
 // ── Province list ──
 const PROVINCES = [
-  { code: "QC", fr: "Quebec", en: "Quebec" },
+  { code: "QC", fr: "Québec", en: "Quebec" },
   { code: "ON", fr: "Ontario", en: "Ontario" },
   { code: "BC", fr: "Colombie-Brit.", en: "British Columbia" },
   { code: "AB", fr: "Alberta", en: "Alberta" },
   { code: "MB", fr: "Manitoba", en: "Manitoba" },
   { code: "SK", fr: "Saskatchewan", en: "Saskatchewan" },
-  { code: "NS", fr: "Nouvelle-Ecosse", en: "Nova Scotia" },
+  { code: "NS", fr: "Nouvelle-Écosse", en: "Nova Scotia" },
   { code: "NB", fr: "Nouveau-Brunswick", en: "New Brunswick" },
   { code: "NL", fr: "Terre-Neuve", en: "Newfoundland" },
-  { code: "PE", fr: "Ile-du-Prince-Ed.", en: "Prince Edward Island" },
+  { code: "PE", fr: "Île-du-Prince-Éd.", en: "Prince Edward Island" },
   { code: "NT", fr: "Territoires du N.-O.", en: "Northwest Terr." },
   { code: "YT", fr: "Yukon", en: "Yukon" },
   { code: "NU", fr: "Nunavut", en: "Nunavut" },
@@ -57,7 +57,7 @@ const PRESETS = [
   {
     id: "fire35",
     fr: "FIRE 35", en: "FIRE 35",
-    descFr: "35 ans, retraite a 45, $110K, croissance", descEn: "Age 35, retire at 45, $110K, growth",
+    descFr: "35 ans, retraite à 45, $110K, croissance", descEn: "Age 35, retire at 45, $110K, growth",
     params: { age: 35, retAge: 45, sex: "M", prov: "QC", sal: 110000, rrsp: 85000, tfsa: 45000, nr: 30000, rrspC: 15000, tfsaC: 7000, nrC: 5000, retSpM: 4000, penType: "none", penM: 0, allocR: 0.85, allocT: 0.85, allocN: 0.65, merR: 0.020, merT: 0.010, merN: 0.010, inf: 0.021, qppAge: 65, oasAge: 65, cOn: false, props: [], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", melt: false, avgE: 110000, qppYrs: 17, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 30000 },
     disclosure: { couple: false, homeowner: false, pension: false, ccpc: false, taxWorry: false, growthRisk: true },
   },
@@ -65,7 +65,7 @@ const PRESETS = [
     id: "couple50",
     fr: "Couple 50", en: "Couple 50",
     descFr: "50 ans, couple, QC, pension DB", descEn: "Age 50, couple, QC, DB pension",
-    params: { age: 50, retAge: 65, sex: "M", prov: "QC", sal: 95000, rrsp: 180000, tfsa: 65000, nr: 40000, rrspC: 10000, tfsaC: 7000, nrC: 0, retSpM: 5500, penType: "db", penM: 2800, penIdx: true, allocR: 0.65, allocT: 0.65, allocN: 0.45, merR: 0.018, merT: 0.009, merN: 0.009, inf: 0.021, qppAge: 65, oasAge: 65, cOn: true, cAge: 48, cSex: "F", cRetAge: 65, cSal: 72000, cRRSP: 95000, cTFSA: 40000, cNR: 0, cLiraBal: 0, cPenType: "none", cPenM: 0, cQppAge: 65, cOasAge: 65, cRetSpM: 2200, cDeath: 92, props: [{ on: true, name: "Residence principale", pri: true, val: 480000, mb: 120000, mr: 0.055, ma: 12, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", split: true, melt: false, avgE: 95000, qppYrs: 32, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 40000 },
+    params: { age: 50, retAge: 65, sex: "M", prov: "QC", sal: 95000, rrsp: 180000, tfsa: 65000, nr: 40000, rrspC: 10000, tfsaC: 7000, nrC: 0, retSpM: 5500, penType: "db", penM: 2800, penIdx: true, allocR: 0.65, allocT: 0.65, allocN: 0.45, merR: 0.018, merT: 0.009, merN: 0.009, inf: 0.021, qppAge: 65, oasAge: 65, cOn: true, cAge: 48, cSex: "F", cRetAge: 65, cSal: 72000, cRRSP: 95000, cTFSA: 40000, cNR: 0, cLiraBal: 0, cPenType: "none", cPenM: 0, cQppAge: 65, cOasAge: 65, cRetSpM: 2200, cDeath: 92, props: [{ on: true, name: "Résidence principale", pri: true, val: 480000, mb: 120000, mr: 0.055, ma: 12, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", split: true, melt: false, avgE: 95000, qppYrs: 32, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 40000 },
     disclosure: { couple: true, homeowner: true, pension: true, ccpc: false, taxWorry: false, growthRisk: false },
   },
   {
@@ -78,14 +78,14 @@ const PRESETS = [
   {
     id: "preretiree",
     fr: "Pre-retraite DB", en: "Pre-retirement DB",
-    descFr: "58 ans, retraite a 62, gouvernement", descEn: "Age 58, retire at 62, government",
-    params: { age: 58, retAge: 62, sex: "M", prov: "ON", sal: 105000, rrsp: 280000, tfsa: 88000, nr: 50000, rrspC: 5000, tfsaC: 7000, nrC: 0, retSpM: 5000, penType: "db", penM: 3600, penIdx: true, allocR: 0.55, allocT: 0.55, allocN: 0.40, merR: 0.015, merT: 0.008, merN: 0.008, inf: 0.021, qppAge: 65, oasAge: 65, cOn: false, props: [{ on: true, name: "Residence principale", pri: true, val: 650000, mb: 0, mr: 0.055, ma: 0, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", melt: true, meltTgt: 70000, bridge: false, avgE: 105000, qppYrs: 40, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 50000 },
+    descFr: "58 ans, retraite à 62, gouvernement", descEn: "Age 58, retire at 62, government",
+    params: { age: 58, retAge: 62, sex: "M", prov: "ON", sal: 105000, rrsp: 280000, tfsa: 88000, nr: 50000, rrspC: 5000, tfsaC: 7000, nrC: 0, retSpM: 5000, penType: "db", penM: 3600, penIdx: true, allocR: 0.55, allocT: 0.55, allocN: 0.40, merR: 0.015, merT: 0.008, merN: 0.008, inf: 0.021, qppAge: 65, oasAge: 65, cOn: false, props: [{ on: true, name: "Résidence principale", pri: true, val: 650000, mb: 0, mr: 0.055, ma: 0, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", melt: true, meltTgt: 70000, bridge: false, avgE: 105000, qppYrs: 40, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 50000 },
     disclosure: { couple: false, homeowner: true, pension: true, ccpc: false, taxWorry: false, growthRisk: false },
   },
   {
     id: "blank",
     fr: "Profil vierge", en: "Blank profile",
-    descFr: "Parametres minimaux", descEn: "Minimal defaults",
+    descFr: "Paramètres minimaux", descEn: "Minimal defaults",
     params: { age: 40, retAge: 65, sex: "M", prov: "QC", sal: 70000, rrsp: 0, tfsa: 0, nr: 0, rrspC: 0, tfsaC: 0, nrC: 0, retSpM: 4000, penType: "none", penM: 0, allocR: 0.70, allocT: 0.70, allocN: 0.50, merR: 0.018, merT: 0.009, merN: 0.009, inf: 0.021, qppAge: 65, oasAge: 65, cOn: false, props: [], debts: [], fatT: true, stochMort: true, stochInf: true, gkOn: true, glide: true, glideSpd: 0.01, wStrat: "optimal", melt: false, avgE: 70000, qppYrs: 22, deathAge: 90, liraBal: 0, dcBal: 0, nrTaxDrag: 0.003, costBase: 0 },
     disclosure: { couple: false, homeowner: false, pension: false, ccpc: false, taxWorry: false, growthRisk: false },
   },
@@ -105,27 +105,27 @@ interface DecisionDef {
 
 const DECISIONS: DecisionDef[] = [
   {
-    id: "retire_delay", fr: "Decaler la retraite de 2 ans", en: "Delay retirement by 2 years",
-    descFr: "Comparer votre age actuel vs +2 ans", descEn: "Compare current age vs +2 years",
+    id: "retire_delay", fr: "Décaler la retraite de 2 ans", en: "Delay retirement by 2 years",
+    descFr: "Comparer votre âge actuel vs +2 ans", descEn: "Compare current age vs +2 years",
     segments: ["couple", "preretiree", "fire"],
     variants: [
-      { label: "Age actuel", labelEn: "Current age", overrides: {} },
+      { label: "Âge actuel", labelEn: "Current age", overrides: {} },
       { label: "+2 ans", labelEn: "+2 years", overrides: { _delta: { retAge: 2 } } },
     ],
   },
   {
-    id: "cpp_timing", fr: "RRQ/RPC a 60, 65 ou 70", en: "CPP at 60, 65 or 70",
+    id: "cpp_timing", fr: "RRQ/RPC à 60, 65 ou 70", en: "CPP at 60, 65 or 70",
     descFr: "L'impact du report des prestations gouvernementales", descEn: "Impact of deferring government benefits",
     segments: ["couple", "preretiree", "fire", "ccpc"],
     variants: [
-      { label: "RRQ a 60", labelEn: "CPP at 60", overrides: { qppAge: 60 } },
-      { label: "RRQ a 65", labelEn: "CPP at 65", overrides: { qppAge: 65 } },
-      { label: "RRQ a 70", labelEn: "CPP at 70", overrides: { qppAge: 70 } },
+      { label: "RRQ à 60", labelEn: "CPP at 60", overrides: { qppAge: 60 } },
+      { label: "RRQ à 65", labelEn: "CPP at 65", overrides: { qppAge: 65 } },
+      { label: "RRQ à 70", labelEn: "CPP at 70", overrides: { qppAge: 70 } },
     ],
   },
   {
     id: "meltdown", fr: "Meltdown REER oui ou non", en: "RRSP meltdown yes or no",
-    descFr: "Decaisser le REER avant les prestations gouvernementales", descEn: "Draw down RRSP before government benefits",
+    descFr: "Décaisser le REER avant les prestations gouvernementales", descEn: "Draw down RRSP before government benefits",
     segments: ["preretiree", "couple"],
     variants: [
       { label: "Sans meltdown", labelEn: "No meltdown", overrides: { melt: false } },
@@ -133,17 +133,17 @@ const DECISIONS: DecisionDef[] = [
     ],
   },
   {
-    id: "spending", fr: "Reduire les depenses de 10%", en: "Reduce spending by 10%",
-    descFr: "Impact d'une reduction des depenses a la retraite", descEn: "Impact of reducing retirement spending",
+    id: "spending", fr: "Réduire les dépenses de 10%", en: "Reduce spending by 10%",
+    descFr: "Impact d'une réduction des dépenses à la retraite", descEn: "Impact of reducing retirement spending",
     segments: ["couple", "preretiree", "fire", "ccpc"],
     variants: [
-      { label: "Depenses actuelles", labelEn: "Current spending", overrides: {} },
+      { label: "Dépenses actuelles", labelEn: "Current spending", overrides: {} },
       { label: "-10%", labelEn: "-10%", overrides: { _delta_pct: { retSpM: -0.10 } } },
     ],
   },
   {
     id: "withdrawal_rate", fr: "Taux de retrait 3.5% vs 4.0% vs 4.5%", en: "Withdrawal rate 3.5% vs 4.0% vs 4.5%",
-    descFr: "Comparer differents taux de retrait", descEn: "Compare different withdrawal rates",
+    descFr: "Comparer différents taux de retrait", descEn: "Compare different withdrawal rates",
     segments: ["fire"],
     variants: [
       { label: "3.5%", labelEn: "3.5%", overrides: { _withdrawal_rate: 0.035 } },
@@ -387,7 +387,7 @@ function FanChart({ pD, retAge, lang }: { pD: PdRow[]; retAge: number; lang: Lan
       <rect x={W - pad.r - 132} y={pad.t + 24} width={18} height={8} rx={2} fill={EK.marine} opacity={0.15} />
       <text x={W - pad.r - 110} y={pad.t + 32} fontSize={9} fill={EK.txDim} fontFamily="'DM Sans', sans-serif">P25 - P75</text>
       <line x1={W - pad.r - 132} y1={pad.t + 40} x2={W - pad.r - 114} y2={pad.t + 40} stroke={EK.marine} strokeWidth={2.5} />
-      <text x={W - pad.r - 110} y={pad.t + 44} fontSize={9} fill={EK.txDim} fontFamily="'DM Sans', sans-serif">{T("Mediane", "Median", lang)} (P50)</text>
+      <text x={W - pad.r - 110} y={pad.t + 44} fontSize={9} fill={EK.txDim} fontFamily="'DM Sans', sans-serif">{T("Médiane", "Median", lang)} (P50)</text>
     </svg>
   );
 }
@@ -411,26 +411,26 @@ function getDriverPhrase(results: SimResults, params: Record<string, unknown>, l
 
   if (succ >= 0.90) {
     return lang === "fr"
-      ? "Le taux de reussite eleve pourrait refleter un bon equilibre entre epargne et depenses prevues."
+      ? "Le taux de réussite élevé pourrait refléter un bon équilibre entre épargne et dépenses prévues."
       : "The high success rate could reflect a good balance between savings and planned spending.";
   }
   if (horizon < 15 && savingsRatio < 3) {
     return lang === "fr"
-      ? `L'horizon de ${horizon} ans avant la retraite, combine a l'epargne actuelle, pourrait limiter la croissance du capital.`
+      ? `L'horizon de ${horizon} ans avant la retraite, combiné à l'épargne actuelle, pourrait limiter la croissance du capital.`
       : `The ${horizon}-year horizon before retirement, combined with current savings, could limit capital growth.`;
   }
   if (retSpM > 6000 && succ < 0.70) {
     return lang === "fr"
-      ? `Les depenses mensuelles prevues de ${f$(retSpM)} a la retraite representent un facteur determinant dans ces resultats.`
+      ? `Les dépenses mensuelles prévues de ${f$(retSpM)} à la retraite représentent un facteur déterminant dans ces résultats.`
       : `The planned monthly retirement spending of ${f$(retSpM)} is a determining factor in these results.`;
   }
   if (succ < 0.55) {
     return lang === "fr"
-      ? "Les donnees indiquent que le taux de retrait prevu pourrait etre un facteur limitant."
+      ? "Les données indiquent que le taux de retrait prévu pourrait être un facteur limitant."
       : "The data indicates that the planned withdrawal rate could be a limiting factor.";
   }
   return lang === "fr"
-    ? "Les resultats dependent de l'interaction entre l'epargne, les depenses et l'horizon de retraite."
+    ? "Les résultats dépendent de l'interaction entre l'épargne, les dépenses et l'horizon de retraite."
     : "Results depend on the interaction between savings, spending, and retirement horizon.";
 }
 
@@ -579,9 +579,9 @@ const TAB_LABELS: Record<string, { fr: string; en: string }> = {
   analyse: { fr: "Analyse", en: "Analysis" },
   couple: { fr: "Couple", en: "Couple" },
   immobilier: { fr: "Immobilier", en: "Real Estate" },
-  strategie: { fr: "Strategie", en: "Strategy" },
+  strategie: { fr: "Stratégie", en: "Strategy" },
   entreprise: { fr: "Entreprise", en: "Business" },
-  fiscalite: { fr: "Fiscalite", en: "Tax" },
+  fiscalite: { fr: "Fiscalité", en: "Tax" },
   optimiseur: { fr: "Optimiseur", en: "Optimizer" },
 };
 
@@ -875,11 +875,11 @@ function SimulateurContent() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="3" strokeLinecap="round" /></svg>
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: "'Newsreader', serif" }}>
-            {fr ? "Acces requis" : "Access required"}
+            {fr ? "Accès requis" : "Access required"}
           </h1>
           <p style={{ fontSize: 15, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
             {fr
-              ? "Ce simulateur est reserve aux membres Expert. Verifiez votre lien d'acces ou procurez-vous un abonnement."
+              ? "Ce simulateur est réservé aux membres Expert. Vérifiez votre lien d'accès ou procurez-vous un abonnement."
               : "This simulator is reserved for Expert members. Check your access link or get a subscription."}
           </p>
           <a
@@ -915,7 +915,7 @@ function SimulateurContent() {
       {showMobileBanner && (
         <div id="mobile-banner" style={{ display: "none", background: EK.marine, color: "#fff", padding: "10px 16px", fontSize: 13, textAlign: "center", position: "relative" }}>
           <style>{`@media (max-width: 767px) { #mobile-banner { display: block !important; } }`}</style>
-          {fr ? "Pour la meilleure experience, utilisez un ordinateur ou une tablette." : "For the best experience, use a computer or tablet."}
+          {fr ? "Pour la meilleure expérience, utilisez un ordinateur ou une tablette." : "For the best experience, use a computer or tablet."}
           <button onClick={() => setShowMobileBanner(false)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer" }} aria-label="Close">x</button>
         </div>
       )}
@@ -949,7 +949,7 @@ function SimulateurContent() {
           >
             {viewMode === "planner"
               ? (fr ? "Mode Standard" : "Standard Mode")
-              : (fr ? "Mode Avance" : "Advanced Mode")}
+              : (fr ? "Mode Avancé" : "Advanced Mode")}
           </button>
           <button
             onClick={() => setLang(l => l === "fr" ? "en" : "fr")}
@@ -975,7 +975,7 @@ function SimulateurContent() {
       {/* ── Workflow buttons ── */}
       <div style={{ background: EK.marine, padding: "0 24px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
         {([
-          { key: "tester" as const, fr: "Tester une decision", en: "Test a decision" },
+          { key: "tester" as const, fr: "Tester une décision", en: "Test a decision" },
           { key: "optimiser" as const, fr: "Optimiser", en: "Optimize" },
           { key: "bilan" as const, fr: "Bilan Annuel", en: "Annual Assessment" },
         ] as const).map(w => (
@@ -995,7 +995,7 @@ function SimulateurContent() {
             color: "#fff", padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif", marginLeft: "auto",
           }}>
-            {fr ? "Resume 1 page" : "1-Page Summary"}
+            {fr ? "Résumé 1 page" : "1-Page Summary"}
           </button>
         )}
       </div>
@@ -1065,11 +1065,11 @@ function SimulateurContent() {
         <aside style={{ width: 320, minWidth: 320, borderRight: `1px solid ${EK.border}`, background: EK.card, overflowY: "auto", padding: "16px 14px", flexShrink: 0 }}>
           <style>{`@media (max-width: 767px) { aside { display: none !important; } }`}</style>
           <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 12 }}>
-            {fr ? "Parametres" : "Parameters"}
+            {fr ? "Paramètres" : "Parameters"}
           </div>
 
           {/* ── General ── */}
-          <SidebarGroup title={fr ? "General" : "General"} expanded={expandedGroups.has("general")} onToggle={() => toggleGroup("general")}>
+          <SidebarGroup title={fr ? "Général" : "General"} expanded={expandedGroups.has("general")} onToggle={() => toggleGroup("general")}>
             <InputRow label={fr ? "Age" : "Age"}>
               <NumInput value={params.age as number} onChange={v => setParam("age", v)} step={1} min={18} max={85} prefix="" isDefault={defaults.has("age")} />
             </InputRow>
@@ -1095,8 +1095,8 @@ function SimulateurContent() {
               <SelectInput value={params.penType as string} onChange={v => setParam("penType", v)}
                 options={[
                   { value: "none", label: fr ? "Aucune" : "None" },
-                  { value: "db", label: fr ? "Prestations determinees" : "Defined benefit" },
-                  { value: "cd", label: fr ? "Cotisations determinees" : "Defined contribution" },
+                  { value: "db", label: fr ? "Prestations déterminées" : "Defined benefit" },
+                  { value: "cd", label: fr ? "Cotisations déterminées" : "Defined contribution" },
                 ]} />
             </InputRow>
             {(params.penType === "db") && (
@@ -1104,20 +1104,20 @@ function SimulateurContent() {
                 <NumInput value={params.penM as number} onChange={v => setParam("penM", v)} step={100} isDefault={defaults.has("penM")} />
               </InputRow>
             )}
-            <InputRow label={fr ? "Depenses retraite ($/mois)" : "Retirement spending ($/mo)"}>
+            <InputRow label={fr ? "Dépenses retraite ($/mois)" : "Retirement spending ($/mo)"}>
               <NumInput value={params.retSpM as number} onChange={v => setParam("retSpM", v)} step={100} isDefault={defaults.has("retSpM")} />
             </InputRow>
           </SidebarGroup>
 
-          {/* ── Epargne ── */}
-          <SidebarGroup title={fr ? "Epargne" : "Savings"} expanded={expandedGroups.has("epargne")} onToggle={() => toggleGroup("epargne")}>
+          {/* ── Épargne ── */}
+          <SidebarGroup title={fr ? "Épargne" : "Savings"} expanded={expandedGroups.has("epargne")} onToggle={() => toggleGroup("epargne")}>
             <InputRow label={fr ? "REER" : "RRSP"}>
               <NumInput value={params.rrsp as number} onChange={v => setParam("rrsp", v)} step={1000} isDefault={defaults.has("rrsp")} />
             </InputRow>
             <InputRow label={fr ? "CELI" : "TFSA"}>
               <NumInput value={params.tfsa as number} onChange={v => setParam("tfsa", v)} step={1000} isDefault={defaults.has("tfsa")} />
             </InputRow>
-            <InputRow label={fr ? "Non-enregistre" : "Non-registered"}>
+            <InputRow label={fr ? "Non-enregistré" : "Non-registered"}>
               <NumInput value={params.nr as number} onChange={v => { setParam("nr", v); setParam("costBase", v); }} step={1000} isDefault={defaults.has("nr")} />
             </InputRow>
             <InputRow label={fr ? "Cotisation REER/an" : "RRSP contrib/yr"}>
@@ -1137,7 +1137,7 @@ function SimulateurContent() {
                 const ho = v === "yes";
                 setDisclosure(d => ({ ...d, homeowner: ho }));
                 if (ho && !(params.props as unknown[])?.length) {
-                  setParam("props", [{ on: true, name: "Residence principale", pri: true, val: 400000, mb: 200000, mr: 0.055, ma: 20, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }]);
+                  setParam("props", [{ on: true, name: "Résidence principale", pri: true, val: 400000, mb: 200000, mr: 0.055, ma: 20, ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.30, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dsAge: 0, dsAmt: 0, dpaOn: false, dpaRate: 0.04 }]);
                 } else if (!ho) {
                   setParam("props", []);
                 }
@@ -1145,13 +1145,13 @@ function SimulateurContent() {
             </InputRow>
             {disclosure.homeowner && (
               <>
-                <InputRow label={fr ? "Valeur propriete" : "Home value"}>
+                <InputRow label={fr ? "Valeur propriété" : "Home value"}>
                   <NumInput value={((params.props as Record<string, unknown>[])?.[0]?.val as number) || 0} onChange={v => {
                     const p = [...(params.props as Record<string, unknown>[])];
                     if (p[0]) { p[0] = { ...p[0], val: v }; setParam("props", p); }
                   }} step={10000} />
                 </InputRow>
-                <InputRow label={fr ? "Hypotheque" : "Mortgage"}>
+                <InputRow label={fr ? "Hypothèque" : "Mortgage"}>
                   <NumInput value={((params.props as Record<string, unknown>[])?.[0]?.mb as number) || 0} onChange={v => {
                     const p = [...(params.props as Record<string, unknown>[])];
                     if (p[0]) { p[0] = { ...p[0], mb: v }; setParam("props", p); }
@@ -1196,8 +1196,8 @@ function SimulateurContent() {
             )}
           </SidebarGroup>
 
-          {/* ── Avance ── */}
-          <SidebarGroup title={fr ? "Avance" : "Advanced"} expanded={expandedGroups.has("avance")} onToggle={() => toggleGroup("avance")}>
+          {/* ── Avancé ── */}
+          <SidebarGroup title={fr ? "Avancé" : "Advanced"} expanded={expandedGroups.has("avance")} onToggle={() => toggleGroup("avance")}>
             <InputRow label={fr ? "Allocation actions (%)" : "Equity allocation (%)"}>
               <NumInput value={Math.round((params.allocR as number) * 100)} onChange={v => { const a = v / 100; setParam("allocR", a); setParam("allocT", a); setParam("allocN", Math.max(0.3, a - 0.2)); }} step={5} min={0} max={100} prefix="%" isDefault={defaults.has("allocR")} />
             </InputRow>
@@ -1225,18 +1225,18 @@ function SimulateurContent() {
                     const d = new Date(entry.date);
                     const dateStr = d.toLocaleDateString(fr ? "fr-CA" : "en-CA", { month: "short", day: "numeric" });
                     const actionLabels: Record<string, { fr: string; en: string }> = {
-                      account_created: { fr: "Compte cree", en: "Account created" },
+                      account_created: { fr: "Compte créé", en: "Account created" },
                       export: { fr: "Bilan exporte", en: "Report exported" },
                       "bilan-annuel": { fr: "Bilan Annuel", en: "Annual Assessment" },
                       renewal: { fr: "Renouvellement", en: "Renewal" },
-                      profile_saved: { fr: "Profil sauvegarde", en: "Profile saved" },
-                      profile_loaded: { fr: "Profil charge", en: "Profile loaded" },
+                      profile_saved: { fr: "Profil sauvegardé", en: "Profile saved" },
+                      profile_loaded: { fr: "Profil chargé", en: "Profile loaded" },
                       simulate: { fr: "Simulation", en: "Simulation" },
-                      addon_purchase: { fr: "Credit supplementaire", en: "Addon purchased" },
-                      referral_reward: { fr: "Recompense parrainage", en: "Referral reward" },
+                      addon_purchase: { fr: "Crédit supplémentaire", en: "Addon purchased" },
+                      referral_reward: { fr: "Récompense parrainage", en: "Referral reward" },
                       referral_reward_3: { fr: "Parrainage (3e)", en: "Referral (3rd)" },
                       anniversary_6m_sent: { fr: "Rappel 6 mois", en: "6-month reminder" },
-                      profile_deleted: { fr: "Profil supprime", en: "Profile deleted" },
+                      profile_deleted: { fr: "Profil supprimé", en: "Profile deleted" },
                     };
                     const label = actionLabels[entry.action]
                       ? T(actionLabels[entry.action].fr, actionLabels[entry.action].en, lang)
@@ -1296,9 +1296,9 @@ function SimulateurContent() {
 
       {/* ── Footer ── */}
       <footer style={{ borderTop: `1px solid ${EK.border}`, padding: "16px 24px", textAlign: "center", fontSize: 12, color: EK.txMuted }}>
-        buildfi.ca &middot; {fr ? "A titre informatif seulement" : "For informational purposes only"}
+        buildfi.ca &middot; {fr ? "À titre informatif seulement" : "For informational purposes only"}
         <span style={{ margin: "0 8px" }}>|</span>
-        <a href="/confidentialite.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialite" : "Privacy"}</a>
+        <a href="/confidentialite.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialité" : "Privacy"}</a>
         <span style={{ margin: "0 8px" }}>|</span>
         <a href="/conditions.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Conditions" : "Terms"}</a>
       </footer>
@@ -1317,7 +1317,7 @@ function SimulateurContent() {
             </h2>
             <p style={{ fontSize: 13, color: EK.txDim, marginBottom: 20, lineHeight: 1.5 }}>
               {fr
-                ? "Selectionnez un profil de depart pour explorer le simulateur. Vous pourrez modifier tous les parametres ensuite."
+                ? "Sélectionnez un profil de départ pour explorer le simulateur. Vous pourrez modifier tous les paramètres ensuite."
                 : "Select a starting profile to explore the simulator. You can modify all parameters afterwards."}
             </p>
 
@@ -1325,7 +1325,7 @@ function SimulateurContent() {
             {profile?.profile?.profiles && profile.profile.profiles.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {fr ? "Mes profils sauvegardes" : "My saved profiles"}
+                  {fr ? "Mes profils sauvegardés" : "My saved profiles"}
                 </div>
                 {profile.profile.profiles.map(sp => (
                   <button
@@ -1351,13 +1351,13 @@ function SimulateurContent() {
                       </div>
                     </div>
                     <div style={{ fontSize: 12, color: EK.txDim, marginTop: 2 }}>
-                      {fr ? "Profil sauvegarde" : "Saved profile"}
+                      {fr ? "Profil sauvegardé" : "Saved profile"}
                     </div>
                   </button>
                 ))}
                 <div style={{ borderBottom: `1px solid ${EK.border}`, margin: "12px 0", opacity: 0.5 }} />
                 <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {fr ? "Profils de depart" : "Starter profiles"}
+                  {fr ? "Profils de départ" : "Starter profiles"}
                 </div>
               </div>
             )}
@@ -1444,7 +1444,7 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
       <Card>
         <div style={{ textAlign: "center", padding: 24, color: EK.red }}>
           <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{fr ? "Erreur de simulation" : "Simulation error"}</div>
-          <div style={{ fontSize: 13, color: EK.txDim }}>{simError || (fr ? "Veuillez reessayer." : "Please try again.")}</div>
+          <div style={{ fontSize: 13, color: EK.txDim }}>{simError || (fr ? "Veuillez réessayer." : "Please try again.")}</div>
         </div>
       </Card>
     );
@@ -1454,8 +1454,8 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
     return (
       <Card>
         <div style={{ textAlign: "center", padding: 40, color: EK.txDim }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{fr ? "Selectionnez un profil pour commencer" : "Select a profile to begin"}</div>
-          <div style={{ fontSize: 13 }}>{fr ? "Utilisez le selecteur de profil ou modifiez les parametres." : "Use the profile selector or modify parameters."}</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{fr ? "Sélectionnez un profil pour commencer" : "Select a profile to begin"}</div>
+          <div style={{ fontSize: 13 }}>{fr ? "Utilisez le sélecteur de profil ou modifiez les paramètres." : "Use the profile selector or modify parameters."}</div>
         </div>
       </Card>
     );
@@ -1480,12 +1480,12 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
   const successDriver = (() => {
     const savingsRate = sal > 0 ? totalContrib / sal : 0;
     if (results.successRate >= 0.85 && savingsRate >= 0.15)
-      return fr ? "Taux d'epargne eleve (" + Math.round(savingsRate * 100) + "%)" : "High savings rate (" + Math.round(savingsRate * 100) + "%)";
+      return fr ? "Taux d'épargne élevé (" + Math.round(savingsRate * 100) + "%)" : "High savings rate (" + Math.round(savingsRate * 100) + "%)";
     if (results.successRate < 0.60 && retSpM > 5000)
-      return fr ? "Depenses elevees (" + f$(retSpM) + "/mois)" : "High spending (" + f$(retSpM) + "/mo)";
+      return fr ? "Dépenses élevées (" + f$(retSpM) + "/mois)" : "High spending (" + f$(retSpM) + "/mo)";
     if (results.successRate < 0.60)
-      return fr ? "Epargne ou horizon insuffisant" : "Insufficient savings or horizon";
-    return fr ? "Equilibre epargne/depenses" : "Savings/spending balance";
+      return fr ? "Épargne ou horizon insuffisant" : "Insufficient savings or horizon";
+    return fr ? "Équilibre épargne/dépenses" : "Savings/spending balance";
   })();
 
   const wealthDriver = (() => {
@@ -1495,30 +1495,30 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
       return fr ? "Allocation croissance (" + Math.round(allocR * 100) + "% actions)" : "Growth allocation (" + Math.round(allocR * 100) + "% equity)";
     if (totalContrib >= 15000)
       return fr ? "Cotisations annuelles de " + f$(totalContrib) : "Annual contributions of " + f$(totalContrib);
-    return fr ? "Portefeuille equilibre" : "Balanced portfolio";
+    return fr ? "Portefeuille équilibré" : "Balanced portfolio";
   })();
 
   const estateDriver = (() => {
     if (hasProps && results.estate.medianNet > 500000)
-      return fr ? "Immobilier + comptes enregistres" : "Real estate + registered accounts";
+      return fr ? "Immobilier + comptes enregistrés" : "Real estate + registered accounts";
     if (hasProps)
-      return fr ? "Valeur immobiliere incluse" : "Property value included";
+      return fr ? "Valeur immobilière incluse" : "Property value included";
     if (results.estate.medianNet > totalSavings * 1.5)
       return fr ? "Croissance des placements" : "Investment growth";
-    return fr ? "Comptes enregistres et non-enregistres" : "Registered and non-registered accounts";
+    return fr ? "Comptes enregistrés et non-enregistrés" : "Registered and non-registered accounts";
   })();
 
   const ruinDriver = (() => {
     const ruinPct = results.ruin.pct ?? 0;
     if (ruinPct <= 0.02)
-      return fr ? "Marge de securite adequate" : "Adequate safety margin";
+      return fr ? "Marge de sécurité adéquate" : "Adequate safety margin";
     if (wStrat === "optimal")
-      return fr ? "Strategie de retrait optimisee" : "Optimized withdrawal strategy";
+      return fr ? "Stratégie de retrait optimisée" : "Optimized withdrawal strategy";
     if (ruinPct > 0.15 && retSpM > 5000)
-      return fr ? "Taux de retrait eleve relatif au capital" : "High withdrawal rate relative to capital";
+      return fr ? "Taux de retrait élevé relatif au capital" : "High withdrawal rate relative to capital";
     if (ruinPct > 0.10)
-      return fr ? "Horizon long ou volatilite elevee" : "Long horizon or high volatility";
-    return fr ? "Strategie de retrait: " + wStrat : "Withdrawal strategy: " + wStrat;
+      return fr ? "Horizon long ou volatilité élevée" : "Long horizon or high volatility";
+    return fr ? "Stratégie de retrait: " + wStrat : "Withdrawal strategy: " + wStrat;
   })();
 
   const rangeDriver = (() => {
@@ -1526,11 +1526,11 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
     const median = results.medianWealth || 1;
     const relSpread = spread / Math.abs(median);
     if (allocR >= 0.80 && relSpread > 1.0)
-      return fr ? "Dispersion elevee liee a l'allocation actions" : "High dispersion linked to equity allocation";
+      return fr ? "Dispersion élevée liée à l'allocation actions" : "High dispersion linked to equity allocation";
     if (relSpread > 1.0)
-      return fr ? "Large eventail de trajectoires possibles" : "Wide range of possible trajectories";
+      return fr ? "Large éventail de trajectoires possibles" : "Wide range of possible trajectories";
     if (relSpread < 0.3)
-      return fr ? "Trajectoires relativement concentrees" : "Relatively concentrated trajectories";
+      return fr ? "Trajectoires relativement concentrées" : "Relatively concentrated trajectories";
     return fr ? "Dispersion typique pour ce profil" : "Typical dispersion for this profile";
   })();
 
@@ -1538,13 +1538,13 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
     const taxAmt = results.estate.medianTax ?? 0;
     const netAmt = results.estate.medianNet ?? 0;
     if (taxAmt <= 0)
-      return fr ? "Aucun impot successoral estime" : "No estimated estate tax";
+      return fr ? "Aucun impôt successoral estimé" : "No estimated estate tax";
     const taxRate = netAmt + taxAmt > 0 ? taxAmt / (netAmt + taxAmt) : 0;
     if (taxRate > 0.25)
-      return fr ? "Forte proportion de REER/FERR au deces" : "High RRSP/RRIF proportion at death";
+      return fr ? "Forte proportion de REER/FERR au décès" : "High RRSP/RRIF proportion at death";
     if (taxRate > 0.10)
-      return fr ? "Impot sur les comptes enregistres au deces" : "Tax on registered accounts at death";
-    return fr ? "Charge fiscale moderee au deces" : "Moderate tax burden at death";
+      return fr ? "Impôt sur les comptes enregistrés au décès" : "Tax on registered accounts at death";
+    return fr ? "Charge fiscale modérée au décès" : "Moderate tax burden at death";
   })();
 
   return (
@@ -1555,13 +1555,13 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
           <GradeRing grade={results.grade} succ={results.successRate} />
           <div style={{ flex: 1, display: "flex", gap: 10, flexWrap: "wrap", minWidth: 0 }}>
             <StatBox
-              label={fr ? "Taux de reussite" : "Success rate"}
+              label={fr ? "Taux de réussite" : "Success rate"}
               value={fPct(results.successRate)}
               color={results.successRate >= 0.75 ? EK.green : results.successRate >= 0.55 ? EK.gold : EK.red}
               sub={successDriver}
             />
             <StatBox
-              label={fr ? "Patrimoine median (reel)" : "Median wealth (real)"}
+              label={fr ? "Patrimoine médian (réel)" : "Median wealth (real)"}
               value={f$(results.medianWealth)}
               sub={wealthDriver}
             />
@@ -1587,7 +1587,7 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
       {/* ── Fan chart ── */}
       <Card>
         <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: "'Newsreader', serif" }}>
-          {fr ? "Projection du patrimoine ($ reels)" : "Wealth projection (real $)"}
+          {fr ? "Projection du patrimoine ($ réels)" : "Wealth projection (real $)"}
         </div>
         {results.yearByYear && results.yearByYear.length > 0 ? (
           <FanChart pD={results.yearByYear} retAge={retAge} lang={lang} />
@@ -1600,12 +1600,12 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
       <Card>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <StatBox
-            label={fr ? "Succession nette (mediane)" : "Net estate (median)"}
+            label={fr ? "Succession nette (médiane)" : "Net estate (median)"}
             value={f$(results.estate.medianNet)}
             sub={estateDriver}
           />
           <StatBox
-            label={fr ? "Impot successoral (mediane)" : "Estate tax (median)"}
+            label={fr ? "Impôt successoral (médiane)" : "Estate tax (median)"}
             value={f$(results.estate.medianTax)}
             color={EK.red}
             sub={estateTaxDriver}
@@ -1635,7 +1635,7 @@ function renderTab(
   if (tab === "diagnostic") return <DiagnosticTab {...sharedProps} />;
   // All other tabs need results
   if (simStatus === "loading" && !results) return <div><Skeleton height={128} /><div style={{ height: 12 }} /><Skeleton height={240} /></div>;
-  if (!results) return <Card style={{ textAlign: "center", padding: 40 }}><div style={{ fontSize: 14, color: EK.txDim }}>{lang === "fr" ? "Selectionnez un profil pour commencer." : "Select a profile to begin."}</div></Card>;
+  if (!results) return <Card style={{ textAlign: "center", padding: 40 }}><div style={{ fontSize: 14, color: EK.txDim }}>{lang === "fr" ? "Sélectionnez un profil pour commencer." : "Select a profile to begin."}</div></Card>;
   const tp = { results, params, lang };
   if (tab === "revenus") return <RevenusTab {...tp} />;
   if (tab === "projection") return <ProjectionTab {...tp} />;
@@ -1687,13 +1687,13 @@ function RevenusTab({ results, params, lang }: TabProps) {
           <StatBox label={fr ? "Taux de remplacement" : "Replacement rate"} value={`${replacementRate}%`} color={replacementRate > 100 ? EK.red : EK.green} />
           <StatBox label={fr ? "Couverture gouvernementale" : "Government coverage"} value={`${govCoverage}%`} color={govCoverage > 40 ? EK.green : EK.gold} />
           <StatBox label={fr ? "Revenus gouv. an 1" : "Gov income year 1"} value={f$(govYear1)} />
-          <StatBox label={fr ? "Depenses annuelles" : "Annual spending"} value={f$(annualSpend)} />
+          <StatBox label={fr ? "Dépenses annuelles" : "Annual spending"} value={f$(annualSpend)} />
         </div>
       </Card>
 
       {/* Stacked area chart */}
       <Card>
-        <SectionTitle>{fr ? "Sources de revenus a la retraite" : "Retirement income sources"}</SectionTitle>
+        <SectionTitle>{fr ? "Sources de revenus à la retraite" : "Retirement income sources"}</SectionTitle>
         {retData.length > 2 ? (() => {
           const keys = ["rrq", "psv", "srg", "pen", "pt", "ret"] as const;
           const colors = ["#3b82f6", "#22c55e", "#a855f7", "#f59e0b", "#06b6d4", "#ef4444"];
@@ -1750,7 +1750,7 @@ function RevenusTab({ results, params, lang }: TabProps) {
       {/* Income table */}
       {retData.length > 0 && (
         <Card>
-          <SectionTitle>{fr ? "Detail par age" : "Detail by age"}</SectionTitle>
+          <SectionTitle>{fr ? "Détail par âge" : "Detail by age"}</SectionTitle>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'JetBrains Mono', monospace" }}>
               <thead>
@@ -1794,7 +1794,7 @@ function ProjectionTab({ results, params, lang }: TabProps) {
   const retAge = (params.retAge as number) || 65;
   const pD = results.yearByYear || [];
 
-  const pctLabels: Record<string, string> = { p5: "P5", p25: "P25", p50: fr ? "Mediane" : "Median", p75: "P75", p95: "P95" };
+  const pctLabels: Record<string, string> = { p5: "P5", p25: "P25", p50: fr ? "Médiane" : "Median", p75: "P75", p95: "P95" };
 
   return (
     <div>
@@ -1821,7 +1821,7 @@ function ProjectionTab({ results, params, lang }: TabProps) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${EK.border}` }}>
-                {[fr ? "Age" : "Age", fr ? "Patrimoine" : "Wealth", "RRSP", "TFSA", fr ? "Non-enr." : "Non-reg", fr ? "Depenses" : "Spending"].map(h => (
+                {[fr ? "Age" : "Age", fr ? "Patrimoine" : "Wealth", "RRSP", "TFSA", fr ? "Non-enr." : "Non-reg", fr ? "Dépenses" : "Spending"].map(h => (
                   <th key={h} style={{ padding: "6px 6px", textAlign: "right", color: EK.txDim, fontWeight: 600, fontSize: 10, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
@@ -1879,7 +1879,7 @@ function PatrimoineTab({ results, params, lang }: TabProps) {
 
   const keys = ["mp_rr", "mp_tf", "mp_nr"] as const;
   const colors = ["#3b82f6", "#22c55e", "#a855f7"];
-  const labels = fr ? ["REER/FERR", "CELI", "Non-enregistre"] : ["RRSP/RRIF", "TFSA", "Non-registered"];
+  const labels = fr ? ["REER/FERR", "CELI", "Non-enregistré"] : ["RRSP/RRIF", "TFSA", "Non-registered"];
 
   // Add couple accounts if applicable
   const allKeys = cOn ? [...keys, "mp_crr" as const, "mp_ctf" as const] : keys;
@@ -1893,14 +1893,14 @@ function PatrimoineTab({ results, params, lang }: TabProps) {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <StatBox label="RRSP/REER" value={f$(rrsp)} />
           <StatBox label="TFSA/CELI" value={f$(tfsa)} />
-          <StatBox label={fr ? "Non-enregistre" : "Non-registered"} value={f$(nr)} />
+          <StatBox label={fr ? "Non-enregistré" : "Non-registered"} value={f$(nr)} />
           <StatBox label="Total" value={f$(totalNow)} color={EK.marine} />
         </div>
       </Card>
 
       {/* Wealth composition chart */}
       <Card>
-        <SectionTitle>{fr ? "Evolution du patrimoine (mediane)" : "Wealth trajectory (median)"}</SectionTitle>
+        <SectionTitle>{fr ? "Évolution du patrimoine (médiane)" : "Wealth trajectory (median)"}</SectionTitle>
         {pD.length > 2 ? (() => {
           const maxY = Math.max(1, ...pD.map((r) => {
             let s = 0; for (const k of allKeys) s += (Number(r[k]) || 0); return s;
@@ -1947,8 +1947,8 @@ function PatrimoineTab({ results, params, lang }: TabProps) {
       <Card>
         <SectionTitle>{fr ? "Succession" : "Estate"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <StatBox label={fr ? "Succession nette (mediane)" : "Net estate (median)"} value={f$(results.estate.medianNet)} />
-          <StatBox label={fr ? "Impot successoral" : "Estate tax"} value={f$(results.estate.medianTax)} color={EK.red} />
+          <StatBox label={fr ? "Succession nette (médiane)" : "Net estate (median)"} value={f$(results.estate.medianNet)} />
+          <StatBox label={fr ? "Impôt successoral" : "Estate tax"} value={f$(results.estate.medianTax)} color={EK.red} />
           <StatBox label={fr ? "P25 - P75" : "P25 - P75"} value={`${f$(results.estate.p25Net)} - ${f$(results.estate.p75Net)}`} />
         </div>
       </Card>
@@ -1970,8 +1970,8 @@ function AnalyseTab({ results, params, lang }: TabProps) {
     <div>
       {/* Tornado chart */}
       <Card>
-        <SectionTitle>{fr ? "Analyse de sensibilite (Tornado)" : "Sensitivity analysis (Tornado)"}</SectionTitle>
-        <p style={{ fontSize: 12, color: EK.txDim, marginBottom: 16 }}>{fr ? "Impact sur le taux de reussite (±1 ecart-type)" : "Impact on success rate (±1 std dev)"}</p>
+        <SectionTitle>{fr ? "Analyse de sensibilité (Tornado)" : "Sensitivity analysis (Tornado)"}</SectionTitle>
+        <p style={{ fontSize: 12, color: EK.txDim, marginBottom: 16 }}>{fr ? "Impact sur le taux de réussite (±1 écart-type)" : "Impact on success rate (±1 std dev)"}</p>
         {sens && sens.length > 0 ? (
           <div>
             {sens.slice(0, 8).map((s, i) => {
@@ -1997,7 +1997,7 @@ function AnalyseTab({ results, params, lang }: TabProps) {
               );
             })}
           </div>
-        ) : <div style={{ fontSize: 13, color: EK.txDim }}>{fr ? "Donnees de sensibilite non disponibles." : "Sensitivity data not available."}</div>}
+        ) : <div style={{ fontSize: 13, color: EK.txDim }}>{fr ? "Données de sensibilité non disponibles." : "Sensitivity data not available."}</div>}
       </Card>
 
       {/* Top sensitivity diagnosis */}
@@ -2049,10 +2049,10 @@ function AnalyseTab({ results, params, lang }: TabProps) {
 
       {/* Death vs Ruin */}
       <Card>
-        <SectionTitle>{fr ? "Deces vs epuisement" : "Death vs ruin"}</SectionTitle>
+        <SectionTitle>{fr ? "Décès vs épuisement" : "Death vs ruin"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
           <StatBox label={fr ? "Risque de ruine" : "Ruin risk"} value={fPct(results.ruin.pct ?? 0)} color={(results.ruin.pct ?? 0) > 0.10 ? EK.red : EK.green} />
-          {results.ruin.medianAge > 0 && <StatBox label={fr ? "Age median de ruine" : "Median ruin age"} value={`${results.ruin.medianAge}`} color={EK.red} />}
+          {results.ruin.medianAge > 0 && <StatBox label={fr ? "Âge médian de ruine" : "Median ruin age"} value={`${results.ruin.medianAge}`} color={EK.red} />}
         </div>
         {dvr && dvr.length > 0 ? (() => {
           const W3 = 600, H3 = 160;
@@ -2075,11 +2075,11 @@ function AnalyseTab({ results, params, lang }: TabProps) {
               })}
               <g transform={`translate(${W3 - 140}, 10)`}>
                 <rect width={8} height={8} fill={EK.marine} opacity={0.5} /><text x={12} y={8} fontSize={9} fill={EK.txDim}>{fr ? "Solvable" : "Solvent"}</text>
-                <rect y={14} width={8} height={8} fill={EK.red} opacity={0.6} /><text x={12} y={22} fontSize={9} fill={EK.txDim}>{fr ? "Epuise" : "Ruined"}</text>
+                <rect y={14} width={8} height={8} fill={EK.red} opacity={0.6} /><text x={12} y={22} fontSize={9} fill={EK.txDim}>{fr ? "Épuisé" : "Ruined"}</text>
               </g>
             </svg>
           );
-        })() : <div style={{ fontSize: 13, color: EK.txDim }}>{fr ? "Donnees non disponibles." : "Data not available."}</div>}
+        })() : <div style={{ fontSize: 13, color: EK.txDim }}>{fr ? "Données non disponibles." : "Data not available."}</div>}
       </Card>
 
       {/* Guardrails */}
@@ -2089,7 +2089,7 @@ function AnalyseTab({ results, params, lang }: TabProps) {
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <StatBox label={fr ? "Coupes moyennes" : "Avg cuts"} value={results.gk.avgCuts.toFixed(1)} color={EK.red} />
             <StatBox label={fr ? "Hausses moyennes" : "Avg raises"} value={results.gk.avgRaises.toFixed(1)} color={EK.green} />
-            <StatBox label={fr ? "Depenses moyennes" : "Avg spending"} value={f$(results.gk.avgSpend)} />
+            <StatBox label={fr ? "Dépenses moyennes" : "Avg spending"} value={f$(results.gk.avgSpend)} />
             <StatBox label={fr ? "Min depenses P5" : "Min spending P5"} value={f$(results.gk.p5MinSpend)} color={EK.gold} />
           </div>
         </Card>
@@ -2141,7 +2141,7 @@ function CoupleTab({ results, params, lang }: TabProps) {
                 ["REER/RRSP", f$(p.rrsp)],
                 ["CELI/TFSA", f$(p.tfsa)],
                 [fr ? "Non-enr." : "Non-reg", f$(p.nr)],
-                [fr ? "Depenses/mois" : "Spending/mo", f$(p.retSpM)],
+                [fr ? "Dépenses/mois" : "Spending/mo", f$(p.retSpM)],
                 ["Total", f$(p.total)],
               ].map(([k, v], j) => (
                 <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: j < 6 ? `1px solid ${EK.sable}` : "none", fontSize: 12 }}>
@@ -2156,10 +2156,10 @@ function CoupleTab({ results, params, lang }: TabProps) {
 
       {/* Combined summary */}
       <Card>
-        <SectionTitle>{fr ? "Menage combine" : "Combined household"}</SectionTitle>
+        <SectionTitle>{fr ? "Ménage combiné" : "Combined household"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <StatBox label={fr ? "Epargne totale" : "Total savings"} value={f$(totalP + totalS)} color={EK.marine} />
-          <StatBox label={fr ? "Depenses menage/mois" : "Household spending/mo"} value={f$(retSpM + cRetSpM)} />
+          <StatBox label={fr ? "Épargne totale" : "Total savings"} value={f$(totalP + totalS)} color={EK.marine} />
+          <StatBox label={fr ? "Dépenses menage/mois" : "Household spending/mo"} value={f$(retSpM + cRetSpM)} />
           <StatBox label={fr ? "Fractionnement" : "Pension splitting"} value={splitOn ? `${Math.round(splitP * 100)}%` : "Off"} color={splitOn ? EK.green : EK.txDim} />
         </div>
       </Card>
@@ -2171,12 +2171,12 @@ function CoupleTab({ results, params, lang }: TabProps) {
         </div>
         <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, fontStyle: "italic" }}>
           {totalS > totalP * 1.5
-            ? (fr ? "L'epargne du conjoint represente une part significative du patrimoine du menage. La strategie de retrait pourrait tenir compte de cet ecart."
+            ? (fr ? "L'épargne du conjoint représente une part significative du patrimoine du ménage. La stratégie de retrait pourrait tenir compte de cet écart."
                   : "Spouse savings represent a significant portion of household wealth. The withdrawal strategy could account for this gap.")
             : totalP > totalS * 3
-            ? (fr ? "Un ecart important existe entre les deux epargnes. Le fractionnement du revenu de retraite pourrait influencer l'efficacite fiscale."
+            ? (fr ? "Un écart important existe entre les deux épargnes. Le fractionnement du revenu de retraite pourrait influencer l'efficacité fiscale."
                   : "A significant gap exists between the two savings. Retirement income splitting could influence tax efficiency.")
-            : (fr ? "Les epargnes du menage sont relativement equilibrees entre les deux conjoints."
+            : (fr ? "Les épargnes du ménage sont relativement équilibrées entre les deux conjoints."
                   : "Household savings are relatively balanced between both spouses.")}
         </p>
       </Card>
@@ -2203,7 +2203,7 @@ function ImmobilierTab({ results, params, lang }: TabProps) {
       <Card>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <StatBox label={fr ? "Valeur totale" : "Total value"} value={f$(totalValue)} />
-          <StatBox label={fr ? "Hypotheques" : "Mortgages"} value={f$(totalMortgage)} color={EK.red} />
+          <StatBox label={fr ? "Hypothèques" : "Mortgages"} value={f$(totalMortgage)} color={EK.red} />
           <StatBox label={fr ? "Avoir net immobilier" : "Net real estate equity"} value={f$(netEquity)} color={EK.green} />
         </div>
       </Card>
@@ -2220,18 +2220,18 @@ function ImmobilierTab({ results, params, lang }: TabProps) {
           <Card key={i}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine }}>{p.name || `${fr ? "Propriete" : "Property"} ${i + 1}`}</div>
-                <div style={{ fontSize: 11, color: EK.txMuted }}>{p.pri ? (fr ? "Residence principale" : "Primary residence") : (fr ? "Locatif" : "Rental")}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine }}>{p.name || `${fr ? "Propriété" : "Property"} ${i + 1}`}</div>
+                <div style={{ fontSize: 11, color: EK.txMuted }}>{p.pri ? (fr ? "Résidence principale" : "Primary residence") : (fr ? "Locatif" : "Rental")}</div>
               </div>
               <div style={{ fontSize: 20, fontWeight: 800, color: EK.green, fontFamily: "'JetBrains Mono', monospace" }}>{f$(equity)}</div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {[
                 [fr ? "Valeur" : "Value", f$(p.val || 0)],
-                [fr ? "Hypotheque" : "Mortgage", f$(p.mb || 0)],
+                [fr ? "Hypothèque" : "Mortgage", f$(p.mb || 0)],
                 [fr ? "Taux" : "Rate", `${((p.mr || 0) * 100).toFixed(2)}%`],
                 [fr ? "Paiement/mois" : "Payment/mo", f$(Math.round(monthlyPayment))],
-                [fr ? "Appreciation" : "Appreciation", `${((p.ri || 0) * 100).toFixed(1)}%/an`],
+                [fr ? "Appréciation" : "Appreciation", `${((p.ri || 0) * 100).toFixed(1)}%/an`],
                 [fr ? "Gain 10 ans" : "10-yr gain", f$(Math.round(appreciation10y))],
                 ...(p.rm > 0 ? [[fr ? "Loyer/mois" : "Rent/mo", f$(p.rm)]] : []),
               ].map(([k, v], j) => (
@@ -2247,7 +2247,7 @@ function ImmobilierTab({ results, params, lang }: TabProps) {
 
       {activeProps.length === 0 && (
         <Card style={{ textAlign: "center", padding: 32 }}>
-          <div style={{ fontSize: 14, color: EK.txDim }}>{fr ? "Aucune propriete configuree dans les parametres." : "No properties configured in parameters."}</div>
+          <div style={{ fontSize: 14, color: EK.txDim }}>{fr ? "Aucune propriété configurée dans les paramètres." : "No properties configured in parameters."}</div>
         </Card>
       )}
     </div>
@@ -2271,15 +2271,15 @@ function StrategieTab({ results, params, lang }: TabProps) {
 
   const stratLabels: Record<string, { fr: string; en: string; desc: string; descEn: string }> = {
     optimal: { fr: "Optimal", en: "Optimal", desc: "Retire dans l'ordre le plus fiscalement efficient.", descEn: "Withdraws in the most tax-efficient order." },
-    optimized: { fr: "Optimise", en: "Optimized", desc: "Similaire a optimal avec ajustements annuels.", descEn: "Similar to optimal with annual adjustments." },
-    tfsaFirst: { fr: "CELI d'abord", en: "TFSA first", desc: "Retire le CELI en premier pour preserver la croissance libre d'impot.", descEn: "Withdraws TFSA first to preserve tax-free growth." },
+    optimized: { fr: "Optimisé", en: "Optimized", desc: "Similaire à optimal avec ajustements annuels.", descEn: "Similar to optimal with annual adjustments." },
+    tfsaFirst: { fr: "CELI d'abord", en: "TFSA first", desc: "Retire le CELI en premier pour préserver la croissance libre d'impôt.", descEn: "Withdraws TFSA first to preserve tax-free growth." },
   };
 
   return (
     <div>
       {/* Current strategy */}
       <Card>
-        <SectionTitle>{fr ? "Strategie de decaissement" : "Withdrawal strategy"}</SectionTitle>
+        <SectionTitle>{fr ? "Stratégie de décaissement" : "Withdrawal strategy"}</SectionTitle>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {Object.entries(stratLabels).map(([key, s]) => (
             <div key={key} style={{
@@ -2298,7 +2298,7 @@ function StrategieTab({ results, params, lang }: TabProps) {
 
       {/* Key parameters */}
       <Card>
-        <SectionTitle>{fr ? "Parametres cles" : "Key parameters"}</SectionTitle>
+        <SectionTitle>{fr ? "Paramètres clés" : "Key parameters"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <StatBox label={fr ? "REER Meltdown" : "RRSP Meltdown"} value={melt ? `${f$(meltTgt)}/an` : "Off"} color={melt ? EK.gold : EK.txDim} />
           <StatBox label="RRQ/CPP" value={`${fr ? "Age" : "Age"} ${qppAge}`} />
@@ -2315,9 +2315,9 @@ function StrategieTab({ results, params, lang }: TabProps) {
         </div>
         <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, fontStyle: "italic" }}>
           {melt
-            ? (fr ? `La strategie de meltdown REER vise un retrait accelere de ${f$(meltTgt)}/an pour reduire la charge fiscale future. Cette approche pourrait etre favorable si les taux marginaux actuels sont plus bas qu'a la retraite.`
+            ? (fr ? `La stratégie de meltdown REER vise un retrait accéléré de ${f$(meltTgt)}/an pour réduire la charge fiscale future. Cette approche pourrait être favorable si les taux marginaux actuels sont plus bas qu'à la retraite.`
                   : `The RRSP meltdown strategy targets accelerated withdrawals of ${f$(meltTgt)}/yr to reduce future tax burden. This approach could be favorable if current marginal rates are lower than in retirement.`)
-            : (fr ? "La strategie de retrait actuelle suit l'ordre optimal standard. L'utilisation de l'outil 'Optimiser' pourrait reveler des combinaisons plus efficaces."
+            : (fr ? "La stratégie de retrait actuelle suit l'ordre optimal standard. L'utilisation de l'outil 'Optimiser' pourrait révéler des combinaisons plus efficaces."
                   : "The current withdrawal strategy follows the standard optimal order. Using the 'Optimize' tool could reveal more efficient combinations.")}
         </p>
       </Card>
@@ -2357,22 +2357,22 @@ function EntrepriseTab({ results, params, lang }: TabProps) {
         <SectionTitle>{fr ? "Tableau de bord corporatif" : "Corporate dashboard"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <StatBox label={fr ? "Revenus bruts" : "Gross revenue"} value={f$(bizRevenue)} />
-          <StatBox label={fr ? "Depenses" : "Expenses"} value={f$(bizExpenses)} color={EK.red} />
+          <StatBox label={fr ? "Dépenses" : "Expenses"} value={f$(bizExpenses)} color={EK.red} />
           <StatBox label={fr ? "Revenu net" : "Net income"} value={f$(netIncome)} color={EK.green} />
-          <StatBox label={fr ? "Benefices non repartis" : "Retained earnings"} value={f$(bizRetainedEarnings)} color={EK.marine} />
+          <StatBox label={fr ? "Bénéfices non répartis" : "Retained earnings"} value={f$(bizRetainedEarnings)} color={EK.marine} />
         </div>
       </Card>
 
       {/* Remuneration strategy */}
       <Card>
-        <SectionTitle>{fr ? "Strategie de remuneration" : "Compensation strategy"}</SectionTitle>
+        <SectionTitle>{fr ? "Stratégie de rémunération" : "Compensation strategy"}</SectionTitle>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <div style={{ background: EK.bg, borderRadius: 8, padding: 14 }}>
             <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 4 }}>{fr ? "Mode actuel" : "Current mode"}</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine }}>{remunLabels[bizRemun] || bizRemun}</div>
           </div>
           <div style={{ background: EK.bg, borderRadius: 8, padding: 14 }}>
-            <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 4 }}>{fr ? "Salaire declare" : "Declared salary"}</div>
+            <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 4 }}>{fr ? "Salaire déclaré" : "Declared salary"}</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine }}>{f$(sal)}</div>
           </div>
         </div>
@@ -2387,7 +2387,7 @@ function EntrepriseTab({ results, params, lang }: TabProps) {
       {/* IPP */}
       {ippOn && (
         <Card>
-          <SectionTitle>{fr ? "Regime de pension individuel (RPI)" : "Individual Pension Plan (IPP)"}</SectionTitle>
+          <SectionTitle>{fr ? "Régime de pension individuel (RPI)" : "Individual Pension Plan (IPP)"}</SectionTitle>
           <StatBox label={fr ? "Solde RPI" : "IPP balance"} value={f$(ippBal)} color={EK.marine} />
         </Card>
       )}
@@ -2399,9 +2399,9 @@ function EntrepriseTab({ results, params, lang }: TabProps) {
         </div>
         <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, fontStyle: "italic" }}>
           {bizRetainedEarnings > 500000
-            ? (fr ? "Les benefices non repartis importants pourraient offrir une flexibilite significative pour la planification de la retraite. L'extraction optimale depend du taux marginal personnel."
+            ? (fr ? "Les bénéfices non répartis importants pourraient offrir une flexibilité significative pour la planification de la retraite. L'extraction optimale dépend du taux marginal personnel."
                   : "Significant retained earnings could offer substantial flexibility for retirement planning. Optimal extraction depends on personal marginal rate.")
-            : (fr ? "La strategie de remuneration actuelle influence directement les cotisations REER et RRQ admissibles. L'equilibre salaire-dividendes pourrait etre explore."
+            : (fr ? "La stratégie de rémunération actuelle influence directement les cotisations REER et RRQ admissibles. L'équilibre salaire-dividendes pourrait être exploré."
                   : "The current compensation strategy directly influences RRSP and CPP contribution eligibility. The salary-dividend balance could be explored.")}
         </p>
       </Card>
@@ -2441,7 +2441,7 @@ function FiscaliteTab({ results, params, lang }: TabProps) {
       <Card>
         <SectionTitle>{fr ? "Situation fiscale actuelle" : "Current tax situation"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <StatBox label={fr ? "Taux marginal combine" : "Combined marginal rate"} value={`${(combinedMarg * 100).toFixed(1)}%`} color={combinedMarg > 0.45 ? EK.red : EK.gold} />
+          <StatBox label={fr ? "Taux marginal combiné" : "Combined marginal rate"} value={`${(combinedMarg * 100).toFixed(1)}%`} color={combinedMarg > 0.45 ? EK.red : EK.gold} />
           <StatBox label={fr ? "Taux federal" : "Federal rate"} value={`${(margRate * 100).toFixed(1)}%`} />
           <StatBox label={fr ? "Taux provincial" : "Provincial rate"} value={`${(provRate * 100).toFixed(1)}%`} />
           <StatBox label={fr ? "Province" : "Province"} value={prov} color={EK.marine} />
@@ -2453,9 +2453,9 @@ function FiscaliteTab({ results, params, lang }: TabProps) {
         <SectionTitle>{fr ? "Leviers fiscaux actifs" : "Active tax levers"}</SectionTitle>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[
-            { label: fr ? "REER Meltdown" : "RRSP Meltdown", active: melt, desc: fr ? "Retrait accelere pour reduire l'impot futur" : "Accelerated withdrawal to reduce future tax" },
-            { label: fr ? "Report PSV/OAS" : "OAS deferral", active: oasAge > 65, desc: fr ? `Report a ${oasAge} ans — augmente la prestation de ${((oasAge - 65) * 7.2).toFixed(1)}%` : `Deferred to age ${oasAge} — increases benefit by ${((oasAge - 65) * 7.2).toFixed(1)}%` },
-            { label: fr ? "Fractionnement" : "Income splitting", active: !!params.split, desc: fr ? "Repartition du revenu de retraite entre conjoints" : "Retirement income split between spouses" },
+            { label: fr ? "REER Meltdown" : "RRSP Meltdown", active: melt, desc: fr ? "Retrait accéléré pour réduire l'impôt futur" : "Accelerated withdrawal to reduce future tax" },
+            { label: fr ? "Report PSV/OAS" : "OAS deferral", active: oasAge > 65, desc: fr ? `Report à ${oasAge} ans — augmente la prestation de ${((oasAge - 65) * 7.2).toFixed(1)}%` : `Deferred to age ${oasAge} — increases benefit by ${((oasAge - 65) * 7.2).toFixed(1)}%` },
+            { label: fr ? "Fractionnement" : "Income splitting", active: !!params.split, desc: fr ? "Répartition du revenu de retraite entre conjoints" : "Retirement income split between spouses" },
           ].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", background: l.active ? "rgba(26,122,76,0.06)" : EK.bg, borderRadius: 8, border: `1px solid ${l.active ? EK.green : EK.border}` }}>
               <div style={{ width: 24, height: 24, borderRadius: 12, background: l.active ? EK.green : EK.sable, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: l.active ? "#fff" : EK.txMuted }}>
@@ -2472,9 +2472,9 @@ function FiscaliteTab({ results, params, lang }: TabProps) {
 
       {/* Estate tax */}
       <Card>
-        <SectionTitle>{fr ? "Impot successoral estime" : "Estimated estate tax"}</SectionTitle>
+        <SectionTitle>{fr ? "Impôt successoral estimé" : "Estimated estate tax"}</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <StatBox label={fr ? "Impot (mediane)" : "Tax (median)"} value={f$(results.estate.medianTax)} color={EK.red} />
+          <StatBox label={fr ? "Impôt (médiane)" : "Tax (median)"} value={f$(results.estate.medianTax)} color={EK.red} />
           <StatBox label={fr ? "Succession nette" : "Net estate"} value={f$(results.estate.medianNet)} color={EK.green} />
           <StatBox label={fr ? "Fourchette P5-P95" : "P5-P95 range"} value={`${f$(results.estate.p5Net)} - ${f$(results.estate.p95Net)}`} />
         </div>
@@ -2496,8 +2496,8 @@ function OptimiseurTab({ results, params, lang }: TabProps) {
       {/* Top sensitivity factors */}
       {sens && sens.length > 0 && (
         <Card>
-          <SectionTitle>{fr ? "Facteurs de sensibilite" : "Sensitivity factors"}</SectionTitle>
-          <p style={{ fontSize: 12, color: EK.txDim, marginBottom: 12 }}>{fr ? "Les parametres qui influencent le plus votre taux de reussite:" : "Parameters that most influence your success rate:"}</p>
+          <SectionTitle>{fr ? "Facteurs de sensibilité" : "Sensitivity factors"}</SectionTitle>
+          <p style={{ fontSize: 12, color: EK.txDim, marginBottom: 12 }}>{fr ? "Les paramètres qui influencent le plus votre taux de réussite:" : "Parameters that most influence your success rate:"}</p>
           {sens.slice(0, 5).map((s, i) => {
             const impact = Math.max(Math.abs(s.lo), s.hi);
             return (
@@ -2522,7 +2522,7 @@ function OptimiseurTab({ results, params, lang }: TabProps) {
         </div>
         <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 16px" }}>
           {fr
-            ? "L'optimiseur teste des milliers de combinaisons de parametres et identifie les leviers les plus impactants."
+            ? "L'optimiseur teste des milliers de combinaisons de paramètres et identifie les leviers les plus impactants."
             : "The optimizer tests thousands of parameter combinations and identifies the most impactful levers."}
         </p>
         <div style={{ fontSize: 13, color: EK.gold, fontWeight: 600 }}>
@@ -2546,11 +2546,11 @@ function TesterPanel({ decisions, selectedDecision, compareResults, compareStatu
   return (
     <div>
       <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
-        {fr ? "Tester une decision" : "Test a decision"}
+        {fr ? "Tester une décision" : "Test a decision"}
       </div>
       <p style={{ fontSize: 13, color: EK.txDim, marginBottom: 12, lineHeight: 1.5 }}>
         {fr
-          ? "Selectionnez une decision pour comparer les scenarios. Le modele explore 1 000 trajectoires par variante."
+          ? "Sélectionnez une décision pour comparer les scénarios. Le modèle explore 1 000 trajectoires par variante."
           : "Select a decision to compare scenarios. The model explores 1,000 trajectories per variant."}
       </p>
 
@@ -2588,7 +2588,7 @@ function TesterPanel({ decisions, selectedDecision, compareResults, compareStatu
       {/* Error */}
       {compareStatus === "error" && (
         <div style={{ textAlign: "center", padding: 16, color: EK.red, fontSize: 14 }}>
-          {fr ? "Erreur lors de la comparaison. Veuillez reessayer." : "Comparison error. Please try again."}
+          {fr ? "Erreur lors de la comparaison. Veuillez réessayer." : "Comparison error. Please try again."}
         </div>
       )}
 
@@ -2598,10 +2598,10 @@ function TesterPanel({ decisions, selectedDecision, compareResults, compareStatu
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>
             <thead>
               <tr style={{ borderBottom: `2px solid ${EK.border}` }}>
-                <th style={{ textAlign: "left", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Scenario" : "Scenario"}</th>
+                <th style={{ textAlign: "left", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Scénario" : "Scenario"}</th>
                 <th style={{ textAlign: "center", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Note" : "Grade"}</th>
-                <th style={{ textAlign: "center", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Reussite" : "Success"}</th>
-                <th style={{ textAlign: "right", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Patrimoine median" : "Median wealth"}</th>
+                <th style={{ textAlign: "center", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Réussite" : "Success"}</th>
+                <th style={{ textAlign: "right", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Patrimoine médian" : "Median wealth"}</th>
                 <th style={{ textAlign: "right", padding: "8px 12px", color: EK.txDim, fontWeight: 600 }}>{fr ? "Succession nette" : "Net estate"}</th>
               </tr>
             </thead>
@@ -2634,7 +2634,7 @@ function TesterPanel({ decisions, selectedDecision, compareResults, compareStatu
             return (
               <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(26,122,76,0.06)", borderRadius: 6, border: `1px solid rgba(26,122,76,0.15)`, fontSize: 13, color: EK.txDim }}>
                 {fr
-                  ? `L'ecart entre les scenarios pourrait atteindre ${delta} points de pourcentage de taux de reussite.`
+                  ? `L'écart entre les scénarios pourrait atteindre ${delta} points de pourcentage de taux de réussite.`
                   : `The gap between scenarios could reach ${delta} percentage points in success rate.`}
               </div>
             );
@@ -2677,7 +2677,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
       </div>
       <p style={{ fontSize: 13, color: EK.txDim, marginBottom: 12, lineHeight: 1.5 }}>
         {fr
-          ? "Le modele explore 8 axes et des milliers de combinaisons pour identifier les leviers les plus impactants."
+          ? "Le modèle explore 8 axes et des milliers de combinaisons pour identifier les leviers les plus impactants."
           : "The model explores 8 axes and thousands of combinations to identify the most impactful levers."}
       </p>
 
@@ -2690,7 +2690,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
           <div style={{ height: 8 }} />
           <Skeleton height={40} />
           <div style={{ fontSize: 12, color: EK.txDim, marginTop: 8, textAlign: "center" }}>
-            {fr ? "Cette analyse prend habituellement 5 a 10 secondes." : "This analysis typically takes 5 to 10 seconds."}
+            {fr ? "Cette analyse prend habituellement 5 à 10 secondes." : "This analysis typically takes 5 to 10 seconds."}
           </div>
         </div>
       )}
@@ -2698,7 +2698,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
       {/* Error */}
       {optimizeStatus === "error" && (
         <div style={{ textAlign: "center", padding: 16, color: EK.red, fontSize: 14 }}>
-          {fr ? "Erreur lors de l'optimisation. Veuillez reessayer." : "Optimization error. Please try again."}
+          {fr ? "Erreur lors de l'optimisation. Veuillez réessayer." : "Optimization error. Please try again."}
         </div>
       )}
 
@@ -2707,7 +2707,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
         <div>
           {/* Baseline */}
           <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 8 }}>
-            {fr ? "Scenario de reference" : "Baseline"}: {optimizeResults.baseline.grade} — {fPct(optimizeResults.baseline.successRate)} — {f$(optimizeResults.baseline.medianWealth)}
+            {fr ? "Scénario de référence" : "Baseline"}: {optimizeResults.baseline.grade} — {fPct(optimizeResults.baseline.successRate)} — {f$(optimizeResults.baseline.medianWealth)}
           </div>
 
           {/* Levers */}
@@ -2758,7 +2758,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
 
           {/* Meta */}
           <div style={{ marginTop: 10, fontSize: 11, color: EK.txMuted, textAlign: "right" }}>
-            {optimizeResults.meta.totalTested.toLocaleString()} {fr ? "combinaisons testees en" : "combinations tested in"} {(optimizeResults.meta.durationMs / 1000).toFixed(1)}s
+            {optimizeResults.meta.totalTested.toLocaleString()} {fr ? "combinaisons testées en" : "combinations tested in"} {(optimizeResults.meta.durationMs / 1000).toFixed(1)}s
           </div>
         </div>
       )}
@@ -2832,7 +2832,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
         <h3 style={{ fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
-          {fr ? "Bilan Annuel genere" : "Annual Assessment generated"}
+          {fr ? "Bilan Annuel généré" : "Annual Assessment generated"}
         </h3>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
           <div style={{ background: EK.bg, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "12px 20px" }}>
@@ -2840,7 +2840,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
             <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine }}>{result.grade}</div>
           </div>
           <div style={{ background: EK.bg, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "12px 20px" }}>
-            <div style={{ fontSize: 11, color: EK.txDim, textTransform: "uppercase" as const }}>{fr ? "Taux de reussite" : "Success rate"}</div>
+            <div style={{ fontSize: 11, color: EK.txDim, textTransform: "uppercase" as const }}>{fr ? "Taux de réussite" : "Success rate"}</div>
             <div style={{ fontSize: 24, fontWeight: 800, color: result.successPct >= 80 ? EK.green : result.successPct >= 60 ? EK.gold : EK.red }}>{result.successPct}%</div>
           </div>
         </div>
@@ -2869,11 +2869,11 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "8px 0" }}>
       <h3 style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>
-        {fr ? "Bilan Annuel — Mise a jour" : "Annual Assessment — Update"}
+        {fr ? "Bilan Annuel — Mise à jour" : "Annual Assessment — Update"}
       </h3>
       <p style={{ fontSize: 13, color: EK.txDim, lineHeight: 1.6, marginBottom: 16 }}>
         {fr
-          ? "Mettez a jour vos 7 chiffres cles. Les champs sont pre-remplis avec vos parametres actuels. Le modele comparera votre situation a votre dernier profil."
+          ? "Mettez à jour vos 7 chiffres clés. Les champs sont pré-remplis avec vos paramètres actuels. Le modèle comparera votre situation à votre dernier profil."
           : "Update your 7 key numbers. Fields are pre-filled from your current parameters. The model will compare your situation to your last profile."}
       </p>
 
@@ -2890,7 +2890,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
         <input type="number" value={bilanFields.tfsa} onChange={e => setBF("tfsa", Number(e.target.value))} style={inputStyle} />
       </div>
       <div style={fieldStyle}>
-        <span style={labelStyle}>{fr ? "Non-enregistre" : "Non-registered"}</span>
+        <span style={labelStyle}>{fr ? "Non-enregistré" : "Non-registered"}</span>
         <input type="number" value={bilanFields.nr} onChange={e => setBF("nr", Number(e.target.value))} style={inputStyle} />
       </div>
 
@@ -2905,7 +2905,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
 
       {/* Field 3: Mortgage */}
       <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
-        {fr ? "3. Hypotheque" : "3. Mortgage"}
+        {fr ? "3. Hypothèque" : "3. Mortgage"}
       </div>
       <div style={fieldStyle}>
         <span style={labelStyle}>{fr ? "Solde" : "Balance"}</span>
@@ -2929,22 +2929,22 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
         <input type="number" value={bilanFields.tfsaC} onChange={e => setBF("tfsaC", Number(e.target.value))} style={inputStyle} />
       </div>
       <div style={fieldStyle}>
-        <span style={labelStyle}>{fr ? "Non-enregistre" : "Non-registered"}</span>
+        <span style={labelStyle}>{fr ? "Non-enregistré" : "Non-registered"}</span>
         <input type="number" value={bilanFields.nrC} onChange={e => setBF("nrC", Number(e.target.value))} style={inputStyle} />
       </div>
 
       {/* Field 5: Retirement spending */}
       <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
-        {fr ? "5. Depenses estimees" : "5. Estimated spending"}
+        {fr ? "5. Dépenses estimées" : "5. Estimated spending"}
       </div>
       <div style={fieldStyle}>
-        <span style={labelStyle}>{fr ? "Depenses retraite ($/mois)" : "Retirement spending ($/mo)"}</span>
+        <span style={labelStyle}>{fr ? "Dépenses retraite ($/mois)" : "Retirement spending ($/mo)"}</span>
         <input type="number" value={bilanFields.retSpM} onChange={e => setBF("retSpM", Number(e.target.value))} style={inputStyle} />
       </div>
 
       {/* Field 6: Events */}
       <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
-        {fr ? "6. Evenements de l'annee" : "6. This year's events"}
+        {fr ? "6. Événements de l'année" : "6. This year's events"}
       </div>
       <textarea
         value={bilanFields.events}
@@ -2982,8 +2982,8 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
           border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: status === "loading" ? "wait" : "pointer",
         }}>
           {status === "loading"
-            ? (fr ? "Generation en cours..." : "Generating...")
-            : (fr ? "Generer mon bilan" : "Generate my assessment")}
+            ? (fr ? "Génération en cours..." : "Generating...")
+            : (fr ? "Générer mon bilan" : "Generate my assessment")}
         </button>
       </div>
     </div>
@@ -3034,17 +3034,17 @@ function ResumeOverlay({ results, params, lang, onClose }: {
   const drivers: string[] = [];
   const wdRate = retSpM > 0 && medW > 0 ? (retSpM * 12 / medW * 100).toFixed(1) : "?";
   if (succPct >= 85) {
-    drivers.push(fr ? "Taux de succes eleve, indicateur de robustesse." : "High success rate indicates robustness.");
+    drivers.push(fr ? "Taux de succès élevé, indicateur de robustesse." : "High success rate indicates robustness.");
   } else if (succPct >= 65) {
-    drivers.push(fr ? "Taux de succes modere. Le taux de retrait (" + wdRate + "%) pourrait etre un facteur limitant." : "Moderate success rate. Withdrawal rate (" + wdRate + "%) could be a limiting factor.");
+    drivers.push(fr ? "Taux de succès modéré. Le taux de retrait (" + wdRate + "%) pourrait être un facteur limitant." : "Moderate success rate. Withdrawal rate (" + wdRate + "%) could be a limiting factor.");
   } else {
-    drivers.push(fr ? "Taux de succes faible. Les donnees suggerent un risque d'epuisement premature." : "Low success rate. Data suggests risk of premature depletion.");
+    drivers.push(fr ? "Taux de succès faible. Les données suggèrent un risque d'épuisement prématuré." : "Low success rate. Data suggests risk of premature depletion.");
   }
   if (medW > 500000) {
-    drivers.push(fr ? "Patrimoine median superieur a 500 000 $ en dollars reels." : "Median wealth exceeds $500,000 in real dollars.");
+    drivers.push(fr ? "Patrimoine médian supérieur à 500 000 $ en dollars réels." : "Median wealth exceeds $500,000 in real dollars.");
   }
   if (p25 <= 0) {
-    drivers.push(fr ? "Le 25e percentile atteindrait zero, indiquant un risque dans les scenarios defavorables." : "The 25th percentile would reach zero, indicating risk in adverse scenarios.");
+    drivers.push(fr ? "Le 25e percentile atteindrait zéro, indiquant un risque dans les scénarios défavorables." : "The 25th percentile would reach zero, indicating risk in adverse scenarios.");
   }
 
   // PNG download handler
@@ -3102,7 +3102,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: EK.txMuted, letterSpacing: 2, textTransform: "uppercase" }}>buildfi.ca</div>
             <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginTop: 2 }}>
-              {fr ? "Resume 1 page" : "1-Page Summary"}
+              {fr ? "Résumé 1 page" : "1-Page Summary"}
             </div>
             <div style={{ fontSize: 11, color: EK.txMuted, marginTop: 2 }}>
               {new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA")} &middot; {params.prov as string} &middot; {fr ? "Constantes 2026" : "Constants 2026"}
@@ -3122,8 +3122,8 @@ function ResumeOverlay({ results, params, lang, onClose }: {
         {/* KPI row */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
           {[
-            { v: succPct + "%", l: fr ? "Taux de succes" : "Success rate", c: sC },
-            { v: f$(medW), l: fr ? "Patrimoine median (reel)" : "Median wealth (real)", c: EK.marine },
+            { v: succPct + "%", l: fr ? "Taux de succès" : "Success rate", c: sC },
+            { v: f$(medW), l: fr ? "Patrimoine médian (réel)" : "Median wealth (real)", c: EK.marine },
             { v: f$(p25) + " \u2013 " + f$(p75), l: "P25 \u2013 P75", c: EK.gold },
           ].map((k, i) => (
             <div key={i} style={{ textAlign: "center", padding: "12px 8px", background: EK.bg, borderRadius: 8, border: `1px solid ${EK.border}` }}>
@@ -3165,7 +3165,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
         {/* 3 key findings */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: EK.marine, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            {fr ? "Constats cles" : "Key findings"}
+            {fr ? "Constats clés" : "Key findings"}
           </div>
           {drivers.map((d, i) => (
             <div key={i} style={{ fontSize: 12, color: EK.tx, lineHeight: 1.7, paddingLeft: 14, position: "relative", marginBottom: 4 }}>
@@ -3177,7 +3177,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
 
         {/* Disclaimer */}
         <div style={{ fontSize: 10, color: EK.txMuted, lineHeight: 1.6, paddingTop: 12, borderTop: `1px solid ${EK.border}` }}>
-          buildfi.ca &middot; {fr ? "A titre informatif seulement. Ne constitue pas un conseil financier." : "For informational purposes only. Does not constitute financial advice."}
+          buildfi.ca &middot; {fr ? "À titre informatif seulement. Ne constitue pas un conseil financier." : "For informational purposes only. Does not constitute financial advice."}
         </div>
 
         </div>{/* end resumeContentRef capture target */}
@@ -3201,7 +3201,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            {pngExporting ? (fr ? "Export en cours..." : "Exporting...") : (fr ? "Telecharger PNG" : "Download PNG")}
+            {pngExporting ? (fr ? "Export en cours..." : "Exporting...") : (fr ? "Télécharger PNG" : "Download PNG")}
           </button>
           <button onClick={onClose} style={{
             padding: "10px 20px", background: "none", border: `1px solid ${EK.border}`,

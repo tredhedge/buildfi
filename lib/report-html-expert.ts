@@ -718,7 +718,7 @@ function renderExpertReport(
       // No AI and no comparisonData — show instructional fallback
       h += '<div style="font-size:13px;color:#666;line-height:1.7;margin:10px 0;font-style:italic">'
         + t(
-          "Utilisez le simulateur pour comparer differents scenarios, puis regenerez le bilan pour inclure la comparaison.",
+          "Utilisez le simulateur pour comparer différents scénarios, puis régénérez le bilan pour inclure la comparaison.",
           "Use the simulator to compare different scenarios, then regenerate the assessment to include the comparison."
         )
         + '</div>';

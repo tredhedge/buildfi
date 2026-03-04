@@ -23,11 +23,11 @@ const TIMELINE: TimelineEntry[] = [
   {
     date: { fr: "Mars 2026", en: "March 2026" },
     title: {
-      fr: "Constantes fiscales 2026 integrees",
+      fr: "Constantes fiscales 2026 intégrées",
       en: "2026 fiscal constants integrated",
     },
     detail: {
-      fr: "Plafonds REER, CELI, RRQ/RPC, PSV, tranches d'imposition federales et provinciales mis a jour pour l'annee fiscale 2026.",
+      fr: "Plafonds REER, CELI, RRQ/RPC, PSV, tranches d'imposition fédérales et provinciales mis à jour pour l'année fiscale 2026.",
       en: "RRSP, TFSA, QPP/CPP, OAS limits and federal/provincial tax brackets updated for fiscal year 2026.",
     },
   },
@@ -96,11 +96,11 @@ export default function MisesAJourPage() {
           color: MARINE,
           marginBottom: 8,
         }}>
-          {fr ? "Mises a jour reglementaires" : "Regulatory Updates"}
+          {fr ? "Mises à jour réglementaires" : "Regulatory Updates"}
         </h1>
         <p style={{ fontSize: 14, color: GRAY, marginBottom: 36, lineHeight: 1.7 }}>
           {fr
-            ? "Suivi des constantes fiscales et parametres reglementaires utilises par le moteur de simulation."
+            ? "Suivi des constantes fiscales et paramètres réglementaires utilisés par le moteur de simulation."
             : "Tracking fiscal constants and regulatory parameters used by the simulation engine."}
         </p>
 
@@ -118,7 +118,7 @@ export default function MisesAJourPage() {
           </div>
           <p style={{ fontSize: 14, color: MARINE, lineHeight: 1.75, margin: 0 }}>
             {fr
-              ? "Les constantes fiscales 2026 sont a jour. Derniere verification\u00a0: mars 2026."
+              ? "Les constantes fiscales 2026 sont à jour. Dernière vérification\u00a0: mars 2026."
               : "2026 fiscal constants are current. Last verified: March 2026."}
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function MisesAJourPage() {
           lineHeight: 1.6,
         }}>
           {fr
-            ? "Cette page est mise a jour a chaque modification des constantes fiscales dans le moteur de simulation."
+            ? "Cette page est mise à jour à chaque modification des constantes fiscales dans le moteur de simulation."
             : "This page is updated whenever fiscal constants change in the simulation engine."}
         </p>
       </main>
