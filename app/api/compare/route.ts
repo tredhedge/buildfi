@@ -34,6 +34,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Allowlist of overridable MC params (prevent injection of internal engine keys)
+    const ALLOWED_OVERRIDES = new Set([
+      "retAge", "retSpM", "sal", "rrsp", "tfsa", "nr", "rrspC", "tfsaC", "nrC",
+      "wStrat", "melt", "meltTgt", "qppAge", "oasAge", "split", "splitP",
+      "ptM", "ptYrs", "inf", "rReal", "prov", "cOn",
+      "cAge", "cSex", "cSal", "cRetAge", "cRrsp", "cTfsa", "cNr",
+      "cRrspC", "cTfsaC", "cNrC", "cQppAge", "cOasAge",
+    ]);
+
     for (let i = 0; i < variants.length; i++) {
       const v = variants[i];
       if (!v || typeof v !== "object" || !v.label || typeof v.overrides !== "object") {
@@ -41,6 +50,12 @@ export async function POST(req: NextRequest) {
           { success: false, error: `Variant ${i}: must have label (string) and overrides (object)` },
           { status: 400 }
         );
+      }
+      // Strip disallowed keys
+      for (const key of Object.keys(v.overrides)) {
+        if (!ALLOWED_OVERRIDES.has(key)) {
+          delete v.overrides[key];
+        }
       }
     }
 

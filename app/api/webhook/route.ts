@@ -31,13 +31,15 @@ import {
   getExpertProfile,
   updateExpertProfile,
   setTokenIndex,
+  getReferral,
   incrementReferralConversion,
+  incrementExportCredit,
   renewExpertProfile,
   markProcessed,
   createFeedbackRecord,
 } from "@/lib/kv";
 import { randomUUID } from "crypto";
-import { sendMagicLinkEmail, sendAdminAlert } from "@/lib/email-expert";
+import { sendMagicLinkEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
 import { buildMagicLinkUrl } from "@/lib/auth";
 
@@ -88,11 +90,18 @@ function reassembleQuizAnswers(
   metadata: Record<string, string>
 ): Record<string, unknown> {
   const chunks = parseInt(metadata.quiz_chunks || "1", 10);
+  if (isNaN(chunks) || chunks < 1 || chunks > 10) {
+    throw new Error(`Invalid quiz_chunks value: ${metadata.quiz_chunks}`);
+  }
   let json = "";
   for (let i = 0; i < chunks; i++) {
     json += metadata[`quiz_${i}`] || "";
   }
-  return JSON.parse(json);
+  try {
+    return JSON.parse(json);
+  } catch {
+    throw new Error(`Malformed quiz JSON after reassembly (${json.length} chars, ${chunks} chunks)`);
+  }
 }
 
 // ── Main webhook handler ──────────────────────────────────
@@ -105,13 +114,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("[webhook] STRIPE_WEBHOOK_SECRET not set — rejecting");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Webhook signature verification failed";
@@ -405,6 +416,7 @@ async function handleExpertPurchase(
 
 async function handleExportAddon(email: string, sessionId: string): Promise<NextResponse> {
   try {
+    // Verify profile exists before incrementing
     const profile = await getExpertProfile(email);
     if (!profile) {
       console.error(`[webhook] Export addon: no profile for ${email}`);
@@ -414,26 +426,32 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
       );
     }
 
+    // Atomic increment via Lua script to prevent race conditions
+    const { success, remaining } = await incrementExportCredit(email);
+    if (!success) {
+      throw new Error(`incrementExportCredit failed for ${email}`);
+    }
+
+    // Append changelog entry (non-atomic, best-effort — credit already secured above)
     await updateExpertProfile(email, {
-      exportsAI: profile.exportsAI + 1,
       changelog: [
         ...profile.changelog,
         {
           date: new Date().toISOString(),
           action: "addon_purchased",
-          details: { credits_added: 1, new_total: profile.exportsAI + 1 },
+          details: { credits_added: 1, new_total: remaining },
         },
       ],
     });
 
     console.log(
-      `[webhook] Export addon for ${email}, new total: ${profile.exportsAI + 1}`
+      `[webhook] Export addon for ${email}, new total: ${remaining}`
     );
 
     return NextResponse.json({
       received: true,
       email,
-      exportsAI: profile.exportsAI + 1,
+      exportsAI: remaining,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Addon processing failed";
@@ -455,15 +473,22 @@ async function handleReferralConversion(
   code: string,
   buyerEmail: string
 ): Promise<void> {
-  const updated = await incrementReferralConversion(code);
-  if (!updated) {
+  // Read referral record first to check for self-referral before incrementing
+  const referral = await getReferral(code);
+  if (!referral) {
     console.warn(`[webhook] Referral code ${code} not found`);
     return;
   }
 
-  // Prevent self-referral
-  if (updated.referrerEmail === buyerEmail.toLowerCase().trim()) {
+  // Prevent self-referral before any state mutation
+  if (referral.referrerEmail === buyerEmail.toLowerCase().trim()) {
     console.warn(`[webhook] Self-referral blocked: ${buyerEmail}`);
+    return;
+  }
+
+  const updated = await incrementReferralConversion(code);
+  if (!updated) {
+    console.warn(`[webhook] Referral code ${code} not found during increment`);
     return;
   }
 
@@ -488,41 +513,46 @@ async function handleReferralConversion(
     // Coupon generated dynamically via Stripe when referrer checks out
   }
 
-  if (updated.conversions === 3 && referrerProfile) {
-    // Free AI export credit
-    await updateExpertProfile(updated.referrerEmail, {
-      exportsAI: referrerProfile.exportsAI + 1,
-      changelog: [
-        ...referrerProfile.changelog,
-        {
-          date: new Date().toISOString(),
-          action: "referral_reward_tier2",
-          details: { code, conversions: 3 },
-        },
-      ],
-    });
-    console.log(`[webhook] Referral ${code}: tier 2 reward applied (free export)`);
-  }
+  if (updated.conversions >= 3 && referrerProfile) {
+    // Check if this tier was already granted (avoid duplicate on re-delivery)
+    const alreadyGranted = referrerProfile.changelog.some(
+      (c) => c.action === "referral_reward_3"
+    );
+    if (!alreadyGranted) {
+      // 3 conversions = 1 free year of Expert + 3 export credits
+      // Re-fetch profile to get latest state after possible earlier updates
+      const freshProfile = await getExpertProfile(updated.referrerEmail);
+      if (freshProfile) {
+        const newExpiry = new Date(
+          Math.max(new Date(freshProfile.expiry).getTime(), Date.now()) +
+            365 * 86400000
+        ).toISOString();
 
-  if (updated.conversions === 5 && referrerProfile) {
-    // Free Expert upgrade (1 year extension)
-    const newExpiry = new Date(
-      Math.max(new Date(referrerProfile.expiry).getTime(), Date.now()) +
-        365 * 86400000
-    ).toISOString();
+        await updateExpertProfile(updated.referrerEmail, {
+          expiry: newExpiry,
+          exportsAI: freshProfile.exportsAI + 3,
+          changelog: [
+            ...freshProfile.changelog,
+            {
+              date: new Date().toISOString(),
+              action: "referral_reward_3",
+              details: { code, conversions: updated.conversions, newExpiry, exportsAdded: 3 },
+            },
+          ],
+        });
+        console.log(`[webhook] Referral ${code}: referral_reward_3 applied (1 year extension + 3 exports)`);
 
-    await updateExpertProfile(updated.referrerEmail, {
-      expiry: newExpiry,
-      changelog: [
-        ...referrerProfile.changelog,
-        {
-          date: new Date().toISOString(),
-          action: "referral_reward_tier3",
-          details: { code, conversions: 5, newExpiry },
-        },
-      ],
-    });
-    console.log(`[webhook] Referral ${code}: tier 3 reward applied (1 year extension)`);
+        // Send congratulations email
+        const referrerLang = ((freshProfile.quizData?.lang as string) || "fr") as "fr" | "en";
+        await sendReferralUpgradeEmail({
+          to: updated.referrerEmail,
+          lang: referrerLang,
+          newExpiry,
+        }).catch((err) =>
+          console.error("[webhook] Referral upgrade congratulations email failed:", err)
+        );
+      }
+    }
   }
 }
 
@@ -537,7 +567,11 @@ async function handleSubscriptionUpdated(
     const customer = await stripe.customers.retrieve(
       subscription.customer as string
     );
-    const email = (customer as Stripe.Customer).email;
+    if (customer.deleted) {
+      console.error("[webhook] Subscription update: customer deleted");
+      return NextResponse.json({ received: true });
+    }
+    const email = customer.email;
 
     if (!email) {
       console.error("[webhook] Subscription update: no customer email");

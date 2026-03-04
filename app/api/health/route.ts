@@ -1,117 +1,168 @@
 // /app/api/health/route.ts
-// Health check endpoint — tests KV, MC engine, Anthropic API, Resend, Blob
-// Used for monitoring and deployment verification
+// Health check endpoint — tests KV, MC engine, Anthropic, Resend, Blob
+// Protected by CRON_SECRET Bearer token
+// Used by admin dashboard and external monitoring
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-interface CheckResult {
-  status: "ok" | "error" | "skip";
-  ms?: number;
+const processStartTime = Date.now();
+
+interface ServiceStatus {
+  status: "ok" | "error" | "missing_key";
+  latencyMs?: number;
+  sims?: number;
   error?: string;
 }
 
-export async function GET() {
-  const checks: Record<string, CheckResult> = {};
-  const start = Date.now();
+interface HealthResponse {
+  status: "healthy" | "degraded" | "unhealthy";
+  timestamp: string;
+  services: {
+    kv: ServiceStatus;
+    mc: ServiceStatus;
+    anthropic: ServiceStatus;
+    resend: ServiceStatus;
+    blob: ServiceStatus;
+  };
+  uptime: string;
+}
 
-  // ── KV (Upstash Redis) ──────────────────────────────────────
+function formatUptime(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
+}
+
+export async function GET(req: NextRequest) {
+  // ── Auth ────────────────────────────────────────────────────
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const services: HealthResponse["services"] = {
+    kv: { status: "error" },
+    mc: { status: "error" },
+    anthropic: { status: "missing_key" },
+    resend: { status: "missing_key" },
+    blob: { status: "missing_key" },
+  };
+
+  // ── KV (Upstash Redis) ────────────────────────────────────
   try {
+    const { redis } = await import("@/lib/kv");
     const t0 = Date.now();
-    const { Redis } = await import("@upstash/redis");
-    const kv = new Redis({
-      url: process.env.KV_REST_API_URL || "",
-      token: process.env.KV_REST_API_TOKEN || "",
-    });
-    await kv.ping();
-    checks.kv = { status: "ok", ms: Date.now() - t0 };
+    await redis.ping();
+    services.kv = { status: "ok", latencyMs: Date.now() - t0 };
   } catch (err) {
-    checks.kv = {
-      status: process.env.KV_REST_API_URL ? "error" : "skip",
+    services.kv = {
+      status: "error",
       error: err instanceof Error ? err.message : "KV unavailable",
     };
   }
 
-  // ── MC Engine (10 sims) ─────────────────────────────────────
+  // ── MC Engine (10 sims, minimal params) ───────────────────
   try {
-    const t0 = Date.now();
     const { runMC } = await import("@/lib/engine");
+    const t0 = Date.now();
     const mc = runMC(
       {
-        age: 40, retAge: 65, sex: "M", prov: "QC",
-        income: 75000, rrsp: 50000, tfsa: 25000, nr: 5000,
-        monthlyContrib: 500, retSpM: 4000, risk: "balanced",
+        age: 40,
+        sal: 70000,
+        retAge: 65,
+        prov: "QC",
+        sex: "M",
+        deathAge: 95,
+        rrsp: 50000,
+        tfsa: 20000,
+        nr: 5000,
+        retSpM: 3500,
+        inf: 0.021,
+        eqRet: 0.07,
+        eqVol: 0.16,
+        bndRet: 0.035,
+        bndVol: 0.06,
+        allocR: 0.6,
+        allocT: 0.8,
+        allocN: 0.5,
       },
       10
-    ) as Record<string, any> | null;
+    ) as Record<string, unknown> | null;
+    const duration = Date.now() - t0;
+
     if (mc && typeof mc.succ === "number") {
-      checks.mc = { status: "ok", ms: Date.now() - t0 };
+      services.mc = { status: "ok", latencyMs: duration, sims: 10 };
     } else {
-      checks.mc = { status: "error", error: "MC returned null" };
+      services.mc = { status: "error", error: "MC returned null or invalid result" };
     }
   } catch (err) {
-    checks.mc = {
+    services.mc = {
       status: "error",
-      error: err instanceof Error ? err.message : "MC failed",
+      error: err instanceof Error ? err.message : "MC engine failed",
     };
   }
 
-  // ── Anthropic API (key presence check only — no credits burned) ──
-  if (typeof process.env.ANTHROPIC_API_KEY === "string" && process.env.ANTHROPIC_API_KEY.startsWith("sk-")) {
-    checks.anthropic = { status: "ok" };
+  // ── Anthropic API (key presence check only) ───────────────
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (typeof anthropicKey === "string" && anthropicKey.length > 0) {
+    services.anthropic = { status: "ok" };
   } else {
-    checks.anthropic = { status: "skip", error: "ANTHROPIC_API_KEY not set or invalid" };
+    services.anthropic = { status: "missing_key" };
   }
 
-  // ── Resend ──────────────────────────────────────────────────
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const t0 = Date.now();
-      const { Resend } = await import("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const domains = await resend.domains.list();
-      checks.resend = {
-        status: domains?.data ? "ok" : "error",
-        ms: Date.now() - t0,
-      };
-    } catch (err) {
-      checks.resend = {
-        status: "error",
-        error: err instanceof Error ? err.message : "Resend failed",
-      };
-    }
+  // ── Resend (key presence check only) ──────────────────────
+  const resendKey = process.env.RESEND_API_KEY;
+  if (typeof resendKey === "string" && resendKey.length > 0) {
+    services.resend = { status: "ok" };
   } else {
-    checks.resend = { status: "skip", error: "RESEND_API_KEY not set" };
+    services.resend = { status: "missing_key" };
   }
 
-  // ── Blob ────────────────────────────────────────────────────
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    try {
-      const t0 = Date.now();
-      const { list } = await import("@vercel/blob");
-      await list({ limit: 1 });
-      checks.blob = { status: "ok", ms: Date.now() - t0 };
-    } catch (err) {
-      checks.blob = {
-        status: "error",
-        error: err instanceof Error ? err.message : "Blob failed",
-      };
-    }
+  // ── Blob (key presence check only) ────────────────────────
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (typeof blobToken === "string" && blobToken.length > 0) {
+    services.blob = { status: "ok" };
   } else {
-    checks.blob = { status: "skip", error: "BLOB_READ_WRITE_TOKEN not set" };
+    services.blob = { status: "missing_key" };
   }
 
-  // ── Summary ─────────────────────────────────────────────────
-  const allOk = Object.values(checks).every(
-    (c) => c.status === "ok" || c.status === "skip"
-  );
+  // ── Determine overall status ──────────────────────────────
+  // Core services: KV and MC must be OK
+  const coreOk = services.kv.status === "ok" && services.mc.status === "ok";
+  // Optional services: anthropic, resend, blob
+  const optionalStatuses = [
+    services.anthropic.status,
+    services.resend.status,
+    services.blob.status,
+  ];
+  const anyOptionalMissing = optionalStatuses.some((s) => s === "missing_key");
+  const anyOptionalError = optionalStatuses.some((s) => s === "error");
 
-  return NextResponse.json(
-    {
-      status: allOk ? "healthy" : "degraded",
-      checks,
-      totalMs: Date.now() - start,
-      timestamp: new Date().toISOString(),
-    },
-    { status: allOk ? 200 : 503 }
-  );
+  let overallStatus: HealthResponse["status"];
+  if (!coreOk) {
+    overallStatus = "unhealthy";
+  } else if (anyOptionalMissing || anyOptionalError) {
+    overallStatus = "degraded";
+  } else {
+    overallStatus = "healthy";
+  }
+
+  const response: HealthResponse = {
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
+    services,
+    uptime: formatUptime(Date.now() - processStartTime),
+  };
+
+  return NextResponse.json(response, {
+    status: overallStatus === "unhealthy" ? 503 : 200,
+  });
 }

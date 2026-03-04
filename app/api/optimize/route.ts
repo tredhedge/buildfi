@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Adaptive sims: if too many combos, use fewer sims per pass
-    const simsP1 = combos.length > 3000 ? 500 : 1000;
+    const simsP1 = combos.length > 3000 ? 1000 : 1000;
 
     // ── Pass 1: sweep ────────────────────────────────────────
     const pass1: Pass1Result[] = [];

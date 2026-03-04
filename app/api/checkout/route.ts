@@ -6,10 +6,26 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { getExpertProfile, getReferral, redis } from "@/lib/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+
+// Rate limit: max 10 checkout sessions per IP per 15 minutes
+const RL_WINDOW_SEC = 15 * 60;
+const RL_MAX = 10;
+
+async function isCheckoutRateLimited(ip: string): Promise<boolean> {
+  const key = `ratelimit:checkout:${ip}`;
+  const now = Date.now();
+  const timestamps: number[] = (await redis.get<number[]>(key)) || [];
+  const recent = timestamps.filter((t) => now - t < RL_WINDOW_SEC * 1000);
+  if (recent.length >= RL_MAX) return true;
+  recent.push(now);
+  await redis.set(key, recent, { ex: RL_WINDOW_SEC });
+  return false;
+}
 
 // Stripe metadata values have a 500-char limit per key.
 // Quiz answers are ~1.5KB JSON — split across 4 metadata keys if needed.
@@ -28,10 +44,28 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, type } = body;
 
-    if (!email) {
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
         { error: "Missing required field: email" },
         { status: 400 }
+      );
+    }
+
+    // Validate email format (RFC 5322 simplified)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email) || email.length > 254) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    // Rate limit by IP
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (await isCheckoutRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests, please try again later" },
+        { status: 429 }
       );
     }
 
@@ -48,12 +82,11 @@ export async function POST(req: NextRequest) {
       }
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
         metadata: { type: "addon", email, tier: "expert" },
-        success_url: `${BASE_URL}/merci?tier=expert&lang=fr`,
+        success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=expert&lang=${body.lang || "fr"}`,
         cancel_url: `${BASE_URL}/expert`,
       });
 
@@ -86,7 +119,6 @@ export async function POST(req: NextRequest) {
 
       const quizJSON = JSON.stringify(quizAnswers);
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
@@ -152,7 +184,6 @@ export async function POST(req: NextRequest) {
     // Build checkout params
     const checkoutLang = lang || "fr";
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       customer_email: email,
@@ -162,12 +193,23 @@ export async function POST(req: NextRequest) {
     };
 
     // Apply upgrade credit or referral discount (mutually exclusive — upgrade takes priority)
-    if (body.upgradeFrom === "essentiel") {
-      checkoutParams.discounts = [{ coupon: "UPGRADE_ESS" }];
-    } else if (body.upgradeFrom === "intermediaire") {
-      checkoutParams.discounts = [{ coupon: "UPGRADE_INTER" }];
+    if (body.upgradeFrom === "essentiel" || body.upgradeFrom === "intermediaire") {
+      // Verify buyer actually has a prior purchase to upgrade from
+      const existingProfile = await getExpertProfile(email);
+      if (existingProfile) {
+        checkoutParams.discounts = [
+          { coupon: body.upgradeFrom === "essentiel" ? "UPGRADE_ESS" : "UPGRADE_INTER" },
+        ];
+      }
     } else if (referralCode) {
-      checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
+      // Verify referral code exists and block self-referral
+      const referralRecord = await getReferral(referralCode);
+      if (
+        referralRecord &&
+        referralRecord.referrerEmail !== email.toLowerCase().trim()
+      ) {
+        checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
+      }
     }
 
     const session = await stripe.checkout.sessions.create(checkoutParams);

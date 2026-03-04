@@ -472,6 +472,26 @@ interface AuthProfile {
   tier?: string;
   exportsAI?: number;
   expiry?: string;
+  sophistication?: "rapide" | "personnalise" | "avance";
+  profile?: {
+    profiles?: { id: string; name: string; data: Record<string, unknown>; created: string; lastUsed: string }[];
+    quizData?: Record<string, unknown>;
+    changelog?: { date: string; action: string; details: Record<string, unknown> }[];
+    reportsGenerated?: { id: string; date: string; type: string; blobUrl: string; aiStatus: string }[];
+    referralCode?: string;
+  };
+}
+
+// ── Derive disclosure flags from quiz data (BUG 3 fix) ──
+function disclosureFromQuizData(qd: Record<string, unknown>) {
+  return {
+    couple: qd.cOn === true || qd.couple === "yes",
+    homeowner: !!(qd.props && (qd.props as unknown[]).length > 0) || qd.homeowner === true,
+    pension: qd.penType !== undefined && qd.penType !== "none",
+    ccpc: qd.bizOn === true || qd.ccpc === true,
+    taxWorry: !!qd.taxWorry,
+    growthRisk: !!qd.growthRisk || (Number(qd.allocR) >= 0.8),
+  };
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -563,7 +583,15 @@ const TAB_LABELS: Record<string, { fr: string; en: string }> = {
   optimiseur: { fr: "Optimiseur", en: "Optimizer" },
 };
 
-function getActiveTabs(disclosure: { couple: boolean; homeowner: boolean; pension: boolean; ccpc: boolean; taxWorry: boolean; growthRisk: boolean }): string[] {
+function getActiveTabs(
+  disclosure: { couple: boolean; homeowner: boolean; pension: boolean; ccpc: boolean; taxWorry: boolean; growthRisk: boolean },
+  sophistication?: "rapide" | "personnalise" | "avance"
+): string[] {
+  // rapide mode: only core tabs, no conditional tabs regardless of disclosure
+  if (sophistication === "rapide") {
+    return [...CORE_TABS];
+  }
+  // personnalise (default) and avance: disclosure-based conditional tabs
   const tabs: string[] = [...CORE_TABS];
   if (disclosure.couple) tabs.push("couple");
   if (disclosure.homeowner) tabs.push("immobilier");
@@ -594,6 +622,8 @@ function SimulateurContent() {
   const [showPorteB, setShowPorteB] = useState(false);
   const [showMobileBanner, setShowMobileBanner] = useState(true);
   const [disclosure, setDisclosure] = useState({ couple: false, homeowner: false, pension: false, ccpc: false, taxWorry: false, growthRisk: false });
+  // Sophistication level from quiz (BUG 4 fix: rapide = core tabs only, personnalise = disclosure-based, avance = iframe)
+  const [sophistication, setSophistication] = useState<"rapide" | "personnalise" | "avance" | undefined>(undefined);
   // Workflow state
   const [activeWorkflow, setActiveWorkflow] = useState<"none" | "tester" | "optimiser" | "bilan">("none");
   const [selectedDecision, setSelectedDecision] = useState<string | null>(null);
@@ -602,6 +632,12 @@ function SimulateurContent() {
   const [optimizeResults, setOptimizeResults] = useState<OptimizeResults | null>(null);
   const [optimizeStatus, setOptimizeStatus] = useState<"idle" | "loading" | "error">("idle");
   const [showResume, setShowResume] = useState(false);
+  // Avancé mode: full planner iframe vs simplified React UI
+  const [viewMode, setViewMode] = useState<"react" | "planner">("react");
+  // Planner iframe ref for postMessage bridge
+  const plannerRef = useRef<HTMLIFrameElement>(null);
+  // Track quiz params for planner bridge
+  const [quizParamsForPlanner, setQuizParamsForPlanner] = useState<Record<string, unknown> | null>(null);
 
   const fr = lang === "fr";
 
@@ -618,7 +654,44 @@ function SimulateurContent() {
         if (data.authenticated) {
           setProfile(data);
           setAuthStatus("ok");
-          setShowPorteB(true);
+          // BUG 4 fix: Store sophistication level for tab routing
+          if (data.sophistication) setSophistication(data.sophistication);
+
+          // ── Porte A: Load quiz params into simulator (BUG 1 fix) ──
+          const quizData = data.profile?.quizData as Record<string, unknown> | undefined;
+          const hasQuizParams = quizData && Object.keys(quizData).length > 0
+            && Object.keys(quizData).some(k => k !== "sophistication");
+
+          if (hasQuizParams && quizData) {
+            // Map quiz data directly to simulator params (keys match MC param keys from quiz-translator-expert.ts)
+            const quizParams: Record<string, unknown> = {};
+            for (const [k, v] of Object.entries(quizData)) {
+              if (k === "sophistication") continue; // meta field, not a sim param
+              quizParams[k] = v;
+            }
+            // Merge quiz params over defaults (quiz overrides, defaults fill gaps)
+            setParams(prev => ({ ...prev, ...quizParams }));
+            // Mark all quiz-loaded fields as defaults (shows left-border indicator)
+            setDefaults(new Set(Object.keys(quizParams)));
+            // Auto-set disclosure flags from quiz data (BUG 3 fix)
+            setDisclosure(disclosureFromQuizData(quizData));
+            // Store quiz params for planner bridge
+            setQuizParamsForPlanner(quizParams);
+            // Skip Porte B modal — user already filled the quiz (Porte A path)
+            // Avancé users go straight to full planner
+            if (data.sophistication === "avance") {
+              setViewMode("planner");
+            }
+            // Do NOT show Porte B — quiz data is loaded
+          } else {
+            // No quiz data — show Porte B preset chooser or planner
+            if (data.sophistication === "avance") {
+              setViewMode("planner");
+            } else {
+              setShowPorteB(true);
+            }
+          }
+
           // Remove token from URL bar for security (C9 fix)
           const url = new URL(window.location.href);
           url.searchParams.delete("token");
@@ -629,6 +702,24 @@ function SimulateurContent() {
       })
       .catch(() => setAuthStatus("denied"));
   }, [tokenFromUrl]);
+
+  // ── Planner iframe postMessage bridge ──
+  useEffect(() => {
+    if (viewMode !== "planner" || !quizParamsForPlanner) return;
+
+    const handleMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "buildfi-planner-ready") {
+        // Planner iframe is ready — send quiz params
+        plannerRef.current?.contentWindow?.postMessage(
+          { type: "buildfi-load-params", params: quizParamsForPlanner },
+          window.location.origin
+        );
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [viewMode, quizParamsForPlanner]);
 
   // ── useSimulation ──
   const { results, status: simStatus, error: simError } = useSimulation(params, token, authStatus === "ok");
@@ -657,8 +748,8 @@ function SimulateurContent() {
     });
   }, []);
 
-  // ── Active tabs ──
-  const activeTabs = getActiveTabs(disclosure);
+  // ── Active tabs (BUG 4: rapide = core only, personnalise = disclosure-based) ──
+  const activeTabs = getActiveTabs(disclosure, sophistication);
 
   // ── Segment for decision filtering ──
   const detectedSegment = useMemo(() => {
@@ -841,6 +932,19 @@ function SimulateurContent() {
             {fr ? "Aide" : "Help"}
           </button>
           <button
+            onClick={() => setViewMode(v => v === "planner" ? "react" : "planner")}
+            style={{
+              background: viewMode === "planner" ? "rgba(184,134,11,0.2)" : "none",
+              border: `1px solid ${viewMode === "planner" ? EK.gold : "rgba(255,255,255,0.2)"}`,
+              borderRadius: 6, color: viewMode === "planner" ? EK.gold : "#fff",
+              padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            {viewMode === "planner"
+              ? (fr ? "Mode Standard" : "Standard Mode")
+              : (fr ? "Mode Avance" : "Advanced Mode")}
+          </button>
+          <button
             onClick={() => setLang(l => l === "fr" ? "en" : "fr")}
             style={{ background: EK.gold, border: "none", borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
           >
@@ -849,12 +953,24 @@ function SimulateurContent() {
         </div>
       </header>
 
+      {/* ═══ PLANNER IFRAME MODE (Avancé — full 27-tab planner) ═══ */}
+      {viewMode === "planner" ? (
+        <iframe
+          ref={plannerRef}
+          key={`planner-${lang}`}
+          src={`/planner-expert.html?lang=${lang}`}
+          style={{ width: "100%", height: "calc(100vh - 56px)", border: "none", display: "block" }}
+          title={fr ? "Simulateur Expert BuildFi" : "BuildFi Expert Simulator"}
+          allow="clipboard-write"
+        />
+      ) : (
+      <>
       {/* ── Workflow buttons ── */}
       <div style={{ background: EK.marine, padding: "0 24px 12px", display: "flex", gap: 8, flexWrap: "wrap" }}>
         {([
           { key: "tester" as const, fr: "Tester une decision", en: "Test a decision" },
           { key: "optimiser" as const, fr: "Optimiser", en: "Optimize" },
-          { key: "bilan" as const, fr: "Bilan Annuel", en: "Annual Assessment", badge: "2027" },
+          { key: "bilan" as const, fr: "Bilan Annuel", en: "Annual Assessment" },
         ] as const).map(w => (
           <button key={w.key} onClick={() => setActiveWorkflow(activeWorkflow === w.key ? "none" : w.key)} style={{
             background: activeWorkflow === w.key ? "rgba(184,134,11,0.2)" : "rgba(255,255,255,0.08)",
@@ -863,9 +979,6 @@ function SimulateurContent() {
             fontFamily: "'DM Sans', sans-serif", position: "relative",
           }}>
             {T(w.fr, w.en, lang)}
-            {"badge" in w && w.badge && (
-              <span style={{ marginLeft: 6, fontSize: 9, background: EK.gold, color: "#fff", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>{w.badge}</span>
-            )}
           </button>
         ))}
         {/* Resume 1 page button */}
@@ -907,7 +1020,7 @@ function SimulateurContent() {
             />
           )}
           {activeWorkflow === "bilan" && (
-            <BilanPanel lang={lang} onClose={() => setActiveWorkflow("none")} />
+            <BilanPanel lang={lang} token={token} params={params} profile={profile} onClose={() => setActiveWorkflow("none")} />
           )}
         </div>
       )}
@@ -1062,6 +1175,57 @@ function SimulateurContent() {
               <NumInput value={Number(((params.inf as number) * 100).toFixed(1))} onChange={v => setParam("inf", v / 100)} step={0.1} min={0} max={10} prefix="%" isDefault={defaults.has("inf")} />
             </InputRow>
           </SidebarGroup>
+
+          {/* ── BUG 19: Recent changes (changelog) ── */}
+          {profile?.profile?.changelog && profile.profile.changelog.length > 0 && (
+            <SidebarGroup
+              title={fr ? "Historique" : "History"}
+              expanded={expandedGroups.has("changelog")}
+              onToggle={() => toggleGroup("changelog")}
+              badge={String(Math.min(5, profile.profile.changelog.length))}
+            >
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                {[...profile.profile.changelog]
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 5)
+                  .map((entry, i) => {
+                    const d = new Date(entry.date);
+                    const dateStr = d.toLocaleDateString(fr ? "fr-CA" : "en-CA", { month: "short", day: "numeric" });
+                    const actionLabels: Record<string, { fr: string; en: string }> = {
+                      account_created: { fr: "Compte cree", en: "Account created" },
+                      export: { fr: "Bilan exporte", en: "Report exported" },
+                      "bilan-annuel": { fr: "Bilan Annuel", en: "Annual Assessment" },
+                      renewal: { fr: "Renouvellement", en: "Renewal" },
+                      profile_saved: { fr: "Profil sauvegarde", en: "Profile saved" },
+                      profile_loaded: { fr: "Profil charge", en: "Profile loaded" },
+                      simulate: { fr: "Simulation", en: "Simulation" },
+                      addon_purchase: { fr: "Credit supplementaire", en: "Addon purchased" },
+                      referral_reward: { fr: "Recompense parrainage", en: "Referral reward" },
+                      referral_reward_3: { fr: "Parrainage (3e)", en: "Referral (3rd)" },
+                      anniversary_6m_sent: { fr: "Rappel 6 mois", en: "6-month reminder" },
+                      profile_deleted: { fr: "Profil supprime", en: "Profile deleted" },
+                    };
+                    const label = actionLabels[entry.action]
+                      ? T(actionLabels[entry.action].fr, actionLabels[entry.action].en, lang)
+                      : entry.action;
+                    const grade = entry.details?.grade as string | undefined;
+                    return (
+                      <div key={i} style={{ padding: "6px 0", borderBottom: i < 4 ? `1px solid ${EK.sable}` : "none", fontSize: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ color: EK.tx, fontWeight: 600 }}>{label}</span>
+                          <span style={{ color: EK.txMuted, fontSize: 11 }}>{dateStr}</span>
+                        </div>
+                        {grade && (
+                          <span style={{ fontSize: 10, color: EK.gold, fontWeight: 600 }}>
+                            {fr ? "Note" : "Grade"}: {grade}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            </SidebarGroup>
+          )}
         </aside>
 
         {/* ═══ MAIN CONTENT ═══ */}
@@ -1095,9 +1259,9 @@ function SimulateurContent() {
       <footer style={{ borderTop: `1px solid ${EK.border}`, padding: "16px 24px", textAlign: "center", fontSize: 12, color: EK.txMuted }}>
         buildfi.ca &middot; {fr ? "A titre informatif seulement" : "For informational purposes only"}
         <span style={{ margin: "0 8px" }}>|</span>
-        <a href="/politique-confidentialite" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialite" : "Privacy"}</a>
+        <a href="/confidentialite.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialite" : "Privacy"}</a>
         <span style={{ margin: "0 8px" }}>|</span>
-        <a href="/conditions" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Conditions" : "Terms"}</a>
+        <a href="/conditions.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Conditions" : "Terms"}</a>
       </footer>
 
       {/* ── Resume 1 page overlay ── */}
@@ -1117,6 +1281,48 @@ function SimulateurContent() {
                 ? "Selectionnez un profil de depart pour explorer le simulateur. Vous pourrez modifier tous les parametres ensuite."
                 : "Select a starting profile to explore the simulator. You can modify all parameters afterwards."}
             </p>
+
+            {/* ── Saved profiles from KV (BUG 2 fix) ── */}
+            {profile?.profile?.profiles && profile.profile.profiles.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {fr ? "Mes profils sauvegardes" : "My saved profiles"}
+                </div>
+                {profile.profile.profiles.map(sp => (
+                  <button
+                    key={sp.id}
+                    onClick={() => {
+                      const savedData = sp.data as Record<string, unknown>;
+                      setParams(prev => ({ ...prev, ...savedData }));
+                      setDefaults(new Set(Object.keys(savedData)));
+                      // Derive disclosure from saved profile data
+                      setDisclosure(disclosureFromQuizData(savedData));
+                      setShowPorteB(false);
+                      setActiveTab("diagnostic");
+                    }}
+                    style={{
+                      display: "block", width: "100%", textAlign: "left", padding: "14px 16px", marginBottom: 8,
+                      background: EK.card, border: `2px solid ${EK.gold}`, borderRadius: 8, cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: EK.marine }}>{sp.name}</div>
+                      <div style={{ fontSize: 11, color: EK.txMuted, fontFamily: "'JetBrains Mono', monospace" }}>
+                        {new Date(sp.lastUsed).toLocaleDateString(fr ? "fr-CA" : "en-CA")}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12, color: EK.txDim, marginTop: 2 }}>
+                      {fr ? "Profil sauvegarde" : "Saved profile"}
+                    </div>
+                  </button>
+                ))}
+                <div style={{ borderBottom: `1px solid ${EK.border}`, margin: "12px 0", opacity: 0.5 }} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {fr ? "Profils de depart" : "Starter profiles"}
+                </div>
+              </div>
+            )}
+
             {PRESETS.map(preset => (
               <button
                 key={preset.id}
@@ -1141,6 +1347,8 @@ function SimulateurContent() {
       )}
 
       {/* (Workflow panels are inline above main layout, no longer modals) */}
+      </>
+      )}
     </div>
   );
 }
@@ -1215,6 +1423,90 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
   }
 
   const retAge = (params.retAge as number) || 65;
+  const retSpM = (params.retSpM as number) || 4000;
+  const sal = (params.sal as number) || 0;
+  const rrsp = (params.rrsp as number) || 0;
+  const tfsa = (params.tfsa as number) || 0;
+  const nr = (params.nr as number) || 0;
+  const totalSavings = rrsp + tfsa + nr;
+  const allocR = (params.allocR as number) || 0.7;
+  const rrspC = (params.rrspC as number) || 0;
+  const tfsaC = (params.tfsaC as number) || 0;
+  const nrC = (params.nrC as number) || 0;
+  const totalContrib = rrspC + tfsaC + nrC;
+  const wStrat = (params.wStrat as string) || "optimal";
+  const hasProps = (params.props as unknown[])?.length > 0;
+
+  // BUG 8 fix: contextual driver phrase for each KPI
+  const successDriver = (() => {
+    const savingsRate = sal > 0 ? totalContrib / sal : 0;
+    if (results.successRate >= 0.85 && savingsRate >= 0.15)
+      return fr ? "Taux d'epargne eleve (" + Math.round(savingsRate * 100) + "%)" : "High savings rate (" + Math.round(savingsRate * 100) + "%)";
+    if (results.successRate < 0.60 && retSpM > 5000)
+      return fr ? "Depenses elevees (" + f$(retSpM) + "/mois)" : "High spending (" + f$(retSpM) + "/mo)";
+    if (results.successRate < 0.60)
+      return fr ? "Epargne ou horizon insuffisant" : "Insufficient savings or horizon";
+    return fr ? "Equilibre epargne/depenses" : "Savings/spending balance";
+  })();
+
+  const wealthDriver = (() => {
+    if (allocR >= 0.80 && totalContrib >= 15000)
+      return fr ? "Allocation croissance + cotisations soutenues" : "Growth allocation + sustained contributions";
+    if (allocR >= 0.80)
+      return fr ? "Allocation croissance (" + Math.round(allocR * 100) + "% actions)" : "Growth allocation (" + Math.round(allocR * 100) + "% equity)";
+    if (totalContrib >= 15000)
+      return fr ? "Cotisations annuelles de " + f$(totalContrib) : "Annual contributions of " + f$(totalContrib);
+    return fr ? "Portefeuille equilibre" : "Balanced portfolio";
+  })();
+
+  const estateDriver = (() => {
+    if (hasProps && results.estate.medianNet > 500000)
+      return fr ? "Immobilier + comptes enregistres" : "Real estate + registered accounts";
+    if (hasProps)
+      return fr ? "Valeur immobiliere incluse" : "Property value included";
+    if (results.estate.medianNet > totalSavings * 1.5)
+      return fr ? "Croissance des placements" : "Investment growth";
+    return fr ? "Comptes enregistres et non-enregistres" : "Registered and non-registered accounts";
+  })();
+
+  const ruinDriver = (() => {
+    const ruinPct = results.ruin.pct ?? 0;
+    if (ruinPct <= 0.02)
+      return fr ? "Marge de securite adequate" : "Adequate safety margin";
+    if (wStrat === "optimal")
+      return fr ? "Strategie de retrait optimisee" : "Optimized withdrawal strategy";
+    if (ruinPct > 0.15 && retSpM > 5000)
+      return fr ? "Taux de retrait eleve relatif au capital" : "High withdrawal rate relative to capital";
+    if (ruinPct > 0.10)
+      return fr ? "Horizon long ou volatilite elevee" : "Long horizon or high volatility";
+    return fr ? "Strategie de retrait: " + wStrat : "Withdrawal strategy: " + wStrat;
+  })();
+
+  const rangeDriver = (() => {
+    const spread = results.percentiles.p75 - results.percentiles.p25;
+    const median = results.medianWealth || 1;
+    const relSpread = spread / Math.abs(median);
+    if (allocR >= 0.80 && relSpread > 1.0)
+      return fr ? "Dispersion elevee liee a l'allocation actions" : "High dispersion linked to equity allocation";
+    if (relSpread > 1.0)
+      return fr ? "Large eventail de trajectoires possibles" : "Wide range of possible trajectories";
+    if (relSpread < 0.3)
+      return fr ? "Trajectoires relativement concentrees" : "Relatively concentrated trajectories";
+    return fr ? "Dispersion typique pour ce profil" : "Typical dispersion for this profile";
+  })();
+
+  const estateTaxDriver = (() => {
+    const taxAmt = results.estate.medianTax ?? 0;
+    const netAmt = results.estate.medianNet ?? 0;
+    if (taxAmt <= 0)
+      return fr ? "Aucun impot successoral estime" : "No estimated estate tax";
+    const taxRate = netAmt + taxAmt > 0 ? taxAmt / (netAmt + taxAmt) : 0;
+    if (taxRate > 0.25)
+      return fr ? "Forte proportion de REER/FERR au deces" : "High RRSP/RRIF proportion at death";
+    if (taxRate > 0.10)
+      return fr ? "Impot sur les comptes enregistres au deces" : "Tax on registered accounts at death";
+    return fr ? "Charge fiscale moderee au deces" : "Moderate tax burden at death";
+  })();
 
   return (
     <div style={{ opacity: simStatus === "loading" ? 0.6 : 1, transition: "opacity 0.3s" }}>
@@ -1227,14 +1519,17 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
               label={fr ? "Taux de reussite" : "Success rate"}
               value={fPct(results.successRate)}
               color={results.successRate >= 0.75 ? EK.green : results.successRate >= 0.55 ? EK.gold : EK.red}
+              sub={successDriver}
             />
             <StatBox
               label={fr ? "Patrimoine median (reel)" : "Median wealth (real)"}
               value={f$(results.medianWealth)}
+              sub={wealthDriver}
             />
             <StatBox
               label={fr ? "Fourchette P25-P75" : "P25-P75 range"}
               value={`${f$(results.percentiles.p25)} - ${f$(results.percentiles.p75)}`}
+              sub={rangeDriver}
             />
           </div>
         </div>
@@ -1268,16 +1563,19 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
           <StatBox
             label={fr ? "Succession nette (mediane)" : "Net estate (median)"}
             value={f$(results.estate.medianNet)}
+            sub={estateDriver}
           />
           <StatBox
             label={fr ? "Impot successoral (mediane)" : "Estate tax (median)"}
             value={f$(results.estate.medianTax)}
             color={EK.red}
+            sub={estateTaxDriver}
           />
           <StatBox
             label={fr ? "Risque de ruine" : "Ruin risk"}
             value={fPct(results.ruin.pct ?? 0)}
             color={(results.ruin.pct ?? 0) > 0.10 ? EK.red : EK.green}
+            sub={ruinDriver}
           />
         </div>
       </Card>
@@ -2430,35 +2728,223 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
 }
 
 // ══════════════════════════════════════════════════════════════
-// BilanPanel — Bilan Annuel placeholder
+// BilanPanel — Bilan Annuel (7-field form + API call)
 // ══════════════════════════════════════════════════════════════
 
-function BilanPanel({ lang, onClose }: { lang: Lang; onClose: () => void }) {
+function BilanPanel({ lang, token, params, profile, onClose }: {
+  lang: Lang; token: string; params: Record<string, unknown>;
+  profile: AuthProfile | null; onClose: () => void;
+}) {
   const fr = lang === "fr";
-  return (
-    <div style={{ textAlign: "center", padding: "16px 0" }}>
-      <div style={{ display: "inline-block", background: EK.gold, color: "#fff", borderRadius: 6, padding: "4px 12px", fontSize: 11, fontWeight: 700, marginBottom: 12, letterSpacing: 0.5 }}>
-        {fr ? "JANVIER 2027" : "JANUARY 2027"}
+  // 7 fields pre-filled from current params
+  const [bilanFields, setBilanFields] = useState({
+    rrsp: Math.round(Number(params.rrsp) || 0),
+    tfsa: Math.round(Number(params.tfsa) || 0),
+    nr: Math.round(Number(params.nr) || 0),
+    cRRSP: Math.round(Number(params.cRRSP) || 0),
+    cTFSA: Math.round(Number(params.cTFSA) || 0),
+    sal: Math.round(Number(params.sal) || 0),
+    mortgageBalance: Math.round(Number(
+      (params.props as unknown[])?.length
+        ? ((params.props as Record<string, unknown>[])[0]?.mb as number) || 0
+        : 0
+    )),
+    mortgageRate: Number(
+      (params.props as unknown[])?.length
+        ? ((params.props as Record<string, unknown>[])[0]?.mr as number) || 0.05
+        : 0.05
+    ) * 100,
+    rrspC: Math.round(Number(params.rrspC) || 0),
+    tfsaC: Math.round(Number(params.tfsaC) || 0),
+    nrC: Math.round(Number(params.nrC) || 0),
+    retSpM: Math.round(Number(params.retSpM) || 0),
+    events: "",
+    changes: "",
+  });
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [result, setResult] = useState<{ downloadUrl: string; grade: string; successPct: number; delta?: Record<string, number> } | null>(null);
+  const [error, setError] = useState("");
+
+  const setBF = (key: string, val: unknown) => setBilanFields(prev => ({ ...prev, [key]: val }));
+
+  const runBilan = async () => {
+    setStatus("loading");
+    setError("");
+    try {
+      const res = await fetch("/api/bilan-annuel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ params, bilanFields, lang }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Bilan generation failed");
+      setResult(data);
+      setStatus("done");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+      setStatus("error");
+    }
+  };
+
+  if (status === "done" && result) {
+    return (
+      <div style={{ textAlign: "center", padding: "16px 0" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: EK.green, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </div>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
+          {fr ? "Bilan Annuel genere" : "Annual Assessment generated"}
+        </h3>
+        <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ background: EK.bg, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "12px 20px" }}>
+            <div style={{ fontSize: 11, color: EK.txDim, textTransform: "uppercase" as const }}>{fr ? "Note" : "Grade"}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine }}>{result.grade}</div>
+          </div>
+          <div style={{ background: EK.bg, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "12px 20px" }}>
+            <div style={{ fontSize: 11, color: EK.txDim, textTransform: "uppercase" as const }}>{fr ? "Taux de reussite" : "Success rate"}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: result.successPct >= 80 ? EK.green : result.successPct >= 60 ? EK.gold : EK.red }}>{result.successPct}%</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+          <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer" style={{
+            display: "inline-block", padding: "10px 24px", background: EK.marine, color: "#fff",
+            borderRadius: 6, fontSize: 13, fontWeight: 600, textDecoration: "none",
+          }}>
+            {fr ? "Voir le bilan (9 pages)" : "View assessment (9 pages)"}
+          </a>
+          <button onClick={onClose} style={{
+            padding: "10px 24px", background: "none", border: `1px solid ${EK.border}`,
+            borderRadius: 6, color: EK.txDim, fontSize: 13, cursor: "pointer",
+          }}>
+            {fr ? "Fermer" : "Close"}
+          </button>
+        </div>
       </div>
-      <h3 style={{ fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
-        {fr ? "Bilan Annuel" : "Annual Assessment"}
+    );
+  }
+
+  const fieldStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "8px 0", borderBottom: `1px solid ${EK.sable}` };
+  const labelStyle = { fontSize: 13, color: EK.tx, fontWeight: 500 as const, flex: "1 1 auto" as const };
+  const inputStyle = { width: 130, padding: "6px 10px", border: `1px solid ${EK.border}`, borderRadius: 6, fontSize: 13, textAlign: "right" as const, fontFamily: "'JetBrains Mono', monospace" };
+
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: "8px 0" }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>
+        {fr ? "Bilan Annuel — Mise a jour" : "Annual Assessment — Update"}
       </h3>
-      <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, maxWidth: 520, margin: "0 auto 16px" }}>
+      <p style={{ fontSize: 13, color: EK.txDim, lineHeight: 1.6, marginBottom: 16 }}>
         {fr
-          ? "Chaque janvier, mettez a jour 7 champs cles et recevez un bilan comparatif de 9 pages. Le modele compare votre situation actuelle a celle de l'annee precedente et identifie les ajustements pertinents."
-          : "Each January, update 7 key fields and receive a 9-page comparative assessment. The model compares your current situation to the previous year and identifies relevant adjustments."}
+          ? "Mettez a jour vos 7 chiffres cles. Les champs sont pre-remplis avec vos parametres actuels. Le modele comparera votre situation a votre dernier profil."
+          : "Update your 7 key numbers. Fields are pre-filled from your current parameters. The model will compare your situation to your last profile."}
       </p>
-      <p style={{ fontSize: 13, color: EK.txDim, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 16px" }}>
-        {fr
-          ? "En attendant, utilisez « Optimiser automatiquement » pour identifier les leviers les plus impactants de votre situation actuelle."
-          : "In the meantime, use \"Auto-optimize\" to identify the most impactful levers in your current situation."}
-      </p>
-      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+
+      {/* Field 1: Account balances */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 12 }}>
+        {fr ? "1. Soldes des comptes" : "1. Account balances"}
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "REER" : "RRSP"}</span>
+        <input type="number" value={bilanFields.rrsp} onChange={e => setBF("rrsp", Number(e.target.value))} style={inputStyle} />
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "CELI" : "TFSA"}</span>
+        <input type="number" value={bilanFields.tfsa} onChange={e => setBF("tfsa", Number(e.target.value))} style={inputStyle} />
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Non-enregistre" : "Non-registered"}</span>
+        <input type="number" value={bilanFields.nr} onChange={e => setBF("nr", Number(e.target.value))} style={inputStyle} />
+      </div>
+
+      {/* Field 2: Income */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "2. Revenu annuel" : "2. Annual income"}
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Salaire brut" : "Gross salary"}</span>
+        <input type="number" value={bilanFields.sal} onChange={e => setBF("sal", Number(e.target.value))} style={inputStyle} />
+      </div>
+
+      {/* Field 3: Mortgage */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "3. Hypotheque" : "3. Mortgage"}
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Solde" : "Balance"}</span>
+        <input type="number" value={bilanFields.mortgageBalance} onChange={e => setBF("mortgageBalance", Number(e.target.value))} style={inputStyle} />
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Taux (%)" : "Rate (%)"}</span>
+        <input type="number" value={bilanFields.mortgageRate} onChange={e => setBF("mortgageRate", Number(e.target.value))} style={inputStyle} step="0.1" />
+      </div>
+
+      {/* Field 4: Annual savings */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "4. Cotisations annuelles" : "4. Annual contributions"}
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "REER" : "RRSP"}</span>
+        <input type="number" value={bilanFields.rrspC} onChange={e => setBF("rrspC", Number(e.target.value))} style={inputStyle} />
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "CELI" : "TFSA"}</span>
+        <input type="number" value={bilanFields.tfsaC} onChange={e => setBF("tfsaC", Number(e.target.value))} style={inputStyle} />
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Non-enregistre" : "Non-registered"}</span>
+        <input type="number" value={bilanFields.nrC} onChange={e => setBF("nrC", Number(e.target.value))} style={inputStyle} />
+      </div>
+
+      {/* Field 5: Retirement spending */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "5. Depenses estimees" : "5. Estimated spending"}
+      </div>
+      <div style={fieldStyle}>
+        <span style={labelStyle}>{fr ? "Depenses retraite ($/mois)" : "Retirement spending ($/mo)"}</span>
+        <input type="number" value={bilanFields.retSpM} onChange={e => setBF("retSpM", Number(e.target.value))} style={inputStyle} />
+      </div>
+
+      {/* Field 6: Events */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "6. Evenements de l'annee" : "6. This year's events"}
+      </div>
+      <textarea
+        value={bilanFields.events}
+        onChange={e => setBF("events", e.target.value)}
+        placeholder={fr ? "Ex: Bonus de 10 000 $, vente auto, renovation..." : "Ex: $10,000 bonus, car sale, renovation..."}
+        style={{ width: "100%", padding: "8px 10px", border: `1px solid ${EK.border}`, borderRadius: 6, fontSize: 13, minHeight: 48, resize: "vertical" as const, fontFamily: "'DM Sans', sans-serif" }}
+      />
+
+      {/* Field 7: Major changes */}
+      <div style={{ fontSize: 12, fontWeight: 700, color: EK.gold, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 6, marginTop: 16 }}>
+        {fr ? "7. Changements majeurs" : "7. Major changes"}
+      </div>
+      <textarea
+        value={bilanFields.changes}
+        onChange={e => setBF("changes", e.target.value)}
+        placeholder={fr ? "Ex: Nouveau conjoint, enfant, changement d'emploi, diagnostic sante..." : "Ex: New spouse, child, job change, health diagnosis..."}
+        style={{ width: "100%", padding: "8px 10px", border: `1px solid ${EK.border}`, borderRadius: 6, fontSize: 13, minHeight: 48, resize: "vertical" as const, fontFamily: "'DM Sans', sans-serif" }}
+      />
+
+      {/* Actions */}
+      {error && (
+        <div style={{ marginTop: 12, padding: "8px 12px", background: "rgba(185,28,28,0.08)", border: `1px solid ${EK.red}`, borderRadius: 6, fontSize: 12, color: EK.red }}>
+          {error}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
         <button onClick={onClose} style={{
-          padding: "8px 24px", background: EK.marine, color: "#fff", border: "none",
-          borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer",
+          padding: "10px 20px", background: "none", border: `1px solid ${EK.border}`,
+          borderRadius: 6, color: EK.txDim, fontSize: 13, cursor: "pointer",
         }}>
-          {fr ? "Compris" : "Got it"}
+          {fr ? "Annuler" : "Cancel"}
+        </button>
+        <button onClick={runBilan} disabled={status === "loading"} style={{
+          padding: "10px 24px", background: status === "loading" ? EK.txDim : EK.marine, color: "#fff",
+          border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: status === "loading" ? "wait" : "pointer",
+        }}>
+          {status === "loading"
+            ? (fr ? "Generation en cours..." : "Generating...")
+            : (fr ? "Generer mon bilan" : "Generate my assessment")}
         </button>
       </div>
     </div>
@@ -2501,6 +2987,10 @@ function ResumeOverlay({ results, params, lang, onClose }: {
   const cpts = (key: string) => pD.map((r: any, i: number) => csx(i) + "," + csy(r[key] || 0)).join(" ");
   const cptsRev = (key: string) => pD.slice().reverse().map((r: any, i: number) => csx(pD.length - 1 - i) + "," + csy(r[key] || 0)).join(" ");
 
+  // Ref for PNG capture
+  const resumeContentRef = useRef<HTMLDivElement>(null);
+  const [pngExporting, setPngExporting] = useState(false);
+
   // Driver phrases
   const drivers: string[] = [];
   const wdRate = retSpM > 0 && medW > 0 ? (retSpM * 12 / medW * 100).toFixed(1) : "?";
@@ -2518,6 +3008,39 @@ function ResumeOverlay({ results, params, lang, onClose }: {
     drivers.push(fr ? "Le 25e percentile atteindrait zero, indiquant un risque dans les scenarios defavorables." : "The 25th percentile would reach zero, indicating risk in adverse scenarios.");
   }
 
+  // PNG download handler
+  const handlePngDownload = async () => {
+    const el = resumeContentRef.current;
+    if (!el) return;
+    setPngExporting(true);
+    try {
+      // Dynamic import: try npm package first, fallback to CDN
+      let h2c: any;
+      try {
+        h2c = (await import("html2canvas")).default;
+      } catch {
+        // Fallback: load from CDN if npm package not installed
+        h2c = (window as any).html2canvas || await new Promise<any>((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          s.onload = () => resolve((window as any).html2canvas);
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const canvas = await h2c(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const link = document.createElement("a");
+      link.download = `buildfi-resume-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("PNG export failed:", err);
+      alert(fr ? "Erreur lors de l'export PNG. Utilisez Imprimer/PDF comme alternative." : "PNG export failed. Use Print/PDF as an alternative.");
+    } finally {
+      setPngExporting(false);
+    }
+  };
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       {/* Print styles */}
@@ -2533,6 +3056,8 @@ function ResumeOverlay({ results, params, lang, onClose }: {
         position: "relative", background: "#fff", borderRadius: 12, maxWidth: 640, width: "100%",
         padding: "32px 28px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)", maxHeight: "95vh", overflowY: "auto",
       }}>
+      {/* Capture target: wraps all visible resume content */}
+      <div ref={resumeContentRef} style={{ background: "#fff", padding: 0 }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
@@ -2616,6 +3141,8 @@ function ResumeOverlay({ results, params, lang, onClose }: {
           buildfi.ca &middot; {fr ? "A titre informatif seulement. Ne constitue pas un conseil financier." : "For informational purposes only. Does not constitute financial advice."}
         </div>
 
+        </div>{/* end resumeContentRef capture target */}
+
         {/* Action buttons */}
         <div className="resume-actions" style={{ display: "flex", gap: 10, marginTop: 16 }}>
           <button onClick={() => window.print()} style={{
@@ -2623,6 +3150,19 @@ function ResumeOverlay({ results, params, lang, onClose }: {
             borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
           }}>
             {fr ? "Imprimer / PDF" : "Print / PDF"}
+          </button>
+          <button
+            onClick={handlePngDownload}
+            disabled={pngExporting}
+            style={{
+              flex: 1, padding: "10px 0", background: EK.gold, color: "#fff", border: "none",
+              borderRadius: 8, fontSize: 13, fontWeight: 700,
+              cursor: pngExporting ? "wait" : "pointer",
+              opacity: pngExporting ? 0.7 : 1,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            {pngExporting ? (fr ? "Export en cours..." : "Exporting...") : (fr ? "Telecharger PNG" : "Download PNG")}
           </button>
           <button onClick={onClose} style={{
             padding: "10px 20px", background: "none", border: `1px solid ${EK.border}`,

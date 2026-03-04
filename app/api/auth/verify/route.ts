@@ -16,13 +16,13 @@ export async function GET(req: NextRequest) {
   }
 
   const p = result.profile;
+  const sophistication = (p.quizData?.sophistication as string) || "rapide";
   return NextResponse.json({
     authenticated: true,
     email: result.email,
     // Full profile for portal/simulator consumption
     profile: {
       email: result.email,
-      token: p.token,
       expiry: p.expiry,
       exportsAI: p.exportsAI,
       bilanUsed: p.bilanUsed,
@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
       tier: p.tier,
       accountType: p.accountType,
       constantsYear: p.constantsYear,
+      quizData: p.quizData,
     },
     // Summary fields (kept for backward compat with simulator auth gate)
     tier: p.tier,
@@ -44,5 +45,6 @@ export async function GET(req: NextRequest) {
     reportsCount: p.reportsGenerated.length,
     accountType: p.accountType,
     constantsYear: p.constantsYear,
+    sophistication,
   });
 }

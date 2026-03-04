@@ -136,16 +136,19 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
         <tr><td style="border-top:1px solid ${BORDER};padding-top:24px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
-              <a href="https://www.buildfi.ca/conditions" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+              <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/confidentialite" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.disclaimer}</td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
-            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;">
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
               <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${s.location}
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se d\u00e9sabonner" : "Unsubscribe"}</a>
             </td></tr>
           </table>
         </td></tr>
@@ -162,6 +165,10 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -337,18 +344,21 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
         <tr><td style="border-top:1px solid ${BORDER};padding-top:24px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
-              <a href="https://www.buildfi.ca/conditions" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+              <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/confidentialite" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.disclaimer}</td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
               <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${s.location}
             </td></tr>
-            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;">${s.productType}</td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.productType}</td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se d\u00e9sabonner" : "Unsubscribe"}</a>
+            </td></tr>
           </table>
         </td></tr>
 
@@ -364,6 +374,10 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -382,6 +396,10 @@ export async function sendAdminAlert(subject: string, body: string) {
       to: [adminEmail],
       subject: `[BuildFi ALERT] ${subject}`,
       html: `<pre style="font-family:monospace;font-size:13px;white-space:pre-wrap;">${body}</pre>`,
+      headers: {
+        "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
     });
   } catch (err) {
     // Don't throw — admin alert failure must not crash the pipeline
@@ -389,66 +407,629 @@ export async function sendAdminAlert(subject: string, body: string) {
   }
 }
 
-// ── Renewal Reminder Emails (J-30, J-7, J-0) ──────────────
+// ── Renewal Email Templates (J-30, J-7, J-0, J+3) ─────────
 
-interface RenewalParams {
+export interface RenewalEmailParams {
   to: string;
   lang: "fr" | "en";
-  daysLeft: 30 | 7 | 0;
-  renewUrl: string;
-  downloadUrl: string; // data export URL
+  token: string;
+  expiryDate: string;
+  reportsCount: number;
+  profilesCount: number;
 }
 
-export async function sendRenewalEmail(params: RenewalParams) {
-  const { to, lang, daysLeft, renewUrl, downloadUrl } = params;
+// Shared helper: build renewal checkout URL
+function renewalCheckoutUrl(to: string): string {
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  return `${base}/api/checkout?type=renewal&email=${encodeURIComponent(to)}`;
+}
+
+// Shared helper: format expiry date for display
+function formatExpiryDate(iso: string, fr: boolean): string {
+  return new Date(iso).toLocaleDateString(fr ? "fr-CA" : "en-CA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+// Shared helper: build the standard renewal email HTML shell
+function buildRenewalHtml(opts: {
+  lang: "fr" | "en";
+  subject: string;
+  preheader: string;
+  heading: string;
+  bodyParagraphs: string[];
+  cardContent: string | null;
+  ctaUrl: string;
+  ctaLabel: string;
+  secondaryCtaUrl?: string;
+  secondaryCtaLabel?: string;
+  infoNote: string | null;
+}): string {
+  const fr = opts.lang === "fr";
+  const tagline = fr ? "Planification financiere accessible" : "Accessible financial planning";
+  const disclaimer = fr
+    ? "Cet outil est fourni a titre informatif et educatif seulement. Il ne constitue pas un avis financier personnalise."
+    : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.";
+  const contact = fr ? "Une question\u00a0?" : "Questions?";
+  const location = fr ? "Quebec, Canada" : "Quebec, Canada";
+
+  const bodyHtml = opts.bodyParagraphs
+    .map((p, i) => `<p style="margin:0${i < opts.bodyParagraphs.length - 1 ? " 0 14px 0" : ""};">${p}</p>`)
+    .join("\n          ");
+
+  const cardSection = opts.cardContent
+    ? `
+        <!-- Value card -->
+        <tr><td style="padding-bottom:28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+            <tr><td style="padding:20px 24px;">
+              ${opts.cardContent}
+            </td></tr>
+          </table>
+        </td></tr>`
+    : "";
+
+  const secondaryCta = opts.secondaryCtaUrl && opts.secondaryCtaLabel
+    ? `
+        <!-- Secondary CTA -->
+        <tr><td align="center" style="padding-bottom:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+            <tr><td align="center" style="border:2px solid ${GOLD};border-radius:10px;">
+              <a href="${opts.secondaryCtaUrl}" style="display:inline-block;padding:12px 36px;color:${GOLD};text-decoration:none;font-family:${FONT};font-size:14px;font-weight:700;line-height:1.2;">${opts.secondaryCtaLabel}</a>
+            </td></tr>
+          </table>
+        </td></tr>`
+    : "";
+
+  const infoBox = opts.infoNote
+    ? `
+        <!-- Info note -->
+        <tr><td style="font-family:${FONT};font-size:12px;color:#999999;line-height:1.6;text-align:center;padding:16px;margin-bottom:24px;background-color:${CARD_BG};border-radius:8px;">
+          ${opts.infoNote}
+        </td></tr>`
+    : "";
+
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="${opts.lang}">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${opts.subject}</title>
+  <!--[if mso]><style type="text/css">table{border-collapse:collapse;}</style><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:${BG};-webkit-font-smoothing:antialiased;">
+
+  <div style="display:none;font-size:1px;color:${BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    ${opts.preheader}${"&#847; &zwnj; &nbsp; ".repeat(30)}
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${BG};">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="580" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;width:100%;">
+
+        <!-- Logo -->
+        <tr><td align="center" style="padding-bottom:32px;">
+          <span style="font-family:${FONT};font-size:26px;font-weight:700;color:${DARK};letter-spacing:-0.5px;">build</span><span style="font-family:${FONT};font-size:26px;font-weight:700;color:${GOLD};letter-spacing:-0.5px;">fi</span>
+          <br/><span style="font-family:${FONT};font-size:11px;color:${GOLD};font-weight:600;text-transform:uppercase;letter-spacing:2px;">${tagline}</span>
+        </td></tr>
+
+        <!-- Heading -->
+        <tr><td style="font-family:${FONT};font-size:22px;font-weight:700;color:${DARK};padding-bottom:16px;text-align:center;">
+          ${opts.heading}
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="font-family:${FONT};font-size:15px;color:#333333;line-height:1.8;padding-bottom:28px;">
+          ${bodyHtml}
+        </td></tr>
+${cardSection}
+        <!-- CTA Button -->
+        <tr><td align="center" style="padding-bottom:12px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+            <tr><td align="center" style="background-color:${GOLD};border-radius:10px;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${opts.ctaUrl}" style="height:48px;v-text-anchor:middle;width:300px;" arcsize="21%" fillcolor="${GOLD}" stroke="f">
+              <center style="color:#ffffff;font-family:${FONT};font-size:15px;font-weight:700;">${opts.ctaLabel}</center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <a href="${opts.ctaUrl}" style="display:inline-block;padding:14px 40px;color:#ffffff;text-decoration:none;font-family:${FONT};font-size:15px;font-weight:700;line-height:1.2;">${opts.ctaLabel}</a>
+              <!--<![endif]-->
+            </td></tr>
+          </table>
+        </td></tr>
+${secondaryCta}
+${infoBox}
+        <!-- Footer -->
+        <tr><td style="border-top:1px solid ${BORDER};padding-top:24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
+              <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialite" : "Privacy"}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis legal" : "Legal"}</a>
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${disclaimer}</td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
+              <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${location}
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se desabonner" : "Unsubscribe"}</a>
+            </td></tr>
+          </table>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+
+</body>
+</html>`;
+}
+
+// ── J-30: Renewal Reminder (30 days before expiry) ──────────
+
+export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
+  const { to, lang, token, expiryDate, reportsCount, profilesCount } = params;
   const fr = lang === "fr";
+  const expFormatted = formatExpiryDate(expiryDate, fr);
+  const checkoutUrl = renewalCheckoutUrl(to);
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  const simUrl = `${base}/acces?token=${token}`;
 
-  const subjects: Record<number, { fr: string; en: string }> = {
-    30: {
-      fr: "Votre acc\u00e8s Expert expire dans 30 jours",
-      en: "Your Expert access expires in 30 days",
-    },
-    7: {
-      fr: "Rappel : votre acc\u00e8s Expert expire dans 7 jours",
-      en: "Reminder: your Expert access expires in 7 days",
-    },
-    0: {
-      fr: "Votre acc\u00e8s Expert expire aujourd'hui",
-      en: "Your Expert access expires today",
-    },
-  };
+  const subject = fr
+    ? "Votre simulateur Expert expire dans 30 jours"
+    : "Your Expert simulator expires in 30 days";
 
-  const subject = subjects[daysLeft][fr ? "fr" : "en"];
+  const heading = fr
+    ? "30 jours avant l\u2019expiration"
+    : "30 days until expiration";
+
+  const bodyP1 = fr
+    ? `Votre acces au Simulateur Expert expire le ${expFormatted}.`
+    : `Your Expert Simulator access expires on ${expFormatted}.`;
+
+  const bodyP2 = fr
+    ? "Le renouvellement est de 29\u00a0$/an et inclut l\u2019acces continu au simulateur, 3 exports AI personnalises et le Bilan Annuel."
+    : "Renewal is $29/year and includes continued simulator access, 3 personalized AI exports, and the Annual Assessment.";
+
+  // Value summary card
+  const valueLines: string[] = [];
+  if (reportsCount > 0) {
+    valueLines.push(fr
+      ? `${reportsCount} bilan${reportsCount > 1 ? "s" : ""} genere${reportsCount > 1 ? "s" : ""}`
+      : `${reportsCount} report${reportsCount > 1 ? "s" : ""} generated`);
+  }
+  if (profilesCount > 0) {
+    valueLines.push(fr
+      ? `${profilesCount} profil${profilesCount > 1 ? "s" : ""} sauvegarde${profilesCount > 1 ? "s" : ""}`
+      : `${profilesCount} saved profile${profilesCount > 1 ? "s" : ""}`);
+  }
+  valueLines.push(fr ? "Recalculs illimites" : "Unlimited recalculations");
+
+  const cardContent = `
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Votre utilisation Expert" : "Your Expert usage"}</td></tr>
+                <tr><td style="font-family:${FONT};font-size:13px;color:${GRAY};line-height:2;">
+                  ${valueLines.map(l => `&bull; ${l}`).join("<br/>")}
+                </td></tr>
+              </table>`;
+
+  const html = buildRenewalHtml({
+    lang,
+    subject,
+    preheader: fr
+      ? `Expire le ${expFormatted}. Renouvelez pour 29 $/an.`
+      : `Expires ${expFormatted}. Renew for $29/year.`,
+    heading,
+    bodyParagraphs: [bodyP1, bodyP2],
+    cardContent,
+    ctaUrl: checkoutUrl,
+    ctaLabel: fr ? "Renouveler maintenant \u2014 29\u00a0$/an" : "Renew now \u2014 $29/year",
+    secondaryCtaUrl: simUrl,
+    secondaryCtaLabel: fr ? "Ouvrir mon simulateur" : "Open my simulator",
+    infoNote: null,
+  });
+
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    to: [to],
+    subject,
+    html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  });
+
+  if (error) {
+    console.error("[email-expert] Renewal J-30 send failed:", error);
+    throw new Error(`Renewal J-30 email failed: ${error.message}`);
+  }
+}
+
+// ── J-7: Urgent Renewal Reminder (7 days before expiry) ─────
+
+export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
+  const { to, lang, token, expiryDate, reportsCount, profilesCount } = params;
+  const fr = lang === "fr";
+  const expFormatted = formatExpiryDate(expiryDate, fr);
+  const checkoutUrl = renewalCheckoutUrl(to);
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  const simUrl = `${base}/acces?token=${token}`;
+
+  const subject = fr
+    ? "Rappel : votre acces Expert expire dans 7 jours"
+    : "Reminder: your Expert access expires in 7 days";
+
+  const heading = fr
+    ? "7 jours restants"
+    : "7 days remaining";
+
+  const bodyP1 = fr
+    ? `Votre acces au Simulateur Expert expire le ${expFormatted}. Apres cette date, le simulateur passera en lecture seule.`
+    : `Your Expert Simulator access expires on ${expFormatted}. After that date, the simulator will switch to read-only mode.`;
+
+  const bodyP2 = fr
+    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} seront conserves 12 mois. Le renouvellement a 29\u00a0$/an reactive immediatement l\u2019ensemble de vos outils.`
+    : `Your ${profilesCount} profile${profilesCount !== 1 ? "s" : ""} and ${reportsCount} report${reportsCount !== 1 ? "s" : ""} will be preserved for 12 months. Renewal at $29/year reactivates all your tools immediately.`;
+
+  const html = buildRenewalHtml({
+    lang,
+    subject,
+    preheader: fr
+      ? `Plus que 7 jours. Renouvelez pour conserver votre simulateur.`
+      : `Only 7 days left. Renew to keep your simulator.`,
+    heading,
+    bodyParagraphs: [bodyP1, bodyP2],
+    cardContent: null,
+    ctaUrl: checkoutUrl,
+    ctaLabel: fr ? "Renouveler maintenant \u2014 29\u00a0$/an" : "Renew now \u2014 $29/year",
+    secondaryCtaUrl: simUrl,
+    secondaryCtaLabel: fr ? "Ouvrir mon simulateur" : "Open my simulator",
+    infoNote: fr
+      ? "Apres expiration, vos donnees seront conservees 12 mois en lecture seule."
+      : "After expiration, your data will be preserved for 12 months in read-only mode.",
+  });
+
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    to: [to],
+    subject,
+    html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  });
+
+  if (error) {
+    console.error("[email-expert] Renewal J-7 send failed:", error);
+    throw new Error(`Renewal J-7 email failed: ${error.message}`);
+  }
+}
+
+// ── J-0: Expiry Day Notice ──────────────────────────────────
+
+export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
+  const { to, lang, token, expiryDate, reportsCount, profilesCount } = params;
+  const fr = lang === "fr";
+  const checkoutUrl = renewalCheckoutUrl(to);
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  const simUrl = `${base}/acces?token=${token}`;
+
+  const subject = fr
+    ? "Votre acces Expert expire aujourd\u2019hui"
+    : "Your Expert access expires today";
+
+  const heading = fr
+    ? "Votre acces expire aujourd\u2019hui"
+    : "Your access expires today";
+
+  const bodyP1 = fr
+    ? "Votre acces au Simulateur Expert arrive a echeance. Une periode de grace de quelques jours vous permet encore de naviguer et de consulter vos donnees."
+    : "Your Expert Simulator access is expiring. A short grace period still allows you to browse and view your data.";
+
+  const bodyP2 = fr
+    ? "Pour continuer a recalculer vos scenarios et generer des bilans AI, le renouvellement a 29\u00a0$/an reactive instantanement votre simulateur complet."
+    : "To continue recalculating your scenarios and generating AI assessments, renewal at $29/year instantly reactivates your full simulator.";
+
+  const bodyP3 = fr
+    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} restent accessibles en lecture seule pendant 12 mois.`
+    : `Your ${profilesCount} profile${profilesCount !== 1 ? "s" : ""} and ${reportsCount} report${reportsCount !== 1 ? "s" : ""} remain accessible in read-only mode for 12 months.`;
+
+  const html = buildRenewalHtml({
+    lang,
+    subject,
+    preheader: fr
+      ? "Dernier jour d\u2019acces complet. Renouvelez pour continuer."
+      : "Last day of full access. Renew to continue.",
+    heading,
+    bodyParagraphs: [bodyP1, bodyP2, bodyP3],
+    cardContent: null,
+    ctaUrl: checkoutUrl,
+    ctaLabel: fr ? "Renouveler maintenant \u2014 29\u00a0$/an" : "Renew now \u2014 $29/year",
+    secondaryCtaUrl: simUrl,
+    secondaryCtaLabel: fr ? "Consulter mes donnees" : "View my data",
+    infoNote: fr
+      ? "Si vous ne renouvelez pas, vos donnees seront conservees 12 mois puis supprimees."
+      : "If you do not renew, your data will be kept for 12 months then deleted.",
+  });
+
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    to: [to],
+    subject,
+    html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  });
+
+  if (error) {
+    console.error("[email-expert] Renewal J-0 send failed:", error);
+    throw new Error(`Renewal J-0 email failed: ${error.message}`);
+  }
+}
+
+// ── J+3: Grace Period Notice (read-only warning) ────────────
+
+export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
+  const { to, lang, token, expiryDate, reportsCount, profilesCount } = params;
+  const fr = lang === "fr";
+  const expFormatted = formatExpiryDate(expiryDate, fr);
+  const checkoutUrl = renewalCheckoutUrl(to);
+
+  const subject = fr
+    ? "Votre simulateur Expert est en lecture seule"
+    : "Your Expert simulator is in read-only mode";
+
+  const heading = fr
+    ? "Votre simulateur est en lecture seule"
+    : "Your simulator is in read-only mode";
+
+  const bodyP1 = fr
+    ? `Votre acces Expert a expire le ${expFormatted}. Le simulateur est maintenant en mode lecture seule\u00a0: vous pouvez consulter vos bilans existants, mais les recalculs et les exports AI ne sont plus disponibles.`
+    : `Your Expert access expired on ${expFormatted}. The simulator is now in read-only mode: you can view your existing assessments, but recalculations and AI exports are no longer available.`;
+
+  const bodyP2 = fr
+    ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} sont preserves pendant 12 mois. Rien n\u2019est perdu.`
+    : `Your ${profilesCount} profile${profilesCount !== 1 ? "s" : ""} and ${reportsCount} report${reportsCount !== 1 ? "s" : ""} are preserved for 12 months. Nothing is lost.`;
+
+  const bodyP3 = fr
+    ? "Le renouvellement a 29\u00a0$/an reactive instantanement votre simulateur complet, avec 3 exports AI et le Bilan Annuel inclus."
+    : "Renewal at $29/year instantly reactivates your full simulator, with 3 AI exports and the Annual Assessment included.";
+
+  // Value reminder card
+  const cardContent = `
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Ce que le renouvellement inclut" : "What renewal includes"}</td></tr>
+                <tr><td style="font-family:${FONT};font-size:13px;color:${GRAY};line-height:2;">
+                  &bull; ${fr ? "Simulateur illimite avec recalcul instantane" : "Unlimited simulator with instant recalculation"}<br/>
+                  &bull; ${fr ? "3 exports AI personnalises" : "3 personalized AI exports"}<br/>
+                  &bull; ${fr ? "Bilan Annuel (verification de janvier)" : "Annual Assessment (January check-up)"}<br/>
+                  &bull; ${fr ? "Tous vos profils et donnees existants" : "All your existing profiles and data"}
+                </td></tr>
+              </table>`;
+
+  const html = buildRenewalHtml({
+    lang,
+    subject,
+    preheader: fr
+      ? "Vos donnees sont preservees. Reactivez votre simulateur."
+      : "Your data is preserved. Reactivate your simulator.",
+    heading,
+    bodyParagraphs: [bodyP1, bodyP2, bodyP3],
+    cardContent,
+    ctaUrl: checkoutUrl,
+    ctaLabel: fr ? "Reactiver mon simulateur \u2014 29\u00a0$/an" : "Reactivate my simulator \u2014 $29/year",
+    infoNote: fr
+      ? "Vos donnees seront conservees 12 mois apres expiration. Aucune action requise pour les preserver."
+      : "Your data will be preserved for 12 months after expiration. No action needed to keep them.",
+  });
+
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    to: [to],
+    subject,
+    html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  });
+
+  if (error) {
+    console.error("[email-expert] Renewal J+3 send failed:", error);
+    throw new Error(`Renewal J+3 email failed: ${error.message}`);
+  }
+}
+
+// ── 6-Month Anniversary Reminder Email ────────────────────
+
+interface AnniversaryReminderParams {
+  to: string;
+  lang: "fr" | "en";
+  lastAccessDate: string;
+  contextualQuestions: string[];
+  token: string;
+}
+
+export async function sendAnniversaryReminderEmail(params: AnniversaryReminderParams) {
+  const { to, lang, lastAccessDate, contextualQuestions, token } = params;
+  const fr = lang === "fr";
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  const magicUrl = buildMagicLinkUrl(token);
+  const lastDate = new Date(lastAccessDate).toLocaleDateString(fr ? "fr-CA" : "en-CA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const subject = fr
+    ? "Il est peut-\u00eatre temps de recalculer votre plan \u2014 buildfi.ca"
+    : "It may be time to recalculate your plan \u2014 buildfi.ca";
 
   const s = {
     tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
-    heading: daysLeft === 0
-      ? (fr ? "Dernier jour" : "Last day")
-      : (fr ? `${daysLeft} jours restants` : `${daysLeft} days remaining`),
-    bodyP1: daysLeft === 30
-      ? (fr
-        ? "Votre acc\u00e8s au Simulateur Expert expire dans 30 jours. Renouvelez pour conserver votre simulateur, vos profils et vos donn\u00e9es."
-        : "Your Expert Simulator access expires in 30 days. Renew to keep your simulator, profiles, and data.")
-      : daysLeft === 7
-      ? (fr
-        ? "Votre acc\u00e8s Expert expire dans 7 jours. Apr\u00e8s expiration, votre profil sera conserv\u00e9 12 mois, mais le simulateur ne sera plus accessible."
-        : "Your Expert access expires in 7 days. After expiration, your profile will be kept for 12 months, but the simulator will no longer be accessible.")
-      : (fr
-        ? "C'est le dernier jour de votre acc\u00e8s Expert. Renouvelez maintenant pour un acc\u00e8s continu, ou t\u00e9l\u00e9chargez vos donn\u00e9es."
-        : "This is the last day of your Expert access. Renew now for continued access, or download your data."),
+    heading: fr
+      ? "6 mois depuis votre dernier calcul"
+      : "6 months since your last calculation",
+    bodyP1: fr
+      ? `Votre dernier calcul date du ${lastDate}. Beaucoup de choses ont pu changer depuis \u2014 revenus, \u00e9pargne, march\u00e9s, objectifs.`
+      : `Your last calculation was on ${lastDate}. A lot may have changed since then \u2014 income, savings, markets, goals.`,
     bodyP2: fr
-      ? "Le renouvellement est de 29\u00a0$/an et inclut le simulateur illimit\u00e9, 3 exports AI et le Bilan Annuel."
-      : "Renewal is $29/year and includes the unlimited simulator, 3 AI exports, and the Annual Assessment.",
-    ctaRenew: fr ? "Renouveler mon acc\u00e8s \u2014 29 $/an" : "Renew my access \u2014 $29/year",
-    ctaDownload: fr ? "T\u00e9l\u00e9charger mes donn\u00e9es" : "Download my data",
+      ? "Voici quelques questions \u00e0 consid\u00e9rer\u00a0:"
+      : "Here are a few questions to consider:",
+    cta: fr ? "Recalculer mon plan" : "Recalculate my plan",
+    fallback: fr ? "Si le bouton ne fonctionne pas\u00a0:" : "If the button doesn\u2019t work:",
+    fallbackLink: fr ? "Ouvrir directement" : "Open directly",
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
     location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
     contact: fr ? "Une question\u00a0?" : "Questions?",
     unsubNote: fr
-      ? "Si vous ne renouvelez pas, vos donn\u00e9es seront conserv\u00e9es 12 mois puis supprim\u00e9es."
-      : "If you do not renew, your data will be kept for 12 months then deleted.",
+      ? "Vous recevez ce courriel car vous avez un compte Simulateur Expert actif."
+      : "You are receiving this email because you have an active Expert Simulator account.",
+  };
+
+  const questionsList = contextualQuestions
+    .map((q) => `<li style="margin-bottom:8px;font-size:13px;color:${GRAY};line-height:1.6">${q}</li>`)
+    .join("");
+
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="${lang}">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${BG};-webkit-font-smoothing:antialiased;">
+  <div style="display:none;font-size:1px;color:${BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    ${s.heading}${"&#847; &zwnj; &nbsp; ".repeat(20)}
+  </div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${BG};">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="580" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;width:100%;">
+        <tr><td align="center" style="padding-bottom:32px;">
+          <span style="font-family:${FONT};font-size:26px;font-weight:700;color:${DARK};letter-spacing:-0.5px;">build</span><span style="font-family:${FONT};font-size:26px;font-weight:700;color:${GOLD};letter-spacing:-0.5px;">fi</span>
+          <br/><span style="font-family:${FONT};font-size:11px;color:${GOLD};font-weight:600;text-transform:uppercase;letter-spacing:2px;">${s.tagline}</span>
+        </td></tr>
+        <tr><td style="font-family:${FONT};font-size:22px;font-weight:700;color:${DARK};padding-bottom:16px;text-align:center;">
+          ${s.heading}
+        </td></tr>
+        <tr><td style="font-family:${FONT};font-size:15px;color:#333333;line-height:1.8;padding-bottom:20px;">
+          <p style="margin:0 0 14px 0;">${s.bodyP1}</p>
+          <p style="margin:0 0 10px 0;">${s.bodyP2}</p>
+        </td></tr>
+        <tr><td style="padding-bottom:24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+            <tr><td style="padding:18px 24px;">
+              <ul style="margin:0;padding-left:20px;list-style-type:disc;">
+                ${questionsList}
+              </ul>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td align="center" style="padding-bottom:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+            <tr><td align="center" style="background-color:${GOLD};border-radius:10px;">
+              <a href="${magicUrl}" style="display:inline-block;padding:14px 40px;color:#ffffff;text-decoration:none;font-family:${FONT};font-size:15px;font-weight:700;line-height:1.2;">${s.cta}</a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;padding-top:12px;padding-bottom:28px;">
+          ${s.fallback} <a href="${magicUrl}" style="color:${GOLD};text-decoration:underline;">${s.fallbackLink}</a>
+        </td></tr>
+        <tr><td style="font-family:${FONT};font-size:12px;color:#999999;line-height:1.6;text-align:center;padding-bottom:24px;background-color:${CARD_BG};border-radius:8px;padding:16px;">
+          ${s.unsubNote}
+        </td></tr>
+        <tr><td style="border-top:1px solid ${BORDER};padding-top:24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
+              <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.disclaimer}</td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
+              <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${s.location}
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se d\u00e9sabonner" : "Unsubscribe"}</a>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    to: [to],
+    subject,
+    html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  });
+
+  if (error) {
+    console.error("[email-expert] Anniversary reminder send failed:", error);
+    throw new Error(`Anniversary reminder email failed: ${error.message}`);
+  }
+}
+
+// ── Referral Auto-Upgrade Congratulations Email ─────────────
+
+interface ReferralUpgradeParams {
+  to: string;
+  lang: "fr" | "en";
+  newExpiry: string;
+}
+
+export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
+  const { to, lang, newExpiry } = params;
+  const fr = lang === "fr";
+  const expiryFormatted = new Date(newExpiry).toLocaleDateString(fr ? "fr-CA" : "en-CA", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const subject = fr
+    ? "F\u00e9licitations\u00a0! 1 an d\u2019acc\u00e8s Expert gratuit \u2014 buildfi.ca"
+    : "Congratulations! 1 free year of Expert access \u2014 buildfi.ca";
+
+  const s = {
+    tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
+    heading: fr ? "1 an d\u2019acc\u00e8s Expert gratuit" : "1 free year of Expert access",
+    bodyP1: fr
+      ? "Gr\u00e2ce \u00e0 vos 3 r\u00e9f\u00e9rences, vous avez d\u00e9bloqu\u00e9 une ann\u00e9e compl\u00e8te d\u2019acc\u00e8s Expert gratuit\u00a0!"
+      : "Thanks to your 3 referrals, you\u2019ve unlocked a full year of free Expert access!",
+    bodyP2: fr
+      ? `Votre acc\u00e8s Expert est d\u00e9sormais valide jusqu\u2019au ${expiryFormatted}. Vous avez aussi re\u00e7u 3 exports AI suppl\u00e9mentaires.`
+      : `Your Expert access is now valid until ${expiryFormatted}. You also received 3 additional AI exports.`,
+    bodyP3: fr
+      ? "Continuez \u00e0 partager BuildFi \u2014 chaque nouvelle r\u00e9f\u00e9rence contribue \u00e0 rendre la planification financi\u00e8re accessible \u00e0 tous."
+      : "Keep sharing BuildFi \u2014 every new referral helps make financial planning accessible to everyone.",
+    disclaimer: fr
+      ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
+      : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
+    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    contact: fr ? "Une question\u00a0?" : "Questions?",
   };
 
   const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -474,34 +1055,25 @@ export async function sendRenewalEmail(params: RenewalParams) {
         </td></tr>
         <tr><td style="font-family:${FONT};font-size:15px;color:#333333;line-height:1.8;padding-bottom:28px;">
           <p style="margin:0 0 14px 0;">${s.bodyP1}</p>
-          <p style="margin:0;">${s.bodyP2}</p>
-        </td></tr>
-        <tr><td align="center" style="padding-bottom:12px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
-            <tr><td align="center" style="background-color:${GOLD};border-radius:10px;">
-              <a href="${renewUrl}" style="display:inline-block;padding:14px 40px;color:#ffffff;text-decoration:none;font-family:${FONT};font-size:15px;font-weight:700;line-height:1.2;">${s.ctaRenew}</a>
-            </td></tr>
-          </table>
-        </td></tr>
-        <tr><td align="center" style="padding-bottom:28px;">
-          <a href="${downloadUrl}" style="font-family:${FONT};font-size:13px;color:${GOLD};text-decoration:underline;">${s.ctaDownload}</a>
-        </td></tr>
-        <tr><td style="font-family:${FONT};font-size:12px;color:#999999;line-height:1.6;text-align:center;padding-bottom:24px;background-color:${CARD_BG};border-radius:8px;padding:16px;">
-          ${s.unsubNote}
+          <p style="margin:0 0 14px 0;">${s.bodyP2}</p>
+          <p style="margin:0;">${s.bodyP3}</p>
         </td></tr>
         <tr><td style="border-top:1px solid ${BORDER};padding-top:24px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
-              <a href="https://www.buildfi.ca/conditions" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+              <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/confidentialite" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+              <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
               &nbsp;&middot;&nbsp;
-              <a href="https://www.buildfi.ca/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+              <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.disclaimer}</td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">${s.contact} <a href="mailto:support@buildfi.ca" style="color:${GOLD};text-decoration:none;">support@buildfi.ca</a></td></tr>
-            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;">
+            <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
               <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999999;">.ca</span> &mdash; ${s.location}
+            </td></tr>
+            <tr><td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+              <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se d\u00e9sabonner" : "Unsubscribe"}</a>
             </td></tr>
           </table>
         </td></tr>
@@ -516,10 +1088,14 @@ export async function sendRenewalEmail(params: RenewalParams) {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
-    console.error(`[email-expert] Renewal (J-${daysLeft}) send failed:`, error);
-    throw new Error(`Renewal email failed: ${error.message}`);
+    console.error("[email-expert] Referral upgrade send failed:", error);
+    throw new Error(`Referral upgrade email failed: ${error.message}`);
   }
 }

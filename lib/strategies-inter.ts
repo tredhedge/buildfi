@@ -84,11 +84,11 @@ export function run5Strategies(baseParams: MCParams): StrategyResult[] {
     return {
       key: s.key, fr: s.fr, en: s.en,
       succ: mc ? mc.succ : 0,
-      medF: mc ? mc.medF : 0,
+      medF: mc ? (mc.rMedF || mc.medF) : 0,
       medEstateTax: mc ? mc.medEstateTax : 0,
       medEstateNet: mc ? mc.medEstateNet : 0,
-      p25F: mc ? mc.p25F : 0,
-      p75F: mc ? mc.p75F : 0,
+      p25F: mc ? (mc.rP25F || mc.p25F) : 0,
+      p75F: mc ? (mc.rP75F || mc.p75F) : 0,
     };
   });
 }
@@ -103,7 +103,7 @@ export function calcMinViableReturn(baseParams: MCParams): number {
   while (hi - lo > 0.002 && itr < 12) {
     mid = (lo + hi) / 2;
     p.eqRet = mid;
-    var mc = runMC(p, 200);
+    var mc = runMC(p, 1000);
     succMid = mc ? mc.succ : 0;
     if (succMid >= 0.5) hi = mid; else lo = mid;
     itr++;

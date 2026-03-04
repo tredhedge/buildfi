@@ -108,6 +108,10 @@ export async function sendFeedbackEmail(params: {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -164,6 +168,10 @@ export async function sendTestimonialRequestEmail(params: {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -220,6 +228,10 @@ export async function sendFeedbackReminderEmail(params: {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -268,6 +280,10 @@ export async function sendReferralConversionEmail(params: {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {

@@ -77,12 +77,12 @@ export function extractReportDataExpert(
 
   // 5-yr projection table
   const projTable: any[] = [];
-  const finalP25 = mc.p25F || 0, finalP50 = mc.medF || 0, finalP75 = mc.p75F || 0;
+  const finalP25 = mc.rP25F || mc.p25F || 0, finalP50 = mc.rMedF || mc.medF || 0, finalP75 = mc.rP75F || mc.p75F || 0;
   const horizYrs = Math.max(1, p.deathAge - p.retAge);
   for (let tAge = p.retAge; tAge <= p.deathAge; tAge += 5) {
     if (tAge > p.deathAge) break;
     const mr5 = rd.find((r: any) => r.age === tAge) || rd[rd.length - 1] || {};
-    const netInc = Math.round((mr5.rrq || 0) + (mr5.psv || 0) + (mr5.pen || 0) + (mr5.ret || 0) + (mr5.ret2 || 0));
+    const netInc = Math.round((mr5.rrq || 0) + (mr5.psv || 0) + (mr5.pen || 0) + (mr5.ret || 0));
     const tax5 = Math.round(mr5.tax || 0);
     const tRatio = Math.max(0, Math.min(1, (tAge - p.retAge) / horizYrs));
     const smooth = tRatio * tRatio * (3 - 2 * tRatio);
@@ -128,7 +128,7 @@ export function extractReportDataExpert(
     expReturn: p.allocR * 0.07 + (1 - p.allocR) * 0.035,
     afterTaxReturn: (p.allocR * 0.07 + (1 - p.allocR) * 0.035) * (1 - margRate * 0.5),
     projTable,
-    nSim: mc.nSim || 5000,
+    nSim: mc.fins ? mc.fins.length : 5000,
     // Expert-specific
     debtBal: rp.debtBal || 0, debtAnnualCost: rp.debtAnnualCost || 0,
     homeVal: rp.homeVal || 0, mortBal: rp.mortBal || 0, equity: rp.equity || 0,
@@ -155,7 +155,8 @@ function renderExpertReport(
   params: Record<string, any>,
   ai: ExpertAINarration,
   activeSections: ExpertSectionKey[],
-  lang: "fr" | "en"
+  lang: "fr" | "en",
+  comparisonData?: { label: string; successPct: number; wealthDelta: number }[]
 ): string {
   const fr = lang === "fr";
   const t = (f: string, e: string) => fr ? f : e;
@@ -207,6 +208,22 @@ function renderExpertReport(
       + '<div style="font-size:12px;font-weight:700;color:' + fg + ';margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">' + title + '</div>'
       + '<div style="font-size:13px;color:#1a1208;line-height:1.75">' + text + '</div></div>';
   };
+
+  // ── AMF compliance badges ──────────────────────────────────────────
+  const amfBadgeLabels = {
+    scenario:   { fr: "Sc\u00e9nario explor\u00e9",                en: "Scenario explored",            bg: "#e8f4fd", color: "#1a5276", border: "#85c1e9" },
+    estimation: { fr: "Estimation",                       en: "Estimate",                     bg: "#fef9e7", color: "#7d6608", border: "#f9e79f" },
+    validation: { fr: "\u00c0 valider avec un professionnel",  en: "Verify with a professional",   bg: "#f2f3f4", color: "#5d6d7e", border: "#aeb6bf" },
+  };
+  const amfBadge = (type: "scenario" | "estimation" | "validation"): string => {
+    const l = amfBadgeLabels[type];
+    return '<span style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;'
+      + 'background:' + l.bg + ';color:' + l.color + ';border:1px solid ' + l.border + ';margin-bottom:8px">'
+      + (fr ? l.fr : l.en) + '</span>';
+  };
+  const badgeScenario = () => amfBadge("scenario");
+  const badgeEstimation = () => amfBadge("estimation");
+  const badgeValidate = () => amfBadge("validation");
 
   const has = (s: ExpertSectionKey) => activeSections.includes(s);
   let secN = 0;
@@ -308,6 +325,7 @@ function renderExpertReport(
   if (has("diagnostic_robustesse")) {
     secN++;
     h += secH(secN, t("Diagnostic de robustesse", "Robustness diagnostic"), t("Distribution des " + (D.nSim || 5000).toLocaleString() + " sc\u00e9narios", "Distribution of " + (D.nSim || 5000).toLocaleString() + " scenarios"));
+    h += badgeScenario();
 
     // Fan chart
     const pD: any[] = D.pD || [];
@@ -379,6 +397,7 @@ function renderExpertReport(
   if (has("revenus_retraite")) {
     secN++;
     h += secH(secN, t("Revenus \u00e0 la retraite", "Retirement income"), t("Sources et couverture", "Sources and coverage"));
+    h += badgeEstimation();
     const items = [
       { v: D.qppMonthly, c: "#1a7a4c", l: gP },
       { v: D.oasMonthly, c: "#4680C0", l: oN },
@@ -412,6 +431,7 @@ function renderExpertReport(
   if (has("projection_patrimoine")) {
     secN++;
     h += secH(secN, t("Projection du patrimoine", "Wealth projection"), t("Accumulation et d\u00e9caissement", "Accumulation and decumulation"));
+    h += badgeEstimation();
 
     // Stacked area chart
     const rd = D.medRevData || [];
@@ -482,6 +502,7 @@ function renderExpertReport(
   if (has("analyse_fiscale")) {
     secN++;
     h += secH(secN, t("Analyse fiscale", "Tax analysis"), t("Taux effectifs et opportunit\u00e9s", "Effective rates and opportunities"));
+    h += badgeEstimation();
     h += card(
       kvr(t("Taux effectif actuel (travail)", "Current effective rate (work)"), fPct(D.taxCurrentEffective))
       + kvr(t("Taux effectif estim\u00e9 (retraite)", "Est. effective rate (retirement)"), fPct(D.taxRetirementEffective))
@@ -584,6 +605,7 @@ function renderExpertReport(
   if (has("decaissement")) {
     secN++;
     h += secH(secN, t("S\u00e9quence de d\u00e9caissement", "Withdrawal sequencing"));
+    h += badgeEstimation();
     h += aiSlot("decaissement", t(
       "Les donn\u00e9es sugg\u00e8rent que l'ordre de d\u00e9caissement des comptes pourrait avoir un impact significatif sur la long\u00e9vit\u00e9 du patrimoine.",
       "Data suggests the account withdrawal order could significantly impact wealth longevity."
@@ -595,6 +617,7 @@ function renderExpertReport(
   if (has("stress_tests")) {
     secN++;
     h += secH(secN, t("Tests de r\u00e9sistance", "Stress tests"), t("Sc\u00e9narios adverses", "Adverse scenarios"));
+    h += badgeScenario();
     const stress = [
       { t2: t("Krach 2008", "2008 Crash"), d2: t("\u221238% actions, reprise 5 ans", "\u221238% equity, 5yr recovery"), delta: -Math.round(D.successPct * 0.10) },
       { t2: t("Inflation 70s", "70s Inflation"), d2: t("+3% inflation pendant 7 ans", "+3% inflation for 7 years"), delta: -Math.round(D.successPct * 0.12) },
@@ -646,6 +669,7 @@ function renderExpertReport(
       "Les leviers les plus significatifs identifi\u00e9s par l'analyse incluraient l'\u00e2ge de retraite, le taux de retrait et la strat\u00e9gie de d\u00e9caissement.",
       "The most significant levers identified by the analysis would include retirement age, withdrawal rate, and decumulation strategy."
     ));
+    h += badgeValidate();
     h += secEnd();
   }
 
@@ -653,6 +677,7 @@ function renderExpertReport(
   if (has("observations_detaillees")) {
     secN++;
     h += secH(secN, t("Observations d\u00e9taill\u00e9es", "Detailed observations"));
+    h += badgeEstimation();
     h += aiSlot("observations_detaillees", t(
       "Les donn\u00e9es de la simulation sugg\u00e8rent plusieurs constats. Le taux de succ\u00e8s de " + D.successPct + "% correspondrait \u00e0 une note de " + D.grade + ". "
       + "Le patrimoine m\u00e9dian estim\u00e9 \u00e0 la fin de l'horizon serait de " + f$(D.rMedF) + " en dollars r\u00e9els.",
@@ -668,7 +693,36 @@ function renderExpertReport(
   if (has("comparaison_scenarios")) {
     secN++;
     h += secH(secN, t("Comparaison de sc\u00e9narios", "Scenario comparison"));
+    h += badgeScenario();
     h += aiSlot("comparaison_scenarios");
+    // Data-driven fallback table when comparisonData is provided (even without AI narration)
+    if (comparisonData && comparisonData.length > 0) {
+      h += '<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">';
+      h += '<thead><tr style="background:#1a2744;color:#ffffff">'
+        + '<th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0">' + t("Variante", "Variant") + '</th>'
+        + '<th style="padding:10px 14px;text-align:center">' + t("Taux de succ\u00e8s", "Success rate") + '</th>'
+        + '<th style="padding:10px 14px;text-align:right;border-radius:0 8px 0 0">' + t("Delta patrimoine", "Wealth delta") + '</th>'
+        + '</tr></thead><tbody>';
+      comparisonData.forEach((row, i) => {
+        const bg = i % 2 === 0 ? '#ffffff' : '#faf8f4';
+        const deltaColor = row.wealthDelta >= 0 ? '#1a7a4c' : '#b91c1c';
+        const deltaSign = row.wealthDelta >= 0 ? '+' : '';
+        h += '<tr style="background:' + bg + '">'
+          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;font-weight:600;color:#1a2744">' + row.label + '</td>'
+          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:center;font-family:\'JetBrains Mono\',monospace;font-weight:600;color:' + gCol(row.successPct / 100) + '">' + row.successPct + '\u00a0%</td>'
+          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:right;font-family:\'JetBrains Mono\',monospace;font-weight:600;color:' + deltaColor + '">' + deltaSign + f$(row.wealthDelta) + '</td>'
+          + '</tr>';
+      });
+      h += '</tbody></table>';
+    } else if (!ai["comparaison_scenarios"]) {
+      // No AI and no comparisonData — show instructional fallback
+      h += '<div style="font-size:13px;color:#666;line-height:1.7;margin:10px 0;font-style:italic">'
+        + t(
+          "Utilisez le simulateur pour comparer differents scenarios, puis regenerez le bilan pour inclure la comparaison.",
+          "Use the simulator to compare different scenarios, then regenerate the assessment to include the comparison."
+        )
+        + '</div>';
+    }
     h += secEnd();
   }
 
@@ -676,6 +730,7 @@ function renderExpertReport(
   if (has("driver_attribution")) {
     secN++;
     h += secH(secN, t("Attribution des facteurs", "Driver attribution"), t("Pourquoi chaque indicateur se situe \u00e0 ce niveau", "Why each indicator is at this level"));
+    h += badgeEstimation();
     h += aiSlot("driver_attribution", t(
       "Le taux de succ\u00e8s de " + D.successPct + "% serait principalement influenc\u00e9 par le taux de retrait ("
       + D.withdrawalRatePct + "%), la couverture gouvernementale (" + D.coveragePct + "%), et l'horizon d'accumulation restant ("
@@ -700,6 +755,7 @@ function renderExpertReport(
       + kvr(t("Esp\u00e9rance de vie", "Life expectancy"), D.avgDeath + " " + t("ans", "yrs"))
     );
     h += aiSlot("pour_professionnel");
+    h += badgeValidate();
     h += secEnd();
   }
 
@@ -707,6 +763,7 @@ function renderExpertReport(
   if (has("questions_fiscaliste")) {
     secN++;
     h += secH(secN, t("Questions pour votre fiscaliste", "Questions for your tax advisor"));
+    h += badgeValidate();
     h += aiSlot("questions_fiscaliste", t(
       "1. Quelle serait la strat\u00e9gie optimale de d\u00e9caissement entre le REER et le CELI?\n"
       + "2. Le meltdown REER serait-il avantageux dans ma situation?\n"
@@ -798,9 +855,9 @@ function renderExpertReport(
     + 'buildfi.ca \u2014 ' + t("\u00c0 titre informatif seulement", "For informational purposes only")
     + ' \u2014 ' + REPORT_VERSION_EXPERT
     + '<div style="margin-top:6px;font-size:10px">'
-    + '<a href="https://www.buildfi.ca/conditions" style="color:#C4944A;text-decoration:none">' + t("Conditions","Terms") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/confidentialite" style="color:#C4944A;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/avis-legal" style="color:#C4944A;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
+    + '<a href="https://www.buildfi.ca/conditions.html" style="color:#C4944A;text-decoration:none">' + t("Conditions","Terms") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/confidentialite.html" style="color:#C4944A;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/avis-legal.html" style="color:#C4944A;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
     + '</div></div>';
 
   h += '</div>'; // end report body
@@ -818,12 +875,13 @@ export function renderReportHTMLExpert(
   ai: ExpertAINarration,
   activeSections: ExpertSectionKey[],
   lang: "fr" | "en",
-  feedbackToken?: string
+  feedbackToken?: string,
+  comparisonData?: { label: string; successPct: number; wealthDelta: number }[]
 ): string {
   const fr = lang === "fr";
   const date = new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA");
 
-  let reportBody = renderExpertReport(D, mc, params, ai, activeSections, lang);
+  let reportBody = renderExpertReport(D, mc, params, ai, activeSections, lang, comparisonData);
 
   // Inject star rating block if feedbackToken provided
   if (feedbackToken) {
@@ -846,8 +904,11 @@ export function renderReportHTMLExpert(
     + 'body{font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#1a1208;background:#faf8f4;'
     + '  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;'
     + '  -webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '@media print{body{background:#fff}.no-print{display:none!important}'
-    + '  div[style*="page-break-inside"]{page-break-inside:avoid}'
+    + '@media print{body{background:#fff !important}.no-print{display:none!important}'
+    + '  .section,div[style*="page-break-inside"]{break-inside:avoid;page-break-inside:avoid}'
+    + '  .page-break{break-before:page;page-break-before:always}'
+    + '  a{color:inherit !important;text-decoration:none !important}'
+    + '  p,li{orphans:3;widows:3}'
     + '}'
     + '@media screen and (max-width:520px){'
     + '  .rpt-grid3{grid-template-columns:1fr!important}'

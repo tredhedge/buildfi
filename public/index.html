@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>buildfi.ca — Votre bilan retraite personnalisé | Jusqu'à 10 000 scénarios</title>
+<title>buildfi.ca — Votre bilan retraite personnalisé | 5 000 scénarios Monte Carlo</title>
 <meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. À partir de 29$.">
 <meta property="og:title" content="buildfi.ca — Savoir si votre argent va durer">
 <meta property="og:description" content="Planification de retraite canadienne. Des milliers de scénarios, un rapport clair, un paiement unique.">
@@ -48,7 +48,7 @@
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(15px,1vw,16px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(16px,1.1vw,18px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");opacity:.5}
 img{max-width:100%;display:block}
 a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(--gold-dark)}
@@ -59,11 +59,11 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .section--sand{background:var(--sand)}
 .section--navy{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 50%,#2a4070 100%);color:#fff;position:relative;overflow:hidden}
 .section--navy::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(184,134,11,.08) 0%,transparent 60%);pointer-events:none}
-.section-label{font-family:var(--font-body);font-size:clamp(11px,.8vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.section-label{font-family:var(--font-body);font-size:clamp(12px,.9vw,13px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
 .section--navy .section-label{color:var(--gold-light)}
 .section-title{font-family:var(--font-display);font-size:clamp(26px,3.2vw,40px);font-weight:700;line-height:1.12;color:var(--navy);margin-bottom:14px}
 .section--navy .section-title{color:#fff}
-.section-subtitle{font-size:clamp(15px,1.15vw,17px);color:var(--text-secondary);max-width:580px;line-height:1.65}
+.section-subtitle{font-size:clamp(16px,1.2vw,18px);color:var(--text-secondary);max-width:580px;line-height:1.65}
 .section--navy .section-subtitle{color:rgba(255,255,255,.7)}
 
 /* ═══ BUTTONS ═══ */
@@ -83,7 +83,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .35s}
 .nav.scrolled{background:rgba(250,248,244,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04);padding:12px 0}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-wide);margin:0 auto;padding:0 24px}
-.nav-logo{font-family:var(--font-body);font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
+.nav-logo{font-family:var(--font-body);font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
 .nav-links{display:flex;align-items:center;gap:36px;list-style:none}
 .nav-links a{font-size:14px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:color .2s;position:relative}.nav-links a:hover{color:var(--navy)}
 .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s;border-radius:1px}
@@ -154,13 +154,13 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .product-card--expert .product-desc{color:rgba(255,255,255,.75)}
 .product-check{color:var(--success);flex-shrink:0;font-size:13px;margin-top:1px;font-weight:700}
 .product-card--expert .product-check{color:#5ce0a0}
-.product-time{font-size:12px;color:var(--text-muted);margin-bottom:18px;display:flex;align-items:center;gap:6px}
+.product-time{font-size:13px;color:var(--text-muted);margin-bottom:18px;display:flex;align-items:center;gap:6px}
 .product-time svg{width:14px;height:14px;flex-shrink:0}
 .product-card--expert .product-time{color:rgba(255,255,255,.4)}
 .product-card .btn{width:100%;justify-content:center}
-.product-process{font-size:12px;color:var(--text-muted);margin-top:12px;text-align:center;line-height:1.5;padding-top:2px}
+.product-process{font-size:13px;color:var(--text-muted);margin-top:12px;text-align:center;line-height:1.5;padding-top:2px}
 .product-card--expert .product-process{color:rgba(255,255,255,.35)}
-.product-for-tag{display:inline-block;margin-top:auto;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;background:var(--navy);color:#fff;align-self:center}
+.product-for-tag{display:inline-block;margin-top:auto;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;background:var(--navy);color:#fff;align-self:center}
 .product-for-tag--light{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7)}
 .products-meta{text-align:center;margin-top:32px;padding-top:28px;border-top:1px solid var(--border-light)}
 .products-upgrade{font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:12px}
@@ -260,13 +260,13 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
 .footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(184,134,11,.3),transparent)}
 .footer-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:52px}
-.footer-brand{font-size:22px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
+.footer-brand{font-size:26px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
 .footer-tagline{font-size:14px;color:rgba(255,255,255,.35);line-height:1.65;max-width:280px}
-.footer-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
 .footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;padding:5px 0;transition:color .2s}.footer-col a:hover{color:var(--gold-light)}
 .footer-soon{display:block;font-size:14px;color:rgba(255,255,255,.25);padding:5px 0;cursor:default}
-.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:12px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
-.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;color:rgba(255,255,255,.2)}
+.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:13px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.2)}
 .footer-bottom-lang{background:none;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.35);cursor:pointer;transition:all .2s}.footer-bottom-lang:hover{border-color:var(--gold-light);color:var(--gold-light)}
 @media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.footer-bottom{flex-direction:column;gap:12px;text-align:center}}
 
@@ -279,18 +279,18 @@ input,select,textarea{font-size:16px}
 .engine-item{padding:24px 20px}
 .engine-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--gold-wash-strong);border-radius:10px;margin:0 auto 14px}
 .engine-icon svg{width:22px;height:22px;color:var(--gold)}
-.engine-item-title{font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
-.engine-item-desc{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.engine-item-title{font-family:var(--font-body);font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.engine-item-desc{font-size:14px;color:var(--text-secondary);line-height:1.6}
 @media(max-width:700px){.engine-grid{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}}
 .product-includes{margin-bottom:16px;padding:12px 0;border-top:1px solid var(--border-light)}
-.product-includes-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
+.product-includes-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
 .product-card--expert .product-includes-label{color:rgba(255,255,255,.4)}
-.product-includes-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);padding:3px 0}
+.product-includes-item{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary);padding:3px 0}
 .product-card--expert .product-includes-item{color:rgba(255,255,255,.65)}
-.products-anti{font-size:14px;font-weight:600;color:var(--text-muted);margin-top:12px;letter-spacing:.2px}
+.products-anti{font-size:15px;font-weight:600;color:var(--text-muted);margin-top:12px;letter-spacing:.2px}
 .product-card--featured{border:2px solid var(--gold);box-shadow:var(--shadow-card),0 0 0 1px rgba(184,134,11,.08)}
 .product-card--featured:hover{box-shadow:var(--shadow-lg),var(--shadow-gold)}
-.product-guarantee{font-size:11px;color:var(--success);font-weight:600;margin-top:6px;text-align:center}
+.product-guarantee{font-size:13px;color:var(--success);font-weight:600;margin-top:6px;text-align:center}
 .product-card--expert .product-guarantee{color:#5ce0a0}
 </style>
 <script src="/logo.js"></script>
@@ -322,7 +322,7 @@ input,select,textarea{font-size:16px}
   <a href="#preview" id="drawerPreview">Aperçu</a>
   <a href="#products" id="drawerProducts">Produits</a>
   <a href="#faq" id="drawerFaq">FAQ</a>
-  <a href="/quiz-essentiel.html" class="nav-cta" id="drawerCta">Commencer</a>
+  <a href="#products" class="nav-cta" id="drawerCta">Commencer</a>
 </div>
 
 <!-- ═══ SECTION 1: HERO ═══ -->
@@ -376,7 +376,7 @@ input,select,textarea{font-size:16px}
 <section class="section" id="howItWorks" style="background:var(--sand);padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
   <div class="container" style="text-align:center">
     <p class="section-label" id="hiwLabel">Comment ça marche</p>
-    <h2 class="section-title" id="hiwTitle">3 étapes. 5 minutes. Zéro compte à créer.</h2>
+    <h2 class="section-title" id="hiwTitle">3 étapes. Quelques minutes. Zéro compte à créer.</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto" class="hiw-grid">
       <div class="reveal" style="text-align:center">
         <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
@@ -384,7 +384,7 @@ input,select,textarea{font-size:16px}
         </div>
         <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep1Label">Étape 1</div>
         <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep1Title">Répondez au quiz</h3>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep1Desc">5 à 10 minutes. Revenus, épargne, dettes, objectifs. Aucune donnée stockée.</p>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.7" id="hiwStep1Desc">5 à 10 minutes. Revenus, épargne, dettes, objectifs. Aucune donnée stockée.</p>
       </div>
       <div class="reveal reveal-delay-1" style="text-align:center">
         <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
@@ -392,7 +392,7 @@ input,select,textarea{font-size:16px}
         </div>
         <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep2Label">Étape 2</div>
         <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep2Title">Recevez votre bilan</h3>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep2Desc">5 000 scénarios simulés. Rapport personnalisé livré par courriel en quelques minutes.</p>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.7" id="hiwStep2Desc">5 000 scénarios simulés. Rapport personnalisé livré par courriel en quelques minutes.</p>
       </div>
       <div class="reveal reveal-delay-2" style="text-align:center">
         <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-wash);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
@@ -400,7 +400,7 @@ input,select,textarea{font-size:16px}
         </div>
         <div style="font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px" id="hiwStep3Label">Étape 3</div>
         <h3 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px" id="hiwStep3Title">Décisions éclairées</h3>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7" id="hiwStep3Desc">Note, projections, observations. Vous savez exactement où vous en êtes.</p>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.7" id="hiwStep3Desc">Note, projections, observations. Vous savez exactement où vous en êtes.</p>
       </div>
     </div>
   </div>
@@ -441,7 +441,7 @@ input,select,textarea{font-size:16px}
         <div class="engine-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
         </div>
-        <h3 class="engine-item-title" id="eng1t">Simulation Monte Carlo corrélée</h3>
+        <h3 class="engine-item-title" id="eng1t">Des milliers de scénarios réalistes</h3>
         <p class="engine-item-desc" id="eng1d">Rendements, inflation, espérance de vie — tout varie simultanément dans chaque scénario. Pas un « rendement moyen de 6 % ».</p>
       </div>
       <div class="engine-item reveal reveal-delay-1">
@@ -455,8 +455,8 @@ input,select,textarea{font-size:16px}
         <div class="engine-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
-        <h3 class="engine-item-title" id="eng3t">436 tests automatisés, 17 profils canary</h3>
-        <p class="engine-item-desc" id="eng3d">Employés, couples, fonctionnaires, incorporés — chaque profil est validé avant chaque mise à jour.</p>
+        <h3 class="engine-item-title" id="eng3t">Testé sur de nombreux scénarios</h3>
+        <p class="engine-item-desc" id="eng3d">Employés, couples, fonctionnaires, incorporés — chaque situation est validée avant chaque mise à jour du moteur.</p>
       </div>
     </div>
   </div>
@@ -511,7 +511,7 @@ input,select,textarea{font-size:16px}
     <div style="text-align:center">
       <p class="section-label" id="productsLabel">Choisissez votre rapport</p>
       <h2 class="section-title" id="productsTitle">Simple ou complet. Vous décidez.</h2>
-      <p class="section-subtitle" style="margin:0 auto" id="productsSubtitle">Chaque rapport utilise le même moteur de simulation — jusqu'à 10 000 scénarios. La différence, c'est la profondeur de l'analyse.</p>
+      <p class="section-subtitle" style="margin:0 auto" id="productsSubtitle">Chaque rapport utilise le même moteur de simulation — 5 000 scénarios Monte Carlo. La différence, c'est la profondeur de l'analyse.</p>
     </div>
       <p class="products-anti" id="productsAnti">Pas un conseiller qui vend des fonds. Pas un calculateur simpliste. Pas un abonnement.</p>
 
@@ -585,9 +585,9 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           À votre rythme — sessions illimitées
         </div>
-        <a href="/expert" class="btn btn-primary" data-track="product_expert" id="prodExpCta">Découvrir le Simulateur Expert <span aria-hidden="true">→</span></a>
+        <a href="/expert/landing" class="btn btn-primary" data-track="product_expert" id="prodExpCta">Découvrir le Simulateur <span aria-hidden="true">→</span></a>
         <p class="product-process" id="prodExpProcess">Quiz → Simulateur illimité + 5 exports AI</p>
-        <p class="product-guarantee" id="prodExpGuarantee">Erreur technique? On refait votre rapport sans frais.</p>
+        <p class="product-guarantee" id="prodExpGuarantee">Support technique inclus par courriel.</p>
         <div class="product-for-tag product-for-tag--light" id="prodExpFor">Contrôle total</div>
       </div>
     </div>
@@ -621,7 +621,7 @@ input,select,textarea{font-size:16px}
         <tbody id="compBody">
           <tr><td id="cr1">Note de retraite (A+ à F)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr2">Narration IA personnalisée</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
-          <tr><td id="cr3">Monte Carlo (jusqu'à 10 000 scénarios)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td id="cr3">Monte Carlo (5 000 scénarios)</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr4">Rapport en ligne + version imprimable</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
           <tr><td id="cr5">Outil interactif — Analyse des dettes</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
           <tr><td id="cr6">Guide 101 — Les bases de vos finances</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td></tr>
@@ -659,7 +659,7 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
         </div>
         <h3 class="why-card-title" id="why1t">Pas une projection. Des milliers.</h3>
-        <p class="why-card-desc" id="why1d">Un calculateur vous dit « vous aurez 800 000 $ ». Ça ne veut rien dire. BuildFi teste votre plan dans jusqu'à 10 000 scénarios — bonnes années, mauvaises années, crises — et vous dit dans quel pourcentage votre argent dure.</p>
+        <p class="why-card-desc" id="why1d">Un calculateur vous dit « vous aurez 800 000 $ ». Ça ne veut rien dire. BuildFi teste votre plan dans 5 000 scénarios — bonnes années, mauvaises années, crises — et vous dit dans quel pourcentage votre argent dure.</p>
       </div>
       <div class="why-card reveal reveal-delay-1">
         <div class="why-icon">
@@ -680,7 +680,7 @@ input,select,textarea{font-size:16px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <h3 class="why-card-title" id="why6t">On ne veut pas vos données.</h3>
-        <p class="why-card-desc" id="why6d">Les calculs roulent dans votre navigateur. Rien n'est envoyé à nos serveurs. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre rapport. C'est tout.</p>
+        <p class="why-card-desc" id="why6d">Vos données sont traitées sur nos serveurs sécurisés au Canada. Aucune donnée financière n'est conservée après la génération de votre bilan. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre bilan. C'est tout.</p>
       </div>
     </div>
   </div>
@@ -717,17 +717,17 @@ input,select,textarea{font-size:16px}
       </div>
       <div class="faq-item">
         <button class="faq-question" aria-expanded="false" data-track="faq_open">
-          <span id="fq4">Qu'est-ce que « 10 000 scénarios »?</span>
+          <span id="fq4">Qu'est-ce que « 5 000 scénarios »?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="faq-answer"><div class="faq-answer-inner" id="fa4">Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans jusqu'à 10 000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C'est la méthode Monte Carlo — couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa4">Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans 5 000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C'est la méthode Monte Carlo — couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-question" aria-expanded="false" data-track="faq_open">
           <span id="fq5">Mes données sont-elles protégées?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Oui. Vos données financières ne sont jamais stockées sur nos serveurs. Les calculs s'exécutent dans votre navigateur. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 — le plus haut niveau de sécurité dans l'industrie. Nous ne voyons jamais votre numéro de carte.</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Oui. Vos données sont traitées sur nos serveurs sécurisés au Canada. Aucune donnée financière n'est conservée après la génération de votre bilan. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 — le plus haut niveau de sécurité dans l'industrie. Nous ne voyons jamais votre numéro de carte.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-question" aria-expanded="false" data-track="faq_open">
@@ -748,7 +748,7 @@ input,select,textarea{font-size:16px}
           <span id="fq9">Quel rendement supposez-vous?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="faq-answer"><div class="faq-answer-inner" id="fa9">Aucun rendement fixe. Le moteur génère des distributions de rendements corrélés — actions, obligations, inflation — basées sur des données historiques. Chaque scénario a ses propres séquences de bonnes et mauvaises années. C'est ce qui différencie une simulation d'un calculateur qui suppose 6 % par année.</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa9">Aucun rendement fixe. Le moteur génère des milliers de séquences de rendements différentes — actions, obligations, inflation — basées sur des données historiques. Chaque scénario a ses propres bonnes et mauvaises années. C'est ce qui différencie une simulation d'un calculateur qui suppose 6 % par année.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-question" aria-expanded="false" data-track="faq_open">
@@ -767,8 +767,7 @@ input,select,textarea{font-size:16px}
     <h2 class="section-title" id="finalTitle">Vous méritez de savoir où vous en êtes.</h2>
     <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un rapport complet, un paiement unique.</p>
     <div class="final-cta-actions">
-      <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Obtenir mon rapport <span aria-hidden="true">→</span></a>
-      <a href="#products" class="btn btn-secondary" data-track="final_compare" id="finalCtaSec">Voir les produits <span aria-hidden="true">↑</span></a>
+      <a href="#products" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Choisir mon produit <span aria-hidden="true">→</span></a>
     </div>
     <p class="final-cta-trust" id="finalTrust">Paiement unique · Livraison instantanée · Données non conservées</p>
   </div>
@@ -778,7 +777,7 @@ input,select,textarea{font-size:16px}
 <div class="sticky-cta" id="stickyCta">
   <div class="sticky-cta-inner">
     <div class="sticky-cta-text" id="stickyText">À partir de <span>29 $</span></div>
-    <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
+    <a href="#products" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
   </div>
 </div>
 
@@ -803,9 +802,9 @@ input,select,textarea{font-size:16px}
       </div>
       <div class="footer-col">
         <div class="footer-col-title" id="footLegal">Légal</div>
-        <a href="/confidentialite" id="footPriv">Confidentialité</a>
-        <a href="/conditions" id="footTerms">Conditions d'utilisation</a>
-        <a href="/avis-legal" id="footDisc">Avis légal</a>
+        <a href="/confidentialite.html" id="footPriv">Confidentialité</a>
+        <a href="/conditions.html" id="footTerms">Conditions d'utilisation</a>
+        <a href="/avis-legal.html" id="footDisc">Avis légal</a>
       </div>
     </div>
     <div class="footer-disclaimer" id="footDisclaimer">
@@ -859,7 +858,7 @@ var T = {
   gradePill: { fr:'En bonne voie', en:'On track' },
   // How it works
   hiwLabel: { fr:'Comment \u00e7a marche', en:'How it works' },
-  hiwTitle: { fr:'3 \u00e9tapes. 5 minutes. Z\u00e9ro compte \u00e0 cr\u00e9er.', en:'3 steps. 5 minutes. No account needed.' },
+  hiwTitle: { fr:'3 \u00e9tapes. Quelques minutes. Z\u00e9ro compte \u00e0 cr\u00e9er.', en:'3 steps. A few minutes. No account needed.' },
   hiwStep1Label: { fr:'\u00c9tape 1', en:'Step 1' },
   hiwStep1Title: { fr:'R\u00e9pondez au quiz', en:'Take the quiz' },
   hiwStep1Desc: { fr:'5 \u00e0 10 minutes. Revenus, \u00e9pargne, dettes, objectifs. Aucune donn\u00e9e stock\u00e9e.', en:'5 to 10 minutes. Income, savings, debts, goals. No data stored.' },
@@ -881,16 +880,16 @@ var T = {
   // Engine
   engineLabel: { fr:'Sous le capot', en:'Under the hood' },
   engineTitle: { fr:"Un moteur de simulation, pas un calculateur.", en:"A simulation engine, not a calculator." },
-  eng1t: { fr:'Simulation Monte Carlo corrélée', en:'Correlated Monte Carlo simulation' },
+  eng1t: { fr:'Des milliers de scénarios réalistes', en:'Thousands of realistic scenarios' },
   eng1d: { fr:"Rendements, inflation, espérance de vie \u2014 tout varie simultanément dans chaque scénario. Pas un \u00ab\u00a0rendement moyen de 6\u00a0%\u00a0\u00bb.", en:"Returns, inflation, life expectancy \u2014 everything varies simultaneously in each scenario. Not an \u201caverage 6% return.\u201d" },
   eng2t: { fr:'Fiscalité fédérale + provinciale ligne par ligne', en:'Federal + provincial taxes, line by line' },
   eng2d: { fr:"Crédits pour l\u2019\u00e2ge, récupération de la PSV, fractionnement de pension. Barèmes 2026, 13 juridictions.", en:"Age credits, OAS clawback, pension splitting. 2026 brackets, 13 jurisdictions." },
-  eng3t: { fr:'436 tests automatisés, 17 profils canary', en:'436 automated tests, 17 canary profiles' },
-  eng3d: { fr:"Employés, couples, fonctionnaires, incorporés \u2014 chaque profil est validé avant chaque mise à jour.", en:"Employees, couples, government workers, incorporated \u2014 every profile validated before every update." },
+  eng3t: { fr:'Testé sur de nombreux scénarios', en:'Tested across many scenarios' },
+  eng3d: { fr:"Employés, couples, fonctionnaires, incorporés \u2014 chaque situation est validée avant chaque mise à jour du moteur.", en:"Employees, couples, government workers, incorporated \u2014 every situation validated before every engine update." },
   // Products
   productsLabel: { fr:'Choisissez votre rapport', en:'Choose your report' },
   productsTitle: { fr:'Simple ou complet. Vous décidez.', en:'Simple or complete. You decide.' },
-  productsSubtitle: { fr:"Chaque rapport utilise le même moteur de simulation \u2014 jusqu\u2019à 10\u00a0000 scénarios. La différence, c\u2019est la profondeur de l\u2019analyse.", en:"Every report uses the same simulation engine \u2014 up to 10,000 scenarios. The difference is the depth of the analysis." },
+  productsSubtitle: { fr:"Chaque rapport utilise le même moteur de simulation \u2014 5\u00a0000 scénarios Monte Carlo. La différence, c\u2019est la profondeur de l\u2019analyse.", en:"Every report uses the same simulation engine \u2014 5,000 Monte Carlo scenarios. The difference is the depth of the analysis." },
   productsAnti: { fr:"Pas un conseiller qui vend des fonds. Pas un calculateur simpliste. Pas un abonnement.", en:"Not an advisor selling funds. Not a simplistic calculator. Not a subscription." },
   prodEssBadge: { fr:'Commencez ici', en:'Start here' },
   prodEssPersona: { fr:'Vous commencez à planifier', en:"You\u2019re starting to plan" },
@@ -914,11 +913,11 @@ var T = {
   prodExpDesc: { fr:"Vous n\u2019avez jamais trouvé un seul outil qui fait tout. L\u2019Expert, c\u2019est ça \u2014 un simulateur où vous testez, ajustez et explorez chaque variable de votre retraite. Incorporation, stress tests, pensions \u2014 tout y est.", en:"You\u2019ve never found one tool that does it all. Expert is it \u2014 a simulator where you test, adjust, and explore every variable of your retirement. Incorporation, stress tests, pensions \u2014 it\u2019s all there." },
   prodEssCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
   prodInterCta: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
-  prodExpCta: { fr:'Découvrir le Simulateur Expert →', en:'Discover the Expert Simulator →' },
+  prodExpCta: { fr:'Découvrir le Simulateur \u2192', en:'Discover the Simulator \u2192' },
   prodEssProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
   prodInterProcess: { fr:'Questionnaire \u2192 Rapport en ligne + version imprimable', en:'Questionnaire \u2192 Online report + printable version' },
   prodExpProcess: { fr:'Quiz → Simulateur illimité + 5 exports AI', en:'Quiz → Unlimited simulator + 5 AI exports' },
-  prodExpGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
+  prodExpGuarantee: { fr:'Support technique inclus par courriel.', en:'Email technical support included.' },
   prodEssFor: { fr:'Personnes seules', en:'Individuals' },
   prodInterFor: { fr:'Couples \u00b7 Propriétaires \u00b7 Profils complexes', en:'Couples \u00b7 Homeowners \u00b7 Complex profiles' },
   prodExpFor: { fr:'Contrôle total', en:'Full control' },
@@ -946,7 +945,7 @@ var T = {
   compFeat: { fr:'Fonctionnalité', en:'Feature' },
   cr1: { fr:'Note de retraite (A+ à F)', en:'Retirement grade (A+ to F)' },
   cr2: { fr:'Narration IA personnalisée', en:'Personalized AI narration' },
-  cr3: { fr:'Monte Carlo (jusqu\u2019à 10\u00a0000 scénarios)', en:'Monte Carlo (up to 10,000 scenarios)' },
+  cr3: { fr:'Monte Carlo (5\u00a0000 scénarios)', en:'Monte Carlo (5,000 scenarios)' },
   cr4: { fr:'Rapport en ligne + version imprimable', en:'Online report + printable version' },
   cr5: { fr:'Outil interactif \u2014 Analyse des dettes', en:'Interactive tool \u2014 Debt analysis' },
   cr6: { fr:'Guide 101 \u2014 Les bases de vos finances', en:'Guide 101 \u2014 The basics of your finances' },
@@ -957,7 +956,7 @@ var T = {
   whyTitle: { fr:"On ne vend pas d\u2019abonnement. On vend un outil qui fonctionne.", en:"We don\u2019t sell subscriptions. We sell a tool that works." },
   whySub: { fr:"Les outils de retraite au Canada sont soit gratuits et trop simplistes, soit réservés aux professionnels. On a construit autre chose.", en:"Retirement tools in Canada are either free and too simplistic, or reserved for professionals. We built something else." },
   why1t: { fr:'Pas une projection. Des milliers.', en:'Not one projection. Thousands.' },
-  why1d: { fr:"Un calculateur vous dit \u00ab\u00a0vous aurez 800\u00a0000\u00a0$\u00a0\u00bb. Ça ne veut rien dire. BuildFi teste votre plan dans jusqu\u2019à 10\u00a0000 scénarios \u2014 bonnes années, mauvaises années, crises \u2014 et vous dit dans quel pourcentage votre argent dure.", en:"A calculator tells you \u201cyou\u2019ll have $800,000.\u201d That means nothing. BuildFi tests your plan across up to 10,000 scenarios \u2014 good years, bad years, crises \u2014 and tells you what percentage of the time your money lasts." },
+  why1d: { fr:"Un calculateur vous dit \u00ab\u00a0vous aurez 800\u00a0000\u00a0$\u00a0\u00bb. Ça ne veut rien dire. BuildFi teste votre plan dans 5\u00a0000 scénarios \u2014 bonnes années, mauvaises années, crises \u2014 et vous dit dans quel pourcentage votre argent dure.", en:"A calculator tells you \u201cyou\u2019ll have $800,000.\u201d That means nothing. BuildFi tests your plan across 5,000 scenarios \u2014 good years, bad years, crises \u2014 and tells you what percentage of the time your money lasts." },
   why2t: { fr:'Vos vrais impôts. Pas une estimation.', en:'Your real taxes. Not an estimate.' },
   why2d: { fr:"On calcule vos impôts fédéraux et provinciaux ligne par ligne \u2014 crédits pour l\u2019âge, pension, récupération de la PSV, fractionnement. Les 10 provinces et 3 territoires, barèmes 2026.", en:"We calculate your federal and provincial taxes line by line \u2014 age credits, pension, OAS clawback, income splitting. All 10 provinces and 3 territories, 2026 brackets." },
   // why3t: { fr:'Vous allez comprendre votre rapport.', en:'You\u2019ll actually understand your report.' },  // moved to engine section
@@ -967,7 +966,7 @@ var T = {
   why5t: { fr:'Canadien. Pas américain traduit.', en:'Canadian. Not a translated American tool.' },
   why5d: { fr:"RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR \u2014 chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.", en:"CPP, OAS, GIS, RRSP, TFSA, FHSA, RRIF \u2014 every government program is modeled. Built for Canadian taxation from the first line of code." },
   why6t: { fr:'On ne veut pas vos données.', en:'We don\u2019t want your data.' },
-  why6d: { fr:"Les calculs roulent dans votre navigateur. Rien n\u2019est envoyé à nos serveurs. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre rapport. C\u2019est tout.", en:"Calculations run in your browser. Nothing is sent to our servers. No account. No marketing emails. You pay, you get your report. That\u2019s it." },
+  why6d: { fr:"Vos données sont traitées sur nos serveurs sécurisés au Canada. Aucune donnée financière n\u2019est conservée après la génération de votre bilan. Pas de compte. Pas de courriel marketing. Vous payez, vous recevez votre bilan. C\u2019est tout.", en:"Your data is processed on our secure Canadian servers. No financial data is retained after your assessment is generated. No account. No marketing emails. You pay, you get your assessment. That\u2019s it." },
   // Preview
   previewLabel: { fr:'Aperçu du rapport', en:'Report preview' },
   previewTitle: { fr:'Ce que contient chaque rapport', en:'What each report contains' },
@@ -1013,10 +1012,10 @@ var T = {
   fa2: { fr:"<strong>Essentiel:</strong> 5 à 8 minutes \u2014 un questionnaire rapide et vos résultats arrivent en ligne et par courriel.<br><strong>Intermédiaire:</strong> 10 à 15 minutes \u2014 un questionnaire plus détaillé pour couvrir le couple, la propriété et la stratégie fiscale.<br><strong>Expert:</strong> À votre rythme. Le simulateur est accessible en sessions illimitées. Explorez, testez, ajustez aussi longtemps que vous le souhaitez.", en:"<strong>Essential:</strong> 5 to 8 minutes \u2014 a quick questionnaire and your results arrive online and by email.<br><strong>Intermediate:</strong> 10 to 15 minutes \u2014 a more detailed questionnaire covering couples, property, and tax strategy.<br><strong>Expert:</strong> At your own pace. The simulator is accessible in unlimited sessions. Explore, test, adjust as long as you wish." },
   fq3: { fr:'Quelle est la différence entre les trois produits?', en:'What\u2019s the difference between the three products?' },
   fa3: { fr:"<strong>Essentiel</strong> est pour les personnes seules qui veulent un premier portrait \u2014 c\u2019est le point de départ. <strong>Intermédiaire</strong> est pour les couples et les propriétaires qui ont besoin d\u2019une analyse plus complète. <strong>Expert</strong> est pour ceux qui veulent tout contrôler: un simulateur interactif avec sessions illimitées. Chaque niveau inclut tout le contenu du niveau précédent. En doute? Commencez par l\u2019Essentiel \u2014 vous pouvez toujours passer au niveau suivant et nous créditons votre achat.", en:"<strong>Essential</strong> is for individuals who want a first portrait \u2014 it\u2019s the starting point. <strong>Intermediate</strong> is for couples and homeowners who need a more complete analysis. <strong>Expert</strong> is for those who want full control: an interactive simulator with unlimited sessions. Each level includes all features from the level below. Unsure? Start with Essential \u2014 you can always upgrade and we credit your purchase." },
-  fq4: { fr:'Qu\u2019est-ce que \u00ab\u00a010\u00a0000 scénarios\u00a0\u00bb?', en:'What does \u201c10,000 scenarios\u201d mean?' },
-  fa4: { fr:"Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans jusqu\u2019à 10\u00a0000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C\u2019est la méthode Monte Carlo \u2014 couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.", en:"Instead of giving you one optimistic projection, our engine simulates your plan across up to 10,000 different conditions: bull markets, recessions, variable inflation, increased longevity. This is the Monte Carlo method \u2014 widely used in financial analysis. Your retirement grade reflects the percentage of scenarios where your money lasts your lifetime." },
+  fq4: { fr:'Qu\u2019est-ce que \u00ab\u00a05\u00a0000 scénarios\u00a0\u00bb?', en:'What does \u201c5,000 scenarios\u201d mean?' },
+  fa4: { fr:"Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans 5\u00a0000 conditions différentes: marchés haussiers, récessions, inflation variable, longévité accrue. C\u2019est la méthode Monte Carlo \u2014 couramment utilisée en analyse financière. Votre note de retraite reflète le pourcentage de ces scénarios où votre argent dure toute votre vie.", en:"Instead of giving you one optimistic projection, our engine simulates your plan across 5,000 different conditions: bull markets, recessions, variable inflation, increased longevity. This is the Monte Carlo method \u2014 widely used in financial analysis. Your retirement grade reflects the percentage of scenarios where your money lasts your lifetime." },
   fq5: { fr:'Mes données sont-elles protégées?', en:'Is my data protected?' },
-  fa5: { fr:"Oui. Vos données financières ne sont jamais stockées sur nos serveurs. Les calculs s\u2019exécutent dans votre navigateur. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 \u2014 le plus haut niveau de sécurité dans l\u2019industrie. Nous ne voyons jamais votre numéro de carte.", en:"Yes. Your financial data is never stored on our servers. Calculations run in your browser. Payment is processed by Stripe, certified PCI DSS Level 1 \u2014 the highest security level in the industry. We never see your card number." },
+  fa5: { fr:"Oui. Vos données sont traitées sur nos serveurs sécurisés au Canada. Aucune donnée financière n\u2019est conservée après la génération de votre bilan. Le paiement est traité par Stripe, qui est certifié PCI DSS niveau 1 \u2014 le plus haut niveau de sécurité dans l\u2019industrie. Nous ne voyons jamais votre numéro de carte.", en:"Yes. Your data is processed on our secure Canadian servers. No financial data is retained after your assessment is generated. Payment is processed by Stripe, certified PCI DSS Level 1 \u2014 the highest security level in the industry. We never see your card number." },
   fq6: { fr:"Puis-je passer d\u2019un produit à l\u2019autre?", en:'Can I switch between products?' },
   fa6: { fr:"Oui. Si votre situation évolue, nous créditons votre achat précédent vers le produit supérieur. Par exemple, si vous passez de l\u2019Essentiel à l\u2019Intermédiaire, vous payez uniquement la différence. Contactez-nous et nous activerons votre mise à niveau.", en:"Yes. If your situation changes, we credit your previous purchase toward the higher product. For example, if you move from Essential to Intermediate, you only pay the difference. Contact us and we\u2019ll activate your upgrade." },
   fq7: { fr:"Quelle est votre politique après l\u2019achat?", en:'What is your post-purchase policy?' },
@@ -1024,12 +1023,11 @@ var T = {
   fq8: { fr:"Quelle espérance de vie utilisez-vous?", en:"What life expectancy do you use?" },
   fa8: { fr:"Nous utilisons les tables de mortalité canadiennes les plus récentes, ajustées pour refléter les tendances d\u2019amélioration de la longévité. L\u2019\u00e2ge de décès varie d\u2019un scénario à l\u2019autre \u2014 votre plan est testé avec une durée de vie de 85 ans comme avec 98 ans. C\u2019est une des variables stochastiques du modèle.", en:"We use the most recent Canadian mortality tables, adjusted to reflect longevity improvement trends. The age of death varies across scenarios \u2014 your plan is tested with a lifespan of 85 as well as 98. It\u2019s one of the stochastic variables in the model." },
   fq9: { fr:'Quel rendement supposez-vous?', en:'What return do you assume?' },
-  fa9: { fr:"Aucun rendement fixe. Le moteur génère des distributions de rendements corrélés \u2014 actions, obligations, inflation \u2014 basées sur des données historiques. Chaque scénario a ses propres séquences de bonnes et mauvaises années. C\u2019est ce qui différencie une simulation d\u2019un calculateur qui suppose 6\u00a0% par année.", en:"No fixed return. The engine generates correlated return distributions \u2014 equities, bonds, inflation \u2014 based on historical data. Each scenario has its own sequences of good and bad years. That\u2019s what differentiates a simulation from a calculator that assumes 6% per year." },
+  fa9: { fr:"Aucun rendement fixe. Le moteur génère des milliers de séquences de rendements différentes \u2014 actions, obligations, inflation \u2014 basées sur des données historiques. Chaque scénario a ses propres bonnes et mauvaises années. C\u2019est ce qui différencie une simulation d\u2019un calculateur qui suppose 6\u00a0% par année.", en:"No fixed return. The engine generates thousands of different return sequences \u2014 equities, bonds, inflation \u2014 based on historical data. Each scenario has its own good and bad years. That\u2019s what differentiates a simulation from a calculator that assumes 6% per year." },
   // Final CTA
   finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
   finalSubtitle: { fr:'Un rapport complet, un paiement unique.', en:'A complete report, one payment.' },
-  finalCtaPrimary: { fr:'Obtenir mon rapport \u2192', en:'Get my report \u2192' },
-  finalCtaSec: { fr:'Voir les produits \u2191', en:'See products \u2191' },
+  finalCtaPrimary: { fr:'Choisir mon produit \u2192', en:'Choose my product \u2192' },
   finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non conservées', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never stored' },
   stickyText: { fr:'À partir de <span>29\u00a0$</span>', en:'Starting at <span>$29</span>' },
   stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },

@@ -6,24 +6,26 @@ import { randomUUID } from "crypto";
 import { getExpertProfile, updateExpertProfile, setTokenIndex, invalidateToken } from "@/lib/kv";
 import { sendMagicLinkEmail } from "@/lib/email-expert";
 
-// In-memory rate limit: max 5 requests per IP per 15 minutes
-const rateLimitMap = new Map<string, number[]>();
-const RL_WINDOW = 15 * 60 * 1000;
+// KV-backed rate limit: max 5 requests per IP per 15 minutes
+import { redis } from "@/lib/kv";
+const RL_WINDOW_SEC = 15 * 60;
 const RL_MAX = 5;
 
-function isRateLimited(ip: string): boolean {
+async function isRateLimited(ip: string): Promise<boolean> {
+  const key = `ratelimit:magic-link:${ip}`;
   const now = Date.now();
-  const hits = (rateLimitMap.get(ip) || []).filter((t) => now - t < RL_WINDOW);
-  if (hits.length >= RL_MAX) return true;
-  hits.push(now);
-  rateLimitMap.set(ip, hits);
+  const timestamps: number[] = (await redis.get<number[]>(key)) || [];
+  const recent = timestamps.filter((t) => now - t < RL_WINDOW_SEC * 1000);
+  if (recent.length >= RL_MAX) return true;
+  recent.push(now);
+  await redis.set(key, recent, { ex: RL_WINDOW_SEC });
   return false;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    if (isRateLimited(ip)) {
+    if (await isRateLimited(ip)) {
       // Return 200 + { sent: true } to prevent enumeration even on rate limit
       return NextResponse.json({ sent: true });
     }

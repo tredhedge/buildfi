@@ -3,6 +3,18 @@
     {
       "path": "/api/cron/feedback",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/renewal",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/anniversary",
+      "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/constants-check",
+      "schedule": "0 14 10 1,2 *"
     }
   ]
 }

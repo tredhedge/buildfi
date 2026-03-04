@@ -4008,6 +4008,10 @@ function runMC(p, N, _progressCb) {
   p.noP = Math.max(0, Math.min(p.noP || 0.75, 1.5));
   // Health multiplier: 0-10%
   p.healthMul = Math.max(0, Math.min(p.healthMul || 0, 0.10));
+  // Government benefit inputs
+  p.avgE = Math.max(0, p.avgE || 0);
+  p.qppYrs = Math.max(0, p.qppYrs || 0);
+  p.qppAge = p.qppAge || 60;
   // === END SANITIZATION ===
   var maxYrs = Math.floor(p.deathAge - p.age);
   if (maxYrs <= 0) return null;
@@ -5132,7 +5136,7 @@ function runMC(p, N, _progressCb) {
     var _mrGov = (mrp.qpp||0) + (mrp.oas||0) + (mrp.gis||0) + (mrp.pen||0) + (mrp.pt||0);
     var _mrActualSpend = mrRetired ? _mrGov + _mrRetCapped : (mrp.spend||0);
     medRevData.push({ age: mrAge, rrq: mrp.qpp||0, psv: mrp.oas||0, srg: mrp.gis||0, pen: mrp.pen||0, pt: mrp.pt||0, ret: _mrRetCapped, spend: _mrActualSpend, tax: mrTax, taxInc: Math.max(0, mrTaxInc), penCont: mrp.penCont||0, sal: mrRetired ? 0 : p.sal * mrInf, payroll: mrRetired ? 0 : calcPayroll(p.sal * mrInf, p.prov || "QC"), cSal: mrRetired ? 0 : (p.cSal || 0) * mrInf, cPayroll: mrRetired ? 0 : calcPayroll((p.cSal || 0) * mrInf, p.prov || "QC"),
-      aRR: mrp.rr||0, aTF: mrp.tf||0, aNR: mrp.nr||0, aPE: mrp.pe||0, aPM: mrp.pm||0, aDC: mrp.dc||0, aCRR: mrp.crr||0, aCTF: mrp.ctf||0, aCNR: mrp.cnr||0, aRE: mrp.re||0, gis: mrp.gis||0,
+      aRR: mrp.rr||0, aTF: mrp.tf||0, aNR: mrp.nr||0, aPE: mrp.pe||0, aPM: mrp.pm||0, aDC: mrp.dc||0, aCRR: mrp.crr||0, aCTF: mrp.ctf||0, aCNR: mrp.cnr||0, aRE: mrp.re||0, aLIRA: mrp.lira||0, aCLIRA: mrp.cLira||0, gis: mrp.gis||0,
       corpBal: mrp.corp||0, corpTax: revData[mri] ? (revData[mri].corpTax||0) : 0, corpSal: revData[mri] ? (revData[mri].corpSal||0) : 0, corpDiv: revData[mri] ? (revData[mri].corpDiv||0) : 0, corpExtract: revData[mri] ? (revData[mri].corpExtract||0) : 0, corpCDA: revData[mri] ? (revData[mri].corpCDA||0) : 0, corpRDTOH: revData[mri] ? (revData[mri].corpRDTOH||0) : 0 });
   }
   // Derive withdrawal sources from balance deltas on medPath

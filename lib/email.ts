@@ -32,8 +32,8 @@ export async function sendReportEmail(params: SendReportParams) {
     : { essentiel: "Essential", intermediaire: "Intermediate", expert: "Expert" }[tier] || tier;
 
   const subject = fr
-    ? `Votre rapport ${tierName} buildfi.ca est prêt — Note ${grade}`
-    : `Your buildfi.ca ${tierName} report is ready — Grade ${grade}`;
+    ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
+    : `Your buildfi.ca ${tierName} assessment is ready — Grade ${grade}`;
 
   const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken });
 
@@ -42,6 +42,10 @@ export async function sendReportEmail(params: SendReportParams) {
     to: [to],
     subject,
     html,
+    headers: {
+      "List-Unsubscribe": "<mailto:support@buildfi.ca?subject=Unsubscribe>",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 
   if (error) {
@@ -66,7 +70,7 @@ function buildEmailHTML(params: {
 
   // A-3: Dynamic preheader
   const preheader = fr
-    ? `Note ${grade} \u2014 taux de r\u00e9ussite ${successPct}%. Votre rapport personnalis\u00e9 est pr\u00eat.`
+    ? `Note ${grade} \u2014 taux de r\u00e9ussite ${successPct}%. Votre bilan personnalis\u00e9 est pr\u00eat.`
     : `Grade ${grade} \u2014 ${successPct}% success rate. Your personalized report is ready.`;
 
   // Invisible spacer to push preheader and prevent Gmail from pulling body text
@@ -75,16 +79,16 @@ function buildEmailHTML(params: {
   // E-3: All user-facing strings, fully bilingual
   const s = {
     tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
-    tierLabel: fr ? `Rapport ${tierName}` : `${tierName} Report`,
+    tierLabel: fr ? `Bilan ${tierName}` : `${tierName} Assessment`,
     successLabel: fr ? `Taux de r\u00e9ussite\u00a0: ${successPct}\u00a0%` : `Success rate: ${successPct}%`,
     bodyP1: fr
-      ? "Votre rapport de retraite personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
-      : "Your personalized retirement report is ready. Click the button below to view it.",
+      ? "Votre bilan de retraite personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
+      : "Your personalized retirement assessment is ready. Click the button below to view it.",
     // E-7: "Monte Carlo" removed — replaced with "scénarios"
     bodyP2: fr
       ? "Ce rapport est bas\u00e9 sur 5\u00a0000 sc\u00e9narios de votre situation financi\u00e8re. Chaque dollar provient directement du moteur de calcul\u00a0\u2014\u00a0aucune estimation approximative."
       : "This report is based on 5,000 scenarios of your financial situation. Every dollar comes directly from the calculation engine\u2009\u2014\u2009no rough estimates.",
-    cta: fr ? "Consulter mon rapport" : "View my report",
+    cta: fr ? "Consulter mon bilan" : "View my assessment",
     linkExpiry: fr ? "Ce lien est valide 30\u00a0jours" : "This link is valid for 30\u00a0days",
     fallbackLink: fr ? "Si le bouton ne fonctionne pas\u00a0:" : "If the button doesn\u2019t work:",
     upsellTitle: fr ? "Envie d\u2019aller plus loin\u00a0?" : "Want to go further?",
@@ -111,7 +115,7 @@ function buildEmailHTML(params: {
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${fr ? "Votre rapport buildfi.ca" : "Your buildfi.ca report"}</title>
+  <title>${fr ? "Votre bilan buildfi.ca" : "Your buildfi.ca assessment"}</title>
   <!--[if mso]>
   <style type="text/css">
     table { border-collapse: collapse; }
@@ -317,11 +321,11 @@ function buildEmailHTML(params: {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:10px;">
-                    <a href="https://www.buildfi.ca/conditions" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
+                    <a href="https://www.buildfi.ca/conditions.html" style="color:${GOLD};text-decoration:none;">${fr ? "Conditions" : "Terms"}</a>
                     &nbsp;&middot;&nbsp;
-                    <a href="https://www.buildfi.ca/confidentialite" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
+                    <a href="https://www.buildfi.ca/confidentialite.html" style="color:${GOLD};text-decoration:none;">${fr ? "Confidentialit\u00e9" : "Privacy"}</a>
                     &nbsp;&middot;&nbsp;
-                    <a href="https://www.buildfi.ca/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
+                    <a href="https://www.buildfi.ca/avis-legal.html" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
                   </td>
                 </tr>
                 <tr>
@@ -341,8 +345,13 @@ function buildEmailHTML(params: {
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;">
+                  <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;line-height:1.8;padding-bottom:6px;">
                     ${s.productType}
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:${FONT};font-size:10px;color:#bbbbbb;line-height:1.8;">
+                    <a href="mailto:support@buildfi.ca?subject=${fr ? "D%C3%A9sabonnement" : "Unsubscribe"}" style="color:#bbbbbb;text-decoration:underline;">${fr ? "Se d\u00e9sabonner" : "Unsubscribe"}</a>
                   </td>
                 </tr>
               </table>

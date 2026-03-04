@@ -124,7 +124,7 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
   const mc2 = a.monthlyContrib || 0;
   const ac = mc2 * 12;
   const tfsaC = a.tfsaC != null ? a.tfsaC : Math.min(ac, 7000);
-  const rrspC = a.rrspC != null ? a.rrspC : Math.min(ac - tfsaC, Math.min(sal * 0.18, 31560));
+  const rrspC = a.rrspC != null ? a.rrspC : Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
   const nrC = Math.max(0, ac - tfsaC - rrspC);
   if (a.tfsaC == null) filled.push("tfsaC");
   if (a.rrspC == null) filled.push("rrspC");

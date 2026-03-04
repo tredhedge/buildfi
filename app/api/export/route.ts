@@ -60,7 +60,7 @@ async function callAnthropicBatch(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { params, lang: rawLang } = body;
+    const { params, lang: rawLang, comparisonData } = body;
     const lang: "fr" | "en" = rawLang === "en" ? "en" : "fr";
 
     if (!params || typeof params !== "object") {
@@ -141,7 +141,13 @@ export async function POST(req: NextRequest) {
     console.log(`[export] ${Object.keys(ai).length}/${activeSections.length} AI sections filled`);
 
     // ── Step 6: Render HTML report ──────────────────────────────
-    const html = renderReportHTMLExpert(D, mc, params, ai, activeSections, lang);
+    // comparisonData: optional array of {label, successPct, wealthDelta} from client-side scenario comparison
+    const validComparison = Array.isArray(comparisonData)
+      ? comparisonData.filter(
+          (c: any) => c && typeof c.label === "string" && typeof c.successPct === "number" && typeof c.wealthDelta === "number"
+        ).slice(0, 10)
+      : undefined;
+    const html = renderReportHTMLExpert(D, mc, params, ai, activeSections, lang, undefined, validComparison);
 
     // ── Step 7: Upload to Blob ──────────────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);
@@ -194,6 +200,27 @@ export async function POST(req: NextRequest) {
       }
     } catch (logErr) {
       console.error("[export] Changelog update failed (non-fatal):", logErr);
+    }
+
+    // ── Step 9b: BUG 20 — Abuse detection (non-blocking) ─────────
+    try {
+      const freshProfile = await getExpertProfile(authResult.email);
+      if (freshProfile?.reportsGenerated?.length) {
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const recentExports = freshProfile.reportsGenerated.filter(
+          (r) => r.type === "expert" && new Date(r.date).getTime() >= sevenDaysAgo
+        );
+        if (recentExports.length >= 5) {
+          console.warn(
+            `[ABUSE] ${authResult.email}: ${recentExports.length} exports in 7 days`
+          );
+          await updateExpertProfile(authResult.email, {
+            abuseFlag: true,
+          });
+        }
+      }
+    } catch (abuseErr) {
+      console.error("[export] Abuse detection failed (non-fatal):", abuseErr);
     }
 
     // ── Step 10: Send email ─────────────────────────────────────

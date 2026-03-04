@@ -4,6 +4,7 @@
 
 import { Redis } from "@upstash/redis";
 import { randomUUID, randomBytes } from "crypto";
+import { ENGINE_VERSION } from "@/lib/api-helpers";
 
 // ── Redis client ──────────────────────────────────────────
 
@@ -31,6 +32,7 @@ export interface ExpertProfile {
   constantsYear: number;
   reportsGenerated: GeneratedReport[];
   referralCode: string;
+  abuseFlag?: boolean; // BUG 20: set when 5+ exports detected in 7 days
 }
 
 export interface SavedProfile {
@@ -108,7 +110,7 @@ export async function createExpertProfile(
     tier: "expert",
     accountType: "personal",
     upgradedFrom: options?.upgradedFrom || null,
-    engineVersion: "11.12.9",
+    engineVersion: ENGINE_VERSION,
     constantsYear: 2026,
     reportsGenerated: [],
     referralCode,
@@ -201,6 +203,31 @@ export async function decrementExportCredit(
       return { success: false, remaining: profile?.exportsAI ?? 0 };
     }
     const remaining = profile.exportsAI - 1;
+    await updateExpertProfile(email, { exportsAI: remaining });
+    return { success: true, remaining };
+  }
+}
+
+export async function incrementExportCredit(
+  email: string
+): Promise<{ success: boolean; remaining: number }> {
+  const norm = normalizeEmail(email);
+  const key = KEYS.expert(norm);
+  try {
+    const result = await redis.eval(
+      `local d = redis.call('GET', KEYS[1])
+       if not d then return {0, -1} end
+       local p = cjson.decode(d)
+       p.exportsAI = (p.exportsAI or 0) + 1
+       redis.call('SET', KEYS[1], cjson.encode(p))
+       return {1, p.exportsAI}`,
+      [key], []
+    ) as [number, number];
+    return { success: result[0] === 1, remaining: result[1] };
+  } catch {
+    const profile = await getExpertProfile(email);
+    if (!profile) return { success: false, remaining: 0 };
+    const remaining = profile.exportsAI + 1;
     await updateExpertProfile(email, { exportsAI: remaining });
     return { success: true, remaining };
   }
@@ -407,6 +434,31 @@ export async function listPendingFeedback(): Promise<FeedbackRecord[]> {
       if (key.startsWith("feedback-email:")) continue;
       const record = await redis.get<FeedbackRecord>(key);
       if (record) results.push(record);
+    }
+  } while (cursor !== 0);
+  return results;
+}
+
+// ── Renewal Scan ─────────────────────────────────────────
+
+export async function listExpertProfiles(): Promise<
+  { email: string; profile: ExpertProfile }[]
+> {
+  const results: { email: string; profile: ExpertProfile }[] = [];
+  let cursor = 0;
+  do {
+    const [nextCursor, keys] = await redis.scan(cursor, {
+      match: "expert:*",
+      count: 100,
+    });
+    cursor =
+      typeof nextCursor === "number"
+        ? nextCursor
+        : parseInt(nextCursor as string);
+    for (const key of keys) {
+      const email = key.replace("expert:", "");
+      const profile = await redis.get<ExpertProfile>(key);
+      if (profile) results.push({ email, profile });
     }
   } while (cursor !== 0);
   return results;

@@ -3,7 +3,7 @@
 // Shows: credits, reports history, saved profiles, referral, quick actions
 // Auth: token from query param, same pattern as /simulateur
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 // ── Expert Kit colors ──────────────────────────────────────────────
@@ -70,9 +70,98 @@ function PortalContent() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
   const [authStatus, setAuthStatus] = useState<"loading" | "ok" | "denied">("loading");
   const [profile, setProfile] = useState<ExpertProfile | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+  const tokenRef = useRef(tokenParam);
 
   const fr = lang === "fr";
   const t = (f: string, e: string) => fr ? f : e;
+
+  // Keep tokenRef current (token is removed from URL after auth but we need it for API calls)
+  useEffect(() => { if (tokenParam) tokenRef.current = tokenParam; }, [tokenParam]);
+
+  // ── API helpers ─────────────────────────────────────────
+  const apiHeaders = useCallback(() => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${tokenRef.current}`,
+  }), []);
+
+  const renameProfile = useCallback(async (profileId: string, newName: string) => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: apiHeaders(),
+        body: JSON.stringify({ profileId, newName }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Rename failed");
+      }
+      // Update local state on success
+      setProfile(prev => {
+        if (!prev) return prev;
+        const updated = prev.profiles.map(p => p.id === profileId ? { ...p, name: newName } : p);
+        return { ...prev, profiles: updated };
+      });
+      return true;
+    } catch (err: any) {
+      alert(err.message || t("Erreur lors du renommage", "Rename failed"));
+      return false;
+    }
+  }, [apiHeaders, t]);
+
+  const deleteProfile = useCallback(async (profileId: string) => {
+    try {
+      const res = await fetch(`/api/profile?profileId=${encodeURIComponent(profileId)}`, {
+        method: "DELETE",
+        headers: apiHeaders(),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Delete failed");
+      }
+      // Update local state on success
+      setProfile(prev => {
+        if (!prev) return prev;
+        return { ...prev, profiles: prev.profiles.filter(p => p.id !== profileId) };
+      });
+      return true;
+    } catch (err: any) {
+      alert(err.message || t("Erreur lors de la suppression", "Delete failed"));
+      return false;
+    }
+  }, [apiHeaders, t]);
+
+  const regenerateReport = useCallback(async (reportId: string) => {
+    setRegeneratingId(reportId);
+    try {
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: apiHeaders(),
+        body: JSON.stringify({ regenerateReportId: reportId }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Regeneration failed");
+      }
+      const d = await res.json();
+      // Update the report in local state if the API returns the updated report
+      if (d.report) {
+        setProfile(prev => {
+          if (!prev) return prev;
+          const updated = prev.reportsGenerated.map(r => r.id === reportId ? { ...r, ...d.report } : r);
+          return { ...prev, reportsGenerated: updated };
+        });
+      }
+      alert(t("Bilan regenere avec succes. Le lien sera mis a jour sous peu.", "Assessment regenerated successfully. The link will be updated shortly."));
+    } catch (err: any) {
+      alert(err.message || t("Erreur lors de la regeneration", "Regeneration failed"));
+    } finally {
+      setRegeneratingId(null);
+    }
+  }, [apiHeaders, t]);
 
   // Auth
   useEffect(() => {
@@ -113,18 +202,56 @@ function PortalContent() {
   if (authStatus === "denied" || !profile) {
     return (
       <div style={{ minHeight: "100vh", background: EK.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 16, padding: 40, maxWidth: 420, textAlign: "center" }}>
-          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 12 }}>
-            {t("Acces requis", "Access required")}
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Newsreader:wght@400;600;700&display=swap');`}</style>
+        <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 16, padding: 40, maxWidth: 480, textAlign: "center" }}>
+          {/* Logo */}
+          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 4 }}>
+            buildfi.ca <span style={{ fontSize: 12, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Simulateur Expert</span>
           </div>
-          <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 24 }}>
+
+          {/* Padlock icon */}
+          <div style={{ margin: "20px auto 16px", width: 48, height: 48, borderRadius: 12, background: "rgba(184,134,11,.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+
+          {/* Title */}
+          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
+            {t("Le simulateur Expert est réservé aux membres.", "The Expert simulator is for members only.")}
+          </div>
+
+          {/* Pitch */}
+          <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
             {t(
-              "Connectez-vous via le lien magique dans votre courriel pour acceder a votre portail Expert.",
-              "Log in via the magic link in your email to access your Expert portal."
+              "Testez vos décisions de retraite en temps réel. 5 profils pré-configurés, optimiseur automatique, exports AI.",
+              "Test your retirement decisions in real time. 5 pre-configured profiles, automatic optimizer, AI exports."
             )}
           </div>
-          <a href="https://buildfi.ca" style={{ display: "inline-block", background: EK.marine, color: "#fff", padding: "12px 28px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
-            {t("Retour a buildfi.ca", "Back to buildfi.ca")}
+
+          {/* Primary CTA → landing */}
+          <a href="/expert/landing" style={{
+            display: "block", background: EK.marine, color: "#fff", padding: "14px 28px", borderRadius: 10,
+            fontWeight: 700, fontSize: 15, textDecoration: "none", fontFamily: "'DM Sans', sans-serif", marginBottom: 12,
+          }}>
+            {t("Découvrir le simulateur Expert", "Discover the Expert simulator")}
+          </a>
+
+          {/* Secondary CTA → magic link resend */}
+          <a href="/api/auth/magic-link" style={{
+            display: "block", background: "transparent", border: `2px solid ${EK.border}`, color: EK.marine,
+            padding: "12px 28px", borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: "none",
+            fontFamily: "'DM Sans', sans-serif", marginBottom: 16,
+          }}>
+            {t("J'ai déjà un accès — renvoyer mon lien", "I already have access — resend my link")}
+          </a>
+
+          {/* Tertiary link → Essentiel */}
+          <a href="/quiz-essentiel.html" style={{
+            fontSize: 13, color: EK.txDim, textDecoration: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+          }}>
+            {t("Commencer par le Diagnostic à 14,50 $ →", "Start with the Diagnostic at $14.50 →")}
           </a>
         </div>
       </div>
@@ -152,7 +279,7 @@ function PortalContent() {
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>Portail Expert</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <a href={`/simulateur?token=${tokenParam}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
+          <a href={`/simulateur?token=${tokenRef.current}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
             {t("Simulateur", "Simulator")}
           </a>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", padding: "4px 10px", borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
@@ -201,7 +328,7 @@ function PortalContent() {
 
         {/* Quick actions */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
-          <a href={`/simulateur?token=${tokenParam}`} style={{
+          <a href={`/simulateur?token=${tokenRef.current}`} style={{
             display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
             background: EK.marine, borderRadius: 12, textDecoration: "none", color: "#fff",
           }}>
@@ -212,7 +339,7 @@ function PortalContent() {
             </div>
           </a>
           {profile.exportsAI > 0 ? (
-            <a href={`/simulateur?token=${tokenParam}&action=export`} style={{
+            <a href={`/simulateur?token=${tokenRef.current}&action=export`} style={{
               display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
               background: `linear-gradient(135deg, ${EK.gold}, #d4a85a)`, borderRadius: 12, textDecoration: "none", color: EK.tx,
             }}>
@@ -291,12 +418,32 @@ function PortalContent() {
                       </div>
                     </div>
                   </div>
-                  <a href={r.blobUrl} target="_blank" rel="noopener noreferrer" style={{
-                    background: EK.marine, color: "#fff", padding: "8px 16px", borderRadius: 8,
-                    fontSize: 12, fontWeight: 700, textDecoration: "none",
-                  }}>
-                    {t("Voir", "View")}
-                  </a>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    {r.aiStatus === "fallback" && (
+                      <button
+                        onClick={() => regenerateReport(r.id)}
+                        disabled={regeneratingId === r.id}
+                        title={t("Regenerer la narration AI", "Regenerate AI narration")}
+                        style={{
+                          background: "none", border: `1px solid ${EK.gold}`, color: EK.gold,
+                          padding: "8px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700,
+                          cursor: regeneratingId === r.id ? "wait" : "pointer",
+                          opacity: regeneratingId === r.id ? 0.6 : 1,
+                          fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap",
+                        }}
+                      >
+                        {regeneratingId === r.id
+                          ? (t("En cours...", "Working..."))
+                          : (t("Regenerer avec AI", "Regenerate with AI"))}
+                      </button>
+                    )}
+                    <a href={r.blobUrl} target="_blank" rel="noopener noreferrer" style={{
+                      background: EK.marine, color: "#fff", padding: "8px 16px", borderRadius: 8,
+                      fontSize: 12, fontWeight: 700, textDecoration: "none",
+                    }}>
+                      {t("Voir", "View")}
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -314,14 +461,103 @@ function PortalContent() {
                 "No saved profiles. Profiles are created automatically in the simulator.")}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
               {profiles.map((p, i) => (
                 <div key={p.id || i} style={{
                   background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "16px 18px",
                 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: EK.marine, marginBottom: 6 }}>{p.name || `Profil ${i + 1}`}</div>
+                  {/* Profile name — inline edit when renaming */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    {renamingId === p.id ? (
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          const trimmed = renameValue.trim();
+                          if (trimmed && trimmed !== p.name) {
+                            await renameProfile(p.id, trimmed);
+                          }
+                          setRenamingId(null);
+                        }}
+                        style={{ display: "flex", gap: 4, flex: 1, marginRight: 8 }}
+                      >
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => setRenamingId(null)}
+                          onKeyDown={(e) => { if (e.key === "Escape") setRenamingId(null); }}
+                          maxLength={60}
+                          style={{
+                            flex: 1, fontSize: 13, fontWeight: 600, color: EK.marine,
+                            border: `1px solid ${EK.gold}`, borderRadius: 4, padding: "2px 6px",
+                            fontFamily: "'DM Sans', sans-serif", outline: "none",
+                          }}
+                        />
+                        <button
+                          type="submit"
+                          onMouseDown={(e) => e.preventDefault()}
+                          style={{ background: EK.gold, border: "none", borderRadius: 4, padding: "2px 8px", fontSize: 11, color: "#fff", cursor: "pointer", fontWeight: 700 }}
+                        >
+                          OK
+                        </button>
+                      </form>
+                    ) : (
+                      <div style={{ fontSize: 14, fontWeight: 700, color: EK.marine }}>{p.name || `Profil ${i + 1}`}</div>
+                    )}
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      {/* Rename */}
+                      <button
+                        onClick={() => { setRenamingId(p.id); setRenameValue(p.name || `Profil ${i + 1}`); }}
+                        title={t("Renommer", "Rename")}
+                        style={{ background: "none", border: `1px solid ${EK.border}`, borderRadius: 4, padding: "2px 6px", fontSize: 11, color: EK.txDim, cursor: "pointer" }}
+                      >
+                        &#9998;
+                      </button>
+                      {/* Export JSON */}
+                      <button
+                        onClick={() => {
+                          const blob = new Blob([JSON.stringify(p.data, null, 2)], { type: "application/json" });
+                          const a = document.createElement("a");
+                          a.href = URL.createObjectURL(blob);
+                          a.download = `${(p.name || "profil").replace(/\s+/g, "-")}.json`;
+                          a.click();
+                          URL.revokeObjectURL(a.href);
+                        }}
+                        title={t("Exporter JSON", "Export JSON")}
+                        style={{ background: "none", border: `1px solid ${EK.border}`, borderRadius: 4, padding: "2px 6px", fontSize: 11, color: EK.txDim, cursor: "pointer" }}
+                      >
+                        &#128190;
+                      </button>
+                      {/* Delete with confirmation */}
+                      {deletingId === p.id ? (
+                        <span style={{ display: "flex", gap: 2, alignItems: "center" }}>
+                          <span style={{ fontSize: 10, color: EK.red, whiteSpace: "nowrap" }}>{t("Confirmer?", "Confirm?")}</span>
+                          <button
+                            onClick={async () => { await deleteProfile(p.id); setDeletingId(null); }}
+                            style={{ background: EK.red, border: "none", borderRadius: 4, padding: "2px 6px", fontSize: 10, color: "#fff", cursor: "pointer", fontWeight: 700 }}
+                          >
+                            {t("Oui", "Yes")}
+                          </button>
+                          <button
+                            onClick={() => setDeletingId(null)}
+                            style={{ background: "none", border: `1px solid ${EK.border}`, borderRadius: 4, padding: "2px 6px", fontSize: 10, color: EK.txDim, cursor: "pointer" }}
+                          >
+                            {t("Non", "No")}
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setDeletingId(p.id)}
+                          title={t("Supprimer", "Delete")}
+                          style={{ background: "none", border: `1px solid ${EK.red}33`, borderRadius: 4, padding: "2px 6px", fontSize: 11, color: EK.red, cursor: "pointer" }}
+                        >
+                          &#10005;
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 10 }}>{fDate(p.created, fr)}</div>
-                  <a href={`/simulateur?token=${tokenParam}&profile=${p.id}`} style={{
+                  <a href={`/simulateur?token=${tokenRef.current}&profile=${p.id}`} style={{
                     display: "inline-block", fontSize: 12, fontWeight: 600, color: EK.gold, textDecoration: "none",
                   }}>
                     {t("Charger dans le simulateur", "Load in simulator")} &rarr;

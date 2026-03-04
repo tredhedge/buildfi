@@ -166,7 +166,7 @@ function FeedbackContent() {
         {/* Star rating */}
         <div style={{ background: CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: "28px 24px", marginBottom: 16, textAlign: "center" }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: DARK, marginBottom: 16 }}>
-            Comment &eacute;valuez-vous votre rapport ?
+            Comment &eacute;valuez-vous votre bilan ?
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
             {[1, 2, 3, 4, 5].map((n) => (

@@ -22,7 +22,7 @@ const STEPS_REPORT: Step[] = [
   { fr: "Analyse fiscale...", en: "Tax analysis...", durationMs: 2000 },
   { fr: "Projection du patrimoine...", en: "Wealth projection...", durationMs: 2000 },
   { fr: "Narration personnalisée...", en: "Personalized narration...", durationMs: 4000 },
-  { fr: "Mise en page du rapport...", en: "Report layout...", durationMs: 1500 },
+  { fr: "Mise en page du bilan...", en: "Assessment layout...", durationMs: 1500 },
   { fr: "Envoi par courriel...", en: "Sending by email...", durationMs: 2000 },
 ];
 
@@ -204,15 +204,15 @@ function ConfirmationContent() {
         <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1A1208", marginBottom: 8, fontFamily: "Newsreader, Georgia, serif" }}>
           {done
             ? (fr ? "Merci pour votre achat!" : "Thank you for your purchase!")
-            : (fr ? "Préparation en cours..." : "Preparing your report...")}
+            : (fr ? "Préparation en cours..." : "Preparing your assessment...")}
         </h1>
         <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, marginBottom: 32 }}>
           {done
             ? (isExpert
               ? (fr ? "Votre bilan Expert est prêt. Un lien magique a été envoyé à votre courriel pour accéder au simulateur."
                     : "Your Expert assessment is ready. A magic link has been sent to your email to access the simulator.")
-              : (fr ? "Votre rapport personnalisé est en route. Vérifiez votre boîte de réception dans les prochaines minutes."
-                    : "Your personalized report is on its way. Check your inbox in the next few minutes."))
+              : (fr ? "Votre bilan personnalisé est en route. Vérifiez votre boîte de réception dans les prochaines minutes."
+                    : "Your personalized assessment is on its way. Check your inbox in the next few minutes."))
             : (fr ? "Nous préparons votre analyse personnalisée. Chaque étape prend quelques secondes."
                   : "We're preparing your personalized analysis. Each step takes a few seconds.")}
         </p>
@@ -277,8 +277,8 @@ function ConfirmationContent() {
                     ? "Vous recevrez un lien magique et votre bilan initial par courriel (rapport@buildfi.ca). Le lien magique vous donne accès au simulateur Expert illimité."
                     : "You'll receive a magic link and your initial assessment by email (rapport@buildfi.ca). The magic link gives you access to the unlimited Expert simulator.")
                   : (fr
-                    ? "Si vous ne voyez pas le courriel dans 5 minutes, vérifiez votre dossier indésirables (spam). Le rapport est envoyé par rapport@buildfi.ca."
-                    : "If you don't see the email within 5 minutes, check your spam folder. The report is sent from rapport@buildfi.ca.")}
+                    ? "Si vous ne voyez pas le courriel dans 5 minutes, vérifiez votre dossier indésirables (spam). Le bilan est envoyé par rapport@buildfi.ca."
+                    : "If you don't see the email within 5 minutes, check your spam folder. The assessment is sent from rapport@buildfi.ca.")}
               </div>
             </div>
 
@@ -304,8 +304,8 @@ function ConfirmationContent() {
                 </div>
                 <a
                   href={tier === "essentiel"
-                    ? `/api/checkout?tier=intermediaire&lang=${lang}`
-                    : `/api/checkout?tier=expert&lang=${lang}`}
+                    ? `/quiz-intermediaire.html?lang=${lang}`
+                    : `/expert-landing.html?lang=${lang}`}
                   onClick={() => trackEvent(EVENTS.UPGRADE_CLICKED, { from: tier, to: tier === "essentiel" ? "intermediaire" : "expert" })}
                   style={{
                     display: "inline-block", background: GOLD, color: "#fff",
@@ -330,8 +330,8 @@ function ConfirmationContent() {
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 12 }}>
                 {fr
-                  ? "Partagez BuildFi avec un proche. Utilisez le code SECOND50 pour votre 2e rapport à moitié prix."
-                  : "Share BuildFi with a friend. Use code SECOND50 for your 2nd report at half price."}
+                  ? "Partagez BuildFi avec un proche. Utilisez le code SECOND50 pour votre 2e bilan à moitié prix."
+                  : "Share BuildFi with a friend. Use code SECOND50 for your 2nd assessment at half price."}
               </div>
               <div style={{
                 background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "8px 12px",
