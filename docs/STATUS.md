@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-03 — v6 (post-audit complet, S1 Expert infra complétée, 21 correctifs appliqués, panel 12 experts)
+> Mis à jour: 2026-03-04 — v7 (launch pricing, cookie consent, Expert landing, S2 Quiz Expert tests, constants auto-update)
 
 ## PHASE ACTUELLE
-**POST-AUDIT + S1 EXPERT INFRA COMPLÉTÉE — Audit 11 phases complété (9 blockers, 12 high-priority). 21 correctifs appliqués au code. Panel de 12 experts passé (score moyen 71.1/100 YELLOW — GO conditionnel pour soft launch). Session S1 Expert terminée (KV Upstash, auth magic link, rate limiting, checkout multi-tier, webhook Expert/addon/referral/renewal). Reste blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel) + pages légales avant lancement Essentiel.**
+**PRE-LAUNCH FINAL — Launch pricing (50% off) deployed on all surfaces. Cookie consent banner (Law 25) added. Expert landing page built at /expert/landing. Constants auto-update system (cron + drift tests). S2 Quiz Expert translator tested (87/87). Legal pages updated. Reste 3 blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel).**
 
 ---
 
@@ -68,7 +68,7 @@
 | Email Expert | ✅ | Magic link + report delivery templates |
 | Tests S1 | ✅ | 23 tests passent |
 
-### Moteur MC — 453 tests, 54 catégories, 0 failures
+### Moteur MC — 453 tests, 54 catégories, 0 failures + 87 Expert translator tests
 - Syncé avec lib/engine/index.js (2,426 lignes, 38 exports)
 - 17 nouveaux tests ajoutés lors de l'audit (436→453)
 - Inclut optimizeDecum()
@@ -80,12 +80,30 @@
 - `lib/report-html-inter.js` — 16 sections, 1,003 lignes
 - `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
 
+### Session S2 — Quiz Expert (2026-03-04)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Quiz Expert paywall pricing | ✅ | Launch pricing (~~129 $~~ 64,50 $) on all price refs |
+| Translator Expert tests | ✅ | 87 tests, 5 profiles (couple/CCPC/preretiree/FIRE/baseline) |
+| Quiz Expert quiz + translator | ✅ PRE-EXISTING | 1,323 + 466 lines, all fields mapped |
+
+### Pre-launch polish (2026-03-04)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Launch pricing (50% off) | ✅ | All 3 tiers on index.html, expert-landing, quiz-expert |
+| Cookie consent banner | ✅ | Law 25, bilingual, localStorage, gates PostHog |
+| SEO/OG meta tags | ✅ | og:locale, og:site_name, og:image on both landings |
+| Legal pages updated | ✅ | Launch pricing in conditions, consent ref in privacy, dates |
+| Expert landing page | ✅ | /expert/landing, launch pricing, bilingual |
+| Constants auto-update | ✅ | Cron Jan+Feb, drift tests, fiscal-2026 |
+| .gitignore updated | ✅ | |
+
 ### Autres composants complétés
 - **Report v6** — Grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme
 - **Email template** — Table-based, bilingual, AMF compliant, grade card dark
 - **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
-- **Landing page v9** — Logo SVG, audit AMF/BSIF complété
+- **Landing page v9** — Logo SVG, audit AMF/BSIF complété, launch pricing
 - **Quiz Essentiel** — Thin client 805 lignes, Stripe intégré
 - **Logo** — SVG flame, shared logo.js, light/dark variants
 
@@ -104,14 +122,14 @@
 ### 3. ANTHROPIC_API_KEY → Vercel [MANUAL]
 - Code complete — ajouter la clé dans Vercel env vars → AI narration goes live
 
-### 4. Pages légales (P0.7)
-- Conditions d'utilisation, politique de confidentialité, avis AMF
-- Templates HTML créés (public/conditions.html, confidentialite.html, avis-legal.html)
-- Besoin: nom légal de l'entreprise, email contact
+### 4. Pages légales (P0.7) — ✅ DONE
+- Conditions, confidentialité, avis légal — mis à jour 2026-03-04
+- Launch pricing ajouté dans conditions
+- Consent banner référencé dans confidentialité
+- [Nom du responsable] placeholder dans confidentialité (Law 25) — à remplir manuellement
 
-### 5. Commit Expert tier files [MANUAL]
-- ~30 fichiers Expert non commités
-- Single commit: "feat: add Expert tier (quiz, translator, API, report, email)"
+### 5. Commit + push [MANUAL]
+- All files ready to commit
 
 ---
 
@@ -134,9 +152,10 @@
 ### P1 — Prochaines actions (par priorité)
 1. Fix Blob public + Resend DNS → rapport accessible par lien
 2. Add ANTHROPIC_API_KEY to Vercel → test E2E avec Stripe test card
-3. Pages légales (P0.7) — conditions, confidentialité, avis AMF
-4. Commit Expert files + audit R19-R20
-5. Soft launch organique (Reddit, LinkedIn, cercle privé)
+3. ~~Pages légales~~ ✅ Done — remplir [Nom du responsable] dans confidentialite.html
+4. Commit + push all changes
+5. Create og-image.png (1200x630) and place in public/
+6. Soft launch organique (Reddit, LinkedIn, cercle privé)
 
 ### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
 - Quiz Intermédiaire thin client (80+ fields, 8 étapes) — à construire
@@ -144,7 +163,7 @@
 - Score résilience 4 jauges, thermomètre risque séquence — à construire
 
 ### Expert — Sessions S2-S14
-- S1 Infra ✅ | S2 Quiz Expert | S3 API simulate/optimize | S4 Simulateur
+- S1 Infra ✅ | S2 Quiz Expert ✅ | S3 API simulate/optimize | S4 Simulateur
 - S5 3 Workflows | S6 Report pipeline | S7 Exports/portail | S8 Landing/upgrade
 - S9 Compliance | S10 Full audit | S11-S14 Post-launch
 - Détails: docs/EXPERT-EXECUTION-PLAN.md
@@ -211,7 +230,7 @@ buildfi/
 │   ├── logo.js, logo-*.svg       ✅ Logo système
 │   └── robots.txt                ✅ Disallow /outils/
 ├── middleware.ts                  ✅ CSP headers
-├── tests/                        ✅ 453 MC + 200 debt = 653 tests
+├── tests/                        ✅ 453 MC + 200 debt + 87 Expert translator = 740 tests
 ├── docs/                         8 fichiers de référence
 └── CLAUDE.md                     Instructions Claude Code
 ```
@@ -232,6 +251,7 @@ Détails complets: docs/SERVICES.md
 ## PROCHAINE SESSION
 1. Fix Blob (public store) + Resend DNS → rapport accessible
 2. Add ANTHROPIC_API_KEY to Vercel → test E2E
-3. Pages légales (P0.7) — finaliser avec nom légal + email contact
-4. Commit Expert tier files (~30 fichiers)
-5. Quiz Intermédiaire thin client (S2 Expert)
+3. Remplir [Nom du responsable] dans confidentialite.html
+4. Create og-image.png (1200x630) for OG tags
+5. Commit + push all changes
+6. S3 Expert: API simulate/optimize endpoints

@@ -21,9 +21,10 @@ export default function PostHogProvider({
   const initialized = useRef(false);
 
   useEffect(() => {
-    // Guard: SSR, missing key, or already loaded
+    // Guard: SSR, missing key, no consent, or already loaded
     if (typeof window === "undefined") return;
     if (!POSTHOG_KEY) return;
+    if (localStorage.getItem("buildfi_consent") !== "yes") return;
     if (initialized.current) return;
     initialized.current = true;
 

@@ -19,7 +19,7 @@ export function trackEvent(
   properties?: Record<string, unknown>
 ): void {
   try {
-    if (typeof window !== "undefined" && window.posthog) {
+    if (typeof window !== "undefined" && localStorage.getItem("buildfi_consent") === "yes" && window.posthog) {
       window.posthog.capture(event, properties);
     }
   } catch {

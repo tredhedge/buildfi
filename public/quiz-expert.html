@@ -237,7 +237,7 @@ function renderPaywall(D, lang) {
   h += '</div>';
   h += '<div style="text-align:center;margin-bottom:20px">';
   h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Simulateur complet — paiement unique","Full simulator — one-time payment") + '</div>';
-  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">129 <span style="font-size:20px">$</span></div>';
+  h += '<div style="margin-bottom:4px"><span style="font-size:18px;text-decoration:line-through;color:#aaa;margin-right:8px">129 $</span><span style="font-size:42px;font-weight:800;color:#1a2744">64,50 <span style="font-size:20px">$</span></span></div>';
   h += '<div style="font-size:12px;color:#888;margin-bottom:4px">CAD ' + t("taxes incluses","taxes included") + '</div>';
   h += '<div style="font-size:11px;color:#aaa;margin-bottom:20px">' + t("Renouvellement : 29 $/an","Renewal: $29/year") + '</div>';
   // Upgrade banner
@@ -250,7 +250,7 @@ function renderPaywall(D, lang) {
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" value="' + (_upgradeEmail || '') + '" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
-  h += t("Accéder au Simulateur Expert — 129 $","Access Expert Simulator — $129");
+  h += t("Acc\u00e9der au Simulateur Expert \u2014 64,50 $","Access Expert Simulator \u2014 $64.50");
   h += '</button>';
   h += '</div>';
   h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — accès immédiat par courriel","One-time payment — instant access by email") + '</div>';
@@ -287,13 +287,13 @@ function startCheckout() {
     } else {
       alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
       btn.disabled = false;
-      btn.textContent = STATE.lang === "fr" ? "Accéder au Simulateur Expert — 129 $" : "Access Expert Simulator — $129";
+      btn.textContent = STATE.lang === "fr" ? "Acc\u00e9der au Simulateur Expert \u2014 64,50 $" : "Access Expert Simulator \u2014 $64.50";
     }
   })
   .catch(function() {
     alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
     btn.disabled = false;
-    btn.textContent = STATE.lang === "fr" ? "Accéder au Simulateur Expert — 129 $" : "Access Expert Simulator — $129";
+    btn.textContent = STATE.lang === "fr" ? "Acc\u00e9der au Simulateur Expert \u2014 64,50 $" : "Access Expert Simulator \u2014 $64.50";
   });
 }
 
@@ -522,7 +522,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<button onclick="STATE.lang=\'en\';render()" style="padding:5px 14px;border-radius:6px;border:'+(!fr?"2px solid var(--g)":"1px solid var(--bd)")+';background:'+(!fr?"var(--gbg)":"var(--bgc)")+';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
       +'<div style="text-align:center;margin-bottom:28px">'
       +'<div style="font-size:22px;font-weight:800;color:var(--g);letter-spacing:-.5px;margin-bottom:4px">buildfi.ca</div>'
-      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Simulateur Expert — 129 $","Expert Simulator — $129")+'</div>'
+      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Simulateur Expert \u2014 64,50 $","Expert Simulator \u2014 $64.50")+'</div>'
       +'</div>'
       +'<h1 style="font-size:26px;font-weight:800;line-height:1.25;text-align:center;margin-bottom:14px">'+t("Votre laboratoire financier.<br>Explorez, testez, optimisez.","Your financial laboratory.<br>Explore, test, optimize.")+'</h1>'
       +'<p style="font-size:14px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'+t("10 à 15 minutes de questionnaire. Simulateur illimité. 5 exports AI. Bilan Annuel chaque janvier.","10 to 15 minutes of questionnaire. Unlimited simulator. 5 AI exports. Annual Check-up every January.")+'</p>'

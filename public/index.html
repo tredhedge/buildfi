@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Votre bilan retraite personnalisé | 5 000 scénarios Monte Carlo</title>
-<meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. À partir de 29$.">
+<meta name="description" content="Savoir si votre argent va durer. BuildFi analyse votre épargne dans des milliers de scénarios. Rapport clair, paiement unique, 10 provinces et 3 territoires. Lancement — 50 % de rabais. À partir de 14,50 $.">
 <meta property="og:title" content="buildfi.ca — Savoir si votre argent va durer">
 <meta property="og:description" content="Planification de retraite canadienne. Des milliers de scénarios, un rapport clair, un paiement unique.">
 <meta property="og:type" content="website">
@@ -14,6 +14,8 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:site_name" content="BuildFi">
 <link rel="canonical" href="https://buildfi.ca/">
 <link rel="alternate" hreflang="fr" href="https://buildfi.ca/">
 <link rel="alternate" hreflang="en" href="https://buildfi.ca/?lang=en">
@@ -21,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BuildFi","url":"https://buildfi.ca","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"AggregateOffer","lowPrice":"29","highPrice":"129","priceCurrency":"CAD"},"description":"Savoir si votre argent va durer. Planification de retraite canadienne par simulation Monte Carlo. 10 provinces et 3 territoires, bilingue.","inLanguage":["fr","en"]}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BuildFi","url":"https://buildfi.ca","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"AggregateOffer","lowPrice":"14.50","highPrice":"64.50","priceCurrency":"CAD"},"description":"Savoir si votre argent va durer. Planification de retraite canadienne par simulation Monte Carlo. 10 provinces et 3 territoires, bilingue.","inLanguage":["fr","en"]}
 </script>
 <script id="faqSchema" type="application/ld+json"></script>
 <style>
@@ -339,7 +341,7 @@ input,select,textarea{font-size:16px}
         </p>
         <div class="hero-actions reveal reveal-delay-3">
           <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Choisir mon rapport <span aria-hidden="true">→</span></a>
-          <span class="hero-actions-price" id="heroPrice">À partir de <strong>29 $</strong> · Paiement unique</span>
+          <span class="hero-actions-price" id="heroPrice">À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29 $</span> <strong>14,50 $</strong> · Paiement unique</span>
           <a href="#products" class="btn btn-ghost" data-track="hero_compare" id="heroCompare">Voir tous les produits <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-trust reveal reveal-delay-4">
@@ -522,7 +524,8 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodEssPersona">Vous commencez à planifier</div>
         <div class="product-name" id="prodEssName">Essentiel</div>
         <div class="product-price">
-          <span class="product-price-current" id="prodEssCurr">29 $</span>
+          <span class="product-price-original" id="prodEssOrig">29 $</span>
+          <span class="product-price-current" id="prodEssCurr">14,50 $</span>
         </div>
         <div class="product-price-note" id="prodEssNote">paiement unique</div>
         <p class="product-desc" id="prodEssDesc">
@@ -548,7 +551,8 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodInterPersona">Vous voulez aller plus loin</div>
         <div class="product-name" id="prodInterName">Intermédiaire</div>
         <div class="product-price">
-          <span class="product-price-current" id="prodInterCurr">59 $</span>
+          <span class="product-price-original" id="prodInterOrig">59 $</span>
+          <span class="product-price-current" id="prodInterCurr">29,50 $</span>
         </div>
         <div class="product-price-note" id="prodInterNote">paiement unique</div>
         <p class="product-desc" id="prodInterDesc">
@@ -575,7 +579,8 @@ input,select,textarea{font-size:16px}
         <div class="product-persona" id="prodExpPersona">Tout ce que vous avez toujours cherché</div>
         <div class="product-name" id="prodExpName">Expert · Simulateur</div>
         <div class="product-price">
-          <span class="product-price-current" id="prodExpCurr">129 $</span>
+          <span class="product-price-original" id="prodExpOrig">129 $</span>
+          <span class="product-price-current" id="prodExpCurr">64,50 $</span>
         </div>
         <div class="product-price-note" id="prodExpNote">paiement unique · renouvellement 29 $/an</div>
         <p class="product-desc" id="prodExpDesc">
@@ -595,7 +600,7 @@ input,select,textarea{font-size:16px}
     <div class="products-meta reveal">
       <p class="products-upgrade" id="productsUpgrade">Votre situation a changé? Passez au niveau suivant — nous créditons votre achat précédent.</p>
       <div class="products-meta-row">
-        <div class="products-early" id="productsEarly" style="display:none"></div>
+        <div class="products-early" id="productsEarly">Lancement — 50 % de rabais</div>
         <div class="products-stripe" id="productsStripe">
           <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           <span id="stripeLabel">Paiement sécurisé par Stripe</span>
@@ -776,7 +781,7 @@ input,select,textarea{font-size:16px}
 <!-- STICKY MOBILE CTA -->
 <div class="sticky-cta" id="stickyCta">
   <div class="sticky-cta-inner">
-    <div class="sticky-cta-text" id="stickyText">À partir de <span>29 $</span></div>
+    <div class="sticky-cta-text" id="stickyText">À partir de <span style="text-decoration:line-through;opacity:.6">29 $</span> <span>14,50 $</span></div>
     <a href="#products" class="btn btn-primary" data-track="sticky_cta" id="stickyBtn">Commencer <span aria-hidden="true">→</span></a>
   </div>
 </div>
@@ -848,7 +853,7 @@ var T = {
   heroTitle: { fr:'Savoir si votre argent<br>va durer.', en:'Know if your money<br>will last.' },
   heroSub: { fr:"BuildFi analyse votre épargne, vos revenus et vos impôts dans des milliers de scénarios économiques. Vous recevez un rapport clair avec une note, des projections et des observations personnalisées. Pas d\u2019abonnement. Pas de compte à créer.", en:"BuildFi analyzes your savings, income, and taxes across thousands of economic scenarios. You get a clear report with a grade, projections, and personalized observations. No subscription. No account to create." },
   heroCta: { fr:'Choisir mon rapport \u2192', en:'Choose my report \u2192' },
-  heroPrice: { fr:'À partir de <strong>29\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <strong>$29</strong> \u00b7 One-time payment' },
+  heroPrice: { fr:'À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29\u00a0$</span> <strong>14,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <span style="text-decoration:line-through;color:var(--text-muted)">$29</span> <strong>$14.50</strong> \u00b7 One-time payment' },
   heroCompare: { fr:'Voir tous les produits \u2193', en:'See all products \u2193' },
   trust1: { fr:'Données jamais stockées', en:'Data never stored' },
   trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
@@ -922,7 +927,13 @@ var T = {
   prodInterFor: { fr:'Couples \u00b7 Propriétaires \u00b7 Profils complexes', en:'Couples \u00b7 Homeowners \u00b7 Complex profiles' },
   prodExpFor: { fr:'Contrôle total', en:'Full control' },
   productsUpgrade: { fr:'Votre situation a changé? Passez au niveau suivant \u2014 nous créditons votre achat précédent.', en:'Your situation changed? Move to the next level \u2014 we credit your previous purchase.' },
-  productsEarly: { fr:'', en:'' },
+  productsEarly: { fr:'Lancement \u2014 50\u00a0% de rabais', en:'Launch \u2014 50% off' },
+  prodEssOrig: { fr:'29\u00a0$', en:'$29' },
+  prodEssCurr: { fr:'14,50\u00a0$', en:'$14.50' },
+  prodInterOrig: { fr:'59\u00a0$', en:'$59' },
+  prodInterCurr: { fr:'29,50\u00a0$', en:'$29.50' },
+  prodExpOrig: { fr:'129\u00a0$', en:'$129' },
+  prodExpCurr: { fr:'64,50\u00a0$', en:'$64.50' },
   stripeLabel: { fr:'Paiement sécurisé par Stripe', en:'Secure payment via Stripe' },
   // moved to product cards
   // bonusLabel: { fr:'Inclus avec votre rapport', en:'Included with your report' },
@@ -1029,7 +1040,7 @@ var T = {
   finalSubtitle: { fr:'Un rapport complet, un paiement unique.', en:'A complete report, one payment.' },
   finalCtaPrimary: { fr:'Choisir mon produit \u2192', en:'Choose my product \u2192' },
   finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non conservées', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never stored' },
-  stickyText: { fr:'À partir de <span>29\u00a0$</span>', en:'Starting at <span>$29</span>' },
+  stickyText: { fr:'À partir de <span style="text-decoration:line-through;opacity:.6">29\u00a0$</span> <span>14,50\u00a0$</span>', en:'Starting at <span style="text-decoration:line-through;opacity:.6">$29</span> <span>$14.50</span>' },
   stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },
   footerTagline: { fr:'Planification de retraite canadienne. Propulsé par la simulation Monte Carlo.', en:'Canadian retirement planning. Powered by Monte Carlo simulation.' },
   footProd: { fr:'Produits', en:'Products' },
@@ -1168,8 +1179,27 @@ if (stickyCta && heroSection) {
 
 /* ─── TRACKING ─── */
 function trackEvent(name, props) {
-  try { if (window.posthog) window.posthog.capture(name, props); } catch(e) {}
+  try { if (localStorage.getItem('buildfi_consent') === 'yes' && window.posthog) window.posthog.capture(name, props); } catch(e) {}
 }
+
+/* ─── COOKIE CONSENT ─── */
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var cl = lang === 'fr'
+    ? 'Ce site utilise des temoins analytiques pour ameliorer l\u2019experience.'
+    : 'This site uses analytics cookies to improve the experience.';
+  var aLbl = lang === 'fr' ? 'Accepter' : 'Accept';
+  var dLbl = lang === 'fr' ? 'Refuser' : 'Decline';
+  var bar = document.createElement('div');
+  bar.id = 'consentBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>' + cl + '</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">' + aLbl + '</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + dLbl + '</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
 document.querySelectorAll('[data-track]').forEach(function(el) {
   el.addEventListener('click', function() { trackEvent(el.dataset.track); });
 });

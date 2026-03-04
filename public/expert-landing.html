@@ -9,6 +9,13 @@
 <meta property="og:description" content="Testez vos decisions de retraite avant de les prendre. Simulateur illimite, 5 exports AI.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buildfi.ca/expert/landing">
+<meta property="og:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:site_name" content="BuildFi">
 <link rel="canonical" href="https://buildfi.ca/expert/landing">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -860,6 +867,25 @@ document.querySelectorAll('.faq-q').forEach(function(btn) {
 document.getElementById('langToggle').addEventListener('click', toggleLang);
 document.getElementById('footLangToggle').addEventListener('click', toggleLang);
 applyLang();
+
+/* ─── COOKIE CONSENT ─── */
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var cl = lang === 'fr'
+    ? 'Ce site utilise des temoins analytiques pour ameliorer l\u2019experience.'
+    : 'This site uses analytics cookies to improve the experience.';
+  var aLbl = lang === 'fr' ? 'Accepter' : 'Accept';
+  var dLbl = lang === 'fr' ? 'Refuser' : 'Decline';
+  var bar = document.createElement('div');
+  bar.id = 'consentBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>' + cl + '</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">' + aLbl + '</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + dLbl + '</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
 })();
 </script>
 </body>
