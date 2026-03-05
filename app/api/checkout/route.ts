@@ -10,7 +10,7 @@ import { getExpertProfile, getReferral, redis } from "@/lib/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || "https://www.buildfi.ca";
 
 // Rate limit: max 10 checkout sessions per IP per 15 minutes
 const RL_WINDOW_SEC = 15 * 60;
@@ -200,9 +200,9 @@ export async function POST(req: NextRequest) {
       cancel_url: `${BASE_URL}/`,
     };
 
-    // Apply upgrade credit or referral discount (mutually exclusive — upgrade takes priority)
+    // Discount priority: upgrade > referral > launch promo
+    // Stripe only allows one of discounts OR allow_promotion_codes per session
     if (body.upgradeFrom === "essentiel" || body.upgradeFrom === "intermediaire") {
-      // Verify buyer actually has a prior purchase to upgrade from
       const existingProfile = await getExpertProfile(email);
       if (existingProfile) {
         checkoutParams.discounts = [
@@ -210,7 +210,6 @@ export async function POST(req: NextRequest) {
         ];
       }
     } else if (referralCode) {
-      // Verify referral code exists and block self-referral
       const referralRecord = await getReferral(referralCode);
       if (
         referralRecord &&
@@ -218,6 +217,10 @@ export async function POST(req: NextRequest) {
       ) {
         checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
       }
+    } else if (selectedTier === "essentiel" || selectedTier === "intermediaire") {
+      // Launch promo — auto-applied for Essentiel/Intermédiaire only
+      // To end promo: delete or deactivate LAUNCH50 coupon in Stripe Dashboard
+      checkoutParams.discounts = [{ coupon: "LAUNCH50" }];
     }
 
     const session = await stripe.checkout.sessions.create(checkoutParams);

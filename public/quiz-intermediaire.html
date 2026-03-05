@@ -240,8 +240,9 @@ function renderPaywall(D, lang) {
   h += '</div>';
   h += '<div style="text-align:center;margin-bottom:20px">';
   h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
-  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">59 <span style="font-size:20px">$</span></div>';
-  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD ' + t("taxes incluses","taxes included") + '</div>';
+  h += '<div style="margin-bottom:4px"><span style="font-size:18px;text-decoration:line-through;color:#aaa;margin-right:8px">59 $</span><span style="font-size:42px;font-weight:800;color:#1a2744">29,50 <span style="font-size:20px">$</span></span></div>';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;margin-bottom:4px">' + t("Lancement \u2014 50 % de rabais","Launch \u2014 50% off") + '</div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD</div>';
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
@@ -249,7 +250,7 @@ function renderPaywall(D, lang) {
   h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#b8860b">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#b8860b">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#b8860b">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#b8860b">Legal notice</a>.');
   h += '</label>';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
-  h += t("Obtenir mon rapport complet — 59 $","Get my full report — $59");
+  h += t("Obtenir mon rapport complet — 29,50 $","Get my full report — $29.50");
   h += '</button>';
   h += '</div>';
   h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique — livraison immédiate par courriel","One-time payment — instant delivery by email") + '</div>';
@@ -291,13 +292,13 @@ function startCheckout() {
     } else {
       alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
       btn.disabled = false;
-      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 59 $" : "Get my full report — $59";
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 29,50 $" : "Get my full report — $29.50";
     }
   })
   .catch(function() {
     alert(STATE.lang === "fr" ? "Erreur. Veuillez réessayer." : "Error. Please try again.");
     btn.disabled = false;
-    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 59 $" : "Get my full report — $59";
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport complet — 29,50 $" : "Get my full report — $29.50";
   });
 }
 
@@ -534,7 +535,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<button onclick="STATE.lang=\'en\';render()" style="padding:5px 14px;border-radius:6px;border:'+(!fr?"2px solid var(--g)":"1px solid var(--bd)")+';background:'+(!fr?"var(--gbg)":"var(--bgc)")+';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
       +'<div style="text-align:center;margin-bottom:28px">'
       +'<div style="font-size:22px;font-weight:800;color:var(--g);letter-spacing:-.5px;margin-bottom:4px">buildfi.ca</div>'
-      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Rapport Intermédiaire — 59 $","Intermediate Report — $59")+'</div>'
+      +'<div style="font-size:10px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase">'+t("Rapport Interm\u00e9diaire — 29,50 $","Intermediate Report — $29.50")+'</div>'
       +'</div>'
       +'<h1 style="font-size:26px;font-weight:800;line-height:1.25;text-align:center;margin-bottom:14px">'+t("Un portrait financier complet.<br>En langage clair.","A complete financial portrait.<br>In plain language.")+'</h1>'
       +'<p style="font-size:14px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'+t("8 à 12 minutes après avoir réuni vos informations. 16 sections d'analyse. 5 000 scénarios simulés.","8 to 12 minutes once you have your information ready. 16 sections of analysis. 5,000 simulated scenarios.")+'</p>'

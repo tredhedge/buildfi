@@ -791,7 +791,8 @@ function renderPaywall(D, lang) {
   // Price + CTA
   h += '<div style="text-align:center;margin-bottom:20px">';
   h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalisé — paiement unique","Personalized report — one-time payment") + '</div>';
-  h += '<div style="font-size:42px;font-weight:800;color:#1a2744;margin-bottom:4px">29 <span style="font-size:20px">$</span></div>';
+  h += '<div style="margin-bottom:4px"><span style="font-size:18px;text-decoration:line-through;color:#aaa;margin-right:8px">29 $</span><span style="font-size:42px;font-weight:800;color:#1a2744">14,50 <span style="font-size:20px">$</span></span></div>';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;margin-bottom:4px">' + t("Lancement \u2014 50 % de rabais","Launch \u2014 50% off") + '</div>';
   h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD</div>';
   h += '<div id="email-gate" style="margin-bottom:16px">';
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
