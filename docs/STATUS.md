@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-04 — v8 (S1-S10 Expert complete, terms acceptance checkbox, cookie consent on quiz pages, legal P07 gaps fixed)
+> Mis à jour: 2026-03-05 — v10 (AI narration v2: voice matrix, composite signals, narrative arc, jargon ban, 10 profiles regenerated)
 
 ## PHASE ACTUELLE
-**PRE-LAUNCH FINAL — Expert S1-S10 complete (29+87+103+91 tests). Terms acceptance checkbox on all quiz pages + server validation (Quebec CPA). Cookie consent banner on all pages (Law 25). Launch pricing deployed. Constants auto-update system. Reste 3 blockers infra manuels (Blob public, Resend DKIM, ANTHROPIC_API_KEY Vercel).**
+**ESSENTIEL LAUNCH-READY. AI narration v2 shipped (voice matrix 9 combos, 8 composite signals, dynamic obs_2, narrative arc, worry combos, FIRE bridge, jargon ban, grade-10 readability). Expert S1-S10 complete (29+87+103+91 tests). Pipeline 3-round audit done (10 profiles). Report polished (8 chantiers). Translator fixes. Stripe/Blob/Resend operational. Reste 2 blockers infra manuels (Blob public, Resend DKIM).**
 
 ---
 
@@ -20,7 +20,7 @@
 | PostHog | ✅ | |
 | Vercel Blob | ⚠️ | Store "buildfi-blob" PRIVATE — rapports Forbidden en accès direct |
 | Vercel KV (Upstash) | ✅ | Redis — profils Expert, auth, rate limiting, referral |
-| Variables Vercel | ⚠️ | Manque: ANTHROPIC_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN |
+| Variables Vercel | ✅ | ANTHROPIC_API_KEY ajouté, KV/Stripe/Resend/Blob all set |
 
 ### Pipeline E2E — VALIDÉ EN PROD (2026-02-27)
 | Étape | Status | Détails |
@@ -29,8 +29,8 @@
 | Stripe Checkout | ✅ | POST /api/checkout → Stripe redirect, $29 CAD |
 | Stripe Webhook | ✅ | POST /api/webhook, signature vérifiée, idempotency, admin alerts |
 | Monte Carlo | ✅ | 5000 sims en ~2.3s sur Vercel serverless |
-| Report HTML render | ✅ | **v6** — grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot |
-| AI narration | ✅ CODE COMPLETE | buildAIPrompt() + Anthropic call wired — needs ANTHROPIC_API_KEY |
+| Report HTML render | ✅ | **v6 polished** — 8 chantiers: upsell URLs, hypotheses grid, resources cadeau, nav pills (Renforcer+Evolution), grade hint, $0 row highlight, methodology accordion, referral banner |
+| AI narration | ✅ OPERATIONAL v2 | buildAIPrompt() v2: voice matrix, composite signals, narrative arc, jargon ban. ANTHROPIC_API_KEY in Vercel |
 | Blob upload | ✅ | Upload OK, mais store PRIVATE → "Forbidden" en accès direct |
 | Email envoi | ✅ | Table-based template, bilingual, AMF compliant — arrives in spam |
 | PDF generation | ❌ DÉSACTIVÉ | Puppeteer incompatible Vercel. Remplacé par lien HTML |
@@ -113,18 +113,46 @@
 | Constants auto-update | ✅ | Cron Jan+Feb, drift tests, fiscal-2026 |
 | .gitignore updated | ✅ | |
 
+### Essentiel Pipeline Audit (2026-03-04) — 3 ROUNDS
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Test profiles (10) | ✅ | All corrected: proper quiz fields (monthlyContrib, lifestyle, flat home fields, debts.amount, psych) |
+| Translator fixes | ✅ | mortgage=0 bug, RRSP-first contrib split (sal >= $55k), QPP/OAS passthrough, partnerWork |
+| Report polish (8 chantiers) | ✅ | Upsell URLs, hypotheses grid, resources cadeau, nav pills, grade hint, $0 rows, methodology accordion, referral |
+| Quiz QPP deferral | ✅ | qppAge question added in Step 1, partnerWork in STATE |
+| Debt CTA contextual | ✅ | Shows in Section 6 when debtBal > 0 |
+| Bottom Expert upsell | ✅ | Removed (too pushy, Essentiel->Simulator gap too big) |
+| Grade distribution | ✅ | D, F, A+, A+, F, F, A+, A+, A+, F — correct for profiles |
+| AI narration v2 | ✅ | Voice matrix (9 combos), 8 composite signals, dynamic obs_2, narrative arc, worry combos, FIRE bridge, jargon ban, grade-10 readability. 10 profiles regenerated + verified |
+
+### AI Narration v2 (2026-03-05)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Voice matrix | ✅ | 9 combos (tone × literacy): warm/balanced/data-forward × basic/intermediate/advanced |
+| Composite signals | ✅ | conservativeGrowthTrap, debtDragOverSavings, mortgageInRetirement, highEffortLowResult, timeLeverage, preRetUrgency, tfsaHeavy, rrspHeavy, riskMismatch |
+| Dynamic obs_2 | ✅ | 7 conditional branches based on profile dominance (debt drag, FIRE bridge, estate, mortgage in ret, withdrawal, compounding, couple) |
+| Narrative arc | ✅ | 4 themes: security, growth, optimization, catch-up — sets emotional journey |
+| Worry combos | ✅ | 5 patterns: existential, estate-optimizer, investor-anxiety, maximum-anxiety, confident |
+| Per-slot implications | ✅ | Each slot enriched with computed numbers (autonomy years, savings rate, timeline) |
+| FIRE bridge data | ✅ | yearsWithoutGov, bridgeCost, bridgeSurvival for early retirees |
+| Succession note | ✅ | 5 contextual angles (worry-driven, couple, high-estate, young, default) |
+| Jargon ban | ✅ | 8 forbidden terms with plain-language replacements (résiduel, portefeuille, percentile, etc.) |
+| External average ban | ✅ | No "la plupart des investisseurs" — only profile-specific DATA |
+| obs_1 variation | ✅ | Anti-repetition: never start with "Le levier" |
+| 10 test profiles | ✅ | All regenerated with v2 prompts, verified differentiation |
+
 ### Autres composants complétés
-- **Report v6** — Grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme
+- **Report v6 polished** — Grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme + 8 chantiers: upsell absolute URLs, hypotheses CSS grid, resources cadeau gold gradient, nav pills Renforcer+Evolution, grade action hint, $0 row red highlight, methodology accordion, referral banner Option A
 - **Email template** — Table-based, bilingual, AMF compliant, grade card dark
 - **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
 - **Landing page v9** — Logo SVG, audit AMF/BSIF complété, launch pricing
-- **Quiz Essentiel** — Thin client 805 lignes, Stripe intégré
+- **Quiz Essentiel** — Thin client, Stripe intégré, QPP deferral question, single-person only (couple=yes callout)
 - **Logo** — SVG flame, shared logo.js, light/dark variants
 
 ---
 
-## BLOQUANTS AVANT LANCEMENT ESSENTIEL
+## BLOQUANTS AVANT LANCEMENT ESSENTIEL (2 restants)
 
 ### 1. Vercel Blob → PUBLIC [MANUAL]
 - Store "buildfi-blob" est PRIVATE → rapports "Forbidden"
@@ -134,8 +162,8 @@
 - Domaine buildfi.ca status: FAILED
 - Fix: copier nouvelle clé DKIM depuis Resend → mettre à jour TXT resend._domainkey sur Cloudflare
 
-### 3. ANTHROPIC_API_KEY → Vercel [MANUAL]
-- Code complete — ajouter la clé dans Vercel env vars → AI narration goes live
+### 3. ~~ANTHROPIC_API_KEY → Vercel~~ ✅ DONE
+- Clé ajoutée dans Vercel env vars — AI narration opérationnel
 
 ### 4. Pages légales (P0.7) — ✅ DONE
 - Conditions, confidentialité, avis légal — mis à jour 2026-03-04
@@ -155,7 +183,7 @@
 | Phase | Titre | Statut |
 |-------|-------|--------|
 | P0 | Infrastructure Web | ✅ Complétée (P0.7 légal en attente) |
-| P1 | Quiz + Rapport Essentiel + Landing | 🔄 Near launch — 3 blockers infra |
+| P1 | Quiz + Rapport Essentiel + Landing | ✅ Launch-ready — 2 blockers infra (Blob public, Resend DNS) |
 | P2 | Rapport Intermédiaire + Upsell | ⏳ Server backbone merged, quiz à construire |
 | P3 | Marketing + Légal | ⏳ |
 | P4 | Migration Next.js | ⏳ Partiellement avancée (engine + API déjà en place) |
@@ -167,8 +195,8 @@
 
 ### P1 — Prochaines actions (par priorité)
 1. Fix Blob public + Resend DNS → rapport accessible par lien
-2. Add ANTHROPIC_API_KEY to Vercel → test E2E avec Stripe test card
-3. ~~Pages légales~~ ✅ Done — remplir [Nom du responsable] dans confidentialite.html
+2. ~~Add ANTHROPIC_API_KEY to Vercel~~ ✅ Done — AI narration operational
+3. ~~Pages légales~~ ✅ Done
 4. Commit + push all changes
 5. Create og-image.png (1200x630) and place in public/
 6. Soft launch organique (Reddit, LinkedIn, cercle privé)
@@ -257,7 +285,7 @@ buildfi/
 | Stripe | ✅ Test mode, webhook fonctionne |
 | Resend | ⚠️ DNS FAILED, email en spam |
 | Vercel Blob | ⚠️ PRIVATE, rapports Forbidden |
-| Anthropic API | ⚠️ Code complete, key pas dans Vercel |
+| Anthropic API | ✅ Operational, key in Vercel |
 | Cloudflare DNS | ✅ |
 | PostHog | ✅ |
 | Upstash Redis | ✅ KV Expert profiles |
@@ -266,8 +294,7 @@ Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
 1. Fix Blob (public store) + Resend DNS → rapport accessible
-2. Add ANTHROPIC_API_KEY to Vercel → test E2E
-3. Create og-image.png (1200x630) for OG tags
-4. Commit + push all changes
-5. Soft launch organique (Reddit, LinkedIn, cercle privé)
-6. S11 Expert post-launch: feedback pipeline, A/B testing
+2. Create og-image.png (1200x630) for OG tags
+3. Commit + push all changes
+4. Soft launch organique (Reddit, LinkedIn, cercle privé)
+5. S11 Expert post-launch: feedback pipeline, A/B testing

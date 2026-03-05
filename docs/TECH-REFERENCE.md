@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-03 — v10 (post-audit 453 tests, 21 correctifs, S1 Expert infra, CSP headers, admin alerts)
+> Mis à jour: 2026-03-05 — v12 (AI narration v2: voice matrix, composite signals, narrative arc, jargon ban)
 
 ---
 
@@ -41,23 +41,35 @@ Quiz thin client (805 lignes, zero IP)
   → Client redirigé vers /merci
 ```
 
-### AI Narration Flow
+### AI Narration Flow (v2 — 2026-03-05)
 ```
 buildAIPrompt(D, params, lang, quiz)
   → DerivedProfile (anxiety, discipline, literacy, friction, theme)
-  → RenderPlan (behavioral signals from ai-profile.ts)
+  → RenderPlan (tone, emphasizeDebt/Fees/Gov, worstCasePlacement, showRiskWindow)
+  → Voice matrix: 9 combos (tone × literacy) with qualitative writing instructions
+  → Composite signals: conservativeGrowthTrap, debtDragOverSavings, mortgageInRetirement,
+    highEffortLowResult, timeLeverage, preRetUrgency, tfsaHeavy, rrspHeavy, riskMismatch
+  → Narrative arc: security / growth / optimization / catch-up
+  → Worry combos: existential / estate-optimizer / investor-anxiety / max-anxiety / confident
+  → Dynamic obs_2: 7 conditional branches based on profile dominance
+  → Jargon ban: 8 forbidden terms → plain-language replacements (grade 10)
+  → External average ban: only profile-specific DATA, never "la plupart"
+  → Per-slot implication hints: computed numbers embedded in slot instructions
+  → FIRE bridge data: yearsWithoutGov, bridgeCost, bridgeSurvival
+  → Succession note: 5 contextual angles (worry/couple/estate/young/default)
   → System prompt: AMF compliance, anti-hallucination, micro-structure
-  → User prompt: enriched with D data + quiz answers
+  → User prompt: enriched DATA block + quiz answers + signals
   → Anthropic API call (claude-sonnet-4)
   → Parse JSON → sanitizeAISlots() (ai-constants.ts)
-  → 12 slots: snapshot_intro, savings_context, debt_impact, gov_explanation,
-    gap_explanation, tax_insight, longevity_good, longevity_watch,
-    obs_1, obs_2, obs_3, upgrade_hook
+  → 13 slots: snapshot_intro, savings_context, debt_impact (conditional),
+    gov_explanation, gap_explanation, tax_insight, longevity_good,
+    longevity_watch, obs_1, obs_2, obs_3, upgrade_hook,
+    succession_note (conditional)
   → Fallback: {} if ANTHROPIC_API_KEY missing or API fails
   → /api/ai-narrate exists as standalone test endpoint (not called by webhook)
 ```
 
-### Report HTML v6 (lib/report-html.js — 1,421 lignes)
+### Report HTML v6 (lib/report-html.js)
 ```
 Key functions:
   extractReportData(mc, params)    → objet D (all computed data)
@@ -73,6 +85,23 @@ Key functions:
   renderReport_v6(D, mc, quiz, lang, ai) → full HTML string
   renderReportHTML(...)            → wrapper that selects v5/v6
 
+Report sections (current order):
+  1. Note (grade ring/donut) + dynamic grade action hint micro-phrase
+  2. Profil (+ single-person callout if couple=yes)
+  3. Projection + Min Viable Return card
+  4. Revenus à la retraite
+  5. Épargne + Cost of Delay card
+  6. Priorité (CÉLI vs REER ranking) + contextual debt tool CTA (if debtBal > 0)
+  7. Et si... (what-if cards)
+  ── Upsell CTA (peak engagement, absolute buildfi.ca/checkout URLs, target="_blank") ──
+  8. Fiscalité & Frais
+  9. Plan aux 5 ans
+  10. Hypothèses (CSS Grid 1fr 220px 1fr, white-space:nowrap, gap 32px)
+  11. Méthodologie (details/summary accordion)
+  ── Disclaimer, Resources (cadeau gold gradient, hover cards), Feedback, Referral (Option A), Print, Footer ──
+
+Nav pills: Note, Profil, Projection, Renforcer, Évolution, Fiscalité, Hypothèses (7 pills + section IDs)
+
 v6 features (March 2026 polish):
   - Grade ring with --amr amber-ring color, client-friendly labels
   - Fan chart with progressive spread (yearFrac accumulation)
@@ -80,24 +109,37 @@ v6 features (March 2026 polish):
   - KPI cards, donut income chart, what-if scenarios
   - 5-year snapshot table with QPP start row highlight (green bg + badge)
   - Heuristics disclosure, cost of delay, min viable return
-  - Mini TOC with 7 section pill anchors (hidden in print)
   - Hover tooltips on jargon (Pessimiste P5, taux effectif, taux marginal)
   - Print theme: gold→brown, break-inside:avoid, orphans/widows
   - tabular-nums on all numeric elements
   - Disclaimer restyled: cream bg + left border, left-aligned
   - "Données utilisées" + version footer block
   - Mobile spacing (@media max-width:600px)
-  - Upsell → "Prochaine étape" with expected result text
+  - $0 wealth rows: red background + "portefeuille épuisé" label
+  - Grid gaps widened (methodology 2-col: 36px)
+  - Bottom Expert Simulator upsell removed (too pushy for Essentiel tier)
+
+8 chantiers (2026-03-04 polish):
+  C1: Upsell buttons → absolute buildfi.ca/checkout URLs + target="_blank"
+  C2: Hypothèses grid → CSS Grid 1fr 220px 1fr + white-space:nowrap (gap 32px)
+  C3: Resources block → premium "cadeau" style with gold gradient, hover cards
+  C4: Nav pills → added "Renforcer" + "Évolution" pills + section IDs
+  C5: Grade action hint → dynamic micro-phrase under badge
+  C6: Table $0 rows → red background + "portefeuille épuisé" label
+  C7: Methodology → details/summary accordion
+  C8: Referral banner → Option A (no misleading "votre lien")
 ```
 
 ### Quiz thin client — quiz-essentiel.html
 ```
-805 lignes total (était 3,227 — 75% retiré)
 Zero fonction MC côté client
 generateMockPreview() pour paywall (données fake)
 Stripe checkout intégré via fetch /api/checkout
 Quiz answers envoyées dans session.metadata (chunked si >500 chars)
 Logo inline fallback + /logo.js shared
+QPP deferral question added in Step 1 (qppAge)
+partnerWork added to STATE
+Single-person only: couple=yes → callout, no couple analysis
 ```
 
 ### Webhook — app/api/webhook/route.ts
@@ -171,9 +213,11 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 |-----------|---------|-----------|
 | Employeur = Gouvernement | penType:'db', ~2%/yr | Moyenne DB gouvernemental |
 | Employeur = Autonome | penType:'none' | Pas de matching |
-| Épargne, âge <35 | 20/50/30 REER/CÉLI/NR | Jeune → favorise CÉLI |
-| Épargne, âge 35–50 | 45/35/20 | Équilibre |
-| Épargne, âge 50+ | 55/25/20 | Proche retraite → REER |
+| Contribution split, sal >= $55k | RRSP-first (18% of sal, max $33,810), then TFSA (up to $7k), remainder NR | Higher income → RRSP deduction more valuable |
+| Contribution split, sal < $55k | TFSA-first (up to $7k), then RRSP, remainder NR | Lower income → TFSA flexibility preferred |
+| Mortgage | a.mortgage if provided (including 0), else Math.round(homeValue * 0.55) | mortgage=0 explicitly means fully paid |
+| QPP age | Passthrough if quiz provides qppAge, else heuristic from retAge (clamped 60-70) | |
+| OAS age | Passthrough if quiz provides oasAge, else heuristic from retAge (clamped 65-70) | |
 | Dette CC | rate: 19.99%, min: max(bal×0.02, 25) | Standard CA |
 | Risque conservateur | allocR:0.50, eqRet:6.5% | |
 | Risque croissance | allocR:0.85, eqRet:7.5% | |
@@ -360,6 +404,8 @@ recommandation(s) / recommendation(s)
 | 2026-03-04 | **S2-S10 Expert sessions** — Quiz Expert, API simulate/optimize, Simulateur, Workflows, Reports, Exports, Landing, Compliance, Full audit | ✅ |
 | 2026-03-04 | **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation | ✅ |
 | 2026-03-04 | **Cookie consent on quiz pages** — Law 25, localStorage gate, bilingual consent bar | ✅ |
+| 2026-03-04 | **Essentiel pipeline 3-round audit** — 10 test profiles corrected, translator fixes (mortgage=0, contrib split, QPP/OAS passthrough), report 8 chantiers polish | ✅ |
+| 2026-03-04 | **Essentiel launch-ready** — Grade distribution D/F/A+/A+/F/F/A+/A+/A+/F, AI narration operational, Stripe/Blob/Resend operational | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"

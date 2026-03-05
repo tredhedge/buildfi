@@ -426,7 +426,8 @@ var STATE = {
     lifestyle:"active", risk:"balanced",
     parttime:"no", parttimeAmount:0, parttimeYears:0,
     worries:[], win:"", fix:"", confidence:3, family:"",
-    psychAnxiety:null, psychDiscipline:null, psychLiteracy:null
+    psychAnxiety:null, psychDiscipline:null, psychLiteracy:null,
+    qppAge:null, partnerWork:null
   },
   mc: null, reportData: null, ai: {}, aiLoading: false, computed: false,
   showReport: false, showPaywall: false, paid: false, costDelay: 0, minReturn: 0
@@ -579,11 +580,20 @@ function renderQuiz(step, q, lang) {
   if (step === 1) {
     var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card' + (q.sex===o.v?" sel":"") + '" onclick="uq(\'sex\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:14px"><div style="font-weight:700">' + o.l + '</div></div>';}).join("");
     var provOptions = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"].map(function(p){return '<option value="'+p+'"'+(q.prov===p?' selected':'')+'>'+provName(p)+'</option>';}).join("");
+    var qppRetVal = Math.max(60, Math.min(70, q.retAge));
+    var qppQ = '';
+    if (q.retAge < 70) {
+      var qppLabel = q.prov === "QC" ? "RRQ" : "RPC";
+      var qppLabelEN = q.prov === "QC" ? "QPP" : "CPP";
+      var qppCards = [{v:qppRetVal,l:t("Dès la retraite","At retirement"),d:(qppRetVal)+" "+t("ans","yr")},{v:65,l:"65 "+t("ans","yr"),d:t("Standard","Standard")},{v:70,l:"70 "+t("ans","yr"),d:t("Maximum (+42 %)","Maximum (+42%)")}].map(function(o){return '<div tabindex="0" class="card' + (q.qppAge===o.v?" sel":"") + '" onclick="uq(\'qppAge\',' + o.v + ')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">' + o.l + '</div><div style="font-size:11px;color:var(--ts);margin-top:2px">' + o.d + '</div></div>';}).join("");
+      qppQ = '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:8px">' + t("Prévoyez-vous commencer le " + qppLabel + " à quel âge ?","When do you plan to start " + qppLabelEN + "?") + '</label><div style="display:flex;gap:8px;margin-bottom:16px">' + qppCards + '</div>';
+    }
     return wrap('<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Parlons de vous","About you") + '</h2>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Âge actuel","Current age") + '</label>'
       + '<input type="number" min="18" max="80" value="' + q.age + '" oninput="uqd(\'age\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:16px;margin-bottom:16px" />'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("À quel âge aimeriez-vous prendre votre retraite ?","At what age would you like to retire?") + '</label>'
       + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><input type="range" min="40" max="75" value="' + q.retAge + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:24px;font-weight:800;color:var(--g);min-width:42px;text-align:center">' + q.retAge + '</span></div>'
+      + qppQ
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px;margin-bottom:16px">' + sexCards + '</div>'
       + '<label style="font-size:13px;color:var(--ts);display:block;margin-bottom:6px">Province</label><select onchange="uq(\'prov\',this.value)" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-bottom:16px;background:var(--bgc)">' + provOptions + '</select>'
       + btn() + backBtn);

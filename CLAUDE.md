@@ -39,7 +39,7 @@ buildfi/
 │   │   └── tests.js               # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
-│   ├── ai-constants.ts            # AI slot names (Ess 12 + Inter 16), AMF forbidden terms, sanitization
+│   ├── ai-constants.ts            # AI slot names (Ess 13 + Inter 16), AMF forbidden terms, sanitization
 │   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals, psych overrides)
 │   ├── ai-prompt-inter.ts         # Intermediaire AI prompt (18 slots, DerivedProfile enrichment)
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
@@ -182,7 +182,7 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 
 ## Current Status (March 2026)
 - **P0.6 COMPLETED** — E2E pipeline validated
-- **P1.4 AI NARRATION MERGED** — buildAIPrompt + Anthropic call wired into webhook
+- **AI NARRATION v2 (2026-03-05)** — Voice matrix (9 combos), 8 composite signals, dynamic obs_2, narrative arc, worry combos, FIRE bridge, jargon ban, grade-10 readability
 - **Report v6 MERGED + POLISHED** — 15 rendering improvements applied
 - **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed, 17 new tests (453/453 pass)
 - **Intermediaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js
@@ -193,7 +193,7 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation
 - **Cookie consent on quiz pages** — Law 25 compliance, localStorage gate, bilingual
 - **Privacy officer** — "Le dirigeant de BuildFi Technologies inc." designated (Law 25 §3.5)
-- Essentiel: near launch, 3 infra blockers (Blob public, Resend DNS, ANTHROPIC_API_KEY)
+- Essentiel: near launch, 2 infra blockers (Blob public, Resend DNS)
 - Next: S11-S14 post-launch (feedback, A/B, bilan annuel crons, admin)
 
 ## Commands

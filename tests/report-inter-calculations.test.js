@@ -671,7 +671,7 @@ assert(prompt.usr.includes("strategy_highlight"), "usr includes strategy_highlig
 assert(prompt.usr.includes("couple_analysis"), "usr includes couple_analysis slot");
 
 // Province-aware: zero acronyms
-assert(prompt.sys.includes("Regime de rentes du Quebec") || prompt.sys.includes("Quebec Pension Plan"), "sys: zero acronyms for QPP in QC");
+assert(prompt.sys.includes("Régime de rentes du Québec") || prompt.sys.includes("Quebec Pension Plan"), "sys: zero acronyms for QPP in QC");
 assert(!prompt.sys.includes("RRQ") || prompt.sys.includes("NEVER"), "sys: no RRQ acronym (or only in NEVER rule)");
 
 // DATA block contains strategy data

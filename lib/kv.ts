@@ -92,12 +92,13 @@ export async function createExpertProfile(
   options?: {
     upgradedFrom?: "essentiel" | "intermediaire" | null;
     quizData?: Record<string, unknown>;
+    referralCode?: string;
   }
 ): Promise<ExpertProfile> {
   const norm = normalizeEmail(email);
   const now = new Date().toISOString();
   const token = randomUUID();
-  const referralCode = generateReferralCode();
+  const referralCode = options?.referralCode || generateReferralCode();
 
   const profile: ExpertProfile = {
     token,
@@ -273,7 +274,7 @@ export async function renewExpertProfile(
 
 // ── Referral CRUD ─────────────────────────────────────────
 
-function generateReferralCode(): string {
+export function generateReferralCode(): string {
   // 8-char alphanumeric, no ambiguous chars (0/O, 1/I/L)
   const chars = "ACDEFGHJKMNPQRSTUVWXYZ23456789";
   const bytes = randomBytes(8);
@@ -282,6 +283,18 @@ function generateReferralCode(): string {
     code += chars[bytes[i] % chars.length];
   }
   return code;
+}
+
+export async function createReferralRecord(
+  code: string,
+  email: string
+): Promise<void> {
+  await redis.set(KEYS.referral(code), {
+    referrerEmail: normalizeEmail(email),
+    uses: 0,
+    conversions: 0,
+    created: new Date().toISOString(),
+  } satisfies ReferralRecord);
 }
 
 export async function getReferral(

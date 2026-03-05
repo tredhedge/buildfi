@@ -135,10 +135,10 @@ function FeedbackContent() {
           {data?.couponUnlocked && (
             <div style={{ background: "#f0ebe3", borderRadius: 10, padding: "16px 20px", border: `1px solid ${BORDER}` }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 6 }}>
-                Coupon d&eacute;bloqu&eacute; : SECOND50
+                Rabais d&eacute;bloqu&eacute;
               </div>
               <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
-                50 % de rabais sur votre prochain achat buildfi.ca. Valide 90 jours.
+                50 % de rabais appliqu&eacute; automatiquement sur votre prochain achat buildfi.ca. Valide 90 jours.
               </div>
             </div>
           )}

@@ -34,9 +34,10 @@ const STEPS_EXPERT: Step[] = [
   { fr: "Lien magique envoyé", en: "Magic link sent", durationMs: 1500 },
 ];
 
-function ShareSection({ fr }: { fr: boolean }) {
+function ShareSection({ fr, refCode }: { fr: boolean; refCode: string | null }) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = "https://www.buildfi.ca";
+  const base = "https://www.buildfi.ca";
+  const shareUrl = refCode ? `${base}?ref=${refCode}` : base;
 
   function handleCopy() {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -56,8 +57,8 @@ function ShareSection({ fr }: { fr: boolean }) {
       </div>
       <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 10 }}>
         {fr
-          ? "Votre proche reçoit 15 % de rabais avec votre lien. Utilisez le code REFERRAL15."
-          : "Your friend gets 15% off with your link. Use code REFERRAL15."}
+          ? "Votre proche reçoit 15 % de rabais automatiquement via votre lien."
+          : "Your friend gets 15% off automatically through your link."}
       </div>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <div style={{
@@ -143,6 +144,7 @@ function ConfirmationContent() {
   const rawLang = searchParams.get("lang") || "fr";
   const lang = rawLang === "en" ? "en" : "fr";
   const fr = lang === "fr";
+  const refCode = searchParams.get("ref");
 
   const steps = tier === "expert" ? STEPS_EXPERT : STEPS_REPORT;
   const [currentStep, setCurrentStep] = useState(0);
@@ -328,22 +330,15 @@ function ConfirmationContent() {
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                 {fr ? "Obtenez un 2e bilan à 50 %" : "Get a 2nd assessment at 50% off"}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7 }}>
                 {fr
-                  ? "Partagez BuildFi avec un proche. Utilisez le code SECOND50 pour votre 2e bilan à moitié prix."
-                  : "Share BuildFi with a friend. Use code SECOND50 for your 2nd assessment at half price."}
-              </div>
-              <div style={{
-                background: "rgba(255,255,255,0.1)", borderRadius: 6, padding: "8px 12px",
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 700, color: GOLD,
-                textAlign: "center", letterSpacing: 2,
-              }}>
-                SECOND50
+                  ? "Votre 2e bilan est automatiquement à 50 % de rabais."
+                  : "Your 2nd assessment is automatically 50% off."}
               </div>
             </div>
 
             {/* Share / referral */}
-            <ShareSection fr={fr} />
+            <ShareSection fr={fr} refCode={refCode} />
 
             {/* Attribution dropdown */}
             <AttributionDropdown fr={fr} tier={tier} />

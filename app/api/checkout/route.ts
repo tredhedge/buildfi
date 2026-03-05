@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getExpertProfile, getReferral, redis } from "@/lib/kv";
+import { getExpertProfile, getReferral, generateReferralCode, redis } from "@/lib/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -89,12 +89,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Addon users are Expert — fetch their existing referral code
+      const existingProfile = await getExpertProfile(email);
+      const addonRefCode = existingProfile?.referralCode || generateReferralCode();
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
         metadata: { type: "addon", email, tier: "expert" },
-        success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=expert&lang=${body.lang || "fr"}`,
+        success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=expert&lang=${body.lang || "fr"}&ref=${addonRefCode}`,
         cancel_url: `${BASE_URL}/expert`,
       });
 
@@ -126,6 +129,7 @@ export async function POST(req: NextRequest) {
       }
 
       const quizJSON = JSON.stringify(quizAnswers);
+      const secondRefCode = generateReferralCode();
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
@@ -137,8 +141,9 @@ export async function POST(req: NextRequest) {
           email,
           tier,
           type: "second",
+          userRefCode: secondRefCode,
         },
-        success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${tier}&lang=${lang || "fr"}`,
+        success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${tier}&lang=${lang || "fr"}&ref=${secondRefCode}`,
         cancel_url: `${BASE_URL}/`,
       });
 
@@ -171,15 +176,17 @@ export async function POST(req: NextRequest) {
     }
 
     const quizJSON = JSON.stringify(quizAnswers);
+    const userRefCode = generateReferralCode();
     const metadata: Record<string, string> = {
       ...splitMetadata(quizJSON),
       lang: lang || "fr",
       email,
       tier: selectedTier,
       type: "report",
+      userRefCode,
     };
 
-    // Referral code tracking
+    // Referral code tracking (the referrer's code, not this user's own code)
     if (referralCode && typeof referralCode === "string") {
       metadata.referralCode = referralCode;
     }
@@ -196,7 +203,7 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       customer_email: email,
       metadata,
-      success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${selectedTier}&lang=${checkoutLang}`,
+      success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${selectedTier}&lang=${checkoutLang}&ref=${userRefCode}`,
       cancel_url: `${BASE_URL}/`,
     };
 

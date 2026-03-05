@@ -226,8 +226,8 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
     linkExpiry: fr ? "Ce lien est valide 30\u00a0jours" : "This link is valid for 30\u00a0days",
     shareTitle: fr ? "Ce bilan a \u00e9t\u00e9 utile\u00a0?" : "Was this assessment helpful?",
     shareSecond: fr
-      ? "Obtenez un 2e bilan \u00e0 50\u00a0% de rabais avec le code SECOND50"
-      : "Get a 2nd assessment at 50% off with code SECOND50",
+      ? "Votre 2e bilan est automatiquement \u00e0 50\u00a0% de rabais"
+      : "Your 2nd assessment is automatically 50% off",
     shareRefer: fr
       ? "Partagez BuildFi avec un proche et recevez des r\u00e9compenses"
       : "Share BuildFi with someone you know and earn rewards",

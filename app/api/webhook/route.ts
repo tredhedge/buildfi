@@ -37,6 +37,7 @@ import {
   renewExpertProfile,
   markProcessed,
   createFeedbackRecord,
+  createReferralRecord,
 } from "@/lib/kv";
 import { randomUUID } from "crypto";
 import { sendMagicLinkEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
@@ -260,6 +261,13 @@ async function handleCheckoutCompleted(
 
     console.log(`[webhook] Email sent to ${email}`);
 
+    // Create referral record so this user's ref link works
+    if (metadata.userRefCode) {
+      await createReferralRecord(metadata.userRefCode, email).catch((err) =>
+        console.error("[webhook] Referral record creation error (non-blocking):", err)
+      );
+    }
+
     return NextResponse.json({ received: true, email, reportUrl: blob.url });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Processing failed";
@@ -313,6 +321,7 @@ async function handleExpertPurchase(
       profile = await createExpertProfile(email, {
         upgradedFrom: (metadata.upgrade_from as "essentiel" | "intermediaire") || null,
         quizData: quizAnswers,
+        referralCode: metadata.userRefCode || undefined,
       });
     }
 

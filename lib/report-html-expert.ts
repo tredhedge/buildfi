@@ -846,7 +846,7 @@ function renderExpertReport(
 
   // ═══ REFERRAL ═══
   h += '<div style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
-  h += t("Partagez BuildFi avec un proche \u2014 code <strong>REFERRAL15</strong> pour 15\u00a0% de rabais.", "Share BuildFi with someone you know \u2014 code <strong>REFERRAL15</strong> for 15% off.");
+  h += t("Partagez BuildFi avec un proche \u2014 15\u00a0% de rabais appliqu\u00e9 automatiquement via votre lien.", "Share BuildFi with someone you know \u2014 15% off applied automatically through your link.");
   h += ' <a href="https://www.buildfi.ca" style="color:#C4944A;text-decoration:none;font-weight:600">buildfi.ca</a>';
   h += '</div>';
 

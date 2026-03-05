@@ -14,10 +14,16 @@ export const AI_SLOTS = [
   "obs_2",
   "obs_3",
   "upgrade_hook",
+  "succession_note",
 ] as const;
 
 export type AISlotKey = (typeof AI_SLOTS)[number];
 export type AINarration = Partial<Record<AISlotKey, string>>;
+
+// Max length overrides per slot (default 500)
+export const AI_SLOT_MAX_LENGTH: Partial<Record<AISlotKey, number>> = {
+  succession_note: 300,
+};
 
 // ─── Intermédiaire tier slots ─────────────────────────────────────────
 export const AI_SLOTS_INTER = [
@@ -42,9 +48,16 @@ export const AI_SLOTS_INTER = [
 export type AISlotKeyInter = (typeof AI_SLOTS_INTER)[number];
 export type AINarrationInter = Partial<Record<AISlotKeyInter, string>>;
 
-// AMF/OSFI forbidden prescriptive terms + scenario combination
+// Max length overrides per Inter slot (default 500)
+export const AI_SLOT_MAX_LENGTH_INTER: Partial<Record<AISlotKeyInter, number>> = {
+  priority_actions: 600,
+  couple_analysis: 600,
+  ccpc_context: 600,
+};
+
+// AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements
 export const FORBIDDEN_TERMS =
-  /\bdevriez\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b/i;
+  /\bdevriez\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bdans ce contexte\b|\bpar ailleurs\b|\ben outre\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b|\bin this context\b|\bajouterait\b|\bconstituerait un pont\b/i;
 
 /**
  * Sanitize raw AI output into safe, compliant slot values.
@@ -58,8 +71,9 @@ export function sanitizeAISlots(raw: Record<string, any>): AINarration {
   for (const key of AI_SLOTS) {
     const val = raw[key];
     if (val && typeof val === "string") {
-      // Strip HTML tags, limit length
-      const clean = val.replace(/<[^>]*>/g, "").slice(0, 500);
+      // Strip HTML tags, limit length (per-slot override or default 500)
+      const maxLen = AI_SLOT_MAX_LENGTH[key] || 500;
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
       // Reject if contains forbidden prescriptive terms
       if (!FORBIDDEN_TERMS.test(clean)) {
         result[key] = clean;
@@ -80,7 +94,8 @@ export function sanitizeAISlotsInter(raw: Record<string, any>): AINarrationInter
   for (const key of AI_SLOTS_INTER) {
     const val = raw[key];
     if (val && typeof val === "string") {
-      const clean = val.replace(/<[^>]*>/g, "").slice(0, 500);
+      const maxLen = AI_SLOT_MAX_LENGTH_INTER[key] || 500;
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
       if (!FORBIDDEN_TERMS.test(clean)) {
         result[key] = clean;
       } else {

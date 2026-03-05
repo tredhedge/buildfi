@@ -72,12 +72,21 @@ export function translateToMC(a: Record<string, any>) {
     }
   }
 
-  // Contributions: TFSA first, RRSP, then NR
+  // Contributions: RRSP-first when marginal rate ≥ 33%, else TFSA-first
   const mc = a.monthlyContrib || 0;
   const ac = mc * 12;
-  const tfsaC = Math.min(ac, 7000);
-  const rrspC = Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
-  const nrC = Math.max(0, ac - tfsaC - rrspC);
+  const rrspRoom = Math.min(sal * 0.18, 33810);
+  const highMarginal = sal >= 55000; // ~33%+ combined marginal rate threshold
+  let rrspC: number, tfsaC: number, nrC: number;
+  if (highMarginal) {
+    rrspC = Math.min(ac, rrspRoom);
+    tfsaC = Math.min(ac - rrspC, 7000);
+    nrC = Math.max(0, ac - rrspC - tfsaC);
+  } else {
+    tfsaC = Math.min(ac, 7000);
+    rrspC = Math.min(ac - tfsaC, rrspRoom);
+    nrC = Math.max(0, ac - tfsaC - rrspC);
+  }
 
   // Pension from employer
   let penType = "none", penM = 0, dcBal = 0, penIdx = false;
@@ -106,9 +115,13 @@ export function translateToMC(a: Record<string, any>) {
   else eq = 0.7;
   const mer = eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012;
 
-  // QPP/OAS timing
-  const qppAge = Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
-  const oasAge = Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
+  // QPP/OAS timing — respect quiz-provided ages if present, else heuristic from retAge
+  const qppAge = a.qppAge
+    ? Math.max(60, Math.min(70, a.qppAge))
+    : Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
+  const oasAge = a.oasAge
+    ? Math.max(65, Math.min(70, a.oasAge))
+    : Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
 
   // Part-time
   let ptM = 0, ptYrs = 0;
@@ -121,8 +134,8 @@ export function translateToMC(a: Record<string, any>) {
   const props: any[] = [];
   if (a.homeowner) {
     const hv = a.homeValue || PMED[prov] || 400000;
-    const mb = a.mortgage || Math.round(hv * 0.55);
-    const ma = a.mortgageAmort || 20;
+    const mb = a.mortgage != null ? a.mortgage : Math.round(hv * 0.55);
+    const ma = mb > 0 ? (a.mortgageAmort || 20) : 0;
     props.push({
       on: true, name: "Primary", pri: true, val: hv, mb, mr: 0.055, ma,
       ri: 0.035, rm: 0, ox: 0, pt: 0, ins: 0, sa: 0, cg: 0, landPct: 0.3,
@@ -178,6 +191,7 @@ export function translateToMC(a: Record<string, any>) {
       family: a.family || "", risk: a.risk || "balanced",
       employer: a.employer || "", savingsDetail: a.savingsDetail || false,
       lifestyle: a.lifestyle || "active", parttime: a.parttime || "no",
+      partnerWork: a.partnerWork || null,
       psych_anxiety: a.psychAnxiety || null,
       psych_discipline: a.psychDiscipline || null,
       psych_literacy: a.psychLiteracy || null,
@@ -188,7 +202,7 @@ export function translateToMC(a: Record<string, any>) {
       debtAnnualCost: debts.reduce((s: number, d: any) => s + d.annualCost, 0),
       homeVal: props.length > 0 ? props[0].val : 0,
       mortBal: props.length > 0 ? props[0].mb : 0,
-      mortAmort: props.length > 0 ? a.mortgageAmort || 20 : 0,
+      mortAmort: props.length > 0 ? props[0].ma : 0,
       equity: props.length > 0 ? Math.max(0, props[0].val - props[0].mb) : 0,
       mortFreeAge:
         props.length > 0 && props[0].mb > 0 ? age + (a.mortgageAmort || 20) : 0,
