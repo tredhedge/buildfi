@@ -993,17 +993,11 @@ function renderQuiz(step,q,lang,activeBlocks){
 
   // ── STEP 7: Stratégie ────────────────────────────────────
   if(step===7){
-    var decCards=[
-      {v:"minimal",l:t("Retraits minimums","Minimums only"),d:t("Retirer le strict nécessaire — préserver le capital","Withdraw only what's needed — preserve capital")},
-      {v:"meltdown",l:t("Décaissement REER graduel avant 71 ans","Gradual RRSP drawdown before 71"),d:t("Réduire le REER pour minimiser l'impôt au FERR","Reduce RRSP to minimize RRIF taxation")},
-      {v:"needs",l:t("Selon les besoins","As needed"),d:t("Retirer selon les dépenses effectives","Withdraw based on actual expenses")}
-    ].map(function(o){return'<div class="card'+(q.decaissement===o.v?" sel":"")+'" onclick="uq(\'decaissement\',\''+o.v+'\')" style="padding:12px 14px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
     var confLabels=[t("Peu informé·e","Beginner"),t("Quelques notions","Some knowledge"),t("Raisonnablement informé·e","Informed"),t("Bien informé·e","Well-informed"),t("Expert·e","Expert")];
     return wrap(
       '<div class="phase-badge">'+t("Phase 3 sur 3 — Stratégie","Phase 3 of 3 — Strategy")+'</div>'
-      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Stratégie de décaissement","Withdrawal strategy")+'</h2>'
-      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("La stratégie de décaissement détermine l'ordre et le rythme des retraits — avec des implications fiscales importantes.","Withdrawal strategy determines the order and pace of drawdowns — with significant tax implications.")+'</p>'
-      +'<div class="fld-block"><label class="fld-label">'+t("Approche souhaitée","Desired approach")+'</label>'+decCards+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Votre profil financier","Your financial profile")+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Une dernière question — elle calibre la profondeur des explications dans votre rapport.","One last question — it calibrates the depth of explanations in your report.")+'</p>'
       +'<div class="fld-block"><label class="fld-label">'+t("Niveau de connaissance financière","Financial knowledge level")+'</label>'
       +'<input type="range" min="1" max="5" value="'+q.confidence+'" oninput="uq(\'confidence\',+this.value)" style="margin-top:8px" />'
       +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm);margin-top:4px">'
