@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-05 — v12 (AI narration v2: voice matrix, composite signals, narrative arc, jargon ban)
+> Mis à jour: 2026-03-05 — v13 (Debt tool: 9 UX cherry-picks, BC/QC bracket fixes, 200/200 tests)
 
 ---
 
@@ -155,13 +155,15 @@ Email tags: DÉSACTIVÉS (erreur validation ASCII)
 Blob access: "private" (store privé — à migrer vers public)
 ```
 
-### Debt Tool (app/outils/dettes/page.jsx — 1,475 lignes)
+### Debt Tool (app/outils/dettes/page.jsx — 1,863 lignes)
 ```
 Standalone React SPA, dark theme (DK palette), bilingual FR/EN
 "use client" — no SSR
 
-UX Structure (March 2026 restructure):
-  - Welcome banner (no debts state)
+UX Structure (March 2026 restructure + cherry-picks):
+  - Welcome banner (no debts state) + QuickStart example presets (Essentiel / Intermédiaire)
+  - Health signals bar: detects util>=80%, pay<interest, pay<minPay (useMemo)
+  - NextBestAction card: guided fix with auto-correct + scroll-to-debt focus
   - Inventory: debts → portrait global → collapsible "Aller plus loin"
     (mortgages, financial context, couple mode)
   - showAdvanced auto-opens on mount if existing data (useEffect)
@@ -172,11 +174,23 @@ UX Structure (March 2026 restructure):
 
 7 strategies: avalanche, snowball, hybrid, cashflow, utilization, interest_dollar, custom
 basePayoff uses selectedStrategy (not hardcoded avalanche)
-Marginal rate label shows "(est.)" in Repay vs Invest
+Marginal rate label shows "(est.)" in Repay vs Invest + accountant mention
 localStorage: buildfi_debts_v1, export/import JSON
+URL share link: base64url encode/decode state → ?s= query param
+Print/PDF: window.print() with print-only summary, .no-print/.print-only classes
+Info modal: 4-tab compliance overlay (notice, scope, assumptions, privacy)
+Mobile bottom bar: fixed nav for <560px with 4 core tabs
+Card uses React.forwardRef, NumInput accepts inputRef — enables scroll-to-debt focus
 Components: Card, StatBox, InputRow, NumInput, SectionTitle, DebtChart — no new ones
 Protégé: Disallow /outils/ dans robots.txt
 200 tests (tests/debt-tool-tests.js), 0 failures required
+
+Utilization sort fix (3 locations):
+  multiDebtPayoff, strategySchedule, sortedForSnowflake
+  — debts without credit limit now sort as lowest priority (was incorrectly 100%)
+
+BC bracket fix: reordered to:253414 before to:258482 (was inverted, dead code)
+QC test fix: $250K correctly falls in to:258482 bracket (rate 0.5253, not top 0.5353)
 ```
 
 ### Guides éducatifs (bonus)
@@ -298,6 +312,11 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-025 | Debt tool progressive disclosure: welcome → debts → portrait → collapsible advanced | **NOUVEAU** |
 | DT-026 | Debt tool tab graying when no payable debts (opacity 0.4) | **NOUVEAU** |
 | DT-027 | Email template table-based layout for email client compatibility | **NOUVEAU** |
+| DT-028 | Debt tool URL share link via base64url ?s= query param | **NOUVEAU** |
+| DT-029 | Debt tool health signals + nextBestAction guided focus | **NOUVEAU** |
+| DT-030 | Debt tool info/compliance modal (4 tabs: notice, scope, assumptions, privacy) | **NOUVEAU** |
+| DT-031 | Debt tool print/PDF via window.print() with summary page | **NOUVEAU** |
+| DT-032 | Debt tool mobile bottom bar (<560px fixed nav) | **NOUVEAU** |
 
 ---
 
@@ -406,6 +425,10 @@ recommandation(s) / recommendation(s)
 | 2026-03-04 | **Cookie consent on quiz pages** — Law 25, localStorage gate, bilingual consent bar | ✅ |
 | 2026-03-04 | **Essentiel pipeline 3-round audit** — 10 test profiles corrected, translator fixes (mortgage=0, contrib split, QPP/OAS passthrough), report 8 chantiers polish | ✅ |
 | 2026-03-04 | **Essentiel launch-ready** — Grade distribution D/F/A+/A+/F/F/A+/A+/A+/F, AI narration operational, Stripe/Blob/Resend operational | ✅ |
+| 2026-03-05 | **AI narration v2** — Voice matrix (9 combos), composite signals, narrative arc, jargon ban, dynamic obs_2 | ✅ |
+| 2026-03-05 | **Intermédiaire pipeline audit** — 11 P0/P1/P2 number fixes, AI prompt v2, 591/591 calculation tests, 5 AI test reports | ✅ |
+| 2026-03-05 | **Debt tool 9 UX cherry-picks** — health signals, guided focus, URL share, QuickStart, info modal, print/PDF, mobile bar, AMF disclaimers | ✅ |
+| 2026-03-05 | **BC/QC bracket fixes** — BC monotonic order, QC $250K test expectation → 200/200 debt tests pass | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"

@@ -35,7 +35,7 @@ buildfi/
 │   ├── expert/                    # Expert tier pages (simulateur, portail, landing)
 │   ├── merci/                     # Post-purchase thank you page
 │   ├── outils/dettes/
-│   │   ├── page.jsx               # Debt tool (1,475 lines, React JSX)
+│   │   ├── page.jsx               # Debt tool (1,863 lines, React JSX)
 │   │   └── tests.js               # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
@@ -186,7 +186,7 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **Report v6 MERGED + POLISHED** — 15 rendering improvements applied
 - **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed, 17 new tests (453/453 pass)
 - **Intermediaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js
-- **Debt tool UX restructured** — progressive tabs, micro-CTAs, 200 tests pass
+- **Debt tool UX restructured** — progressive tabs, micro-CTAs, 9 cherry-picks (health signals, guided focus, URL share, print/PDF, mobile bar, info modal), 200/200 tests
 - **Email template refactored** — table-based, AMF compliant, bilingual
 - **Expert planning COMPLETE** — STRATEGY-EXPERT-PLAN v4, EXECUTION-PLAN, IDENTITY-ALIGNMENT all documented
 - **EXPERT S1-S10 COMPLETE (2026-03-04)** — All 10 pre-launch Expert sessions done (29+87+103+91 tests)
