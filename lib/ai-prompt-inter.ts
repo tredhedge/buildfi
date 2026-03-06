@@ -182,6 +182,15 @@ export function buildAIPromptInter(
   if (signals.timeLeverage)
     obsPool.push({ topic: "time-leverage", labelFr: "Effet du temps", labelEn: "Time leverage", instr: "Compounding runway: with " + yrsToRet + " years to retirement, each dollar saved today could multiply " + Math.round(Math.pow(1 + (D.expReturn || 0.05), yrsToRet)) + "x in real terms. Frame the power of early consistency." });
 
+  if (signals.preRetUrgency)
+    obsPool.push({ topic: "pre-ret-urgency", labelFr: "Horizon compressé", labelEn: "Compressed horizon", instr: "Pre-retirement urgency: " + signals.preRetUrgency.years + " year(s) remaining before retirement. Accumulation window is closing. Observe what adjustments made now vs. deferred 1-2 years mean mathematically in terminal wealth terms. Do NOT use prescriptive language." });
+
+  if (signals.tfsaHeavy)
+    obsPool.push({ topic: "tfsa-concentration", labelFr: "Concentration CÉLI", labelEn: "TFSA concentration", instr: "TFSA concentration: " + Math.round(signals.tfsaHeavy) + "% of registered savings in TFSA. Observe the tax-free withdrawal flexibility this creates in retirement income planning — and any diversification implications." });
+
+  if (signals.rrspHeavy)
+    obsPool.push({ topic: "rrsp-concentration", labelFr: "Concentration REER", labelEn: "RRSP concentration", instr: "RRSP concentration: " + Math.round(signals.rrspHeavy) + "% of registered savings in RRSP. Observe the mandatory RRIF conversion at 71 and implications for taxable income in retirement. No prescriptive verbs." });
+
   // Fallback
   obsPool.push({ topic: "unique-insight", labelFr: "Observation unique", labelEn: "Unique insight", instr: "Unique profile insight: identify the single most interesting tension or opportunity in this profile that hasn't been covered in other slots. Be specific, not generic." });
 

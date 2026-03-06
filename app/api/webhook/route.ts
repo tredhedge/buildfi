@@ -219,6 +219,7 @@ async function handleCheckoutCompleted(
       } catch { /* non-fatal — email sends without baseline URL */ }
       const mcStart = Date.now();
       const mc = runMC(params, 5000);
+      if (!mc) throw new Error("MC engine returned null — check params (age, retAge, lifespan)");
       const stratData = run5Strategies(params as any);
       const costDelayVal = calcCostOfDelay(params as any);
       const minReturn = calcMinViableReturn(params as any);

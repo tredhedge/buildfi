@@ -74,11 +74,11 @@ export function translateToMCInter(a: Record<string, any>) {
     rrspC = a.rrspC || 0;
     tfsaC = a.tfsaC || 0;
   } else if (sal >= 55000) {
-    rrspC = Math.min(ac, Math.min(sal * 0.18, 33810));
+    rrspC = Math.min(ac, Math.min(sal * 0.18, 31560));
     tfsaC = Math.min(ac - rrspC, 7000);
   } else {
     tfsaC = Math.min(ac, 7000);
-    rrspC = Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
+    rrspC = Math.min(ac - tfsaC, Math.min(sal * 0.18, 31560));
   }
   const nrC = Math.max(0, ac - tfsaC - rrspC);
 
@@ -252,10 +252,11 @@ export function translateToMCInter(a: Record<string, any>) {
     cRetAge: a.cRetAge || retAge, cSal: a.cIncome || 0,
     cRRSP: a.cRrsp || 0, cTFSA: a.cTfsa || 0, cNR: a.cNr || 0, cLiraBal: a.cLira || 0,
     cPenType: a.cPenType === "dc" ? "cd" : (a.cPenType || "none"), cPenM: a.cPenM || 0,
-    cPenIdx: a.cPenIdx ? 2 : (a.cPenType === "db" ? 1 : 0),
+    cPenIdx: a.cPenIdx ? 2 : 0,
     cDCBal: a.cDcBal || 0,
     // Derive spousal annual contributions from monthly input if not explicitly provided
-    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 33810)),
+    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 31560)),
+    cTFSAC: a.cTfsaC != null ? a.cTfsaC * 12 : Math.min(Math.max(0, (a.cMonthlyContrib || 0) * 12 - Math.min((a.cIncome || 0) * 0.18, 31560)), 7000),
     cNRC: a.cNrC != null ? a.cNrC * 12 : 0,
     cAvgE: a.cIncome || 0, cQppYrs: Math.min(40, Math.max(0, (a.cAge || 0) - 18)),
     cQppAge: a.cQppAge || 65, cOasAge: a.cOasAge || 65,

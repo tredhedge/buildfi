@@ -124,7 +124,7 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
   const mc2 = a.monthlyContrib || 0;
   const ac = mc2 * 12;
   const tfsaC = a.tfsaC != null ? a.tfsaC : Math.min(ac, 7000);
-  const rrspC = a.rrspC != null ? a.rrspC : Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
+  const rrspC = a.rrspC != null ? a.rrspC : Math.min(ac - tfsaC, Math.min(sal * 0.18, 31560));
   const nrC = Math.max(0, ac - tfsaC - rrspC);
   if (a.tfsaC == null) filled.push("tfsaC");
   if (a.rrspC == null) filled.push("rrspC");
@@ -380,8 +380,8 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
     cRetAge: a.cRetAge || retAge, cSal: a.cIncome || 0,
     cRRSP: a.cRrsp || 0, cTFSA: a.cTfsa || 0, cNR: a.cNr || 0, cLiraBal: a.cLira || 0,
     cPenType: a.cPenType === "dc" ? "cd" : (a.cPenType || "none"), cPenM: a.cPenM || 0,
-    cPenIdx: a.cPenIdx ? 2 : (a.cPenType === "db" ? 1 : 0),
-    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 33810)),
+    cPenIdx: a.cPenIdx ? 2 : 0,
+    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 31560)),
     cNRC: a.cNrC != null ? a.cNrC * 12 : 0,
     cQppAge: a.cQppAge || 65, cOasAge: a.cOasAge || 65,
     cRetSpM: Math.round(retSpM * 0.4), cDeath: a.cSex === "F" ? 92 : 90,
