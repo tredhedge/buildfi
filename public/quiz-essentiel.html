@@ -600,7 +600,9 @@ function renderConfirmEss(q, lang) {
   html += scard(t("Revenus et épargne", "Income & savings"),
     row(t("Revenu annuel brut", "Gross annual income"), fmt(q.income), q.income <= 0)
     + row(t("Type d'employeur", "Employer type"), employerLabel)
-    + row(t("Épargne totale", "Total savings"), fmt(q.totalSavings))
+    + (q.savingsDetail
+      ? row("REER", fmt(q.rrsp)) + row("CÉLI", fmt(q.tfsa)) + row(t("Non enregistré", "Non-reg"), (q.nr||0) > 0 ? fmt(q.nr) : "—")
+      : row(t("Épargne totale", "Total savings"), fmt(q.totalSavings)))
     + row(t("Cotisation mensuelle", "Monthly contribution"), fmt(q.monthlyContrib), q.monthlyContrib > monthlyIncome * 0.6 && monthlyIncome > 0)
   , 3);
 

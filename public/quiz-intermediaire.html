@@ -627,6 +627,9 @@ function renderConfirm(q,lang){
       pen+=row(t("Indexée à l'inflation","Inflation-indexed"),q.penIdx?t("Oui","Yes"):t("Non","No"));
       pen+=row(t("Prestation-pont","Bridge benefit"),q.penBridge?t("Oui","Yes"):t("Non","No"));
     }
+    if(q.penType==="dc"){
+      if((q.dcBal||0)>0)pen+=row(t("Solde accumulé","Accumulated balance"),fmt(q.dcBal));
+    }
     html+=scard(t("Régime employeur","Employer pension"),pen,"BB");
   }
 
@@ -641,7 +644,7 @@ function renderConfirm(q,lang){
   // CTA
   html+='<div style="margin-top:24px">';
   html+='<button class="pbtn" onclick="go(\'loading\')" style="font-size:16px">'+t("Tout est exact — générer mon rapport →","All correct — generate my report →")+'</button>';
-  html+='<button onclick="go(7)" style="display:block;width:100%;margin-top:12px;padding:12px;background:transparent;border:1px solid var(--bd);border-radius:10px;color:var(--ts);font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">'+t("Retour aux questions","Back to questions")+'</button>';
+  html+='<button onclick="go(STATE.activeBlocks&&STATE.activeBlocks.length>0?\'B\'+STATE.activeBlocks[STATE.activeBlocks.length-1]:7)" style="display:block;width:100%;margin-top:12px;padding:12px;background:transparent;border:1px solid var(--bd);border-radius:10px;color:var(--ts);font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">'+t("Retour aux questions","Back to questions")+'</button>';
   html+='</div>';
   html+='</div>';
   return html;
