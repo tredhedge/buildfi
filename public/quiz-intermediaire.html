@@ -466,14 +466,14 @@ function toggleWorry(w){
 }
 function goConditional(){
   var blocks=STATE.activeBlocks=detectBlocks(STATE.quiz);
-  if(blocks.length===0){go("loading");return;}
+  if(blocks.length===0){go("confirm");return;}
   go("B"+blocks[0]);
 }
 function goNextBlock(current){
   var blocks=STATE.activeBlocks;
   var idx=blocks.indexOf(current);
   if(idx>=0&&idx<blocks.length-1)go("B"+blocks[idx+1]);
-  else go("loading");
+  else go("confirm");
 }
 function goPrevBlock(current){
   var blocks=STATE.activeBlocks;
@@ -500,7 +500,155 @@ function renderLoading(fr){
     +'<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
 }
 
+function renderConfirm(q,lang){
+  var fr=lang==="fr",t=function(f,e){return fr?f:e;};
+  var fmt=function(n){if(!n||n===0)return"—";return Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")+" $";};
+  var totalSavings=(q.rrsp||0)+(q.tfsa||0)+(q.nr||0)+(q.lira||0)+(q.dcBal||0);
+  var partnerSavings=q.couple==="yes"?(q.cRrsp||0)+(q.cTfsa||0)+(q.cNr||0)+(q.cLira||0):0;
+  var totalDebt=(q.debts||[]).reduce(function(s,d){return s+(d.amount||0);},0);
+  var debtCount=(q.debts||[]).filter(function(d){return(d.amount||0)>0;}).length;
+  var monthlyIncome=(q.income||0)/12;
+  var retBudget=q.retSpM>0?q.retSpM:q.lifestyle==="cozy"?3000:q.lifestyle==="premium"?7500:q.lifestyle==="custom"?q.retSpMCustom:5000;
+  var lifestyleLabel=q.lifestyle==="cozy"?t("Sobre","Cozy"):q.lifestyle==="premium"?t("Aisé","Premium"):q.lifestyle==="custom"?t("Personnalisé","Custom"):t("Actif","Active");
+  var riskLabel=q.risk==="conservative"?t("Conservateur","Conservative"):q.risk==="growth"?t("Croissance","Growth"):q.risk==="custom"?t("Personnalisé","Custom"):t("Équilibré","Balanced");
+  var qppLabel=q.prov==="QC"?"RRQ":"RPC";
+  var srcLabel=(q.sources||["employed"]).map(function(s){return s==="employed"?t("Salarié","Employed"):s==="self"?t("Autonome","Self-employed"):s==="ccpc"?"CCPC":s==="retired"?t("Retraité","Retired"):s;}).join(", ");
+  var employerLabel=q.employer==="gov"?t("Gouvernement","Government"):q.employer==="large"?t("Grande entreprise","Large company"):q.employer==="tech"?t("Tech/startup","Tech/startup"):q.employer==="sme"?t("PME","SME"):q.employer==="self"?t("Indépendant","Independent"):"";
+  var penLabel=q.penType==="db"?t("Prestations déterminées","Defined benefit"):q.penType==="dc"?t("Cotisations déterminées","Defined contribution"):t("Aucun","None");
+  var decLabel=q.decaissement==="meltdown"?t("Décaissement REER avant 71","RRSP drawdown before 71"):q.decaissement==="needs"?t("Selon les besoins","As needed"):t("Retraits minimums","Minimums only");
+
+  // Validation warnings — flag suspicious values
+  var warnings=[];
+  if(q.retAge<=q.age)warnings.push(t("L'âge de retraite ("+q.retAge+") doit être supérieur à l'âge actuel ("+q.age+").","Retirement age ("+q.retAge+") must be greater than current age ("+q.age+")."));
+  if(q.income<=0)warnings.push(t("Revenu annuel non saisi.","Annual income not entered."));
+  if(retBudget>0&&monthlyIncome>0&&retBudget>monthlyIncome*0.95)warnings.push(t("Budget retraite ("+fmt(retBudget)+"/mois) proche du revenu mensuel actuel ("+fmt(monthlyIncome)+"/mois). Est-ce intentionnel ?","Retirement budget ("+fmt(retBudget)+"/mo) is near your current monthly income ("+fmt(monthlyIncome)+"/mo). Intentional?"));
+  if(q.homeowner&&q.homeValue>0&&q.mortgage>=q.homeValue)warnings.push(t("Hypothèque ("+fmt(q.mortgage)+") égale ou supérieure à la valeur de la propriété ("+fmt(q.homeValue)+"). Veuillez vérifier.","Mortgage ("+fmt(q.mortgage)+") equals or exceeds home value ("+fmt(q.homeValue)+"). Please verify."));
+  if(q.penType==="db"&&q.penM>0&&monthlyIncome>0&&q.penM>monthlyIncome)warnings.push(t("Rente mensuelle ("+fmt(q.penM)+") supérieure au revenu mensuel actuel ("+fmt(monthlyIncome)+"). Veuillez vérifier.","Monthly pension ("+fmt(q.penM)+") exceeds current monthly income ("+fmt(monthlyIncome)+"). Please verify."));
+  if(q.monthlyContrib>0&&monthlyIncome>0&&q.monthlyContrib>monthlyIncome*0.6)warnings.push(t("Cotisation mensuelle ("+fmt(q.monthlyContrib)+") représente plus de 60 % du revenu mensuel. Veuillez vérifier.","Monthly contribution ("+fmt(q.monthlyContrib)+") exceeds 60% of monthly income. Please verify."));
+
+  // Row helper: label + value, optional red flag
+  function row(label,value,flag){
+    return'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bdl)">'
+      +'<span style="font-size:13px;color:var(--tm)">'+label+'</span>'
+      +'<span style="font-size:13px;font-weight:600;color:'+(flag?"#CC4444":"var(--tx)")+'">'+value+'</span>'
+      +'</div>';
+  }
+  // Section card helper
+  function scard(title,content,editTarget){
+    return'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      +'<div style="font-size:14px;font-weight:700;color:var(--g)">'+title+'</div>'
+      +'<button onclick="go('+JSON.stringify(editTarget)+')" style="font-size:12px;color:var(--g);background:transparent;border:1px solid var(--bd);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:DM Sans,sans-serif">'+t("Modifier","Edit")+'</button>'
+      +'</div>'
+      +'<div>'+content+'</div>'
+      +'</div>';
+  }
+
+  var html='<div style="max-width:580px;margin:0 auto;padding:32px 20px 80px">';
+
+  // Header
+  html+='<div style="text-align:center;margin-bottom:24px">';
+  html+='<div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">'+t("Vérification","Review")+'</div>';
+  html+='<h2 style="font-size:22px;font-weight:800;margin-bottom:10px">'+t("Vos informations sont-elles exactes ?","Is your information correct?")+'</h2>';
+  html+='<p style="font-size:14px;color:var(--ts);line-height:1.6;max-width:440px;margin:0 auto">'+t("Une erreur dans les données produit un rapport inexact. Prenez 30 secondes pour vérifier les points clés.","Incorrect data produces an inaccurate report. Take 30 seconds to verify the key details.")+'</p>';
+  html+='</div>';
+
+  // Warnings
+  if(warnings.length>0){
+    html+='<div style="background:#FFF8E6;border:1px solid #E6B800;border-radius:10px;padding:14px 16px;margin-bottom:18px">';
+    html+='<div style="font-size:13px;font-weight:700;color:#B8860B;margin-bottom:8px">'+t("Points à vérifier","Points to verify")+'</div>';
+    warnings.forEach(function(w){html+='<div style="font-size:12px;color:#7A5A00;padding:5px 0 5px 12px;border-left:3px solid #E6B800;margin-bottom:6px;line-height:1.5">'+w+'</div>';});
+    html+='</div>';
+  }
+
+  // 1. Profil de base
+  html+=scard(t("Profil de base","Basic profile"),
+    row(t("Âge actuel","Current age"),q.age+" "+t("ans","yrs"))
+    +row(t("Âge de retraite","Retirement age"),q.retAge+" "+t("ans","yrs"),q.retAge<=q.age)
+    +row(t("Sexe","Sex"),q.sex==="F"?t("Femme","Female"):t("Homme","Male"))
+    +row(t("Province","Province"),q.prov||"QC")
+    +row(t("Situation","Situation"),q.couple==="yes"?t("Couple (conjoint·e, "+q.cAge+" ans)","Couple (partner, "+q.cAge+" yrs)"):t("Célibataire","Single"))
+  ,1);
+
+  // 2. Revenus
+  html+=scard(t("Revenus","Income"),
+    row(t("Revenu annuel brut","Gross annual income"),fmt(q.income),q.income<=0)
+    +row(t("Sources de revenu","Income sources"),srcLabel)
+    +((q.sources||[]).indexOf("employed")>=0?row(t("Type d'employeur","Employer type"),employerLabel):"")
+    +(q.couple==="yes"&&(q.cIncome||0)>0?row(t("Revenu conjoint·e","Partner income"),fmt(q.cIncome)):"")
+  ,2);
+
+  // 3. Épargne
+  html+=scard(t("Épargne","Savings"),
+    row("REER",fmt(q.rrsp))
+    +row("CÉLI",fmt(q.tfsa))
+    +row(t("Non enregistré","Non-reg"),(q.nr||0)>0?fmt(q.nr):"—")
+    +row("CRI",(q.lira||0)>0?fmt(q.lira):"—")
+    +row(t("CD / RPCD","DC plan"),(q.dcBal||0)>0?fmt(q.dcBal):"—")
+    +(q.couple==="yes"?row(t("Épargne conjoint·e","Partner savings"),fmt(partnerSavings)):"")
+    +row(t("Cotisation mensuelle","Monthly contribution"),fmt(q.monthlyContrib),q.monthlyContrib>monthlyIncome*0.6&&monthlyIncome>0)
+    +'<div style="display:flex;justify-content:space-between;padding-top:8px;margin-top:4px;border-top:2px solid var(--bd)">'
+    +'<span style="font-size:13px;font-weight:700">'+t("Total épargne liquide","Total liquid savings")+'</span>'
+    +'<span style="font-size:14px;font-weight:800;color:var(--g)">'+fmt(totalSavings+partnerSavings)+'</span></div>'
+  ,3);
+
+  // 4. Objectif retraite
+  html+=scard(t("Objectif retraite","Retirement goal"),
+    row(t("Budget mensuel","Monthly budget"),fmt(retBudget)+t("/mois","/mo")+" — "+lifestyleLabel,retBudget>monthlyIncome*0.95&&monthlyIncome>0)
+    +row(t("Profil de risque","Risk profile"),riskLabel)
+    +row(qppLabel+" — "+t("début","start"),q.qppAge+" "+t("ans","yrs"))
+    +row(t("PSV — début","OAS — start"),q.oasAge+" "+t("ans","yrs"))
+    +row(t("Stratégie de décaissement","Withdrawal strategy"),decLabel)
+    +(q.parttime!=="no"?row(t("Travail partiel","Part-time work"),fmt(q.parttimeAmount)+t("/mois × ","/mo × ")+q.parttimeYears+" "+t("ans","yrs")):"")
+  ,6);
+
+  // 5. Immobilier (if applicable)
+  if(q.homeowner||q.hasRental){
+    var immo="";
+    if(q.homeowner){
+      immo+=row(t("Valeur de la propriété","Home value"),fmt(q.homeValue),(q.homeValue||0)<=0);
+      immo+=row(t("Hypothèque","Mortgage"),(q.mortgage||0)>0?fmt(q.mortgage):t("Aucune","None"),q.mortgage>=q.homeValue&&q.homeValue>0);
+      if((q.mortgage||0)>0)immo+=row(t("Amortissement restant","Remaining amort"),q.mortgageAmort+" "+t("ans","yrs"));
+      if((q.heloc||0)>0)immo+=row("HELOC",fmt(q.heloc));
+    }
+    if(q.hasRental){
+      immo+=row(t("Bien locatif","Rental property"),fmt(q.rentalValue));
+      if((q.rentalIncome||0)>0)immo+=row(t("Revenus locatifs","Rental income"),fmt(q.rentalIncome)+t("/an","/yr"));
+    }
+    html+=scard(t("Immobilier","Real estate"),immo,5);
+  }
+
+  // 6. Pension employeur (if applicable)
+  if(q.penType&&q.penType!=="none"){
+    var pen=row(t("Type de régime","Plan type"),penLabel);
+    if(q.penType==="db"){
+      pen+=row(t("Rente mensuelle estimée","Est. monthly pension"),fmt(q.penM),q.penM>monthlyIncome&&monthlyIncome>0);
+      if((q.penYrs||0)>0)pen+=row(t("Années de service","Years of service"),q.penYrs);
+      pen+=row(t("Indexée à l'inflation","Inflation-indexed"),q.penIdx?t("Oui","Yes"):t("Non","No"));
+      pen+=row(t("Prestation-pont","Bridge benefit"),q.penBridge?t("Oui","Yes"):t("Non","No"));
+    }
+    html+=scard(t("Régime employeur","Employer pension"),pen,"BB");
+  }
+
+  // 7. Dettes (if applicable)
+  if(totalDebt>0){
+    html+=scard(t("Dettes","Debts"),
+      row(t("Nombre de dettes","Number of debts"),debtCount)
+      +row(t("Solde total","Total balance"),fmt(totalDebt))
+    ,"BE");
+  }
+
+  // CTA
+  html+='<div style="margin-top:24px">';
+  html+='<button class="pbtn" onclick="go(\'loading\')" style="font-size:16px">'+t("Tout est exact — générer mon rapport →","All correct — generate my report →")+'</button>';
+  html+='<button onclick="go(7)" style="display:block;width:100%;margin-top:12px;padding:12px;background:transparent;border:1px solid var(--bd);border-radius:10px;color:var(--ts);font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">'+t("Retour aux questions","Back to questions")+'</button>';
+  html+='</div>';
+  html+='</div>';
+  return html;
+}
+
 function renderQuiz(step,q,lang,activeBlocks){
+  if(step==="confirm")return renderConfirm(q,lang);
   var fr=lang==="fr",t=function(f,e){return fr?f:e;};
   var totalSteps=7+(activeBlocks||[]).length;
   function progressBar(stepNum){

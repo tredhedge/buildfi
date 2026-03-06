@@ -535,10 +535,106 @@ function renderLoading(fr) {
   return '<div style="max-width:480px;margin:80px auto;text-align:center;padding:20px"><div style="font-size:48px;margin-bottom:24px">??</div><h2 style="font-size:20px;font-weight:700;color:var(--g)">' + (fr ? "Analyse en cours..." : "Analyzing...") + '</h2><p style="color:var(--ts);margin:12px 0;font-size:14px">' + (fr ? "5 000 scénarios économiques simulés" : "Simulating 5,000 economic scenarios") + '</p><div style="margin:24px 0"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
 }
 
+function renderConfirmEss(q, lang) {
+  var fr = lang === "fr", t = function(f, e) { return fr ? f : e; };
+  var fmt = function(n) { if (!n || n === 0) return "—"; return Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $"; };
+  var monthlyIncome = (q.income || 0) / 12;
+  var retBudget = q.lifestyle === "cozy" ? 3000 : q.lifestyle === "premium" ? 7500 : 5000;
+  var lifestyleLabel = q.lifestyle === "cozy" ? t("Sobre (~3 000 $/mois)", "Cozy (~$3,000/mo)") : q.lifestyle === "premium" ? t("Aisé (~7 500 $/mois)", "Premium (~$7,500/mo)") : t("Actif (~5 000 $/mois)", "Active (~$5,000/mo)");
+  var riskLabel = q.risk === "conservative" ? t("Conservateur (50% actions)", "Conservative (50% equity)") : q.risk === "growth" ? t("Croissance (85% actions)", "Growth (85% equity)") : t("Équilibré (70% actions)", "Balanced (70% equity)");
+  var employerLabel = q.employer === "gov" ? t("Gouvernement", "Government") : q.employer === "large" ? t("Grande entreprise", "Large company") : q.employer === "tech" ? t("Tech/startup", "Tech/startup") : t("PME / Travailleur autonome", "Small business / Self-employed");
+  var totalDebt = (q.debts || []).reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+  var debtCount = (q.debts || []).filter(function(d) { return (d.amount || 0) > 0; }).length;
+  var qppLabel = q.prov === "QC" ? "RRQ" : "RPC";
+
+  // Validation warnings
+  var warnings = [];
+  if (q.retAge <= q.age) warnings.push(t("L'âge de retraite (" + q.retAge + ") doit être supérieur à l'âge actuel (" + q.age + ").", "Retirement age (" + q.retAge + ") must be greater than current age (" + q.age + ")."));
+  if (q.income <= 0) warnings.push(t("Revenu annuel non saisi.", "Annual income not entered."));
+  if (retBudget > monthlyIncome * 0.95 && q.income > 0) warnings.push(t("Budget retraite (" + fmt(retBudget) + "/mois) proche du revenu mensuel actuel (" + fmt(monthlyIncome) + "/mois). Est-ce intentionnel ?", "Retirement budget (" + fmt(retBudget) + "/mo) is near your current monthly income (" + fmt(monthlyIncome) + "/mo). Intentional?"));
+  if (q.homeowner && q.homeValue > 0 && q.mortgage >= q.homeValue) warnings.push(t("Hypothèque (" + fmt(q.mortgage) + ") égale ou supérieure à la valeur de la propriété (" + fmt(q.homeValue) + "). Veuillez vérifier.", "Mortgage (" + fmt(q.mortgage) + ") equals or exceeds home value (" + fmt(q.homeValue) + "). Please verify."));
+  if (q.monthlyContrib > 0 && monthlyIncome > 0 && q.monthlyContrib > monthlyIncome * 0.6) warnings.push(t("Cotisation mensuelle (" + fmt(q.monthlyContrib) + ") représente plus de 60 % du revenu mensuel. Veuillez vérifier.", "Monthly contribution (" + fmt(q.monthlyContrib) + ") exceeds 60% of monthly income. Please verify."));
+
+  function row(label, value, flag) {
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bdl)">'
+      + '<span style="font-size:13px;color:var(--tm)">' + label + '</span>'
+      + '<span style="font-size:13px;font-weight:600;color:' + (flag ? "#CC4444" : "var(--tx)") + '">' + value + '</span>'
+      + '</div>';
+  }
+  function scard(title, content, editTarget) {
+    return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      + '<div style="font-size:14px;font-weight:700;color:var(--g)">' + title + '</div>'
+      + '<button onclick="go(' + editTarget + ')" style="font-size:12px;color:var(--g);background:transparent;border:1px solid var(--bd);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:DM Sans,sans-serif">' + t("Modifier", "Edit") + '</button>'
+      + '</div><div>' + content + '</div></div>';
+  }
+
+  var html = '<div style="max-width:560px;margin:0 auto;padding:32px 24px 80px">';
+
+  // Header
+  html += '<div style="text-align:center;margin-bottom:24px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">' + t("Vérification", "Review") + '</div>';
+  html += '<h2 style="font-size:22px;font-weight:800;margin-bottom:10px">' + t("Vos informations sont-elles exactes ?", "Is your information correct?") + '</h2>';
+  html += '<p style="font-size:14px;color:var(--ts);line-height:1.6;max-width:440px;margin:0 auto">' + t("Une erreur dans les données produit un rapport inexact. Prenez 30 secondes pour vérifier.", "Incorrect data produces an inaccurate report. Take 30 seconds to verify.") + '</p>';
+  html += '</div>';
+
+  // Warnings
+  if (warnings.length > 0) {
+    html += '<div style="background:#FFF8E6;border:1px solid #E6B800;border-radius:10px;padding:14px 16px;margin-bottom:18px">';
+    html += '<div style="font-size:13px;font-weight:700;color:#B8860B;margin-bottom:8px">' + t("Points à vérifier", "Points to verify") + '</div>';
+    warnings.forEach(function(w) { html += '<div style="font-size:12px;color:#7A5A00;padding:5px 0 5px 12px;border-left:3px solid #E6B800;margin-bottom:6px;line-height:1.5">' + w + '</div>'; });
+    html += '</div>';
+  }
+
+  // 1. Profil de base → Step 1
+  html += scard(t("Profil de base", "Basic profile"),
+    row(t("Âge actuel", "Current age"), q.age + " " + t("ans", "yrs"))
+    + row(t("Âge de retraite", "Retirement age"), q.retAge + " " + t("ans", "yrs"), q.retAge <= q.age)
+    + row(t("Sexe", "Sex"), q.sex === "F" ? t("Femme", "Female") : t("Homme", "Male"))
+    + row(t("Province", "Province"), q.prov || "QC")
+    + row(t("Situation", "Situation"), q.couple === "yes" ? t("En couple", "With partner") : t("Célibataire", "Single"))
+    + (q.qppAge ? row(qppLabel + " — " + t("début", "start"), q.qppAge + " " + t("ans", "yrs")) : "")
+  , 1);
+
+  // 2. Revenus & épargne → Step 3
+  html += scard(t("Revenus et épargne", "Income & savings"),
+    row(t("Revenu annuel brut", "Gross annual income"), fmt(q.income), q.income <= 0)
+    + row(t("Type d'employeur", "Employer type"), employerLabel)
+    + row(t("Épargne totale", "Total savings"), fmt(q.totalSavings))
+    + row(t("Cotisation mensuelle", "Monthly contribution"), fmt(q.monthlyContrib), q.monthlyContrib > monthlyIncome * 0.6 && monthlyIncome > 0)
+  , 3);
+
+  // 3. Objectif retraite → Step 5
+  html += scard(t("Objectif retraite", "Retirement goal"),
+    row(t("Style de vie", "Lifestyle"), lifestyleLabel, retBudget > monthlyIncome * 0.95 && q.income > 0)
+    + row(t("Profil de risque", "Risk profile"), riskLabel)
+    + (q.parttime !== "no" ? row(t("Travail partiel", "Part-time work"), fmt(q.parttimeAmount) + t("/mois × ", "/mo × ") + q.parttimeYears + " " + t("ans", "yrs")) : "")
+  , 5);
+
+  // 4. Dettes & propriété → Step 4 (conditional)
+  if (totalDebt > 0 || q.homeowner) {
+    var dpContent = "";
+    if (totalDebt > 0) dpContent += row(t("Dettes — solde total", "Debts — total balance"), fmt(totalDebt));
+    if (q.homeowner) {
+      dpContent += row(t("Valeur de la propriété", "Home value"), fmt(q.homeValue), (q.homeValue || 0) <= 0);
+      dpContent += row(t("Hypothèque", "Mortgage"), (q.mortgage || 0) > 0 ? fmt(q.mortgage) : t("Aucune", "None"), q.mortgage >= q.homeValue && q.homeValue > 0);
+    }
+    html += scard(t("Dettes et propriété", "Debts & property"), dpContent, 4);
+  }
+
+  // CTA
+  html += '<div style="margin-top:24px">';
+  html += '<button class="pbtn" onclick="go(9)" style="font-size:16px">' + t("Tout est exact — voir mon rapport →", "All correct — see my report →") + '</button>';
+  html += '<button onclick="go(8)" style="display:block;width:100%;margin-top:12px;padding:12px;background:transparent;border:1px solid var(--bd);border-radius:10px;color:var(--ts);font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">' + t("Retour aux questions", "Back to questions") + '</button>';
+  html += '</div></div>';
+  return html;
+}
+
 function renderQuiz(step, q, lang) {
+  if (step === "confirm") return renderConfirmEss(q, lang);
   var fr = lang === "fr", t = function(f,e){return fr?f:e;};
   var wrap = function(inner) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:48px 24px 36px">' + (step > 0 ? '<div style="margin-bottom:24px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tm);margin-bottom:6px"><span>' + t("\u00c9tape","Step") + ' ' + step + '/8</span><span>' + Math.round(step/8*100) + '%</span></div><div role="progressbar" aria-valuenow="' + step + '" aria-valuemin="0" aria-valuemax="8" aria-label="' + t("Progression du quiz","Quiz progress") + '" style="height:4px;background:var(--bd);border-radius:2px"><div style="height:100%;background:var(--g);border-radius:2px;width:' + (step/8*100) + '%;transition:width .3s"></div></div></div>' : '') + '<div class="qs" aria-live="polite" key="' + step + '">' + inner + '</div></div>'; };
-  var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 8 ? step+1 : 9) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
+  var btn = function(label) { return '<button class="pbtn" onclick="go(' + (step < 8 ? step+1 : "'confirm'") + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; };
   var backBtn = step > 0 ? '<button class="back-btn" onclick="go(' + (step-1) + ')" style="margin-top:10px;width:100%;text-align:center">' + t("Retour","Back") + '</button>' : '';
 
   // STEP 0: LANDING PAGE
