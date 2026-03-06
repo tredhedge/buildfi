@@ -192,6 +192,7 @@ async function handleCheckoutCompleted(
     const fr = lang === "fr";
     let reportHTML: string;
     let D: Record<string, unknown>;
+    let allocationUrl: string | undefined;
 
     // Generate feedback token for star ratings in report + email
     const feedbackToken = randomUUID();
@@ -200,6 +201,22 @@ async function handleCheckoutCompleted(
     if (tier === "intermediaire") {
       // ── Intermédiaire pipeline ──────────────────────────
       const params = translateToMCInter(quizAnswers);
+
+      // Build allocation tool baseline URL (params baseline for pre-fill)
+      try {
+        const annualContrib = (params.rrspC || 0) + (params.tfsaC || 0) + (params.nrC || 0);
+        const blendedReturn = Math.round((params.allocR * 7 + (1 - params.allocR) * 4) * 10) / 10;
+        const urlParts: string[] = [];
+        if (params.sal) urlParts.push(`income=${Math.round(params.sal)}`);
+        if (annualContrib > 0) urlParts.push(`alloc=${Math.round(annualContrib)}`);
+        if (blendedReturn > 0) urlParts.push(`return=${blendedReturn}`);
+        if (params.retAge) urlParts.push(`retAge=${params.retAge}`);
+        if (params.age) urlParts.push(`age=${params.age}`);
+        if (params.prov) urlParts.push(`province=${params.prov}`);
+        urlParts.push(`married=${!!params.cOn}`);
+        urlParts.push(`mortgage=${(params._report?.mortBal || 0) > 0}`);
+        allocationUrl = `https://www.buildfi.ca/outils/allocation-epargne.html${urlParts.length ? `?${urlParts.join("&")}` : ""}`;
+      } catch { /* non-fatal — email sends without baseline URL */ }
       const mcStart = Date.now();
       const mc = runMC(params, 5000);
       const stratData = run5Strategies(params as any);
@@ -257,6 +274,7 @@ async function handleCheckoutCompleted(
       grade: (D as Record<string, string>).grade,
       successPct: (D as Record<string, number>).successPct,
       feedbackToken,
+      allocationUrl,
     });
 
     console.log(`[webhook] Email sent to ${email}`);

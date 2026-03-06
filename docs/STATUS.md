@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-05 — v10 (AI narration v2: voice matrix, composite signals, narrative arc, jargon ban, 10 profiles regenerated)
+> Mis à jour: 2026-03-05 — v11 (Inter report visual overhaul: CSS migration, header, MC fan chart, KPI grouping, obs restructuring, 685 tests)
 
 ## PHASE ACTUELLE
-**ESSENTIEL LAUNCH-READY. AI narration v2 shipped (voice matrix 9 combos, 8 composite signals, dynamic obs_2, narrative arc, worry combos, FIRE bridge, jargon ban, grade-10 readability). Expert S1-S10 complete (29+87+103+91 tests). Pipeline 3-round audit done (10 profiles). Report polished (8 chantiers). Translator fixes. Stripe/Blob/Resend operational. Reste 2 blockers infra manuels (Blob public, Resend DKIM).**
+**ESSENTIEL LAUNCH-READY. INTER REPORT VISUAL OVERHAUL COMPLETE (6 sessions, 685/685 tests). AI narration v2 shipped. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
 
 ---
 
@@ -74,11 +74,23 @@
 - Inclut optimizeDecum()
 - Tax parity vérifiée sur 10 provinces
 
-### Intermediaire Server Backbone — MERGED
-- `lib/ai-prompt-inter.ts` — 18 AI slots, DerivedProfile
+### Intermediaire Server Backbone — MERGED + OVERHAULED
+- `lib/ai-prompt-inter.ts` — 18 AI slots, DerivedProfile, voice matrix, 13 signals
 - `lib/quiz-translator-inter.ts` — 85 champs → 120 MC params
-- `lib/report-html-inter.js` — 16 sections, 1,003 lignes
+- `lib/report-html-inter.js` — 16 sections, ~1,100 lignes, **visual overhaul complete** (see below)
 - `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
+- `tests/report-inter-calculations.test.js` — 685 tests, 50 catégories
+
+### Inter Report Visual Overhaul (2026-03-05) — 6 SESSIONS, 685/685 TESTS
+| Session | Composant | Statut |
+|---------|-----------|--------|
+| S0 | CSS migration — 30+ classes Essentiel portées (`.sg .sh .sn .c .co .kg .kp .ai .ex .tip .np`), `.kg4` ajouté, `body line-height:1.75`, `max-width:820px` | ✅ |
+| S1 | Header redesign — logo SVG, grade donut lettre seulement, labels descriptifs (Très solide/Solide/Fragile/À corriger), note italique probTranslation, callout `.co.cog` "dollars d'aujourd'hui", TOC `.np` | ✅ |
+| S2 | MC fan chart fusion — S6 remplacé par graphe pleine vie (D.age→D.deathAge) en SVG 740×370, utilise `D.pD` rows, marqueur retraite, 5 bandes percentiles (P5→P95), légende, fallback smoothstep | ✅ |
+| S3 | KPI grouping — 11 KPIs en 3 sous-groupes (Patrimoine `.kg4`, Revenus & Succession `.kg4`, Risques `.kg`); `kp()` migré vers classes CSS; callouts `.co.cogn` ajoutés après chaque secH() pour S1/S3/S5/S6/S7/S8 | ✅ |
+| S4 | Observations + best lever — `obs()` 4e param bullets; métriques topic-keyed (gov-coverage/fee-impact/withdrawal-stress/bridge-period/mortgage-retirement/obs_1); callout "Levier le plus efficace" en S8 quand stratégie domine de >2pp | ✅ |
+| S5 | Fixes mineurs — "Groupe d'âge" accent corrigé; Action no 1 restructurée en `.co.cogn` (label→name→why); emoji 🎯 retiré (brand rules) | ✅ |
+| Audit | Fix `.kp` CSS — `background:var(--bgc)` manquant sur les cartes KPI non-modifiées (bleu/vert marque) — régression visuelle corrigée | ✅ |
 
 ### Expert Tier — Sessions S1-S10 Complétées (2026-03-02 → 2026-03-04)
 | Session | Composant | Tests | Statut |
@@ -202,9 +214,10 @@
 6. Soft launch organique (Reddit, LinkedIn, cercle privé)
 
 ### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
+- **Report visual overhaul: COMPLETE** — CSS system, header, MC chart, KPI grouping, obs restructuring (685/685 tests)
 - Quiz Intermédiaire thin client (80+ fields, 8 étapes) — à construire
+- Checkout pipeline /api/checkout → webhook → report-html-inter.js — à connecter E2E
 - Server backbone already merged (translator, report, AI prompt, strategies)
-- Score résilience 4 jauges, thermomètre risque séquence — à construire
 
 ### Expert — Sessions S1-S10 ✅ COMPLETE | S11-S14 Post-launch
 - S1 Infra ✅ | S2 Quiz ✅ | S3 API ✅ | S4 Simulateur ✅ | S5 Workflows ✅
@@ -258,7 +271,7 @@ buildfi/
 │   ├── quiz-translator-expert.ts ✅ Expert translator
 │   ├── rate-limit.ts             ✅ Sliding window rate limiting
 │   ├── report-html.js            ✅ Essentiel report v6 (1,421 lignes)
-│   ├── report-html-inter.js      ✅ Inter report (1,003 lignes)
+│   ├── report-html-inter.js      ✅ Inter report (~1,100 lignes, visual overhaul complete)
 │   ├── report-html-expert.ts     ✅ Expert report
 │   ├── strategies-inter.ts       ✅ 5-strategy comparison
 │   └── tracking.ts               ✅ PostHog tracking
@@ -297,4 +310,5 @@ Détails complets: docs/SERVICES.md
 2. Create og-image.png (1200x630) for OG tags
 3. Commit + push all changes
 4. Soft launch organique (Reddit, LinkedIn, cercle privé)
-5. S11 Expert post-launch: feedback pipeline, A/B testing
+5. Inter quiz/checkout E2E — connecter quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+6. S11 Expert post-launch: feedback pipeline, A/B testing

@@ -21,6 +21,7 @@ interface SendReportParams {
   grade: string;
   successPct: number;
   feedbackToken?: string;
+  allocationUrl?: string;
 }
 
 export async function sendReportEmail(params: SendReportParams) {
@@ -35,7 +36,7 @@ export async function sendReportEmail(params: SendReportParams) {
     ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
     : `Your buildfi.ca ${tierName} assessment is ready — Grade ${grade}`;
 
-  const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken });
+  const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken, allocationUrl: params.allocationUrl });
 
   const text = fr
     ? `${subject}\n\nVotre bilan personnalisé est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\n\nCe lien est valide 30 jours.\n\nCet outil est fourni à titre informatif et éducatif seulement. Il ne constitue pas un avis financier personnalisé.\n\nsupport@buildfi.ca | buildfi.ca`
@@ -70,8 +71,9 @@ function buildEmailHTML(params: {
   successPct: number;
   downloadUrl: string;
   feedbackToken?: string;
+  allocationUrl?: string;
 }): string {
-  const { lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken } = params;
+  const { lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken, allocationUrl } = params;
   const fr = lang === "fr";
 
   // A-3: Dynamic preheader
@@ -114,6 +116,16 @@ function buildEmailHTML(params: {
     location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
     productType: fr ? "Produit num\u00e9rique\u00a0\u2014\u00a0livraison instantan\u00e9e" : "Digital product\u00a0\u2014\u00a0instant delivery",
     contactLabel: fr ? "Une question\u00a0?" : "Questions?",
+    toolsInterTitle: fr ? "Vos deux outils inclus" : "Your two included tools",
+    toolsInterDesc: fr ? "Utilisez celui qui correspond \u00e0 votre situation en ce moment \u2014 ou les deux." : "Use the one that fits your situation right now \u2014 or both.",
+    toolsEssTitle: fr ? "Votre outil interactif \u2014 choisissez celui qui vous correspond" : "Your interactive tool \u2014 choose the one that fits",
+    toolAllocName: fr ? "Outil d\u2019allocation REER/C\u00c9LI" : "RRSP/TFSA Allocation Tool",
+    toolAllocDescInter: fr ? "Vos donn\u00e9es de rapport sont pr\u00e9-remplies \u2014 explorez diff\u00e9rents sc\u00e9narios." : "Your report data is pre-filled \u2014 explore different scenarios.",
+    toolAllocDescEss: fr ? "Si vous \u00e9pargnez activement \u2014 d\u00e9couvrez o\u00f9 placer votre prochain dollar pour maximiser votre apr\u00e8s-imp\u00f4t." : "If you\u2019re actively saving \u2014 discover where to put your next dollar to maximize your after-tax outcome.",
+    toolDebtName: fr ? "Outil de gestion de dettes" : "Debt Management Tool",
+    toolDebtDescInter: fr ? "Analysez vos dettes et identifiez la strat\u00e9gie de remboursement la plus avantageuse." : "Analyze your debts and identify the most advantageous repayment strategy.",
+    toolDebtDescEss: fr ? "Si vous remboursez activement des dettes \u2014 analysez vos options et acc\u00e9l\u00e9rez votre remboursement." : "If you\u2019re actively paying down debt \u2014 analyze your options and accelerate your repayment.",
+    toolOpenBtn: fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192",
   };
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -244,9 +256,9 @@ function buildEmailHTML(params: {
                       </tr>
                       <tr>
                         <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
-                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)<br>
-                          ${tier === "intermediaire" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)<br>` : ""}
-                          &#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)${tier === "intermediaire" || tier === "expert" ? "<br>" : ""}
+                          ${tier === "intermediaire" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}` : ""}
+                          ${tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}` : ""}
                         </td>
                       </tr>
                     </table>
@@ -255,6 +267,157 @@ function buildEmailHTML(params: {
               </table>
             </td>
           </tr>
+
+          <!-- TOOLS BLOC — INTERMÉDIAIRE -->
+          ${tier === "intermediaire" ? `<tr>
+            <td style="padding-bottom:28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+                <tr>
+                  <td style="padding:18px 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:6px;">
+                          ${s.toolsInterTitle}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.6;padding-bottom:14px;">
+                          ${s.toolsInterDesc}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom:10px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
+                            <tr>
+                              <td style="padding:14px 16px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
+                                      ${s.toolAllocName}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
+                                      ${s.toolAllocDescInter}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <a href="${allocationUrl || "https://www.buildfi.ca/outils/allocation-epargne.html"}" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
+                            <tr>
+                              <td style="padding:14px 16px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
+                                      ${s.toolDebtName}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
+                                      ${s.toolDebtDescInter}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <a href="https://www.buildfi.ca/outils/dettes" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
+
+          <!-- TOOLS BLOC — ESSENTIEL -->
+          ${tier === "essentiel" ? `<tr>
+            <td style="padding-bottom:28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+                <tr>
+                  <td style="padding:18px 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:14px;">
+                          ${s.toolsEssTitle}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom:10px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
+                            <tr>
+                              <td style="padding:14px 16px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
+                                      ${s.toolDebtName}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
+                                      ${s.toolDebtDescEss}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <a href="https://www.buildfi.ca/outils/dettes" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
+                            <tr>
+                              <td style="padding:14px 16px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
+                                      ${s.toolAllocName}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
+                                      ${s.toolAllocDescEss}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <a href="https://www.buildfi.ca/outils/allocation-epargne.html" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
 
           <!-- FEEDBACK LINK -->
           ${feedbackToken ? `<tr>

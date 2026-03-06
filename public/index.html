@@ -533,8 +533,9 @@ input,select,textarea{font-size:16px}
         </p>
         <div class="product-includes" id="prodEssIncludes">
           <div class="product-includes-label" id="prodEssIncludesLabel">Inclus :</div>
-          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus1">Outil d'analyse des dettes (interactif)</span></div>
-          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus2">Guide 101 — Les bases de vos finances (PDF)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus1">Rapport personnalisé — 8 sections, narration IA</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus2">Guide PDF : Les bases de vos finances (13 pages)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodEssBonus3">1 outil interactif au choix</span></div>
         </div>
         <div class="product-time" id="prodEssTime">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -560,9 +561,11 @@ input,select,textarea{font-size:16px}
         </p>
         <div class="product-includes" id="prodInterIncludes">
           <div class="product-includes-label" id="prodInterIncludesLabel">Inclus :</div>
-          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus1">Tout l'Essentiel</span></div>
-          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus2">Guide 201 — Optimiser votre retraite (PDF)</span></div>
-          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus3">Outil d'analyse des dettes (interactif)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus1">Rapport personnalisé — 16 sections, narration IA</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus2">Couple, immobilier, stratégie fiscale</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus3">Guide PDF : Optimiser votre retraite (19 pages)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus4">Outil d'allocation REER/CÉLI (pré-rempli depuis votre rapport)</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodInterBonus5">Outil de gestion de dettes</span></div>
         </div>
         <div class="product-time" id="prodInterTime">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -904,17 +907,20 @@ var T = {
   prodEssName: { fr:'Essentiel', en:'Essential' },
   prodEssDesc: { fr:"Vous ne savez pas trop où vous en êtes \u2014 et les outils génériques ne vous disent rien d\u2019utile. En quelques minutes, vous obtenez un portrait clair de votre situation: votre note, vos revenus projetés, vos risques, et des observations personnalisées.", en:"You\u2019re not sure where you stand \u2014 and generic tools don\u2019t tell you much. In a few minutes, you get a clear portrait of your situation: your grade, projected income, risks, and personalized observations." },
   prodEssIncludesLabel: { fr:'Inclus :', en:'Included:' },
-  prodEssBonus1: { fr:"Outil d\u2019analyse des dettes (interactif)", en:'Debt analysis tool (interactive)' },
-  prodEssBonus2: { fr:'Guide 101 \u2014 Les bases de vos finances (PDF)', en:'Guide 101 \u2014 The basics of your finances (PDF)' },
+  prodEssBonus1: { fr:'Rapport personnalis\u00e9 \u2014 8 sections, narration IA', en:'Personalized report \u2014 8 sections, AI narration' },
+  prodEssBonus2: { fr:'Guide PDF\u00a0: Les bases de vos finances (13 pages)', en:'PDF guide: Financial Fundamentals (13 pages)' },
+  prodEssBonus3: { fr:'1 outil interactif au choix', en:'1 interactive tool of your choice' },
   prodEssGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodInterPersona: { fr:'Vous voulez aller plus loin', en:'You want to go deeper' },
   prodInterName: { fr:'Intermédiaire', en:'Intermediate' },
   // prodInterBadge: { fr:'Populaire', en:'Popular' },  // moved badge to Essentiel
   prodInterDesc: { fr:"Vous épargnez déjà, vous êtes en couple ou propriétaire \u2014 et vous voulez savoir si votre stratégie tient la route. L\u2019Intermédiaire analyse votre situation complète: fiscalité, immobilier, succession, et résilience de votre plan.", en:"You\u2019re already saving, you\u2019re a couple or homeowner \u2014 and you want to know if your strategy holds up. Intermediate analyzes your complete situation: taxes, real estate, succession, and plan resilience." },
   prodInterIncludesLabel: { fr:'Inclus :', en:'Included:' },
-  prodInterBonus1: { fr:"Tout l\u2019Essentiel", en:'Everything in Essential' },
-  prodInterBonus2: { fr:'Guide 201 \u2014 Optimiser votre retraite (PDF)', en:'Guide 201 \u2014 Optimize your retirement (PDF)' },
-  prodInterBonus3: { fr:"Outil d\u2019analyse des dettes (interactif)", en:'Debt analysis tool (interactive)' },
+  prodInterBonus1: { fr:'Rapport personnalis\u00e9 \u2014 16 sections, narration IA', en:'Personalized report \u2014 16 sections, AI narration' },
+  prodInterBonus2: { fr:'Couple, immobilier, strat\u00e9gie fiscale', en:'Couple, real estate, tax strategy' },
+  prodInterBonus3: { fr:'Guide PDF\u00a0: Optimiser votre retraite (19 pages)', en:'PDF guide: Optimize Your Retirement (19 pages)' },
+  prodInterBonus4: { fr:"Outil d\u2019allocation REER/C\u00c9LI (pr\u00e9-rempli depuis votre rapport)", en:'RRSP/TFSA allocation tool (pre-filled from your report)' },
+  prodInterBonus5: { fr:"Outil de gestion de dettes", en:'Debt management tool' },
   prodInterGuarantee: { fr:'Erreur technique? On refait votre rapport sans frais.', en:'Technical error? We redo your report at no cost.' },
   prodExpPersona: { fr:'Tout ce que vous avez toujours cherché', en:"Everything you\u2019ve been looking for" },
   prodExpName: { fr:'Expert \u00b7 Simulateur', en:'Expert \u00b7 Simulator' },

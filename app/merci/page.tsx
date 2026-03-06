@@ -322,6 +322,70 @@ function ConfirmationContent() {
               </div>
             )}
 
+            {/* Bonus tools section */}
+            {(tier === "essentiel" || tier === "intermediaire") && (
+              <div style={{ marginBottom: 20, textAlign: "left" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1208", marginBottom: 6 }}>
+                  {tier === "intermediaire"
+                    ? (fr ? "Vos deux outils inclus" : "Your two included tools")
+                    : (fr ? "Votre outil interactif — à vous de choisir" : "Your interactive tool — your choice")}
+                </div>
+                <div style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginBottom: 14 }}>
+                  {tier === "intermediaire"
+                    ? (fr ? "Utilisez celui qui correspond à votre situation en ce moment — ou les deux." : "Use the one that fits your situation right now — or both.")
+                    : (fr ? "Un outil inclus avec votre rapport. Choisissez celui qui correspond à votre situation en ce moment." : "One tool included with your report. Choose the one that fits your situation right now.")}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                  {/* Card A */}
+                  <a
+                    href={tier === "intermediaire" ? "/outils/allocation-epargne.html" : "/outils/dettes"}
+                    style={{
+                      flex: "1 1 200px", minWidth: 200, background: "#fff",
+                      border: "1.5px solid #E8E0D4", borderRadius: 12,
+                      padding: "18px 18px", textDecoration: "none", display: "block",
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
+                      {tier === "intermediaire"
+                        ? (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")
+                        : (fr ? "Outil de gestion de dettes" : "Debt Management Tool")}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                      {tier === "intermediaire"
+                        ? (fr ? "Vos données de rapport sont pré-remplies" : "Your report data is pre-filled")
+                        : (fr ? "Pour analyser et accélérer votre remboursement" : "To analyze and accelerate your repayment")}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
+                      {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
+                    </span>
+                  </a>
+                  {/* Card B */}
+                  <a
+                    href={tier === "intermediaire" ? "/outils/dettes" : "/outils/allocation-epargne.html"}
+                    style={{
+                      flex: "1 1 200px", minWidth: 200, background: "#fff",
+                      border: "1.5px solid #E8E0D4", borderRadius: 12,
+                      padding: "18px 18px", textDecoration: "none", display: "block",
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
+                      {tier === "intermediaire"
+                        ? (fr ? "Outil de gestion de dettes" : "Debt Management Tool")
+                        : (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                      {tier === "intermediaire"
+                        ? (fr ? "Analysez vos dettes et vos options de remboursement" : "Analyze your debts and repayment options")
+                        : (fr ? "Pour savoir où placer votre prochain dollar" : "To know where to put your next dollar")}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
+                      {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
+                    </span>
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Referral + second report */}
             <div style={{
               background: MARINE, borderRadius: 12, padding: "20px 22px",
