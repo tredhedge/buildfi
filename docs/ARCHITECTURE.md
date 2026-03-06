@@ -25,7 +25,7 @@
 | merci | Page /merci | Skeleton loader · grade live · referral · offre 2e rapport | All | ✅ basique, 🔨 améliorée |
 | portail | Portail /expert | Dashboard · profils · crédits · historique · exports | Expert | 🔨 |
 | page_vente_expert | Page vente Expert | Hero · workflows · features · pricing · FAQ | Expert | 🔨 |
-| debt_tool | Outil Dettes | Bonus · 6 tabs · 1,475 lignes · 200 tests | Ess+Inter | ✅ |
+| debt_tool | Outil Dettes | Bonus · 6 tabs · 1,863 lignes · 200/200 tests · FINAL | Ess+Inter | ✅ |
 | page_feedback | Page /feedback/{token} | Questions segmentées par tier | All | 🔨 |
 | page_changelog | Page /mises-a-jour | Changelog public · constantes · features | All | 🔨 |
 | page_blog | Blog / Articles | Héberge articles SEO | All | 📋 Phase 3 |
