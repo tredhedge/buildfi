@@ -163,7 +163,7 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
   // --- Pension logic (same as Inter) ---
   let penType = "none";
   let penM = 0;
-  let penIdx = false;
+  let penIdx: number = 0;
   let dcBal2 = dcBal;
 
   if (a.penType === "db") {
@@ -172,14 +172,14 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
       sal * Math.pow(salGrowth + 1, Math.max(0, retAge - age)) *
       0.02 * (a.penYrs || Math.min(35, Math.max(0, retAge - 25))) / 12
     );
-    penIdx = a.penIdx || false;
+    penIdx = a.penIdx ? 2 : 0; // engine: 2=full CPI, 1=half CPI, 0=none
     if (!a.penM) filled.push("penM");
   } else if (a.penType === "dc") {
     penType = "cd"; // engine expects "cd"
     dcBal2 = a.dcBal || dcBal;
   } else if (a.employer === "gov") {
     penType = "db";
-    penIdx = true;
+    penIdx = 2; // government pensions are fully indexed
     const projYrs = a.penYrs > 0 ? a.penYrs : Math.min(35, Math.max(0, retAge - 25));
     const projSal = sal * Math.pow(salGrowth + 1, Math.max(0, retAge - age));
     penM = a.penM || Math.round(projSal * 0.02 * projYrs / 12);
@@ -199,8 +199,8 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
   else { retSpM = Math.round(5000 * col); filled.push("retSpM"); }
 
   // --- QPP/OAS timing ---
-  const qppAge = a.qppAge || 65;
-  const oasAge = a.oasAge || 65;
+  const qppAge = Math.max(60, Math.min(70, a.qppAge || 65));
+  const oasAge = Math.max(65, Math.min(70, a.oasAge || 65));
 
   // --- Part-time work ---
   let ptM = 0, ptYrs = 0;
@@ -379,7 +379,10 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
     cAge: a.cAge || 0, cSex: a.cSex || "F",
     cRetAge: a.cRetAge || retAge, cSal: a.cIncome || 0,
     cRRSP: a.cRrsp || 0, cTFSA: a.cTfsa || 0, cNR: a.cNr || 0, cLiraBal: a.cLira || 0,
-    cPenType: a.cPenType || "none", cPenM: a.cPenM || 0,
+    cPenType: a.cPenType === "dc" ? "cd" : (a.cPenType || "none"), cPenM: a.cPenM || 0,
+    cPenIdx: a.cPenIdx ? 2 : (a.cPenType === "db" ? 1 : 0),
+    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 33810)),
+    cNRC: a.cNrC != null ? a.cNrC * 12 : 0,
     cQppAge: a.cQppAge || 65, cOasAge: a.cOasAge || 65,
     cRetSpM: Math.round(retSpM * 0.4), cDeath: a.cSex === "F" ? 92 : 90,
     lifeInsType, lifeInsDuration,
@@ -392,9 +395,9 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
     strs: "none", strs2: "none", stWhen: "start", stWhen2: "start",
     qppShare: 0, contGr: 0,
     cgIncLo: 0.5, cgIncHi: 0.6667, cgThresh: 250000,
-    // Expert-specific MC params
-    inheritAge, inheritAmt,
-    bigExpAge, bigExpAmt,
+    // Map to engine field names (engine uses inc1Age/inc1Amt for windfalls, ev1Age/ev1Amt for large expenses)
+    inc1Age: inheritAge || 0, inc1Amt: inheritAmt || 0,
+    ev1Age: bigExpAge || 0, ev1Amt: bigExpAmt || 0,
     respBal, respC, respKids, respKidAges,
   }, bizParams);
 

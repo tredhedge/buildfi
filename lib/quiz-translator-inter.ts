@@ -85,7 +85,7 @@ export function translateToMCInter(a: Record<string, any>) {
   // Pension logic — explicit penType, employer fallback, or none
   let penType = "none";
   let penM = 0;
-  let penIdx = false;
+  let penIdx: number = 0;
   let dcBal2 = dcBal;
 
   if (a.penType === "db") {
@@ -94,14 +94,14 @@ export function translateToMCInter(a: Record<string, any>) {
       sal * Math.pow(1.021, Math.max(0, retAge - age)) *
       0.02 * (a.penYrs || Math.min(35, Math.max(0, retAge - 25))) / 12
     );
-    penIdx = a.penIdx || false;
+    penIdx = a.penIdx ? 2 : 0; // engine: 2=full CPI, 1=half CPI, 0=none
   } else if (a.penType === "dc") {
     // PROACTIVE FIX: engine expects "cd" not "dc"
     penType = "cd";
     dcBal2 = a.dcBal || dcBal;
   } else if (a.employer === "gov") {
     penType = "db";
-    penIdx = true;
+    penIdx = 2; // government pensions are fully indexed
     const projYrs = a.penYrs > 0 ? a.penYrs : Math.min(35, Math.max(0, retAge - 25));
     const projSal = sal * Math.pow(1.021, Math.max(0, retAge - age));
     penM = a.penM || Math.round(projSal * 0.02 * projYrs / 12);
@@ -129,8 +129,8 @@ export function translateToMCInter(a: Record<string, any>) {
   const mer = eq > 0.85 ? 0.020 : eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012;
 
   // QPP/OAS timing — Intermédiaire uses explicit ages
-  const qppAge = a.qppAge || 65;
-  const oasAge = a.oasAge || 65;
+  const qppAge = Math.max(60, Math.min(70, a.qppAge || 65));
+  const oasAge = Math.max(65, Math.min(70, a.oasAge || 65));
 
   // Part-time work
   let ptM = 0, ptYrs = 0;
@@ -252,7 +252,11 @@ export function translateToMCInter(a: Record<string, any>) {
     cRetAge: a.cRetAge || retAge, cSal: a.cIncome || 0,
     cRRSP: a.cRrsp || 0, cTFSA: a.cTfsa || 0, cNR: a.cNr || 0, cLiraBal: a.cLira || 0,
     cPenType: a.cPenType === "dc" ? "cd" : (a.cPenType || "none"), cPenM: a.cPenM || 0,
+    cPenIdx: a.cPenIdx ? 2 : (a.cPenType === "db" ? 1 : 0),
     cDCBal: a.cDcBal || 0,
+    // Derive spousal annual contributions from monthly input if not explicitly provided
+    cRRSPC: a.cRrspC != null ? a.cRrspC * 12 : Math.min((a.cMonthlyContrib || 0) * 12, Math.min((a.cIncome || 0) * 0.18, 33810)),
+    cNRC: a.cNrC != null ? a.cNrC * 12 : 0,
     cAvgE: a.cIncome || 0, cQppYrs: Math.min(40, Math.max(0, (a.cAge || 0) - 18)),
     cQppAge: a.cQppAge || 65, cOasAge: a.cOasAge || 65,
     cRetSpM: Math.round(retSpM * 0.4), cDeath: a.cSex === "F" ? 92 : 90,

@@ -292,7 +292,7 @@ function ConfirmationContent() {
               }}>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                   {tier === "essentiel"
-                    ? (fr ? "Allez plus loin avec l'Intermédiaire" : "Go further with Intermediaire")
+                    ? (fr ? "Allez plus loin avec l'Intermédiaire" : "Go further with the Intermediate report")
                     : (fr ? "Passez au simulateur Expert" : "Upgrade to the Expert simulator")}
                 </div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 14 }}>
@@ -316,7 +316,7 @@ function ConfirmationContent() {
                   }}
                 >
                   {tier === "essentiel"
-                    ? (fr ? "Intermédiaire — 59 $" : "Intermediaire — $59")
+                    ? (fr ? "Intermédiaire — 59 $" : "Intermediate — $59")
                     : (fr ? "Expert — 129 $" : "Expert — $129")}
                 </a>
               </div>
@@ -394,11 +394,23 @@ function ConfirmationContent() {
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                 {fr ? "Obtenez un 2e bilan à 50 %" : "Get a 2nd assessment at 50% off"}
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 14 }}>
                 {fr
                   ? "Votre 2e bilan est automatiquement à 50 % de rabais."
                   : "Your 2nd assessment is automatically 50% off."}
               </div>
+              <a
+                href={tier === "intermediaire"
+                  ? `/quiz-essentiel.html?lang=${fr ? "fr" : "en"}&second=1`
+                  : `/quiz-intermediaire.html?lang=${fr ? "fr" : "en"}&second=1`}
+                style={{
+                  display: "inline-block", background: GOLD, color: "#fff",
+                  padding: "9px 20px", borderRadius: 8, textDecoration: "none",
+                  fontSize: 13, fontWeight: 700,
+                }}
+              >
+                {fr ? "Commencer mon 2e bilan →" : "Start my 2nd assessment →"}
+              </a>
             </div>
 
             {/* Share / referral */}

@@ -119,5 +119,6 @@ export function calcCostOfDelay(baseParams: MCParams): number {
   var lostContrib = (baseParams.rrspC || 0) + (baseParams.tfsaC || 0) + (baseParams.nrC || 0);
   var yrsToGrow = baseParams.deathAge - baseParams.retAge;
   var expRet = (baseParams.allocR || 0.7) * 0.07 + (1 - (baseParams.allocR || 0.7)) * 0.035 - (baseParams.merR || 0.015);
-  return Math.round(lostContrib * 12 * Math.pow(1 + expRet, yrsToGrow));
+  // rrspC/tfsaC/nrC are already annual (translators store monthly*12), no *12 needed
+  return Math.round(lostContrib * Math.pow(1 + expRet, yrsToGrow));
 }

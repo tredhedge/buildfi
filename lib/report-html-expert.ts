@@ -50,7 +50,9 @@ export function extractReportDataExpert(
   const govM = qppM + oasM + penMo;
   const coverPct = p.retSpM > 0 ? Math.round(govM / p.retSpM * 100) : 0;
   const gapM = Math.max(0, p.retSpM - govM);
-  const retBal = retRow ? Math.round((retRow.aRR || 0) + (retRow.aTF || 0) + (retRow.aNR || 0) + (retRow.aDC || 0)) : 0;
+  // Deflate retBal to real dollars (same as Essentiel extractor)
+  const retDefl = 1 / Math.pow(1 + (p.inf || 0.021), Math.max(0, (retRow.age || p.retAge) - p.age));
+  const retBal = retRow ? Math.round(((retRow.aRR || 0) + (retRow.aTF || 0) + (retRow.aNR || 0) + (retRow.aDC || 0)) * retDefl) : 0;
   const annualW = gapM * 12;
   const wdPct = retBal > 0 ? Math.round(annualW / retBal * 1000) / 10 : 99;
   const workRow = rd.find((r: any) => r.age === p.age) || {};
@@ -58,7 +60,7 @@ export function extractReportDataExpert(
   const taxRetRow = rd.find((r: any) => r.age === p.retAge + 2) || retRow;
   const taxRetEff = taxRetRow && taxRetRow.taxInc > 0 ? Math.round((taxRetRow.tax || 0) / taxRetRow.taxInc * 100) : 0;
   const taxInfo = calcTax(p.sal, 0, p.prov, 0) as any;
-  const margRate = taxInfo ? taxInfo.marg / 100 : 0.30;
+  const margRate = taxInfo ? taxInfo.marg : 0.30; // calcTax returns decimal (e.g. 0.47), not percentage
   const merW = ((p.merR || 0.015) * (p.rrsp || 0) + (p.merT || 0.007) * (p.tfsa || 0) + (p.merN || 0.007) * (p.nr || 0))
     / Math.max(1, (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0));
   const feeCost = Math.round(merW * retBal * (p.deathAge - p.retAge));

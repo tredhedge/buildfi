@@ -68,6 +68,96 @@ function daysUntil(iso: string): number {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000));
 }
 
+// ── Denied screen (standalone — no auth state needed) ──────────────
+function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l: "fr" | "en") => void }) {
+  const fr = lang === "fr";
+  const t = (f: string, e: string) => fr ? f : e;
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+
+  async function handleResend(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (!email.trim() || status === "sending") return;
+    setStatus("sending");
+    try {
+      await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch { /* swallow — server always returns 200 */ }
+    setStatus("sent");
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: EK.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Newsreader:wght@400;600;700&display=swap');`}</style>
+      <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 16, padding: 40, maxWidth: 480, width: "100%", textAlign: "center" }}>
+        {/* Logo + lang toggle */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, color: EK.marine }}>
+            buildfi.ca <span style={{ fontSize: 11, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Expert</span>
+          </div>
+          <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "4px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {fr ? "EN" : "FR"}
+          </button>
+        </div>
+
+        {/* Padlock icon */}
+        <div style={{ margin: "0 auto 16px", width: 48, height: 48, borderRadius: 12, background: "rgba(184,134,11,.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+
+        <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
+          {t("Le portail Expert est réservé aux membres.", "The Expert portal is for members only.")}
+        </div>
+        <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
+          {t(
+            "Testez vos décisions de retraite en temps réel. Profils pré-configurés, optimiseur automatique, exports AI.",
+            "Test your retirement decisions in real time. Pre-configured profiles, automatic optimizer, AI exports."
+          )}
+        </div>
+
+        {/* Primary CTA → landing */}
+        <a href="/expert/landing" style={{ display: "block", background: EK.marine, color: "#fff", padding: "14px 28px", borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: "none", marginBottom: 20 }}>
+          {t("Découvrir le simulateur Expert", "Discover the Expert simulator")}
+        </a>
+
+        {/* Resend magic link form */}
+        <div style={{ borderTop: `1px solid ${EK.border}`, paddingTop: 20, marginTop: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: EK.txDim, marginBottom: 12 }}>
+            {t("Déjà membre ? Recevez votre lien d'accès.", "Already a member? Get your access link.")}
+          </div>
+          {status === "sent" ? (
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "14px 20px", fontSize: 14, color: EK.green, fontWeight: 600 }}>
+              {t("Vérifiez votre boîte courriel — si un compte existe, le lien a été envoyé.", "Check your inbox — if an account exists, the link was sent.")}
+            </div>
+          ) : (
+            <form onSubmit={handleResend} style={{ display: "flex", gap: 8 }}>
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder={t("Votre adresse courriel", "Your email address")}
+                required
+                style={{ flex: 1, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", color: EK.tx }}
+              />
+              <button type="submit" disabled={status === "sending"} style={{ background: EK.gold, border: "none", borderRadius: 8, color: "#fff", padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                {status === "sending" ? "..." : t("Envoyer", "Send")}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Tertiary → Essentiel */}
+        <a href="/quiz-essentiel.html" style={{ display: "block", marginTop: 20, fontSize: 13, color: EK.txDim, textDecoration: "none", fontWeight: 600 }}>
+          {t("Commencer par le Diagnostic à 14,50 $ →", "Start with the Diagnostic at $14.50 →")}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ── Portal Content ─────────────────────────────────────────────────
 function PortalContent() {
   const searchParams = useSearchParams();
@@ -82,6 +172,7 @@ function PortalContent() {
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackSummary | null>(null);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [referralCopied, setReferralCopied] = useState(false);
   const tokenRef = useRef(tokenParam);
 
   const fr = lang === "fr";
@@ -209,62 +300,7 @@ function PortalContent() {
   }
 
   if (authStatus === "denied" || !profile) {
-    return (
-      <div style={{ minHeight: "100vh", background: EK.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Newsreader:wght@400;600;700&display=swap');`}</style>
-        <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 16, padding: 40, maxWidth: 480, textAlign: "center" }}>
-          {/* Logo */}
-          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 4 }}>
-            buildfi.ca <span style={{ fontSize: 12, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Simulateur Expert</span>
-          </div>
-
-          {/* Padlock icon */}
-          <div style={{ margin: "20px auto 16px", width: 48, height: 48, borderRadius: 12, background: "rgba(184,134,11,.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </div>
-
-          {/* Title */}
-          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
-            {t("Le simulateur Expert est réservé aux membres.", "The Expert simulator is for members only.")}
-          </div>
-
-          {/* Pitch */}
-          <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
-            {t(
-              "Testez vos décisions de retraite en temps réel. 5 profils pré-configurés, optimiseur automatique, exports AI.",
-              "Test your retirement decisions in real time. 5 pre-configured profiles, automatic optimizer, AI exports."
-            )}
-          </div>
-
-          {/* Primary CTA → landing */}
-          <a href="/expert/landing" style={{
-            display: "block", background: EK.marine, color: "#fff", padding: "14px 28px", borderRadius: 10,
-            fontWeight: 700, fontSize: 15, textDecoration: "none", fontFamily: "'DM Sans', sans-serif", marginBottom: 12,
-          }}>
-            {t("Découvrir le simulateur Expert", "Discover the Expert simulator")}
-          </a>
-
-          {/* Secondary CTA → magic link resend */}
-          <a href="/api/auth/magic-link" style={{
-            display: "block", background: "transparent", border: `2px solid ${EK.border}`, color: EK.marine,
-            padding: "12px 28px", borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: "none",
-            fontFamily: "'DM Sans', sans-serif", marginBottom: 16,
-          }}>
-            {t("J'ai déjà un accès — renvoyer mon lien", "I already have access — resend my link")}
-          </a>
-
-          {/* Tertiary link → Essentiel */}
-          <a href="/quiz-essentiel.html" style={{
-            fontSize: 13, color: EK.txDim, textDecoration: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
-          }}>
-            {t("Commencer par le Diagnostic à 14,50 $ →", "Start with the Diagnostic at $14.50 →")}
-          </a>
-        </div>
-      </div>
-    );
+    return <ExpertDeniedScreen lang={lang} setLang={setLang} />;
   }
 
   // ── Portal ────────────────────────────────────────────────
@@ -312,7 +348,7 @@ function PortalContent() {
         </div>
 
         {/* KPI cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 32 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14, marginBottom: 32 }}>
           {/* Credits */}
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 16px", textAlign: "center", borderTop: `3px solid ${EK.gold}` }}>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 28, fontWeight: 800, color: EK.gold }}>{profile.exportsAI}</div>
@@ -599,14 +635,18 @@ function PortalContent() {
               {referralUrl}
             </div>
             <button
-              onClick={() => { navigator.clipboard.writeText(referralUrl); }}
+              onClick={() => {
+                navigator.clipboard.writeText(referralUrl);
+                setReferralCopied(true);
+                setTimeout(() => setReferralCopied(false), 2000);
+              }}
               style={{
-                marginTop: 12, background: EK.gold, color: EK.tx, border: "none",
+                marginTop: 12, background: referralCopied ? EK.green : EK.gold, color: "#fff", border: "none",
                 padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'DM Sans', sans-serif", transition: "background .2s",
               }}
             >
-              {t("Copier le lien", "Copy link")}
+              {referralCopied ? t("Copié !", "Copied!") : t("Copier le lien", "Copy link")}
             </button>
           </div>
         </section>

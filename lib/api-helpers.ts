@@ -53,13 +53,14 @@ export async function authenticateAndRateLimit(
 // ── Grade ────────────────────────────────────────────────────
 
 export function gradeFromSuccess(succ: number): string {
+  // Canonical 8-level scale — matches report-html.js, report-html-inter.js, report-html-expert.ts
   if (succ >= 0.95) return "A+";
-  if (succ >= 0.90) return "A";
-  if (succ >= 0.85) return "A-";
-  if (succ >= 0.80) return "B+";
-  if (succ >= 0.70) return "B";
-  if (succ >= 0.50) return "C";
-  if (succ >= 0.30) return "D";
+  if (succ >= 0.85) return "A";
+  if (succ >= 0.75) return "B+";
+  if (succ >= 0.65) return "B";
+  if (succ >= 0.55) return "C+";
+  if (succ >= 0.45) return "C";
+  if (succ >= 0.35) return "D";
   return "F";
 }
 

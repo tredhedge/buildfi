@@ -224,8 +224,8 @@ export async function POST(req: NextRequest) {
       ) {
         checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
       }
-    } else if (selectedTier === "essentiel" || selectedTier === "intermediaire") {
-      // Launch promo — auto-applied for Essentiel/Intermédiaire only
+    } else {
+      // Launch promo — auto-applied for all tiers
       // To end promo: delete or deactivate LAUNCH50 coupon in Stripe Dashboard
       checkoutParams.discounts = [{ coupon: "LAUNCH50" }];
     }

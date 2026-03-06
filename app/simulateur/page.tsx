@@ -604,6 +604,86 @@ function getActiveTabs(
   return tabs;
 }
 
+// ── Denied / access-gate screen ────────────────────────────────────
+function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
+  const fr = lang === "fr";
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+
+  async function handleResend(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (!email.trim() || status === "sending") return;
+    setStatus("sending");
+    try {
+      await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch { /* server always returns 200 */ }
+    setStatus("sent");
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: EK.bg, fontFamily: "'DM Sans', sans-serif", padding: "40px 24px" }}>
+      <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine, fontFamily: "'Newsreader', serif" }}>buildfi.ca</div>
+            <div style={{ fontSize: 11, color: EK.gold, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 2 }}>Simulateur Expert</div>
+          </div>
+          <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {fr ? "EN" : "FR"}
+          </button>
+        </div>
+
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(184,134,11,.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, fontFamily: "'Newsreader', serif" }}>
+          {fr ? "Accès réservé aux membres Expert" : "Access reserved for Expert members"}
+        </h1>
+        <p style={{ fontSize: 15, color: EK.txDim, lineHeight: 1.7, marginBottom: 24 }}>
+          {fr
+            ? "Utilisez le lien dans votre courriel de confirmation pour accéder au simulateur."
+            : "Use the link in your confirmation email to access the simulator."}
+        </p>
+
+        <a href="/expert/landing" style={{ display: "block", padding: "13px 28px", background: EK.marine, color: "#fff", borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
+          {fr ? "Découvrir le simulateur Expert" : "Discover the Expert simulator"}
+        </a>
+
+        {/* Resend form */}
+        <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 24px", textAlign: "left" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: EK.txDim, marginBottom: 12, textAlign: "center" }}>
+            {fr ? "Déjà membre ? Recevez votre lien d'accès." : "Already a member? Get your access link."}
+          </div>
+          {status === "sent" ? (
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "13px 16px", fontSize: 14, color: EK.green, fontWeight: 600, textAlign: "center" }}>
+              {fr ? "Vérifiez votre boîte courriel — si un compte existe, le lien a été envoyé." : "Check your inbox — if an account exists, the link was sent."}
+            </div>
+          ) : (
+            <form onSubmit={handleResend} style={{ display: "flex", gap: 8 }}>
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder={fr ? "Votre adresse courriel" : "Your email address"}
+                required
+                style={{ flex: 1, border: `1px solid ${EK.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 14, outline: "none", color: EK.tx, fontFamily: "'DM Sans', sans-serif" }}
+              />
+              <button type="submit" disabled={status === "sending"} style={{ background: EK.gold, border: "none", borderRadius: 8, color: "#fff", padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+                {status === "sending" ? "..." : (fr ? "Envoyer" : "Send")}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // MAIN: SimulateurContent (inside Suspense)
 // ══════════════════════════════════════════════════════════════
@@ -864,36 +944,7 @@ function SimulateurContent() {
 
   // ── Denied screen ──
   if (authStatus === "denied") {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: EK.bg, fontFamily: "'DM Sans', sans-serif", padding: "40px 24px" }}>
-        <div style={{ maxWidth: 480, textAlign: "center" }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: EK.marine, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>buildfi.ca</div>
-          <div style={{ fontSize: 11, color: EK.gold, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 2, marginBottom: 36 }}>
-            Simulateur Expert
-          </div>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: EK.red, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="3" strokeLinecap="round" /></svg>
-          </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: "'Newsreader', serif" }}>
-            {fr ? "Accès requis" : "Access required"}
-          </h1>
-          <p style={{ fontSize: 15, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
-            {fr
-              ? "Ce simulateur est réservé aux membres Expert. Vérifiez votre lien d'accès ou procurez-vous un abonnement."
-              : "This simulator is reserved for Expert members. Check your access link or get a subscription."}
-          </p>
-          <a
-            href="/"
-            style={{
-              display: "inline-block", padding: "12px 32px", background: EK.marine, color: "#fff",
-              borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none",
-            }}
-          >
-            {fr ? "Voir les forfaits" : "View plans"}
-          </a>
-        </div>
-      </div>
-    );
+    return <SimulateurDeniedScreen lang={lang} setLang={setLang} />;
   }
 
   // ══════════════════════════════════════════════════════════════

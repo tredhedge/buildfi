@@ -40,7 +40,7 @@ import {
   createReferralRecord,
 } from "@/lib/kv";
 import { randomUUID } from "crypto";
-import { sendMagicLinkEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
+import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
 import { buildMagicLinkUrl } from "@/lib/auth";
 
@@ -413,14 +413,14 @@ async function handleExpertPurchase(
 
       console.log(`[webhook] Expert initial report uploaded: ${blob.url}`);
 
-      await sendReportEmail({
+      await sendExpertDeliveryEmail({
         to: email,
         lang,
-        tier: "expert",
         downloadUrl: blob.url,
         grade,
         successPct: D.successPct,
-        feedbackToken: expertFeedbackToken,
+        magicLinkUrl: buildMagicLinkUrl(profile.token),
+        referralCode: profile.referralCode,
       });
 
       console.log(`[webhook] Expert initial report email sent to ${email}`);

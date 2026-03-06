@@ -89,11 +89,11 @@ export function translateToMC(a: Record<string, any>) {
   }
 
   // Pension from employer
-  let penType = "none", penM = 0, dcBal = 0, penIdx = false;
+  let penType = "none", penM = 0, dcBal = 0, penIdx = 0;
   const emp = a.employer || "x";
   if (emp === "gov") {
     penType = "db";
-    penIdx = true;
+    penIdx = 2; // 2 = fully indexed (engine: penIdx===2 → full CPI adjustment)
     const projYrs = Math.min(35, Math.max(0, retAge - 25));
     const projSal = sal * Math.pow(1.021, Math.max(0, retAge - age));
     penM = Math.round((projSal * 0.02 * projYrs) / 12);
