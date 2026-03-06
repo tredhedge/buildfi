@@ -75,7 +75,7 @@ export function translateToMC(a: Record<string, any>) {
   // Contributions: RRSP-first when marginal rate ≥ 33%, else TFSA-first
   const mc = a.monthlyContrib || 0;
   const ac = mc * 12;
-  const rrspRoom = Math.min(sal * 0.18, 31560);
+  const rrspRoom = Math.min(sal * 0.18, 33810);
   const highMarginal = sal >= 55000; // ~33%+ combined marginal rate threshold
   let rrspC: number, tfsaC: number, nrC: number;
   if (highMarginal) {

@@ -151,7 +151,7 @@ export const TFSA = {
 
 export const RRSP = {
   contributionRate: 0.18,
-  dollarCap: 31560,
+  dollarCap: 33810,
   department: "CRA (announced by Finance Canada)",
   source: "CRA RRSP dollar limit 2026; = 18% of previous year's earned income, capped",
   sourceUrl: "canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/rrsp-mp-limit.html",
