@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-05 — v11 (Inter report visual overhaul: CSS migration, header, MC fan chart, KPI grouping, obs restructuring, 685 tests)
+> Mis à jour: 2026-03-05 — v12 (Bonus tools integration: allocation REER/CÉLI tool, email blocs, merci cards, landing cards)
 
 ## PHASE ACTUELLE
-**ESSENTIEL LAUNCH-READY. INTER REPORT VISUAL OVERHAUL COMPLETE (6 sessions, 685/685 tests). AI narration v2 shipped. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
+**ESSENTIEL LAUNCH-READY. BONUS TOOLS INTEGRATED (allocation tool + email blocs + merci cards). Inter report visual overhaul complete (685/685 tests). AI narration v2 shipped. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
 
 ---
 
@@ -153,12 +153,24 @@
 | obs_1 variation | ✅ | Anti-repetition: never start with "Le levier" |
 | 10 test profiles | ✅ | All regenerated with v2 prompts, verified differentiation |
 
+### Bonus Tools Integration (2026-03-05)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| `/public/outils/allocation-epargne.html` | ✅ | Allocation REER/CÉLI tool intégré — brand BuildFi, logo.js, REPORT BASELINE URL params, footer AMF bilingue, AMF fix (Constat) |
+| `robots.txt` | ✅ | `Disallow: /outils/allocation-epargne.html` ajouté |
+| `public/index.html` — product cards | ✅ | Essentiel 3 items, Intermédiaire 5 items — feature lists mis à jour, bilingual |
+| `lib/email.ts` — Inter | ✅ | Bloc "Vos deux outils inclus" (allocation w/ baseline URL + dettes). Debt tool retiré de "Ressources incluses" pour Ess+Inter (expert only). |
+| `lib/email.ts` — Essentiel | ✅ | Bloc "Votre outil interactif — choisissez" (dettes + allocation sans params). |
+| `app/merci/page.tsx` | ✅ | Section bonus conditionnelle par tier — Ess: 2 cards (dettes/alloc), Inter: 2 cards (alloc/dettes), Expert: rien |
+| `app/api/webhook/route.ts` | ✅ | Inter pipeline: construction URL baseline (income/alloc/return/retAge/age/province/married/mortgage) passée à sendReportEmail |
+
 ### Autres composants complétés
 - **Report v6 polished** — Grade ring, fan chart, TL;DR, KPI cards, donut, what-if, 5yr snapshot, tooltips, mini TOC, print theme + 8 chantiers: upsell absolute URLs, hypotheses CSS grid, resources cadeau gold gradient, nav pills Renforcer+Evolution, grade action hint, $0 row red highlight, methodology accordion, referral banner Option A
-- **Email template** — Table-based, bilingual, AMF compliant, grade card dark
+- **Email template** — Table-based, bilingual, AMF compliant, grade card dark, tier-aware tool blocs
 - **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
+- **Allocation REER/CÉLI tool** — Standalone HTML, BuildFi brand, REPORT BASELINE URL params, AMF compliant
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
-- **Landing page v9** — Logo SVG, audit AMF/BSIF complété, launch pricing
+- **Landing page v9** — Logo SVG, audit AMF/BSIF complété, launch pricing, feature lists à jour
 - **Quiz Essentiel** — Thin client, Stripe intégré, QPP deferral question, single-person only (couple=yes callout)
 - **Logo** — SVG flame, shared logo.js, light/dark variants
 
@@ -276,7 +288,7 @@ buildfi/
 │   ├── strategies-inter.ts       ✅ 5-strategy comparison
 │   └── tracking.ts               ✅ PostHog tracking
 ├── public/
-│   ├── index.html                ✅ Landing page v9
+│   ├── index.html                ✅ Landing page v9 (feature lists Ess 3 items / Inter 5 items)
 │   ├── expert.html               ✅ Expert landing page
 │   ├── quiz-essentiel.html       ✅ Thin client (805 lignes)
 │   ├── quiz-intermediaire.html   ✅ Inter quiz
@@ -285,7 +297,9 @@ buildfi/
 │   ├── conditions.html           ✅ Conditions d'utilisation
 │   ├── confidentialite.html      ✅ Politique de confidentialité
 │   ├── logo.js, logo-*.svg       ✅ Logo système
-│   └── robots.txt                ✅ Disallow /outils/
+│   ├── robots.txt                ✅ Disallow /outils/ + /outils/allocation-epargne.html
+│   └── outils/
+│       └── allocation-epargne.html ✅ Outil allocation REER/CÉLI (REPORT BASELINE, AMF footer)
 ├── middleware.ts                  ✅ CSP headers
 ├── tests/                        ✅ 453 MC + 200 debt + 87 Expert translator + 103 S3 + 91 S10 = 934 tests
 ├── docs/                         8 fichiers de référence
@@ -308,7 +322,6 @@ Détails complets: docs/SERVICES.md
 ## PROCHAINE SESSION
 1. Fix Blob (public store) + Resend DNS → rapport accessible
 2. Create og-image.png (1200x630) for OG tags
-3. Commit + push all changes
-4. Soft launch organique (Reddit, LinkedIn, cercle privé)
-5. Inter quiz/checkout E2E — connecter quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
-6. S11 Expert post-launch: feedback pipeline, A/B testing
+3. Soft launch organique (Reddit, LinkedIn, cercle privé)
+4. Inter quiz/checkout E2E — connecter quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+5. S11 Expert post-launch: feedback pipeline, A/B testing

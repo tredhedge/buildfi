@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Où va mon prochain dollar? — BuildFi</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/logo.js"></script>
+
+<style>
+:root {
+  --cream:#faf8f4; --sand:#f0ece3; --card:#ffffff;
+  --navy:#1a2744; --navy-mid:#2c3e6b; --navy-light:#e8ecf5;
+  --gold:#b8860b; --gold-light:#d4a520;
+  --gold-wash:rgba(184,134,11,0.08); --gold-border:rgba(184,134,11,0.28);
+  --green:#1a7a4c; --green-wash:rgba(26,122,76,0.08); --green-border:rgba(26,122,76,0.28);
+  --red:#b91c1c; --red-wash:rgba(185,28,28,0.07);
+  --purple:#6d28d9; --purple-wash:rgba(109,40,217,0.07); --purple-border:rgba(109,40,217,0.25);
+  --blue:#1e40af; --blue-wash:rgba(30,64,175,0.07); --blue-border:rgba(30,64,175,0.22);
+  --text:#1a1a1a; --text-2:#4a4a4a; --text-3:#7a7a7a;
+  --border:#e4dfd6; --border-light:#ede8e0;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06); --shadow-md:0 4px 16px rgba(0,0,0,0.08);
+  --radius:12px; --radius-lg:18px;
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.site-header{background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--font-body);font-weight:800;font-size:20px;color:#fff;letter-spacing:-.5px;text-decoration:none}
+.logo span{color:var(--gold-light)}
+.lang-toggle{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.lang-btn{font-family:var(--font-body);font-size:12px;font-weight:600;color:rgba(255,255,255,.6);background:none;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.lang-btn.active{background:rgba(255,255,255,.15);color:#fff}
+
+/* HERO */
+.hero{background:var(--navy);padding:48px 24px 56px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%)}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:12px;opacity:.9}
+.hero h1{font-family:var(--font-display);font-size:clamp(28px,5vw,44px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:16px;letter-spacing:-.5px}
+.hero h1 em{font-style:italic;color:var(--gold-light)}
+.hero-sub{font-size:16px;color:rgba(255,255,255,.65);max-width:520px;margin:0 auto;line-height:1.6}
+
+/* LAYOUT */
+.main{max-width:720px;margin:0 auto;padding:0 20px 80px}
+
+/* FHSA BANNER */
+.fhsa-banner{display:none;background:linear-gradient(135deg,var(--purple-wash),rgba(109,40,217,.04));border:1.5px solid var(--purple-border);border-radius:var(--radius);padding:16px 20px;margin:28px 0 0;animation:slideDown .3s ease}
+.fhsa-banner.visible{display:flex;gap:14px;align-items:flex-start}
+.fhsa-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.fhsa-title{font-weight:700;font-size:14px;color:var(--purple);margin-bottom:3px}
+.fhsa-desc{font-size:13px;color:#6d28d9;line-height:1.5}
+
+/* INPUT CARD */
+.input-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;margin-top:28px;box-shadow:var(--shadow-sm)}
+.input-card-title{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.input-card-title::before{content:'';display:block;width:4px;height:20px;background:var(--gold);border-radius:2px}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:540px){.fields-grid{grid-template-columns:1fr}.input-card{padding:20px}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:700;color:var(--text-2);letter-spacing:.4px;text-transform:uppercase}
+.field-hint{font-size:11px;color:var(--text-3);margin-top:-2px;font-style:italic}
+
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-prefix,.input-suffix{position:absolute;font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--text-3);pointer-events:none}
+.input-prefix{left:12px}.input-suffix{right:12px}
+
+input[type="number"],select{width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;color:var(--text);background:var(--sand);border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+input[type="number"].has-prefix{padding-left:28px}
+input[type="number"].has-suffix{padding-right:36px}
+input[type="number"]:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-wash);background:#fff}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+/* RETURN PRESETS */
+.return-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.return-preset{font-family:var(--font-body);font-size:12px;font-weight:700;padding:6px 13px;border-radius:50px;border:1.5px solid var(--border);background:var(--sand);color:var(--text-2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.return-preset:hover{border-color:var(--gold);color:var(--navy)}
+.return-preset.active{background:var(--gold-wash);border-color:var(--gold-border);color:var(--gold)}
+.return-custom-wrap{display:flex;align-items:center;gap:8px}
+.return-custom-wrap input[type="range"]{flex:1;accent-color:var(--gold);height:4px;cursor:pointer}
+
+/* RETIREMENT PRESETS */
+.ret-income-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ret-preset{font-size:11px;font-weight:700;padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:var(--sand);color:var(--text-3);cursor:pointer;transition:all .18s}
+.ret-preset:hover{border-color:var(--navy-mid);color:var(--navy)}
+
+/* CONTRIB TYPE TOGGLE */
+.contrib-type-row{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:6px}
+.contrib-type-btn{flex:1;font-family:var(--font-body);font-size:12px;font-weight:700;padding:8px 6px;background:var(--sand);border:none;cursor:pointer;color:var(--text-3);transition:all .18s;text-align:center;line-height:1.3}
+.contrib-type-btn.active{background:var(--navy);color:#fff}
+.contrib-type-btn:first-child{border-right:1px solid var(--border)}
+
+/* CHIPS */
+.toggle-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light)}
+.toggle-chip{display:flex;align-items:center;gap:7px;padding:7px 14px;background:var(--sand);border:1.5px solid var(--border);border-radius:50px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .2s;user-select:none}
+.toggle-chip:hover{border-color:var(--gold);color:var(--navy)}
+.toggle-chip.active{background:var(--gold-wash);border-color:var(--gold-border);color:var(--gold)}
+.toggle-chip .chip-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .2s}
+.toggle-chip.active .chip-dot{background:var(--gold)}
+
+/* EXPAND */
+.expand-section{display:none;margin-top:18px;padding-top:18px;border-top:1px dashed var(--border);animation:fadeIn .25s ease}
+.expand-section.open{display:block}
+
+/* DECISION BOX */
+.decision-box{background:var(--navy);border-radius:var(--radius-lg);padding:24px 28px;margin-top:28px;box-shadow:var(--shadow-md)}
+.decision-action-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);opacity:.8;margin-bottom:8px}
+.decision-action{font-family:var(--font-display);font-size:clamp(18px,3.2vw,26px);font-weight:700;color:#fff;line-height:1.25;margin-bottom:14px}
+.decision-action em{font-style:italic;color:var(--gold-light)}
+.decision-rule{font-size:13px;color:rgba(255,255,255,.7);line-height:1.65;padding:12px 16px;background:rgba(255,255,255,.06);border-radius:8px;border-left:3px solid var(--gold)}
+.decision-rule strong{color:#fff}
+
+/* ANSWER CARD */
+.answer-card{background:var(--card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);border:1px solid var(--border);margin-top:14px}
+.answer-body{padding:24px 28px}
+.delta-row{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.delta-main{display:flex;align-items:baseline;gap:8px}
+.delta-amount{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--green);line-height:1}
+.delta-label{font-size:13px;color:var(--text-2);line-height:1.4}
+.delta-pct{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--green);background:var(--green-wash);border:1px solid var(--green-border);padding:4px 10px;border-radius:50px;white-space:nowrap}
+.answer-why{font-size:14px;color:var(--text-2);line-height:1.7;background:var(--sand);border-radius:8px;padding:14px 16px;border-left:3px solid var(--gold)}
+.rate-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.rate-pill{font-size:12px;font-weight:600;padding:5px 12px;border-radius:50px;font-family:var(--font-mono)}
+.rate-pill.now{background:var(--red-wash);color:var(--red)}
+.rate-pill.ret{background:var(--green-wash);color:var(--green)}
+.rate-pill.gap{background:var(--gold-wash);color:var(--gold)}
+
+/* SHOW MORE */
+.show-more-btn{width:100%;margin-top:16px;padding:12px;background:none;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.show-more-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+.show-more-btn .arrow{transition:transform .25s;font-size:10px}
+.show-more-btn.open .arrow{transform:rotate(180deg)}
+
+/* DEEP SECTION */
+.deep-section{display:none;margin-top:14px;animation:slideDown .3s ease}
+.deep-section.open{display:block}
+
+/* DETAIL CARDS */
+.detail-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.detail-card-header{padding:16px 20px;background:var(--navy-light);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--border)}
+.detail-card-title{font-weight:700;font-size:14px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.detail-card-icon{font-size:16px}
+.detail-card-toggle{font-size:10px;color:var(--text-3);transition:transform .2s}
+.detail-card.expanded .detail-card-toggle{transform:rotate(180deg)}
+.detail-card-body{display:none;padding:20px;animation:fadeIn .2s ease}
+.detail-card.expanded .detail-card-body{display:block}
+
+/* BREAKEVEN HERO */
+.breakeven-hero{background:var(--navy);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px}
+.breakeven-hero-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-light);opacity:.8;margin-bottom:6px}
+.breakeven-hero-rule{font-family:var(--font-display);font-size:19px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:6px}
+.breakeven-hero-rule em{font-style:italic;color:var(--gold-light)}
+.breakeven-hero-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
+
+/* BARS */
+.compare-wrap{margin-bottom:20px}
+.compare-label{font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-name{font-size:13px;font-weight:700;color:var(--text);width:56px;flex-shrink:0}
+.bar-track{flex:1;background:var(--sand);border-radius:50px;height:28px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:50px;transition:width .6s cubic-bezier(.34,1.56,.64,1);min-width:4px}
+.bar-fill.winner{background:linear-gradient(90deg,#1a7a4c,#22c55e40)}
+.bar-fill.loser{background:linear-gradient(90deg,#b8860b,#d4a52040)}
+.bar-fill.neutral{background:linear-gradient(90deg,#64748b,#94a3b840)}
+.bar-val{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)}
+
+/* YEAR TABLE */
+.year-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:0}
+.year-table th{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-3);text-align:right;padding:8px 10px;border-bottom:1.5px solid var(--border)}
+.year-table th:first-child{text-align:left}
+.year-table td{font-family:var(--font-mono);font-size:12px;text-align:right;padding:8px 10px;border-bottom:1px solid var(--border-light);color:var(--text-2)}
+.year-table td:first-child{font-family:var(--font-body);font-weight:600;text-align:left;color:var(--text)}
+.year-table tr:last-child td{border-bottom:none;font-weight:700;color:var(--text)}
+.year-table .highlight{color:var(--green);font-weight:700}
+
+/* PRIORITY */
+.priority-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.priority-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--card)}
+.priority-item.rank-1{border-color:var(--green-border);background:var(--green-wash)}
+.priority-item.rank-2{border-color:var(--gold-border);background:var(--gold-wash)}
+.priority-rank{font-family:var(--font-mono);font-size:11px;font-weight:700;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--sand);color:var(--text-3)}
+.priority-item.rank-1 .priority-rank{background:var(--green);color:#fff}
+.priority-item.rank-2 .priority-rank{background:var(--gold);color:#fff}
+.priority-name{font-weight:700;font-size:14px;color:var(--navy);flex:1}
+.priority-why{font-size:12px;color:var(--text-2);margin-top:2px}
+.priority-val{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text-2);text-align:right;flex-shrink:0}
+.priority-item.rank-1 .priority-val{color:var(--green)}
+
+/* MORTGAGE */
+.mortgage-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.mcompare-card{background:var(--sand);border-radius:8px;padding:14px;text-align:center;border:1.5px solid var(--border)}
+.mcompare-card.winner-card{border-color:var(--green-border);background:var(--green-wash)}
+.mcompare-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:6px}
+.mcompare-val{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--navy)}
+.mcompare-card.winner-card .mcompare-val{color:var(--green)}
+.mcompare-sub{font-size:11px;color:var(--text-3);margin-top:4px;line-height:1.4}
+
+/* BLOCKS */
+.wtm-block{background:var(--navy-light);border-left:3px solid var(--navy);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:14px}
+.wtm-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:6px;opacity:.7}
+.wtm-text{font-size:13px;color:var(--text-2);line-height:1.7}
+.warning-block{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.5;margin-top:10px}
+.warning-block.warn{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.3);color:#854d0e}
+.warning-block.info{background:var(--blue-wash);border:1px solid var(--blue-border);color:var(--blue)}
+.warning-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+.sensitivity-block{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.5;margin-top:10px;background:var(--navy-light);border:1px solid rgba(26,39,68,.15);color:var(--navy)}
+.sensitivity-block.sensitive{background:rgba(234,179,8,.07);border-color:rgba(234,179,8,.3);color:#854d0e}
+.sens-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+
+/* EXPERT UPSELL */
+.expert-upsell{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(26,39,68,.04),rgba(26,39,68,.08));border:1.5px solid rgba(26,39,68,.16);margin-top:10px}
+.expert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.expert-text{flex:1;font-size:13px;color:var(--text-2);line-height:1.55}
+.expert-text strong{color:var(--navy)}
+.expert-link{font-size:12px;font-weight:700;background:var(--navy);color:#fff;padding:5px 12px;border-radius:50px;display:inline-block;margin-top:8px;text-decoration:none;transition:background .2s}
+.expert-link:hover{background:var(--navy-mid)}
+
+/* ASSUMPTIONS */
+.assumptions-footer{margin-top:24px;padding:16px 20px;background:var(--sand);border-radius:var(--radius);border:1px solid var(--border-light)}
+.assumptions-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);margin-bottom:8px}
+.assumptions-list{display:flex;flex-wrap:wrap;gap:8px}
+.assumption-tag{font-size:11px;font-family:var(--font-mono);padding:3px 9px;background:var(--card);border:1px solid var(--border);border-radius:50px;color:var(--text-2)}
+.disclaimer{margin-top:32px;font-size:11px;color:var(--text-3);line-height:1.7;text-align:center;padding:0 12px}
+
+/* Table scroll wrapper (mobile) */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px;background:#fff}
+
+/* Print summary card */
+.print-summary{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.15);
+  border-radius:12px;
+  padding:14px 16px;
+  margin:16px 0 0;
+}
+.print-summary .ps-title{
+  font-weight:800;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  font-size:11px;
+  opacity:.75;
+  margin-bottom:8px;
+}
+.print-summary .ps-row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:baseline;
+  font-size:13px;
+  line-height:1.5;
+}
+.print-summary code{
+  font-family:var(--font-mono);
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:8px;
+  border:1px solid rgba(0,0,0,.12);
+  background:rgba(0,0,0,.03);
+}
+.print-only{display:none}
+
+/* Accessibility */
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Responsive polish */
+button, .toggle-chip, select, input { touch-action: manipulation; }
+.show-more-btn, .contrib-type-btn, .return-preset, .ret-preset, .toggle-chip { min-height:40px; }
+.export-row{gap:12px!important}
+.export-row .contrib-type-row{min-height:40px}
+.share-row .show-more-btn{white-space:nowrap}
+
+@media (max-width: 860px){
+  .input-card{padding:22px!important}
+  .answer-body{padding:20px!important}
+  .decision-box{padding:20px!important}
+}
+@media (max-width: 820px){
+  .main{padding:0 16px 64px!important}
+  .fields-grid{gap:14px!important}
+  .bar-name{width:52px!important}
+  .delta-amount{font-size:28px!important}
+  .delta-row{gap:12px!important}
+}
+@media (max-width: 540px){
+  .main{padding:0 16px 80px!important}
+  input[type="number"],select{padding:12px 14px!important;font-size:16px!important}
+  .input-prefix,.input-suffix{font-size:13px!important}
+  .decision-action{font-size:22px!important}
+  .decision-rule{font-size:13px!important}
+  .bar-track{height:26px!important}
+  .year-table{min-width:520px}
+}
+
+/* Mobile sticky actions */
+.mobile-sticky-actions{display:none}
+@media (max-width: 540px){
+  .mobile-sticky-actions{
+    display:flex;
+    position: sticky;
+    bottom: 10px;
+    z-index: 50;
+    gap: 10px;
+    padding: 10px;
+    margin-top: 14px;
+    border-radius: 14px;
+    background: rgba(250,248,244,.92);
+    border: 1px solid rgba(26,39,68,.12);
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+    backdrop-filter: blur(8px);
+  }
+  .mobile-sticky-actions .show-more-btn{
+    margin:0;
+    width:100%;
+    padding:12px 14px;
+  }
+  .export-row{flex-direction:column;align-items:stretch!important}
+  .export-row>div{width:100%}
+  .share-row{width:100%}
+  .share-row .show-more-btn{flex:1;justify-content:center}
+  .toggle-row{gap:8px!important}
+  .toggle-chip{padding:9px 14px!important}
+}
+
+/* PRINT */
+@media print{
+  .print-only{display:block!important}
+  html,body{background:#fff!important}
+  body{color:#000!important}
+  .site-header,.hero::after{display:none!important}
+  .lang-toggle,.toggle-row,.return-row,.return-custom-wrap,.ret-income-presets,.contrib-type-row,
+  .show-more-btn,.detail-card-header,.detail-card-toggle,.export-row,.share-row,.mobile-sticky-actions,.print-hide{display:none!important}
+  .hero{padding:18px 24px 10px!important;background:#fff!important}
+  .hero h1{color:#000!important}
+  .hero-sub,.hero-eyebrow{color:#000!important;opacity:1!important}
+  .main{max-width:860px!important;padding:0 24px 0!important}
+  .input-card{box-shadow:none!important;border:1px solid #ddd!important}
+  .decision-box{box-shadow:none!important;border:1px solid #ddd!important;background:#fff!important}
+  .decision-action-label{color:#000!important}
+  .decision-action{color:#000!important}
+  .decision-rule{color:#000!important;background:#f6f6f6!important;border-left-color:#999!important}
+  .answer-card,.detail-card{box-shadow:none!important;border:1px solid #ddd!important}
+  .deep-section{display:block!important}
+  .detail-card-body{display:block!important}
+  .decision-box,.answer-card,.detail-card,.assumptions-footer,.print-summary{break-inside:avoid;page-break-inside:avoid}
+  table{break-inside:avoid;page-break-inside:avoid}
+  a{color:#000!important;text-decoration:none!important}
+  a[href]:after{content:" (" attr(href) ")";font-size:10px;color:#444}
+  *{animation:none!important;transition:none!important}
+}
+
+/* ── REPORT BASELINE BOX ── */
+.report-baseline{display:none;background:linear-gradient(135deg,var(--navy-light),rgba(232,236,245,.4));border:1.5px solid rgba(44,62,107,.22);border-radius:var(--radius);padding:16px 20px;margin:0 0 20px;animation:slideDown .3s ease}
+.report-baseline.visible{display:block}
+.report-baseline-header{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy-mid);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.report-baseline-header::before{content:'';display:block;width:3px;height:14px;background:var(--gold);border-radius:2px;flex-shrink:0}
+.report-baseline-grid{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:12px}
+.report-baseline-item{font-size:13px;color:var(--text-2)}
+.report-baseline-item strong{font-weight:700;color:var(--navy);font-family:var(--font-mono);font-size:13px}
+.report-baseline-restore{font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--navy);background:#fff;border:1.5px solid rgba(44,62,107,.3);border-radius:8px;padding:8px 16px;cursor:pointer;transition:all .2s}
+.report-baseline-restore:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+
+<body>
+<header class="site-header">
+  <a href="https://buildfi.ca" class="logo" id="hdr-logo">build<span>fi</span>.ca</a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow" id="hero-eyebrow">Outil inclus — Intermédiaire</div>
+  <h1 id="hero-title">Où va mon <em>prochain dollar</em>?</h1>
+  <p class="hero-sub" id="hero-sub">REER, CÉLI, non-enregistré ou hypothèque — découvrez quelle option vous laisse le plus d'argent après impôt.</p>
+</div>
+
+<main class="main">
+
+<div class="report-baseline" id="report-baseline-box">
+  <div class="report-baseline-header" id="rbl-header">Hypothèses de votre rapport BuildFi</div>
+  <div class="report-baseline-grid" id="rbl-grid"></div>
+  <button class="report-baseline-restore" id="rbl-restore-btn" onclick="applyBaseline(REPORT_BASELINE)" type="button">
+    &#8617; <span id="rbl-restore-label">Restaurer les hypothèses du rapport</span>
+  </button>
+</div>
+
+  <div class="fhsa-banner" id="fhsa-banner">
+    <div class="fhsa-icon">⭐</div>
+    <div class="fhsa-text">
+      <div class="fhsa-title" id="fhsa-title">CELIAPP disponible — priorité absolue</div>
+      <div class="fhsa-desc" id="fhsa-desc">Le CELIAPP combine déduction REER + retraits libres d'impôt pour l'achat d'une première propriété. 8 000 $/an, 40 000 $ à vie. Maximisez-le avant toute autre décision.</div>
+    </div>
+  </div>
+
+  <div class="input-card">
+    <div class="input-card-title" id="ic-title">Votre situation</div>
+
+    <!-- Actions row (return mode + share + print) -->
+    <div class="export-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:-6px 0 18px;">
+      <div style="flex:1;min-width:260px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-2);margin-bottom:6px" id="lbl-return-mode">
+          Rendement — mode
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div class="contrib-type-row" style="max-width:320px;margin:0">
+            <button class="contrib-type-btn active" id="rmode-nom" onclick="setReturnMode('nominal')">Nominal</button>
+            <button class="contrib-type-btn" id="rmode-real" onclick="setReturnMode('real')">Réel</button>
+          </div>
+
+          <div id="inflation-wrap" style="display:none;align-items:center;gap:8px">
+            <span style="font-size:12px;font-weight:700;color:var(--text-3)" id="lbl-inflation">Inflation</span>
+            <div class="input-wrap" style="width:120px">
+              <input type="number" id="inp-inflation" class="has-suffix" min="0" max="10" step="0.1" value="2.0" oninput="compute()">
+              <span class="input-suffix">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-hint" id="hint-return-mode" style="margin-top:6px">
+          Nominal = avant inflation. Réel = pouvoir d’achat (corrigé de l’inflation).
+        </div>
+      </div>
+
+      <div class="share-row" style="display:flex;gap:8px;align-items:center">
+        <button class="show-more-btn" style="width:auto;margin:0;padding:10px 14px" onclick="copyShareLink()">
+          🔗 <span id="btn-share">Partager</span>
+        </button>
+        <button class="show-more-btn" style="width:auto;margin:0;padding:10px 14px" onclick="printPDF()">
+          🖨️ <span id="btn-print">Imprimer / PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="fields-grid">
+
+      <div class="field">
+        <label id="lbl-age">Votre âge</label>
+        <div class="input-wrap">
+          <input type="number" id="inp-age" min="18" max="70" value="38" oninput="compute()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label id="lbl-prov">Province</label>
+        <select id="inp-prov" onchange="compute()">
+          <option value="QC">Québec</option><option value="ON">Ontario</option>
+          <option value="BC">Colombie-Britannique</option>
+          <option value="AB">Alberta</option>
+          <option value="SK">Saskatchewan</option>
+          <option value="MB">Manitoba</option>
+          <option value="NB">Nouveau-Brunswick</option>
+          <option value="NS">Nouvelle-Écosse</option>
+          <option value="PE">Île-du-Prince-Édouard</option>
+          <option value="NL">Terre-Neuve</option>
+          <option value="NT">T.-N.-O.</option>
+          <option value="YT">Yukon</option>
+          <option value="NU">Nunavut</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label id="lbl-income">Revenu annuel brut</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="inp-income" class="has-prefix" min="0" max="500000" step="1000" value="85000" oninput="compute()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label id="lbl-ret-income">Revenu de base à la retraite</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="inp-ret-income" class="has-prefix" min="0" max="500000" step="1000" value="55000" oninput="compute()">
+        </div>
+        <span class="field-hint" id="hint-ret-income">RRQ, PSV, pension — excluez les retraits REER/CÉLI</span>
+        <div class="ret-income-presets">
+          <button class="ret-preset" id="rp-low"  onclick="setRetIncome(22000)" type="button">Faible (22k)</button>
+          <button class="ret-preset" id="rp-mid"  onclick="setRetIncome(45000)" type="button">Moyen (45k)</button>
+          <button class="ret-preset" id="rp-high" onclick="setRetIncome(70000)" type="button">Confortable (70k)</button>
+          <button class="ret-preset" id="rp-high2" onclick="setRetIncome(95000)" type="button">Élevé (95k)</button>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label id="lbl-contrib">Montant à allouer</label>
+        <div class="contrib-type-row">
+          <button class="contrib-type-btn active" id="ctype-after"   onclick="setContribType('after')" type="button">Argent disponible (après impôt)</button>
+          <button class="contrib-type-btn"        id="ctype-before"  onclick="setContribType('before')" type="button">Cotisation REER (avant impôt)</button>
+        </div>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="inp-contrib" class="has-prefix" min="500" max="100000" step="500" value="10000" oninput="compute()">
+        </div>
+        <span class="field-hint" id="hint-contrib">Montant annuel — même base de comparaison pour tous les comptes</span>
+        <span class="field-hint" id="hint-contrib-type" style="margin-top:4px;color:var(--navy-mid);font-style:normal;font-weight:600">Vous avez ce montant en main à investir, peu importe le compte choisi.</span>
+      </div>
+
+      <div class="field">
+        <label id="lbl-ret-age">Âge de retraite</label>
+        <div class="input-wrap">
+          <input type="number" id="inp-ret-age" min="45" max="75" value="65" oninput="compute()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label id="lbl-return">Rendement annuel — <span id="return-display" style="color:var(--gold);font-family:var(--font-mono);font-weight:700">6.0%</span></label>
+        <div class="return-row">
+          <button class="return-preset"        id="rpreset-cons" data-key="cons" onclick="setReturn(4.5,'cons')" type="button">4.5% — Conservateur</button>
+          <button class="return-preset active" id="rpreset-bal"  data-key="bal"  onclick="setReturn(6.0,'bal')" type="button">6.0% — Équilibré</button>
+          <button class="return-preset"        id="rpreset-grow" data-key="grow" onclick="setReturn(7.5,'grow')" type="button">7.5% — Croissance</button>
+        </div>
+        <div class="return-custom-wrap">
+          <span id="lbl-custom" style="font-size:11px;color:var(--text-3);font-weight:700;white-space:nowrap">Personnalisé:</span>
+          <input type="range" id="inp-return" min="2" max="12" step="0.5" value="6" oninput="onReturnSlider()">
+          <span id="return-display-2" style="font-size:12px;font-family:var(--font-mono);font-weight:700;color:var(--text-2);width:36px;text-align:right">6.0%</span>
+        </div>
+        <span class="field-hint" id="hint-return">Avant inflation · même rendement pour tous les comptes</span>
+      </div>
+
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle-chip" id="chip-fhsa"     onclick="toggleChip('fhsa')"     role="checkbox" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleChip('fhsa')">
+        <div class="chip-dot"></div><span id="chip-fhsa-label">Première propriété</span>
+      </div>
+      <div class="toggle-chip" id="chip-mortgage" onclick="toggleChip('mortgage')" role="checkbox" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleChip('mortgage')">
+        <div class="chip-dot"></div><span id="chip-mortgage-label">J'ai une hypothèque</span>
+      </div>
+      <div class="toggle-chip" id="chip-couple"   onclick="toggleChip('couple')"   role="checkbox" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleChip('couple')">
+        <div class="chip-dot"></div><span id="chip-couple-label">En couple</span>
+      </div>
+      <div class="toggle-chip" id="chip-pension"  onclick="toggleChip('pension')"  role="checkbox" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleChip('pension')">
+        <div class="chip-dot"></div><span id="chip-pension-label">REER existant / pension DB</span>
+      </div>
+    </div>
+
+    <div class="expand-section" id="expand-mortgage">
+      <div class="fields-grid">
+        <div class="field">
+          <label id="lbl-mort-rate">Taux hypothécaire</label>
+          <div class="input-wrap">
+            <input type="number" id="inp-mort-rate" class="has-suffix" min="1" max="15" step="0.1" value="5.5" oninput="compute()">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label id="lbl-mort-bal">Solde restant</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="inp-mort-bal" class="has-prefix" min="0" max="2000000" step="5000" value="320000" oninput="compute()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="expand-section" id="expand-couple">
+      <div class="fields-grid">
+        <div class="field full">
+          <label id="lbl-spouse-income">Revenu annuel brut du conjoint(e)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="inp-spouse-income" class="has-prefix" min="0" max="500000" step="1000" value="55000" oninput="compute()">
+          </div>
+          <span class="field-hint" id="hint-couple-scope">Indicateur seulement — optimisation avancée dans Expert</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="expand-section" id="expand-pension">
+      <div class="fields-grid">
+        <div class="field">
+          <label id="lbl-rrsp-bal">Solde REER actuel</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="inp-rrsp-bal" class="has-prefix" min="0" max="5000000" step="5000" value="150000" oninput="compute()">
+          </div>
+          <span class="field-hint" id="hint-rrsp-bal">Valeur du REER aujourd'hui</span>
+        </div>
+        <div class="field">
+          <label id="lbl-pension-m">Pension DB mensuelle estimée</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="inp-pension-m" class="has-prefix" min="0" max="20000" step="100" value="0" oninput="compute()">
+          </div>
+          <span class="field-hint" id="hint-pension-m">Ne pas inclure ce montant dans le "revenu de base" ci-dessus</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /input-card -->
+
+  <div id="result-area"></div>
+
+  <!-- Mobile sticky actions -->
+  <div class="mobile-sticky-actions print-hide">
+    <button class="show-more-btn" onclick="copyShareLink()">🔗 <span id="btn-share-2">Partager</span></button>
+    <button class="show-more-btn" onclick="printPDF()">🖨️ <span id="btn-print-2">Imprimer</span></button>
+  </div>
+
+</main>
+
+<footer style="background:var(--sand);border-top:1px solid var(--border);padding:24px;text-align:center;">
+  <p id="ftr-disclaimer" style="font-size:11px;color:var(--text-3);line-height:1.7;max-width:680px;margin:0 auto;">
+    Cet outil est fourni à titre informatif seulement. Les projections présentées sont basées sur des hypothèses simplifiées et ne constituent pas des conseils financiers, fiscaux ou juridiques. Consultez un planificateur financier agréé pour des conseils adaptés à votre situation. BuildFi Technologies inc.
+  </p>
+</footer>
+
+<script>
+
+'use strict';
+
+/* ─────────────────────────────────────────────────────────────
+   ENGINE / REPRODUCIBILITY
+───────────────────────────────────────────────────────────── */
+var ENGINE_VERSION = 'intermediate.v1.5.1';
+var ASSUMPTIONS_PACK = {
+  engineVersion: ENGINE_VERSION,
+  taxYear: 2026,
+  cgInclusion: 0.50,
+  nrTaxDrag: 0.003,
+  oasClawbackThreshold: 95323
+};
+/* ─────────────────────────────────────────────────────────────
+   LANGUAGE
+───────────────────────────────────────────────────────────── */
+var LANG = 'fr';
+function setLang(l) {
+  LANG = l;
+  document.getElementById('btn-fr').classList.toggle('active', l==='fr');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  renderLabels();
+  compute();
+}
+function t(fr, en) { return LANG==='fr' ? fr : en; }
+
+function renderLabels() {
+  document.getElementById('hero-eyebrow').textContent = t('Outil inclus — Intermédiaire','Included Tool — Intermédiaire');
+  document.getElementById('hero-title').innerHTML = t('Où va mon <em>prochain dollar</em>?','Where does my <em>next dollar</em> go?');
+  document.getElementById('hero-sub').textContent = t('REER, CÉLI, non-enregistré ou hypothèque — découvrez quelle option vous laisse le plus d\'argent après impôt.','RRSP, TFSA, non-registered or mortgage — find out which option leaves you the most money after tax.');
+  document.getElementById('ic-title').textContent = t('Votre situation','Your situation');
+  document.getElementById('lbl-age').textContent = t('Votre âge','Your age');
+  document.getElementById('lbl-prov').textContent = t('Province','Province');
+  document.getElementById('lbl-income').textContent = t('Revenu annuel brut','Annual gross income');
+  document.getElementById('lbl-ret-income').textContent = t('Revenu de base à la retraite','Base retirement income');
+  document.getElementById('hint-ret-income').textContent = t('RRQ, PSV, pension — excluez les retraits REER/CÉLI','QPP, OAS, pension — exclude RRSP/TFSA withdrawals');
+  document.getElementById('rp-low').textContent   = t('Faible (22k)','Low (22k)');
+  document.getElementById('rp-mid').textContent   = t('Moyen (45k)','Medium (45k)');
+  document.getElementById('rp-high').textContent  = t('Confortable (70k)','Comfortable (70k)');
+  document.getElementById('rp-high2').textContent = t('Élevé (95k)','High (95k)');
+  document.getElementById('lbl-contrib').textContent = t('Montant à allouer','Amount to allocate');
+  document.getElementById('ctype-after').textContent  = t('Argent disponible (après impôt)','Cash available (after-tax)');
+  document.getElementById('ctype-before').textContent = t('Cotisation REER (avant impôt)','RRSP contribution (pre-tax)');
+  document.getElementById('hint-contrib').textContent = t('Montant annuel — même base de comparaison pour tous les comptes','Annual amount — same comparison basis for all accounts');
+  document.getElementById('lbl-ret-age').textContent = t('Âge de retraite','Retirement age');
+  var rd = document.getElementById('return-display');
+  document.getElementById('lbl-return').innerHTML = t('Rendement annuel — ','Annual return — ')+'<span id="return-display" style="color:var(--gold);font-family:var(--font-mono);font-weight:700">'+(rd?rd.textContent:'6.0%')+'</span>';
+  document.getElementById('rpreset-cons').textContent = t('4.5% — Conservateur','4.5% — Conservative');
+  document.getElementById('rpreset-bal').textContent  = t('6.0% — Équilibré','6.0% — Balanced');
+  document.getElementById('rpreset-grow').textContent = t('7.5% — Croissance','7.5% — Growth');
+  document.getElementById('lbl-custom').textContent = t('Personnalisé:','Custom:');
+  document.getElementById('hint-return').textContent = t('Avant inflation · même rendement pour tous les comptes','Before inflation · same return for all accounts');
+  document.getElementById('chip-fhsa-label').textContent     = t('Première propriété','First-time buyer');
+  document.getElementById('chip-mortgage-label').textContent = t('J\'ai une hypothèque','I have a mortgage');
+  document.getElementById('chip-couple-label').textContent   = t('En couple','Couple');
+  document.getElementById('chip-pension-label').textContent  = t('REER existant / pension DB','Existing RRSP / DB pension');
+  document.getElementById('lbl-mort-rate').textContent     = t('Taux hypothécaire','Mortgage rate');
+  document.getElementById('lbl-mort-bal').textContent      = t('Solde restant','Remaining balance');
+  document.getElementById('lbl-spouse-income').textContent = t('Revenu annuel brut du conjoint(e)','Spouse annual gross income');
+  document.getElementById('hint-couple-scope').textContent = t('Indicateur seulement — optimisation avancée dans Expert','Indicative only — advanced optimization in Expert');
+  document.getElementById('lbl-rrsp-bal').textContent    = t('Solde REER actuel','Current RRSP balance');
+  document.getElementById('hint-rrsp-bal').textContent   = t('Valeur du REER aujourd\'hui','Current RRSP value today');
+  document.getElementById('lbl-pension-m').textContent   = t('Pension DB mensuelle estimée','Estimated monthly DB pension');
+  document.getElementById('hint-pension-m').textContent  = t('Ne pas inclure ce montant dans le "revenu de base" ci-dessus','Do not include this amount in the "base retirement income" field above');
+  document.getElementById('fhsa-title').textContent = t('CELIAPP disponible — priorité absolue','FHSA available — top priority');
+  document.getElementById('fhsa-desc').textContent  = t('Le CELIAPP combine déduction REER + retraits libres d\'impôt pour l\'achat d\'une première propriété. 8 000 $/an, 40 000 $ à vie. Maximisez-le avant toute autre décision.','The FHSA combines RRSP deduction + tax-free withdrawals for your first home purchase. $8,000/year, $40,000 lifetime. Maximize it before any other decision.');
+
+  // New labels
+  document.getElementById('lbl-return-mode').textContent = t('Rendement — mode','Return — mode');
+  document.getElementById('lbl-inflation').textContent = t('Inflation','Inflation');
+  document.getElementById('hint-return-mode').textContent = t(
+    'Nominal = avant inflation. Réel = pouvoir d’achat (corrigé de l’inflation).',
+    'Nominal = before inflation. Real = purchasing power (inflation-adjusted).'
+  );
+  document.getElementById('rmode-nom').textContent = t('Nominal','Nominal');
+  document.getElementById('rmode-real').textContent = t('Réel','Real');
+  document.getElementById('btn-share').textContent = t('Partager','Share');
+  var ftrD = document.getElementById('ftr-disclaimer');
+  if (ftrD) ftrD.textContent = t(
+    'Cet outil est fourni à titre informatif seulement. Les projections présentées sont basées sur des hypothèses simplifiées et ne constituent pas des conseils financiers, fiscaux ou juridiques. Consultez un planificateur financier agréé pour des conseils adaptés à votre situation. BuildFi Technologies inc.',
+    'This tool is provided for informational purposes only. Projections are based on simplified assumptions and do not constitute financial, tax, or legal advice. Consult a licensed financial planner for advice tailored to your situation. BuildFi Technologies inc.'
+  );
+  document.getElementById('btn-print').textContent = t('Imprimer / PDF','Print / PDF');
+  var s2 = document.getElementById('btn-share-2'); if (s2) s2.textContent = t('Partager','Share');
+  var p2 = document.getElementById('btn-print-2'); if (p2) p2.textContent = t('Imprimer','Print');
+
+  var sel = document.getElementById('inp-prov');
+  var pl = { QC:t('Québec','Quebec'), ON:'Ontario', BC:t('Colombie-Britannique','British Columbia'), AB:'Alberta', SK:'Saskatchewan', MB:'Manitoba', NB:t('Nouveau-Brunswick','New Brunswick'), NS:t('Nouvelle-Écosse','Nova Scotia'), PE:t('Île-du-Prince-Édouard','Prince Edward Island'), NL:t('Terre-Neuve','Newfoundland'), NT:t('T.-N.-O.','N.W.T.'), YT:'Yukon', NU:'Nunavut' };
+  for (var o of sel.options) { if (pl[o.value]) o.textContent = pl[o.value]; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────────────────────── */
+var chips = { fhsa:false, mortgage:false, couple:false, pension:false };
+var contribType = 'after';
+
+/* ─────────────────────────────────────────────────────────────
+   RETURN CONTROL
+───────────────────────────────────────────────────────────── */
+var RETURN = 0.06;            // nominal annual return (decimal)
+var RETURN_MODE = 'nominal';  // 'nominal' | 'real'
+var RUNTIME_RETURN = 0.06;    // effective return used for compounding
+var SCENARIO_ID = '';         // short hash of ?s=
+
+function setReturnMode(mode) {
+  RETURN_MODE = mode;
+  document.getElementById('rmode-nom').classList.toggle('active', mode==='nominal');
+  document.getElementById('rmode-real').classList.toggle('active', mode==='real');
+  document.getElementById('inflation-wrap').style.display = (mode==='real') ? 'flex' : 'none';
+  compute();
+}
+
+function getInflationRateFromState(S) {
+  var inf = (S && isFinite(S.inflation)) ? S.inflation : 2.0;
+  if (!isFinite(inf)) inf = 2.0;
+  return Math.max(0, inf)/100;
+}
+function getEffectiveReturnFromState(S) {
+  var rNom = (S && isFinite(S.RETURN)) ? S.RETURN : RETURN;
+  if (!S || S.returnMode !== 'real') return rNom;
+  var i = getInflationRateFromState(S);
+  return (1 + rNom) / (1 + i) - 1;
+}
+// FNV-1a hash -> base36 short id
+function fnv1a32(str) {
+  var h = 0x811c9dc5;
+  for (var i=0; i<str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24))) >>> 0;
+  }
+  return h >>> 0;
+}
+function shortScenarioIdFromEnc(enc) {
+  var h = fnv1a32(enc || '');
+  var s = h.toString(36).toUpperCase();
+  return ('000000' + s).slice(-6);
+}
+
+function toggleChip(key) {
+  chips[key] = !chips[key];
+  var el = document.getElementById('chip-'+key);
+  el.classList.toggle('active', chips[key]);
+  el.setAttribute('aria-checked', chips[key]);
+  if (key==='mortgage') document.getElementById('expand-mortgage').classList.toggle('open', chips[key]);
+  if (key==='couple')   document.getElementById('expand-couple').classList.toggle('open',   chips[key]);
+  if (key==='pension')  document.getElementById('expand-pension').classList.toggle('open',  chips[key]);
+  if (key==='fhsa')     document.getElementById('fhsa-banner').classList.toggle('visible',  chips[key]);
+
+  // FHSA requires after-tax mode
+  if (key==='fhsa') {
+    var beforeBtn = document.getElementById('ctype-before');
+    if (chips.fhsa) {
+      setContribType('after');
+      beforeBtn.disabled = true;
+      beforeBtn.style.opacity = '0.4';
+      beforeBtn.title = t('Non disponible avec le CELIAPP — cotisation après impôt seulement','Not available with FHSA — after-tax contribution only');
+      var hint = document.getElementById('hint-contrib-type');
+      if (hint) hint.textContent = t('Le CELIAPP est une cotisation après impôt (déductible). Mode "avant impôt" désactivé.','FHSA contributions are after-tax (deductible). Pre-tax mode disabled.');
+    } else {
+      beforeBtn.disabled = false;
+      beforeBtn.style.opacity = '';
+      beforeBtn.title = '';
+      setContribType('after');
+    }
+  }
+  compute();
+}
+
+function setContribType(type) {
+  contribType = type;
+  document.getElementById('ctype-after').classList.toggle('active',  type==='after');
+  document.getElementById('ctype-before').classList.toggle('active', type==='before');
+  var el = document.getElementById('hint-contrib-type');
+  if (el) {
+    if (type==='after') {
+      el.textContent = t('Vous avez ce montant en main à investir, peu importe le compte choisi.','You have this amount in hand to invest, regardless of which account you choose.');
+    } else {
+      el.textContent = t('Vous cotisez ce montant brut au REER — vous recevrez un retour d\'impôt en plus.','You are contributing this gross amount to the RRSP — you will receive a tax refund on top.');
+    }
+  }
+  compute();
+}
+
+function setRetIncome(val) {
+  document.getElementById('inp-ret-income').value = val;
+  compute();
+}
+
+function setReturn(pct, key) {
+  RETURN = pct / 100;
+  document.getElementById('inp-return').value = pct;
+  updateReturnDisplay();
+  ['cons','bal','grow'].forEach(function(k){
+    document.getElementById('rpreset-'+k).classList.toggle('active', k===key);
+  });
+  compute();
+}
+function onReturnSlider() {
+  RETURN = parseFloat(document.getElementById('inp-return').value) / 100;
+  ['cons','bal','grow'].forEach(function(k){ document.getElementById('rpreset-'+k).classList.remove('active'); });
+  updateReturnDisplay();
+  compute();
+}
+function updateReturnDisplay() {
+  var pct = (RETURN*100).toFixed(1)+'%';
+  var d1 = document.getElementById('return-display');
+  var d2 = document.getElementById('return-display-2');
+  if (d1) d1.textContent = pct;
+  if (d2) d2.textContent = pct;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TAX ENGINE — (as provided; kept intact)
+───────────────────────────────────────────────────────────── */
+var FED_BRACKETS     = [58523,117045,181440,258482];
+var FED_RATES        = [0.14,0.205,0.26,0.29,0.33];
+var FED_PERSONAL     = 16452;
+var OAS_CLAWBACK_THR = 95323;
+
+var PROV_TAX = {
+  QC:{b:[54345,108730,132245],           r:[0.14,0.19,0.24,0.2575],              pd:18952,abate:0.835,ageAmt:3903, ageThresh:0,    penAmt:2918},
+  ON:{b:[53891,107785,15e4,22e4],        r:[0.0505,0.0915,0.1116,0.1216,0.1316], pd:12091,abate:1,   ageAmt:5286, ageThresh:42335,penAmt:1580},
+  BC:{b:[49159,98320,112883,137073,185854,259197],r:[0.0506,0.077,0.105,0.1229,0.147,0.168,0.205],pd:12901,abate:1,ageAmt:5766,ageThresh:42660,penAmt:1000},
+  AB:{b:[154259,185203,246938,370220],   r:[0.1,0.12,0.13,0.14,0.15],            pd:22769,abate:1,   ageAmt:5553, ageThresh:43906,penAmt:1491},
+  SK:{b:[54532,155805],                  r:[0.105,0.125,0.145],                  pd:20381,abate:1,   ageAmt:5518, ageThresh:0,    penAmt:1000},
+  MB:{b:[47e3,1e5],                      r:[0.108,0.1275,0.174],                 pd:15780,abate:1,   ageAmt:3728, ageThresh:0,    penAmt:1000},
+  NB:{b:[51306,102614,190081],           r:[0.094,0.14,0.16,0.195],              pd:13396,abate:1,   ageAmt:5849, ageThresh:42553,penAmt:1000},
+  NS:{b:[30182,60364,94860,153e3],       r:[0.0879,0.1495,0.1667,0.175,0.21],   pd:8651, abate:1,   ageAmt:4897, ageThresh:0,    penAmt:1000},
+  PE:{b:[33538,67079],                   r:[0.098,0.138,0.167],                  pd:13865,abate:1,   ageAmt:4862, ageThresh:0,    penAmt:1000},
+  NL:{b:[44062,88123,157329,220262,281387,562714],r:[0.087,0.145,0.158,0.178,0.198,0.208,0.213],pd:11034,abate:1,ageAmt:7742,ageThresh:39880,penAmt:1000},
+  NT:{b:[51963,103931,169067],           r:[0.059,0.086,0.122,0.1405],           pd:17041,abate:1,   ageAmt:8200, ageThresh:0,    penAmt:1000},
+  YT:{b:[58523,117045,181440,258482,5e5],r:[0.064,0.09,0.109,0.128,0.15,0.16],  pd:16452,abate:1,   ageAmt:8790, ageThresh:44325,penAmt:2000},
+  NU:{b:[54333,108668,177231],           r:[0.04,0.07,0.09,0.115],               pd:18284,abate:1,   ageAmt:14865,ageThresh:0,    penAmt:2000}
+};
+
+function calcTax(inc, prov, retired) {
+  inc = Math.max(0, inc||0); prov = prov||'QC';
+  if (inc<=0) return {total:0,marg:0.14,eff:0};
+  var fb=FED_BRACKETS,fr=FED_RATES,fpd=FED_PERSONAL;
+  var _ageCr = retired ? Math.max(0,8790-0.15*Math.max(0,inc-44325)) : 0;
+  var _penCr = retired ? 2000 : 0;
+  var fed=0,prev=0;
+  for(var i=0;i<fb.length;i++){if(inc<=fb[i]){fed+=(inc-prev)*fr[i];prev=inc;break;}fed+=(fb[i]-prev)*fr[i];prev=fb[i];if(i===fb.length-1)fed+=(inc-fb[i])*fr[i+1];}
+  fed=Math.max(0,fed-fpd*fr[0]-_ageCr*0.15-_penCr*0.15);
+  var pt=PROV_TAX[prov]||PROV_TAX.QC;
+  fed*=pt.abate;
+  var pb=pt.b,pr2=pt.r,ppd=pt.pd;
+  var ptax=0;prev=0;
+  for(var j=0;j<pb.length;j++){if(inc<=pb[j]){ptax+=(inc-prev)*pr2[j];prev=inc;break;}ptax+=(pb[j]-prev)*pr2[j];prev=pb[j];if(j===pb.length-1)ptax+=(inc-pb[j])*pr2[j+1];}
+  ptax=Math.max(0,ptax-ppd*pr2[0]);
+  if(retired&&pt.ageAmt){var pat=pt.ageThresh||0;var pac=pat>0?Math.max(0,pt.ageAmt-0.15*Math.max(0,inc-pat)):pt.ageAmt;ptax=Math.max(0,ptax-pac*pr2[0]);if(pt.penAmt)ptax=Math.max(0,ptax-pt.penAmt*pr2[0]);}
+  if(prov==='ON'){var os=0;if(ptax>4991)os+=(ptax-4991)*0.2;if(ptax>6387)os+=(ptax-6387)*0.36;ptax+=os;}
+  var total=Math.max(0,fed)+Math.max(0,ptax);
+  var fm=fr[0];for(var k=0;k<fb.length;k++){if(inc<=fb[k]){fm=fr[k];break;}if(k===fb.length-1)fm=fr[fr.length-1];}
+  var pm=pr2[0];for(var k2=0;k2<pb.length;k2++){if(inc<=pb[k2]){pm=pr2[k2];break;}if(k2===pb.length-1)pm=pr2[pr2.length-1];}
+  return {total:total,marg:fm*pt.abate+pm,eff:inc>0?total/inc:0};
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PROJECTION ENGINE
+───────────────────────────────────────────────────────────── */
+var NR_TAX_DRAG  = 0.003;
+var CG_INCLUSION = 0.50;
+
+// Cached formatter (performance)
+var _nfFR = new Intl.NumberFormat('fr-CA');
+
+function fmt(n)    { if(!isFinite(n)||isNaN(n))return '$—'; return '$'+_nfFR.format(Math.round(n)); }
+function fmtPct(n) { return (n*100).toFixed(1)+'%'; }
+
+// True effective marginal rate: tax saved by RRSP deduction / contrib
+function getMarginalRateOnContrib(income, contrib, prov) {
+  var tw = calcTax(Math.max(0,income-contrib),prov,false).total;
+  var tw2= calcTax(income,prov,false).total;
+  return contrib>0 ? (tw2-tw)/contrib : calcTax(income,prov,false).marg;
+}
+
+// All accounts compared on the same NET OUT-OF-POCKET basis.
+function projectAccount(type, netCost, years, refundMarg, margRet) {
+  if (type==='rrsp') {
+    var pt   = netCost/(1-refundMarg);
+    var ref  = pt*refundMarg;
+    var fv   = pt*Math.pow(1+RUNTIME_RETURN,years);
+    var at   = fv*(1-margRet);
+    var rfv  = ref*Math.pow(1+RUNTIME_RETURN,years);
+    return {fv:fv, afterTax:at+rfv, refund:ref, refundFV:rfv, preTax:pt};
+  }
+  if (type==='tfsa') {
+    var fv2=netCost*Math.pow(1+RUNTIME_RETURN,years);
+    return {fv:fv2,afterTax:fv2,refund:0,refundFV:0,preTax:netCost};
+  }
+  if (type==='nr') {
+    var fv3=netCost*Math.pow(1+(RUNTIME_RETURN-NR_TAX_DRAG),years);
+    var cgt=(fv3-netCost)*CG_INCLUSION*margRet;
+    return {fv:fv3,afterTax:fv3-cgt,refund:0,refundFV:0,preTax:netCost};
+  }
+  return {fv:0,afterTax:0,refund:0,refundFV:0,preTax:0};
+}
+
+// Break-even: retirement income where RRSP total = TFSA total
+function findBreakEven(netCost, years, refundMarg, prov) {
+  var lo=0,hi=400000,mid,mRet,rr,rt;
+  for(var i=0;i<80;i++){mid=(lo+hi)/2;mRet=calcTax(mid,prov,true).marg;rr=projectAccount('rrsp',netCost,years,refundMarg,mRet).afterTax;rt=projectAccount('tfsa',netCost,years,refundMarg,mRet).afterTax;if(rr>rt)lo=mid;else hi=mid;}
+  return mid;
+}
+
+// Implied CAGR from netCost to afterTax — for honest mortgage comparison
+function impliedCAGR(afterTax, netCost, years) {
+  if (netCost<=0||years<=0) return 0;
+  return Math.pow(afterTax/netCost,1/years)-1;
+}
+
+function buildYearTable(netCost, years, refundMarg, margRet) {
+  var rows=[], pts=[5,10,15,20,25,30].filter(function(y){return y<=years;});
+  if(!pts.length||pts[pts.length-1]!==years) pts.push(years);
+  pts.forEach(function(yr){
+    rows.push({
+      yr:yr,
+      rrsp:projectAccount('rrsp',netCost,yr,refundMarg,margRet).afterTax,
+      tfsa:projectAccount('tfsa',netCost,yr,refundMarg,margRet).afterTax,
+      nr:projectAccount('nr',netCost,yr,refundMarg,margRet).afterTax
+    });
+  });
+  return rows;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   COMPUTE PIPELINE (state → model → render)
+   - readStateFromDOM(): DOM read once per cycle
+   - computeModel(S): no DOM reads/writes
+   - renderModel(M): DOM writes only
+───────────────────────────────────────────────────────────── */
+var _rafPending = false;
+function compute() { scheduleCompute(); }
+
+function scheduleCompute() {
+  if (_rafPending) return;
+  _rafPending = true;
+  requestAnimationFrame(function(){
+    _rafPending = false;
+    try {
+      var S = readStateFromDOM();
+      // Keep global knobs coherent for share/print helpers
+      RETURN_MODE = S.returnMode || RETURN_MODE;
+      RUNTIME_RETURN = getEffectiveReturnFromState(S);
+      var M = computeModel(S);
+      renderModel(M);
+      // Keep URL synced (shareable scenario)
+      updateURLFromState();
+    } catch (e) {
+      // Fail-safe: show a visible error instead of silently stopping
+      var box = document.getElementById('result-area');
+      if (box) {
+        box.innerHTML =
+          '<div style="max-width:720px;margin:14px auto 0;padding:14px 16px;border:1px solid rgba(185,28,28,.25);background:rgba(185,28,28,.06);border-radius:12px;color:#7f1d1d;font-family:var(--font-body);">' +
+          '<div style="font-weight:800;margin-bottom:6px;">' + t('Erreur de calcul (debug)','Computation error (debug)') + '</div>' +
+          '<div style="font-size:12px;line-height:1.5;word-break:break-word;">' + (e && (e.message || e.toString()) ? (e.message || e.toString()) : 'Unknown error') + '</div>' +
+          '<div style="margin-top:8px;font-size:11px;opacity:.85;">Engine: ' + ENGINE_VERSION + '</div>' +
+          '</div>';
+      }
+      try { console.error(e); } catch(_) {}
+    }
+  });
+}
+
+function renderModel(M) {
+  document.getElementById('result-area').innerHTML = (M && M.html) ? M.html : '';
+}
+
+function computeModel(S) {
+
+  // Inputs (already read from DOM)
+  var age       = parseInt(S.age) || 38;
+  var prov      = S.prov || 'QC';
+  var income    = parseFloat(S.income) || 0;
+  var retInc    = parseFloat(S.retIncome) || 0;
+  var retAge    = parseInt(S.retAge) || 65;
+  var mortRate  = (parseFloat(S.mortRate)/100) || 0.055;
+  var mortBal   = parseFloat(S.mortBal) || 0;
+  var spIncome  = parseFloat(S.spouseIncome) || 0;
+  var rawContrib= parseFloat(S.contrib) || 0;
+
+  // Effective return (nominal vs real)
+  var R = getEffectiveReturnFromState(S);
+  RUNTIME_RETURN = R;
+  updateReturnDisplay();
+
+  // Mortgage rate consistency with mode (for comparisons)
+  var mortRateEff = mortRate;
+  if (RETURN_MODE === 'real') {
+    var i2 = getInflationRateFromState(S);
+    mortRateEff = (1 + mortRate) / (1 + i2) - 1;
+  }
+
+  var years = Math.max(1, retAge-age);
+
+  if (income<=0 || rawContrib<=0) { updateURLFromState(); return { html: '' }; }
+
+  // ── CONTRIB TYPE RESOLUTION ──
+  var refundMarg, netCost;
+  if (contribType==='before') {
+    refundMarg = getMarginalRateOnContrib(income, rawContrib, prov);
+    netCost    = rawContrib*(1-refundMarg);
+  } else {
+    var ptEst = rawContrib / (1 - calcTax(income,prov,false).marg);
+    for (var ci=0; ci<5; ci++) {
+      var rmEst = getMarginalRateOnContrib(income, ptEst, prov);
+      ptEst = rawContrib / (1 - rmEst);
+    }
+    refundMarg = getMarginalRateOnContrib(income, ptEst, prov);
+    netCost    = rawContrib;
+  }
+
+  // ── RETIREMENT INCOME: RRIF / DB pension warnings ──
+  var rrspBal    = chips.pension?(parseFloat(S.rrspBal)||0):0;
+  var pensionM   = chips.pension?(parseFloat(S.pensionM)||0):0;
+  var pensionAnn = pensionM*12;
+  var rrifMinAnn = 0, rrifProjectedInc = 0, rrifMargActual = 0;
+  var rrifWarning=false, rrifWarnText='';
+
+  if (chips.pension&&(rrspBal>0||pensionAnn>0)) {
+    var rrspAtRet  = rrspBal*Math.pow(1+R,Math.max(0,retAge-age));
+    var rrspAtRRIF = rrspAtRet*Math.pow(1+R,Math.max(0,72-retAge));
+    rrifMinAnn       = rrspAtRRIF*0.054; // 5.40%
+    rrifProjectedInc = retInc+rrifMinAnn+pensionAnn;
+    rrifMargActual   = calcTax(rrifProjectedInc,prov,true).marg;
+    if (rrifMinAnn+pensionAnn>5000) {
+      rrifWarning = true;
+      var overOAS72 = rrifProjectedInc>OAS_CLAWBACK_THR;
+      rrifWarnText = t(
+        '<strong>Impôt différé — FERR:</strong> Avec un REER de '+fmt(rrspBal)+(pensionAnn>0?' et une pension DB de '+fmt(pensionAnn)+'/an':'')+', votre revenu à la retraite pourrait inclure environ <strong>'+fmt(rrifMinAnn)+'</strong>/an de retraits minimums FERR obligatoires (si converti à 71–72 ans). Revenu total imposable estimé: <strong>'+fmt(rrifProjectedInc)+'</strong> — taux marginal: <strong>'+fmtPct(rrifMargActual)+'</strong>.'+(overOAS72?' <strong>Ce revenu dépasserait le seuil de récupération PSV ('+fmt(OAS_CLAWBACK_THR)+').</strong>':'')+' Le CÉLI évite ces retraits forcés et cet impôt différé.',
+        '<strong>Deferred tax — RRIF:</strong> With an RRSP of '+fmt(rrspBal)+(pensionAnn>0?' and DB pension of '+fmt(pensionAnn)+'/yr':'')+', your retirement income could include approximately <strong>'+fmt(rrifMinAnn)+'</strong>/yr in mandatory RRIF minimum withdrawals (if converted at age 71–72). Estimated total taxable income: <strong>'+fmt(rrifProjectedInc)+'</strong> — marginal rate: <strong>'+fmtPct(rrifMargActual)+'</strong>.'+(overOAS72?' <strong>This could exceed the OAS clawback threshold ('+fmt(OAS_CLAWBACK_THR)+').</strong>':'')+' The TFSA avoids these forced withdrawals and this deferred tax.'
+      );
+    }
+  }
+
+  var totalRetInc = (chips.pension&&rrifProjectedInc>retInc) ? rrifProjectedInc : retInc;
+  var margRet = calcTax(totalRetInc, prov, true).marg;
+
+  // ── FHSA logic ──
+  var FHSA_MAX = 8000;
+  var fhsaContrib    = chips.fhsa ? Math.min(rawContrib, FHSA_MAX) : 0;
+  var fhsaRemainder  = chips.fhsa ? Math.max(0, rawContrib - FHSA_MAX) : 0;
+  var projNetCost = chips.fhsa ? fhsaRemainder : netCost;
+
+  // ── PROJECT ──
+  var rrspR = projectAccount('rrsp', projNetCost, years, refundMarg, margRet);
+  var tfsaR = projectAccount('tfsa', projNetCost, years, refundMarg, margRet);
+  var nrR   = projectAccount('nr',   projNetCost, years, refundMarg, margRet);
+
+  var mortBase = chips.fhsa ? projNetCost : netCost;
+  var mortFV = (chips.mortgage&&mortBal>0) ? mortBase*Math.pow(1+mortRateEff,years) : 0;
+
+  var bestInvAfterTax = Math.max(rrspR.afterTax, tfsaR.afterTax, nrR.afterTax);
+  var bestInvCAGR     = impliedCAGR(bestInvAfterTax, projNetCost, years);
+  var bestInvKey = rrspR.afterTax>=tfsaR.afterTax&&rrspR.afterTax>=nrR.afterTax ? 'rrsp'
+                 : tfsaR.afterTax>=nrR.afterTax ? 'tfsa' : 'nr';
+
+  var breakEven = findBreakEven(projNetCost, years, refundMarg, prov);
+  var yearRows  = buildYearTable(projNetCost, years, refundMarg, margRet);
+
+  // ── RANKING ──
+  var accounts=[
+    {key:'rrsp',val:rrspR.afterTax},
+    {key:'tfsa',val:tfsaR.afterTax},
+    {key:'nr',  val:nrR.afterTax}
+  ];
+  if (chips.mortgage&&mortBal>0) accounts.push({key:'mortgage',val:mortFV});
+  accounts.sort(function(a,b){return b.val-a.val;});
+  if (chips.fhsa) accounts.unshift({key:'fhsa',val:null});
+
+  var winner   = accounts[0];
+  var second   = accounts[1];
+  var delta    = (winner.key==='fhsa'||!second) ? 0 : winner.val-second.val;
+  var deltaPct = (winner.key!=='fhsa'&&second&&second.val>0) ? (winner.val/second.val-1) : 0;
+
+  // ── FLAGS ──
+  var oasWarning  = totalRetInc>OAS_CLAWBACK_THR&&totalRetInc>0;
+  var gisWarning  = totalRetInc<22000&&totalRetInc>0;
+  var spousFlag   = chips.couple&&spIncome>0&&Math.abs(income-spIncome)>25000;
+  var closeDelta  = !chips.fhsa&&delta<500&&delta>=0;
+  var higherEarner= income>spIncome;
+  var nonFhsaAccts = accounts.filter(function(a){return a.key!=='fhsa';});
+  var nrTopTwo    = (nonFhsaAccts[0]&&nonFhsaAccts[0].key==='nr') || (nonFhsaAccts[1]&&nonFhsaAccts[1].key==='nr');
+
+  function acctName(key) {
+    return {rrsp:t('REER','RRSP'),tfsa:t('CÉLI','TFSA'),nr:t('Non-enregistré','Non-registered'),mortgage:t('Hypothèque','Mortgage'),fhsa:t('CELIAPP','FHSA')}[key]||key;
+  }
+
+  var remainderWinner = nonFhsaAccts[0]||null;
+
+  function buildAction() {
+    if (chips.fhsa) {
+      var base = t('Maximisez votre <em>CELIAPP</em> (<em>'+fmt(fhsaContrib)+'</em>/an).','Maximize your <em>FHSA</em> (<em>'+fmt(fhsaContrib)+'</em>/year).');
+      if (fhsaRemainder > 0 && remainderWinner) {
+        base += t(' Les <em>'+fmt(fhsaRemainder)+'</em> restants → <em>'+acctName(remainderWinner.key)+'</em>.',' Remaining <em>'+fmt(fhsaRemainder)+'</em> → <em>'+acctName(remainderWinner.key)+'</em>.');
+      }
+      return base;
+    }
+    if (winner.key==='rrsp') return t('Placez <em>'+fmt(netCost)+'</em> dans le <em>REER</em> et réinvestissez le retour d\'impôt de <em>'+fmt(rrspR.refund)+'</em> dans le CÉLI.','Put <em>'+fmt(netCost)+'</em> in the <em>RRSP</em> and reinvest the <em>'+fmt(rrspR.refund)+'</em> tax refund in your TFSA.');
+    if (winner.key==='tfsa') return t('Placez <em>'+fmt(netCost)+'</em> dans le <em>CÉLI</em> — croissance et retraits entièrement libres d\'impôt.','Put <em>'+fmt(netCost)+'</em> in the <em>TFSA</em> — completely tax-free growth and withdrawals.');
+    if (winner.key==='mortgage') return t('Remboursez votre hypothèque — rendement garanti de <em>'+fmtPct(mortRateEff)+'</em>, sans risque de marché.','Pay down your mortgage — guaranteed return of <em>'+fmtPct(mortRateEff)+'</em>, zero market risk.');
+    return t('Consultez un planificateur financier certifié.','Consult a certified financial planner.');
+  }
+
+  function buildRule() {
+    if (chips.fhsa) {
+      var rem = fhsaRemainder > 0 && remainderWinner
+        ? t(' Après CELIAPP: le solde de '+fmt(fhsaRemainder)+' suit la règle ci-dessous.',' After FHSA: the remaining '+fmt(fhsaRemainder)+' follows the rule below.')
+        : t(' Après avoir maximisé le CELIAPP, revenez ici pour allouer le reste.',' After maximizing your FHSA, return here to allocate the remainder.');
+      var be2=fmt(breakEven);
+      return t('Règle: si revenu retraite > <strong>'+be2+'</strong> → CÉLI d\'abord. Sinon → REER d\'abord.','Rule: if retirement income > <strong>'+be2+'</strong> → TFSA first. Otherwise → RRSP first.')+rem;
+    }
+    var be=fmt(breakEven);
+    var mortRule=(chips.mortgage&&mortBal>0)?t(' · Si taux hypothécaire > '+fmtPct(bestInvCAGR)+' (CAGR implicite) → hypothèque en premier.',' · If mortgage rate > '+fmtPct(bestInvCAGR)+' (implied CAGR) → mortgage first.'):'';
+    return t('Règle: si revenu retraite > <strong>'+be+'</strong> → CÉLI d\'abord. Sinon → REER d\'abord.'+mortRule,'Rule: if retirement income > <strong>'+be+'</strong> → TFSA first. Otherwise → RRSP first.'+mortRule);
+  }
+
+  function buildWhy() {
+    if (chips.fhsa) return t('Le CELIAPP est le seul compte offrant à la fois la déductibilité du REER et les retraits libres d\'impôt du CÉLI pour l\'achat d\'une première propriété. Dans cette situation, aucun autre compte ne peut l\'égaler.','The FHSA is the only account offering both RRSP deductibility and TFSA tax-free withdrawals for a first home purchase. In this situation, no other account can compete.');
+    var refNote = t(' Le retour d\'impôt estimé de '+fmt(rrspR.refund)+' réinvesti dans le CÉLI ajoute '+fmt(rrspR.refundFV)+' à la valeur finale.',' The estimated '+fmt(rrspR.refund)+' tax refund reinvested in the TFSA adds '+fmt(rrspR.refundFV)+' to the final value.');
+    if (winner.key==='rrsp') {
+      var gap=refundMarg-margRet;
+      if(gap>0.04) return t('Votre taux marginal effectif sur la cotisation ('+fmtPct(refundMarg)+') est nettement supérieur à votre taux estimé à la retraite ('+fmtPct(margRet)+'). Le REER capture cet écart de '+fmtPct(gap)+'.','Your effective marginal rate on the contribution ('+fmtPct(refundMarg)+') is significantly higher than your estimated retirement rate ('+fmtPct(margRet)+'). The RRSP captures that '+fmtPct(gap)+' gap.')+refNote;
+      return t('Vos taux marginaux sont proches (cotisation: '+fmtPct(refundMarg)+', retraite: '+fmtPct(margRet)+'). Le REER reste légèrement avantageux.','Your marginal rates are close (contribution: '+fmtPct(refundMarg)+', retirement: '+fmtPct(margRet)+'). The RRSP remains slightly better.')+refNote;
+    }
+    if (winner.key==='tfsa') return t('Votre taux marginal estimé à la retraite ('+fmtPct(margRet)+') dépasse le taux effectif sur la cotisation ('+fmtPct(refundMarg)+'). Le CÉLI évite cet impôt futur — retraits entièrement libres d\'impôt.','Your estimated retirement marginal rate ('+fmtPct(margRet)+') exceeds the effective contribution rate ('+fmtPct(refundMarg)+'). The TFSA avoids that future tax — completely tax-free withdrawals.');
+    if (winner.key==='mortgage') return t('Rembourser votre hypothèque offre un rendement garanti de '+fmtPct(mortRateEff)+' sans risque. Le CAGR après impôt implicite du meilleur compte de placement est de '+fmtPct(bestInvCAGR)+'. Le remboursement gagne.','Paying down your mortgage offers a guaranteed return of '+fmtPct(mortRateEff)+' with zero risk. The implied after-tax CAGR of the best investment account is '+fmtPct(bestInvCAGR)+'. Mortgage prepayment wins.');
+    return '';
+  }
+
+  function buildWTM() {
+    var rrspAhead=rrspR.afterTax>tfsaR.afterTax;
+    var rd2=Math.abs(rrspR.afterTax-tfsaR.afterTax);
+    if(rrspAhead) return t('Sur '+years+' ans, le REER générerait environ '+fmt(rrspR.afterTax)+' après impôt, contre '+fmt(tfsaR.afterTax)+' pour le CÉLI — différence de '+fmt(rd2)+'.','Over '+years+' years, the RRSP would generate approximately '+fmt(rrspR.afterTax)+' after tax, vs '+fmt(tfsaR.afterTax)+' for the TFSA — a difference of '+fmt(rd2)+'.');
+    return t('Sur '+years+' ans, le CÉLI générerait environ '+fmt(tfsaR.afterTax)+' après impôt, contre '+fmt(rrspR.afterTax)+' pour le REER — différence de '+fmt(rd2)+'.','Over '+years+' years, the TFSA would generate approximately '+fmt(tfsaR.afterTax)+' after tax, vs '+fmt(rrspR.afterTax)+' for the RRSP — a difference of '+fmt(rd2)+'.');
+  }
+
+  function buildSensitivity() {
+    if (chips.fhsa || winner.key==='mortgage') return '';
+    var savedReturn = RUNTIME_RETURN;
+    var rrspLow, tfsaLow, nrLow;
+    try {
+      RUNTIME_RETURN = Math.max(0.01, savedReturn - 0.02);
+      rrspLow = projectAccount('rrsp', projNetCost, years, refundMarg, margRet).afterTax;
+      tfsaLow = projectAccount('tfsa', projNetCost, years, refundMarg, margRet).afterTax;
+      nrLow   = projectAccount('nr',   projNetCost, years, refundMarg, margRet).afterTax;
+    } finally {
+      RUNTIME_RETURN = savedReturn;
+    }
+    var lowAccts = [{key:'rrsp',val:rrspLow},{key:'tfsa',val:tfsaLow},{key:'nr',val:nrLow}];
+    if (chips.mortgage&&mortBal>0) lowAccts.push({key:'mortgage',val:netCost*Math.pow(1+mortRateEff,years)});
+    lowAccts.sort(function(a,b){return b.val-a.val;});
+    var lowWinner = lowAccts[0].key;
+    var sameWinner  = lowWinner===winner.key;
+    var pctLow  = ((savedReturn-0.02)*100).toFixed(1);
+    if (sameWinner) {
+      return '<div class="sensitivity-block">'+
+        '<span class="sens-icon">📐</span>'+
+        '<span>'+t('<strong>Sensibilité:</strong> À un rendement de '+pctLow+'% (−2%), le gagnant reste le <strong>'+acctName(winner.key)+'</strong>. La conclusion est robuste.','<strong>Sensitivity:</strong> At a '+pctLow+'% return (−2%), the winner remains <strong>'+acctName(winner.key)+'</strong>. The conclusion is robust.')+'</span>'+
+      '</div>';
+    }
+    return '<div class="sensitivity-block sensitive">'+
+      '<span class="sens-icon">⚡</span>'+
+      '<span>'+t('<strong>Sensibilité:</strong> À un rendement de '+pctLow+'% (−2%), le gagnant deviendrait le <strong>'+acctName(lowWinner)+'</strong>. Les deux options sont proches — votre hypothèse de rendement influence le résultat.','<strong>Sensitivity:</strong> At a '+pctLow+'% return (−2%), the winner would shift to <strong>'+acctName(lowWinner)+'</strong>. The two options are close — your return assumption drives the result.')+'</span>'+
+    '</div>';
+  }
+
+  function buildExpertUpsells() {
+    var upsells=[];
+    var link='<a href="https://buildfi.ca/expert" class="expert-link">'+t('Voir Expert →','See Expert →')+'</a>';
+
+    if (closeDelta) upsells.push(t('<strong>Les options sont presque équivalentes dans votre situation.</strong> Cet outil couvre les paramètres fondamentaux. Le simulateur Expert intègre OAS/SRG, l\'ordre de retrait REER/CÉLI/FERR et la séquence de décaissement — des facteurs qui peuvent faire pencher la balance.','<strong>The options are nearly equivalent in your situation.</strong> This tool covers the key parameters. The Expert simulator integrates OAS/GIS, the RRSP/TFSA/RRIF withdrawal order, and the full drawdown sequence — factors that can tip the balance.')+link);
+
+    if (oasWarning) upsells.push(t('<strong>Votre revenu de retraite dépasse le seuil de récupération PSV.</strong> Cet outil identifie le risque. Le simulateur Expert modélise l\'ordre optimal des retraits REER/CÉLI/FERR pour minimiser la récupération PSV année par année.','<strong>Your retirement income exceeds the OAS clawback threshold.</strong> This tool flags the risk. The Expert simulator models the optimal RRSP/TFSA/RRIF withdrawal order to minimize OAS clawback year by year.')+link);
+
+    if (rrifWarning) upsells.push(t('<strong>Avec un REER de cette taille, les retraits FERR minimums créent une contrainte fiscale réelle à 72 ans.</strong> Cet outil projette l\'exposition. Le simulateur Expert modélise la conversion REER→FERR, le décaissement optimal et l\'impact fiscal année par année.','<strong>With an RRSP this size, mandatory RRIF minimums create a real tax constraint at age 72.</strong> This tool projects the exposure. The Expert simulator models RRSP→RRIF conversion, optimal drawdown, and year-by-year tax impact.')+link);
+
+    if (spousFlag) upsells.push(t('<strong>Un écart de revenus de '+fmt(Math.abs(income-spIncome))+' peut être significatif.</strong> Cet outil détecte l\'écart. Le simulateur Expert optimise le timing du REER conjoint, le fractionnement de revenu et la stratégie fiscale combinée.','<strong>An income gap of '+fmt(Math.abs(income-spIncome))+' can be significant.</strong> This tool detects the gap. The Expert simulator optimizes spousal RRSP timing, income splitting, and combined tax strategy.')+link);
+
+    if (nrTopTwo) upsells.push(t('<strong>Le non-enregistré figure parmi vos meilleures options.</strong> Cet outil utilise une traînée fiscale approximative (0.3%). Le traitement réel dépend de la composition du portefeuille (intérêts, dividendes, gains en capital). Le simulateur Expert modélise les distributions annuelles avec précision.','<strong>Non-registered is among your best options.</strong> This tool uses an approximate tax drag (0.3%). The actual treatment depends on portfolio composition (interest, dividends, capital gains). The Expert simulator models annual distributions accurately.')+link);
+
+    if (age>55) upsells.push(t('<strong>À votre stade, le calendrier des décisions a un impact élevé.</strong> Les années de transition pré-retraite (conversion REER, timing PSV/SRG, décaissement) sont les plus sensibles fiscalement. Le simulateur Expert modélise chaque année en détail.','<strong>At your stage, decision timing has high impact.</strong> Pre-retirement transition years (RRSP conversion, OAS/GIS timing, drawdown sequencing) are the most tax-sensitive. The Expert simulator models each year in detail.')+link);
+
+    if (!upsells.length) return '';
+    return upsells.slice(0,2).map(function(u){return '<div class="expert-upsell"><span class="expert-icon">🔬</span><div class="expert-text">'+u+'</div></div>';}).join('');
+  }
+
+  // Bars
+  var maxVal=Math.max(rrspR.afterTax,tfsaR.afterTax,nrR.afterTax,mortFV||0);
+  function barPct(v){return maxVal>0?Math.max(4,Math.round(v/maxVal*100)):4;}
+
+  // Year table
+  var yh=t('<th>Année</th><th>REER</th><th>CÉLI</th><th>Non-enr.</th>','<th>Year</th><th>RRSP</th><th>TFSA</th><th>Non-reg.</th>');
+  var ytHTML='<table class="year-table"><thead><tr>'+yh+'</tr></thead><tbody>';
+  yearRows.forEach(function(r,idx){
+    var isLast=idx===yearRows.length-1;
+    var best=Math.max(r.rrsp,r.tfsa,r.nr);
+    ytHTML+='<tr><td>'+(isLast?t('Retraite ('+r.yr+'a)','Retirement ('+r.yr+'y)'):r.yr+t(' ans',' yrs'))+'</td>';
+    ytHTML+='<td class="'+(r.rrsp===best?'highlight':'')+'">'+(r.rrsp===best?'★ ':'')+fmt(r.rrsp)+'</td>';
+    ytHTML+='<td class="'+(r.tfsa===best?'highlight':'')+'">'+(r.tfsa===best?'★ ':'')+fmt(r.tfsa)+'</td>';
+    ytHTML+='<td class="'+(r.nr===best?'highlight':'')+'">'+(r.nr===best?'★ ':'')+fmt(r.nr)+'</td></tr>';
+  });
+  ytHTML+='</tbody></table>';
+
+  // Rank list
+  var rankItems=accounts.slice(0,4).map(function(a,i){
+    var why='',val=a.val;
+    if(a.key==='fhsa')     {why=t('Déductible + retraits libres d\'impôt (première propriété)','Deductible + tax-free withdrawals (first home)');val=null;}
+    if(a.key==='rrsp')     why=t('Taux cotisation '+fmtPct(refundMarg)+' → retraite '+fmtPct(margRet)+' · retour '+fmt(rrspR.refund)+' réinvesti','Contribution rate '+fmtPct(refundMarg)+' → retirement '+fmtPct(margRet)+' · '+fmt(rrspR.refund)+' refund reinvested');
+    if(a.key==='tfsa')     why=t('Croissance et retraits 100% libres d\'impôt','100% tax-free growth and withdrawals');
+    if(a.key==='nr')       why=t('Gains en capital (50% inclusion) taxés à la disposition','Capital gains (50% inclusion) taxed at disposition');
+    if(a.key==='mortgage') why=t('Rendement garanti '+fmtPct(mortRateEff)+' · CAGR implicite placement: '+fmtPct(bestInvCAGR),'Guaranteed return '+fmtPct(mortRateEff)+' · implied investment CAGR: '+fmtPct(bestInvCAGR));
+    return '<div class="priority-item rank-'+(i+1)+'"><div class="priority-rank">'+(i+1)+'</div><div style="flex:1"><div class="priority-name">'+acctName(a.key)+'</div><div class="priority-why">'+why+'</div></div><div class="priority-val">'+(val!==null?fmt(val):t('Priorité','Priority'))+'</div></div>';
+  }).join('');
+
+  // Mortgage detail
+  var mortHTML='';
+  if (chips.mortgage&&mortBal>0) {
+    var invWins=bestInvCAGR>mortRateEff;
+    var mortDelta=Math.abs(bestInvAfterTax-mortFV);
+    mortHTML='<div class="detail-card" id="card-mortgage"><div class="detail-card-header" onclick="toggleCard(\'mortgage\')"><div class="detail-card-title"><span class="detail-card-icon">🏠</span>'+t('Rembourser l\'hypothèque vs. Investir','Pay Down Mortgage vs. Invest')+'</div><div class="detail-card-toggle">▼</div></div><div class="detail-card-body">' +
+    '<div class="mortgage-compare">' +
+      '<div class="mcompare-card '+(invWins?'':'winner-card')+'"><div class="mcompare-label">'+t('Remboursement hypothèque','Mortgage prepayment')+'</div><div class="mcompare-val">'+fmtPct(mortRateEff)+'</div><div class="mcompare-sub">'+t('rendement garanti (intérêt résidentiel non déductible au Canada)','guaranteed return (residential interest not deductible in Canada)')+'</div></div>' +
+      '<div class="mcompare-card '+(invWins?'winner-card':'')+'"><div class="mcompare-label">'+t('Meilleur compte placement','Best investment account')+'</div><div class="mcompare-val">'+fmtPct(bestInvCAGR)+'</div><div class="mcompare-sub">'+t('CAGR après impôt implicite ('+acctName(bestInvKey)+')','Implied after-tax CAGR ('+acctName(bestInvKey)+')')+'</div></div>' +
+    '</div>' +
+    '<div class="wtm-block"><div class="wtm-label">'+t('Ce que cela signifie','What this means')+'</div><div class="wtm-text">'+(invWins
+      ?t('Le CAGR implicite du meilleur compte ('+acctName(bestInvKey)+': '+fmtPct(bestInvCAGR)+') dépasse votre taux hypothécaire garanti ('+fmtPct(mortRateEff)+'). La différence sur '+years+' ans: '+fmt(mortDelta)+'. Le placement gagne — mais l\'hypothèque offre la certitude.','The implied CAGR of the best account ('+acctName(bestInvKey)+': '+fmtPct(bestInvCAGR)+') exceeds your guaranteed mortgage rate ('+fmtPct(mortRateEff)+'). Difference over '+years+' years: '+fmt(mortDelta)+'. Investment wins — but the mortgage offers certainty.')
+      :t('Votre taux hypothécaire garanti ('+fmtPct(mortRateEff)+') dépasse le CAGR implicite du meilleur compte de placement ('+acctName(bestInvKey)+': '+fmtPct(bestInvCAGR)+'). Le remboursement hypothécaire est la décision financièrement prudente.','Your guaranteed mortgage rate ('+fmtPct(mortRateEff)+') exceeds the implied CAGR of the best investment account ('+acctName(bestInvKey)+': '+fmtPct(bestInvCAGR)+'). Mortgage prepayment is the financially sound decision.')
+    )+'</div></div></div></div>';
+  }
+
+  // Warnings
+  var wHTML='';
+  if(rrifWarning) wHTML+='<div class="warning-block warn"><span class="warning-icon">⚠️</span><span>'+rrifWarnText+'</span></div>';
+  if(oasWarning)  wHTML+='<div class="warning-block warn"><span class="warning-icon">⚠️</span><span>'+t('<strong>Récupération PSV:</strong> Votre revenu net estimé à la retraite ('+fmt(totalRetInc)+') dépasse le seuil de récupération PSV ('+fmt(OAS_CLAWBACK_THR)+'). Les retraits REER augmentent ce revenu et peuvent réduire vos prestations PSV de 15 ¢ par dollar. Le CÉLI n\'a pas cet effet.','<strong>OAS clawback:</strong> Your estimated net retirement income ('+fmt(totalRetInc)+') exceeds the OAS clawback threshold ('+fmt(OAS_CLAWBACK_THR)+'). RRSP withdrawals increase this income and can reduce your OAS by 15¢ per dollar. The TFSA has no such effect.')+'</span></div>';
+  if(gisWarning)  wHTML+='<div class="warning-block info"><span class="warning-icon">ℹ️</span><span>'+t('<strong>SRG potentiel:</strong> Avec un revenu net estimé de '+fmt(totalRetInc)+', vous pourriez être admissible au SRG. Les retraits REER augmentent ce revenu et peuvent réduire les prestations SRG — le CÉLI n\'a pas cet effet.','<strong>GIS potential:</strong> With an estimated net income of '+fmt(totalRetInc)+', you may qualify for the GIS. RRSP withdrawals increase this income and can reduce GIS benefits — the TFSA has no such effect.')+'</span></div>';
+  if(spousFlag){
+    var hE=higherEarner?t('Vous','You'):t('Votre conjoint(e)','Your spouse');
+    var lE=higherEarner?t('votre conjoint(e)','your spouse'):t('vous','you');
+    wHTML+='<div class="warning-block info"><span class="warning-icon">💑</span><span>'+t('<strong>REER conjoint à considérer:</strong> '+hE+' gagne '+fmt(higherEarner?income:spIncome)+', '+lE+' gagne '+fmt(higherEarner?spIncome:income)+'. Un écart de '+fmt(Math.abs(income-spIncome))+' suggère qu\'un REER conjoint pourrait réduire l\'impôt combiné à la retraite — indicatif seulement.','<strong>Spousal RRSP to consider:</strong> '+hE+' earns '+fmt(higherEarner?income:spIncome)+', '+lE+' earns '+fmt(higherEarner?spIncome:income)+'. A '+fmt(Math.abs(income-spIncome))+' gap suggests a spousal RRSP could reduce combined retirement tax — indicative only.')+'</span></div>';
+  }
+
+  // Print summary (3 lines)
+  function buildPrintSummary() {
+    var rModeLabel = RETURN_MODE === 'real' ? t('Réel','Real') : t('Nominal','Nominal');
+    var iPct = (getInflationRateFromState(S)*100).toFixed(1) + '%';
+    var rPct = (RUNTIME_RETURN*100).toFixed(1) + '%';
+    var line1 = t('Constat','Findings') + ': ' + buildAction().replace(/<[^>]+>/g,'');
+    var line2 = t('Entrées','Inputs') + ': ' +
+      t('Âge','Age') + ' ' + age + ' · ' +
+      t('Province','Province') + ' ' + prov + ' · ' +
+      t('Revenu','Income') + ' ' + fmt(income) + ' · ' +
+      t('Retraite','Retirement') + ' ' + retAge + ' · ' +
+      t('Montant','Amount') + ' ' + fmt(rawContrib);
+    var line3 = t('Rendement','Return') + ': ' + rModeLabel + ' ' + rPct +
+      (RETURN_MODE==='real' ? (' · '+t('Inflation','Inflation')+' '+iPct) : '') +
+      ' · ' + t('ID scénario','Scenario ID') + ': ' + (SCENARIO_ID || '—');
+
+    return '' +
+      '<div class="print-summary print-only">' +
+        '<div class="ps-title">'+t('Résumé (PDF)','Summary (PDF)')+'</div>' +
+        '<div class="ps-row"><strong>'+line1+'</strong></div>' +
+        '<div class="ps-row">'+line2+'</div>' +
+        '<div class="ps-row">'+line3+' <code>'+(SCENARIO_ID || '—')+'</code></div>' +
+      '</div>';
+  }
+
+  // Assumptions
+  var cNote=contribType==='before'
+    ?t('Cotisation REER avant impôt: '+fmt(rawContrib)+' → coût net: '+fmt(netCost),'Pre-tax RRSP contrib: '+fmt(rawContrib)+' → net cost: '+fmt(netCost))
+    :t('Mise de fonds après impôt: '+fmt(netCost),'After-tax outlay: '+fmt(netCost));
+
+  var assumHTML='<div class="assumptions-footer"><div class="assumptions-title">'+t('Hypothèses','Assumptions')+'</div><div class="assumptions-list">' +
+    '<span class="assumption-tag">'+cNote+'</span>' +
+    '<span class="assumption-tag">'+t('Rendement: ','Return: ')+fmtPct(RUNTIME_RETURN)+'</span>' +
+    '<span class="assumption-tag">'+t('Mode: ','Mode: ')+(RETURN_MODE==='real'?t('Réel','Real'):t('Nominal','Nominal'))+'</span>' +
+    (RETURN_MODE==='real'?'<span class="assumption-tag">'+t('Inflation: ','Inflation: ')+((getInflationRateFromState(S)*100).toFixed(1)+'%')+'</span>':'') +
+    '<span class="assumption-tag">'+t('Retraite: ','Retirement: ')+retAge+t(' ans',' yrs')+'</span>' +
+    '<span class="assumption-tag">'+t('Retour REER réinvesti dans CÉLI','RRSP refund reinvested in TFSA')+'</span>' +
+    '<span class="assumption-tag">'+t('Taux CG: ','CG rate: ')+fmtPct(CG_INCLUSION)+t(' (loi actuelle)',' (current law)')+'</span>' +
+    '<span class="assumption-tag">'+t('Traînée NE: ~','NR drag: ~')+fmtPct(NR_TAX_DRAG)+'</span>' +
+    '<span class="assumption-tag">'+t('Intérêt hypothécaire non déductible (résidence principale)','Mortgage interest not deductible (principal residence)')+'</span>' +
+    '<span class="assumption-tag">'+t('Moteur '+ENGINE_VERSION+' · Taux '+ASSUMPTIONS_PACK.taxYear+' — 13 provinces','Engine '+ENGINE_VERSION+' · '+ASSUMPTIONS_PACK.taxYear+' rates — 13 provinces')+'</span>' +
+  '</div></div>';
+
+  var expertUpsells = buildExpertUpsells();
+
+  // Assemble
+  var html =
+  '<div class="decision-box">' +
+    '<div class="decision-action-label">'+t('Action recommandée','Recommended action')+'</div>' +
+    '<div class="decision-action">'+buildAction()+'</div>' +
+    '<div class="decision-rule">'+buildRule()+'</div>' +
+  '</div>' +
+  buildPrintSummary() +
+
+  '<div class="answer-card"><div class="answer-body">' +
+    (winner.key!=='fhsa'?
+      '<div class="delta-row"><div class="delta-main"><div class="delta-amount">'+fmt(delta)+'</div><div class="delta-label">'+t('de plus après impôt<br>vs. '+acctName(second?second.key:''),'more after tax<br>vs. '+acctName(second?second.key:''))+'</div></div>'+(deltaPct>0?'<div class="delta-pct">+'+fmtPct(deltaPct)+'</div>':'')+'</div>':'') +
+    '<div class="answer-why">'+buildWhy()+'</div>' +
+    (winner.key!=='fhsa'?'<div class="rate-pills"><span class="rate-pill now">'+t('Taux cotisation: ','Contribution rate: ')+fmtPct(refundMarg)+'</span><span class="rate-pill ret">'+t('Taux retraite: ','Retirement rate: ')+fmtPct(margRet)+'</span><span class="rate-pill gap">'+t('Horizon: ','Horizon: ')+years+t(' ans',' yrs')+'</span></div>':'') +
+    buildSensitivity() +
+    wHTML +
+    expertUpsells +
+    '<button class="show-more-btn" id="show-more-btn" onclick="toggleDeep()" aria-expanded="false"><span id="show-more-label">'+t('Voir l\'analyse complète','See full analysis')+'</span><span class="arrow">▼</span></button>' +
+  '</div></div>' +
+
+  '<div class="deep-section" id="deep-section">' +
+    (winner.key!=='fhsa'?
+    '<div class="breakeven-hero">' +
+      '<div class="breakeven-hero-label">'+t('Seuil décisionnel','Decision threshold')+'</div>' +
+      '<div class="breakeven-hero-rule">'+t('Si revenu retraite &gt; <em>'+fmt(breakEven)+'</em> → CÉLI. Sinon → REER.','If retirement income &gt; <em>'+fmt(breakEven)+'</em> → TFSA. Otherwise → RRSP.')+'</div>' +
+      '<div class="breakeven-hero-sub">'+t('En dessous: le REER (avec retour d\'impôt réinvesti) génère plus après impôt. Au-dessus: le CÉLI évite un taux marginal de retraite plus élevé.','Below: the RRSP (with reinvested refund) generates more after tax. Above: the TFSA avoids a higher retirement marginal rate.')+'</div>' +
+    '</div>':'') +
+
+    '<div class="detail-card expanded" id="card-rank"><div class="detail-card-header" onclick="toggleCard(\'rank\')"><div class="detail-card-title"><span class="detail-card-icon">🏆</span>'+t('Classement complet','Full ranking')+'</div><div class="detail-card-toggle">▼</div></div><div class="detail-card-body"><div class="priority-list">'+rankItems+'</div><div class="wtm-block" style="margin-top:14px"><div class="wtm-label">'+t('Ce que cela signifie','What this means')+'</div><div class="wtm-text">'+buildWTM()+'</div></div></div></div>' +
+
+    (winner.key!=='fhsa'?
+    '<div class="detail-card" id="card-rrvstf"><div class="detail-card-header" onclick="toggleCard(\'rrvstf\')"><div class="detail-card-title"><span class="detail-card-icon">⚖️</span>'+t('REER vs CÉLI — Détail','RRSP vs TFSA — Detail')+'</div><div class="detail-card-toggle">▼</div></div><div class="detail-card-body">' +
+      '<div class="compare-wrap"><div class="compare-label">'+t('Valeur après impôt à la retraite (même mise de fonds)','After-tax value at retirement (same out-of-pocket)')+'</div>' +
+      '<div class="bar-row"><div class="bar-name">'+t('REER','RRSP')+'</div><div class="bar-track"><div class="bar-fill '+(rrspR.afterTax>=tfsaR.afterTax?'winner':'loser')+'" style="width:'+barPct(rrspR.afterTax)+'%"></div><div class="bar-val">'+fmt(rrspR.afterTax)+'</div></div></div>' +
+      '<div class="bar-row"><div class="bar-name">'+t('CÉLI','TFSA')+'</div><div class="bar-track"><div class="bar-fill '+(tfsaR.afterTax>=rrspR.afterTax?'winner':'loser')+'" style="width:'+barPct(tfsaR.afterTax)+'%"></div><div class="bar-val">'+fmt(tfsaR.afterTax)+'</div></div></div>' +
+      '<div class="bar-row"><div class="bar-name">'+t('NE','NR')+'</div><div class="bar-track"><div class="bar-fill neutral" style="width:'+barPct(nrR.afterTax)+'%"></div><div class="bar-val">'+fmt(nrR.afterTax)+'</div></div></div>' +
+      '</div>' +
+      '<div style="margin-top:16px">' +
+        '<div class="compare-label">'+t('Projection par horizon (après impôt)','Projection by horizon (after tax)')+'</div>' +
+        '<div class="table-scroll">'+ytHTML+'</div>' +
+      '</div>' +
+    '</div></div>':'') +
+
+    mortHTML +
+    assumHTML +
+
+    '<p class="disclaimer">'+t(
+      'Cet outil est éducatif et informatif. Les projections reposent sur des hypothèses simplifiées et des taux d\'imposition 2026 estimés. Elles ne constituent pas un conseil financier, fiscal ou juridique. Les situations complexes (FERR, succession, revenus variables, comptes enregistrés multiples) nécessitent l\'expertise d\'un planificateur financier certifié (Pl. Fin.).',
+      'This tool is educational and informational. Projections rely on simplified assumptions and estimated 2026 tax rates. They do not constitute financial, tax, or legal advice. Complex situations (RRIF, estate planning, variable income, multiple registered accounts) require a certified financial planner (CFP).'
+    )+'</p>' +
+  '</div>';
+
+  return {
+    html: html,
+    scenarioId: SCENARIO_ID || '',
+    assumptions: ASSUMPTIONS_PACK,
+    inputs: {
+      lang: LANG,
+      chips: chips,
+      contribType: contribType,
+      returnMode: RETURN_MODE,
+      inflation: (S && isFinite(S.inflation)) ? S.inflation : 2.0,
+      RETURN: RETURN,
+      effectiveReturn: RUNTIME_RETURN,
+      age: age,
+      prov: prov,
+      income: income,
+      retIncome: retInc,
+      contrib: rawContrib,
+      retAge: retAge,
+      mortRatePct: (mortRate*100),
+      mortBal: mortBal,
+      spouseIncome: spIncome,
+      rrspBal: rrspBal,
+      pensionM: pensionM
+    }
+  };
+
+  // URL syncing handled in scheduleCompute()
+
+}
+
+
+function toggleDeep() {
+  var sec=document.getElementById('deep-section');
+  var btn=document.getElementById('show-more-btn');
+  var lbl=document.getElementById('show-more-label');
+  var isOpen=sec.classList.toggle('open');
+  btn.classList.toggle('open',isOpen);
+  btn.setAttribute('aria-expanded',isOpen);
+  lbl.textContent=isOpen?t('Masquer l\'analyse','Hide analysis'):t('Voir l\'analyse complète','See full analysis');
+  if(isOpen)sec.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function toggleCard(id) {
+  var c=document.getElementById('card-'+id);
+  if(c)c.classList.toggle('expanded');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SHAREABLE URL STATE (?s=...) + PRINT/PDF
+───────────────────────────────────────────────────────────── */
+function b64urlEncode(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64urlDecode(str) {
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while (str.length % 4) str += '=';
+  return decodeURIComponent(escape(atob(str)));
+}
+
+
+function readStateFromDOM() {
+  // Single source of truth for inputs (read once per render cycle)
+  return {
+    schema: 2,
+    engineVersion: ENGINE_VERSION,
+
+    lang: LANG,
+    chips: chips,
+    contribType: contribType,
+    returnMode: RETURN_MODE,
+    inflation: parseFloat((document.getElementById('inp-inflation') ? document.getElementById('inp-inflation').value : null) || '2.0') || 2.0,
+    RETURN: RETURN,
+
+    age: +document.getElementById('inp-age').value || 38,
+    prov: document.getElementById('inp-prov').value || 'QC',
+    income: +document.getElementById('inp-income').value || 0,
+    retIncome: +document.getElementById('inp-ret-income').value || 0,
+    contrib: +document.getElementById('inp-contrib').value || 0,
+    retAge: +document.getElementById('inp-ret-age').value || 65,
+
+    mortRate: +document.getElementById('inp-mort-rate').value || 5.5,
+    mortBal: +document.getElementById('inp-mort-bal').value || 0,
+
+    spouseIncome: +document.getElementById('inp-spouse-income').value || 0,
+
+    rrspBal: +document.getElementById('inp-rrsp-bal').value || 0,
+    pensionM: +document.getElementById('inp-pension-m').value || 0
+  };
+}
+
+function getState() { return readStateFromDOM(); }
+function applyState(s) {
+  if (!s || typeof s !== 'object') return;
+
+  if (s.lang === 'en' || s.lang === 'fr') setLang(s.lang);
+
+  if (s.age != null) document.getElementById('inp-age').value = s.age;
+  if (s.prov) document.getElementById('inp-prov').value = s.prov;
+  if (s.income != null) document.getElementById('inp-income').value = s.income;
+  if (s.retIncome != null) document.getElementById('inp-ret-income').value = s.retIncome;
+  if (s.contrib != null) document.getElementById('inp-contrib').value = s.contrib;
+  if (s.retAge != null) document.getElementById('inp-ret-age').value = s.retAge;
+
+  if (s.mortRate != null) document.getElementById('inp-mort-rate').value = s.mortRate;
+  if (s.mortBal != null) document.getElementById('inp-mort-bal').value = s.mortBal;
+
+  if (s.spouseIncome != null) document.getElementById('inp-spouse-income').value = s.spouseIncome;
+
+  if (document.getElementById('inp-rrsp-bal') && s.rrspBal != null) document.getElementById('inp-rrsp-bal').value = s.rrspBal;
+  if (document.getElementById('inp-pension-m') && s.pensionM != null) document.getElementById('inp-pension-m').value = s.pensionM;
+
+  if (s.contribType === 'before' || s.contribType === 'after') setContribType(s.contribType);
+
+  if (typeof s.RETURN === 'number' && isFinite(s.RETURN)) {
+    RETURN = s.RETURN;
+    var pct = (RETURN * 100);
+    document.getElementById('inp-return').value = pct;
+    updateReturnDisplay();
+  }
+
+  if (s.returnMode === 'real' || s.returnMode === 'nominal') setReturnMode(s.returnMode);
+  if (s.inflation != null && document.getElementById('inp-inflation')) {
+    document.getElementById('inp-inflation').value = s.inflation;
+  }
+
+  if (s.chips && typeof s.chips === 'object') {
+    ['fhsa','mortgage','couple','pension'].forEach(function(k){
+      var want = !!s.chips[k];
+      if (!!chips[k] !== want) toggleChip(k);
+    });
+  }
+}
+
+function updateURLFromState() {
+  try {
+    var st = getState();
+    var enc = b64urlEncode(JSON.stringify(st));
+    SCENARIO_ID = shortScenarioIdFromEnc(enc);
+    var url = new URL(window.location.href);
+    url.searchParams.set('s', enc);
+    window.history.replaceState(null, '', url.toString());
+  } catch(e) { /* no-op */ }
+}
+
+function loadStateFromURL() {
+  try {
+    var url = new URL(window.location.href);
+    var enc = url.searchParams.get('s');
+    if (!enc) return;
+    SCENARIO_ID = shortScenarioIdFromEnc(enc);
+    var json = b64urlDecode(enc);
+    var st = JSON.parse(json);
+    applyState(st);
+  } catch(e) { /* no-op */ }
+}
+
+async function copyShareLink() {
+  updateURLFromState();
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    var btn = document.getElementById('btn-share');
+    if (btn) {
+      var prev = btn.textContent;
+      btn.textContent = t('Copié ✓','Copied ✓');
+      setTimeout(function(){ btn.textContent = prev; }, 1200);
+    }
+  } catch(e) {
+    prompt(t('Copiez ce lien:','Copy this link:'), window.location.href);
+  }
+}
+
+function printPDF() {
+  var sec = document.getElementById('deep-section');
+  if (sec && !sec.classList.contains('open')) sec.classList.add('open');
+  updateURLFromState();
+  window.print();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REPORT BASELINE — URL param loading + restore
+   Params: ?income=85000&alloc=10000&return=6&retAge=65&age=37&province=QC&married=false&mortgage=false
+───────────────────────────────────────────────────────────── */
+var REPORT_BASELINE = null;
+
+function loadBaselineFromURL() {
+  try {
+    var url = new URL(window.location.href);
+    var income   = url.searchParams.get('income');
+    var alloc    = url.searchParams.get('alloc');
+    var ret      = url.searchParams.get('return');
+    var retAge   = url.searchParams.get('retAge');
+    var age      = url.searchParams.get('age');
+    var province = url.searchParams.get('province');
+    var married  = url.searchParams.get('married');
+    var mortgage = url.searchParams.get('mortgage');
+
+    if (!income || !alloc) return;
+
+    REPORT_BASELINE = {
+      income:   parseFloat(income)  || null,
+      contrib:  parseFloat(alloc)   || null,
+      RETURN:   (parseFloat(ret) / 100) || null,
+      retAge:   parseInt(retAge)    || null,
+      age:      parseInt(age)       || null,
+      prov:     province            || null,
+      chips: {
+        couple:   married === 'true',
+        mortgage: mortgage === 'true',
+        fhsa:     false,
+        pension:  false
+      }
+    };
+
+    applyBaseline(REPORT_BASELINE);
+    renderBaselineBox(REPORT_BASELINE);
+  } catch(e) { /* no-op */ }
+}
+
+function applyBaseline(b) {
+  if (!b || typeof b !== 'object') return;
+  applyState(b);
+  compute();
+}
+
+function renderBaselineBox(b) {
+  var box = document.getElementById('report-baseline-box');
+  if (!box || !b) return;
+
+  var isFR = (LANG === 'fr');
+  var header = document.getElementById('rbl-header');
+  var grid   = document.getElementById('rbl-grid');
+  var btn    = document.getElementById('rbl-restore-label');
+
+  if (header) header.textContent = isFR ? 'Hypothèses de votre rapport BuildFi' : 'Your BuildFi report baseline';
+  if (btn)    btn.textContent    = isFR ? 'Restaurer les hypothèses du rapport' : 'Restore report assumptions';
+
+  var items = [];
+  if (b.income  != null) items.push({ label: isFR ? 'Revenu' : 'Income',                        val: '$' + b.income.toLocaleString('fr-CA') });
+  if (b.contrib != null) items.push({ label: isFR ? 'Allocation annuelle' : 'Annual allocation', val: '$' + b.contrib.toLocaleString('fr-CA') });
+  if (b.RETURN  != null) items.push({ label: isFR ? 'Rendement' : 'Return assumption',           val: (b.RETURN * 100).toFixed(1) + '%' });
+  if (b.retAge  != null) items.push({ label: isFR ? 'Retraite' : 'Retirement age',               val: b.retAge });
+  if (b.age     != null) items.push({ label: isFR ? 'Âge actuel' : 'Current age',                val: b.age });
+  if (b.prov    != null) items.push({ label: isFR ? 'Province' : 'Province',                     val: b.prov });
+
+  if (grid) {
+    grid.innerHTML = items.map(function(i) {
+      return '<div class="report-baseline-item">' + i.label + ': <strong>' + i.val + '</strong></div>';
+    }).join('');
+  }
+
+  box.classList.add('visible');
+}
+
+/* ─── INIT ─── */
+renderLabels();
+loadStateFromURL();
+loadBaselineFromURL();
+compute();
+// Logo injection via /logo.js
+(function(){var e=document.getElementById('hdr-logo');if(e&&typeof logoSVG==='function'){e.style.cssText+='display:flex;align-items:center;';e.innerHTML=logoSVG('md','dark');}})();
+</script>
+</body>
+</html>
