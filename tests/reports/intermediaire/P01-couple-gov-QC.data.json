@@ -1,0 +1,21 @@
+{
+  "grade": "A+",
+  "successPct": 100,
+  "minReturn": 1.1,
+  "costDelay": 373233,
+  "retBal": 1347858,
+  "rMedF": 1334200,
+  "coveragePct": 61,
+  "withdrawalRatePct": 1.7,
+  "avgDeath": 88,
+  "obsLabels": {
+    "obs_2": "Impact des frais",
+    "obs_2_topic": "fee-impact",
+    "obs_3": "Structure successorale",
+    "obs_3_topic": "estate-structure",
+    "obs_4": "Couverture gouvernementale",
+    "obs_4_topic": "gov-coverage",
+    "obs_5": "Décalage fiscal",
+    "obs_5_topic": "tax-bracket-shift"
+  }
+}

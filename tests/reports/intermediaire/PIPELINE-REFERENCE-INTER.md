@@ -1,5 +1,5 @@
 # Intermédiaire Pipeline Audit Reference
-Generated: 2026-03-05T05:18:15.274Z
+Generated: 2026-03-05T12:08:59.905Z
 Reports: 15 profiles × 5,000 MC sims each + 5 strategies × 1,000 sims
 
 ## Pipeline Flow

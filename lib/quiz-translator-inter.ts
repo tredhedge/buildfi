@@ -68,8 +68,18 @@ export function translateToMCInter(a: Record<string, any>) {
   // Contributions: explicit or TFSA-first heuristic
   const mc2 = a.monthlyContrib || 0;
   const ac = mc2 * 12;
-  const tfsaC = a.tfsaC != null ? a.tfsaC : Math.min(ac, 7000);
-  const rrspC = a.rrspC != null ? a.rrspC : Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
+  // RRSP-first when income >= $55K (marginal rate makes deduction more valuable)
+  let rrspC: number, tfsaC: number;
+  if (a.rrspC != null || a.tfsaC != null) {
+    rrspC = a.rrspC || 0;
+    tfsaC = a.tfsaC || 0;
+  } else if (sal >= 55000) {
+    rrspC = Math.min(ac, Math.min(sal * 0.18, 33810));
+    tfsaC = Math.min(ac - rrspC, 7000);
+  } else {
+    tfsaC = Math.min(ac, 7000);
+    rrspC = Math.min(ac - tfsaC, Math.min(sal * 0.18, 33810));
+  }
   const nrC = Math.max(0, ac - tfsaC - rrspC);
 
   // Pension logic — explicit penType, employer fallback, or none
@@ -106,7 +116,7 @@ export function translateToMCInter(a: Record<string, any>) {
   if (a.retSpM && a.retSpM > 0) retSpM = a.retSpM;
   else if (a.lifestyle === "cozy") retSpM = Math.round(3000 * col);
   else if (a.lifestyle === "premium") retSpM = Math.round(7500 * col);
-  else if (a.lifestyle === "custom" && a.retSpMCustom > 0) retSpM = Math.round(a.retSpMCustom * col);
+  else if (a.lifestyle === "custom" && a.retSpMCustom > 0) retSpM = Math.round(a.retSpMCustom);
   else retSpM = Math.round(5000 * col);
 
   // Allocation from risk profile
@@ -241,7 +251,9 @@ export function translateToMCInter(a: Record<string, any>) {
     cAge: a.cAge || 0, cSex: a.cSex || "F",
     cRetAge: a.cRetAge || retAge, cSal: a.cIncome || 0,
     cRRSP: a.cRrsp || 0, cTFSA: a.cTfsa || 0, cNR: a.cNr || 0, cLiraBal: a.cLira || 0,
-    cPenType: a.cPenType || "none", cPenM: a.cPenM || 0,
+    cPenType: a.cPenType === "dc" ? "cd" : (a.cPenType || "none"), cPenM: a.cPenM || 0,
+    cDCBal: a.cDcBal || 0,
+    cAvgE: a.cIncome || 0, cQppYrs: Math.min(40, Math.max(0, (a.cAge || 0) - 18)),
     cQppAge: a.cQppAge || 65, cOasAge: a.cOasAge || 65,
     cRetSpM: Math.round(retSpM * 0.4), cDeath: a.cSex === "F" ? 92 : 90,
     lifeInsBenefit: a.lifeInsBenefit || 0, lifeInsPremium: a.lifeInsPremium || 0,

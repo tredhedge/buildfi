@@ -12,8 +12,8 @@ import { runMC, calcTax } from "../lib/engine/index.js";
 import { extractReportDataInter, renderReportHTMLInter } from "../lib/report-html-inter.js";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "../lib/strategies-inter.ts";
 import { buildAIPromptInter } from "../lib/ai-prompt-inter.ts";
-import { AI_SLOTS_INTER, sanitizeAISlotsInter, FORBIDDEN_TERMS } from "../lib/ai-constants.ts";
-import { computeDerivedProfile, computeRenderPlan } from "../lib/ai-profile.ts";
+import { AI_SLOTS_INTER, sanitizeAISlotsInter, FORBIDDEN_TERMS, AI_SLOT_MAX_LENGTH_INTER } from "../lib/ai-constants.ts";
+import { computeDerivedProfile, computeRenderPlan, computeCompositeSignals } from "../lib/ai-profile.ts";
 
 // ════════════════════════════════════════════════════════════════
 // TEST INFRASTRUCTURE
@@ -109,13 +109,13 @@ assert(p.tfsa === 30000, "tfsa = 30000 (explicit)", `got ${p.tfsa}`);
 assert(p.nr === 15000, "nr = 15000 (explicit)", `got ${p.nr}`);
 assert(p.liraBal === 8000, "liraBal = 8000", `got ${p.liraBal}`);
 
-// Contributions: TFSA-first heuristic when tfsaC/rrspC are null
-// ac = 800 * 12 = 9600, tfsaC = min(9600, 7000) = 7000
+// Contributions: RRSP-first heuristic when sal >= $55K and tfsaC/rrspC are null
+// ac = 800 * 12 = 9600, rrspC = min(9600, min(95000*0.18, 33810)) = min(9600, 17100) = 9600
 const ac = 800 * 12;
-assert(p.tfsaC === 7000, "tfsaC = min(9600, 7000) = 7000", `got ${p.tfsaC}`);
-// rrspC = min(9600-7000, min(95000*0.18, 31560)) = min(2600, 17100) = 2600
-assert(p.rrspC === 2600, "rrspC = min(2600, 17100) = 2600", `got ${p.rrspC}`);
-// nrC = max(0, 9600 - 7000 - 2600) = 0
+assert(p.rrspC === 9600, "rrspC = min(9600, 17100) = 9600 (RRSP-first at sal≥55K)", `got ${p.rrspC}`);
+// tfsaC = min(9600-9600, 7000) = 0
+assert(p.tfsaC === 0, "tfsaC = 0 (all contrib goes RRSP-first)", `got ${p.tfsaC}`);
+// nrC = max(0, 9600 - 9600 - 0) = 0
 assert(p.nrC === 0, "nrC = 0", `got ${p.nrC}`);
 
 console.log("  Savings & contributions: all passed");
@@ -659,13 +659,13 @@ assert(prompt.sys.includes("OSFI"), "sys includes OSFI");
 assert(prompt.sys.includes("Intermediaire"), "sys references Intermediaire tier");
 assert(prompt.sys.includes("conditional tense"), "sys requires conditional tense");
 assert(prompt.sys.includes("NUMERIC SAFETY"), "sys includes numeric safety rules");
-assert(prompt.sys.includes("MICRO-STRUCTURE"), "sys includes micro-structure");
+assert(prompt.sys.includes("SLOT STRUCTURE"), "sys includes slot structure rules");
 assert(prompt.sys.includes("Grade 10"), "sys includes Grade 10 reading level");
 
 // User prompt structure
-assert(prompt.usr.includes("TONE:"), "usr includes TONE");
-assert(prompt.usr.includes("LITERACY:"), "usr includes LITERACY");
-assert(prompt.usr.includes("DATA:"), "usr includes DATA block");
+assert(prompt.usr.includes("VOICE"), "usr includes VOICE");
+assert(prompt.usr.includes("NARRATIVE ARC"), "usr includes NARRATIVE ARC");
+assert(prompt.usr.includes("=== DATA ==="), "usr includes DATA block");
 assert(prompt.usr.includes("snapshot_intro"), "usr includes snapshot_intro slot");
 assert(prompt.usr.includes("strategy_highlight"), "usr includes strategy_highlight slot");
 assert(prompt.usr.includes("couple_analysis"), "usr includes couple_analysis slot");
@@ -681,7 +681,7 @@ assert(prompt.usr.includes("statu_quo"), "usr DATA includes statu_quo strategy")
 // English prompt
 const promptEN = buildAIPromptInter(D, p, false, quiz, stratData);
 assert(promptEN.sys.includes("English"), "EN prompt language = English");
-assert(promptEN.usr.includes("DATA:"), "EN prompt includes DATA");
+assert(promptEN.usr.includes("=== DATA ==="), "EN prompt includes DATA");
 
 console.log("  AI prompt structure: all passed");
 
@@ -722,7 +722,7 @@ assert(prompt.usr.includes("theme="), "usr includes theme value");
 assert(prompt.usr.includes("EXPAND") || p._quiz.worries.length === 0, "worry expansions present for worried user");
 
 // Couple context
-assert(prompt.usr.includes("Household") || prompt.usr.includes("Household context"), "couple context in prompt for couple=yes");
+assert(prompt.usr.includes("couple_analysis") && prompt.usr.includes("DO NOT repeat"), "couple context with dedup rule for couple=yes");
 
 // Property context (has mortgage extending into retirement)
 assert(prompt.usr.includes("Mortgage") || prompt.usr.includes("ortgage"), "property context in prompt for homeowner");
@@ -744,7 +744,7 @@ console.log("  DerivedProfile integration: all passed");
 section("22. AI_SLOTS_INTER & sanitizeAISlotsInter");
 
 // Slot count
-assert(AI_SLOTS_INTER.length === 16, "AI_SLOTS_INTER has 16 slots", `got ${AI_SLOTS_INTER.length}`);
+assert(AI_SLOTS_INTER.length === 17, "AI_SLOTS_INTER has 17 slots", `got ${AI_SLOTS_INTER.length}`);
 
 // Expected slots
 const expectedSlots = [
@@ -1102,7 +1102,7 @@ assert(planHigh.tone === "warm", "high anxiety → warm tone", `got ${planHigh.t
 const promptPsychHigh = buildAIPromptInter(DPsych, pPsychHigh, true, QUIZ_PSYCH_HIGH, stratData);
 assert(promptPsychHigh.usr.includes("anxiety=high"), "psych prompt: anxiety=high in usr");
 assert(promptPsychHigh.usr.includes("discipline=high"), "psych prompt: discipline=high in usr");
-assert(promptPsychHigh.usr.includes("WARM"), "psych prompt: WARM tone for high anxiety");
+assert(promptPsychHigh.usr.includes("patient") || promptPsychHigh.usr.includes("trusted advisor") || promptPsychHigh.usr.includes("Warm"), "psych prompt: warm voice for high anxiety");
 
 console.log("  Psych overrides (high anxiety): all passed");
 
@@ -1131,8 +1131,8 @@ assert(planCalm.tone === "data-forward", "calm+advanced → data-forward tone", 
 // AI prompt reflects calm profile
 const promptPsychCalm = buildAIPromptInter(DPsych, pPsychCalm, true, QUIZ_PSYCH_CALM, stratData);
 assert(promptPsychCalm.usr.includes("anxiety=low"), "calm prompt: anxiety=low in usr");
-assert(promptPsychCalm.usr.includes("DATA-FORWARD"), "calm prompt: DATA-FORWARD tone");
-assert(promptPsychCalm.usr.includes("advanced"), "calm prompt: advanced literacy");
+assert(promptPsychCalm.usr.includes("quant analyst") || promptPsychCalm.usr.includes("data-forward"), "calm prompt: data-forward voice");
+assert(promptPsychCalm.usr.includes("advanced") || promptPsychCalm.usr.includes("density"), "calm prompt: advanced voice");
 
 console.log("  Psych overrides (calm): all passed");
 
@@ -1372,6 +1372,483 @@ assert(promptEmphasis.usr.includes("EMPHASIS") || promptEmphasis.usr.includes("e
 assert(promptEmphasis.usr.includes("RISK ORDER"), "RISK ORDER instruction present in prompt");
 
 console.log("  Emphasis blocks in AI prompt: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 44: Voice matrix + Narrative arc + Filler ban
+// ════════════════════════════════════════════════════════════════
+section("44. Voice matrix, Narrative arc, Filler ban");
+
+// Voice matrix appears in sys prompt
+assert(prompt.sys.includes("=== VOICE ==="), "sys includes VOICE section");
+assert(prompt.usr.includes("=== VOICE ==="), "usr includes VOICE section");
+
+// Voice matrix produces actual instructions (not just a label)
+assert(prompt.usr.includes("Write like"), "voice matrix produces 'Write like...' instruction");
+
+// Narrative arc appears in usr prompt
+assert(prompt.usr.includes("=== NARRATIVE ARC ==="), "usr includes NARRATIVE ARC section");
+assert(prompt.usr.includes("NARRATIVE ARC:"), "usr includes narrative arc instruction");
+
+// Filler ban in sys prompt
+assert(prompt.sys.includes("FILLER BAN"), "sys includes FILLER BAN section");
+assert(prompt.sys.includes("il est important de noter"), "sys lists filler phrase as banned");
+assert(prompt.sys.includes("ZERO TOLERANCE"), "sys: filler ban is zero tolerance");
+
+// Deduplication rules in sys prompt
+assert(prompt.sys.includes("DEDUPLICATION"), "sys includes DEDUPLICATION section");
+assert(prompt.sys.includes("obs slots MUST NOT repeat the topic of strategy_highlight"), "sys: obs dedup from strategy_highlight");
+
+// Personalization section
+assert(prompt.sys.includes("PERSONALIZATION"), "sys includes PERSONALIZATION section");
+
+// pourrait + infinitive rule
+assert(prompt.sys.includes("pourrait + infinitive"), "sys: pourrait + infinitive rule");
+
+console.log("  Voice matrix, Narrative arc, Filler ban: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 45: Composite signals + Dynamic obs routing
+// ════════════════════════════════════════════════════════════════
+section("45. Composite signals + Dynamic obs routing");
+
+// computeCompositeSignals returns an object
+const sigTest = computeCompositeSignals(QUIZ_INTER, D, p, profile);
+assert(typeof sigTest === "object", "computeCompositeSignals returns object");
+
+// Profile type added to DerivedProfile
+assert(profile.profileType !== undefined, "profile.profileType defined", `got ${profile.profileType}`);
+assert(["debt-heavy", "early-retirement", "ccpc", "couple", "pre-retirement", "critical", "optimized", "mortgage-focus", "general"].includes(profile.profileType), "profile.profileType valid");
+
+// QUIZ_INTER has couple=yes → profileType should be "couple" or something reasonable
+assert(profile.profileType !== undefined, "couple quiz has profileType set");
+
+// Enriched DATA block in prompt
+assert(prompt.usr.includes('"timeline"'), "DATA contains timeline block");
+assert(prompt.usr.includes('"fees"'), "DATA contains fees block");
+assert(prompt.usr.includes('"profileType"'), "DATA contains profileType");
+assert(prompt.usr.includes('"narrativeTheme"'), "DATA contains narrativeTheme");
+assert(prompt.usr.includes('"savingsRate"'), "DATA contains savingsRate");
+
+// Couple block in DATA for couple profile
+assert(prompt.usr.includes('"couple"'), "DATA contains couple block for couple=yes");
+
+// Strategy success as percentage (not decimal)
+if (stratData && stratData.length > 0) {
+  const dataStr = prompt.usr;
+  // statu_quo should have succ as integer percentage
+  assert(dataStr.includes('"succ":') && !dataStr.includes('"succ":0.'), "strategy succ is percentage not decimal");
+}
+
+// obs_3 instruction should NOT be about fees when best strategy is low_mer
+const lowMerStrats = [
+  { key: "statu_quo", succ: 0.44, medF: 0 },
+  { key: "meltdown", succ: 0.39, medF: 0 },
+  { key: "qpp_70", succ: 0.43, medF: 0 },
+  { key: "low_mer", succ: 0.55, medF: 54000 },  // best strategy
+  { key: "save_more", succ: 0.45, medF: 0 },
+];
+const promptLowMer = buildAIPromptInter(D, p, true, quiz, lowMerStrats);
+// obs_3 should not contain "fee" or "MER" when low_mer is best
+const obs3Section = promptLowMer.usr.split('"obs_3":')[1]?.split('"obs_4"')[0] || "";
+assert(!obs3Section.toLowerCase().includes("fee impact:") && !obs3Section.toLowerCase().includes("management fees"), "obs_3 avoids fee topic when best strat is low_mer");
+
+// couple_analysis contains "DO NOT repeat"
+assert(prompt.usr.includes("DO NOT repeat"), "couple_analysis has dedup instruction");
+
+// benchmark_context forbids invented externals
+assert(prompt.usr.includes("DO NOT invent external") || prompt.usr.includes("ONLY") && prompt.usr.includes("Self-comparison"), "benchmark forbids invented stats");
+
+console.log("  Composite signals + Dynamic obs routing: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 46: Per-slot max length overrides + Expanded FORBIDDEN_TERMS
+// ════════════════════════════════════════════════════════════════
+section("46. Per-slot max length + Expanded FORBIDDEN_TERMS");
+
+// Per-slot max lengths defined
+assert(AI_SLOT_MAX_LENGTH_INTER.priority_actions === 600, "priority_actions max = 600");
+assert(AI_SLOT_MAX_LENGTH_INTER.couple_analysis === 600, "couple_analysis max = 600");
+assert(AI_SLOT_MAX_LENGTH_INTER.ccpc_context === 600, "ccpc_context max = 600");
+
+// Default slots still truncated to 500
+const longObs = { obs_3: "A".repeat(600) };
+const sanitizedLong = sanitizeAISlotsInter(longObs);
+assert(sanitizedLong.obs_3.length === 500, "obs_3 still truncated to 500 (default)", `got ${sanitizedLong.obs_3.length}`);
+
+// priority_actions allows 600
+const longPriority = { priority_actions: "A".repeat(600) };
+const sanitizedPriority = sanitizeAISlotsInter(longPriority);
+assert(sanitizedPriority.priority_actions.length === 600, "priority_actions allows 600 chars", `got ${sanitizedPriority.priority_actions.length}`);
+
+// Expanded FORBIDDEN_TERMS catches filler phrases
+assert(FORBIDDEN_TERMS.test("il est important de noter"), "FORBIDDEN catches filler: il est important de noter");
+assert(FORBIDDEN_TERMS.test("il convient de souligner"), "FORBIDDEN catches filler: il convient de souligner");
+assert(FORBIDDEN_TERMS.test("it is important to note"), "FORBIDDEN catches filler: it is important to note");
+assert(FORBIDDEN_TERMS.test("it should be noted"), "FORBIDDEN catches filler: it should be noted");
+assert(FORBIDDEN_TERMS.test("worth noting"), "FORBIDDEN catches filler: worth noting");
+assert(FORBIDDEN_TERMS.test("par ailleurs"), "FORBIDDEN catches filler: par ailleurs");
+assert(FORBIDDEN_TERMS.test("en outre"), "FORBIDDEN catches filler: en outre");
+assert(FORBIDDEN_TERMS.test("notons que"), "FORBIDDEN catches filler: notons que");
+
+// AMF glissements caught
+assert(FORBIDDEN_TERMS.test("ajouterait"), "FORBIDDEN catches AMF glissement: ajouterait");
+assert(FORBIDDEN_TERMS.test("constituerait un pont"), "FORBIDDEN catches AMF glissement: constituerait un pont");
+
+// Existing terms still caught
+assert(FORBIDDEN_TERMS.test("vous devriez"), "FORBIDDEN still catches devriez");
+assert(FORBIDDEN_TERMS.test("we recommend"), "FORBIDDEN still catches we recommend");
+
+// Clean phrases still allowed
+assert(!FORBIDDEN_TERMS.test("les données indiquent"), "FORBIDDEN allows observational");
+assert(!FORBIDDEN_TERMS.test("cette analyse suggère"), "FORBIDDEN allows cette analyse suggère");
+assert(!FORBIDDEN_TERMS.test("pourrait ajouter"), "FORBIDDEN allows pourrait + infinitive");
+
+console.log("  Per-slot max length + Expanded FORBIDDEN_TERMS: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 47: 13-Bug Audit Fixes
+// ════════════════════════════════════════════════════════════════
+section("47. 13-Bug Audit Fixes");
+
+// --- B-1: Accent enforcement in AI prompt ---
+{
+  const promptRes = buildAIPromptInter(D, p, true, QUIZ_INTER, stratData);
+  assert(promptRes.sys.includes("ACCENTS"), "B-1: FR sys prompt includes ACCENTS instruction");
+  assert(promptRes.sys.includes("réussite"), "B-1: FR sys prompt mentions réussite");
+  assert(promptRes.sys.includes("épargne"), "B-1: FR sys prompt mentions épargne");
+  // EN prompt should NOT have accent block
+  const promptEN = buildAIPromptInter(D, p, false, QUIZ_INTER, stratData);
+  assert(!promptEN.sys.includes("ACCENTS"), "B-1: EN sys prompt does NOT include ACCENTS instruction");
+}
+
+// --- B-2: Seq-risque override for extreme withdrawal rates ---
+{
+  // Create a profile with extreme withdrawal rate (>20%)
+  const DExtreme = { ...D, withdrawalRatePct: 99 };
+  const pExtreme = { ...p, allocR: 0.7, _report: p._report, _quiz: p._quiz };
+  const htmlExtreme = renderReportHTMLInter(DExtreme, mc, stratData, pExtreme, "fr", {}, 0, 0);
+  assert(htmlExtreme.includes("\u00c9lev\u00e9") || htmlExtreme.includes("High"), "B-2: wd=99% yields Élevé level");
+  // Score should be at least 70
+  assert(!htmlExtreme.includes('"Mod\u00e9r\u00e9"') || htmlExtreme.includes("\u00c9lev\u00e9"), "B-2: extreme wd does NOT show Modéré");
+}
+
+// --- B-3: Cost-of-delay guard for high success profiles ---
+{
+  const DHighSuccess = { ...D, successPct: 95, grade: "A+", succ: 0.95 };
+  const htmlHighSuccess = renderReportHTMLInter(DHighSuccess, mc, stratData, p, "fr", {}, 50000, minReturn);
+  assert(!htmlHighSuccess.includes("Co\u00fbt de l'inaction") && !htmlHighSuccess.includes("Cost of waiting"), "B-3: A+ profile (95%) hides cost-of-delay");
+
+  const DMidSuccess = { ...D, successPct: 70, grade: "B+", succ: 0.70 };
+  const htmlMidSuccess = renderReportHTMLInter(DMidSuccess, mc, stratData, p, "fr", {}, 50000, minReturn);
+  assert(htmlMidSuccess.includes("Co\u00fbt de l'inaction") || htmlMidSuccess.includes("Cost of waiting"), "B-3: B+ profile (70%) shows cost-of-delay");
+}
+
+// --- B-4: Dynamic obs labels from obsLabels ---
+{
+  const promptRes = buildAIPromptInter(D, p, true, QUIZ_INTER, stratData);
+  assert(promptRes.obsLabels, "B-4: buildAIPromptInter returns obsLabels object");
+  assert(promptRes.obsLabels.obs_2, "B-4: obsLabels has obs_2");
+  assert(promptRes.obsLabels.obs_3, "B-4: obsLabels has obs_3");
+  assert(promptRes.obsLabels.obs_4, "B-4: obsLabels has obs_4");
+  assert(promptRes.obsLabels.obs_5, "B-4: obsLabels has obs_5");
+
+  // Labels should be French for fr=true
+  const promptFR = buildAIPromptInter(D, p, true, QUIZ_INTER, stratData);
+  const promptEN = buildAIPromptInter(D, p, false, QUIZ_INTER, stratData);
+  // At least one label should differ between FR and EN
+  const frLabels = Object.values(promptFR.obsLabels);
+  const enLabels = Object.values(promptEN.obsLabels);
+  const allSame = frLabels.every((l, i) => l === enLabels[i]);
+  assert(!allSame, "B-4: FR and EN obs labels differ");
+
+  // When obsLabels passed to renderer, they appear in HTML
+  const customLabels = { obs_2: "Mon Label Custom", obs_3: "Test Label", obs_4: "Autre", obs_5: "Dernier" };
+  const htmlWithLabels = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0, null, customLabels);
+  assert(htmlWithLabels.includes("Mon Label Custom"), "B-4: custom obs_2 label appears in HTML");
+  assert(htmlWithLabels.includes("Test Label"), "B-4: custom obs_3 label appears in HTML");
+}
+
+// --- M-5: Objectif slot ---
+{
+  assert(AI_SLOTS_INTER.includes("objectif"), "M-5: objectif is in AI_SLOTS_INTER");
+
+  // Prompt includes objectif slot when lifestyle is set
+  const promptRes = buildAIPromptInter(D, p, true, QUIZ_INTER, stratData);
+  assert(promptRes.usr.includes("objectif"), "M-5: usr prompt includes objectif slot");
+
+  // Renderer shows objectif callout when AI has it
+  const aiWithObj = { objectif: "Votre objectif de retraite confortable..." };
+  const htmlObj = renderReportHTMLInter(D, mc, stratData, p, "fr", aiWithObj, 0, 0);
+  assert(htmlObj.includes("Votre objectif"), "M-5: objectif callout appears in HTML");
+  assert(htmlObj.includes("Votre objectif de retraite confortable"), "M-5: objectif AI content appears");
+
+  // When no objectif in AI, no callout
+  const htmlNoObj = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0);
+  assert(!htmlNoObj.includes("Votre objectif de retraite confortable"), "M-5: no objectif callout when AI empty");
+}
+
+// --- M-6: Benchmark fallback prose ---
+{
+  // Without AI benchmark_context, a fallback should still appear
+  const htmlNoBench = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0);
+  assert(htmlNoBench.includes("pargne enregistr") || htmlNoBench.includes("registered savings"), "M-6: benchmark fallback prose appears when no AI");
+}
+
+// --- M-7: 4th tier for extreme minReturn ---
+{
+  // Test "Hors portée" label for >10%
+  const htmlExtreme = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 14.9);
+  assert(htmlExtreme.includes("Hors port\u00e9e") || htmlExtreme.includes("Out of reach"), "M-7: minReturn=14.9% shows Hors portée");
+  assert(htmlExtreme.includes("pratiquement impossible") || htmlExtreme.includes("virtually impossible"), "M-7: minReturn=14.9% shows extreme explanation");
+
+  // Test "Difficile à atteindre" for 7-10%
+  const htmlHard = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 8.5);
+  assert(htmlHard.includes("Difficile") || htmlHard.includes("Difficult"), "M-7: minReturn=8.5% shows Difficile");
+  assert(htmlHard.includes("prise de risque importante") || htmlHard.includes("significant risk"), "M-7: minReturn=8.5% shows risk explanation");
+}
+
+// --- M-8: CSS alignment ---
+{
+  const htmlCSS = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0);
+  assert(htmlCSS.includes("max-width:820px"), "M-8: container width is 820px");
+  assert(htmlCSS.includes("rgba(124,96,184,.04)"), "M-8: aiSlot has purple accent background");
+  assert(htmlCSS.includes("border-left:3px solid var(--pr)"), "M-8: aiSlot has purple border-left");
+}
+
+// --- m-9: Profile-specific cost-of-delay text ---
+{
+  const DLowSuccess = { ...D, successPct: 70, grade: "B+", succ: 0.70 };
+  const htmlCOD = renderReportHTMLInter(DLowSuccess, mc, stratData, p, "fr", {}, 50000, minReturn);
+  if (htmlCOD.includes("Ce que cela signifie")) {
+    assert(htmlCOD.includes("taux d'\u00e9pargne de") || htmlCOD.includes("savings rate of"), "m-9: cost-of-delay mentions savings rate");
+  }
+}
+
+// --- m-10: Profile-aware buffer strategies ---
+{
+  // High equity (>70%) profile should mention glide path with specific target
+  const DSeq = { ...D, withdrawalRatePct: 7 };
+  const pHiEq = { ...p, allocR: 0.85, _report: p._report, _quiz: p._quiz };
+  const htmlBuf = renderReportHTMLInter(DSeq, mc, stratData, pHiEq, "fr", {}, 0, 0);
+  // Should NOT contain the old hardcoded text "glide path vers 60% actions"
+  // Instead should have computed target (85-20=65%)
+  assert(!htmlBuf.includes("glide path vers 60%"), "m-10: no hardcoded 60% glide path");
+}
+
+// --- m-11: PSV threshold update ---
+{
+  const htmlPSV = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0);
+  assert(!htmlPSV.includes("93 000") && !htmlPSV.includes("93,000"), "m-11: no stale 93k PSV threshold");
+  assert(!htmlPSV.includes("en 2024"), "m-11: no stale 2024 year reference for PSV");
+  // If PSV clawback note shown, it should reference 95 323
+  if (htmlPSV.includes("PSV partielle") || htmlPSV.includes("Partial OAS")) {
+    assert(htmlPSV.includes("95 323") || htmlPSV.includes("95,323"), "m-11: PSV threshold is 95,323");
+    assert(htmlPSV.includes("2026"), "m-11: PSV year is 2026");
+  }
+}
+
+// --- m-13: Navigable TOC ---
+{
+  const htmlTOC = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 0);
+  // TOC pills should be present
+  assert(htmlTOC.includes('href="#sec-1"'), "m-13: TOC has link to sec-1");
+  assert(htmlTOC.includes('href="#sec-7"'), "m-13: TOC has link to sec-7");
+  assert(htmlTOC.includes('href="#sec-16"'), "m-13: TOC has link to sec-16");
+  // Section IDs should be present
+  assert(htmlTOC.includes('id="sec-1"'), "m-13: section 1 has id attribute");
+  assert(htmlTOC.includes('id="sec-7"'), "m-13: section 7 has id attribute");
+  assert(htmlTOC.includes('id="sec-15"'), "m-13: section 15 has id attribute");
+}
+
+console.log("  47. 13-Bug Audit Fixes: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 48: Pipeline Audit Fixes (P0/P1/P2)
+// ════════════════════════════════════════════════════════════════
+section("48. Pipeline Audit Fixes");
+
+// --- P0: cPenType dc→cd for couple ---
+{
+  const qDC = { ...QUIZ_INTER, cPenType: "dc", cPenM: 0 };
+  const pDC = translateToMCInter(qDC);
+  assert(pDC.cPenType === "cd", "P0: couple cPenType 'dc' → 'cd'", `got ${pDC.cPenType}`);
+}
+
+// --- P0: cAvgE and cQppYrs populated for couple ---
+{
+  const qCouple = { ...QUIZ_INTER, couple: "yes", cAge: 40, cIncome: 65000 };
+  const pCouple = translateToMCInter(qCouple);
+  assert(pCouple.cAvgE === 65000, "P0: cAvgE = cIncome", `got ${pCouple.cAvgE}`);
+  assert(pCouple.cQppYrs === 22, "P0: cQppYrs = min(40, 40-18) = 22", `got ${pCouple.cQppYrs}`);
+}
+
+// --- P0: cDCBal populated ---
+{
+  const qDCBal = { ...QUIZ_INTER, cPenType: "dc", cDcBal: 50000 };
+  const pDCBal = translateToMCInter(qDCBal);
+  assert(pDCBal.cDCBal === 50000, "P0: cDCBal passthrough", `got ${pDCBal.cDCBal}`);
+}
+
+// --- P1: RRSP-first when sal >= 55K ---
+{
+  const qHigh = { ...QUIZ_INTER, income: 95000, monthlyContrib: 800, tfsaC: null, rrspC: null };
+  const pHigh = translateToMCInter(qHigh);
+  assert(pHigh.rrspC === 9600, "P1: RRSP-first at 95K — rrspC=9600", `got ${pHigh.rrspC}`);
+  assert(pHigh.tfsaC === 0, "P1: RRSP-first at 95K — tfsaC=0", `got ${pHigh.tfsaC}`);
+}
+
+// --- P1: TFSA-first when sal < 55K ---
+{
+  const qLow = { ...QUIZ_INTER, income: 45000, monthlyContrib: 500, tfsaC: null, rrspC: null };
+  const pLow = translateToMCInter(qLow);
+  assert(pLow.tfsaC === 6000, "P1: TFSA-first at 45K — tfsaC=min(6000,7000)=6000", `got ${pLow.tfsaC}`);
+  assert(pLow.rrspC === 0, "P1: TFSA-first at 45K — rrspC=0 (nothing left)", `got ${pLow.rrspC}`);
+}
+
+// --- P1: retSpMCustom no COL applied ---
+{
+  const qCustom = { ...QUIZ_INTER, lifestyle: "custom", retSpMCustom: 6000, prov: "BC" };
+  const pCustom = translateToMCInter(qCustom);
+  assert(pCustom.retSpM === 6000, "P1: retSpMCustom=6000 not multiplied by COL", `got ${pCustom.retSpM}`);
+}
+
+// --- P1: QPP optimizer reverse-engineers base-65 correctly ---
+{
+  // When user chose QPP at 60, D.qppMonthly is already reduced by 36%
+  // base65 should be qppM / 0.64
+  const Dq60 = { ...D, qppMonthly: 640, qppAge: 60 };
+  const html60 = renderReportHTMLInter(Dq60, mc, stratData, p, "fr", {}, 0, 0);
+  // base65 = 640 / 0.64 = 1000, q60 = 640, q70 = 1420
+  // HTML should show the q70 value (~1420)
+  assert(html60.includes("1\u00a0420") || html60.includes("1 420") || html60.includes("1,420") || html60.includes("1420"), "P1: QPP optimizer q70 = ~1420 when qppAge=60 and qppM=640", `check HTML for 1420`);
+}
+
+// --- P0: obsLabels parameter accepted by renderReportHTMLInter ---
+{
+  const obsL = { obs_2: "Test Label", obs_3: "Another Label" };
+  const htmlObs = renderReportHTMLInter(D, mc, stratData, p, "fr", { obs_2: "Content here" }, 0, 0, null, obsL);
+  assert(htmlObs.includes("Test Label"), "P0: obsLabels.obs_2 rendered in HTML", "obsLabel not found");
+}
+
+console.log("  48. Pipeline Audit Fixes: all passed");
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORY 49: Rendering Audit Fixes
+// ════════════════════════════════════════════════════════════════
+section("49. Rendering Audit Fixes");
+
+{
+  const htmlRender = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, 0, 5);
+  const htmlEN = renderReportHTMLInter(D, mc, stratData, p, "en", {}, 0, 5);
+
+  // CSS variables
+  assert(htmlRender.includes("--sans:"), "CSS: --sans variable defined");
+  assert(htmlRender.includes("--mono:"), "CSS: --mono variable defined");
+  assert(htmlRender.includes("--rad:"), "CSS: --rad variable defined");
+  assert(htmlRender.includes("--altrow:"), "CSS: --altrow variable defined");
+  assert(htmlRender.includes("font-size:15px"), "CSS: body font-size set");
+  assert(htmlRender.includes("line-height:1.75"), "CSS: body line-height set");
+
+  // Responsive class
+  assert(htmlRender.includes('class="rpt-wrap"'), "Wrapper has responsive class");
+  assert(htmlRender.includes("padding:40px 32px 60px"), "Wrapper has top padding (CSS class)");
+
+  // Print safety
+  assert(htmlRender.includes("rpt-card"), "Cards have print-safe class");
+  assert(htmlRender.includes("rpt-pb"), "Print CSS defines rpt-pb class");
+
+  // JetBrains Mono via var(--mono)
+  assert(htmlRender.includes("var(--mono)"), "Uses var(--mono) for monospace");
+  assert(!htmlRender.includes("font-family:monospace"), "No raw monospace left");
+
+  // Bilingual — EN labels
+  assert(htmlEN.includes("RRSP"), "EN: REER → RRSP in chart legend");
+  assert(htmlEN.includes("TFSA"), "EN: CELI → TFSA in chart legend");
+  assert(htmlEN.includes("LIRA"), "EN: CRI → LIRA in chart legend");
+  assert(htmlEN.includes("Median:") || htmlEN.includes("Median"), "EN: Mediane → Median in benchBar");
+
+  // FR labels
+  assert(htmlRender.includes("REER"), "FR: REER in chart legend");
+  assert(htmlRender.includes("CELI"), "FR: CELI in chart legend");
+  assert(htmlRender.includes("Médiane") || htmlRender.includes("M\u00e9diane"), "FR: Médiane in benchBar");
+
+  // Donut labels bilingual
+  assert(htmlEN.includes(">OAS<") || htmlEN.includes("OAS</"), "EN: PSV → OAS in donut");
+
+  // No emojis in succession banners (but OK in Expert CTA feature list)
+  // Check that succession objective banners don't contain emojis
+  const succSection = htmlRender.substring(htmlRender.indexOf("Analyse successorale") || 0, htmlRender.indexOf("Analyse successorale") + 800 || 0);
+  assert(!succSection.includes("\ud83c\udfdb") && !succSection.includes("\ud83c\udf05"), "No emojis in succession banner section");
+
+  // Strategy table uses rMedF
+  assert(htmlRender.includes("rpt-grid3"), "QPP optimizer grid is responsive");
+  assert(htmlRender.includes('scope="col"'), "Table headers have scope attribute");
+
+  // Expert CTA hidden in print
+  assert(htmlRender.includes('class="no-print" style="background:linear-gradient'), "Expert CTA has no-print class");
+
+  // Consistent border-radius via var(--rad)
+  assert(htmlRender.includes("border-radius:var(--rad)"), "Cards use var(--rad)");
+
+  // CSS var colors in obs
+  assert(htmlRender.includes("color:var(--ts)") && !htmlRender.includes('color:#333;line-height:1.75"'), "obs() uses var(--ts) not #333");
+
+  // Tabular nums
+  assert(htmlRender.includes("font-variant-numeric:tabular-nums"), "tabular-nums rule present");
+}
+
+console.log("  49. Rendering Audit Fixes: all passed");
+
+// ══ 50. Final HTML Audit — B1-B3 + W2-W6 ══
+section("50. Final HTML Audit Fixes");
+
+{
+  const htmlRender = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, costDelay, minReturn, null, {});
+
+  // B1: obsLabels includes topic keys
+  const promptB1 = buildAIPromptInter(D, p, true, p._quiz || {}, stratData);
+  assert(promptB1.obsLabels.obs_2_topic, "B1: obsLabels includes obs_2_topic key");
+  assert(promptB1.obsLabels.obs_3_topic, "B1: obsLabels includes obs_3_topic key");
+  assert(promptB1.obsLabels.obs_4_topic, "B1: obsLabels includes obs_4_topic key");
+  assert(promptB1.obsLabels.obs_5_topic, "B1: obsLabels includes obs_5_topic key");
+  // obs_2_topic should be a valid topic string
+  const validTopics = ["gov-coverage","fee-impact","debt-drag","bridge-period","couple-asymmetry","withdrawal-stress","mortgage-retirement","biz-extract","estate-structure","tax-bracket-shift","risk-mismatch","time-leverage","unique-insight"];
+  assert(validTopics.includes(promptB1.obsLabels.obs_2_topic), "B1: obs_2_topic is a valid topic");
+  assert(validTopics.includes(promptB1.obsLabels.obs_3_topic), "B1: obs_3_topic is a valid topic");
+
+  // B1: Renderer uses topic-based fallback (test with obsLabels containing non-default topic)
+  const testObsLabels = { obs_2: "Poids de la dette", obs_2_topic: "debt-drag", obs_3: "Impact des frais", obs_3_topic: "fee-impact", obs_4: "Observation 4", obs_4_topic: "unique-insight", obs_5: "Observation 5", obs_5_topic: "unique-insight" };
+  const htmlObs = renderReportHTMLInter(D, mc, stratData, p, "fr", {}, costDelay, minReturn, null, testObsLabels);
+  // When obs_2 title is "Poids de la dette" but AI is empty, body should NOT say "couvrent X% de votre revenu cible" (that's gov-coverage)
+  const obsSection = htmlObs.substring(htmlObs.indexOf("Observations personn"), htmlObs.indexOf("Cascade de priorit"));
+  assert(!obsSection.includes("couvrent " + D.coveragePct + "%"), "B1: debt-drag obs doesn't show gov-coverage fallback body");
+  assert(obsSection.includes("dette") || obsSection.includes("\u00e9pargne") || obsSection.includes("accumulation"), "B1: debt-drag obs shows debt-related fallback body");
+
+  // B2: Dynamic sim count — no hardcoded "5 000" in section headers
+  assert(htmlRender.includes("Distribution des"), "B2: S6 subtitle present");
+  // The nSim value should be dynamic — with nSim=1234, it should show "1 234" not "5 000"
+  const DTest = Object.assign({}, D, { nSim: 1234 });
+  const htmlDynSim = renderReportHTMLInter(DTest, mc, stratData, p, "fr", {}, costDelay, minReturn, null, {});
+  assert(htmlDynSim.includes("1\u00a0234") || htmlDynSim.includes("1 234"), "B2: Dynamic sim count rendered (1234)");
+  assert(!htmlDynSim.includes("5 000 simulations Monte Carlo"), "B2: No hardcoded 5000 in methodology when nSim=1234");
+
+  // B3: P25=$0 footnote for high success profiles
+  assert(htmlRender.includes("patrimoine liquide") || htmlRender.includes("liquid portfolio"), "B3: Footnote says 'liquid portfolio' not just 'wealth'");
+
+  // W2: Retirement age has "ans" in header
+  assert(htmlRender.includes(D.retAge + " ans</strong>"), "W2: Retirement age shows 'ans' in header");
+
+  // W3: avgDeath label says "esp. vie MC" not "fin d'horizon"
+  assert(htmlRender.includes("esp. vie MC"), "W3: avgDeath label says 'esp. vie MC'");
+  assert(!htmlRender.includes("fin d'horizon"), "W3: No more 'fin d'horizon' label");
+
+  // W4: No "+0pp" in strategy table
+  assert(!htmlRender.includes("+0pp"), "W4: No '+0pp' displayed in strategy table");
+
+  // W6: Expert CTA links to /expert
+  assert(htmlRender.includes("buildfi.ca/expert"), "W6: Expert CTA links to /expert, not homepage");
+}
+console.log("  50. Final HTML Audit Fixes: all passed");
 
 // ════════════════════════════════════════════════════════════════
 // SUMMARY

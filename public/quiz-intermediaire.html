@@ -263,7 +263,7 @@ function renderPaywall(D, lang) {
 // -- Stripe checkout --
 function startCheckout() {
   if (!document.getElementById("terms-accept").checked) {
-    alert(t("Veuillez accepter les conditions pour continuer.", "Please accept the terms to continue."));
+    alert(STATE.lang === "fr" ? "Veuillez accepter les conditions pour continuer." : "Please accept the terms to continue.");
     return;
   }
   var email = document.getElementById("buyer-email").value.trim();

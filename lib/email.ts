@@ -38,11 +38,11 @@ export async function sendReportEmail(params: SendReportParams) {
   const html = buildEmailHTML({ lang, tier, tierName, grade, successPct, downloadUrl, feedbackToken: params.feedbackToken });
 
   const text = fr
-    ? `${subject}\n\nVotre bilan personnalisé est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\n\nCe lien est valide 30 jours.\n\nCet outil est fourni à titre informatif et educatif seulement. Il ne constitue pas un avis financier personnalisé.\n\nsupport@buildfi.ca | buildfi.ca`
+    ? `${subject}\n\nVotre bilan personnalisé est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\n\nCe lien est valide 30 jours.\n\nCet outil est fourni à titre informatif et éducatif seulement. Il ne constitue pas un avis financier personnalisé.\n\nsupport@buildfi.ca | buildfi.ca`
     : `${subject}\n\nYour personalized assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\n\nThis link is valid for 30 days.\n\nThis tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { data, error } = await resend.emails.send({
-    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    from: process.env.RESEND_FROM || "BuildFi <bilan@buildfi.ca>",
     replyTo: "support@buildfi.ca",
     to: [to],
     subject,
@@ -220,7 +220,7 @@ function buildEmailHTML(params: {
           <!-- A-1: Plaintext fallback link below CTA -->
           <tr>
             <td align="center" style="font-family:${FONT};font-size:11px;color:#999999;padding-top:12px;padding-bottom:4px;">
-              ${s.fallbackLink} <a href="${downloadUrl}" style="color:${GOLD};text-decoration:underline;">${fr ? "Ouvrir mon rapport directement" : "Open my report directly"}</a>
+              ${s.fallbackLink} <a href="${downloadUrl}" style="color:${GOLD};text-decoration:underline;">${fr ? "Ouvrir mon bilan directement" : "Open my assessment directly"}</a>
             </td>
           </tr>
 
@@ -245,7 +245,7 @@ function buildEmailHTML(params: {
                       <tr>
                         <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
                           &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)<br>
-                          <!-- Guide 201+301 is Intermediaire-only -->
+                          ${tier === "intermediaire" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)<br>` : ""}
                           &#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}
                         </td>
                       </tr>
@@ -270,7 +270,7 @@ function buildEmailHTML(params: {
                       </tr>
                       <tr>
                         <td align="center" style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.6;padding-bottom:8px;">
-                          ${fr ? "Notez votre rapport en un clic \u2014 cela nous aide \u00e0 am\u00e9liorer buildfi.ca." : "Rate your report in one click \u2014 it helps us improve buildfi.ca."}
+                          ${fr ? "Notez votre bilan en un clic \u2014 cela nous aide \u00e0 am\u00e9liorer buildfi.ca." : "Rate your assessment in one click \u2014 it helps us improve buildfi.ca."}
                         </td>
                       </tr>
                       <tr>

@@ -1,0 +1,21 @@
+{
+  "grade": "F",
+  "successPct": 26,
+  "minReturn": 11,
+  "costDelay": 85527,
+  "retBal": 366119,
+  "rMedF": 0,
+  "coveragePct": 30,
+  "withdrawalRatePct": 11.4,
+  "avgDeath": 87,
+  "obsLabels": {
+    "obs_2": "Impact des frais",
+    "obs_2_topic": "fee-impact",
+    "obs_3": "Pression de retrait",
+    "obs_3_topic": "withdrawal-stress",
+    "obs_4": "Hypothèque à la retraite",
+    "obs_4_topic": "mortgage-retirement",
+    "obs_5": "Couverture gouvernementale",
+    "obs_5_topic": "gov-coverage"
+  }
+}

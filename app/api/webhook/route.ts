@@ -216,7 +216,7 @@ async function handleCheckoutCompleted(
       console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
 
       reportHTML = renderReportHTMLInter(
-        D, mc, stratData, params, lang, ai, costDelayVal, minReturn, feedbackToken
+        D, mc, stratData, params, lang, ai, costDelayVal, minReturn, feedbackToken, prompt.obsLabels
       );
     } else {
       // ── Essentiel pipeline (default) ────────────────────

@@ -1,0 +1,21 @@
+{
+  "grade": "A+",
+  "successPct": 100,
+  "minReturn": 1.1,
+  "costDelay": 875328,
+  "retBal": 1873344,
+  "rMedF": 1448498,
+  "coveragePct": 60,
+  "withdrawalRatePct": 1.3,
+  "avgDeath": 85,
+  "obsLabels": {
+    "obs_2": "Période de pont",
+    "obs_2_topic": "bridge-period",
+    "obs_3": "Asymétrie du ménage",
+    "obs_3_topic": "couple-asymmetry",
+    "obs_4": "Impact des frais",
+    "obs_4_topic": "fee-impact",
+    "obs_5": "Hypothèque à la retraite",
+    "obs_5_topic": "mortgage-retirement"
+  }
+}

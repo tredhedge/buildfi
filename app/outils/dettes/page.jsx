@@ -1,6 +1,20 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 
+// ── URL share helpers (base64url JSON) ──
+const b64urlEncode = (str) => {
+  try {
+    return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  } catch (e) { return ""; }
+};
+const b64urlDecode = (str) => {
+  try {
+    const pad = str.length % 4 ? "=".repeat(4 - (str.length % 4)) : "";
+    const s = (str + pad).replace(/-/g, "+").replace(/_/g, "/");
+    return decodeURIComponent(escape(atob(s)));
+  } catch (e) { return null; }
+};
+
 // ═══════════════════════════════════════════════════════════════════
 // BuildFi — Outil interactif de gestion de dettes / Debt Management Tool
 // Standalone bonus for Essentiel + Intermédiaire tiers
@@ -18,10 +32,14 @@ const DK = {
   orange: "#c48a40", orangeBg: "rgba(196,138,64,.08)",
 };
 
-// ── Province tax data (2026 combined fed+prov marginal brackets) ──
+// ── Province tax data — ESTIMATED 2026 combined fed+prov marginal brackets ──
+// Source: CRA + Revenu Québec / provincial finance ministry published rates
+// These are approximations for comparison purposes (Repay vs Invest).
+// They do not account for surtaxes, clawbacks, or personal credits.
+// For exact figures, users should consult their accountant.
 const PROV_TAX = {
   AB: [{ to:58523, r:.25 },{ to:117045, r:.305 },{ to:154906, r:.36 },{ to:175000, r:.38 },{ to:258482, r:.41 },{ to:Infinity, r:.48 }],
-  BC: [{ to:47937, r:.2006 },{ to:58523, r:.2272 },{ to:95875, r:.2850 },{ to:117045, r:.3150 },{ to:155844, r:.3850 },{ to:157748, r:.408 },{ to:258482, r:.4670 },{ to:253414, r:.4970 },{ to:Infinity, r:.535 }],
+  BC: [{ to:47937, r:.2006 },{ to:58523, r:.2272 },{ to:95875, r:.2850 },{ to:117045, r:.3150 },{ to:155844, r:.3850 },{ to:157748, r:.408 },{ to:253414, r:.4670 },{ to:258482, r:.4970 },{ to:Infinity, r:.535 }],
   MB: [{ to:36842, r:.2580 },{ to:58523, r:.2780 },{ to:79625, r:.338 },{ to:117045, r:.3830 },{ to:157748, r:.4380 },{ to:Infinity, r:.504 }],
   NB: [{ to:49958, r:.2402 },{ to:58523, r:.2782 },{ to:99916, r:.3182 },{ to:117045, r:.3582 },{ to:157748, r:.4282 },{ to:176756, r:.4982 },{ to:258482, r:.5182 },{ to:Infinity, r:.533 }],
   NL: [{ to:43198, r:.235 },{ to:58523, r:.295 },{ to:86395, r:.325 },{ to:117045, r:.375 },{ to:154803, r:.425 },{ to:157748, r:.4550 },{ to:215943, r:.4800 },{ to:258482, r:.510 },{ to:275870, r:.5150 },{ to:Infinity, r:.548 }],
@@ -73,7 +91,11 @@ function multiDebtPayoff(debtsArr, extraMonthly, strategy) {
     case "snowball": sorted = ds.slice().sort((a, b) => a.bal - b.bal); break;
     case "hybrid": sorted = ds.slice().sort((a, b) => (a.bal / Math.max(a.rate, 0.001)) - (b.bal / Math.max(b.rate, 0.001))); break;
     case "cashflow": sorted = ds.slice().sort((a, b) => b.pay - a.pay); break;
-    case "utilization": sorted = ds.slice().sort((a, b) => ((b.bal / Math.max(b.limit || b.bal, 1))) - ((a.bal / Math.max(a.limit || a.bal, 1)))); break;
+    case "utilization": sorted = ds.slice().sort((a, b) => {
+      const aUtil = a.limit > 0 ? a.bal / a.limit : -1;
+      const bUtil = b.limit > 0 ? b.bal / b.limit : -1;
+      return bUtil - aUtil;
+    }); break;
     case "interest_dollar": sorted = ds.slice().sort((a, b) => (b.bal * b.rate / 12) - (a.bal * a.rate / 12)); break;
     case "custom": sorted = ds.slice(); break;
     default: sorted = ds.slice().sort((a, b) => b.rate - a.rate);
@@ -168,9 +190,9 @@ function DebtChart({ timeline, height = 160, color = DK.accent, id = "main" }) {
 }
 
 // ── Reusable UI components (defined outside DebtTool to avoid re-creation) ──
-const Card = ({ children, style, ...props }) => (
-  <div style={{ background: DK.card, borderRadius: 8, border: `1px solid ${DK.border}`, padding: 14, marginBottom: 10, ...style }} {...props}>{children}</div>
-);
+const Card = React.forwardRef(({ children, style, ...props }, ref) => (
+  <div ref={ref} style={{ background: DK.card, borderRadius: 8, border: `1px solid ${DK.border}`, padding: 14, marginBottom: 10, ...style }} {...props}>{children}</div>
+));
 
 const StatBox = ({ label, value, color = DK.tx, sub, small }) => (
   <div style={{ textAlign: "center", padding: small ? "8px 4px" : "10px 8px", background: DK.s2 || DK.bg, borderRadius: 6, border: `1px solid ${DK.border}`, flex: 1, minWidth: 0 }}>
@@ -196,7 +218,7 @@ const InputRow = ({ label, tip, children }) => (
 
 // NumInput — local state while typing, commit to parent on blur
 // Prevents heavy useMemo recomputation on every keystroke
-function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", style: sx }) {
+function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", style: sx, inputRef }) {
   const [local, setLocal] = useState(String(value ?? ""));
   const [isFocused, setIsFocused] = useState(false);
   const prevValue = useRef(value);
@@ -210,7 +232,7 @@ function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", sty
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
       {prefix && <span style={{ fontSize: 12, color: DK.txDim }}>{prefix}</span>}
-      <input type="number" value={local} step={step} min={min} max={max}
+      <input ref={inputRef} type="number" value={local} step={step} min={min} max={max}
         onChange={e => setLocal(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => {
@@ -265,6 +287,16 @@ export default function DebtTool() {
   const [expandedStrat, setExpandedStrat] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const importRef = useRef(null);
+  const [flash, setFlash] = useState("");
+  const [showInfo, setShowInfo] = useState(false);
+  const [infoTab, setInfoTab] = useState("notice");
+  const [includePrintDetails, setIncludePrintDetails] = useState(false);
+  const debtCardRefs = useRef([]);
+  const debtPayRefs = useRef([]);
+  const debtMinPayRefs = useRef([]);
+  const debtLimitRefs = useRef([]);
+  const [focusDebt, setFocusDebt] = useState(null);
+  const [highlightDebt, setHighlightDebt] = useState(null);
 
   // ── Debt type labels (must be before derived values that reference them) ──
   const typeLabels = {
@@ -294,6 +326,97 @@ export default function DebtTool() {
   const monthlyInterest = useMemo(() => activeDebts.reduce((s, d) => s + d.bal * (d.rate || 0) / 12, 0), [activeDebts]);
   const dailyInterest = useMemo(() => monthlyInterest / 30.44, [monthlyInterest]);
   const wAvgRate = useMemo(() => totalDebt > 0 ? activeDebts.reduce((s, d) => s + d.bal * (d.rate || 0), 0) / totalDebt : 0, [activeDebts, totalDebt]);
+
+  // ── Health signals (simple, fast) ──
+  const healthSignals = useMemo(() => {
+    const sigs = [];
+    const revolving = activeDebts.filter(d => (d.type === "card" || d.type === "heloc") && d.limit > 0);
+    const hiUtil = revolving.filter(d => (d.bal / d.limit) >= 0.80);
+    if (hiUtil.length) sigs.push({ key: "util", level: "warn", n: hiUtil.length, labelFr: "Utilisation \u2265 80%", labelEn: "Utilization \u2265 80%" });
+    const payLtInt = activeDebts.filter(d => d.pay > 0 && (d.bal * (d.rate || 0) / 12) > d.pay);
+    if (payLtInt.length) sigs.push({ key: "negAm", level: "bad", n: payLtInt.length, labelFr: "Paiement < int\u00e9r\u00eats", labelEn: "Payment < interest" });
+    const payLtMin = activeDebts.filter(d => d.minPay > 0 && d.pay > 0 && d.pay < d.minPay);
+    if (payLtMin.length) sigs.push({ key: "min", level: "bad", n: payLtMin.length, labelFr: "Paiement < minimum", labelEn: "Payment < minimum" });
+    return sigs;
+  }, [activeDebts]);
+
+  // ── Next best action ──
+  const nextBestAction = useMemo(() => {
+    const payLtMin = activeDebts.filter(d => d.minPay > 0 && d.pay > 0 && d.pay < d.minPay);
+    if (payLtMin.length) {
+      return {
+        key: "min", level: "bad",
+        titleFr: "Corriger les paiements sous le minimum", titleEn: "Fix payments below the minimum",
+        whyFr: `${payLtMin.length} dette(s) sous le minimum requis.`, whyEn: `${payLtMin.length} debt(s) below the required minimum.`,
+        stepsFr: ["Ajuste le paiement au minimum (au moins).", "Ensuite, applique ta strat\u00e9gie sur le surplus.", "Reviens au simulateur pour v\u00e9rifier la dur\u00e9e."],
+        stepsEn: ["Raise the payment to the minimum (at least).", "Then apply your strategy on the extra money.", "Return to the simulator to confirm the timeline."],
+        goTab: 0, canAuto: true,
+        targetIndex: debts.indexOf(payLtMin[0]), targetField: "pay",
+        auto: () => { setDebts(prev => prev.map(d => { if (d.minPay > 0 && d.pay > 0 && d.pay < d.minPay) return { ...d, pay: d.minPay }; return d; })); }
+      };
+    }
+    const payLtInt = activeDebts.filter(d => d.pay > 0 && (d.bal * (d.rate || 0) / 12) > d.pay);
+    if (payLtInt.length) {
+      const worst = payLtInt.slice().sort((a, b) => ((b.bal * b.rate / 12) - b.pay) - ((a.bal * a.rate / 12) - a.pay))[0];
+      const need = Math.ceil((worst.bal * (worst.rate || 0) / 12) + 5);
+      return {
+        key: "negAm", level: "bad",
+        titleFr: "Stopper l'amortissement n\u00e9gatif", titleEn: "Stop negative amortization",
+        whyFr: `Au moins une dette augmente (paiement < int\u00e9r\u00eats). Exemple: ${worst.name || "dette"}.`,
+        whyEn: `At least one debt is growing (payment < interest). Example: ${worst.name || "debt"}.`,
+        stepsFr: [`Augmente le paiement de ${worst.name || "cette dette"} \u00e0 ~${f$(need)}/mo.`, "Garde les autres paiements stables.", "Ensuite, utilise Avalanche ou Snowball sur le surplus."],
+        stepsEn: [`Increase ${worst.name || "this debt"} payment to ~${f$(need)}/mo.`, "Keep other payments stable.", "Then use Avalanche or Snowball on the extra money."],
+        goTab: 0, canAuto: true,
+        targetIndex: debts.indexOf(worst), targetField: "pay",
+        auto: () => { setDebts(prev => prev.map(d => { if (d.name === worst.name && d.bal === worst.bal) return { ...d, pay: Math.max(d.pay, need) }; return d; })); }
+      };
+    }
+    const revolving = activeDebts.filter(d => (d.type === "card" || d.type === "heloc") && d.limit > 0);
+    const hiUtil = revolving.filter(d => (d.bal / d.limit) >= 0.80).sort((a, b) => (b.bal / b.limit) - (a.bal / a.limit));
+    if (hiUtil.length) {
+      const top = hiUtil[0];
+      const delta = Math.max(0, top.bal - Math.round(top.limit * 0.70));
+      return {
+        key: "util", level: "warn",
+        titleFr: "R\u00e9duire l'utilisation des cartes (\u2264 70%)", titleEn: "Lower credit utilization (\u2264 70%)",
+        whyFr: `Utilisation \u00e9lev\u00e9e sur ${top.name || "carte"} (~${Math.round((top.bal / top.limit) * 100)}%).`,
+        whyEn: `High utilization on ${top.name || "card"} (~${Math.round((top.bal / top.limit) * 100)}%).`,
+        stepsFr: [`Vise une baisse d'environ ${f$(delta)} sur ${top.name || "cette carte"}.`, "Si possible, utilise un paiement ponctuel (snowflake).", "Ensuite, applique ta strat\u00e9gie mensuelle habituelle."],
+        stepsEn: [`Aim to pay down about ${f$(delta)} on ${top.name || "this card"}.`, "If possible, use a one-time payment (snowflake).", "Then follow your usual monthly strategy."],
+        goTab: 2, canAuto: false
+      };
+    }
+    return null;
+  }, [activeDebts, debts]);
+
+  const goToDebt = (i, field = "pay") => {
+    if (typeof i !== "number" || i < 0) return;
+    setActiveTab(0);
+    setHighlightDebt(i);
+    setFocusDebt({ i, field });
+  };
+
+  const applyNextBest = () => {
+    if (!nextBestAction) return;
+    if (nextBestAction.canAuto && typeof nextBestAction.auto === "function") nextBestAction.auto();
+    if (typeof nextBestAction.targetIndex === "number") { goToDebt(nextBestAction.targetIndex, nextBestAction.targetField || "pay"); return; }
+    if (typeof nextBestAction.goTab === "number") setActiveTab(nextBestAction.goTab);
+  };
+
+  useEffect(() => {
+    if (!focusDebt || activeTab !== 0) return;
+    const { i, field } = focusDebt;
+    const card = debtCardRefs.current[i];
+    if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ behavior: "smooth", block: "center" });
+    const focusMap = { pay: debtPayRefs.current[i], minPay: debtMinPayRefs.current[i], limit: debtLimitRefs.current[i] };
+    const el = focusMap[field] || debtPayRefs.current[i];
+    const t = setTimeout(() => {
+      if (el && typeof el.focus === "function") { el.focus(); if (typeof el.select === "function") el.select(); }
+      setFocusDebt(null);
+      setTimeout(() => setHighlightDebt(null), 1400);
+    }, 380);
+    return () => clearTimeout(t);
+  }, [focusDebt, activeTab]);
 
   // ── All 6 strategies computed (only payable debts) ──
   const strategies = useMemo(() => {
@@ -395,7 +518,7 @@ export default function DebtTool() {
       snowball: (a, b) => a.bal - b.bal,
       hybrid: (a, b) => (a.bal / Math.max(a.rate, 0.001)) - (b.bal / Math.max(b.rate, 0.001)),
       cashflow: (a, b) => b.pay - a.pay,
-      utilization: (a, b) => ((b.bal / Math.max(b.limit || b.bal, 1))) - ((a.bal / Math.max(a.limit || a.bal, 1))),
+      utilization: (a, b) => { const aU = a.limit > 0 ? a.bal / a.limit : -1; const bU = b.limit > 0 ? b.bal / b.limit : -1; return bU - aU; },
       interest_dollar: (a, b) => (b.bal * b.rate / 12) - (a.bal * a.rate / 12),
     };
     const sorted = ds.slice().sort(sortFn[selectedStrategy] || sortFn.avalanche);
@@ -446,9 +569,30 @@ export default function DebtTool() {
     return { ...d, am, effRate, verdict, ownerMarg, ownerATR };
   }), [activeDebts, margRate, afterTaxRet, spouseMargRate, spouseAfterTaxRet, coupleOn]);
 
-  // ── localStorage persistence ──
+  // ── Persistence: URL state (?s=...) takes precedence, then localStorage ──
   useEffect(() => {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get("s");
+      if (s) {
+        const decoded = b64urlDecode(s);
+        if (decoded) {
+          const data = JSON.parse(decoded);
+          if (data.debts) setDebts(data.debts);
+          if (data.mortgages) setMortgages(data.mortgages);
+          if (data.income != null) setIncome(data.income);
+          if (data.prov) setProv(data.prov);
+          if (data.expReturn != null) setExpReturn(data.expReturn);
+          if (data.coupleOn != null) setCoupleOn(!!data.coupleOn);
+          if (data.lang) setLang(data.lang);
+          if (data.spouseIncome != null) setSpouseIncome(data.spouseIncome);
+          if (data.spouseProv) setSpouseProv(data.spouseProv);
+          if (data.selectedStrategy) setSelectedStrategy(data.selectedStrategy);
+          if (data.extraPay != null) setExtraPay(data.extraPay);
+          if (data.snowflakeAmt != null) setSnowflakeAmt(data.snowflakeAmt);
+          return;
+        }
+      }
       const saved = localStorage.getItem("buildfi_debts_v1");
       if (saved) {
         const data = JSON.parse(saved);
@@ -478,6 +622,44 @@ export default function DebtTool() {
   useEffect(() => {
     if (mortgages.length > 0 || income > 0 || coupleOn) setShowAdvanced(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Share link + PDF ──
+  const copyShareLink = async () => {
+    try {
+      const payload = JSON.stringify({ debts, mortgages, income, prov, expReturn, coupleOn, lang, spouseIncome, spouseProv, selectedStrategy, extraPay, snowflakeAmt });
+      const s = b64urlEncode(payload);
+      const url = new URL(window.location.href);
+      url.searchParams.set("s", s);
+      const link = url.toString();
+      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(link); }
+      else { const ta = document.createElement("textarea"); ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
+      setFlash(fr ? "Lien copi\u00e9" : "Link copied");
+      setTimeout(() => setFlash(""), 2200);
+    } catch (e) { setFlash(fr ? "Impossible de copier le lien" : "Could not copy link"); setTimeout(() => setFlash(""), 2200); }
+  };
+
+  const printPDF = () => { try { window.print(); } catch (e) {} };
+
+  // ── Quick-start example presets ──
+  const loadExample = (mode) => {
+    if (mode === "essentiel") {
+      setLang("fr"); setProv("QC"); setIncome(85000); setCoupleOn(false);
+      setDebts([
+        { name: "Visa", type: "card", bal: 6200, rate: 0.2199, minPay: 150, pay: 250, term: 0, limit: 8000, deductible: false, owner: "me" },
+        { name: "Pr\u00eat auto", type: "auto", bal: 14500, rate: 0.069, minPay: 0, pay: 420, term: 48, limit: 0, deductible: false, owner: "me" },
+      ]);
+      setMortgages([]); setSelectedStrategy("avalanche"); setExtraPay(100); setActiveTab(1);
+    } else {
+      setLang("fr"); setProv("QC"); setIncome(110000); setCoupleOn(true); setSpouseProv("QC"); setSpouseIncome(75000);
+      setDebts([
+        { name: "Mastercard", type: "card", bal: 9800, rate: 0.2399, minPay: 220, pay: 350, term: 0, limit: 12000, deductible: false, owner: "me" },
+        { name: "Marge (HELOC)", type: "heloc", bal: 18000, rate: 0.084, minPay: 0, pay: 450, term: 0, limit: 35000, deductible: true, owner: "me" },
+        { name: "Pr\u00eat \u00e9tudiant", type: "student", bal: 9200, rate: 0.055, minPay: 0, pay: 180, term: 60, limit: 0, deductible: false, owner: "spouse" },
+      ]);
+      setMortgages([{ name: "Hypoth\u00e8que", bal: 365000, rate: 0.052, amort: 25, termYrs: 5, renewalRate: 0.045, type: "fixed", frequency: "monthly", deductible: false, owner: "me" }]);
+      setSelectedStrategy("avalanche"); setExtraPay(200); setShowAdvanced(true); setActiveTab(1);
+    }
+  };
 
   // ── Export/Import ──
   const exportData = () => {
@@ -574,16 +756,66 @@ export default function DebtTool() {
   // ══════════════════════════════════════════════════════════
   const renderInventory = () => (
     <div>
+      {/* Health signals bar */}
+      {healthSignals.length > 0 && (
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
+          {healthSignals.map(s => (
+            <span key={s.key} style={{
+              fontSize: 12, padding: "3px 10px", borderRadius: 999, fontWeight: 700,
+              border: `1px solid ${s.level === "bad" ? DK.red + "55" : DK.orange + "55"}`,
+              background: s.level === "bad" ? DK.redBg : DK.orangeBg,
+              color: s.level === "bad" ? DK.red : DK.orange,
+            }}>
+              {(fr ? s.labelFr : s.labelEn)} · {s.n}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Next best action card */}
+      {nextBestAction && (
+        <Card style={{ borderLeft: `3px solid ${nextBestAction.level === "bad" ? DK.red : DK.orange}`, marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: nextBestAction.level === "bad" ? DK.red : DK.orange, marginBottom: 4 }}>
+            {fr ? nextBestAction.titleFr : nextBestAction.titleEn}
+          </div>
+          <div style={{ fontSize: 12, color: DK.txDim, lineHeight: 1.5, marginBottom: 6 }}>
+            {fr ? nextBestAction.whyFr : nextBestAction.whyEn}
+          </div>
+          <ol style={{ margin: 0, paddingLeft: 18, color: DK.txDim, fontSize: 12, lineHeight: 1.4 }}>
+            {(fr ? nextBestAction.stepsFr : nextBestAction.stepsEn).map((s, i) => <li key={i} style={{ marginBottom: 3 }}>{s}</li>)}
+          </ol>
+          {nextBestAction.canAuto && (
+            <button onClick={applyNextBest} style={{ marginTop: 8, fontSize: 12, padding: "6px 14px", background: DK.accent, color: DK.bg, border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+              {fr ? "Corriger automatiquement" : "Auto-fix"}
+            </button>
+          )}
+        </Card>
+      )}
+
       {/* Welcome banner — only when no debts and no mortgages */}
       {activeDebts.length === 0 && mortgages.length === 0 && (
         <Card style={{ borderLeft: `3px solid ${DK.accent}`, marginBottom: 16 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: DK.accent, marginBottom: 6 }}>
-            {fr ? "Reprenez le contrôle de vos dettes" : "Take control of your debt"}
+            {fr ? "Reprenez le contr\u00f4le de vos dettes" : "Take control of your debt"}
           </div>
-          <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6, marginBottom: 10 }}>
             {fr
-              ? "Ajoutez vos dettes ci-dessous — solde, taux et paiement mensuel suffisent. L'outil calcule automatiquement la meilleure stratégie, le calendrier de remboursement et le coût réel de chaque dette."
-              : "Add your debts below — balance, rate and monthly payment are enough. The tool automatically calculates the best strategy, payoff calendar, and true cost of each debt."}
+              ? "Ajoutez vos dettes ci-dessous \u2014 solde, taux et paiement mensuel suffisent. L'outil calcule automatiquement la meilleure strat\u00e9gie, le calendrier de remboursement et le co\u00fbt r\u00e9el de chaque dette."
+              : "Add your debts below \u2014 balance, rate and monthly payment are enough. The tool automatically calculates the best strategy, payoff calendar, and true cost of each debt."}
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: DK.tx, marginBottom: 6 }}>
+            {fr ? "D\u00e9marrage rapide" : "Quick start"}
+          </div>
+          <div style={{ fontSize: 12, color: DK.txDim, lineHeight: 1.5, marginBottom: 8 }}>
+            {fr ? "Charge un exemple pour voir l'outil en action, puis remplace par tes chiffres." : "Load an example to see the tool in action, then replace with your numbers."}
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => loadExample("essentiel")} style={{ fontSize: 12, padding: "8px 14px", background: DK.accentBg, color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+              {fr ? "Exemple Essentiel" : "Essentiel example"}
+            </button>
+            <button onClick={() => loadExample("inter")} style={{ fontSize: 12, padding: "8px 14px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+              {fr ? "Exemple Interm\u00e9diaire" : "Interm\u00e9diaire example"}
+            </button>
           </div>
         </Card>
       )}
@@ -598,7 +830,7 @@ export default function DebtTool() {
         const monthlyInt = d.bal * (d.rate || 0) / 12;
 
         return (
-          <Card key={i} style={{ borderLeft: `4px solid ${severityColor(d.rate)}`, padding: 12 }}>
+          <Card key={i} ref={(el) => { debtCardRefs.current[i] = el; }} style={{ borderLeft: `4px solid ${severityColor(d.rate)}`, padding: 12, boxShadow: highlightDebt === i ? "0 0 0 3px rgba(184,134,11,.35)" : "none", transition: "box-shadow .3s" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                 {coupleOn && (
@@ -628,7 +860,7 @@ export default function DebtTool() {
                 <NumInput value={Math.round((d.rate || 0) * 10000) / 100} onChange={v => updateDebt(i, "rate", v / 100)} step={0.25} min={0} max={30} prefix="%" />
               </InputRow>
               <InputRow label={fr ? "Paiement minimum/mois" : "Minimum payment/mo"} tip={fr ? "Le montant minimum exigé par le prêteur chaque mois" : "The minimum amount required by the lender each month"}>
-                <NumInput value={d.minPay || 0} onChange={v => updateDebt(i, "minPay", v)} step={25} />
+                <NumInput value={d.minPay || 0} onChange={v => updateDebt(i, "minPay", v)} step={25} inputRef={(el) => { debtMinPayRefs.current[i] = el; }} />
               </InputRow>
               {hasTerm(d.type) && (
                 <InputRow label={fr ? "Terme restant (mois)" : "Remaining term (mo)"} tip={fr ? "Le nombre de mois restants au contrat. Le paiement se calcule automatiquement." : "Remaining months on the contract. Payment auto-calculates."}>
@@ -640,7 +872,7 @@ export default function DebtTool() {
             {/* Pre-authorized payment */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
               <InputRow label={fr ? "Paiement pré-autorisé/mois" : "Pre-authorized payment/mo"} tip={fr ? "Le montant que vous payez réellement chaque mois. C'est ce chiffre qui est utilisé dans les calculs." : "The amount you actually pay each month. This is the number used in calculations."}>
-                <NumInput value={d.pay} onChange={v => updateDebt(i, "pay", v)} step={25} />
+                <NumInput value={d.pay} onChange={v => updateDebt(i, "pay", v)} step={25} inputRef={(el) => { debtPayRefs.current[i] = el; }} />
               </InputRow>
               {d.pay > 0 && (d.minPay || 0) > 0 && d.pay > d.minPay && (
                 <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: 4 }}>
@@ -661,7 +893,7 @@ export default function DebtTool() {
             {/* Credit limit for cards */}
             {d.type === "card" && (
               <InputRow label={fr ? "Limite de crédit" : "Credit limit"} tip={fr ? "Sert au calcul du ratio d'utilisation (impact sur cote de crédit)" : "Used to calculate utilization ratio (credit score impact)"}>
-                <NumInput value={d.limit || 0} onChange={v => updateDebt(i, "limit", v)} step={500} />
+                <NumInput value={d.limit || 0} onChange={v => updateDebt(i, "limit", v)} step={500} inputRef={(el) => { debtLimitRefs.current[i] = el; }} />
               </InputRow>
             )}
 
@@ -754,7 +986,7 @@ export default function DebtTool() {
             </div>
             {income > 0 && (
               <div style={{ marginTop: 8, padding: "6px 10px", background: DK.accentBg, borderRadius: 6, fontSize: 12, color: DK.txDim }}>
-                {fr ? `Taux marginal estimé : ${pct(margRate)} · Rendement après impôt : ${pct(afterTaxRet)}` : `Estimated marginal rate: ${pct(margRate)} · After-tax return: ${pct(afterTaxRet)}`}
+                {fr ? `Taux marginal estimé : ${pct(margRate)} · Rendement après impôt (est.) : ${pct(afterTaxRet)}` : `Estimated marginal rate: ${pct(margRate)} · After-tax return (est.): ${pct(afterTaxRet)}`}
               </div>
             )}
             {!income && (
@@ -1019,7 +1251,7 @@ export default function DebtTool() {
         case "snowball": return a.bal - b.bal;
         case "hybrid": return (a.bal / Math.max(a.rate, 0.001)) - (b.bal / Math.max(b.rate, 0.001));
         case "cashflow": return b.pay - a.pay;
-        case "utilization": return ((b.bal / Math.max(b.limit || b.bal, 1))) - ((a.bal / Math.max(a.limit || a.bal, 1)));
+        case "utilization": { const aU = a.limit > 0 ? a.bal / a.limit : -1; const bU = b.limit > 0 ? b.bal / b.limit : -1; return bU - aU; }
         case "interest_dollar": return (b.bal * b.rate / 12) - (a.bal * a.rate / 12);
         default: return b.rate - a.rate; // avalanche + custom
       }
@@ -1116,15 +1348,15 @@ export default function DebtTool() {
         <SectionTitle>{fr ? "Rembourser ou investir ?" : "Repay or invest?"}</SectionTitle>
         <div style={{ fontSize: 13, color: DK.txDim, marginBottom: 12, lineHeight: 1.6 }}>
           {fr
-            ? `Pour chaque dette, on compare son coût réel avec ce que vos placements pourraient rapporter après impôt (estimé à ${pct(afterTaxRet)}). Ce n'est pas une recommandation — c'est un point de repère pour prendre votre décision.`
-            : `For each debt, we compare its real cost with what your investments could return after tax (estimated at ${pct(afterTaxRet)}). This isn't a recommendation — it's a reference point to help you decide.`}
+            ? `Pour chaque dette, on compare son coût réel avec ce que vos placements pourraient rapporter après impôt (estimé à ${pct(afterTaxRet)}). Ce n'est pas une recommandation — c'est un point de repère pour prendre votre décision. Pour des chiffres exacts adaptés à votre situation, consultez votre comptable.`
+            : `For each debt, we compare its real cost with what your investments could return after tax (estimated at ${pct(afterTaxRet)}). This isn't a recommendation — it's a reference point to help you decide. For exact figures tailored to your situation, consult your accountant.`}
         </div>
 
         {/* Reference rates */}
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <StatBox small label={fr ? "Taux marginal (est.)" : "Marginal rate (est.)"} value={pct(margRate)} color={DK.tx} />
           <StatBox small label={fr ? "Rendement espéré" : "Expected return"} value={pct(expReturn)} color={DK.blue} />
-          <StatBox small label={fr ? "Rendement après impôt" : "After-tax return"} value={pct(afterTaxRet)} color={DK.accent}
+          <StatBox small label={fr ? "Rendement après impôt (est.)" : "After-tax return (est.)"} value={pct(afterTaxRet)} color={DK.accent}
             sub={fr ? "(mixte GC/div/int)" : "(blended CG/div/int)"} />
         </div>
 
@@ -1393,10 +1625,22 @@ export default function DebtTool() {
         ::-webkit-scrollbar-thumb { background: ${DK.border}; border-radius: 3px; }
         select { cursor: pointer; outline: none; }
         select:focus { border-color: ${DK.accent}; }
+        .print-only { display: none; }
+        @media print {
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          body { background: #fff !important; }
+        }
+        .mobile-bottom-bar { display: none; }
+        @media (max-width: 560px) {
+          .mobile-bottom-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 10px 12px; gap: 10px; background: rgba(36,32,24,.96); backdrop-filter: blur(10px); border-top: 1px solid ${DK.border}; }
+          .mobile-bottom-bar button { flex: 1; min-height: 44px; border-radius: 8px; font-weight: 600; }
+          .dt-content-wrap { padding-bottom: 80px !important; }
+        }
       `}</style>
 
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${DK.border}`, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", background: DK.card }}>
+      <div className="no-print" style={{ borderBottom: `1px solid ${DK.border}`, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", background: DK.card }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: DK.accent, letterSpacing: 0.5 }}>BuildFi</span>
           <span style={{ fontSize: 12, color: DK.txDim, fontWeight: 500 }}>{fr ? "Gestion de dettes" : "Debt Management"}</span>
@@ -1404,7 +1648,7 @@ export default function DebtTool() {
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button onClick={() => {
               if (!confirmReset) { setConfirmReset(true); setTimeout(() => setConfirmReset(false), 3000); }
-              else { setDebts([]); setMortgages([]); setIncome(0); setExtraPay(0); setSnowflakeAmt(0); setProv("QC"); setExpReturn(0.06); setCoupleOn(false); setSpouseIncome(0); setSpouseProv("QC"); setSelectedStrategy("avalanche"); setExpandedDebt(-1); setConfirmReset(false); localStorage.removeItem("buildfi_debts_v1"); }
+              else { setDebts([]); setMortgages([]); setIncome(0); setExtraPay(0); setSnowflakeAmt(0); setProv("QC"); setExpReturn(0.06); setCoupleOn(false); setSpouseIncome(0); setSpouseProv("QC"); setSelectedStrategy("avalanche"); setExpandedDebt(-1); setConfirmReset(false); setShowInfo(false); setIncludePrintDetails(false); setHighlightDebt(null); setFocusDebt(null); setFlash(""); localStorage.removeItem("buildfi_debts_v1"); }
             }} title={fr ? "Effacer toutes les données et recommencer" : "Clear all data and start over"}
             style={{ fontSize: 12, padding: "5px 12px", background: confirmReset ? DK.red : "transparent", color: confirmReset ? "#fff" : DK.red, border: `1px solid ${DK.red}${confirmReset ? "" : "40"}`, borderRadius: 6, cursor: "pointer", transition: "all .15s" }}>
             {confirmReset ? (fr ? "Confirmer ?" : "Confirm?") : (fr ? "Réinitialiser" : "Reset")}
@@ -1420,6 +1664,21 @@ export default function DebtTool() {
             {fr ? "Charger" : "Load"} ↑
           </button>
           <input ref={importRef} type="file" accept=".json" onChange={importData} style={{ display: "none" }} />
+          <button onClick={copyShareLink}
+            title={fr ? "G\u00e9n\u00e9rer un lien partageable avec vos donn\u00e9es" : "Generate a shareable link with your data"}
+            style={{ fontSize: 12, padding: "5px 12px", background: DK.accentBg, color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+            {fr ? "Lien" : "Link"}
+          </button>
+          <button onClick={printPDF}
+            title={fr ? "Imprimer / exporter en PDF via le navigateur" : "Print / export to PDF via the browser"}
+            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
+            PDF
+          </button>
+          <button onClick={() => { setInfoTab("notice"); setShowInfo(true); }}
+            title={fr ? "Conformit\u00e9, hypoth\u00e8ses et confidentialit\u00e9" : "Compliance, assumptions, and privacy"}
+            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
+            Info
+          </button>
           <button onClick={() => setLang(lang === "fr" ? "en" : "fr")}
             style={{ fontSize: 12, padding: "5px 12px", background: DK.accentBg, color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
             {lang === "fr" ? "EN" : "FR"}
@@ -1427,8 +1686,15 @@ export default function DebtTool() {
         </div>
       </div>
 
+      {/* Flash toast */}
+      {flash && (
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "8px 18px", borderRadius: 8, background: DK.accent, color: DK.bg, fontSize: 13, fontWeight: 600, boxShadow: "0 4px 12px rgba(0,0,0,.3)" }}>
+          {flash}
+        </div>
+      )}
+
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: 2, padding: "6px 12px", overflowX: "auto", borderBottom: `1px solid ${DK.border}`, background: DK.card }}>
+      <div className="no-print" style={{ display: "flex", gap: 2, padding: "6px 12px", overflowX: "auto", borderBottom: `1px solid ${DK.border}`, background: DK.card }}>
         {tabs.map((t, idx) => {
           const isActive = activeTab === t.id;
           const hasData = payableDebts.length > 0 || t.id === 0;
@@ -1450,8 +1716,25 @@ export default function DebtTool() {
         })}
       </div>
 
+      {/* Print-only summary */}
+      <div className="print-only" style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px", fontFamily: "'DM Sans', sans-serif" }}>
+        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>BuildFi — {fr ? "Gestion de dettes" : "Debt Management"}</div>
+        {payableDebts.length > 0 && (
+          <div style={{ fontSize: 13, lineHeight: 1.8 }}>
+            <div><strong>{fr ? "Stratégie :" : "Strategy:"}</strong> {strategies.find(s => s.key === selectedStrategy)?.name || selectedStrategy}</div>
+            <div><strong>{fr ? "Nombre de dettes :" : "Number of debts:"}</strong> {payableDebts.length}</div>
+            <div><strong>{fr ? "Solde total :" : "Total balance:"}</strong> {f$(totalDebt)}</div>
+            <div><strong>{fr ? "Durée estimée :" : "Estimated duration:"}</strong> {fMo(selectedResult.months, lang)}</div>
+            <div><strong>{fr ? "Intérêts totaux :" : "Total interest:"}</strong> {f$(Math.round(selectedResult.totalInt))}</div>
+            {extraPay > 0 && <div><strong>{fr ? "Extra/mois :" : "Extra/mo:"}</strong> {f$(extraPay)}</div>}
+            <div><strong>{fr ? "Date de liberté :" : "Freedom date:"}</strong> {freedomDate(selectedResult.months, lang)}</div>
+          </div>
+        )}
+        <hr style={{ margin: "12px 0", border: "none", borderTop: "1px solid #ccc" }} />
+      </div>
+
       {/* Content */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "14px 16px 24px" }}>
+      <div className="dt-content-wrap" style={{ maxWidth: 800, margin: "0 auto", padding: "14px 16px 24px" }}>
         {activeTab === 0 && renderInventory()}
         {activeTab === 1 && renderStrategies()}
         {activeTab === 2 && renderSimulator()}
@@ -1461,13 +1744,118 @@ export default function DebtTool() {
       </div>
 
       {/* Footer disclaimer */}
-      <div style={{ borderTop: `1px solid ${DK.border}`, padding: "8px 16px", textAlign: "center", background: DK.card, marginTop: 20 }}>
+      <div className="no-print" style={{ borderTop: `1px solid ${DK.border}`, padding: "8px 16px", textAlign: "center", background: DK.card, marginTop: 20 }}>
         <div style={{ fontSize: 12, color: DK.txMuted, maxWidth: 800, margin: "0 auto", lineHeight: 1.4 }}>
           {fr
             ? "Cet outil présente des scénarios à titre informatif et éducatif. Il ne constitue pas un avis financier, fiscal ou juridique. Les rendements des marchés financiers ne sont pas garantis. Consultez un planificateur financier certifié pour des conseils adaptés à votre situation."
             : "This tool presents scenarios for informational and educational purposes. It does not constitute financial, tax, or legal advice. Financial market returns are not guaranteed. Consult a certified financial planner for advice tailored to your situation."}
           <span style={{ marginLeft: 6, color: DK.accent }}>buildfi.ca</span>
         </div>
+      </div>
+
+      {/* Info / Compliance modal */}
+      {showInfo && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={() => setShowInfo(false)}>
+          <div style={{ background: DK.card, border: `1px solid ${DK.border}`, borderRadius: 12, maxWidth: 540, width: "92%", maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column" }}
+            onClick={e => e.stopPropagation()}>
+            {/* Modal header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: `1px solid ${DK.border}` }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: DK.accent }}>Info</span>
+              <button onClick={() => setShowInfo(false)} style={{ background: "transparent", color: DK.txDim, border: "none", fontSize: 18, cursor: "pointer" }}>✕</button>
+            </div>
+            {/* Modal tabs */}
+            <div style={{ display: "flex", gap: 2, padding: "8px 16px", borderBottom: `1px solid ${DK.border}` }}>
+              {[
+                { key: "notice", label: fr ? "Avis" : "Notice" },
+                { key: "scope", label: fr ? "Portée" : "Scope" },
+                { key: "assumptions", label: fr ? "Hypothèses" : "Assumptions" },
+                { key: "privacy", label: fr ? "Vie privée" : "Privacy" },
+              ].map(t => (
+                <button key={t.key} onClick={() => setInfoTab(t.key)}
+                  style={{ padding: "4px 10px", fontSize: 12, fontWeight: 600, borderRadius: 4, border: "none", cursor: "pointer",
+                    background: infoTab === t.key ? DK.accentBg : "transparent", color: infoTab === t.key ? DK.accent : DK.txDim }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {/* Modal body */}
+            <div style={{ padding: "16px", overflowY: "auto", fontSize: 13, color: DK.txDim, lineHeight: 1.7 }}>
+              {infoTab === "notice" && (
+                <div>
+                  <div style={{ fontWeight: 600, color: DK.tx, marginBottom: 8 }}>{fr ? "Avis de conformité" : "Compliance notice"}</div>
+                  {fr
+                    ? "BuildFi Technologies inc. n'est pas un cabinet de services financiers au sens de la Loi sur la distribution de produits et services financiers (LDPSF). Cet outil ne constitue pas un avis financier, fiscal ou juridique. Les projections sont des scénarios hypothétiques basés sur les données que vous fournissez. Aucune recommandation personnelle n'est formulée. Consultez un planificateur financier certifié pour des conseils adaptés à votre situation."
+                    : "BuildFi Technologies inc. is not a financial services firm within the meaning of the LDPSF (Quebec). This tool does not constitute financial, tax, or legal advice. Projections are hypothetical scenarios based on data you provide. No personalized recommendations are made. Consult a certified financial planner for advice tailored to your situation."}
+                </div>
+              )}
+              {infoTab === "scope" && (
+                <div>
+                  <div style={{ fontWeight: 600, color: DK.tx, marginBottom: 8 }}>{fr ? "Ce que cet outil fait et ne fait pas" : "What this tool does and doesn't do"}</div>
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontWeight: 600, color: DK.green, marginBottom: 4 }}>{fr ? "L'outil fait :" : "The tool does:"}</div>
+                    <ul style={{ paddingLeft: 18, margin: 0 }}>
+                      <li>{fr ? "Calculer l'amortissement de chaque dette" : "Calculate amortization for each debt"}</li>
+                      <li>{fr ? "Comparer 6 stratégies de remboursement" : "Compare 6 repayment strategies"}</li>
+                      <li>{fr ? "Simuler l'impact de paiements supplémentaires" : "Simulate the impact of extra payments"}</li>
+                      <li>{fr ? "Comparer rembourser vs investir" : "Compare repaying vs investing"}</li>
+                      <li>{fr ? "Estimer le coût réel et le coût d'opportunité" : "Estimate true cost and opportunity cost"}</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, color: DK.red, marginBottom: 4 }}>{fr ? "L'outil ne fait pas :" : "The tool doesn't:"}</div>
+                    <ul style={{ paddingLeft: 18, margin: 0 }}>
+                      <li>{fr ? "Formuler des recommandations personnelles" : "Make personalized recommendations"}</li>
+                      <li>{fr ? "Remplacer un planificateur financier" : "Replace a financial planner"}</li>
+                      <li>{fr ? "Garantir des rendements de marché" : "Guarantee market returns"}</li>
+                      <li>{fr ? "Tenir compte de votre situation fiscale complète" : "Account for your complete tax situation"}</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+              {infoTab === "assumptions" && (
+                <div>
+                  <div style={{ fontWeight: 600, color: DK.tx, marginBottom: 8 }}>{fr ? "Hypothèses du modèle" : "Model assumptions"}</div>
+                  <ul style={{ paddingLeft: 18, margin: 0 }}>
+                    <li>{fr ? "Les paiements sont maintenus mensuellement sans interruption" : "Payments are maintained monthly without interruption"}</li>
+                    <li>{fr ? "Les taux d'intérêt restent constants (sauf scénario de renouvellement hypothécaire)" : "Interest rates remain constant (except mortgage renewal scenario)"}</li>
+                    <li>{fr ? "Taux marginaux d'impôt : estimations fédérales + provinciales combinées 2026" : "Marginal tax rates: estimated 2026 combined federal + provincial rates"}</li>
+                    <li>{fr ? "Rendement après impôt : mixte 50% gains en capital, 30% dividendes, 20% intérêts" : "After-tax return: blended 50% capital gains, 30% dividends, 20% interest"}</li>
+                    <li>{fr ? "L'inflation n'est pas prise en compte (montants nominaux)" : "Inflation is not factored in (nominal amounts)"}</li>
+                  </ul>
+                </div>
+              )}
+              {infoTab === "privacy" && (
+                <div>
+                  <div style={{ fontWeight: 600, color: DK.tx, marginBottom: 8 }}>{fr ? "Vos données restent chez vous" : "Your data stays with you"}</div>
+                  {fr
+                    ? "Aucune donnée n'est envoyée à un serveur. Tout est calculé localement dans votre navigateur et sauvegardé dans le localStorage de votre appareil. Si vous utilisez la fonction Lien, vos données sont encodées dans l'URL — quiconque possède le lien peut voir vos chiffres. Aucun cookie n'est utilisé par cet outil."
+                    : "No data is sent to a server. Everything is calculated locally in your browser and saved in your device's localStorage. If you use the Link feature, your data is encoded in the URL — anyone with the link can see your numbers. No cookies are used by this tool."}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile bottom bar */}
+      <div className="mobile-bottom-bar no-print">
+        <button onClick={() => setActiveTab(0)}
+          style={{ background: activeTab === 0 ? DK.accentBg : "transparent", color: activeTab === 0 ? DK.accent : DK.txDim, border: `1px solid ${activeTab === 0 ? DK.accent + "40" : DK.border}`, fontSize: 12 }}>
+          {fr ? "Inventaire" : "Inventory"}
+        </button>
+        <button onClick={() => setActiveTab(1)}
+          style={{ background: activeTab === 1 ? DK.accentBg : "transparent", color: activeTab === 1 ? DK.accent : DK.txDim, border: `1px solid ${activeTab === 1 ? DK.accent + "40" : DK.border}`, fontSize: 12 }}>
+          {fr ? "Stratégies" : "Strategies"}
+        </button>
+        <button onClick={() => setActiveTab(2)}
+          style={{ background: activeTab === 2 ? DK.accentBg : "transparent", color: activeTab === 2 ? DK.accent : DK.txDim, border: `1px solid ${activeTab === 2 ? DK.accent + "40" : DK.border}`, fontSize: 12 }}>
+          {fr ? "Simulateur" : "Simulator"}
+        </button>
+        <button onClick={() => setActiveTab(4)}
+          style={{ background: activeTab === 4 ? DK.accentBg : "transparent", color: activeTab === 4 ? DK.accent : DK.txDim, border: `1px solid ${activeTab === 4 ? DK.accent + "40" : DK.border}`, fontSize: 12 }}>
+          {fr ? "Calendrier" : "Calendar"}
+        </button>
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ export const AI_SLOT_MAX_LENGTH: Partial<Record<AISlotKey, number>> = {
 // ─── Intermédiaire tier slots ─────────────────────────────────────────
 export const AI_SLOTS_INTER = [
   "snapshot_intro",
+  "objectif",
   "savings_context",
   "income_mix",
   "tax_context",

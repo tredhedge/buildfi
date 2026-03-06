@@ -1,0 +1,21 @@
+{
+  "grade": "A+",
+  "successPct": 100,
+  "minReturn": 1.1,
+  "costDelay": 3582129,
+  "retBal": 1487592,
+  "rMedF": 36549,
+  "coveragePct": 38,
+  "withdrawalRatePct": 3.4,
+  "avgDeath": 86,
+  "obsLabels": {
+    "obs_2": "Période de pont",
+    "obs_2_topic": "bridge-period",
+    "obs_3": "Asymétrie du ménage",
+    "obs_3_topic": "couple-asymmetry",
+    "obs_4": "Impact des frais",
+    "obs_4_topic": "fee-impact",
+    "obs_5": "Couverture gouvernementale",
+    "obs_5_topic": "gov-coverage"
+  }
+}

@@ -7,7 +7,7 @@
 // ── Province tax data (copy from debt-tool.jsx) ──
 const PROV_TAX = {
   AB: [{ to:58523, r:.25 },{ to:117045, r:.305 },{ to:154906, r:.36 },{ to:175000, r:.38 },{ to:258482, r:.41 },{ to:Infinity, r:.48 }],
-  BC: [{ to:47937, r:.2006 },{ to:58523, r:.2272 },{ to:95875, r:.2850 },{ to:117045, r:.3150 },{ to:155844, r:.3850 },{ to:157748, r:.408 },{ to:258482, r:.4670 },{ to:253414, r:.4970 },{ to:Infinity, r:.535 }],
+  BC: [{ to:47937, r:.2006 },{ to:58523, r:.2272 },{ to:95875, r:.2850 },{ to:117045, r:.3150 },{ to:155844, r:.3850 },{ to:157748, r:.408 },{ to:253414, r:.4670 },{ to:258482, r:.4970 },{ to:Infinity, r:.535 }],
   MB: [{ to:36842, r:.2580 },{ to:58523, r:.2780 },{ to:79625, r:.338 },{ to:117045, r:.3830 },{ to:157748, r:.4380 },{ to:Infinity, r:.504 }],
   NB: [{ to:49958, r:.2402 },{ to:58523, r:.2782 },{ to:99916, r:.3182 },{ to:117045, r:.3582 },{ to:157748, r:.4282 },{ to:176756, r:.4982 },{ to:258482, r:.5182 },{ to:Infinity, r:.533 }],
   NL: [{ to:43198, r:.235 },{ to:58523, r:.295 },{ to:86395, r:.325 },{ to:117045, r:.375 },{ to:154803, r:.425 },{ to:157748, r:.4550 },{ to:215943, r:.4800 },{ to:258482, r:.510 },{ to:275870, r:.5150 },{ to:Infinity, r:.548 }],
@@ -144,7 +144,7 @@ function runTestSuite() {
   T("MargRate", "QC @$50K", getMarginalRate(50000, "QC"), 0.3553);
   T("MargRate", "QC @$100K", getMarginalRate(100000, "QC"), 0.4553);
   T("MargRate", "QC @$150K", getMarginalRate(150000, "QC"), 0.5053);
-  T("MargRate", "QC @$250K", getMarginalRate(250000, "QC"), 0.5353);
+  T("MargRate", "QC @$250K", getMarginalRate(250000, "QC"), 0.5253);
   T("MargRate", "QC top", getMarginalRate(1000000, "QC"), 0.5353);
 
   T("MargRate", "ON @$50K", getMarginalRate(50000, "ON"), 0.2015);
