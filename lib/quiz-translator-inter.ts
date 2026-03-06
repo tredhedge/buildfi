@@ -128,9 +128,13 @@ export function translateToMCInter(a: Record<string, any>) {
 
   const mer = eq > 0.85 ? 0.020 : eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012;
 
-  // QPP/OAS timing — Intermédiaire uses explicit ages
-  const qppAge = Math.max(60, Math.min(70, a.qppAge || 65));
-  const oasAge = Math.max(65, Math.min(70, a.oasAge || 65));
+  // QPP/OAS timing — explicit quiz ages when provided, else heuristic from retAge
+  const qppAge = a.qppAge
+    ? Math.max(60, Math.min(70, a.qppAge))
+    : Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge));
+  const oasAge = a.oasAge
+    ? Math.max(65, Math.min(70, a.oasAge))
+    : Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge));
 
   // Part-time work
   let ptM = 0, ptYrs = 0;
