@@ -9,6 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { translateToMC } from "@/lib/quiz-translator";
 import { translateToMCInter } from "@/lib/quiz-translator-inter";
 import { translateToMCExpert } from "@/lib/quiz-translator-expert";
+import { translateDecumToMC } from "@/lib/quiz-translator-decum";
 import { runMC } from "@/lib/engine";
 import {
   renderReportHTML,
@@ -20,9 +21,12 @@ import {
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
 import { buildAIPromptInter } from "@/lib/ai-prompt-inter";
+import { extractReportDataDecum, renderReportDecum } from "@/lib/report-html-decum";
+import { buildAIPromptDecum } from "@/lib/ai-prompt-decum";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, sanitizeAISlotsInter, sanitizeAISlotsExpert } from "@/lib/ai-constants";
+import { sanitizeAISlots, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum } from "@/lib/ai-constants";
+import type { AINarrationDecum } from "@/lib/ai-constants";
 import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
 import type { ExpertAINarration } from "@/lib/ai-constants";
@@ -182,6 +186,10 @@ async function handleCheckoutCompleted(
     return handleExpertPurchase(email, metadata, session.id);
   }
 
+  if (tier === "decaissement") {
+    return handleDecaissementPurchase(email, metadata, session.id);
+  }
+
   // ── Essentiel / Intermediaire pipeline ──────────────────
   try {
     const quizAnswers = reassembleQuizAnswers(metadata);
@@ -299,6 +307,123 @@ async function handleCheckoutCompleted(
       { received: true, error: msg },
       { status: 500 }
     );
+  }
+}
+
+// ── Décaissement purchase handler ────────────────────────
+
+async function handleDecaissementPurchase(
+  email: string,
+  metadata: Record<string, string>,
+  sessionId: string
+): Promise<NextResponse> {
+  try {
+    const quizAnswers = reassembleQuizAnswers(metadata);
+    const lang = (metadata.lang || "fr") as "fr" | "en";
+    const fr = lang === "fr";
+    const quiz = quizAnswers as Record<string, any>;
+
+    console.log(`[webhook] Processing Décaissement report for ${email} (${lang})`);
+
+    const params = translateDecumToMC(quizAnswers);
+    const mcStart = Date.now();
+
+    // ── Run 1: Baseline (5,000 sims) ─────────────────────
+    const mcBase = runMC(params, 5000);
+    if (!mcBase) throw new Error("Décaissement MC baseline returned null");
+
+    // ── Runs 2–3: Meltdown scenarios (1,000 sims each) ───
+    const meltTarget: number = (params._report as any)?.meltTarget ?? 58523;
+    const meltIsBase = !!((params._report as any)?.meltIsBase);
+    let mcMelt1: Record<string, any> | null = null;
+    let mcMelt2: Record<string, any> | null = null;
+    if (!meltIsBase) {
+      const melt2Target = Math.round(meltTarget * 0.75);
+      const paramsMelt1 = { ...params, retIncome: meltTarget, retSpM: Math.round(meltTarget / 12) };
+      const paramsMelt2 = { ...params, retIncome: melt2Target, retSpM: Math.round(melt2Target / 12) };
+      mcMelt1 = runMC(paramsMelt1, 1000) as Record<string, any> | null;
+      mcMelt2 = runMC(paramsMelt2, 1000) as Record<string, any> | null;
+    }
+
+    // ── Runs 4–6: CPP/QPP timing (1,000 sims each) ───────
+    const alreadyClaiming = quiz.qppAlreadyClaiming === true || quiz.qppAlreadyClaiming === "true";
+    let mcC60: Record<string, any> | null = null;
+    let mcC65: Record<string, any> | null = null;
+    let mcC70: Record<string, any> | null = null;
+    if (!alreadyClaiming) {
+      const pC60 = translateDecumToMC({ ...quiz, qppPlannedAge: 60, qppAlreadyClaiming: false });
+      const pC65 = translateDecumToMC({ ...quiz, qppPlannedAge: 65, qppAlreadyClaiming: false });
+      const pC70 = translateDecumToMC({ ...quiz, qppPlannedAge: 70, qppAlreadyClaiming: false });
+      mcC60 = runMC(pC60, 1000) as Record<string, any> | null;
+      mcC65 = runMC(pC65, 1000) as Record<string, any> | null;
+      mcC70 = runMC(pC70, 1000) as Record<string, any> | null;
+    }
+
+    const extraRuns = { mcMelt1, mcMelt2, mcC60, mcC65, mcC70 };
+    console.log(`[webhook] Décaissement 6 MC runs completed in ${Date.now() - mcStart}ms`);
+
+    const D = extractReportDataDecum(mcBase as Record<string, any>, params, extraRuns);
+
+    // ── AI narration ──────────────────────────────────────
+    const aiStart = Date.now();
+    const prompt = buildAIPromptDecum(D, params, fr, quiz);
+    const ai: AINarrationDecum = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsDecum);
+    console.log(`[webhook] Décaissement AI in ${Date.now() - aiStart}ms`);
+
+    // ── Feedback token ────────────────────────────────────
+    const feedbackToken = randomUUID();
+    await createFeedbackRecord(feedbackToken, email, "intermediaire"); // closest existing type
+
+    // ── Simulator URL ─────────────────────────────────────
+    const simParts: string[] = [];
+    if (params.age) simParts.push(`age=${params.age}`);
+    if (params.retIncome) simParts.push(`income=${Math.round(params.retIncome as number)}`);
+    if (params.allocR) simParts.push(`allocR=${params.allocR}`);
+    if (params.prov) simParts.push(`province=${params.prov}`);
+    if (params.cOn) simParts.push(`couple=true`);
+    const simulatorUrl = `https://www.buildfi.ca/outils/decaissement-simulateur.html${simParts.length ? `?${simParts.join("&")}` : ""}`;
+
+    // ── Render report ─────────────────────────────────────
+    const reportHTML = renderReportDecum(D, mcBase as Record<string, any>, params, lang, ai, feedbackToken, extraRuns);
+
+    // ── Upload ────────────────────────────────────────────
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `rapport-decaissement-${timestamp}-${sessionId.slice(-8)}.html`;
+    const blob = await put(filename, reportHTML, {
+      access: "public",
+      contentType: "text/html; charset=utf-8",
+      addRandomSuffix: true,
+    });
+    console.log(`[webhook] Décaissement report uploaded: ${blob.url}`);
+
+    // ── Email ─────────────────────────────────────────────
+    await sendReportEmail({
+      to: email,
+      lang,
+      tier: "decaissement",
+      downloadUrl: blob.url,
+      grade: String(D.grade),
+      successPct: D.successPct as number,
+      feedbackToken,
+      allocationUrl: simulatorUrl,
+    });
+    console.log(`[webhook] Décaissement email sent to ${email}`);
+
+    if (metadata.userRefCode) {
+      await createReferralRecord(metadata.userRefCode, email).catch((err) =>
+        console.error("[webhook] Referral record creation error (non-blocking):", err)
+      );
+    }
+
+    return NextResponse.json({ received: true, email, reportUrl: blob.url });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Décaissement processing failed";
+    console.error("[webhook] Décaissement error:", err);
+    await sendAdminAlert(
+      "Décaissement pipeline failed",
+      `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
+    );
+    return NextResponse.json({ received: true, error: msg }, { status: 500 });
   }
 }
 

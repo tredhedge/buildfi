@@ -56,6 +56,49 @@ export const AI_SLOT_MAX_LENGTH_INTER: Partial<Record<AISlotKeyInter, number>> =
   ccpc_context: 600,
 };
 
+// ─── Décaissement tier slots ──────────────────────────────────────────
+export const AI_SLOTS_DECUM = [
+  "snapshot_intro",
+  "longevity_context",
+  "spending_flex_obs",
+  "income_mix_obs",
+  "meltdown_obs",
+  "cpp_timing_obs",
+  "sequence_obs",
+  "estate_obs",
+  "obs_1",
+  "obs_2",
+] as const;
+
+export type AISlotKeyDecum = (typeof AI_SLOTS_DECUM)[number];
+export type AINarrationDecum = Partial<Record<AISlotKeyDecum, string>>;
+
+export const AI_SLOT_MAX_LENGTH_DECUM: Partial<Record<AISlotKeyDecum, number>> = {
+  snapshot_intro: 600,
+  meltdown_obs: 600,
+  estate_obs: 400,
+};
+
+/**
+ * Sanitize raw AI output for Décaissement tier.
+ */
+export function sanitizeAISlotsDecum(raw: Record<string, any>): AINarrationDecum {
+  const result: AINarrationDecum = {};
+  for (const key of AI_SLOTS_DECUM) {
+    const val = raw[key];
+    if (val && typeof val === "string") {
+      const maxLen = AI_SLOT_MAX_LENGTH_DECUM[key] || 500;
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      if (!FORBIDDEN_TERMS.test(clean)) {
+        result[key] = clean;
+      } else {
+        console.warn(`[ai-constants] Compliance violation in slot "${key}" (decum), dropping`);
+      }
+    }
+  }
+  return result;
+}
+
 // AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements
 export const FORBIDDEN_TERMS =
   /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bdans ce contexte\b|\bpar ailleurs\b|\ben outre\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b|\bin this context\b|\bajouterait\b|\bconstituerait\b|\bpermetrait\b/i;

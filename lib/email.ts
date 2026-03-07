@@ -21,7 +21,7 @@ interface SendReportParams {
   grade: string;
   successPct: number;
   feedbackToken?: string;
-  allocationUrl?: string;
+  allocationUrl?: string; // also used as simulatorUrl for decaissement
 }
 
 export async function sendReportEmail(params: SendReportParams) {
@@ -29,8 +29,8 @@ export async function sendReportEmail(params: SendReportParams) {
   const fr = lang === "fr";
 
   const tierName = fr
-    ? { essentiel: "Essentiel", intermediaire: "Intermédiaire", expert: "Expert" }[tier] || tier
-    : { essentiel: "Essential", intermediaire: "Intermediate", expert: "Expert" }[tier] || tier;
+    ? { essentiel: "Essentiel", intermediaire: "Intermédiaire", expert: "Expert", decaissement: "Décaissement" }[tier] || tier
+    : { essentiel: "Essential", intermediaire: "Intermediate", expert: "Expert", decaissement: "Decumulation" }[tier] || tier;
 
   const subject = fr
     ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
@@ -105,9 +105,13 @@ function buildEmailHTML(params: {
     upsellBody: fr
       ? (tier === "intermediaire"
         ? "Le Simulateur Expert int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
+        : tier === "decaissement"
+        ? "Le Simulateur Expert permet d\u2019explorer des sc\u00e9narios illimit\u00e9s\u00a0: ajuster le revenu, la r\u00e9partition, la date de demande des rentes gouvernementales, et g\u00e9n\u00e9rer des exports AI personnalis\u00e9s."
         : "Le rapport Interm\u00e9diaire analyse votre immobilier, votre couple, vos dettes en d\u00e9tail et explore 5\u00a0approches possibles. Une analyse plus d\u00e9taill\u00e9e pourrait r\u00e9v\u00e9ler un portrait diff\u00e9rent.")
       : (tier === "intermediaire"
         ? "The Expert Simulator includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers."
+        : tier === "decaissement"
+        ? "The Expert Simulator lets you explore unlimited scenarios: adjust income, allocation, government benefit timing, and generate personalized AI exports."
         : "The Interm\u00e9diaire report analyzes your real estate, couple dynamics, and debts in detail, exploring 5\u00a0possible approaches. A more detailed analysis could reveal a different picture."),
     upsellCta: fr ? "En savoir plus\u00a0\u2192" : "Learn more\u00a0\u2192",
     disclaimer: fr
@@ -267,6 +271,35 @@ function buildEmailHTML(params: {
               </table>
             </td>
           </tr>
+
+          <!-- TOOLS BLOC — DÉCAISSEMENT -->
+          ${tier === "decaissement" && allocationUrl ? `<tr>
+            <td style="padding-bottom:28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
+                <tr>
+                  <td style="padding:18px 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:6px;">
+                          ${fr ? "Votre simulateur interactif inclus" : "Your included interactive simulator"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.6;padding-bottom:14px;">
+                          ${fr ? "Vos données sont pré-remplies. Testez différents scénarios de revenus, d\u2019allocation et de timing." : "Your data is pre-filled. Test different income, allocation, and timing scenarios."}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <a href="${allocationUrl}" style="display:inline-block;padding:10px 20px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${fr ? "Ouvrir le simulateur \u2192" : "Open simulator \u2192"}</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
 
           <!-- TOOLS BLOC — INTERMÉDIAIRE -->
           ${tier === "intermediaire" ? `<tr>

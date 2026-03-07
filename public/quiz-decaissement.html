@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>buildfi.ca — Bilan de décaissement</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A1A1A}
+:root{
+  --g:#C4944A;--gl:#D4A85A;--gn:#2A8C46;--gnl:#3AA856;--am:#B89830;
+  --rd:#CC4444;--bl:#4680C0;--pr:#7C60B8;--tx:#1A1A1A;--ts:#555;--tm:#888;
+  --bg:#FEFCF9;--bgc:#fff;--bd:#E8E0D4;--bdl:#F0ECE4;
+  --gbg:rgba(196,148,74,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
+  --rdbg:rgba(204,68,68,.06);--bga:rgba(124,96,184,.04);
+  --blbg:rgba(70,128,192,.06);
+}
+.qs{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bd);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
+.pbtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s}
+.pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,148,74,.25)}
+.pbtn-sec{display:block;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bgc);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:var(--ts);transition:border-color .2s;font-family:'DM Sans',sans-serif}
+.pbtn-sec:hover{border-color:var(--g)}
+.card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.card:hover{border-color:var(--gl);background:#FDF8F0}
+.card:focus{outline:2px solid var(--g);outline-offset:2px}
+.card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,148,74,.25);transform:scale(1.02)}
+.chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:13px;cursor:pointer;transition:all .2s;margin:3px}
+.chip:hover{border-color:var(--gl);background:#FDF8F0}
+.chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,148,74,.2)}
+.back-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:11px;font-weight:600;cursor:pointer;color:var(--ts);font-family:'DM Sans',sans-serif}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin:0 3px;animation:bounce .6s infinite alternate}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
+@keyframes microFade{0%{opacity:0;transform:scale(.97)}20%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.97)}}
+.micro-copy{font-size:14px;color:#666;font-style:italic;text-align:center;animation:microFade 1.2s ease-in-out forwards}
+.fld-block{margin-bottom:18px}
+.fld-label{font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px;letter-spacing:.2px}
+.fld-sub{font-size:11px;color:var(--tm);margin-top:3px;line-height:1.5}
+.inp{width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--bd);font-size:15px;font-family:'DM Sans',sans-serif;background:var(--bgc);color:var(--tx);transition:border-color .15s}
+.inp:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,148,74,.1)}
+.inp-sm{padding:9px 11px;font-size:13px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.section-head{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;padding:14px 0 8px;border-bottom:2px solid var(--gbg);margin:20px 0 14px}
+.phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
+.info-box{background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+@media print{body{background:#fff}.no-print{display:none!important}}
+@media(min-width:900px){
+  body{font-size:16px}
+  .qs h2{font-size:24px!important}
+  .pbtn{font-size:16px!important;padding:18px 20px!important}
+}
+@media(max-width:640px){
+  .rpt-grid2{grid-template-columns:1fr!important}
+  .rpt-flex{flex-direction:column!important}
+}
+@media(max-width:480px){
+  body{font-size:14px}
+  h1{font-size:22px!important}
+  h2{font-size:19px!important}
+}
+</style>
+<script src="/logo.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ============================================================
+// THIN CLIENT — No MC engine. All computation runs server-side.
+// Quiz answers sent to /api/checkout -> Stripe -> webhook -> MC -> report -> email
+// ============================================================
+
+var DEBT_RATES = {cc:0.199,student:0.055,car:0.065,loc:0.075};
+var COL_ADJ = {QC:1,ON:1.15,BC:1.35,AB:1.05,MB:0.92,SK:0.90,NS:0.95,NB:0.88,NL:0.93,PE:0.87,NT:1.25,YT:1.20,NU:1.40};
+
+// -- PostHog helper (fires only if consent given and posthog loaded) --
+function ph(event, props) {
+  try {
+    if (localStorage.getItem('buildfi_consent') === 'yes' && typeof posthog !== 'undefined') {
+      posthog.capture(event, Object.assign({tier:'decaissement'}, props||{}));
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// MOCK PREVIEW — plausible numbers for blurred paywall
+// Real numbers generated server-side after payment
+// ============================================================
+function generateMockPreviewDecum(q) {
+  var age = q.age || 65;
+  var sex = q.sex || "M";
+  var prov = q.prov || "QC";
+  var rrsp = q.rrspBal || 0;
+  var tfsa = q.tfsaBal || 0;
+  var nr = q.nrBal || 0;
+  var totalSavings = rrsp + tfsa + nr;
+  if (q.couple === "yes") {
+    totalSavings += (q.cRrspBal||0) + (q.cTfsaBal||0) + (q.cNrBal||0);
+  }
+
+  var isQC = prov === "QC";
+  var qppBase = isQC ? 1364 : 1306;
+  var qppM;
+  if (q.qppAlreadyClaiming && q.qppMonthly > 0) {
+    qppM = q.qppMonthly;
+  } else if (q.qppAlreadyClaiming) {
+    qppM = qppBase;
+  } else {
+    var qppFactor = q.qppPlannedAge === 60 ? 0.64 : q.qppPlannedAge === 70 ? 1.42 : 1.0;
+    qppM = q.qppMonthly > 0 ? q.qppMonthly : Math.round(qppBase * qppFactor);
+  }
+
+  var oasM;
+  if (q.oasAlreadyClaiming && q.oasMonthly > 0) {
+    oasM = q.oasMonthly;
+  } else if (q.oasAlreadyClaiming) {
+    oasM = 727;
+  } else {
+    oasM = q.oasMonthly > 0 ? q.oasMonthly : (q.oasPlannedAge === 70 ? 1036 : 727);
+  }
+
+  var penM = (q.hasPension && q.penMonthly > 0) ? q.penMonthly : 0;
+  if (q.couple === "yes" && q.cHasPension && q.cPenMonthly > 0) penM += q.cPenMonthly;
+
+  var govM = qppM + oasM + penM;
+  var retSpM = (q.retIncome > 0 ? q.retIncome : 48000) / 12;
+  var gapM = Math.max(0, retSpM - govM);
+
+  var wdRate = totalSavings > 0 ? (gapM * 12) / totalSavings : 99;
+  var roughSucc;
+  if (wdRate <= 0.03) roughSucc = 0.93;
+  else if (wdRate <= 0.04) roughSucc = 0.83;
+  else if (wdRate <= 0.05) roughSucc = 0.70;
+  else if (wdRate <= 0.06) roughSucc = 0.55;
+  else if (wdRate <= 0.08) roughSucc = 0.35;
+  else roughSucc = 0.15;
+
+  var succPct = Math.round(roughSucc * 100);
+  var grade;
+  if (succPct >= 92) grade = "A+";
+  else if (succPct >= 88) grade = "A";
+  else if (succPct >= 82) grade = "A\u2212";
+  else if (succPct >= 78) grade = "B+";
+  else if (succPct >= 72) grade = "B";
+  else if (succPct >= 67) grade = "B\u2212";
+  else if (succPct >= 60) grade = "C+";
+  else if (succPct >= 50) grade = "C";
+  else if (succPct >= 40) grade = "D";
+  else grade = "F";
+
+  var coverageYrs = gapM > 0 ? Math.round(totalSavings / (gapM * 12)) : 999;
+  var coverageAge = Math.min(105, age + coverageYrs);
+  var deathAge = sex === "F" ? 89 : 86; // CPM-2023 central estimate from age 65
+
+  return {
+    age:age, sex:sex, prov:prov, totalSavings:totalSavings,
+    rrsp:Math.round(rrsp), tfsa:Math.round(tfsa), nr:Math.round(nr),
+    govM:Math.round(govM), qppM:Math.round(qppM), oasM:Math.round(oasM), penM:Math.round(penM),
+    retSpM:Math.round(retSpM),
+    gapM:Math.round(gapM),
+    govCovPct:Math.min(100, Math.round(govM / Math.max(1, retSpM) * 100)),
+    successPct:succPct, succ:roughSucc, grade:grade,
+    wdRate:Math.round(wdRate * 1000) / 10,
+    coverageAge:coverageAge, deathAge:deathAge,
+    _isMockPreview:true
+  };
+}
+
+// ============================================================
+// PAYWALL RENDERER
+// ============================================================
+function renderPaywall(D, lang) {
+  var fr = lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  var gradeLabel = D.successPct >= 80
+    ? t("Votre situation est solide","Your situation looks solid")
+    : D.successPct >= 60
+    ? t("Votre situation a du potentiel","Your situation has potential")
+    : t("Votre situation m\u00e9rite attention","Your situation warrants attention");
+
+  var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:\'DM Sans\',sans-serif">';
+
+  // Logo + tier label
+  h += '<div style="text-align:center;margin-bottom:32px">';
+  h += '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:22px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan de d\u00e9caissement","Retirement Drawdown Report") + '</div>';
+  h += '</div>';
+
+  // Grade card
+  h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
+  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE DURABILIT\u00c9","YOUR SUSTAINABILITY GRADE") + '</div>';
+  h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de sc\u00e9narios r\u00e9ussis","of scenarios succeeded") + '</div>';
+  h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
+  h += '</div>';
+
+  // What's included
+  h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
+  h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre bilan complet inclut :","Your complete assessment includes:") + '</div>';
+  var items = fr ? [
+    "12 sections d\u2019analyse approfondie de votre situation de retrait",
+    "Comparaison des sc\u00e9narios de timing RRQ/RPC (60, 65 et 70 ans)",
+    "Analyse du meltdown REER vs FERR — c\u00f4te \u00e0 c\u00f4te",
+    "Combien de temps votre argent pourrait durer — distribution compl\u00e8te",
+    "Comment vos d\u00e9penses pourraient s\u2019adapter si les march\u00e9s baissent",
+    "Dans quel ordre retirer votre argent selon votre situation fiscale",
+    "Narration financi\u00e8re personnalis\u00e9e par IA",
+    "Simulateur interactif inclus \u2014 testez vos sc\u00e9narios"
+  ] : [
+    "12 sections of in-depth analysis of your retirement drawdown",
+    "CPP/QPP timing comparison (60, 65 and 70)",
+    "RRSP meltdown vs RRIF conversion \u2014 side by side",
+    "How long your money could last \u2014 full distribution",
+    "How your spending could adapt if markets decline",
+    "Which accounts to draw from first based on your tax situation",
+    "AI-powered personalized financial narration",
+    "Interactive simulator included \u2014 test your scenarios"
+  ];
+  items.forEach(function(item) {
+    h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">';
+    h += '<div style="color:#1a7a4c;font-size:14px;margin-top:2px;flex-shrink:0">\u2714</div>';
+    h += '<div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // Price + CTA
+  h += '<div style="text-align:center;margin-bottom:20px">';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Bilan personnalis\u00e9 \u2014 paiement unique","Personalized assessment \u2014 one-time payment") + '</div>';
+  h += '<div style="font-size:48px;font-weight:800;color:#1a2744;line-height:1;margin-bottom:4px">59 <span style="font-size:24px">$</span></div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD</div>';
+  h += '<div id="email-gate" style="margin-bottom:16px">';
+  h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px;font-family:\'DM Sans\',sans-serif">';
+  h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
+  h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#b8860b">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#b8860b">avis l\u00e9gal</a>.',
+         'I agree to the <a href="/conditions.html" target="_blank" style="color:#b8860b">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#b8860b">Legal notice</a>.');
+  h += '</label>';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif">';
+  h += t("Obtenir mon Bilan de d\u00e9caissement \u2192","Get my Retirement Drawdown Report \u2192");
+  h += '</button>';
+  h += '</div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique \u2014 livraison imm\u00e9diate par courriel","One-time payment \u2014 instant delivery by email") + '</div>';
+  h += '<div style="margin-top:20px;text-align:center"><button onclick="localStorage.removeItem(\'buildfi_quiz_decum\');location.reload();" style="padding:10px 24px;background:transparent;border:1px solid #ccc;border-radius:8px;color:#888;font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif">' + t("Recommencer le questionnaire","Restart questionnaire") + '</button></div>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
+// -- Stripe checkout --
+function startCheckout() {
+  if (!document.getElementById("terms-accept").checked) {
+    alert(STATE.lang === "fr" ? "Veuillez accepter les conditions pour continuer." : "Please accept the terms to continue.");
+    return;
+  }
+  var email = document.getElementById("buyer-email").value.trim();
+  if (!email || !email.includes("@")) {
+    alert(STATE.lang === "fr" ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+    return;
+  }
+  var btn = document.querySelector("#email-gate button");
+  btn.disabled = true;
+  btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
+  ph("quiz_completed");
+  fetch("/api/checkout", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(Object.assign({
+      quizAnswers: STATE.quiz,
+      lang: STATE.lang,
+      email: email,
+      tier: "decaissement",
+      termsAccepted: true
+    }, sessionStorage.getItem("bf_ref") ? {referralCode: sessionStorage.getItem("bf_ref")} : {}))
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
+      btn.disabled = false;
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon Bilan de d\u00e9caissement \u2192" : "Get my Retirement Drawdown Report \u2192";
+    }
+  })
+  .catch(function() {
+    alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
+    btn.disabled = false;
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon Bilan de d\u00e9caissement \u2192" : "Get my Retirement Drawdown Report \u2192";
+  });
+}
+
+// ============================================================
+// APPLICATION STATE
+// ============================================================
+var STATE = {
+  step: 0, lang: "fr",
+  quiz: {
+    // Screen 1 — Profil
+    age: 65, prov: "QC", sex: "M", couple: "no", cAge: 62, cSex: "F",
+    // Screen 2 — Phase
+    retirementStatus: "retired", retAge: 65,
+    // Screen 3 — Patrimoine
+    rrspIsFerf: false,
+    rrspBal: 0, tfsaBal: 0, nrBal: 0,
+    cRrspBal: 0, cTfsaBal: 0, cNrBal: 0,
+    // Screen 4 — Revenus gouvernementaux
+    qppAlreadyClaiming: false, qppMonthly: 0, qppPlannedAge: 65,
+    oasAlreadyClaiming: false, oasMonthly: 0, oasPlannedAge: 65,
+    // Screen 5 — Pension
+    hasPension: false, penMonthly: 0, penIndexed: "no",
+    cHasPension: false, cPenMonthly: 0, cPenIndexed: "no",
+    // Screen 6 — Dépenses
+    retIncome: 0, spendingFlex: "moderate",
+    // Screen 7 — REER/FERR strategy (conditional)
+    meltdownPref: null,
+    // Screen 8 — Successoral
+    estatePref: "balanced",
+    // Screen 9 — Risque
+    allocR: 0.60,
+    // Screen 10 — Rendement
+    eqRet: 5.0, inf: 2.1,
+    // Screen 11 — Contexte additionnel
+    homeValue: 0, homeMortgage: 0, totalDebt: 0
+  },
+  computed: false, reportData: null, showPaywall: false
+};
+
+// Province names
+var PROV_NAMES_FR = {"QC":"Qu\u00e9bec","ON":"Ontario","BC":"Colombie-Britannique","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nouvelle-\u00c9cosse","NB":"Nouveau-Brunswick","NL":"Terre-Neuve-et-Labrador","PE":"\u00cele-du-Prince-\u00c9douard","NT":"Territoires du Nord-Ouest","YT":"Yukon","NU":"Nunavut"};
+var PROV_NAMES_EN = {"QC":"Quebec","ON":"Ontario","BC":"British Columbia","AB":"Alberta","MB":"Manitoba","SK":"Saskatchewan","NS":"Nova Scotia","NB":"New Brunswick","NL":"Newfoundland and Labrador","PE":"Prince Edward Island","NT":"Northwest Territories","YT":"Yukon","NU":"Nunavut"};
+function provName(code) { return (STATE.lang === "fr" ? PROV_NAMES_FR : PROV_NAMES_EN)[code] || code; }
+
+// -- LocalStorage persistence --
+try {
+  var _saved = localStorage.getItem("buildfi_quiz_decum");
+  if (_saved) {
+    var _p = JSON.parse(_saved);
+    if (_p && _p.quiz && _p.step != null) {
+      STATE.step = _p.step;
+      STATE.lang = _p.lang || "fr";
+      STATE.quiz = Object.assign(STATE.quiz, _p.quiz);
+    }
+  }
+} catch(e) {}
+function saveState() {
+  try { localStorage.setItem("buildfi_quiz_decum", JSON.stringify({step:STATE.step, lang:STATE.lang, quiz:STATE.quiz})); } catch(e) {}
+}
+
+function f$(n) {
+  if (n == null || isNaN(n)) return "\u2014";
+  return (n < 0 ? "-" : "") + Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $";
+}
+
+// Screen 7 is conditional: only if rrspBal > 0 AND not already fully retired with FERR
+function isStep7Visible(q) {
+  return (q.rrspBal > 0) && (q.retirementStatus !== "retired" || !q.rrspIsFerf);
+}
+
+function totalSteps(q) {
+  return isStep7Visible(q) ? 12 : 11;
+}
+
+// Maps logical step (1-12) to display step (accounts for skipped step 7)
+function displayStep(logicalStep, q) {
+  if (!isStep7Visible(q) && logicalStep > 7) return logicalStep - 1;
+  return logicalStep;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+var MICRO_COPY = {
+  1: ["Bonne base. Entrons dans le d\u00e9tail.", "Good start. Let\u2019s get into the details."],
+  2: ["Votre patrimoine travaille pour vous \u2014 voyons comment.", "Your assets are working for you \u2014 let\u2019s see how."],
+  3: ["Vos revenus garantis changent tout.", "Your guaranteed income changes everything."],
+  4: ["Les pensions sont souvent le pilier le plus stable.", "Pensions are often the most stable pillar."],
+  5: ["Vos objectifs de retraite sont clairs. On continue.", "Your retirement goals are clear. Let\u2019s continue."],
+  6: ["Bonne r\u00e9flexion sur votre strat\u00e9gie.", "Good thinking on your strategy."],
+  7: ["Presque termin\u00e9.", "Almost done."],
+  8: ["Votre profil de risque est pris en compte.", "Your risk profile is factored in."],
+  9: ["Hypoth\u00e8ses enregistr\u00e9es.", "Assumptions recorded."],
+  10: ["Contexte complet. Derni\u00e8re \u00e9tape.", "Full context. Final step."],
+  11: ["Profil complet\u00a0! Votre bilan sera tr\u00e8s personnalis\u00e9.", "Complete profile! Your assessment will be highly personalized."]
+};
+
+function go(step) {
+  var prev = STATE.step;
+  var q = STATE.quiz;
+
+  // Skip step 7 if not applicable
+  if (step === 7 && !isStep7Visible(q)) {
+    STATE.step = step > prev ? 8 : 6;
+    saveState();
+    window.scrollTo({top:0, behavior:"smooth"});
+    render();
+    return;
+  }
+
+  // Micro-copy interstitial when advancing
+  if (typeof step === "number" && typeof prev === "number" && step > prev && prev > 0 && MICRO_COPY[prev]) {
+    var fr = STATE.lang === "fr";
+    var msg = MICRO_COPY[prev][fr ? 0 : 1];
+    document.getElementById("app").innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;padding:40px 24px"><p class="micro-copy">' + msg + '</p></div>';
+    setTimeout(function() {
+      STATE.step = step;
+      saveState();
+      window.scrollTo({top:0, behavior:"smooth"});
+      render();
+    }, 1200);
+    return;
+  }
+
+  STATE.step = step;
+  saveState();
+  window.scrollTo({top:0, behavior:"smooth"});
+  render();
+}
+
+function uq(key, val) { STATE.quiz[key] = val; saveState(); render(); }
+var _dTimer = {};
+function uqd(key, rawVal) {
+  var n = parseFloat(rawVal);
+  STATE.quiz[key] = isNaN(n) ? (rawVal === "" || rawVal == null ? 0 : STATE.quiz[key]) : n;
+  clearTimeout(_dTimer[key]);
+  _dTimer[key] = setTimeout(function() { saveState(); }, 600);
+}
+
+// ============================================================
+// RENDER ROUTER
+// ============================================================
+function render() {
+  var app = document.getElementById("app");
+  var s = STATE, q = s.quiz, fr = s.lang === "fr";
+  document.documentElement.lang = s.lang;
+  document.title = fr ? "buildfi.ca \u2014 Bilan de d\u00e9caissement" : "buildfi.ca \u2014 Retirement Drawdown Report";
+  saveState();
+
+  if (s.showPaywall && s.reportData) {
+    app.innerHTML = renderPaywall(s.reportData, s.lang);
+    return;
+  }
+  if (s.step === "loading") {
+    app.innerHTML = renderLoading(fr);
+    if (!s.computed) {
+      s.computed = true;
+      STATE.reportData = generateMockPreviewDecum(q);
+      STATE.showPaywall = true;
+      render();
+    }
+    return;
+  }
+  if (s.step === "confirm") {
+    app.innerHTML = renderConfirm(q, s.lang);
+    return;
+  }
+  app.innerHTML = renderQuiz(s.step, q, s.lang);
+}
+
+function renderLoading(fr) {
+  return '<div style="max-width:520px;margin:80px auto;text-align:center;padding:24px">'
+    + '<div style="width:56px;height:56px;border-radius:50%;background:var(--gbg);border:2px solid var(--g);display:flex;align-items:center;justify-content:center;margin:0 auto 24px"></div>'
+    + '<h2 style="font-size:20px;font-weight:700;color:var(--g);margin-bottom:10px">' + (fr ? "Analyse en cours\u2026" : "Analyzing\u2026") + '</h2>'
+    + '<p style="color:var(--ts);font-size:14px;line-height:1.6;margin-bottom:6px">' + (fr ? "5\u00a0000 sc\u00e9narios de retraite simul\u00e9s sur votre horizon de vie." : "Simulating 5,000 retirement scenarios across your life horizon.") + '</p>'
+    + '<p style="color:var(--tm);font-size:12px;margin-bottom:24px">' + (fr ? "Cela prend g\u00e9n\u00e9ralement 3 \u00e0 8 secondes." : "This usually takes 3 to 8 seconds.") + '</p>'
+    + '<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
+}
+
+// ============================================================
+// CONFIRM SCREEN
+// ============================================================
+function renderConfirm(q, lang) {
+  var fr = lang === "fr", t = function(f, e) { return fr ? f : e; };
+  var fmt = function(n) { if (!n || n === 0) return "\u2014"; return Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " $"; };
+  var isQC = q.prov === "QC";
+  var qppLabel = isQC ? "RRQ" : "RPC";
+  var oasLabel = (isQC && fr) ? "PSV" : "OAS";
+
+  var retStatusLabel = q.retirementStatus === "retired" ? t("D\u00e9j\u00e0 \u00e0 la retraite", "Already retired")
+    : q.retirementStatus === "within_1yr" ? t("Retraite dans < 1 an", "Retiring in < 1 year")
+    : t("Retraite dans 1\u20132 ans", "Retiring in 1\u20132 years");
+
+  var spendLabel = q.spendingFlex === "rigid" ? t("Rigide", "Rigid")
+    : q.spendingFlex === "flexible" ? t("Flexible", "Flexible")
+    : t("Mod\u00e9r\u00e9e", "Moderate");
+
+  var estateLabel = q.estatePref === "maximize" ? t("Maximiser l\u2019h\u00e9ritage", "Maximize inheritance")
+    : q.estatePref === "spenddown" ? t("Profiter pleinement", "Spend it down")
+    : t("\u00c9quilibr\u00e9", "Balanced");
+
+  var allocLabel = q.allocR <= 0.40 ? t("Prudent (40% actions)", "Conservative (40% equity)")
+    : q.allocR <= 0.60 ? t("\u00c9quilibr\u00e9 (60% actions)", "Balanced (60% equity)")
+    : t("Croissance (75% actions)", "Growth (75% equity)");
+
+  var meltLabel = q.meltdownPref === true ? t("Oui \u2014 d\u00e9buter les retraits", "Yes \u2014 start withdrawals")
+    : q.meltdownPref === false ? t("Non \u2014 laisser croitre", "No \u2014 let it grow")
+    : t("Analyser les deux sc\u00e9narios", "Analyze both scenarios");
+
+  function row(label, value, flag) {
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bdl)">'
+      + '<span style="font-size:13px;color:var(--tm)">' + label + '</span>'
+      + '<span style="font-size:13px;font-weight:600;color:' + (flag ? "#CC4444" : "var(--tx)") + '">' + value + '</span>'
+      + '</div>';
+  }
+  function scard(title, content, editStep) {
+    return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      + '<div style="font-size:14px;font-weight:700;color:var(--g)">' + title + '</div>'
+      + '<button onclick="go(' + JSON.stringify(editStep) + ')" style="font-size:12px;color:var(--g);background:transparent;border:1px solid var(--bd);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:\'DM Sans\',sans-serif">' + t("Modifier", "Edit") + '</button>'
+      + '</div><div>' + content + '</div></div>';
+  }
+
+  var warnings = [];
+  if (q.age < 50 || q.age > 90) warnings.push(t("\u00c2ge (" + q.age + ") hors de la plage normale (50\u201390). V\u00e9rifiez.", "Age (" + q.age + ") outside normal range (50\u201390). Please verify."));
+  if (q.retIncome <= 0) warnings.push(t("Revenu cible non saisi. Un montant est n\u00e9cessaire pour les projections.", "Target income not entered. An amount is needed for projections."));
+  if (q.retirementStatus !== "retired" && q.retAge <= q.age) warnings.push(t("\u00c2ge de retraite pr\u00e9vu (" + q.retAge + ") doit \u00eatre sup\u00e9rieur \u00e0 l\u2019\u00e2ge actuel (" + q.age + ").", "Planned retirement age (" + q.retAge + ") must be greater than current age (" + q.age + ")."));
+
+  var html = '<div style="max-width:580px;margin:0 auto;padding:32px 20px 80px">';
+  html += '<div style="text-align:center;margin-bottom:24px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">' + t("V\u00e9rification", "Review") + '</div>';
+  html += '<h2 style="font-size:22px;font-weight:800;margin-bottom:10px">' + t("Vos informations sont-elles exactes ?", "Is your information correct?") + '</h2>';
+  html += '<p style="font-size:14px;color:var(--ts);line-height:1.6;max-width:440px;margin:0 auto">' + t("Une erreur dans les donn\u00e9es produit un bilan inexact. Prenez 30 secondes pour v\u00e9rifier.", "Incorrect data produces an inaccurate assessment. Take 30 seconds to verify.") + '</p>';
+  html += '</div>';
+
+  if (warnings.length > 0) {
+    html += '<div style="background:#FFF8E6;border:1px solid #E6B800;border-radius:10px;padding:14px 16px;margin-bottom:18px">';
+    html += '<div style="font-size:13px;font-weight:700;color:#B8860B;margin-bottom:8px">' + t("Points \u00e0 v\u00e9rifier", "Points to verify") + '</div>';
+    warnings.forEach(function(w) { html += '<div style="font-size:12px;color:#7A5A00;padding:5px 0 5px 12px;border-left:3px solid #E6B800;margin-bottom:6px;line-height:1.5">' + w + '</div>'; });
+    html += '</div>';
+  }
+
+  html += scard(t("Profil de base", "Basic profile"),
+    row(t("\u00c2ge actuel", "Current age"), q.age + " " + t("ans", "yrs"))
+    + row(t("Province", "Province"), provName(q.prov))
+    + row(t("Sexe", "Sex"), q.sex === "F" ? t("Femme", "Female") : t("Homme", "Male"))
+    + row(t("Situation", "Situation"), q.couple === "yes" ? t("En couple (conjoint\u00b7e, " + q.cAge + " ans)", "With partner (" + q.cAge + " yrs)") : t("Seul\u00b7e", "Single"))
+    + row(t("Statut de retraite", "Retirement status"), retStatusLabel)
+  , 1);
+
+  html += scard(t("\u00c9pargne", "Savings"),
+    row("REER / FERR", fmt(q.rrspBal))
+    + row("C\u00c9LI", fmt(q.tfsaBal))
+    + row(t("Non enregistr\u00e9", "Non-reg"), q.nrBal > 0 ? fmt(q.nrBal) : "\u2014")
+    + (q.couple === "yes" ? row(t("\u00c9pargne conjoint\u00b7e", "Partner savings"), fmt((q.cRrspBal||0)+(q.cTfsaBal||0)+(q.cNrBal||0))) : "")
+  , 3);
+
+  html += scard(t("Revenus de retraite", "Retirement income"),
+    row(qppLabel, q.qppAlreadyClaiming ? fmt(q.qppMonthly) + t("/mois", "/mo") : t("Pr\u00e9vu \u00e0 ", "Planned at ") + q.qppPlannedAge + " " + t("ans", "yrs"))
+    + row(oasLabel, q.oasAlreadyClaiming ? fmt(q.oasMonthly) + t("/mois", "/mo") : t("Pr\u00e9vu \u00e0 ", "Planned at ") + q.oasPlannedAge + " " + t("ans", "yrs"))
+    + (q.hasPension ? row(t("Pension RD", "DB Pension"), fmt(q.penMonthly) + t("/mois", "/mo")) : "")
+  , 4);
+
+  html += scard(t("Objectif de d\u00e9penses", "Spending goal"),
+    row(t("Revenu annuel cible", "Annual target income"), fmt(q.retIncome), q.retIncome <= 0)
+    + row(t("Flexibilit\u00e9 des d\u00e9penses", "Spending flexibility"), spendLabel)
+    + (isStep7Visible(q) ? row(t("Strat\u00e9gie REER avant 71", "RRSP before 71"), meltLabel) : "")
+    + row(t("Objectif successoral", "Estate priority"), estateLabel)
+    + row(t("Profil de risque", "Risk profile"), allocLabel)
+  , 6);
+
+  if (q.homeValue > 0 || q.totalDebt > 0) {
+    var ctxContent = "";
+    if (q.homeValue > 0) {
+      ctxContent += row(t("Valeur de la propri\u00e9t\u00e9", "Property value"), fmt(q.homeValue));
+      if (q.homeMortgage > 0) ctxContent += row(t("Hypoth\u00e8que restante", "Remaining mortgage"), fmt(q.homeMortgage));
+    }
+    if (q.totalDebt > 0) ctxContent += row(t("Dettes restantes", "Remaining debts"), fmt(q.totalDebt));
+    html += scard(t("Contexte additionnel", "Additional context"), ctxContent, 11);
+  }
+
+  html += '<div style="margin-top:24px">';
+  html += '<button class="pbtn" onclick="go(\'loading\')" style="font-size:16px">' + t("Tout est exact \u2014 g\u00e9n\u00e9rer mon bilan \u2192", "All correct \u2014 generate my assessment \u2192") + '</button>';
+  html += '<button onclick="go(11)" class="pbtn-sec">' + t("Retour aux questions", "Back to questions") + '</button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+// ============================================================
+// QUIZ SCREENS
+// ============================================================
+function renderQuiz(step, q, lang) {
+  var fr = lang === "fr", t = function(f, e) { return fr ? f : e; };
+  var isQC = q.prov === "QC";
+  var qppLabel = isQC ? (fr ? "RRQ" : "QPP") : (fr ? "RPC" : "CPP");
+  var oasLabel = (isQC && fr) ? "PSV" : "OAS";
+  var ts = totalSteps(q);
+
+  // ── SCREEN 0: ROUTING ─────────────────────────────────────
+  if (step === 0) {
+    var routeUnsure = STATE._routeUnsure;
+    return '<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:560px;margin:0 auto;padding:40px 24px">'
+      // Language toggle
+      + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
+      + '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:5px 14px;border-radius:6px;border:' + (fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (fr?"var(--gbg)":"var(--bgc)") + ';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">FR</button>'
+      + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:5px 14px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
+      // Logo
+      + '<div style="text-align:center;margin-bottom:32px">'
+      + '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:24px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>'
+      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan de d\u00e9caissement", "Retirement Drawdown Report") + '</div>'
+      + '</div>'
+      // Headline
+      + '<h1 style="font-size:24px;font-weight:800;line-height:1.3;text-align:center;margin-bottom:24px">'
+      + t("O\u00f9 en \u00eates-vous dans votre parcours\u00a0?", "Where are you in your financial journey?")
+      + '</h1>'
+      // Routing cards
+      + (routeUnsure
+          ? '<div style="background:var(--gbg);border:1px solid rgba(196,148,74,.25);border-radius:14px;padding:20px 22px;margin-bottom:24px">'
+            + '<p style="font-size:14px;color:var(--ts);line-height:1.7;margin-bottom:0">'
+            + t("Le Bilan de d\u00e9caissement s\u2019adresse aux personnes qui ont cess\u00e9 d\u2019\u00e9pargner activement et qui commencent \u00e0 vivre de leur patrimoine. Si vous \u00eates encore en phase d\u2019accumulation \u2014 revenus de travail, cotisations REER \u2014 le Rapport Interm\u00e9diaire est plus adapt\u00e9.",
+               "The Retirement Drawdown Report is for people who have stopped actively saving and are beginning to live off their assets. If you\u2019re still accumulating \u2014 employment income, RRSP contributions \u2014 the Interm\u00e9diaire Report is a better fit.")
+            + '</p></div>'
+            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:14px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Continuer avec le Bilan de d\u00e9caissement", "Continue with the Retirement Drawdown Report") + '</div></div>'
+            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:14px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire \u2192", "To the Interm\u00e9diaire Report \u2192") + '</div></div>'
+          : '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:15px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("R\u00e9treite d\u00e9j\u00e0 en cours ou imminente", "Retirement already started or imminent") + '</div></div>'
+            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:15px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire", "To the Interm\u00e9diaire Report") + ' \u2192</div></div>'
+            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'unsure\'});STATE._routeUnsure=true;render()"><div style="font-weight:700;font-size:15px">' + t("Je ne suis pas s\u00fbr\u00b7e", "I\u2019m not sure") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Voir une explication", "See an explanation") + '</div></div>'
+        )
+      + '</div>';
+  }
+
+  // Helper: progress bar (step 1-12)
+  function progressBar(sn) {
+    var displaySn = displayStep(sn, q);
+    var pct = Math.round(displaySn / ts * 100);
+    return '<div style="margin-bottom:28px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px">'
+      + '<span style="font-weight:600">' + t("\u00c9tape", "Step") + ' ' + displaySn + ' / ' + ts + '</span>'
+      + '<span style="font-weight:700;color:var(--g)">' + pct + '%</span></div>'
+      + '<div role="progressbar" aria-valuenow="' + displaySn + '" aria-valuemin="0" aria-valuemax="' + ts + '" aria-label="' + t("Progression", "Progress") + '" style="height:4px;background:var(--bdl);border-radius:2px">'
+      + '<div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:' + pct + '%;transition:width .3s"></div>'
+      + '</div></div>';
+  }
+  function wrap(inner, sn) {
+    return '<div style="max-width:560px;margin:0 auto;padding:40px 20px 60px">'
+      + progressBar(sn)
+      + '<div class="qs" aria-live="polite">' + inner + '</div>'
+      + '</div>';
+  }
+  function backBtn(target) {
+    return '<button class="pbtn-sec" onclick="go(' + JSON.stringify(target) + ')" style="margin-top:8px">' + t("Retour", "Back") + '</button>';
+  }
+
+  // ── SCREEN 1: PROFIL ──────────────────────────────────────
+  if (step === 1) {
+    var provOpts = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"]
+      .map(function(p) { return '<option value="' + p + '"' + (q.prov === p ? " selected" : "") + '>' + provName(p) + '</option>'; }).join("");
+    var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}]
+      .map(function(o) { return '<div tabindex="0" class="card' + (q.sex===o.v?" sel":"") + '" onclick="uq(\'sex\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600;font-size:14px">' + o.l + '</div></div>'; }).join("");
+    var coupleCards = [{v:"no",l:t("Seul\u00b7e","Single"),d:t("Situation individuelle","Individual situation")},{v:"yes",l:t("En couple","With a partner"),d:t("Deux personnes","Two people")}]
+      .map(function(o) { return '<div tabindex="0" class="card' + (q.couple===o.v?" sel":"") + '" onclick="uq(\'couple\',\'' + o.v + '\')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600;font-size:14px">' + o.l + '</div><div style="font-size:11px;color:var(--ts);margin-top:3px">' + o.d + '</div></div>'; }).join("");
+    var partnerFields = q.couple === "yes"
+      ? '<div style="background:var(--blbg);border:1px solid rgba(70,128,192,.15);border-radius:10px;padding:16px;margin-top:4px">'
+        + '<div style="font-size:11px;font-weight:700;color:var(--bl);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">' + t("Conjoint\u00b7e", "Partner") + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        + '<div><label class="fld-label">' + t("\u00c2ge du/de la conjoint\u00b7e", "Partner age") + '</label><input class="inp" type="number" min="40" max="95" value="' + (q.cAge||62) + '" oninput="uqd(\'cAge\',this.value)" /></div>'
+        + '<div><label class="fld-label">' + t("Sexe du/de la conjoint\u00b7e", "Partner sex") + '</label>'
+        + '<div style="display:flex;gap:8px">'
+        + [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card'+(q.cSex===o.v?" sel":"")+'" onclick="uq(\'cSex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("")
+        + '</div></div></div></div>'
+      : '';
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 1 \u2014 Votre profil", "Phase 1 \u2014 Your profile") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Informations de base", "Basic information") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">' + t("Ces donn\u00e9es d\u00e9terminent les tables de mortalit\u00e9, les taux d\u2019imposition et les param\u00e8tres de pension gouvernementale.", "These determine mortality tables, tax rates, and government pension parameters.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge actuel", "Current age") + '</label><input class="inp" type="number" min="50" max="90" value="' + q.age + '" oninput="uqd(\'age\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Province de r\u00e9sidence", "Province of residence") + '</label><select class="inp" onchange="uq(\'prov\',this.value)">' + provOpts + '</select></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Sexe biologique", "Biological sex") + '</label><div style="display:flex;gap:8px">' + sexCards + '</div>'
+      + '<div class="fld-sub">' + t("Utilis\u00e9 pour calibrer les projections de long\u00e9vit\u00e9 selon les tables de mortalit\u00e9 canadiennes CPM-2023.", "Used to calibrate longevity projections using CPM-2023 Canadian mortality tables.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Situation conjugale", "Relationship status") + '</label><div style="display:flex;gap:8px">' + coupleCards + '</div></div>'
+      + partnerFields
+      + '<button class="pbtn" onclick="ph(\'quiz_step_1_completed\');go(2)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(0)
+    , 1);
+  }
+
+  // ── SCREEN 2: PHASE DE RETRAITE ───────────────────────────
+  if (step === 2) {
+    var retStatus = [{v:"retired",l:t("Je suis d\u00e9j\u00e0 \u00e0 la retraite","I\u2019m already retired"),d:t("Revenus de retraite actifs","Retirement income active")},
+      {v:"within_1yr",l:t("Je prends ma retraite dans moins d\u2019un an","I\u2019m retiring in less than a year"),d:""},
+      {v:"within_2yr",l:t("Je prends ma retraite dans 1 \u00e0 2 ans","I\u2019m retiring in 1 to 2 years"),d:""}]
+      .map(function(o){return '<div tabindex="0" class="card'+(q.retirementStatus===o.v?" sel":"")+'" onclick="uq(\'retirementStatus\',\''+o.v+'\')"><div style="font-weight:700;font-size:13px">'+o.l+'</div>'+(o.d?'<div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div>':'')+'</div>';}).join("");
+    var retAgeField = q.retirementStatus !== "retired"
+      ? '<div class="fld-block" style="margin-top:16px"><label class="fld-label">' + t("\u00c2ge pr\u00e9vu de retraite", "Planned retirement age") + '</label>'
+        + '<div style="display:flex;align-items:center;gap:14px"><input type="range" min="50" max="75" value="' + (q.retAge||q.age+1) + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" />'
+        + '<span style="font-family:monospace;font-size:22px;font-weight:800;color:var(--g);min-width:42px;text-align:center">' + (q.retAge||q.age+1) + '</span></div></div>'
+      : '';
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 1 \u2014 Phase de retraite", "Phase 1 \u2014 Retirement phase") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("O\u00f9 en \u00eates-vous\u00a0?", "Where do you stand?") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">' + t("Cela d\u00e9termine si votre patrimoine est en croissance ou en d\u00e9caissement actif.", "This determines whether your assets are still growing or in active drawdown.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Statut de retraite", "Retirement status") + '</label>' + retStatus + '</div>'
+      + retAgeField
+      + '<button class="pbtn" onclick="go(3)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(1)
+    , 2);
+  }
+
+  // ── SCREEN 3: PATRIMOINE ──────────────────────────────────
+  if (step === 3) {
+    var rrspIsFerf = q.rrspIsFerf;
+    var rrspLabel = rrspIsFerf ? (fr ? "FERR \u2014 Fonds enregistr\u00e9 de revenu de retraite" : "RRIF \u2014 Registered Retirement Income Fund") : (fr ? "REER \u2014 R\u00e9gime enregistr\u00e9 d\u2019\u00e9pargne-retraite" : "RRSP \u2014 Registered Retirement Savings Plan");
+    var partnerSav = q.couple === "yes"
+      ? '<div style="background:var(--blbg);border:1px solid rgba(70,128,192,.15);border-radius:10px;padding:16px;margin-top:4px">'
+        + '<div style="font-size:11px;font-weight:700;color:var(--bl);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">' + t("Conjoint\u00b7e", "Partner") + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        + '<div><label class="fld-label">REER / FERR ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cRrspBal||0) + '" oninput="uqd(\'cRrspBal\',this.value)" /></div>'
+        + '<div><label class="fld-label">C\u00c9LI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cTfsaBal||0) + '" oninput="uqd(\'cTfsaBal\',this.value)" /></div>'
+        + '<div><label class="fld-label">' + t("Non enregistr\u00e9", "Non-reg") + ' ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cNrBal||0) + '" oninput="uqd(\'cNrBal\',this.value)" /></div>'
+        + '</div></div>'
+      : '';
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 2 \u2014 Votre patrimoine", "Phase 2 \u2014 Your assets") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Comptes et \u00e9pargne actuels", "Current accounts and savings") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("La r\u00e9partition entre les comptes influence directement l\u2019ordre de retrait et l\u2019imposition.", "The split between accounts directly influences withdrawal order and taxation.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Type de compte enregistr\u00e9", "Registered account type") + '</label>'
+      + '<div style="display:flex;gap:8px">'
+      + [{v:false,l:t("REER","RRSP"),d:t("Pas encore converti","Not yet converted")},{v:true,l:t("FERR","RRIF"),d:t("D\u00e9j\u00e0 converti ou en cours","Already converted")}].map(function(o){return '<div tabindex="0" class="card'+(q.rrspIsFerf===o.v?" sel":"")+'" onclick="uq(\'rrspIsFerf\','+o.v+')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:14px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("")
+      + '</div>'
+      + '<div class="fld-sub">' + t("Les deux types correspondent au m\u00eame calcul. Le moteur g\u00e8re les retraits minimums FERR automatiquement d\u00e8s 71 ans.", "Both map to the same calculation. Minimum RRIF withdrawals are handled automatically at age 71.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + rrspLabel + ' ($)</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.rrspBal||0) + '" oninput="uqd(\'rrspBal\',this.value)" />'
+      + '<div class="fld-sub">' + t("Valeur approximative \u2014 pas besoin d\u2019\u00eatre exact au dollar pr\u00e8s.", "Approximate value \u2014 no need to be exact to the dollar.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("C\u00c9LI \u2014 Compte d\u2019\u00e9pargne libre d\u2019imp\u00f4t ($)", "TFSA \u2014 Tax-Free Savings Account ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.tfsaBal||0) + '" oninput="uqd(\'tfsaBal\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Placements imposables hors REER/C\u00c9LI ($)", "Taxable investments outside RRSP/TFSA ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.nrBal||0) + '" oninput="uqd(\'nrBal\',this.value)" />'
+      + '<div class="fld-sub">' + t("Optionnel. Laissez \u00e0 0 si vous n\u2019en avez pas.", "Optional. Leave at 0 if none.") + '</div></div>'
+      + partnerSav
+      + '<button class="pbtn" onclick="go(4)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(2)
+    , 3);
+  }
+
+  // ── SCREEN 4: REVENUS GOUVERNEMENTAUX ─────────────────────
+  if (step === 4) {
+    var qppAlready = q.qppAlreadyClaiming;
+    var oasAlready = q.oasAlreadyClaiming;
+    var qppTimingCards = [{v:60,l:"60 " + t("ans","yrs"),d:t("R\u00e9duction de 36%","36% reduction")},{v:65,l:"65 " + t("ans","yrs"),d:t("Montant standard","Standard amount")},{v:70,l:"70 " + t("ans","yrs"),d:t("Bonification +42%","Bonus +42%")}]
+      .map(function(o){return '<div tabindex="0" class="card'+(q.qppPlannedAge===o.v?" sel":"")+'" onclick="uq(\'qppPlannedAge\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("");
+    var oasTimingCards = [{v:65,l:"65 " + t("ans","yrs"),d:t("Montant standard","Standard amount")},{v:70,l:"70 " + t("ans","yrs"),d:t("Bonification +36%","Bonus +36%")}]
+      .map(function(o){return '<div tabindex="0" class="card'+(q.oasPlannedAge===o.v?" sel":"")+'" onclick="uq(\'oasPlannedAge\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 2 \u2014 Revenus gouvernementaux", "Phase 2 \u2014 Government income") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Pensions gouvernementales", "Government pensions") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Ces revenus garantis r\u00e9duisent directement le montant \u00e0 retirer de votre portefeuille.", "These guaranteed income sources directly reduce how much you need to withdraw from your portfolio.") + '</p>'
+      // QPP/CPP
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      + '<div class="section-head">' + qppLabel + ' / ' + (isQC ? "R\u00e9gime de rentes du Qu\u00e9bec" : "R\u00e9gime de pensions du Canada") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Recevez-vous d\u00e9j\u00e0 la " + qppLabel + " ?", "Are you already receiving " + qppLabel + "?") + '</label>'
+      + '<div style="display:flex;gap:8px">'
+      + [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.qppAlreadyClaiming===o.v?" sel":"")+'" onclick="uq(\'qppAlreadyClaiming\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("")
+      + '</div></div>'
+      + (qppAlready
+          ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel re\u00e7u actuellement ($)", "Amount currently received per month ($)") + '</label><input class="inp" type="number" min="0" step="10" value="' + (q.qppMonthly||0) + '" oninput="uqd(\'qppMonthly\',this.value)" /></div>'
+          : '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge pr\u00e9voyez-vous la demander\u00a0?", "At what age do you plan to claim it?") + '</label><div style="display:flex;gap:8px">' + qppTimingCards + '</div></div>'
+            + '<div class="fld-block"><label class="fld-label">' + t("Prestation mensuelle estim\u00e9e ($)", "Estimated monthly benefit ($)") + '</label><input class="inp" type="number" min="0" step="10" value="' + (q.qppMonthly||0) + '" oninput="uqd(\'qppMonthly\',this.value)" /><div class="fld-sub">' + t("Optionnel. Consultez votre relev\u00e9 Mon dossier Service Canada. Laisser \u00e0 0 = estimation automatique.", "Optional. Check your My Service Canada Account statement. Leave at 0 = automatic estimate.") + '</div></div>'
+        )
+      + '</div>'
+      // OAS/PSV
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      + '<div class="section-head">' + oasLabel + ' / ' + t("Pension de la S\u00e9curit\u00e9 de la vieillesse", "Old Age Security") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Recevez-vous d\u00e9j\u00e0 la " + oasLabel + " ?", "Are you already receiving " + oasLabel + "?") + '</label>'
+      + '<div style="display:flex;gap:8px">'
+      + [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.oasAlreadyClaiming===o.v?" sel":"")+'" onclick="uq(\'oasAlreadyClaiming\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("")
+      + '</div></div>'
+      + (oasAlready
+          ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel re\u00e7u actuellement ($)", "Amount currently received per month ($)") + '</label><input class="inp" type="number" min="0" step="10" value="' + (q.oasMonthly||0) + '" oninput="uqd(\'oasMonthly\',this.value)" /></div>'
+          : '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge pr\u00e9voyez-vous la demander\u00a0?", "At what age do you plan to claim it?") + '</label><div style="display:flex;gap:8px">' + oasTimingCards + '</div><div class="fld-sub">' + t("727 $/mois \u00e0 65 ans | 1\u00a0036 $/mois \u00e0 70 ans (2026)", "$727/mo at 65 | $1,036/mo at 70 (2026)") + '</div></div>'
+        )
+      + '</div>'
+      + '<button class="pbtn" onclick="go(5)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(3)
+    , 4);
+  }
+
+  // ── SCREEN 5: PENSION D'EMPLOYEUR ─────────────────────────
+  if (step === 5) {
+    var penFields = q.hasPension
+      ? '<div style="background:var(--gnbg);border:1px solid rgba(42,140,70,.15);border-radius:10px;padding:16px;margin-top:4px">'
+        + '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)", "Monthly amount ($)") + '</label>'
+        + '<input class="inp" type="number" min="0" step="50" value="' + (q.penMonthly||0) + '" oninput="uqd(\'penMonthly\',this.value)" />'
+        + '<div class="fld-sub">' + t("Si d\u00e9j\u00e0 en cours: montant re\u00e7u. Si pas encore: montant pr\u00e9vu.", "If already active: amount received. If not yet: expected amount.") + '</div></div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Cette pension est-elle index\u00e9e \u00e0 l\u2019inflation\u00a0?", "Is this pension indexed to inflation?") + '</label>'
+        + '<div style="display:flex;gap:8px">'
+        + [{v:"yes",l:t("Oui","Yes")},{v:"partial",l:t("Partiellement","Partially")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.penIndexed===o.v?" sel":"")+'" onclick="uq(\'penIndexed\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("")
+        + '</div></div></div>'
+      : '';
+    var cPenFields = (q.couple === "yes" && q.cHasPension)
+      ? '<div style="background:var(--blbg);border:1px solid rgba(70,128,192,.15);border-radius:10px;padding:16px;margin-top:4px">'
+        + '<div style="font-size:11px;font-weight:700;color:var(--bl);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">' + t("Pension conjoint\u00b7e", "Partner pension") + '</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel conjoint\u00b7e ($)", "Partner monthly amount ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="50" value="' + (q.cPenMonthly||0) + '" oninput="uqd(\'cPenMonthly\',this.value)" /></div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Index\u00e9e \u00e0 l\u2019inflation\u00a0?", "Indexed to inflation?") + '</label>'
+        + '<div style="display:flex;gap:8px">'
+        + [{v:"yes",l:t("Oui","Yes")},{v:"partial",l:t("Partiellement","Partially")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.cPenIndexed===o.v?" sel":"")+'" onclick="uq(\'cPenIndexed\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("")
+        + '</div></div></div>'
+      : '';
+    var cPenToggle = q.couple === "yes"
+      ? '<div class="fld-block" style="margin-top:16px"><label class="fld-label">' + t("Votre conjoint\u00b7e a-t-il/elle une pension \u00e0 prestations d\u00e9termin\u00e9es\u00a0?", "Does your partner have a defined benefit pension?") + '</label>'
+        + '<div style="display:flex;gap:8px">'
+        + [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.cHasPension===o.v?" sel":"")+'" onclick="uq(\'cHasPension\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("")
+        + '</div></div>' + cPenFields
+      : '';
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 2 \u2014 Pension d\u2019employeur", "Phase 2 \u2014 Employer pension") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("R\u00e9gime de retraite \u00e0 prestations d\u00e9termin\u00e9es", "Defined benefit pension plan") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Un r\u00e9gime \u00e0 prestations d\u00e9termin\u00e9es garantit un montant mensuel fixe \u2014 souvent d\u2019un employeur public ou d\u2019une grande entreprise.", "A defined benefit plan guarantees a fixed monthly amount \u2014 often from a public employer or large company.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Avez-vous un r\u00e9gime de retraite \u00e0 prestations d\u00e9termin\u00e9es\u00a0?", "Do you have a defined benefit pension plan?") + '</label>'
+      + '<div style="display:flex;gap:8px">'
+      + [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.hasPension===o.v?" sel":"")+'" onclick="uq(\'hasPension\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("")
+      + '</div></div>'
+      + penFields
+      + cPenToggle
+      + '<button class="pbtn" onclick="go(6)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(4)
+    , 5);
+  }
+
+  // ── SCREEN 6: DÉPENSES ────────────────────────────────────
+  if (step === 6) {
+    var flexCards = [
+      {v:"rigid",l:t("Rigide","Rigid"),d:t("J\u2019ai besoin de ce montant chaque ann\u00e9e sans exception","I need this amount every year without exception")},
+      {v:"moderate",l:t("Mod\u00e9r\u00e9e","Moderate"),d:t("Je peux r\u00e9duire jusqu\u2019\u00e0 15\u00a0% temporairement si n\u00e9cessaire","I can reduce up to 15% temporarily if needed")},
+      {v:"flexible",l:t("Flexible","Flexible"),d:t("Je peux ajuster significativement selon les conditions du march\u00e9","I can adjust significantly based on market conditions")}
+    ].map(function(o){return '<div tabindex="0" class="card'+(q.spendingFlex===o.v?" sel":"")+'" onclick="uq(\'spendingFlex\',\''+o.v+'\')"><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Vos objectifs", "Phase 3 \u2014 Your goals") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Objectif de d\u00e9penses \u00e0 la retraite", "Retirement spending goal") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Le montant et la flexibilit\u00e9 de vos d\u00e9penses sont les deux variables qui ont le plus d\u2019impact sur la dur\u00e9e de votre patrimoine.", "The amount and flexibility of your spending are the two variables with the greatest impact on how long your assets last.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Revenu annuel cible \u00e0 la retraite ($)", "Annual target retirement income ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.retIncome||0) + '" oninput="uqd(\'retIncome\',this.value)" />'
+      + '<div class="fld-sub">' + t("Incluez toutes vos d\u00e9penses courantes \u2014 logement, alimentation, loisirs, voyages, sant\u00e9. Avant imp\u00f4ts.", "Include all your current expenses \u2014 housing, food, leisure, travel, health. Before taxes.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Flexibilit\u00e9 des d\u00e9penses si les march\u00e9s baissent", "Spending flexibility if markets decline") + '</label>'
+      + flexCards
+      + '<div class="fld-sub">' + t("Ce param\u00e8tre d\u00e9termine comment vos d\u00e9penses pourraient s\u2019adapter dans les milliers de sc\u00e9narios simul\u00e9s.", "This parameter determines how your spending could adapt across the thousands of simulated scenarios.") + '</div></div>'
+      + '<button class="pbtn" onclick="go(7)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(5)
+    , 6);
+  }
+
+  // ── SCREEN 7: STRATÉGIE REER/FERR (CONDITIONAL) ───────────
+  if (step === 7) {
+    var meltCards = [
+      {v:true,l:t("Oui \u2014 commencer les retraits d\u00e8s ma retraite","Yes \u2014 start withdrawals at retirement"),d:t("R\u00e9duit les retraits obligatoires \u00e0 71 ans","Reduces mandatory withdrawals at age 71")},
+      {v:false,l:t("Non \u2014 laisser croitre jusqu\u2019\u00e0 la conversion obligatoire","No \u2014 let it grow until mandatory conversion"),d:t("Maximise la croissance \u00e0 l\u2019abri de l\u2019imp\u00f4t","Maximizes tax-sheltered growth")},
+      {v:null,l:t("Je ne sais pas \u2014 analyser les deux sc\u00e9narios","I don\u2019t know \u2014 analyze both scenarios"),d:t("Le rapport pr\u00e9sentera les deux c\u00f4te \u00e0 c\u00f4te","The report will show both side by side")}
+    ].map(function(o){return '<div tabindex="0" class="card'+(q.meltdownPref===o.v?" sel":"")+'" onclick="uq(\'meltdownPref\','+(o.v===null?"null":o.v)+')"><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Strat\u00e9gie REER", "Phase 3 \u2014 RRSP strategy") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Retrait anticip\u00e9 de votre REER avant 71 ans", "Early RRSP withdrawals before age 71") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:8px;line-height:1.6">' + t("Apr\u00e8s 71 ans, votre REER doit \u00eatre converti en FERR et des retraits minimums s\u2019imposent. Les retirer d\u00e8s maintenant peut r\u00e9duire l\u2019imposition future.", "After age 71, your RRSP must be converted to a RRIF with mandatory minimum withdrawals. Withdrawing earlier can reduce future taxation.") + '</p>'
+      + '<div class="info-box">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:4px">' + t("Le rapport pr\u00e9sente toujours les deux sc\u00e9narios c\u00f4te \u00e0 c\u00f4te.", "The report always shows both scenarios side by side.") + '</div>'
+      + '<div style="font-size:12px;color:var(--ts)">' + t("Cette pr\u00e9f\u00e9rence d\u00e9termine seulement lequel est affich\u00e9 comme sc\u00e9nario de base.", "This preference only determines which one is shown as the base scenario.") + '</div>'
+      + '</div>'
+      + '<div class="fld-block">' + meltCards + '</div>'
+      + '<button class="pbtn" onclick="go(8)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(6)
+    , 7);
+  }
+
+  // ── SCREEN 8: OBJECTIF SUCCESSORAL ───────────────────────
+  if (step === 8) {
+    var estateCards = [
+      {v:"maximize",l:t("Maximiser l\u2019h\u00e9ritage","Maximize inheritance"),d:t("Laisser le plus possible \u00e0 mes proches","Leave as much as possible to loved ones")},
+      {v:"balanced",l:t("\u00c9quilibr\u00e9","Balanced"),d:t("Laisser quelque chose sans me priver","Leave something without depriving myself")},
+      {v:"spenddown",l:t("Profiter pleinement","Spend it down"),d:t("Je pr\u00e9vois d\u00e9penser mon patrimoine de mon vivant","I plan to spend my assets during my lifetime")}
+    ].map(function(o){return '<div tabindex="0" class="card'+(q.estatePref===o.v?" sel":"")+'" onclick="uq(\'estatePref\',\''+o.v+'\')"><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+    var prevStep = isStep7Visible(q) ? 7 : 6;
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Objectifs", "Phase 3 \u2014 Goals") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Quelle est votre priorit\u00e9 pour votre patrimoine\u00a0?", "What is your priority for your assets?") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Cette pr\u00e9f\u00e9rence influence la strat\u00e9gie d\u2019investissement propos\u00e9e et l\u2019interpr\u00e9tation des r\u00e9sultats.", "This preference influences the investment strategy and how results are interpreted.") + '</p>'
+      + '<div class="fld-block">' + estateCards + '</div>'
+      + '<button class="pbtn" onclick="go(9)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(prevStep)
+    , 8);
+  }
+
+  // ── SCREEN 9: TOLÉRANCE AU RISQUE ────────────────────────
+  if (step === 9) {
+    var riskCards = [
+      {v:0.40,l:t("Prudent","Conservative"),d:t("40% actions / 60% obligations \u2014 minimiser les fluctuations","40% equity / 60% bonds \u2014 minimize fluctuations")},
+      {v:0.60,l:t("\u00c9quilibr\u00e9","Balanced"),d:t("60% actions / 40% obligations \u2014 volatilit\u00e9 mod\u00e9r\u00e9e","60% equity / 40% bonds \u2014 moderate volatility")},
+      {v:0.75,l:t("Croissance","Growth"),d:t("75% actions / 25% obligations \u2014 potentiel plus \u00e9lev\u00e9","75% equity / 25% bonds \u2014 higher potential")}
+    ].map(function(o){return '<div tabindex="0" class="card'+(q.allocR===o.v?" sel":"")+'" onclick="uq(\'allocR\','+o.v+')"><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Profil de risque", "Phase 3 \u2014 Risk profile") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Tol\u00e9rance aux fluctuations du march\u00e9", "Market fluctuation tolerance") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:8px;line-height:1.6">' + t("En phase de d\u00e9caissement, une allocation plus conservatrice est habituelle pour prot\u00e9ger le capital des baisses \u00e0 court terme.", "In the drawdown phase, a more conservative allocation is typical to protect capital from short-term declines.") + '</p>'
+      + '<div class="info-box">'
+      + '<div style="font-size:12px;color:var(--ts)">' + t("Plafond de 75% actions en d\u00e9caissement (vs 85% en accumulation). La r\u00e9partition se r\u00e9duit aussi automatiquement avec l\u2019\u00e2ge dans les simulations.", "75% equity cap in drawdown (vs 85% in accumulation). Allocation also automatically decreases with age in simulations.") + '</div>'
+      + '</div>'
+      + '<div class="fld-block">' + riskCards + '</div>'
+      + '<button class="pbtn" onclick="go(10)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(8)
+    , 9);
+  }
+
+  // ── SCREEN 10: HYPOTHÈSES DE RENDEMENT ───────────────────
+  if (step === 10) {
+    var retPresets = [{pct:3.5,l:t("Conservateur","Conservative")},{pct:5.0,l:t("Mod\u00e9r\u00e9","Moderate")},{pct:6.5,l:t("Croissance","Growth")}];
+    var defaultEqRet = q.allocR <= 0.40 ? 3.5 : q.allocR <= 0.60 ? 5.0 : 6.5;
+    var curEqRet = q.eqRet > 0 ? q.eqRet : defaultEqRet;
+    var presetBtns = retPresets.map(function(p){
+      return '<div tabindex="0" class="card'+(Math.abs(curEqRet-p.pct)<0.01?" sel":"")+'" onclick="uq(\'eqRet\','+p.pct+')" style="flex:1;text-align:center;padding:11px">'
+        +'<div style="font-weight:600;font-size:13px">'+p.l+'</div>'
+        +'<div style="font-size:12px;color:var(--g);font-weight:700;margin-top:2px">'+p.pct+'%</div>'
+        +'</div>';
+    }).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Hypoth\u00e8ses", "Phase 3 \u2014 Assumptions") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Hypoth\u00e8ses de rendement et d\u2019inflation", "Return and inflation assumptions") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Ces valeurs s\u2019appliquent \u00e0 la fois au rapport et au simulateur interactif.", "These values apply to both the report and the interactive simulator.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Rendement attendu du portefeuille", "Expected portfolio return") + '</label>'
+      + '<div style="display:flex;gap:8px;margin-bottom:10px">' + presetBtns + '</div>'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<input class="inp" type="number" min="1" max="12" step="0.5" value="' + curEqRet + '" oninput="uqd(\'eqRet\',this.value)" style="max-width:120px" />'
+      + '<span style="font-size:14px;color:var(--ts)">%</span>'
+      + '<span style="font-size:12px;color:var(--tm)">' + t("Rendement brut annuel", "Gross annual return") + '</span>'
+      + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Inflation annuelle (%)", "Annual inflation (%)") + '</label>'
+      + '<div style="display:flex;align-items:center;gap:14px">'
+      + '<input type="range" min="1" max="4" step="0.1" value="' + (q.inf||2.1) + '" oninput="uq(\'inf\',+this.value)" style="flex:1" />'
+      + '<span style="font-family:monospace;font-size:20px;font-weight:800;color:var(--g);min-width:48px;text-align:right">' + parseFloat(q.inf||2.1).toFixed(1) + ' %</span>'
+      + '</div>'
+      + '<div class="fld-sub">' + t("Cible Banque du Canada 2%. D\u00e9faut 2,1%.", "Bank of Canada target 2%. Default 2.1%.") + '</div></div>'
+      + '<button class="pbtn" onclick="go(11)">' + t("Continuer", "Continue") + '</button>'
+      + backBtn(9)
+    , 10);
+  }
+
+  // ── SCREEN 11: CONTEXTE ADDITIONNEL ──────────────────────
+  if (step === 11) {
+    return wrap(
+      '<div class="phase-badge">' + t("Phase 3 \u2014 Contexte", "Phase 3 \u2014 Context") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Contexte additionnel (optionnel)", "Additional context (optional)") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Ces informations enrichissent le portrait de votre patrimoine net. Laissez \u00e0 0 si non applicable.", "This information enriches the portrait of your net worth. Leave at 0 if not applicable.") + '</p>'
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      + '<div class="section-head">' + t("Propri\u00e9t\u00e9 immobili\u00e8re", "Real estate") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Valeur estim\u00e9e de votre r\u00e9sidence ($)", "Estimated value of your residence ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="5000" value="' + (q.homeValue||0) + '" oninput="uqd(\'homeValue\',this.value)" />'
+      + '<div class="fld-sub">' + t("Mod\u00e9lis\u00e9 comme actif net dans le sommaire de patrimoine \u2014 pas comme source de retrait liquide.", "Modeled as net asset in the wealth summary \u2014 not as a liquid withdrawal source.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Hypoth\u00e8que restante ($)", "Remaining mortgage ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.homeMortgage||0) + '" oninput="uqd(\'homeMortgage\',this.value)" /></div>'
+      + '</div>'
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+      + '<div class="section-head">' + t("Dettes restantes", "Remaining debts") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Solde total des dettes (hors hypoth\u00e8que) ($)", "Total debt balance (excluding mortgage) ($)") + '</label>'
+      + '<input class="inp" type="number" min="0" step="1000" value="' + (q.totalDebt||0) + '" oninput="uqd(\'totalDebt\',this.value)" />'
+      + '<div class="fld-sub">' + t("Pr\u00eats auto, marges de cr\u00e9dit, cartes. Affich\u00e9 dans le sommaire patrimonial.", "Car loans, lines of credit, cards. Displayed in the wealth summary.") + '</div></div>'
+      + '</div>'
+      + '<button class="pbtn" onclick="ph(\'quiz_step_11_completed\');go(\'confirm\')">' + t("Continuer \u2014 v\u00e9rifier mes informations", "Continue \u2014 review my information") + '</button>'
+      + backBtn(10)
+    , 11);
+  }
+
+  return '<div style="max-width:560px;margin:80px auto;text-align:center;padding:40px 24px"><p style="color:var(--tm)">Chargement&hellip;</p></div>';
+}
+
+// ============================================================
+// KEYBOARD ACCESSIBILITY
+// ============================================================
+document.addEventListener("keydown", function(e) {
+  if ((e.key === "Enter" || e.key === " ") && document.activeElement && document.activeElement.classList.contains("card")) {
+    e.preventDefault(); document.activeElement.click();
+  }
+  if (e.key === "Enter" && typeof STATE.step === "number" && STATE.step >= 1 && STATE.step <= 11) {
+    var tag = document.activeElement ? document.activeElement.tagName : "";
+    if (tag === "TEXTAREA" || tag === "SELECT" || tag === "INPUT") return;
+    var btn = document.querySelector(".pbtn");
+    if (btn && !btn.disabled) btn.click();
+  }
+});
+
+// ============================================================
+// COOKIE CONSENT (Law 25)
+// ============================================================
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var fr = STATE.lang === 'fr';
+  var cl = fr ? 'Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.' : 'This site uses analytics cookies to improve the experience.';
+  var bar = document.createElement('div');
+  bar.id = 'consentBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>' + cl + '</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">' + (fr ? 'Accepter' : 'Accept') + '</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + (fr ? 'Refuser' : 'Decline') + '</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
+
+// ============================================================
+// BOOT
+// ============================================================
+render();
+</script>
+
+<style>
+html:lang(en) .amf-fr{display:none!important}
+html:lang(en) .amf-en{display:inline!important}
+html:lang(fr) .amf-en{display:none!important}
+html:lang(fr) .amf-fr{display:inline!important}
+</style>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
+<span class="amf-fr">buildfi.ca fournit des projections \u00e0 titre informatif seulement. Ce service ne constitue pas du conseil financier, fiscal ou juridique. Consultez un professionnel qualifi\u00e9 avant de prendre des d\u00e9cisions financi\u00e8res. Qu\u00e9bec, Canada.</span>
+<span class="amf-en" style="display:none">buildfi.ca provides projections for informational purposes only. This service does not constitute financial, tax, or legal advice. Consult a qualified professional before making financial decisions. Quebec, Canada.</span>
+</div>
+</body>
+</html>

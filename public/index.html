@@ -133,7 +133,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 @media(max-width:900px){.hero-inner{grid-template-columns:1fr;text-align:center}.hero-text{order:1}.hero-sub{margin-left:auto;margin-right:auto}.hero-actions{justify-content:center}.hero-price{text-align:center}.hero-trust{text-align:left;max-width:400px;margin-left:auto;margin-right:auto}.grade-card{order:2;margin-top:16px;transform:none}}
 
 /* ═══ PRODUCTS (streamlined cards) ═══ */
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:52px}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px;margin-top:52px}
 .product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px 28px 32px;display:flex;flex-direction:column;transition:all .3s;position:relative;box-shadow:var(--shadow-card)}
 .product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
 .product-card--inter{border:2px solid var(--gold);box-shadow:var(--shadow-card),0 0 0 1px rgba(184,134,11,.08)}
@@ -555,8 +555,37 @@ input,select,textarea{font-size:16px}
         <div class="product-for-tag" id="prodInterFor">Couples · Propriétaires · Profils complexes</div>
       </div>
 
+      <!-- DÉCAISSEMENT -->
+      <div class="product-card reveal reveal-delay-2" style="border:2px solid #4A7FC1;box-shadow:0 1px 8px rgba(74,127,193,0.10);">
+        <div class="product-badge" id="prodDecumBadge" style="background:#4A7FC1;">Déjà à la retraite</div>
+        <div class="product-persona" id="prodDecumPersona">Vous vivez de votre épargne</div>
+        <div class="product-name" id="prodDecumName">Décaissement</div>
+        <div class="product-price">
+          <span class="product-price-original" id="prodDecumOrig">59 $</span>
+        </div>
+        <div class="product-price-note" id="prodDecumNote">paiement unique</div>
+        <p class="product-desc" id="prodDecumDesc">
+          Vous êtes à la retraite ou sur le point de l'être. L'enjeu n'est plus d'épargner — c'est de savoir combien retirer, dans quel ordre, et si votre argent tiendra jusqu'à la fin. Le Bilan Décaissement répond à ces questions avec précision.
+        </p>
+        <div class="product-includes" id="prodDecumIncludes">
+          <div class="product-includes-label" id="prodDecumIncludesLabel">Inclus :</div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodDecumBonus1">Bilan personnalisé — 12 sections, narration IA</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodDecumBonus2">Comparaison timing RRQ/RPC 60 · 65 · 70 ans</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodDecumBonus3">Scénarios de robustesse + portrait successoral</span></div>
+          <div class="product-includes-item"><span class="product-check">✓</span> <span id="prodDecumBonus4">Simulateur interactif (pré-rempli depuis votre bilan)</span></div>
+        </div>
+        <div class="product-time" id="prodDecumTime">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          8 à 12 minutes
+        </div>
+        <a href="/quiz-decaissement.html" class="btn btn-primary" data-track="product_decum" id="prodDecumCta">Obtenir mon bilan <span aria-hidden="true">→</span></a>
+        <p class="product-process" id="prodDecumProcess">Questionnaire → Bilan en ligne + simulateur interactif</p>
+        <p class="product-guarantee" id="prodDecumGuarantee">Erreur technique? On refait votre bilan sans frais.</p>
+        <div class="product-for-tag" id="prodDecumFor">Retraités · Préretraités · Couples en décaissement</div>
+      </div>
+
       <!-- EXPERT -->
-      <div class="product-card product-card--expert reveal reveal-delay-2">
+      <div class="product-card product-card--expert reveal reveal-delay-3">
         <div class="product-persona" id="prodExpPersona">Tout ce que vous avez toujours cherché</div>
         <div class="product-name" id="prodExpName">Expert · Simulateur</div>
         <div class="product-price">
@@ -920,6 +949,21 @@ var T = {
   prodEssCurr: { fr:'14,50\u00a0$', en:'$14.50' },
   prodInterOrig: { fr:'59\u00a0$', en:'$59' },
   prodInterCurr: { fr:'29,50\u00a0$', en:'$29.50' },
+  prodDecumBadge: { fr:'D\u00e9j\u00e0 \u00e0 la retraite', en:'Already retired' },
+  prodDecumPersona: { fr:'Vous vivez de votre \u00e9pargne', en:"You\u2019re living off your savings" },
+  prodDecumName: { fr:'D\u00e9caissement', en:'Decumulation' },
+  prodDecumDesc: { fr:"Vous \u00eates \u00e0 la retraite ou sur le point de l\u2019\u00eatre. L\u2019enjeu n\u2019est plus d\u2019\u00e9pargner \u2014 c\u2019est de savoir combien retirer, dans quel ordre, et si votre argent tiendra jusqu\u2019\u00e0 la fin.", en:"You\u2019re retired or about to be. The question is no longer about saving \u2014 it\u2019s about how much to withdraw, in what order, and whether your money will last." },
+  prodDecumIncludesLabel: { fr:'Inclus :', en:'Included:' },
+  prodDecumBonus1: { fr:'Bilan personnalis\u00e9 \u2014 12 sections, narration IA', en:'Personalized assessment \u2014 12 sections, AI narration' },
+  prodDecumBonus2: { fr:'Comparaison timing RRQ/RPC 60 \u00b7 65 \u00b7 70 ans', en:'CPP/QPP timing comparison 60 \u00b7 65 \u00b7 70' },
+  prodDecumBonus3: { fr:'Sc\u00e9narios de robustesse + portrait successoral', en:'Robustness scenarios + estate overview' },
+  prodDecumBonus4: { fr:'Simulateur interactif (pr\u00e9-rempli depuis votre bilan)', en:'Interactive simulator (pre-filled from your assessment)' },
+  prodDecumOrig: { fr:'59\u00a0$', en:'$59' },
+  prodDecumCta: { fr:'Obtenir mon bilan \u2192', en:'Get my assessment \u2192' },
+  prodDecumProcess: { fr:'Questionnaire \u2192 Bilan en ligne + simulateur interactif', en:'Questionnaire \u2192 Online assessment + interactive simulator' },
+  prodDecumGuarantee: { fr:'Erreur technique? On refait votre bilan sans frais.', en:'Technical error? We redo your assessment at no cost.' },
+  prodDecumFor: { fr:'Retrait\u00e9s \u00b7 Pr\u00e9retrait\u00e9s \u00b7 Couples en d\u00e9caissement', en:'Retirees \u00b7 Pre-retirees \u00b7 Decumulation couples' },
+  prodDecumNote: { fr:'paiement unique', en:'one-time payment' },
   prodExpOrig: { fr:'129\u00a0$', en:'$129' },
   prodExpCurr: { fr:'64,50\u00a0$', en:'$64.50' },
   stripeLabel: { fr:'Paiement sécurisé par Stripe', en:'Secure payment via Stripe' },

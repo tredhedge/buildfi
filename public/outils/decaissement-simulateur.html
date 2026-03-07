@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur de décaissement — BuildFi</title>
+<script src="/logo.js"></script>
+<style>
+:root {
+  --cream:#faf8f4; --sand:#f0ece3; --card:#ffffff;
+  --navy:#1a2744; --navy-mid:#2c3e6b;
+  --gold:#b8860b; --gold-light:#d4a520; --gold-wash:rgba(184,134,11,0.08); --gold-border:rgba(184,134,11,0.28);
+  --green:#1a7a4c; --green-wash:rgba(26,122,76,0.08); --green-border:rgba(26,122,76,0.28);
+  --red:#b91c1c; --red-wash:rgba(185,28,28,0.07); --red-border:rgba(185,28,28,0.22);
+  --blue:#1e40af; --blue-wash:rgba(30,64,175,0.07);
+  --text:#1a1a1a; --text-2:#4a4a4a; --text-3:#7a7a7a;
+  --border:#e4dfd6; --shadow-sm:0 1px 3px rgba(0,0,0,0.06); --shadow-md:0 4px 16px rgba(0,0,0,0.08);
+  --radius:12px; --radius-lg:18px;
+  --font-display:'Georgia',serif; --font-body:-apple-system,'Helvetica Neue',Arial,sans-serif; --font-mono:'Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+.site-header{background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo-wrap a{text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-text{font-weight:800;font-size:20px;color:#fff;letter-spacing:-.5px}
+.logo-text span{color:var(--gold-light)}
+.lang-toggle{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.lang-btn{font-size:12px;font-weight:600;color:rgba(255,255,255,.6);background:none;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s}
+.lang-btn.active{background:rgba(255,255,255,.15);color:#fff}
+
+.hero{background:var(--navy);padding:40px 24px 52px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:36px;background:var(--cream);clip-path:ellipse(55% 100% at 50% 100%)}
+.hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px}
+.hero h1{font-family:var(--font-display);font-size:clamp(24px,4.5vw,40px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:12px}
+.hero h1 em{font-style:italic;color:var(--gold-light)}
+.hero-sub{font-size:15px;color:rgba(255,255,255,.65);max-width:500px;margin:0 auto;line-height:1.6}
+.sim-badge{display:inline-block;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-top:12px;letter-spacing:1px;text-transform:uppercase}
+
+.main{max-width:800px;margin:0 auto;padding:0 20px 80px}
+
+.input-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-top:28px;box-shadow:var(--shadow-sm)}
+.card-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';display:block;width:4px;height:18px;background:var(--gold);border-radius:2px}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:560px){.fields-grid{grid-template-columns:1fr}.input-card{padding:18px}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.5px;text-transform:uppercase}
+.field-hint{font-size:11px;color:var(--text-3);font-style:italic;margin-top:-2px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-prefix,.input-suffix{position:absolute;font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text-3);pointer-events:none}
+.input-prefix{left:11px}.input-suffix{right:11px}
+input[type="number"],select,input[type="range"]{width:100%;font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--text);background:var(--sand);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+input[type="number"].has-prefix{padding-left:26px}
+input[type="number"].has-suffix{padding-right:34px}
+input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-wash);background:#fff}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type="range"]{padding:4px 0;background:transparent;border:none;box-shadow:none;cursor:pointer}
+input[type="range"]:focus{box-shadow:none}
+.range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:2px}
+.range-val{font-size:13px;font-weight:700;color:var(--navy);text-align:center;margin-top:2px}
+
+/* Results */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px}
+.result-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;transition:border-color .2s}
+.result-card.good{border-color:var(--green-border);background:var(--green-wash)}
+.result-card.warn{border-color:var(--gold-border);background:var(--gold-wash)}
+.result-card.bad{border-color:var(--red-border);background:var(--red-wash)}
+.result-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:8px}
+.result-value{font-size:28px;font-weight:800;color:var(--navy);line-height:1}
+.result-value.grade{font-size:40px}
+.result-sub{font-size:12px;color:var(--text-3);margin-top:6px;line-height:1.4}
+
+.chart-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-top:20px}
+.chart-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px}
+.chart-wrap{overflow:hidden}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--text-3)}
+.leg-item{display:flex;align-items:center;gap:5px}
+.leg-dot{width:12px;height:4px;border-radius:2px;flex-shrink:0}
+
+.income-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:16px}
+.inc-item{background:var(--sand);border-radius:10px;padding:14px;text-align:center}
+.inc-amt{font-size:18px;font-weight:800;color:var(--navy)}
+.inc-lbl{font-size:11px;color:var(--text-3);margin-top:3px}
+
+.prog-bg{background:#e0dbd3;border-radius:4px;height:8px;margin-top:6px}
+.prog-fill{height:8px;border-radius:4px;transition:width .4s ease}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-top:4px}
+
+.note-disclaimer{background:var(--sand);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-top:20px;font-size:13px;color:var(--text-3);line-height:1.6}
+.note-disclaimer strong{color:var(--text-2)}
+
+.cta-section{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);border-radius:var(--radius-lg);padding:28px;margin-top:24px;text-align:center;color:#fff}
+.cta-section h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.cta-section p{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:18px}
+.cta-btn{display:inline-block;background:var(--gold);color:#fff;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;transition:opacity .2s}
+.cta-btn:hover{opacity:.9}
+
+.share-wrap{margin-top:16px}
+.share-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:var(--font-body);transition:all .2s}
+.share-btn:hover{background:rgba(255,255,255,.2)}
+.share-copied{display:none;font-size:12px;color:var(--gold-light);margin-top:6px}
+
+[lang-fr],[lang-en]{display:none}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-wrap">
+    <a href="https://www.buildfi.ca">
+      <span class="logo-text">build<span>fi</span></span>
+    </a>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('fr')" id="btn-fr">FR</button>
+    <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow" lang-fr>Outil interactif</div>
+  <div class="hero-eyebrow" lang-en>Interactive tool</div>
+  <h1 lang-fr>Simulateur de <em>décaissement</em></h1>
+  <h1 lang-en>Decumulation <em>Simulator</em></h1>
+  <p class="hero-sub" lang-fr>Explorez l'impact de vos décisions sur la durabilité de votre portefeuille à la retraite. Calcul instantané — aucune donnée envoyée.</p>
+  <p class="hero-sub" lang-en>Explore the impact of your decisions on portfolio sustainability in retirement. Instant calculation — no data sent.</p>
+  <div class="sim-badge" lang-fr>Estimations simplifiées — non-MC</div>
+  <div class="sim-badge" lang-en>Simplified estimates — non-MC</div>
+</div>
+
+<div class="main">
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <div class="card-title" lang-fr>Votre situation</div>
+    <div class="card-title" lang-en>Your situation</div>
+
+    <div class="fields-grid">
+
+      <!-- Age -->
+      <div class="field">
+        <label lang-fr>Âge actuel</label>
+        <label lang-en>Current age</label>
+        <div class="input-wrap">
+          <input type="number" id="age" min="55" max="85" value="65" oninput="calc()">
+        </div>
+      </div>
+
+      <!-- Province -->
+      <div class="field">
+        <label lang-fr>Province</label>
+        <label lang-en>Province</label>
+        <select id="prov" onchange="calc()">
+          <option value="QC">Québec</option>
+          <option value="ON">Ontario</option>
+          <option value="BC">Colombie-Britannique</option>
+          <option value="AB">Alberta</option>
+          <option value="SK">Saskatchewan</option>
+          <option value="MB">Manitoba</option>
+          <option value="NS">Nouvelle-Écosse</option>
+          <option value="NB">Nouveau-Brunswick</option>
+          <option value="PE">Île-du-Prince-Édouard</option>
+          <option value="NL">Terre-Neuve</option>
+        </select>
+      </div>
+
+      <!-- Portfolio -->
+      <div class="field">
+        <label lang-fr>Épargne-retraite totale</label>
+        <label lang-en>Total retirement savings</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="portfolio" class="has-prefix" min="0" max="5000000" step="10000" value="500000" oninput="calc()">
+        </div>
+        <div class="field-hint" lang-fr>REER/FERR + CÉLI + non-enregistré</div>
+        <div class="field-hint" lang-en>RRSP/RRIF + TFSA + non-reg</div>
+      </div>
+
+      <!-- Desired income -->
+      <div class="field">
+        <label lang-fr>Revenu désiré (/an)</label>
+        <label lang-en>Desired income (/yr)</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="income" class="has-prefix" min="0" max="300000" step="1000" value="55000" oninput="calc()">
+        </div>
+        <div class="field-hint" lang-fr>Avant impôt, dollars d'aujourd'hui</div>
+        <div class="field-hint" lang-en>Pre-tax, today's dollars</div>
+      </div>
+
+      <!-- CPP/QPP monthly -->
+      <div class="field">
+        <label lang-fr id="lbl-qpp">RRQ/RPC mensuel</label>
+        <label lang-en id="lbl-qpp-en">QPP/CPP monthly</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="qppMonthly" class="has-prefix" min="0" max="2000" step="50" value="900" oninput="calc()">
+        </div>
+        <div class="field-hint" lang-fr>Si pas encore réclamé, estimez selon l'âge prévu</div>
+        <div class="field-hint" lang-en>If not yet claimed, estimate based on planned age</div>
+      </div>
+
+      <!-- OAS monthly -->
+      <div class="field">
+        <label lang-fr>Sécurité de la vieillesse (/mois)</label>
+        <label lang-en>Old Age Security (/mo)</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="oasMonthly" class="has-prefix" min="0" max="1200" step="50" value="727" oninput="calc()">
+        </div>
+        <div class="field-hint" lang-fr>727 $ à 65 ans, 1 036 $ à 70 ans</div>
+        <div class="field-hint" lang-en>$727 at 65, $1,036 at 70</div>
+      </div>
+
+      <!-- Pension -->
+      <div class="field">
+        <label lang-fr>Pension DB (/mois)</label>
+        <label lang-en>DB Pension (/mo)</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="pension" class="has-prefix" min="0" max="10000" step="100" value="0" oninput="calc()">
+        </div>
+        <div class="field-hint" lang-fr>Régime de retraite à prestations définies</div>
+        <div class="field-hint" lang-en>Defined benefit pension plan</div>
+      </div>
+
+      <!-- Allocation -->
+      <div class="field">
+        <label lang-fr>Actions dans le portefeuille</label>
+        <label lang-en>Equities in portfolio</label>
+        <input type="range" id="allocR" min="0.20" max="0.80" step="0.05" value="0.50" oninput="calc()">
+        <div class="range-val" id="allocR-val">50 %</div>
+        <div class="range-labels"><span>20 %</span><span>80 %</span></div>
+      </div>
+
+      <!-- Spending flex -->
+      <div class="field">
+        <label lang-fr>Flexibilité des dépenses</label>
+        <label lang-en>Spending flexibility</label>
+        <select id="flex" onchange="calc()">
+          <option value="rigid" lang-fr>Fixe — dépenses constantes</option>
+          <option value="rigid" lang-en>Fixed — constant spending</option>
+          <option value="moderate" selected lang-fr>Modérée — ajustements légers</option>
+          <option value="moderate" lang-en>Moderate — light adjustments</option>
+          <option value="flexible" lang-fr>Flexible — ajustements importants</option>
+          <option value="flexible" lang-en>Flexible — significant adjustments</option>
+        </select>
+      </div>
+
+      <!-- Equity return -->
+      <div class="field">
+        <label lang-fr>Rendement actions (%/an)</label>
+        <label lang-en>Equity return (%/yr)</label>
+        <div class="input-wrap">
+          <input type="number" id="eqRet" min="1" max="12" step="0.5" value="6.5" oninput="calc()">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <!-- Inflation -->
+      <div class="field">
+        <label lang-fr>Inflation (%/an)</label>
+        <label lang-en>Inflation (%/yr)</label>
+        <div class="input-wrap">
+          <input type="number" id="inf" min="0" max="6" step="0.25" value="2.0" oninput="calc()">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+    </div><!-- /fields-grid -->
+  </div><!-- /input-card -->
+
+  <!-- RESULTS -->
+  <div class="results-grid" id="results-grid">
+    <div class="result-card" id="card-grade">
+      <div class="result-label" lang-fr>Robustesse estimée</div>
+      <div class="result-label" lang-en>Estimated robustness</div>
+      <div class="result-value grade" id="val-grade">—</div>
+      <div class="result-sub" id="val-succ">—</div>
+    </div>
+    <div class="result-card" id="card-cov">
+      <div class="result-label" lang-fr>Couverture garantie</div>
+      <div class="result-label" lang-en>Guaranteed coverage</div>
+      <div class="result-value" id="val-cov">—</div>
+      <div class="result-sub" lang-fr>Des revenus garantis couvrent votre cible</div>
+      <div class="result-sub" lang-en>Guaranteed income covers your target</div>
+    </div>
+    <div class="result-card" id="card-wd">
+      <div class="result-label" lang-fr>Taux de retrait initial</div>
+      <div class="result-label" lang-en>Initial withdrawal rate</div>
+      <div class="result-value" id="val-wd">—</div>
+      <div class="result-sub" lang-fr>Du portefeuille la première année</div>
+      <div class="result-sub" lang-en>From portfolio in first year</div>
+    </div>
+    <div class="result-card" id="card-est">
+      <div class="result-label" lang-fr>Patrimoine à 90 ans (est.)</div>
+      <div class="result-label" lang-en>Est. wealth at 90 (est.)</div>
+      <div class="result-value" id="val-est">—</div>
+      <div class="result-sub" lang-fr>Médiane, dollars d'aujourd'hui</div>
+      <div class="result-sub" lang-en>Median, today's dollars</div>
+    </div>
+  </div>
+
+  <!-- Income breakdown chart -->
+  <div class="chart-section">
+    <div class="chart-title" lang-fr>Répartition du revenu de retraite</div>
+    <div class="chart-title" lang-en>Retirement income breakdown</div>
+    <div class="income-breakdown" id="income-breakdown"></div>
+    <div style="margin-top:16px;">
+      <div class="prog-label" lang-fr><span id="prog-gov-lbl">Revenus garantis</span><span id="prog-gov-pct">— %</span></div>
+      <div class="prog-label" lang-en><span>Guaranteed income</span><span id="prog-gov-pct-en">— %</span></div>
+      <div class="prog-bg"><div class="prog-fill" id="prog-gov" style="width:0%;background:#1a7a4c;"></div></div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px;" id="gov-detail-fr"></div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px;" id="gov-detail-en"></div>
+    </div>
+  </div>
+
+  <!-- Portfolio trajectory chart -->
+  <div class="chart-section">
+    <div class="chart-title" lang-fr>Trajectoire du portefeuille (estimation simplifiée)</div>
+    <div class="chart-title" lang-en>Portfolio trajectory (simplified estimate)</div>
+    <div class="chart-wrap"><svg id="traj-chart" viewBox="0 0 600 200" width="100%"></svg></div>
+    <div class="chart-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#b8860b;"></div><span lang-fr>Médiane estimée</span><span lang-en>Estimated median</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#b8860b;opacity:0.3;width:20px;height:10px;border-radius:3px;"></div><span lang-fr>Fourchette probable (±30 %)</span><span lang-en>Probable range (±30%)</span></div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="note-disclaimer">
+    <strong lang-fr>Avertissement — Estimations simplifiées</strong>
+    <strong lang-en>Disclaimer — Simplified estimates</strong>
+    <span lang-fr> : Ce simulateur utilise des formules déterministes simplifiées. Les résultats sont des estimations indicatives, pas des projections probabilistes complètes. Le Bilan Décaissement complet utilise 5 000+ scénarios avec mortalité stochastique, queues épaisses et optimisation fiscale annuelle. Aucune donnée n'est envoyée à un serveur.</span>
+    <span lang-en> : This simulator uses simplified deterministic formulas. Results are indicative estimates, not full probabilistic projections. The complete Decumulation Assessment uses 5,000+ scenarios with stochastic mortality, fat tails, and annual tax optimization. No data is sent to a server.</span>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h3 lang-fr>Besoin d'un bilan complet ?</h3>
+    <h3 lang-en>Need a complete assessment?</h3>
+    <p lang-fr>Le Bilan Décaissement — 59 $ — analyse votre situation avec 5 000 scénarios, le timing optimal de vos rentes gouvernementales, les scénarios de robustesse et votre portrait successoral.</p>
+    <p lang-en>The Decumulation Assessment — $59 — analyzes your situation with 5,000 scenarios, optimal government benefit timing, robustness scenarios, and your estate overview.</p>
+    <a href="https://www.buildfi.ca/quiz-decaissement.html" class="cta-btn" lang-fr>Obtenir mon bilan →</a>
+    <a href="https://www.buildfi.ca/quiz-decaissement.html" class="cta-btn" lang-en>Get my assessment →</a>
+    <div class="share-wrap">
+      <button class="share-btn" onclick="shareUrl()" lang-fr>Partager cette simulation</button>
+      <button class="share-btn" onclick="shareUrl()" lang-en>Share this simulation</button>
+      <div class="share-copied" id="share-copied" lang-fr>Lien copié !</div>
+      <div class="share-copied" id="share-copied-en" lang-en>Link copied!</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── Language toggle ──────────────────────────────────────────────────
+var LANG = "fr";
+function setLang(l) {
+  LANG = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll("[lang-fr]").forEach(function(el){ el.style.display = l==="fr" ? "" : "none"; });
+  document.querySelectorAll("[lang-en]").forEach(function(el){ el.style.display = l==="en" ? "" : "none"; });
+  document.getElementById("btn-fr").classList.toggle("active", l==="fr");
+  document.getElementById("btn-en").classList.toggle("active", l==="en");
+  // Rebuild select options for lang
+  rebuildFlexOptions();
+  calc();
+}
+
+function rebuildFlexOptions() {
+  var s = document.getElementById("flex");
+  var cur = s.value;
+  var opts = LANG === "fr"
+    ? [["rigid","Fixe — dépenses constantes"],["moderate","Modérée — ajustements légers"],["flexible","Flexible — ajustements importants"]]
+    : [["rigid","Fixed — constant spending"],["moderate","Moderate — light adjustments"],["flexible","Flexible — significant adjustments"]];
+  s.innerHTML = opts.map(function(o){ return '<option value="'+o[0]+'">'+ o[1] +'</option>'; }).join("");
+  s.value = cur;
+}
+
+// ── URL params pre-fill ──────────────────────────────────────────────
+(function() {
+  var p = new URLSearchParams(window.location.search);
+  if (p.get("age")) document.getElementById("age").value = p.get("age");
+  if (p.get("income")) document.getElementById("income").value = p.get("income");
+  if (p.get("allocR")) { document.getElementById("allocR").value = p.get("allocR"); }
+  if (p.get("province")) document.getElementById("prov").value = p.get("province");
+  if (p.get("couple")) { /* future */ }
+  if (p.get("lang") === "en") setLang("en");
+})();
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function fmtK(n, fr) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + " M$";
+  if (n >= 1000) return Math.round(n/1000) + " k$";
+  return Math.round(n) + " $";
+}
+function fmtFull(n, fr) {
+  return Math.round(n).toLocaleString(fr ? "fr-CA" : "en-CA") + " $";
+}
+function fmtPct(n) { return Math.round(n * 10) / 10 + " %"; }
+
+// ── Grade ────────────────────────────────────────────────────────────
+function gradeFromSucc(pct) {
+  if (pct >= 95) return "A+";
+  if (pct >= 85) return "A";
+  if (pct >= 75) return "B+";
+  if (pct >= 65) return "B";
+  if (pct >= 55) return "C+";
+  if (pct >= 45) return "C";
+  if (pct >= 35) return "D";
+  return "F";
+}
+function gradeColor(g) {
+  if (g==="A+"||g==="A") return "#1a7a4c";
+  if (g==="B+"||g==="B") return "#1e40af";
+  if (g==="C+"||g==="C") return "#b8860b";
+  return "#b91c1c";
+}
+function cardClass(pct) {
+  return pct >= 75 ? "good" : pct >= 55 ? "warn" : "bad";
+}
+
+// ── Core calculation (deterministic estimate) ────────────────────────
+// Success rate table based on initial withdrawal rate + adjustments
+// Calibrated against MC results from known profiles
+function estimateSuccess(wdRate, flex, allocR) {
+  // Base from withdrawal rate
+  var base;
+  if (wdRate <= 0.02) base = 99;
+  else if (wdRate <= 0.03) base = 96;
+  else if (wdRate <= 0.04) base = 88;
+  else if (wdRate <= 0.045) base = 82;
+  else if (wdRate <= 0.05) base = 74;
+  else if (wdRate <= 0.055) base = 65;
+  else if (wdRate <= 0.06) base = 56;
+  else if (wdRate <= 0.065) base = 47;
+  else if (wdRate <= 0.07) base = 38;
+  else if (wdRate <= 0.08) base = 27;
+  else base = 15;
+
+  // Allocation adjustment
+  var allocAdj = 0;
+  if (allocR >= 0.65) allocAdj = 4;
+  else if (allocR >= 0.50) allocAdj = 2;
+  else if (allocR <= 0.30) allocAdj = -4;
+  else if (allocR <= 0.40) allocAdj = -2;
+
+  // Spending flexibility adjustment
+  var flexAdj = 0;
+  if (flex === "flexible") flexAdj = 8;
+  else if (flex === "moderate") flexAdj = 4;
+
+  return Math.max(5, Math.min(99, Math.round(base + allocAdj + flexAdj)));
+}
+
+// Simple deterministic projection (median estimate, real $)
+function projectPortfolio(portfolio, annualWithdrawal, eqRet, bndRet, allocR, inf, yearsToProject, flex) {
+  var realReturn = eqRet * allocR + bndRet * (1 - allocR) - inf;
+  var glideReduction = 0.01; // 1%/yr shift from equity to bonds
+  var pts = [];
+  var p = portfolio;
+  var cAllocR = allocR;
+  for (var y = 0; y <= yearsToProject; y++) {
+    pts.push(Math.max(0, Math.round(p)));
+    if (p <= 0) break;
+    // Adjust real return for glide
+    cAllocR = Math.max(0.20, cAllocR - glideReduction);
+    var r = eqRet * cAllocR + bndRet * (1 - cAllocR) - inf;
+    p = p * (1 + r) - annualWithdrawal;
+  }
+  return pts;
+}
+
+// ── Main calc ────────────────────────────────────────────────────────
+function calc() {
+  var age = parseInt(document.getElementById("age").value) || 65;
+  var prov = document.getElementById("prov").value;
+  var portfolio = parseFloat(document.getElementById("portfolio").value) || 0;
+  var income = parseFloat(document.getElementById("income").value) || 0;
+  var qppMonthly = parseFloat(document.getElementById("qppMonthly").value) || 0;
+  var oasMonthly = parseFloat(document.getElementById("oasMonthly").value) || 0;
+  var pension = parseFloat(document.getElementById("pension").value) || 0;
+  var allocR = parseFloat(document.getElementById("allocR").value) || 0.5;
+  var flex = document.getElementById("flex").value;
+  var eqRet = (parseFloat(document.getElementById("eqRet").value) || 6.5) / 100;
+  var inf = (parseFloat(document.getElementById("inf").value) || 2) / 100;
+
+  // Update range display
+  document.getElementById("allocR-val").textContent = Math.round(allocR * 100) + " %";
+
+  var bndRet = Math.max(0.01, eqRet - 0.035);
+  var isQC = prov === "QC";
+  var govLabel = isQC ? (LANG==="fr" ? "RRQ + SV" : "QPP + OAS") : (LANG==="fr" ? "RPC + SV" : "CPP + OAS");
+
+  // Income math
+  var govMonthly = qppMonthly + oasMonthly + pension;
+  var govAnnual = govMonthly * 12;
+  var incomeMonthly = income / 12;
+  var govCovPct = income > 0 ? Math.min(1, govAnnual / income) : 0;
+  var portfolioNeeded = Math.max(0, income - govAnnual);
+  var wdRate = portfolio > 0 ? portfolioNeeded / portfolio : 0.99;
+
+  // Success estimate
+  var succPct = estimateSuccess(wdRate, flex, allocR);
+  var grade = gradeFromSucc(succPct);
+  var gColor = gradeColor(grade);
+
+  // Estate estimate at 90 (25 years from 65, or (90-age) years)
+  var years90 = Math.max(0, 90 - age);
+  var traj = projectPortfolio(portfolio, portfolioNeeded, eqRet, bndRet, allocR, inf, years90, flex);
+  var estate90 = traj[traj.length - 1] || 0;
+
+  // ── Update result cards ───────────────────────────────────────────
+  var cardGrade = document.getElementById("card-grade");
+  cardGrade.className = "result-card " + cardClass(succPct);
+  document.getElementById("val-grade").textContent = grade;
+  document.getElementById("val-grade").style.color = gColor;
+  document.getElementById("val-succ").textContent = LANG==="fr"
+    ? "~" + succPct + " % de réussite estimée"
+    : "~" + succPct + "% estimated success";
+
+  var cardCov = document.getElementById("card-cov");
+  cardCov.className = "result-card " + (govCovPct >= 0.7 ? "good" : govCovPct >= 0.4 ? "warn" : "bad");
+  document.getElementById("val-cov").textContent = Math.round(govCovPct * 100) + " %";
+
+  var wdPct = Math.round(wdRate * 1000) / 10;
+  var cardWd = document.getElementById("card-wd");
+  cardWd.className = "result-card " + (wdPct <= 4 ? "good" : wdPct <= 5.5 ? "warn" : "bad");
+  document.getElementById("val-wd").textContent = wdPct + " %";
+
+  var cardEst = document.getElementById("card-est");
+  cardEst.className = "result-card " + (estate90 > 0 ? "good" : "bad");
+  document.getElementById("val-est").textContent = estate90 > 0 ? fmtK(estate90, LANG==="fr") : (LANG==="fr" ? "Épuisé" : "Depleted");
+
+  // ── Income breakdown ──────────────────────────────────────────────
+  var items = [];
+  if (qppMonthly > 0) items.push({ amt: fmtFull(qppMonthly, LANG==="fr"), lbl: isQC ? (LANG==="fr"?"RRQ":"QPP") : (LANG==="fr"?"RPC":"CPP") });
+  if (oasMonthly > 0) items.push({ amt: fmtFull(oasMonthly, LANG==="fr"), lbl: LANG==="fr"?"Sécurité de la vieillesse":"Old Age Security" });
+  if (pension > 0) items.push({ amt: fmtFull(pension, LANG==="fr"), lbl: LANG==="fr"?"Pension DB":"DB Pension" });
+  items.push({ amt: fmtFull(Math.max(0, portfolioNeeded / 12), LANG==="fr"), lbl: LANG==="fr"?"Retraits du portefeuille":"Portfolio withdrawals" });
+
+  document.getElementById("income-breakdown").innerHTML = items.map(function(it){
+    return '<div class="inc-item"><div class="inc-amt">'+ it.amt +'</div><div class="inc-lbl">'+ it.lbl +'</div></div>';
+  }).join("");
+
+  var govPctRound = Math.round(govCovPct * 100);
+  document.getElementById("prog-gov").style.width = Math.min(100, govPctRound) + "%";
+  document.getElementById("prog-gov-pct").textContent = govPctRound + " %";
+  document.getElementById("prog-gov-pct-en").textContent = govPctRound + "%";
+  document.getElementById("gov-detail-fr").textContent = govAnnual.toLocaleString("fr-CA") + " $/an garanti sur " + income.toLocaleString("fr-CA") + " $/an désirés";
+  document.getElementById("gov-detail-en").textContent = govAnnual.toLocaleString("en-CA") + " guaranteed of " + income.toLocaleString("en-CA") + " desired/yr";
+
+  // ── Trajectory SVG ────────────────────────────────────────────────
+  var maxYears = 95 - age;
+  var fullTraj = projectPortfolio(portfolio, portfolioNeeded, eqRet, bndRet, allocR, inf, maxYears, flex);
+  drawTrajChart(fullTraj, age, portfolio);
+
+  // ── URL share ─────────────────────────────────────────────────────
+  updateShareUrl(age, prov, portfolio, income, allocR);
+}
+
+function drawTrajChart(traj, startAge, portfolio) {
+  var W = 600, H = 200, PL = 50, PB = 25, PT = 10, PR = 20;
+  var chartW = W - PL - PR, chartH = H - PB - PT;
+  var maxP = Math.max(portfolio, Math.max.apply(null, traj));
+  if (maxP <= 0) maxP = 1;
+
+  function xp(i) { return PL + i / (traj.length - 1) * chartW; }
+  function yp(v) { return PT + chartH - (v / maxP) * chartH; }
+
+  var medLine = traj.map(function(v, i){ return xp(i) + "," + yp(v); }).join(" L ");
+
+  // Optimistic band (+30%) and pessimistic (-30%)
+  var optLine = traj.map(function(v, i){ return xp(i) + "," + yp(Math.min(maxP, v * 1.3)); }).join(" ");
+  var pessPts = traj.slice().reverse().map(function(v, i){ return xp(traj.length - 1 - i) + "," + yp(Math.max(0, v * 0.7)); }).join(" ");
+
+  // Axis labels
+  var ageStep = Math.ceil((traj.length - 1) / 6);
+  var axisLabels = "";
+  for (var i = 0; i < traj.length; i += ageStep) {
+    axisLabels += '<text x="'+ xp(i) +'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#999">'+(startAge+i)+'</text>';
+  }
+
+  var svg = '<polygon points="'+ optLine +" "+ pessPts +'" fill="#b8860b" fill-opacity="0.12"/>' +
+    '<polyline points="'+ medLine +'" fill="none" stroke="#b8860b" stroke-width="2.5"/>' +
+    axisLabels +
+    '<text x="'+ PL +'" y="'+(PT+8)+'" font-size="9" fill="#999">'+ fmtK(maxP, LANG==="fr") +'</text>' +
+    '<text x="'+ PL +'" y="'+(PT+chartH)+'" font-size="9" fill="#999">0 $</text>';
+
+  document.getElementById("traj-chart").innerHTML = svg;
+}
+
+function updateShareUrl(age, prov, portfolio, income, allocR) {
+  // Stored for share button
+  window._shareUrl = window.location.origin + window.location.pathname
+    + "?age="+age+"&province="+prov+"&income="+income+"&allocR="+allocR+"&lang="+LANG;
+}
+
+function shareUrl() {
+  if (!window._shareUrl) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window._shareUrl).then(function(){
+      var el = document.getElementById(LANG==="fr" ? "share-copied" : "share-copied-en");
+      if (el) { el.style.display = "block"; setTimeout(function(){ el.style.display="none"; }, 2000); }
+    });
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────
+setLang("fr");
+calc();
+</script>
+
+</body>
+</html>

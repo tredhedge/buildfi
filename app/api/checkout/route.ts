@@ -1,8 +1,8 @@
 // /app/api/checkout/route.ts
 // Creates a Stripe Checkout Session — supports 3 checkout types:
-//   type=report (default): Ess/Inter/Expert report purchase with quiz data
+//   type=report (default): Ess/Inter/Expert/Decaissement report purchase with quiz data
 //   type=addon: Expert AI export addon ($14.99)
-//   type=second: 2nd report at 50% off (SECOND50 coupon)
+//   type=second: 2nd report at 50% off (SECOND50 coupon) or DECUM50 for decaissement
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
       const validTiers: Record<string, string | undefined> = {
         essentiel: process.env.STRIPE_PRICE_ESSENTIEL,
         intermediaire: process.env.STRIPE_PRICE_INTERMEDIAIRE,
+        decaissement: process.env.STRIPE_PRICE_DECAISSEMENT,
       };
 
       const tier = originalTier || "essentiel";
@@ -128,13 +129,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // All tiers use SECOND50 coupon for second report
+      const secondCoupon = "SECOND50";
       const quizJSON = JSON.stringify(quizAnswers);
       const secondRefCode = generateReferralCode();
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
-        discounts: [{ coupon: "SECOND50" }],
+        discounts: [{ coupon: secondCoupon }],
         metadata: {
           ...splitMetadata(quizJSON),
           lang: lang || "fr",
@@ -164,6 +167,7 @@ export async function POST(req: NextRequest) {
       essentiel: process.env.STRIPE_PRICE_ESSENTIEL,
       intermediaire: process.env.STRIPE_PRICE_INTERMEDIAIRE,
       expert: process.env.STRIPE_PRICE_EXPERT,
+      decaissement: process.env.STRIPE_PRICE_DECAISSEMENT,
     };
 
     const selectedTier = tier || "essentiel";
@@ -224,8 +228,9 @@ export async function POST(req: NextRequest) {
       ) {
         checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
       }
-    } else {
-      // Launch promo — auto-applied for all tiers
+    } else if (selectedTier !== "decaissement") {
+      // Launch promo — auto-applied for Ess/Inter/Expert
+      // Decaissement has no launch discount per spec
       // To end promo: delete or deactivate LAUNCH50 coupon in Stripe Dashboard
       checkoutParams.discounts = [{ coupon: "LAUNCH50" }];
     }
