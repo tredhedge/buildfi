@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-05 — v12 (Bonus tools integration: allocation REER/CÉLI tool, email blocs, merci cards, landing cards)
+> Mis à jour: 2026-03-06 — v13 (Narrative arc Ess+Inter, QPP fix, RRSP 2026 cap, CCPC data path, AMF audit pass)
 
 ## PHASE ACTUELLE
-**ESSENTIEL LAUNCH-READY. BONUS TOOLS INTEGRATED (allocation tool + email blocs + merci cards). Inter report visual overhaul complete (685/685 tests). AI narration v2 shipped. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
+**ESSENTIEL LAUNCH-READY. INTER REPORT NARRATIVE ARC COMPLETE. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
 
 ---
 
@@ -80,6 +80,27 @@
 - `lib/report-html-inter.js` — 16 sections, ~1,100 lignes, **visual overhaul complete** (see below)
 - `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
 - `tests/report-inter-calculations.test.js` — 685 tests, 50 catégories
+
+### Inter + Essentiel Narrative Arc (2026-03-06) — 3 COMMITS
+| Composant | Changement | Statut |
+|-----------|-----------|--------|
+| `report-html-inter.js` | `bridge()` helper + 8 connecteurs narratifs data-driven (S2→S9) | ✅ |
+| `report-html-inter.js` | Objectif callout + badges préoccupations dans header (toujours visible) | ✅ |
+| `report-html-inter.js` | TOC : section count dynamique (`tocItems.length`) | ✅ |
+| `report-html-inter.js` | S7 intro aware des worries du quiz | ✅ |
+| `report-html-inter.js` | S9 verdict synthesis (Levier fort/modéré/Statu quo + estate angle) | ✅ |
+| `report-html-inter.js` | S11b CCPC : salary/dividend quick-compare via `calcTax()` (2 scénarios) | ✅ |
+| `report-html-inter.js` | S16 "Ce que vous avez dit" closing box | ✅ |
+| `report-html-inter.js` | Bug fix CCPC : `params._quiz.bizRemun/.bizSalaryPct` → `params.*` | ✅ |
+| `quiz-intermediaire.html` | Question décaissement retirée de l'étape 7 (engine gère via wStrat=optimal) | ✅ |
+| `quiz-translator-inter.ts` | `melt: false` (hardcoded), `decaissement` retiré du _quiz passthrough | ✅ |
+| `quiz-translator-inter.ts` | QPP heuristic : `\|\| 65` → retAge-based (comme Essentiel) | ✅ |
+| `report-html.js` | `bridge()` helper + 6 connecteurs narratifs (S2, S3, S4, S5, S6, S8) | ✅ |
+| `report-html.js` | Objectif callout data-driven (AI + fallback sur quiz.objective) | ✅ |
+| `report-html.js` | "Ce que vous avez dit" box avant méthodologie | ✅ |
+| `report-html.js` | Upsell : "16 sections" → "Jusqu'à 16 sections adaptées à votre profil" | ✅ |
+| `report-html.js` | 3 violations AMF éliminées (Concentrez-vous, constituerait, devrait) | ✅ |
+| `quiz-translator*.ts` + `constants-registry.ts` | Plafond REER 31 560 → 33 810 $ (limite CRA 2026) | ✅ |
 
 ### Inter Report Visual Overhaul (2026-03-05) — 6 SESSIONS, 685/685 TESTS
 | Session | Composant | Statut |
@@ -227,7 +248,9 @@
 
 ### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
 - **Report visual overhaul: COMPLETE** — CSS system, header, MC chart, KPI grouping, obs restructuring (685/685 tests)
-- Quiz Intermédiaire thin client (80+ fields, 8 étapes) — à construire
+- **Narrative arc: COMPLETE** — bridge() helper, 8 connectors, objective callout, worries badges, S9 verdict, CCPC compare, S16 closing box
+- **Quiz step 7 simplified** — decaissement question removed, engine handles via wStrat=optimal
+- Quiz Intermédiaire thin client — à connecter E2E (quiz existe, checkout pipeline à câbler)
 - Checkout pipeline /api/checkout → webhook → report-html-inter.js — à connecter E2E
 - Server backbone already merged (translator, report, AI prompt, strategies)
 
@@ -323,5 +346,6 @@ Détails complets: docs/SERVICES.md
 1. Fix Blob (public store) + Resend DNS → rapport accessible
 2. Create og-image.png (1200x630) for OG tags
 3. Soft launch organique (Reddit, LinkedIn, cercle privé)
-4. Inter quiz/checkout E2E — connecter quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+4. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+   - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
 5. S11 Expert post-launch: feedback pipeline, A/B testing

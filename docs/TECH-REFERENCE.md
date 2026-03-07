@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-05 — v13 (Debt tool: 9 UX cherry-picks, BC/QC bracket fixes, 200/200 tests)
+> Mis à jour: 2026-03-06 — v14 (Inter + Ess narrative arc, QPP heuristic, CCPC data path, RRSP cap 33810)
 
 ---
 
@@ -82,25 +82,35 @@ Key functions:
   calcMinViableReturn(D, params)   → minimum viable return
   buildPriority(D)                 → priority items
   gradeInfo(D)                     → grade ring (A+ to F) with colors/labels
+  bridge(fr, en)                   → bilingual narrative connector (italic, muted, grade-10)
   renderReport_v6(D, mc, quiz, lang, ai) → full HTML string
   renderReportHTML(...)            → wrapper that selects v5/v6
 
 Report sections (current order):
-  1. Note (grade ring/donut) + dynamic grade action hint micro-phrase
-  2. Profil (+ single-person callout if couple=yes)
-  3. Projection + Min Viable Return card
-  4. Revenus à la retraite
-  5. Épargne + Cost of Delay card
-  6. Priorité (CÉLI vs REER ranking) + contextual debt tool CTA (if debtBal > 0)
+  1. Note (grade ring/donut) + dynamic grade action hint micro-phrase + "Ce que vous avez dit" box
+     + objective callout (if successRate < 80% → "Votre objectif: {retAge} ans, {retIncome}$")
+  2. Profil (+ single-person callout if couple=yes) [bridge → S3]
+  3. Projection + Min Viable Return card [bridge → S4]
+  4. Revenus à la retraite [bridge → S5]
+  5. Épargne + Cost of Delay card [bridge → S6]
+  6. Priorité (CÉLI vs REER ranking) + contextual debt tool CTA (if debtBal > 0) [bridge → S8]
   7. Et si... (what-if cards)
   ── Upsell CTA (peak engagement, absolute buildfi.ca/checkout URLs, target="_blank") ──
-  8. Fiscalité & Frais
+     "Jusqu'à 16 sections adaptées à votre situation complète" (Inter upsell)
+  8. Fiscalité & Frais [bridge after]
   9. Plan aux 5 ans
   10. Hypothèses (CSS Grid 1fr 220px 1fr, white-space:nowrap, gap 32px)
   11. Méthodologie (details/summary accordion)
   ── Disclaimer, Resources (cadeau gold gradient, hover cards), Feedback, Referral (Option A), Print, Footer ──
 
 Nav pills: Note, Profil, Projection, Renforcer, Évolution, Fiscalité, Hypothèses (7 pills + section IDs)
+
+Narrative arc (2026-03-06):
+  - bridge() helper: italic muted connector between sections (bilingual)
+  - 6 bridges: S2→S3, S3→S4, S4→S5, S5→S6, S6→S8 (debt/no-debt variants), S8 closing
+  - "Ce que vous avez dit" box: recap of 3 quiz answers (age/retAge/risk) in gold callout
+  - Objective callout: shown if successRate < 80%, anchors the gap to stated goal
+  - Upsell text updated: "Jusqu'à 16 sections adaptées à votre situation complète"
 
 v6 features (March 2026 polish):
   - Grade ring with --amr amber-ring color, client-friendly labels
@@ -128,6 +138,30 @@ v6 features (March 2026 polish):
   C6: Table $0 rows → red background + "portefeuille épuisé" label
   C7: Methodology → details/summary accordion
   C8: Referral banner → Option A (no misleading "votre lien")
+```
+
+### Report HTML Inter (lib/report-html-inter.js — 1,003+ lignes)
+```
+16 sections: Bilan, Profil, Trajectoire, Revenus, Épargne, Immo, CCPC, Dettes,
+             Fiscalité, Stratégies, Simulation stress, Succession, Bilan annuel,
+             Hypothèses, Méthodologie, Footer verdict
+
+Key pattern: bridge(fr, en) — same helper as Essentiel, narrative connectors between sections
+Data source: params (direct Object.assign fields) NOT params._quiz for bizRemun/bizSalaryPct
+CCPC display fix (2026-03-06):
+  - params.bizRemun (not params._quiz.bizRemun) — lives in params via bizParams Object.assign
+  - params.bizSalaryPct already 0-1 scale (divided by 100 in translator) → display as Math.round(val * 100)%
+  - Before fix: CCPC strategy always showed "Dividendes purs" + salary % always 50%
+
+quiz-translator-inter.ts (85 fields → 120 MC params):
+  - QPP heuristic (2026-03-06): if quiz provides qppAge → passthrough (clamped 60-70),
+    else derive from retAge: Math.max(60, Math.min(70, retAge < 60 ? 65 : retAge))
+  - OAS heuristic: if quiz provides oasAge → passthrough (clamped 65-70),
+    else derive from retAge: Math.max(65, Math.min(70, retAge < 65 ? 65 : retAge))
+  - Matches Essentiel translator 1:1 (was defaulting to hardcoded 65 regardless of retAge)
+  - melt: false (hardcoded — engine handles optimal drawdown, no decaissement question)
+  - wStrat: "optimal" (engine handles strategy selection)
+  - bizSalaryPct stored as fraction 0-1: (a.bizSalaryPct || 50) / 100
 ```
 
 ### Quiz thin client — quiz-essentiel.html
@@ -317,6 +351,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-030 | Debt tool info/compliance modal (4 tabs: notice, scope, assumptions, privacy) | **NOUVEAU** |
 | DT-031 | Debt tool print/PDF via window.print() with summary page | **NOUVEAU** |
 | DT-032 | Debt tool mobile bottom bar (<560px fixed nav) | **NOUVEAU** |
+| DT-033 | bridge(fr, en) narrative connector pattern — italic muted bilingual text between report sections (Ess + Inter) | **NOUVEAU** |
 
 ---
 
@@ -429,6 +464,11 @@ recommandation(s) / recommendation(s)
 | 2026-03-05 | **Intermédiaire pipeline audit** — 11 P0/P1/P2 number fixes, AI prompt v2, 591/591 calculation tests, 5 AI test reports | ✅ |
 | 2026-03-05 | **Debt tool 9 UX cherry-picks** — health signals, guided focus, URL share, QuickStart, info modal, print/PDF, mobile bar, AMF disclaimers | ✅ |
 | 2026-03-05 | **BC/QC bracket fixes** — BC monotonic order, QC $250K test expectation → 200/200 debt tests pass | ✅ |
+| 2026-03-06 | **RRSP cap 33810** — corrected in quiz-translator.ts, quiz-translator-inter.ts, quiz-translator-expert.ts, constants-registry.ts (was 31560) | ✅ |
+| 2026-03-06 | **Inter + Ess narrative arc** — bridge() helper, 6 narrative connectors, "Ce que vous avez dit" box, objective callout, Inter upsell copy (Ess); bridge() + narrative connectors (Inter) | ✅ |
+| 2026-03-06 | **AMF 3 violations fixed** — report-html.js: "Concentrez-vous" → observational, "constituerait" → "pourrait", "devrait faire" → "gagnerait à" | ✅ |
+| 2026-03-06 | **CCPC data path fix** — report-html-inter.js: bizRemun/bizSalaryPct read from params directly (not params._quiz), scale corrected (0-1 fraction → × 100 for display) | ✅ |
+| 2026-03-06 | **QPP/OAS heuristic fix** — quiz-translator-inter.ts: retAge-based heuristic (clamped) replaces hardcoded default 65, matches Essentiel translator 1:1 | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
