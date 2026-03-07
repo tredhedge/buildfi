@@ -228,9 +228,8 @@ export async function POST(req: NextRequest) {
       ) {
         checkoutParams.discounts = [{ coupon: "REFERRAL15" }];
       }
-    } else if (selectedTier !== "decaissement") {
-      // Launch promo — auto-applied for Ess/Inter/Expert
-      // Decaissement has no launch discount per spec
+    } else {
+      // Launch promo — auto-applied for all tiers including Décaissement
       // To end promo: delete or deactivate LAUNCH50 coupon in Stripe Dashboard
       checkoutParams.discounts = [{ coupon: "LAUNCH50" }];
     }
