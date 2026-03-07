@@ -74,6 +74,16 @@ input[type=number]{-moz-appearance:textfield}
 </head>
 <body>
 <div id="app"></div>
+<noscript>
+<div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Simulateur Expert — buildfi.ca</div>
+  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Testez vos décisions de retraite avant de les prendre.</h1>
+  <p style="color:#555;margin-bottom:16px;line-height:1.6">190 paramètres, sessions illimitées, 5 exports AI inclus. Optimiseur automatique, stress tests, analyse CCPC, décaissement. Expérience optimale sur ordinateur. Paiement unique — 64,50 $.</p>
+  <p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong> Activez JavaScript dans votre navigateur pour y accéder.</p>
+  <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
+  <p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier. Consultez un planificateur financier certifié avant toute décision importante.</p>
+</div>
+</noscript>
 <script>
 // ============================================================
 // THIN CLIENT -- No MC engine. All computation runs server-side.
@@ -592,7 +602,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +[{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){
         return'<div class="card'+(q.sex===o.v?" sel":"")+'" onclick="uq(\'sex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:13px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';
       }).join("")+'</div>'
-      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Utilisé pour les tables actuarielles CPM-2014.","Used for CPM-2014 actuarial tables.")+'</div></div>'
+      +'<div style="font-size:11px;color:var(--tm);margin-top:4px">'+t("Utilisé pour les tables actuarielles CPM-2023.","Used for CPM-2023 actuarial tables.")+'</div></div>'
       +'<div class="fld-block"><label class="fld-label">'+t("Province de résidence","Province of residence")+'</label>'
       +'<select class="inp" onchange="uq(\'prov\',this.value)">'+provOpts+'</select></div>'
       +'<div class="fld-block"><label class="fld-label">'+t("Situation conjugale","Relationship status")+'</label>'
