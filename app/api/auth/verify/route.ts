@@ -6,7 +6,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { getFeedbackByEmail } from "@/lib/kv";
 
+// ── Dev bypass ─────────────────────────────────────────────────────────────
+// In local development, ?token=dev skips KV lookup entirely.
+// Usage: http://localhost:3000/simulateur?token=dev
+// NEVER active in production (NODE_ENV check is evaluated at runtime).
+const DEV_EXPIRY = new Date(Date.now() + 365 * 86400_000).toISOString();
+
+function devBypassResponse() {
+  return NextResponse.json({
+    authenticated: true,
+    email: "dev@buildfi.ca",
+    profile: {
+      email: "dev@buildfi.ca",
+      expiry: DEV_EXPIRY,
+      exportsAI: 5,
+      bilanUsed: false,
+      profiles: [],
+      changelog: [],
+      reportsGenerated: [],
+      referralCode: "DEV00001",
+      tier: "expert",
+      accountType: "personal",
+      constantsYear: 2026,
+      quizData: { sophistication: "personnalise" },
+    },
+    feedback: null,
+    tier: "expert",
+    exportsAI: 5,
+    expiry: DEV_EXPIRY,
+    bilanUsed: false,
+    referralCode: "DEV00001",
+    profileCount: 0,
+    reportsCount: 0,
+    accountType: "personal",
+    constantsYear: 2026,
+    sophistication: "personnalise",
+  });
+}
+
 export async function GET(req: NextRequest) {
+  // Dev bypass — localhost only, never production
+  if (process.env.NODE_ENV === "development") {
+    const url = new URL(req.url);
+    const token = url.searchParams.get("token") || req.headers.get("authorization")?.slice(7) || "";
+    if (token === "dev") return devBypassResponse();
+  }
+
   const result = await verifyToken(req);
 
   if (!result.authenticated || !result.profile) {
