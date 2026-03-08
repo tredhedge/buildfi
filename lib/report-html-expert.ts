@@ -403,7 +403,7 @@ function renderExpertReport(
     const items = [
       { v: D.qppMonthly, c: "#1a7a4c", l: gP },
       { v: D.oasMonthly, c: "#4680C0", l: oN },
-      { v: D.dbPensionMonthly, c: "#7C60B8", l: t("Pension employeur", "Employer pension") },
+      { v: D.dbPensionMonthly, c: "#4680C0", l: t("Pension employeur", "Employer pension") },
       { v: D.gapMonthly, c: "#b8860b", l: t("\u00c9pargne personnelle", "Personal savings") },
     ].filter(i => i.v > 0);
     const total = Math.max(1, items.reduce((s, i) => s + i.v, 0));
