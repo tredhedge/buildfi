@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Planification financière personnalisée</title>
 <meta name="description" content="BuildFi analyse votre situation financière dans des milliers de scénarios. Portrait clair, paiement unique, 13 juridictions. À partir de 14,50 $.">
-<meta property="og:title" content="buildfi.ca — Savoir exactement où vous en êtes">
+<meta property="og:title" content="BuildFi — Voyez si votre retraite tient vraiment">
 <meta property="og:description" content="Planification financière personnalisée pour les Canadiens. Des milliers de scénarios, un portrait clair, un paiement unique.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buildfi.ca/">
@@ -258,13 +258,13 @@ input,select,textarea{font-size:16px}
       <div class="hero-text">
         <p class="section-label reveal" id="heroLabel">Planification financière canadienne</p>
         <h1 class="hero-headline reveal reveal-delay-1" id="heroTitle">
-          Êtes-vous en bonne voie — et que regarder en premier?
+          Voyez si votre retraite tient vraiment.
         </h1>
         <p class="hero-sub reveal reveal-delay-2" id="heroSub">
-          En quelques minutes, obtenez une note claire, vos revenus projetés, vos principaux risques et votre prochain levier à examiner. Pas d'abonnement. Pas de compte à créer.
+          En quelques minutes, recevez votre note de retraite, vos revenus projetés année par année, vos principaux risques et votre prochain levier à examiner. Fiscalité canadienne détaillée. Pas d'abonnement. Pas de compte à créer.
         </p>
         <div class="hero-actions reveal reveal-delay-3">
-          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Trouver mon point de départ <span aria-hidden="true">→</span></a>
+          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Voir les produits <span aria-hidden="true">↓</span></a>
           <span class="hero-actions-price" id="heroPrice">À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29 $</span> <strong>14,50 $</strong> · Paiement unique</span>
         </div>
         <div class="hero-trust reveal reveal-delay-4">
@@ -349,8 +349,8 @@ input,select,textarea{font-size:16px}
 <section class="section section--sand" id="products">
   <div class="container">
     <div style="text-align:center">
-      <p class="section-label" id="productsLabel">Trouver mon point de départ</p>
-      <h2 class="section-title" id="productsTitle">Quatre produits. Une seule question pour commencer.</h2>
+      <p class="section-label" id="productsLabel">Quel produit est pour vous?</p>
+      <h2 class="section-title" id="productsTitle">Choisissez selon votre situation — pas selon votre niveau.</h2>
     </div>
 
     <!-- Decision helper -->
@@ -396,57 +396,57 @@ input,select,textarea{font-size:16px}
     <div class="products-grid">
       <!-- BILAN -->
       <div class="product-card reveal" id="card-bilan">
-        <div class="product-badge">Personnes seules</div>
+        <div class="product-badge" id="badgeEss">Premier portrait</div>
         <div class="product-name" id="prodEssName">Bilan</div>
-        <div class="product-subtitle" id="prodEssSub">Votre portrait financier</div>
+        <div class="product-subtitle" id="prodEssSub">Vous êtes seul(e) et voulez savoir où vous en êtes.</div>
         <div class="product-price">
           <span class="product-price-original" id="prodEssOrig">29 $</span>
           <span class="product-price-current" id="prodEssCurr">14,50 $</span>
         </div>
         <div class="product-price-note" id="prodEssNote">paiement unique</div>
-        <p class="product-oneliner" id="prodEssOneliner">Savoir si vous êtes en bonne voie — en 5 à 8 minutes.</p>
+        <p class="product-oneliner" id="prodEssOneliner">Votre note, vos projections, vos risques — en 5 à 8 minutes.</p>
         <a href="/bilan" class="product-link" data-track="product_card_clicked" data-product="bilan" id="prodEssLink">En savoir plus <span aria-hidden="true">→</span></a>
       </div>
 
       <!-- BILAN 360 -->
       <div class="product-card reveal reveal-delay-1" id="card-bilan360">
-        <div class="product-badge product-badge--gold">Le plus complet</div>
+        <div class="product-badge product-badge--gold" id="badgeInter">Situation complexe</div>
         <div class="product-name" id="prodInterName">Bilan 360</div>
-        <div class="product-subtitle" id="prodInterSub">Couple, immobilier, fiscalité, succession</div>
+        <div class="product-subtitle" id="prodInterSub">Votre situation inclut un couple, une propriété ou une entreprise.</div>
         <div class="product-price">
           <span class="product-price-original" id="prodInterOrig">59 $</span>
           <span class="product-price-current" id="prodInterCurr">29,50 $</span>
         </div>
         <div class="product-price-note" id="prodInterNote">paiement unique</div>
-        <p class="product-oneliner" id="prodInterOneliner">Savoir si votre plan tient la route — couple, propriété, fiscalité inclus.</p>
+        <p class="product-oneliner" id="prodInterOneliner">Tout ce que le Bilan couvre, plus l'immobilier, la fiscalité de couple et la succession.</p>
         <a href="/bilan-360" class="product-link" data-track="product_card_clicked" data-product="bilan360" id="prodInterLink">En savoir plus <span aria-hidden="true">→</span></a>
       </div>
 
       <!-- HORIZON -->
       <div class="product-card reveal reveal-delay-2" id="card-horizon">
-        <div class="product-badge product-badge--blue">Retraités · Préretraités</div>
+        <div class="product-badge product-badge--blue" id="badgeDecum">Retraités · Préretraités</div>
         <div class="product-name" id="prodDecumName">Horizon</div>
-        <div class="product-subtitle" id="prodDecumSub">Planifier vos retraits à la retraite</div>
+        <div class="product-subtitle" id="prodDecumSub">Vous êtes à la retraite ou vous vous y préparez.</div>
         <div class="product-price">
           <span class="product-price-original" id="prodDecumOrig">59 $</span>
           <span class="product-price-current" id="prodDecumCurr">29,50 $</span>
         </div>
         <div class="product-price-note" id="prodDecumNote">paiement unique</div>
-        <p class="product-oneliner" id="prodDecumOneliner">Savoir combien retirer, dans quel ordre, et si votre argent dure.</p>
+        <p class="product-oneliner" id="prodDecumOneliner">Combien retirer, dans quel ordre, et si votre argent dure toute votre vie.</p>
         <a href="/horizon" class="product-link" data-track="product_card_clicked" data-product="horizon" id="prodDecumLink">En savoir plus <span aria-hidden="true">→</span></a>
       </div>
 
       <!-- LABORATOIRE -->
       <div class="product-card reveal reveal-delay-3" id="card-lab" style="background:linear-gradient(150deg,var(--navy),var(--navy-light));border-color:transparent">
-        <div class="product-badge product-badge--navy-light">Contrôle total</div>
+        <div class="product-badge product-badge--navy-light" id="badgeExp">Autonomie totale</div>
         <div class="product-name" style="color:#fff" id="prodExpName">Laboratoire</div>
-        <div class="product-subtitle" style="color:rgba(255,255,255,.5)" id="prodExpSub">Tester vos décisions avant d'agir</div>
+        <div class="product-subtitle" style="color:rgba(255,255,255,.5)" id="prodExpSub">Vous voulez tester vous-même plusieurs scénarios.</div>
         <div class="product-price">
           <span class="product-price-original" style="color:rgba(255,255,255,.4)" id="prodExpOrig">129 $</span>
           <span class="product-price-current" style="color:#fff" id="prodExpCurr">64,50 $</span>
         </div>
         <div class="product-price-note" style="color:rgba(255,255,255,.4)" id="prodExpNote">paiement unique</div>
-        <p class="product-oneliner" style="color:rgba(255,255,255,.7)" id="prodExpOneliner">Tester chaque décision avant de la prendre.</p>
+        <p class="product-oneliner" style="color:rgba(255,255,255,.7)" id="prodExpOneliner">Testez chaque décision avant de la prendre. Simulateur illimité.</p>
         <a href="/expert/landing" class="product-link" style="color:var(--gold-light)" data-track="product_card_clicked" data-product="lab" id="prodExpLink">En savoir plus <span aria-hidden="true">→</span></a>
       </div>
     </div>
@@ -578,7 +578,7 @@ input,select,textarea{font-size:16px}
     <h2 class="section-title" id="finalTitle">Vous méritez de savoir où vous en êtes.</h2>
     <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un portrait clair, un paiement unique.</p>
     <div class="final-cta-actions">
-      <a href="#products" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Trouver mon point de départ <span aria-hidden="true">↑</span></a>
+      <a href="#products" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Voir les produits <span aria-hidden="true">↑</span></a>
     </div>
     <p class="final-cta-trust" id="finalTrust">Paiement unique · Livraison instantanée · Données non revendues</p>
   </div>
@@ -657,9 +657,9 @@ var T = {
   skipNav: { fr:'Aller au contenu', en:'Skip to content' },
   // Hero
   heroLabel: { fr:'Planification financière canadienne', en:'Canadian financial planning' },
-  heroTitle: { fr:'\u00cates-vous en bonne voie — et que regarder en premier?', en:'Are you on track — and what should you look at first?' },
-  heroSub: { fr:"En quelques minutes, obtenez une note claire, vos revenus projetés, vos principaux risques et votre prochain levier à examiner. Pas d\u2019abonnement. Pas de compte à créer.", en:"In a few minutes, get a clear grade, your projected income, your main risks, and your next lever to examine. No subscription. No account to create." },
-  heroCta: { fr:'Trouver mon point de d\u00e9part \u2192', en:'Find my starting point \u2192' },
+  heroTitle: { fr:'Voyez si votre retraite tient vraiment.', en:'See if your retirement really holds up.' },
+  heroSub: { fr:"En quelques minutes, recevez votre note de retraite, vos revenus projet\u00e9s ann\u00e9e par ann\u00e9e, vos principaux risques et votre prochain levier \u00e0 examiner. Fiscalit\u00e9 canadienne d\u00e9taill\u00e9e. Pas d\u2019abonnement. Pas de compte \u00e0 cr\u00e9er.", en:"In a few minutes, get your retirement grade, your projected income year by year, your main risks, and your next lever to examine. Detailed Canadian taxation. No subscription. No account to create." },
+  heroCta: { fr:'Voir les produits \u2193', en:'See products \u2193' },
   heroPrice: { fr:'À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29\u00a0$</span> <strong>14,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <span style="text-decoration:line-through;color:var(--text-muted)">$29</span> <strong>$14.50</strong> \u00b7 One-time payment' },
   trust1: { fr:'Données non revendues', en:'Data never sold' },
   trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
@@ -680,8 +680,12 @@ var T = {
   hiwStep3Title: { fr:'Décisions éclairées', en:'Informed decisions' },
   hiwStep3Desc: { fr:'Note, projections, observations. Vous savez exactement où vous en êtes.', en:'Grade, projections, observations. You know exactly where you stand.' },
   // Products
-  productsLabel: { fr:'Trouver mon point de d\u00e9part', en:'Find my starting point' },
-  productsTitle: { fr:'Quatre produits. Une seule question pour commencer.', en:'Four products. One question to start.' },
+  productsLabel: { fr:'Quel produit est pour vous?', en:'Which product is for you?' },
+  productsTitle: { fr:'Choisissez selon votre situation \u2014 pas selon votre niveau.', en:'Choose based on your situation \u2014 not your level.' },
+  badgeEss: { fr:'Premier portrait', en:'First portrait' },
+  badgeInter: { fr:'Situation complexe', en:'Complex situation' },
+  badgeDecum: { fr:'Retrait\u00e9s \u00b7 Pr\u00e9retrait\u00e9s', en:'Retirees \u00b7 Pre-retirees' },
+  badgeExp: { fr:'Autonomie totale', en:'Full autonomy' },
   dhIntro: { fr:'Pas sûr par où commencer?', en:'Not sure where to start?' },
   dhQ1: { fr:"Êtes-vous déjà à la retraite ou en train de retirer de votre épargne?", en:'Are you already retired or withdrawing from your savings?' },
   dhYes1: { fr:'Oui', en:'Yes' }, dhNo1: { fr:'Non', en:'No' },
@@ -692,17 +696,17 @@ var T = {
   dhResultLabel: { fr:'Notre suggestion', en:'Our suggestion' },
   dhRestart: { fr:'Recommencer', en:'Start over' },
   prodEssName: { fr:'Bilan', en:'Snapshot' },
-  prodEssSub: { fr:'Votre portrait financier', en:'Your financial portrait' },
-  prodEssOneliner: { fr:'Savoir si vous \u00eates en bonne voie — en 5 \u00e0 8 minutes.', en:'Know if you\u2019re on track — in 5 to 8 minutes.' },
+  prodEssSub: { fr:'Vous \u00eates seul(e) et voulez savoir o\u00f9 vous en \u00eates.', en:'You\u2019re on your own and want to know where you stand.' },
+  prodEssOneliner: { fr:'Votre note, vos projections, vos risques \u2014 en 5 \u00e0 8 minutes.', en:'Your grade, projections, and risks \u2014 in 5 to 8 minutes.' },
   prodInterName: { fr:'Bilan 360', en:'Snapshot 360' },
-  prodInterSub: { fr:'Couple, immobilier, fiscalité, succession', en:'Couples, real estate, tax, succession' },
-  prodInterOneliner: { fr:'Savoir si votre plan tient la route — couple, propri\u00e9t\u00e9, fiscalit\u00e9 inclus.', en:'Know if your plan holds up — couples, property, and tax included.' },
+  prodInterSub: { fr:'Votre situation inclut un couple, une propri\u00e9t\u00e9 ou une entreprise.', en:'Your situation includes a couple, property, or a business.' },
+  prodInterOneliner: { fr:'Tout ce que le Bilan couvre, plus l\u2019immobilier, la fiscalit\u00e9 de couple et la succession.', en:'Everything Snapshot covers, plus real estate, couple tax, and succession.' },
   prodDecumName: { fr:'Horizon', en:'Horizon' },
-  prodDecumSub: { fr:'Planifier vos retraits à la retraite', en:'Plan your retirement withdrawals' },
-  prodDecumOneliner: { fr:'Savoir combien retirer, dans quel ordre, et si votre argent dure.', en:'Know how much to withdraw, in what order, and if your money lasts.' },
+  prodDecumSub: { fr:'Vous \u00eates \u00e0 la retraite ou vous vous y pr\u00e9parez.', en:'You\u2019re retired or getting ready.' },
+  prodDecumOneliner: { fr:'Combien retirer, dans quel ordre, et si votre argent dure toute votre vie.', en:'How much to withdraw, in what order, and if your money lasts your whole life.' },
   prodExpName: { fr:'Laboratoire', en:'Lab' },
-  prodExpSub: { fr:"Tester vos décisions avant d\u2019agir", en:'Test your decisions before acting' },
-  prodExpOneliner: { fr:'Tester chaque d\u00e9cision avant de la prendre.', en:'Test every decision before you make it.' },
+  prodExpSub: { fr:'Vous voulez tester vous-m\u00eame plusieurs sc\u00e9narios.', en:'You want to test multiple scenarios yourself.' },
+  prodExpOneliner: { fr:'Testez chaque d\u00e9cision avant de la prendre. Simulateur illimit\u00e9.', en:'Test every decision before you make it. Unlimited simulator.' },
   prodEssOrig: { fr:'29\u00a0$', en:'$29' },
   prodEssCurr: { fr:'14,50\u00a0$', en:'$14.50' },
   prodInterOrig: { fr:'59\u00a0$', en:'$59' },
@@ -765,7 +769,7 @@ var T = {
   // Final CTA
   finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
   finalSubtitle: { fr:'Un portrait clair, un paiement unique.', en:'A clear portrait, one payment.' },
-  finalCtaPrimary: { fr:'Trouver mon point de d\u00e9part \u2191', en:'Find my starting point \u2191' },
+  finalCtaPrimary: { fr:'Voir les produits \u2191', en:'See products \u2191' },
   finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non revendues', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never sold' },
   stickyText: { fr:'À partir de <span style="text-decoration:line-through;opacity:.6">29\u00a0$</span> <span>14,50\u00a0$</span>', en:'Starting at <span style="text-decoration:line-through;opacity:.6">$29</span> <span>$14.50</span>' },
   stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },
