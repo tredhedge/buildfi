@@ -13,7 +13,7 @@ export function middleware(req: NextRequest) {
     "img-src 'self' data: blob: https://*.vercel-storage.com https://*.stripe.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://api.stripe.com https://*.posthog.com https://*.vercel-storage.com https://fonts.googleapis.com",
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
   ].join("; ");
