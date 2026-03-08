@@ -385,7 +385,7 @@ button, .toggle-chip, select, input { touch-action: manipulation; }
 </header>
 
 <div class="hero">
-  <div class="hero-eyebrow" id="hero-eyebrow">Outil inclus — Intermédiaire</div>
+  <div class="hero-eyebrow" id="hero-eyebrow">Outil inclus — Bilan 360</div>
   <h1 id="hero-title">Où va mon <em>prochain dollar</em>?</h1>
   <p class="hero-sub" id="hero-sub">REER, CÉLI, non-enregistré ou hypothèque — découvrez quelle option vous laisse le plus d'argent après impôt.</p>
 </div>
@@ -578,7 +578,7 @@ button, .toggle-chip, select, input { touch-action: manipulation; }
             <span class="input-prefix">$</span>
             <input type="number" id="inp-spouse-income" class="has-prefix" min="0" max="500000" step="1000" value="55000" oninput="compute()">
           </div>
-          <span class="field-hint" id="hint-couple-scope">Indicateur seulement — optimisation avancée dans Expert</span>
+          <span class="field-hint" id="hint-couple-scope">Indicateur seulement — optimisation avancée dans le Laboratoire</span>
         </div>
       </div>
     </div>
@@ -651,7 +651,7 @@ function setLang(l) {
 function t(fr, en) { return LANG==='fr' ? fr : en; }
 
 function renderLabels() {
-  document.getElementById('hero-eyebrow').textContent = t('Outil inclus — Intermédiaire','Included Tool — Intermédiaire');
+  document.getElementById('hero-eyebrow').textContent = t('Outil inclus — Bilan 360','Included Tool — Snapshot 360');
   document.getElementById('hero-title').innerHTML = t('Où va mon <em>prochain dollar</em>?','Where does my <em>next dollar</em> go?');
   document.getElementById('hero-sub').textContent = t('REER, CÉLI, non-enregistré ou hypothèque — découvrez quelle option vous laisse le plus d\'argent après impôt.','RRSP, TFSA, non-registered or mortgage — find out which option leaves you the most money after tax.');
   document.getElementById('ic-title').textContent = t('Votre situation','Your situation');
@@ -683,7 +683,7 @@ function renderLabels() {
   document.getElementById('lbl-mort-rate').textContent     = t('Taux hypothécaire','Mortgage rate');
   document.getElementById('lbl-mort-bal').textContent      = t('Solde restant','Remaining balance');
   document.getElementById('lbl-spouse-income').textContent = t('Revenu annuel brut du conjoint(e)','Spouse annual gross income');
-  document.getElementById('hint-couple-scope').textContent = t('Indicateur seulement — optimisation avancée dans Expert','Indicative only — advanced optimization in Expert');
+  document.getElementById('hint-couple-scope').textContent = t('Indicateur seulement — optimisation avancée dans le Laboratoire','Indicative only — advanced optimization in the Lab');
   document.getElementById('lbl-rrsp-bal').textContent    = t('Solde REER actuel','Current RRSP balance');
   document.getElementById('hint-rrsp-bal').textContent   = t('Valeur du REER aujourd\'hui','Current RRSP value today');
   document.getElementById('lbl-pension-m').textContent   = t('Pension DB mensuelle estimée','Estimated monthly DB pension');
@@ -1196,19 +1196,19 @@ function computeModel(S) {
 
   function buildExpertUpsells() {
     var upsells=[];
-    var link='<a href="https://www.buildfi.ca/expert" class="expert-link">'+t('Voir Expert →','See Expert →')+'</a>';
+    var link='<a href="https://www.buildfi.ca/expert" class="expert-link">'+t('Voir Laboratoire →','See Lab →')+'</a>';
 
-    if (closeDelta) upsells.push(t('<strong>Les options sont presque équivalentes dans votre situation.</strong> Cet outil couvre les paramètres fondamentaux. Le simulateur Expert intègre OAS/SRG, l\'ordre de retrait REER/CÉLI/FERR et la séquence de décaissement — des facteurs qui peuvent faire pencher la balance.','<strong>The options are nearly equivalent in your situation.</strong> This tool covers the key parameters. The Expert simulator integrates OAS/GIS, the RRSP/TFSA/RRIF withdrawal order, and the full drawdown sequence — factors that can tip the balance.')+link);
+    if (closeDelta) upsells.push(t('<strong>Les options sont presque équivalentes dans votre situation.</strong> Cet outil couvre les paramètres fondamentaux. Le Laboratoire intègre OAS/SRG, l\'ordre de retrait REER/CÉLI/FERR et la séquence de décaissement — des facteurs qui peuvent faire pencher la balance.','<strong>The options are nearly equivalent in your situation.</strong> This tool covers the key parameters. The Lab integrates OAS/GIS, the RRSP/TFSA/RRIF withdrawal order, and the full drawdown sequence — factors that can tip the balance.')+link);
 
-    if (oasWarning) upsells.push(t('<strong>Votre revenu de retraite dépasse le seuil de récupération PSV.</strong> Cet outil identifie le risque. Le simulateur Expert modélise l\'ordre optimal des retraits REER/CÉLI/FERR pour minimiser la récupération PSV année par année.','<strong>Your retirement income exceeds the OAS clawback threshold.</strong> This tool flags the risk. The Expert simulator models the optimal RRSP/TFSA/RRIF withdrawal order to minimize OAS clawback year by year.')+link);
+    if (oasWarning) upsells.push(t('<strong>Votre revenu de retraite dépasse le seuil de récupération PSV.</strong> Cet outil identifie le risque. Le Laboratoire modélise l\'ordre optimal des retraits REER/CÉLI/FERR pour minimiser la récupération PSV année par année.','<strong>Your retirement income exceeds the OAS clawback threshold.</strong> This tool flags the risk. The Lab models the optimal RRSP/TFSA/RRIF withdrawal order to minimize OAS clawback year by year.')+link);
 
-    if (rrifWarning) upsells.push(t('<strong>Avec un REER de cette taille, les retraits FERR minimums créent une contrainte fiscale réelle à 72 ans.</strong> Cet outil projette l\'exposition. Le simulateur Expert modélise la conversion REER→FERR, le décaissement optimal et l\'impact fiscal année par année.','<strong>With an RRSP this size, mandatory RRIF minimums create a real tax constraint at age 72.</strong> This tool projects the exposure. The Expert simulator models RRSP→RRIF conversion, optimal drawdown, and year-by-year tax impact.')+link);
+    if (rrifWarning) upsells.push(t('<strong>Avec un REER de cette taille, les retraits FERR minimums créent une contrainte fiscale réelle à 72 ans.</strong> Cet outil projette l\'exposition. Le Laboratoire modélise la conversion REER→FERR, le décaissement optimal et l\'impact fiscal année par année.','<strong>With an RRSP this size, mandatory RRIF minimums create a real tax constraint at age 72.</strong> This tool projects the exposure. The Lab models RRSP→RRIF conversion, optimal drawdown, and year-by-year tax impact.')+link);
 
-    if (spousFlag) upsells.push(t('<strong>Un écart de revenus de '+fmt(Math.abs(income-spIncome))+' peut être significatif.</strong> Cet outil détecte l\'écart. Le simulateur Expert optimise le timing du REER conjoint, le fractionnement de revenu et la stratégie fiscale combinée.','<strong>An income gap of '+fmt(Math.abs(income-spIncome))+' can be significant.</strong> This tool detects the gap. The Expert simulator optimizes spousal RRSP timing, income splitting, and combined tax strategy.')+link);
+    if (spousFlag) upsells.push(t('<strong>Un écart de revenus de '+fmt(Math.abs(income-spIncome))+' peut être significatif.</strong> Cet outil détecte l\'écart. Le Laboratoire optimise le timing du REER conjoint, le fractionnement de revenu et la stratégie fiscale combinée.','<strong>An income gap of '+fmt(Math.abs(income-spIncome))+' can be significant.</strong> This tool detects the gap. The Lab optimizes spousal RRSP timing, income splitting, and combined tax strategy.')+link);
 
-    if (nrTopTwo) upsells.push(t('<strong>Le non-enregistré figure parmi vos meilleures options.</strong> Cet outil utilise une traînée fiscale approximative (0.3%). Le traitement réel dépend de la composition du portefeuille (intérêts, dividendes, gains en capital). Le simulateur Expert modélise les distributions annuelles avec précision.','<strong>Non-registered is among your best options.</strong> This tool uses an approximate tax drag (0.3%). The actual treatment depends on portfolio composition (interest, dividends, capital gains). The Expert simulator models annual distributions accurately.')+link);
+    if (nrTopTwo) upsells.push(t('<strong>Le non-enregistré figure parmi vos meilleures options.</strong> Cet outil utilise une traînée fiscale approximative (0.3%). Le traitement réel dépend de la composition du portefeuille (intérêts, dividendes, gains en capital). Le Laboratoire modélise les distributions annuelles avec précision.','<strong>Non-registered is among your best options.</strong> This tool uses an approximate tax drag (0.3%). The actual treatment depends on portfolio composition (interest, dividends, capital gains). The Lab models annual distributions accurately.')+link);
 
-    if (age>55) upsells.push(t('<strong>À votre stade, le calendrier des décisions a un impact élevé.</strong> Les années de transition pré-retraite (conversion REER, timing PSV/SRG, décaissement) sont les plus sensibles fiscalement. Le simulateur Expert modélise chaque année en détail.','<strong>At your stage, decision timing has high impact.</strong> Pre-retirement transition years (RRSP conversion, OAS/GIS timing, drawdown sequencing) are the most tax-sensitive. The Expert simulator models each year in detail.')+link);
+    if (age>55) upsells.push(t('<strong>À votre stade, le calendrier des décisions a un impact élevé.</strong> Les années de transition pré-retraite (conversion REER, timing PSV/SRG, décaissement) sont les plus sensibles fiscalement. Le Laboratoire modélise chaque année en détail.','<strong>At your stage, decision timing has high impact.</strong> Pre-retirement transition years (RRSP conversion, OAS/GIS timing, drawdown sequencing) are the most tax-sensitive. The Lab models each year in detail.')+link);
 
     if (!upsells.length) return '';
     return upsells.slice(0,2).map(function(u){return '<div class="expert-upsell"><span class="expert-icon">🔬</span><div class="expert-text">'+u+'</div></div>';}).join('');
