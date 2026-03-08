@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>buildfi.ca — Bilan de décaissement</title>
-<meta name="description" content="Analysez la durabilité de vos retraits à la retraite. Timing RRQ/PSV, analyse meltdown, 6 scénarios Monte Carlo. Paiement unique 29,50 $.">
+<title>buildfi.ca — Horizon</title>
+<meta name="description" content="Planifiez vos retraits à la retraite. Timing RRQ/PSV, analyse de robustesse, 6 scénarios Monte Carlo. Paiement unique 29,50 $.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -97,19 +97,28 @@ input[type=number]{-moz-appearance:textfield}
 <body>
 <div id="app">
 <div class="seo-shell" style="max-width:520px;margin:48px auto;padding:32px 24px;text-align:center">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan Décaissement — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Analysez la durabilité de vos retraits à la retraite.</h1>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6">12 sections, timing RRQ/PSV optimal, analyse de robustesse, portrait successoral. 10 à 15 minutes. Paiement unique.</p>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Retraités, préretraités et couples en phase de décaissement qui veulent savoir combien retirer et dans quel ordre.</p>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Vous recevez :</strong> Un bilan personnalisé avec comparaison du timing RRQ/PSV (60, 65, 70 ans), scénarios de krach et simulateur interactif.</p>
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Horizon — buildfi.ca</div>
+  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Planifiez vos retraits à la retraite.</h1>
+  <p style="color:#555;margin-bottom:12px;line-height:1.6">12 sections, timing RRQ/PSV optimal, analyse de robustesse, 6 scénarios Monte Carlo. 10 à 15 minutes. Paiement unique.</p>
+  <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:8px">Ce que vous recevez :</div>
+    <div style="font-size:13px;color:#555;line-height:1.8">
+      ✓ Comparaison du timing RRQ/PSV (60, 65, 70 ans)<br>
+      ✓ Analyse de robustesse en cas de krach<br>
+      ✓ Ordre optimal de retrait (REER, CÉLI, non enregistré)<br>
+      ✓ Portrait successoral et fiscalité au décès<br>
+      ✓ Simulateur interactif de décaissement inclus
+    </div>
+  </div>
+  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Retraités et préretraités qui veulent savoir combien retirer, dans quel ordre, et quand demander les prestations gouvernementales.</p>
   <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
 </div>
 </div>
 <noscript>
 <div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan Décaissement — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Analysez la durabilité de vos retraits à la retraite.</h1>
-  <p style="color:#555;margin-bottom:16px;line-height:1.6">12 sections personnalisées — timing RRQ/PSV, analyse meltdown, comparaison de 6 scénarios de retrait, résilience aux krachs en phase de décaissement. Paiement unique — 29,50 $.</p>
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Horizon — buildfi.ca</div>
+  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Planifiez vos retraits à la retraite.</h1>
+  <p style="color:#555;margin-bottom:16px;line-height:1.6">12 sections personnalisées — timing RRQ/PSV, analyse de robustesse, comparaison de 6 scénarios de retrait, résilience aux krachs à la retraite. Paiement unique — 29,50 $.</p>
   <p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong> Activez JavaScript dans votre navigateur pour y accéder.</p>
   <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
   <p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier. Consultez un planificateur financier certifié avant toute décision importante.</p>
@@ -235,7 +244,7 @@ function renderPaywall(D, lang) {
   // Logo + tier label
   h += '<div style="text-align:center;margin-bottom:32px">';
   h += '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:22px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>';
-  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan de d\u00e9caissement","Retirement Drawdown Report") + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Horizon","Horizon") + '</div>';
   h += '</div>';
 
   // Grade card
@@ -289,7 +298,7 @@ function renderPaywall(D, lang) {
          'I agree to the <a href="/conditions.html" target="_blank" style="color:#b8860b">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#b8860b">Legal notice</a>.');
   h += '</label>';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif">';
-  h += t("Obtenir mon Bilan de d\u00e9caissement \u2192","Get my Retirement Drawdown Report \u2192");
+  h += t("Obtenir mon rapport Horizon \u2192","Get my Horizon report \u2192");
   h += '</button>';
   h += '</div>';
   h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique \u2014 livraison imm\u00e9diate par courriel","One-time payment \u2014 instant delivery by email") + '</div>';
@@ -332,13 +341,13 @@ function startCheckout() {
     } else {
       alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
       btn.disabled = false;
-      btn.textContent = STATE.lang === "fr" ? "Obtenir mon Bilan de d\u00e9caissement \u2192" : "Get my Retirement Drawdown Report \u2192";
+      btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport Horizon \u2192" : "Get my Horizon report \u2192";
     }
   })
   .catch(function() {
     alert(STATE.lang === "fr" ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
     btn.disabled = false;
-    btn.textContent = STATE.lang === "fr" ? "Obtenir mon Bilan de d\u00e9caissement \u2192" : "Get my Retirement Drawdown Report \u2192";
+    btn.textContent = STATE.lang === "fr" ? "Obtenir mon rapport Horizon \u2192" : "Get my Horizon report \u2192";
   });
 }
 
@@ -504,7 +513,7 @@ function render() {
   var app = document.getElementById("app");
   var s = STATE, q = s.quiz, fr = s.lang === "fr";
   document.documentElement.lang = s.lang;
-  document.title = fr ? "buildfi.ca \u2014 Bilan de d\u00e9caissement" : "buildfi.ca \u2014 Retirement Drawdown Report";
+  document.title = fr ? "buildfi.ca \u2014 Horizon" : "buildfi.ca \u2014 Horizon";
   saveState();
 
   if (s.showPaywall && s.reportData) {
@@ -689,7 +698,7 @@ function renderQuiz(step, q, lang) {
       // Logo
       + '<div style="text-align:center;margin-bottom:32px">'
       + '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("lg","light") : '<div style="font-size:24px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>'
-      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan de d\u00e9caissement", "Retirement Drawdown Report") + '</div>'
+      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Horizon", "Horizon") + '</div>'
       + '</div>'
       // Headline
       + '<h1 style="font-size:24px;font-weight:800;line-height:1.3;text-align:center;margin-bottom:24px">'
@@ -699,10 +708,10 @@ function renderQuiz(step, q, lang) {
       + (routeUnsure
           ? '<div style="background:var(--gbg);border:1px solid rgba(196,148,74,.25);border-radius:14px;padding:20px 22px;margin-bottom:24px">'
             + '<p style="font-size:14px;color:var(--ts);line-height:1.7;margin-bottom:0">'
-            + t("Le Bilan de d\u00e9caissement s\u2019adresse aux personnes qui ont cess\u00e9 d\u2019\u00e9pargner activement et qui commencent \u00e0 vivre de leur patrimoine. Si vous \u00eates encore en phase d\u2019accumulation \u2014 revenus de travail, cotisations REER \u2014 le Rapport Interm\u00e9diaire est plus adapt\u00e9.",
-               "The Retirement Drawdown Report is for people who have stopped actively saving and are beginning to live off their assets. If you\u2019re still accumulating \u2014 employment income, RRSP contributions \u2014 the Interm\u00e9diaire Report is a better fit.")
+            + t("Horizon s\u2019adresse aux personnes qui ont cess\u00e9 d\u2019\u00e9pargner activement et qui commencent \u00e0 vivre de leur patrimoine. Si vous \u00eates encore en phase d\u2019accumulation \u2014 revenus de travail, cotisations REER \u2014 le Rapport Interm\u00e9diaire est plus adapt\u00e9.",
+               "Horizon is for people who have stopped actively saving and are beginning to live off their assets. If you\u2019re still accumulating \u2014 employment income, RRSP contributions \u2014 the Interm\u00e9diaire Report is a better fit.")
             + '</p></div>'
-            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:14px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Continuer avec le Bilan de d\u00e9caissement", "Continue with the Retirement Drawdown Report") + '</div></div>'
+            + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:14px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Continuer avec Horizon", "Continue with Horizon") + '</div></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:14px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire \u2192", "To the Interm\u00e9diaire Report \u2192") + '</div></div>'
           : '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:15px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Retraite d\u00e9j\u00e0 en cours ou imminente", "Retirement already started or imminent") + '</div></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:15px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire", "To the Interm\u00e9diaire Report") + ' \u2192</div></div>'

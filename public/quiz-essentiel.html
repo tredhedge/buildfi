@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>buildfi.ca — Rapport Essentiel</title>
-<meta name="description" content="Obtenez votre portrait retraite en 5 à 8 minutes. 8 sections, 5 000 scénarios Monte Carlo, narration IA personnalisée. Paiement unique 14,50 $.">
+<title>buildfi.ca — Bilan</title>
+<meta name="description" content="Votre portrait retraite personnalisé en 5 à 8 minutes. 8 sections, 5 000 scénarios Monte Carlo, narration IA. Paiement unique.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -104,19 +104,27 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 <body>
 <div id="app">
 <div class="seo-shell" style="max-width:520px;margin:48px auto;padding:32px 24px;text-align:center">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Rapport Essentiel — buildfi.ca</div>
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan — buildfi.ca</div>
   <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Votre portrait retraite en 5 à 8 minutes.</h1>
   <p style="color:#555;margin-bottom:12px;line-height:1.6">8 sections personnalisées, 5 000 scénarios Monte Carlo, narration IA. Paiement unique.</p>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Employés, travailleurs autonomes et préretraités qui veulent un premier portrait clair de leur retraite.</p>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Vous recevez :</strong> Un bilan personnalisé livré par courriel en quelques minutes.</p>
+  <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:8px">Ce que vous recevez :</div>
+    <div style="font-size:13px;color:#555;line-height:1.8">
+      ✓ Note de retraite (A+ à F) et taux de réussite<br>
+      ✓ Revenus projetés par source (RRQ, REER, CÉLI)<br>
+      ✓ Observations personnalisées par l'IA<br>
+      ✓ Guide PDF : Les bases de vos finances (13 pages)
+    </div>
+  </div>
+  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Employés, travailleurs autonomes et préretraités qui veulent un premier portrait clair.</p>
   <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
 </div>
 </div>
 <noscript>
 <div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Rapport Essentiel — buildfi.ca</div>
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan — buildfi.ca</div>
   <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Votre portrait retraite en 5 à 8 minutes.</h1>
-  <p style="color:#555;margin-bottom:16px;line-height:1.6">8 sections personnalisées, 5 000 scénarios Monte Carlo, narration IA. Livré par courriel en quelques minutes. Paiement unique — 14,50 $.</p>
+  <p style="color:#555;margin-bottom:16px;line-height:1.6">8 sections personnalisées, 5 000 scénarios Monte Carlo, narration IA. Livré par courriel en quelques minutes. Paiement unique.</p>
   <p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong> Activez JavaScript dans votre navigateur pour y accéder.</p>
   <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
   <p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier. Consultez un planificateur financier certifié avant toute décision importante.</p>
@@ -488,7 +496,7 @@ function render() {
   var s = STATE, q = s.quiz, fr = s.lang === "fr";
   var t = function(f, e) { return fr ? f : e; };
   document.documentElement.lang = s.lang;
-  document.title = fr ? "buildfi.ca \u2014 Rapport Essentiel" : "buildfi.ca \u2014 Essentials Report";
+  document.title = fr ? "buildfi.ca \u2014 Bilan" : "buildfi.ca \u2014 Snapshot";
   saveState();
 
   if (s.showPaywall && s.reportData) {
@@ -668,7 +676,7 @@ function renderQuiz(step, q, lang) {
       + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
       // Brand — SVG logo
       + '<div style="text-align:center;margin-bottom:28px"><div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>'
-      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Essentiel","Essentials Report") + '</div>'
+      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan","Snapshot") + '</div>'
       + '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Planifiez votre libert\u00e9 financi\u00e8re.","Plan your financial freedom.") + '</div></div>'
       // Headline
       + '<h1 style="font-size:28px;font-weight:800;line-height:1.25;text-align:center;margin:0 0 14px">'
@@ -880,7 +888,7 @@ function renderPaywall(D, lang) {
   // Logo
   h += '<div style="text-align:center;margin-bottom:32px">';
   h += '<div style="display:flex;justify-content:center">' + logoSVG("md","light") + '</div>';
-  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Rapport Essentiel","Essentials Report") + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan","Snapshot") + '</div>';
   h += '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Planifiez votre libert\u00e9 financi\u00e8re.","Plan your financial freedom.") + '</div>';
   h += '</div>';
 
