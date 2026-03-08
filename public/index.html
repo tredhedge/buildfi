@@ -625,15 +625,15 @@ input,select,textarea{font-size:16px}
 
 <!-- ═══ JAVASCRIPT ═══ -->
 <script>
-// Logo SVG injection
-if (typeof logoSVG === 'function') {
-  document.addEventListener('DOMContentLoaded', function() {
+// Logo SVG injection — check inside DOMContentLoaded (logo.js is deferred)
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof logoSVG === 'function') {
     var nav = document.querySelector('.nav-logo');
     if (nav) nav.innerHTML = logoSVG('md','light');
     var footer = document.querySelector('.footer-brand');
     if (footer) footer.innerHTML = logoSVG('lg','dark');
-  });
-}
+  }
+});
 (function(){
 'use strict';
 

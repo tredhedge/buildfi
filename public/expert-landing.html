@@ -756,15 +756,15 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 
 <!-- ═══ JAVASCRIPT ═══ -->
 <script>
-// Logo SVG injection
-if (typeof logoSVG === 'function') {
-  document.addEventListener('DOMContentLoaded', function() {
+// Logo SVG injection — check inside DOMContentLoaded (logo.js is deferred)
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof logoSVG === 'function') {
     var nav = document.querySelector('.nav-logo');
     if (nav) nav.innerHTML = logoSVG('md','light');
     var footer = document.querySelector('.footer-brand');
     if (footer) footer.innerHTML = logoSVG('lg','dark');
-  });
-}
+  }
+});
 (function(){
 'use strict';
 var lang = (new URLSearchParams(window.location.search).get('lang') || localStorage.getItem('buildfi_lang') || 'fr').toLowerCase();

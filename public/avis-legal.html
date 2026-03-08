@@ -252,13 +252,13 @@ if (hamburger && drawer) {
     });
   });
 }
-// Logo SVG injection
-if (typeof logoSVG === 'function') {
-  document.addEventListener('DOMContentLoaded', function() {
+// Logo SVG injection — check inside DOMContentLoaded (logo.js is deferred)
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof logoSVG === 'function') {
     var navLogo = document.querySelector('.nav-logo');
     if (navLogo) navLogo.innerHTML = logoSVG('md','light');
-  });
-}
+  }
+});
 </script>
 </body>
 </html>
