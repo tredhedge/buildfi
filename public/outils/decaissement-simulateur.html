@@ -112,7 +112,7 @@ input[type="range"]:focus{box-shadow:none}
 <header class="site-header">
   <div class="logo-wrap">
     <a href="https://www.buildfi.ca">
-      <span class="logo-text">build<span>fi</span></span>
+      <span class="logo-text" id="sim-logo">build<span>fi</span></span>
     </a>
   </div>
   <div class="lang-toggle">
@@ -614,6 +614,8 @@ function shareUrl() {
 // ── Init ─────────────────────────────────────────────────────────────
 setLang("fr");
 calc();
+// Logo injection
+(function(){var e=document.getElementById('sim-logo');if(e&&typeof logoSVG==='function'){e.innerHTML=logoSVG('md','dark');}})();
 </script>
 
 </body>
