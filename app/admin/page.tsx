@@ -422,7 +422,22 @@ function LoadingScreen() {
 
 function DashboardInner() {
   const searchParams = useSearchParams();
-  const secret = searchParams.get("secret");
+
+  // Auth: prefer sessionStorage (persists tab session) over URL param
+  // URL param is consumed once, then stripped from URL to avoid leaking in history/logs
+  const [secret, setSecret] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    const stored = sessionStorage.getItem("bf_admin_secret") || "";
+    const fromUrl = new URLSearchParams(window.location.search).get("secret") || "";
+    if (fromUrl) {
+      // Store in sessionStorage and clean the URL immediately
+      sessionStorage.setItem("bf_admin_secret", fromUrl);
+      window.history.replaceState({}, "", "/admin");
+      return fromUrl;
+    }
+    return stored;
+  });
+  const [secretInput, setSecretInput] = useState("");
 
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [health, setHealth] = useState<HealthData | null>(null);
@@ -477,13 +492,9 @@ function DashboardInner() {
     setLastRefresh(new Date());
   }, [fetchHealth, fetchStats]);
 
-  // Initial auth check: no secret means unauthorized
+  // Initial auth check: no secret → show login form (not unauthorized screen)
   useEffect(() => {
-    if (!secret) {
-      setAuthorized(false);
-      return;
-    }
-    // Auth is validated by the API response (401 = bad secret)
+    if (!secret) return; // stays null (loading) until user submits login
     refreshAll();
   }, [secret, refreshAll]);
 
@@ -495,8 +506,50 @@ function DashboardInner() {
   }, [authorized, refreshAll]);
 
   // ── Render guards ───────────────────────────────────────
+  if (!secret) {
+    // No secret yet — show login form (never expose URL-based auth to users)
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: palette.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+        <div style={{ backgroundColor: palette.card, border: `1px solid ${palette.cardBorder}`, borderRadius: 12, padding: "40px 36px", maxWidth: 360, width: "100%" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: palette.text, marginBottom: 4 }}>BuildFi Admin</h1>
+          <p style={{ fontSize: 13, color: palette.textMuted, marginBottom: 24 }}>Enter your admin secret to continue.</p>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const val = secretInput.trim();
+            if (!val) return;
+            sessionStorage.setItem("bf_admin_secret", val);
+            setSecret(val);
+            setSecretInput("");
+          }}>
+            <input
+              type="password"
+              placeholder="Admin secret"
+              value={secretInput}
+              onChange={(e) => setSecretInput(e.target.value)}
+              autoFocus
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${palette.cardBorder}`, fontSize: 14, marginBottom: 12, boxSizing: "border-box" as const }}
+            />
+            <button type="submit" style={{ width: "100%", padding: "10px 0", background: palette.gold, border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+              Sign in
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
   if (authorized === null) return <LoadingScreen />;
-  if (authorized === false) return <UnauthorizedScreen />;
+  if (authorized === false) return (
+    <div style={{ minHeight: "100vh", backgroundColor: palette.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <div style={{ backgroundColor: palette.card, border: `1px solid ${palette.cardBorder}`, borderRadius: 12, padding: "40px 36px", maxWidth: 360, textAlign: "center" }}>
+        <div style={{ fontSize: 40, fontWeight: 700, color: palette.red, marginBottom: 8 }}>401</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: palette.text, marginBottom: 8 }}>Invalid secret</div>
+        <button onClick={() => { sessionStorage.removeItem("bf_admin_secret"); setSecret(""); setAuthorized(null); }}
+          style={{ marginTop: 16, padding: "8px 20px", background: palette.goldLight, border: `1px solid ${palette.gold}`, borderRadius: 8, color: palette.goldDark, cursor: "pointer", fontWeight: 600 }}>
+          Try again
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div

@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getExpertProfile, getReferral, generateReferralCode, redis } from "@/lib/kv";
+import { getExpertProfile, getReferral, generateReferralCode, getFeedbackByEmail, redis } from "@/lib/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -111,6 +111,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { error: "Missing quizAnswers for second report" },
           { status: 400 }
+        );
+      }
+
+      // Gate: SECOND50 requires a submitted rating (feedback gate per strategy)
+      const feedbackRecord = await getFeedbackByEmail(email);
+      if (!feedbackRecord?.couponUnlocked) {
+        return NextResponse.json(
+          {
+            error: "second_report_not_unlocked",
+            message: "Le rabais 2e rapport est débloqué en soumettant une évaluation de votre premier rapport. / The second report discount unlocks after rating your first report.",
+            feedbackToken: feedbackRecord?.token ?? null,
+          },
+          { status: 403 }
         );
       }
 

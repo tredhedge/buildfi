@@ -15,6 +15,14 @@ export interface AuthResult {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Mask email for logs: "alice@example.com" → "al***@ex***.com" */
+export function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const [dname, ...drest] = domain.split(".");
+  return `${local.slice(0, 2)}***@${dname.slice(0, 2)}***.${drest.join(".")}`;
+}
+
 export async function verifyToken(req: NextRequest): Promise<AuthResult> {
   // Extract token from query param or Authorization header
   const url = new URL(req.url);
@@ -46,11 +54,11 @@ export async function verifyToken(req: NextRequest): Promise<AuthResult> {
     const { email, profile } = result;
 
     if (new Date(profile.expiry) < new Date()) {
-      console.log(`[auth] Token expired for ${email}, expiry: ${profile.expiry}`);
+      console.log(`[auth] Token expired for ${maskEmail(email)}, expiry: ${profile.expiry}`);
       return { authenticated: false, error: "Token expired" };
     }
 
-    console.log(`[auth] Token verified for ${email}`);
+    console.log(`[auth] Token verified for ${maskEmail(email)}`);
     return { authenticated: true, email, profile };
   } catch (err) {
     console.error("[auth] KV lookup error:", err);

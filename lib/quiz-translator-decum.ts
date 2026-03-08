@@ -74,14 +74,14 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   // REER and FERR both map to params.rrsp
   // Engine handles FERR minimum withdrawals automatically at age 71
   // The rrspIsFerf toggle is UX only — no distinct engine param
-  const rrsp = Math.max(0, Math.round(a.rrspBal || 0));
-  const tfsa = Math.max(0, Math.round(a.tfsaBal || 0));
-  const nr   = Math.max(0, Math.round(a.nrBal   || 0));
+  const rrsp = Math.max(0, Math.round(a.rrspBal || a.rrsp || 0));
+  const tfsa = Math.max(0, Math.round(a.tfsaBal || a.tfsa || 0));
+  const nr   = Math.max(0, Math.round(a.nrBal   || a.nr   || 0));
 
   // Couple savings
-  const cRRSP = cOn ? Math.max(0, Math.round(a.cRrspBal || 0)) : 0;
-  const cTFSA = cOn ? Math.max(0, Math.round(a.cTfsaBal || 0)) : 0;
-  const cNR   = cOn ? Math.max(0, Math.round(a.cNrBal   || 0)) : 0;
+  const cRRSP = cOn ? Math.max(0, Math.round(a.cRrspBal || a.cRrsp || a.cRRSP || 0)) : 0;
+  const cTFSA = cOn ? Math.max(0, Math.round(a.cTfsaBal || a.cTfsa || a.cTFSA || 0)) : 0;
+  const cNR   = cOn ? Math.max(0, Math.round(a.cNrBal   || a.cNr   || a.cNR   || 0)) : 0;
 
   // No active contributions in decumulation
   const rrspC = 0;
@@ -137,11 +137,13 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   let penM: number     = 0;
   let penIdx: number   = 0; // engine: 0=non-indexed, 1=half CPI, 2=full CPI
 
-  if (a.hasPension && (a.penMonthly || 0) > 0) {
+  const hasPen = a.hasPension || a.penType === "db";
+  const penMonthlyRaw = a.penMonthly || a.penM || 0;
+  if (hasPen && penMonthlyRaw > 0) {
     penType = "db";
-    penM    = Math.round(a.penMonthly); // mensuel → le moteur gère l'annualisation
-    penIdx  = a.penIndexed === "yes" ? 2
-            : a.penIndexed === "partial" ? 1
+    penM    = Math.round(penMonthlyRaw); // mensuel → le moteur gère l'annualisation
+    penIdx  = (a.penIndexed === "yes" || a.penIdx === true || a.penIdx === 2) ? 2
+            : (a.penIndexed === "partial" || a.penIdx === 1) ? 1
             : 0;
   }
 
@@ -150,11 +152,13 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   let cPenM: number    = 0;
   let cPenIdx: number  = 0;
 
-  if (cOn && a.cHasPension && (a.cPenMonthly || 0) > 0) {
+  const cHasPen = a.cHasPension || a.cPenType === "db";
+  const cPenMonthlyRaw = a.cPenMonthly || a.cPenM || 0;
+  if (cOn && cHasPen && cPenMonthlyRaw > 0) {
     cPenType = "db";
-    cPenM    = Math.round(a.cPenMonthly);
-    cPenIdx  = a.cPenIndexed === "yes" ? 2
-             : a.cPenIndexed === "partial" ? 1
+    cPenM    = Math.round(cPenMonthlyRaw);
+    cPenIdx  = (a.cPenIndexed === "yes" || a.cPenIdx === true || a.cPenIdx === 2) ? 2
+             : (a.cPenIndexed === "partial" || a.cPenIdx === 1) ? 1
              : 0;
   }
 
@@ -246,8 +250,12 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   // ── SECTION 11: CONTEXTE ADDITIONNEL (immobilier, dettes) ───────────────
 
   const homeValue    = Math.max(0, a.homeValue    || 0);
-  const homeMortgage = Math.max(0, a.homeMortgage || 0);
-  const totalDebt    = Math.max(0, a.totalDebt    || 0);
+  const homeMortgage = Math.max(0, a.homeMortgage || a.mortgage || 0);
+  // totalDebt: accept direct value or sum from debts array
+  const totalDebtFromArray = Array.isArray(a.debts)
+    ? a.debts.reduce((s: number, d: any) => s + (d.amount || d.bal || 0), 0)
+    : 0;
+  const totalDebt    = Math.max(0, a.totalDebt || totalDebtFromArray || 0);
 
   // Properties: modeled as net asset in wealth summary only — not as a liquid withdrawal source
   const props: any[] = [];
@@ -360,10 +368,10 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     // Couple splitting
     split: cOn,
     bridge: false,          // no bridge benefit in decum context (already in retirement)
-    // FHSA / LIRA / other accounts not applicable in decumulation
+    // FHSA / LIRA / other accounts
     fhsaBal: 0, fhsaC: 0, fhsaForHome: false, fhsaHomeAge: 0,
     ftqOn: false,
-    liraBal: 0,
+    liraBal: Math.max(0, Math.round(a.liraBal || a.lira || 0)),
     // Capital gains inclusion rates
     cgIncLo: 0.5, cgIncHi: 0.6667, cgThresh: 250000,
     // Business
@@ -378,7 +386,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     cAge, cSex,
     cRetAge: cOn ? (a.cAge || 0) : 0, // partner retirement = partner current age (already retired)
     cSal: 0,     // no partner employment income
-    cRRSP, cTFSA, cNR, cLiraBal: 0,
+    cRRSP, cTFSA, cNR, cLiraBal: cOn ? Math.max(0, Math.round(a.cLiraBal || a.cLira || 0)) : 0,
     cPenType, cPenM, cPenIdx,
     cDCBal: 0,
     cRRSPC: 0, cTFSAC: 0, cNRC: 0, // no couple contributions
@@ -436,6 +444,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     retIncome,
     // Meltdown scenario base preference (for report section 6 "base" label)
     meltIsBase: melt,
+    meltTarget: meltTgt,
     // GK: whether flexibility is active
     gkActive: gkOn,
     // Debt for display

@@ -10,9 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "qa:full": "node tests/debt-tool-tests.js && npx tsx tests/constants-drift.test.js && npm run lint:amf && npm run build",
-    "test:constants": "npx tsx tests/constants-drift.test.js",
-    "lint:amf": "bash -c \"! grep -rn 'devriez\\|recommandons\\|vous devez\\|il faut que\\|conseillons\\|assurez-vous\\|priorisez\\|plan d.action' lib/ public/ app/ --include='*.ts' --include='*.tsx' --include='*.js' --include='*.html' | grep -vi 'NEVER use\\|forbidden\\|interdits\\|lint:amf\\|grep\\|devez savoir\\|/devriez\\|ai-prompt\\|ai-constants\\|JAMAIS utiliser\\|sanitiz\\|function().*return lang'\""
+    "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npm run lint:amf && npm run build",
+    "test:constants": "tsx tests/constants-drift.test.js",
+    "lint:amf": "node scripts/lint-amf.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -33,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }

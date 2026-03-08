@@ -75,6 +75,8 @@ input[type=number]{-moz-appearance:textfield}
 }
 @media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
 <script src="/logo.js"></script>
 </head>
 <body>
@@ -311,7 +313,7 @@ function renderPaywall(D, lang) {
   h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
   h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
-  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis légal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
   h += '</label>';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
   h += t("Obtenir mon rapport complet — 29,50 $","Get my full report — $29.50");

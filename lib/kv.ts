@@ -35,6 +35,8 @@ export interface ExpertProfile {
   reportsGenerated: GeneratedReport[];
   referralCode: string;
   abuseFlag?: boolean; // BUG 20: set when 5+ exports detected in 7 days
+  deletionRequestedAt?: string; // ISO 8601 — set when user requests deletion
+  deletionScheduledAt?: string; // ISO 8601 — actual purge fires on/after this date
 }
 
 export interface SavedProfile {
@@ -495,6 +497,19 @@ export async function listExpertProfiles(): Promise<
     }
   } while (cursor !== 0);
   return results;
+}
+
+// ── Hard delete an expert profile (LPRPDE/Loi 25 purge) ──────────
+// Removes both the profile key and its token index entry.
+export async function deleteExpertProfile(email: string): Promise<boolean> {
+  const norm = normalizeEmail(email);
+  const profile = await redis.get<ExpertProfile>(KEYS.expert(norm));
+  if (!profile) return false;
+  // Remove token index so the token can no longer authenticate
+  await redis.del(KEYS.token(profile.token));
+  // Remove the profile itself
+  await redis.del(KEYS.expert(norm));
+  return true;
 }
 
 // ── Export redis for direct use in rate-limit.ts ──────────

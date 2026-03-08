@@ -94,8 +94,9 @@ export function buildAIPromptDecum(
   const successPct = Number(D.successPct ?? 50);
   const gkActive = !!params.gkOn;
   const alreadyClaiming = q.qppAlreadyClaiming === true || q.qppAlreadyClaiming === "true";
-  const totalWealth = (params.rrsp ?? 0) + (params.tfsa ?? 0) + (params.nr ?? 0) +
-    (params.cRRSP ?? 0) + (params.cTFSA ?? 0) + (params.cNR ?? 0);
+  // Read wealth from _report (authoritative after translation) with params fallback
+  const totalWealth = (rpt.rrsp ?? params.rrsp ?? 0) + (rpt.tfsa ?? params.tfsa ?? 0) + (rpt.nr ?? params.nr ?? 0) +
+    (rpt.cRRSP ?? params.cRRSP ?? 0) + (rpt.cTFSA ?? params.cTFSA ?? 0) + (rpt.cNR ?? params.cNR ?? 0);
   const wdRate = D.initialRate ?? 0;
 
   // Longevity + spending concern
@@ -212,9 +213,9 @@ export function buildAIPromptDecum(
     },
     wealth: {
       total: totalWealth,
-      rrsp: params.rrsp ?? 0, tfsa: params.tfsa ?? 0, nr: params.nr ?? 0,
-      rrspPct: totalWealth > 0 ? Math.round((params.rrsp ?? 0) / totalWealth * 100) : 0,
-      tfsaPct: totalWealth > 0 ? Math.round((params.tfsa ?? 0) / totalWealth * 100) : 0,
+      rrsp: rpt.rrsp ?? params.rrsp ?? 0, tfsa: rpt.tfsa ?? params.tfsa ?? 0, nr: rpt.nr ?? params.nr ?? 0,
+      rrspPct: totalWealth > 0 ? Math.round((rpt.rrsp ?? params.rrsp ?? 0) / totalWealth * 100) : 0,
+      tfsaPct: totalWealth > 0 ? Math.round((rpt.tfsa ?? params.tfsa ?? 0) / totalWealth * 100) : 0,
       homeEquity: rpt.homeEquity ?? 0,
       debtBal: rpt.debtBal ?? 0,
     },
@@ -265,7 +266,7 @@ export function buildAIPromptDecum(
   if (couple) {
     data.couple = {
       partnerAge: params.cAge, partnerSex: params.cSex,
-      cRRSP: params.cRRSP ?? 0, cTFSA: params.cTFSA ?? 0, cNR: params.cNR ?? 0,
+      cRRSP: rpt.cRRSP ?? params.cRRSP ?? 0, cTFSA: rpt.cTFSA ?? params.cTFSA ?? 0, cNR: rpt.cNR ?? params.cNR ?? 0,
       cPenMonthly: rpt.cPenMonthly ?? 0,
     };
   }
@@ -294,7 +295,8 @@ export function buildAIPromptDecum(
 
   const incomeMixHint = gP + " " + (rpt.govQppMonthly ?? 0) + "$/mo + " + oN + " " + (rpt.govOasMonthly ?? 0) + "$/mo" + ((rpt.govPenMonthly ?? 0) > 0 ? " + DB pension " + (rpt.govPenMonthly ?? 0) + "$/mo" : "") + " = " + govMonthly + "$/mo total guaranteed. This covers " + Math.round(govCoveragePct * 100) + "% of the " + Math.round(retIncome / 12) + "$/mo target. The remaining " + Math.max(0, Math.round(retIncome / 12 - govMonthly)) + "$/mo comes from portfolio withdrawals. Activation ages: " + gP + " at " + (params.qppAge ?? 65) + ", " + oN + " at " + (params.oasAge ?? 65) + ".";
 
-  const taxTimingHint = "RRSP/RRIF balance: " + fmt(params.rrsp ?? 0) + "$" + (totalWealth > 0 ? " (" + Math.round((params.rrsp ?? 0) / totalWealth * 100) + "% of liquid savings)" : "") + ". RRIF minimum conversion begins at 71 (forced taxable withdrawals that increase with age). OAS recovery threshold: $95,323 (2026) — every dollar above triggers 15% recovery tax. " + (retIncome > 90000 ? "Current target income of " + fmt(retIncome) + "$ is ABOVE the threshold — OAS recovery is active." : retIncome > 80000 ? "Current target of " + fmt(retIncome) + "$ approaches the threshold." : "Current target is below the threshold.") + " Pension income splitting: " + (couple ? "available — could reduce household tax burden." : "N/A (single profile).") + " Observe tax implications of the drawdown sequence. DO NOT prescribe tax strategy.";
+  const rrspVal = rpt.rrsp ?? params.rrsp ?? 0;
+  const taxTimingHint = "RRSP/RRIF balance: " + fmt(rrspVal) + "$" + (totalWealth > 0 ? " (" + Math.round(rrspVal / totalWealth * 100) + "% of liquid savings)" : "") + ". RRIF minimum conversion begins at 71 (forced taxable withdrawals that increase with age). OAS recovery threshold: $95,323 (2026) — every dollar above triggers 15% recovery tax. " + (retIncome > 90000 ? "Current target income of " + fmt(retIncome) + "$ is ABOVE the threshold — OAS recovery is active." : retIncome > 80000 ? "Current target of " + fmt(retIncome) + "$ approaches the threshold." : "Current target is below the threshold.") + " Pension income splitting: " + (couple ? "available — could reduce household tax burden." : "N/A (single profile).") + " Observe tax implications of the drawdown sequence. DO NOT prescribe tax strategy.";
 
   const meltdownHint = meltIsBase
     ? "Income is already at or below the meltdown target (" + fmt(meltTarget) + "$/yr). Margin is zero. Observe what this means for spending flexibility and whether further reduction is feasible."

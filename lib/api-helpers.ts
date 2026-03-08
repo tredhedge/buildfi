@@ -95,13 +95,13 @@ export function formatMCResults(mc: Record<string, any>): Record<string, any> {
     successRate: mc.succ,
     grade: gradeFromSuccess(mc.succ),
     medianWealth: mc.rMedF,
+    // Engine provides p5/p25/p50/p75/p95 — p10/p90 are not computed and omitted
+    // to avoid misrepresenting precision to users making retirement decisions.
     percentiles: {
       p5: mc.rP5F,
-      p10: mc.rP5F, // engine doesn't have p10 real, use p5 as floor
       p25: mc.rP25F,
       p50: mc.rMedF,
       p75: mc.rP75F,
-      p90: mc.rP75F, // engine doesn't have p90 real, use p75
       p95: mc.rP95F,
     },
     liquidWealth: {

@@ -48,7 +48,7 @@ import {
 import { randomUUID } from "crypto";
 import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
-import { buildMagicLinkUrl } from "@/lib/auth";
+import { buildMagicLinkUrl, maskEmail } from "@/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -197,7 +197,7 @@ async function handleCheckoutCompleted(
     const quizAnswers = reassembleQuizAnswers(metadata);
     const lang = (metadata.lang || "fr") as "fr" | "en";
 
-    console.log(`[webhook] Processing ${tier} report for ${email} (${lang})`);
+    console.log(`[webhook] Processing ${tier} report for ${maskEmail(email)} (${lang})`);
 
     const fr = lang === "fr";
     let reportHTML: string;
@@ -288,7 +288,7 @@ async function handleCheckoutCompleted(
       allocationUrl,
     });
 
-    console.log(`[webhook] Email sent to ${email}`);
+    console.log(`[webhook] Email sent to ${maskEmail(email)}`);
 
     // Create referral record so this user's ref link works
     if (metadata.userRefCode) {
@@ -301,6 +301,10 @@ async function handleCheckoutCompleted(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Processing failed";
     console.error("[webhook] Processing error:", err);
+    // Clear idempotency flag so Stripe retries can re-process on transient failure
+    await unmarkProcessed(session.id).catch((e) =>
+      console.error("[webhook] Failed to unmark processed:", e)
+    );
     await sendAdminAlert(
       `${tier} pipeline failed`,
       `Email: ${email}\nSession: ${session.id}\nTier: ${tier}\nError: ${msg}`
@@ -325,7 +329,7 @@ async function handleDecaissementPurchase(
     const fr = lang === "fr";
     const quiz = quizAnswers as Record<string, any>;
 
-    console.log(`[webhook] Processing Décaissement report for ${email} (${lang})`);
+    console.log(`[webhook] Processing Décaissement report for ${maskEmail(email)} (${lang})`);
 
     const params = translateDecumToMC(quizAnswers);
     const mcStart = Date.now();
@@ -421,7 +425,7 @@ async function handleDecaissementPurchase(
       feedbackToken,
       allocationUrl: simulatorUrl,
     });
-    console.log(`[webhook] Décaissement email sent to ${email}`);
+    console.log(`[webhook] Décaissement email sent to ${maskEmail(email)}`);
 
     if (metadata.userRefCode) {
       await createReferralRecord(metadata.userRefCode, email).catch((err) =>
@@ -456,7 +460,7 @@ async function handleExpertPurchase(
     const lang = (metadata.lang || "fr") as "fr" | "en";
     const quizAnswers = reassembleQuizAnswers(metadata);
 
-    console.log(`[webhook] Processing Expert purchase for ${email}`);
+    console.log(`[webhook] Processing Expert purchase for ${maskEmail(email)}`);
 
     // Check if profile already exists (upgrade scenario)
     const existing = await getExpertProfile(email);
@@ -499,7 +503,7 @@ async function handleExpertPurchase(
       isNewAccount: !existing,
     });
 
-    console.log(`[webhook] Expert profile created for ${email}, magic link sent`);
+    console.log(`[webhook] Expert profile created for ${maskEmail(email)}, magic link sent`);
 
     // Generate initial Expert report (S6 pipeline)
     try {
@@ -567,7 +571,7 @@ async function handleExpertPurchase(
         referralCode: profile.referralCode,
       });
 
-      console.log(`[webhook] Expert initial report email sent to ${email}`);
+      console.log(`[webhook] Expert initial report email sent to ${maskEmail(email)}`);
     } catch (reportErr) {
       // Non-fatal: profile + magic link already sent, report is a bonus
       console.error("[webhook] Expert initial report generation failed (non-fatal):", reportErr);
@@ -583,6 +587,10 @@ async function handleExpertPurchase(
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Expert processing failed";
     console.error("[webhook] Expert purchase error:", err);
+    // Clear idempotency flag so Stripe retries can re-process on transient failure
+    await unmarkProcessed(sessionId).catch((e) =>
+      console.error("[webhook] Failed to unmark processed:", e)
+    );
     await sendAdminAlert(
       "Expert purchase pipeline failed",
       `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
@@ -626,9 +634,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
       ],
     });
 
-    console.log(
-      `[webhook] Export addon for ${email}, new total: ${remaining}`
-    );
+    console.log(`[webhook] Export addon for ${maskEmail(email)}, new total: ${remaining}`);
 
     return NextResponse.json({
       received: true,
@@ -638,6 +644,10 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Addon processing failed";
     console.error("[webhook] Export addon error:", err);
+    // Clear idempotency flag so Stripe retries can re-process on transient failure
+    await unmarkProcessed(sessionId).catch((e) =>
+      console.error("[webhook] Failed to unmark processed:", e)
+    );
     await sendAdminAlert(
       "Export addon failed",
       `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`

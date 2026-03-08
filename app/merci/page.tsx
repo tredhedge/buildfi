@@ -320,7 +320,7 @@ function ConfirmationContent() {
                 <a
                   href={tier === "essentiel"
                     ? `/quiz-intermediaire.html?lang=${lang}`
-                    : `/expert-landing.html?lang=${lang}`}
+                    : `/expert/landing?lang=${lang}`}
                   onClick={() => trackEvent(EVENTS.UPGRADE_CLICKED, { from: tier, to: tier === "essentiel" ? "intermediaire" : "expert" })}
                   style={{
                     display: "inline-block", background: GOLD, color: "#fff",

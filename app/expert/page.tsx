@@ -5,6 +5,7 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { trackEvent, EVENTS } from "@/lib/tracking";
 
 // ── Expert Kit colors ──────────────────────────────────────────────
 const EK = {
@@ -173,6 +174,10 @@ function PortalContent() {
   const [feedback, setFeedback] = useState<FeedbackSummary | null>(null);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
+  const [dataExportStatus, setDataExportStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [deleteScheduledAt, setDeleteScheduledAt] = useState<string | null>(null);
   const tokenRef = useRef(tokenParam);
 
   const fr = lang === "fr";
@@ -235,6 +240,7 @@ function PortalContent() {
 
   const regenerateReport = useCallback(async (reportId: string) => {
     setRegeneratingId(reportId);
+    trackEvent(EVENTS.LAB_EXPORT_STARTED, { creditsRemaining: profile?.exportsAI ?? 0 });
     try {
       const res = await fetch("/api/export", {
         method: "POST",
@@ -261,6 +267,56 @@ function PortalContent() {
       setRegeneratingId(null);
     }
   }, [apiHeaders, t]);
+
+  // ── Download full account data (Loi 25 portability) ──────────────
+  const downloadAccountData = useCallback(async () => {
+    setDataExportStatus("loading");
+    try {
+      const res = await fetch("/api/data/export", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Export failed");
+      }
+      // Trigger browser download
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `buildfi-donnees-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setDataExportStatus("done");
+    } catch (err: any) {
+      console.error("[portal] Data export failed:", err);
+      setDataExportStatus("error");
+    }
+  }, []);
+
+  // ── Request account deletion (Loi 25 — 30-day scheduled purge) ───
+  const requestAccountDeletion = useCallback(async () => {
+    setDeleteStatus("loading");
+    try {
+      const res = await fetch("/api/data/delete", {
+        method: "POST",
+        headers: apiHeaders(),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Deletion request failed");
+      }
+      const d = await res.json();
+      setDeleteScheduledAt(d.deletionScheduledAt || null);
+      setDeleteStatus("done");
+      setDeleteConfirmOpen(false);
+    } catch (err: any) {
+      console.error("[portal] Deletion request failed:", err);
+      setDeleteStatus("error");
+      setDeleteConfirmOpen(false);
+    }
+  }, [apiHeaders]);
 
   // Auth — use ref to prevent re-auth after token is removed from URL
   const initialTokenRef = useRef(tokenParam);
@@ -389,7 +445,9 @@ function PortalContent() {
             </div>
           </a>
           {profile.exportsAI > 0 ? (
-            <a href={`/simulateur?token=${tokenRef.current}&action=export`} style={{
+            <a href={`/simulateur?token=${tokenRef.current}&action=export`}
+              onClick={() => trackEvent(EVENTS.LAB_EXPORT_STARTED, { creditsRemaining: profile.exportsAI })}
+              style={{
               display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
               background: `linear-gradient(135deg, ${EK.gold}, #d4a85a)`, borderRadius: 12, textDecoration: "none", color: EK.tx,
             }}>
@@ -724,7 +782,7 @@ function PortalContent() {
         )}
 
         {/* Account details */}
-        <section>
+        <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
             {t("Détails du compte", "Account details")}
           </h2>
@@ -732,18 +790,113 @@ function PortalContent() {
             {[
               [t("Courriel", "Email"), profile.email],
               [t("Expiration", "Expiry"), fDate(profile.expiry, fr) + ` (${daysLeft} ${t("jours", "days")})`],
-              [t("Credits AI", "AI credits"), String(profile.exportsAI)],
+              [t("Crédits AI", "AI credits"), String(profile.exportsAI)],
               [t("Bilan Annuel", "Annual Assessment"), profile.bilanUsed ? t("Utilisé", "Used") : t("Disponible", "Available")],
-              [t("Code referral", "Referral code"), profile.referralCode],
+              [t("Code référal", "Referral code"), profile.referralCode],
             ].map(([k, v], i) => (
               <div key={i} style={{
                 display: "flex", justifyContent: "space-between", padding: "10px 0",
-                borderBottom: i < 4 ? `1px solid ${EK.sable}` : "none", fontSize: 13,
+                borderBottom: `1px solid ${EK.sable}`, fontSize: 13,
               }}>
                 <span style={{ color: EK.txDim }}>{k}</span>
                 <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>{v}</span>
               </div>
             ))}
+
+            {/* ── Data rights (Loi 25 / LPRPDE) ── */}
+            <div style={{ paddingTop: 20, marginTop: 4 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: EK.txDim, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                {t("Vos droits sur vos données", "Your data rights")}
+              </div>
+
+              {/* Download data */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: EK.tx }}>{t("Télécharger mes données", "Download my data")}</div>
+                  <div style={{ fontSize: 12, color: EK.txMuted }}>{t("Exportez toutes vos données en format JSON.", "Export all your data as JSON.")}</div>
+                </div>
+                {dataExportStatus === "done" ? (
+                  <span style={{ fontSize: 12, color: EK.green, fontWeight: 600 }}>&#10003; {t("Téléchargement lancé", "Download started")}</span>
+                ) : dataExportStatus === "error" ? (
+                  <span style={{ fontSize: 12, color: EK.red, fontWeight: 600 }}>{t("Erreur — réessayez", "Error — retry")}</span>
+                ) : (
+                  <button
+                    onClick={downloadAccountData}
+                    disabled={dataExportStatus === "loading"}
+                    style={{
+                      background: EK.marine, border: "none", borderRadius: 6, color: "#fff",
+                      padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: dataExportStatus === "loading" ? "wait" : "pointer",
+                      fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {dataExportStatus === "loading" ? "..." : t("Télécharger", "Download")}
+                  </button>
+                )}
+              </div>
+
+              {/* Delete account */}
+              {deleteStatus === "done" && deleteScheduledAt ? (
+                <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "12px 16px", fontSize: 13, color: "#9a3412" }}>
+                  {t(
+                    `Suppression confirmée. Votre compte sera supprimé le ${fDate(deleteScheduledAt, true)}.`,
+                    `Deletion confirmed. Your account will be deleted on ${fDate(deleteScheduledAt, false)}.`
+                  )}
+                </div>
+              ) : deleteStatus === "error" ? (
+                <div style={{ fontSize: 13, color: EK.red }}>{t("Erreur lors de la demande — réessayez ou écrivez à support@buildfi.ca.", "Request failed — retry or email support@buildfi.ca.")}</div>
+              ) : deleteConfirmOpen ? (
+                <div style={{ background: "#fef2f2", border: `1px solid ${EK.red}44`, borderRadius: 8, padding: "16px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: EK.red, marginBottom: 8 }}>
+                    {t("Confirmer la suppression du compte", "Confirm account deletion")}
+                  </div>
+                  <div style={{ fontSize: 13, color: EK.tx, marginBottom: 14, lineHeight: 1.6 }}>
+                    {t(
+                      "Votre compte, vos profils et vos bilans seront supprimés dans 30 jours. Cette action est irréversible.",
+                      "Your account, profiles, and assessments will be deleted in 30 days. This action cannot be undone."
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={requestAccountDeletion}
+                      disabled={deleteStatus === "loading"}
+                      style={{
+                        background: EK.red, border: "none", borderRadius: 6, color: "#fff",
+                        padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: deleteStatus === "loading" ? "wait" : "pointer",
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      {deleteStatus === "loading" ? "..." : t("Confirmer la suppression", "Confirm deletion")}
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirmOpen(false)}
+                      style={{
+                        background: "none", border: `1px solid ${EK.border}`, borderRadius: 6, color: EK.txDim,
+                        padding: "8px 18px", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      {t("Annuler", "Cancel")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: EK.tx }}>{t("Supprimer mon compte", "Delete my account")}</div>
+                    <div style={{ fontSize: 12, color: EK.txMuted }}>{t("Suppression définitive dans 30 jours.", "Permanent deletion in 30 days.")}</div>
+                  </div>
+                  <button
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    style={{
+                      background: "none", border: `1px solid ${EK.red}66`, borderRadius: 6, color: EK.red,
+                      padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {t("Supprimer", "Delete account")}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </main>

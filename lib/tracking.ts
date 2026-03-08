@@ -62,6 +62,16 @@ export const EVENTS = {
   SIMULATOR_RECALC: "simulator_recalc",
   EXPORT_GENERATED: "export_generated",
   UPGRADE_CLICKED: "upgrade_clicked",
+  // ── Lab simulator events ──────────────────────────────────────────
+  LAB_MODE_SWITCH: "lab_mode_switch",           // { from: "guided"|"planner", to: "guided"|"planner" }
+  LAB_PROFILE_LOADED: "lab_profile_loaded",     // { source: "quiz"|"preset"|"saved", presetId?: string }
+  LAB_PROFILE_SAVED: "lab_profile_saved",       // { name: string }
+  LAB_OPTIMIZER_RUN: "lab_optimizer_run",       // { successRate: number, leversFound: number }
+  LAB_COMPARE_RUN: "lab_compare_run",           // { decisionId: string, variantCount: number }
+  LAB_ANNUAL_RUN: "lab_annual_run",             // { grade: string, successPct: number }
+  LAB_SUMMARY_OPENED: "lab_summary_opened",     // {}
+  LAB_EXPORT_STARTED: "lab_export_started",     // { creditsRemaining: number }
+  LAB_PLANNER_OPENED: "lab_planner_opened",     // { source: "mode_switch"|"auto" }
 } as const;
 
 // ---------------------------------------------------------------------------

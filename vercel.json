@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/constants-check",
       "schedule": "0 14 10 1,2 *"
+    },
+    {
+      "path": "/api/cron/purge",
+      "schedule": "0 17 * * *"
     }
   ]
 }

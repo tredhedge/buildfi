@@ -72,6 +72,8 @@ input[type=number]{-moz-appearance:textfield}
 }
 @media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
 <script src="/logo.js"></script>
 </head>
 <body>
@@ -315,7 +317,7 @@ function renderPaywall(D, lang) {
   h += '<input id="buyer-email" type="email" value="' + (_upgradeEmail || '') + '" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
   h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
-  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis légal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
   h += '</label>';
   h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
   h += t("Acc\u00e9der au Laboratoire \u2014 64,50 $","Access Lab \u2014 $64.50");
@@ -342,6 +344,8 @@ function startCheckout() {
   var btn = document.querySelector("#email-gate button");
   btn.disabled = true;
   btn.textContent = STATE.lang === "fr" ? "Redirection..." : "Redirecting...";
+  var _refCode = null;
+  try { _refCode = sessionStorage.getItem('bf_ref'); } catch(e) {}
   fetch("/api/checkout", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
@@ -351,7 +355,8 @@ function startCheckout() {
       email: email,
       tier: "expert",
       termsAccepted: true
-    }, _upgradeFrom ? { upgradeFrom: _upgradeFrom } : {}))
+    }, _upgradeFrom ? { upgradeFrom: _upgradeFrom } : {},
+       _refCode ? { referralCode: _refCode } : {}))
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -1036,7 +1041,7 @@ function renderQuiz(step,q,lang,activeBlocks){
     var sophCards=[
       {v:"rapide",l:t("Rapide","Quick"),d:t("On utilise les meilleures pratiques pour tout.","We use best practices for everything."),note:t("Mortalité stochastique, queues épaisses, inflation stochastique, Guyton-Klinger, allocation dynamique. Idéal si vous faites confiance au moteur.","Stochastic mortality, fat tails, stochastic inflation, Guyton-Klinger, dynamic allocation. Ideal if you trust the engine.")},
       {v:"personnalise",l:t("Personnalisé","Custom"),d:t("Vous choisissez vos hypothèses.","You choose your assumptions."),note:t("Activez ou désactivez les modules avancés un par un. Pour ceux qui veulent comprendre chaque levier.","Toggle advanced modules on or off individually. For those who want to understand each lever.")},
-      {v:"avance",l:t("Avancé","Advanced"),d:t("Accès complet — 30 onglets, 190 paramètres.","Full access — 30 tabs, 190 parameters."),note:t("Pour les experts en planification financière ou les passionnés FIRE. Chaque paramètre est modifiable dans le simulateur.","For financial planning experts or FIRE enthusiasts. Every parameter is editable in the simulator.")}
+      {v:"avance",l:t("Avancé","Advanced"),d:t("Accès complet — 30+ modules, 190 paramètres.","Full access — 30+ modules, 190 parameters."),note:t("Pour les experts en planification financière ou les passionnés FIRE. Chaque paramètre est modifiable dans le simulateur.","For financial planning experts or FIRE enthusiasts. Every parameter is editable in the simulator.")}
     ].map(function(o){return'<div class="card'+(q.sophistication===o.v?" sel":"")+'" onclick="uq(\'sophistication\',\''+o.v+'\')" style="padding:14px 16px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:14px">'+o.l+'</span></div>'
       +'<div style="font-size:12px;color:var(--ts);margin-top:4px">'+o.d+'</div>'

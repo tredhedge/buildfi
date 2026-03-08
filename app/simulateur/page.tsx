@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { trackEvent, EVENTS } from "@/lib/tracking";
 
 // ═══════════════════════════════════════════════════════════════════
 // BuildFi — Simulateur Expert
@@ -717,11 +718,16 @@ function SimulateurContent() {
   const [optimizeResults, setOptimizeResults] = useState<OptimizeResults | null>(null);
   const [optimizeStatus, setOptimizeStatus] = useState<"idle" | "loading" | "error">("idle");
   const [showResume, setShowResume] = useState(false);
-  // Avancé mode: full planner iframe vs simplified React UI
+  const [showHelp, setShowHelp] = useState(false);
+  // paramSource: tracks where current params came from for the Profile button label
+  const [paramSource, setParamSource] = useState<{ type: "quiz" | "preset" | "saved" | "empty"; label: string }>({ type: "empty", label: "" });
+  // Guided/Planner mode: simplified React UI vs full planner iframe
   const [viewMode, setViewMode] = useState<"react" | "planner">("react");
   // Planner iframe ref for postMessage bridge
   const plannerRef = useRef<HTMLIFrameElement>(null);
-  // Track quiz params for planner bridge
+  // Ref always tracking current params — used by bridge so planner always receives latest state
+  const paramsRef = useRef<Record<string, unknown>>({ ...DEFAULT_PARAMS });
+  // Track quiz params for planner bridge (kept for backward-compat; bridge now uses paramsRef)
   const [quizParamsForPlanner, setQuizParamsForPlanner] = useState<Record<string, unknown> | null>(null);
 
   const fr = lang === "fr";
@@ -767,19 +773,25 @@ function SimulateurContent() {
             setDisclosure(disclosureFromQuizData(quizData));
             // Store quiz params for planner bridge
             setQuizParamsForPlanner(quizParams);
+            // Track source for Profile button label
+            setParamSource({ type: "quiz", label: data.email?.split("@")[0] || "Quiz" });
+            trackEvent(EVENTS.LAB_PROFILE_LOADED, { source: "quiz" });
             // Skip Porte B modal — user already filled the quiz (Porte A path)
             // Avancé users go straight to full planner
             if (data.sophistication === "avance") {
               setViewMode("planner");
+              trackEvent(EVENTS.LAB_PLANNER_OPENED, { source: "auto" });
             }
             // Do NOT show Porte B — quiz data is loaded
           } else {
             // No quiz data — show Porte B preset chooser or planner
             if (data.sophistication === "avance") {
               setViewMode("planner");
+              trackEvent(EVENTS.LAB_PLANNER_OPENED, { source: "auto" });
             } else {
               setShowPorteB(true);
             }
+            setParamSource({ type: "empty", label: "" });
           }
 
           // Remove token from URL bar for security (C9 fix)
@@ -794,16 +806,22 @@ function SimulateurContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Keep paramsRef current so bridge always sends latest React state ──
+  useEffect(() => { paramsRef.current = params; }, [params]);
+
   // ── Planner iframe postMessage bridge (bidirectional) ──
+  // Bug fixes:
+  //   A) Send current params (paramsRef) not original quiz params — preserves Standard edits
+  //   B) No quizParamsForPlanner guard — bridge works for Porte B (preset) users too
   useEffect(() => {
-    if (viewMode !== "planner" || !quizParamsForPlanner) return;
+    if (viewMode !== "planner") return;
 
     const handleMessage = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       if (e.data?.type === "buildfi-planner-ready") {
-        // Planner iframe is ready — send quiz params
+        // Planner iframe is ready — send current React state (not original quiz snapshot)
         plannerRef.current?.contentWindow?.postMessage(
-          { type: "buildfi-load-params", params: quizParamsForPlanner },
+          { type: "buildfi-load-params", params: paramsRef.current },
           window.location.origin
         );
       }
@@ -815,7 +833,7 @@ function SimulateurContent() {
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [viewMode, quizParamsForPlanner]);
+  }, [viewMode]);
 
   // ── useSimulation ──
   const { results, status: simStatus, error: simError } = useSimulation(params, token, authStatus === "ok");
@@ -833,6 +851,8 @@ function SimulateurContent() {
     setDefaults(new Set(Object.keys(preset.params)));
     setShowPorteB(false);
     setActiveTab("diagnostic");
+    setParamSource({ type: "preset", label: preset.fr });
+    trackEvent(EVENTS.LAB_PROFILE_LOADED, { source: "preset", presetId: preset.id });
   }, []);
 
   // ── Sidebar group toggle ──
@@ -906,6 +926,7 @@ function SimulateurContent() {
       if (data.success) {
         setCompareResults(data.variants);
         setCompareStatus("idle");
+        trackEvent(EVENTS.LAB_COMPARE_RUN, { decisionId, variantCount: data.variants?.length ?? 0 });
       } else {
         setCompareStatus("error");
       }
@@ -919,6 +940,7 @@ function SimulateurContent() {
     if (!token) return;
     setOptimizeStatus("loading");
     setOptimizeResults(null);
+    trackEvent(EVENTS.LAB_OPTIMIZER_RUN, { successRate: results?.successRate ?? 0, leversFound: 0 });
 
     try {
       const res = await fetch("/api/optimize", {
@@ -931,13 +953,14 @@ function SimulateurContent() {
       if (data.success) {
         setOptimizeResults(data);
         setOptimizeStatus("idle");
+        trackEvent(EVENTS.LAB_OPTIMIZER_RUN, { successRate: data.baseline?.successRate ?? 0, leversFound: data.levers?.length ?? 0 });
       } else {
         setOptimizeStatus("error");
       }
     } catch {
       setOptimizeStatus("error");
     }
-  }, [params, token]);
+  }, [params, token, results]);
 
   // ── Loading screen ──
   if (authStatus === "loading") {
@@ -971,46 +994,93 @@ function SimulateurContent() {
         input[type=number] { -moz-appearance: textfield; }
       `}</style>
 
-      {/* ── Mobile banner ── */}
-      {showMobileBanner && (
-        <div id="mobile-banner" style={{ display: "none", background: EK.marine, color: "#fff", padding: "10px 16px", fontSize: 13, textAlign: "center", position: "relative" }}>
-          <style>{`@media (max-width: 767px) { #mobile-banner { display: block !important; } }`}</style>
-          {fr ? "Pour la meilleure expérience, utilisez un ordinateur ou une tablette." : "For the best experience, use a computer or tablet."}
-          <button onClick={() => setShowMobileBanner(false)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer" }} aria-label="Close">x</button>
+      {/* ── Mobile/tablet banner — deliberate responsive policy ── */}
+      {showMobileBanner && viewMode === "planner" && (
+        <div id="planner-mobile-banner" style={{ display: "none", background: "#7a1c1c", color: "#fff", padding: "10px 16px", fontSize: 13, textAlign: "center", position: "relative" }}>
+          <style>{`@media (max-width: 1023px) { #planner-mobile-banner { display: block !important; } }`}</style>
+          {fr
+            ? "Le Mode Planificateur est optimisé pour ordinateur. Sur tablette ou téléphone, utilisez le Mode Guidé."
+            : "Planner Mode is optimized for desktop. On tablet or phone, use Guided Mode instead."}
+          <button onClick={() => setShowMobileBanner(false)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer" }} aria-label="Fermer">×</button>
+        </div>
+      )}
+      {showMobileBanner && viewMode !== "planner" && (
+        <div id="guided-mobile-banner" style={{ display: "none", background: EK.marine, color: "#fff", padding: "8px 16px", fontSize: 12, textAlign: "center", position: "relative" }}>
+          <style>{`@media (max-width: 479px) { #guided-mobile-banner { display: block !important; } }`}</style>
+          {fr ? "Mode Guidé — expérience optimale sur tablette ou ordinateur." : "Guided Mode — best experience on tablet or desktop."}
+          <button onClick={() => setShowMobileBanner(false)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#fff", fontSize: 16, cursor: "pointer" }} aria-label="Fermer">×</button>
         </div>
       )}
 
       {/* ── Header ── */}
       <header style={{ background: EK.marine, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'Newsreader', serif" }}>buildfi.ca</span>
-          <span style={{ fontSize: 13, color: EK.gold, fontWeight: 600 }}>Simulateur Expert</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <a href={`/expert?token=${token}`} style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'Newsreader', serif", textDecoration: "none" }}>buildfi.ca</a>
+          <span style={{ fontSize: 13, color: EK.gold, fontWeight: 600 }}>
+            {T("Laboratoire", "Lab", lang)}
+          </span>
+          {/* Mode indicator pill */}
+          <span style={{
+            fontSize: 11, fontWeight: 600, color: viewMode === "planner" ? EK.gold : "rgba(255,255,255,0.5)",
+            background: viewMode === "planner" ? "rgba(196,154,26,0.15)" : "rgba(255,255,255,0.07)",
+            border: `1px solid ${viewMode === "planner" ? "rgba(196,154,26,0.3)" : "rgba(255,255,255,0.12)"}`,
+            borderRadius: 10, padding: "2px 8px", letterSpacing: "0.03em",
+          }}>
+            {viewMode === "planner" ? T("Mode Planificateur", "Planner Mode", lang) : T("Mode Guidé", "Guided Mode", lang)}
+          </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {profile?.email && (
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", cursor: "default" }} title={profile.email}>
-              {profile.email.split("@")[0]}
-            </span>
-          )}
-          <button onClick={() => setShowPorteB(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, cursor: "pointer" }}>
-            {fr ? "Profil" : "Profile"}
-          </button>
-          <button onClick={() => {}} style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, cursor: "pointer" }}>
-            {fr ? "Aide" : "Help"}
-          </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Profile button — shows source context */}
           <button
-            onClick={() => setViewMode(v => v === "planner" ? "react" : "planner")}
+            onClick={() => setShowPorteB(true)}
+            style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+            title={paramSource.type !== "empty"
+              ? (fr ? `Chargé depuis: ${paramSource.type === "quiz" ? "quiz" : paramSource.type === "preset" ? `profil ${paramSource.label}` : paramSource.label}` : `Loaded from: ${paramSource.type === "quiz" ? "quiz" : paramSource.type === "preset" ? `preset ${paramSource.label}` : paramSource.label}`)
+              : (fr ? "Choisir un profil de départ" : "Choose a starting profile")}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            {paramSource.type !== "empty"
+              ? (paramSource.type === "quiz" ? T("Quiz", "Quiz", lang) : paramSource.label.length > 12 ? paramSource.label.slice(0, 12) + "…" : paramSource.label)
+              : T("Profil", "Profile", lang)}
+          </button>
+
+          {/* Help button — real panel */}
+          <button
+            onClick={() => setShowHelp(h => !h)}
             style={{
-              background: viewMode === "planner" ? "rgba(196,154,26,0.2)" : "none",
-              border: `1px solid ${viewMode === "planner" ? EK.gold : "rgba(255,255,255,0.2)"}`,
-              borderRadius: 6, color: viewMode === "planner" ? EK.gold : "#fff",
-              padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              background: showHelp ? "rgba(255,255,255,0.12)" : "none",
+              border: `1px solid ${showHelp ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.2)"}`,
+              borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, cursor: "pointer",
             }}
           >
-            {viewMode === "planner"
-              ? (fr ? "Mode Standard" : "Standard Mode")
-              : (fr ? "Mode Avancé" : "Advanced Mode")}
+            {T("Aide", "Help", lang)}
           </button>
+
+          {/* Mode switch button */}
+          <button
+            onClick={() => {
+              const next = viewMode === "planner" ? "react" : "planner";
+              trackEvent(EVENTS.LAB_MODE_SWITCH, { from: viewMode === "planner" ? "planner" : "guided", to: next === "planner" ? "planner" : "guided" });
+              if (next === "planner") trackEvent(EVENTS.LAB_PLANNER_OPENED, { source: "mode_switch" });
+              setViewMode(next);
+            }}
+            style={{
+              background: viewMode === "planner" ? "rgba(196,154,26,0.2)" : "rgba(255,255,255,0.08)",
+              border: `1px solid ${viewMode === "planner" ? EK.gold : "rgba(255,255,255,0.25)"}`,
+              borderRadius: 6, color: viewMode === "planner" ? EK.gold : "#fff",
+              padding: "4px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+            title={viewMode === "planner"
+              ? T("Revenir au Mode Guidé — workflows, analyses, résumé", "Return to Guided Mode — workflows, analysis, summary", lang)
+              : T("Ouvrir le Mode Planificateur — contrôle total de 190 paramètres", "Open Planner Mode — full control of 190 parameters", lang)}
+          >
+            {viewMode === "planner"
+              ? T("← Mode Guidé", "← Guided Mode", lang)
+              : T("Mode Planificateur →", "Planner Mode →", lang)}
+          </button>
+
           <button
             onClick={() => setLang(l => l === "fr" ? "en" : "fr")}
             style={{ background: EK.gold, border: "none", borderRadius: 6, color: "#fff", padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
@@ -1020,7 +1090,61 @@ function SimulateurContent() {
         </div>
       </header>
 
-      {/* ═══ PLANNER IFRAME MODE (Avancé — full 27-tab planner) ═══ */}
+      {/* ── Help panel (collapsible below header) ── */}
+      {showHelp && viewMode !== "planner" && (
+        <div style={{ background: "#132057", borderBottom: `1px solid rgba(255,255,255,0.1)`, padding: "16px 24px" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+            {[
+              {
+                icon: "⊕",
+                title: T("Mode Guidé", "Guided Mode", lang),
+                desc: T("Workflows pour tester vos décisions, optimiser automatiquement et générer un Bilan Annuel.", "Workflows to test decisions, auto-optimize, and generate an Annual Assessment.", lang),
+              },
+              {
+                icon: "⊞",
+                title: T("Mode Planificateur", "Planner Mode", lang),
+                desc: T("Accès complet à 190 paramètres. Idéal pour explorer des hypothèses avancées.", "Full access to 190 parameters. Ideal for exploring advanced assumptions.", lang),
+              },
+              {
+                icon: "◑",
+                title: T("Tester une décision", "Test a decision", lang),
+                desc: T("Comparez deux ou trois scénarios côte à côte. Ex: RRQ à 60, 65 ou 70 ans.", "Compare two or three scenarios side by side. E.g. CPP at 60, 65, or 70.", lang),
+              },
+              {
+                icon: "↑",
+                title: T("Optimiser", "Optimize", lang),
+                desc: T("Le modèle explore des milliers de combinaisons et identifie vos leviers les plus impactants.", "The model explores thousands of combinations and identifies your most impactful levers.", lang),
+              },
+              {
+                icon: "▤",
+                title: T("Résumé 1 page", "1-Page Summary", lang),
+                desc: T("Apparaît après la première simulation. Résumé imprimable de votre plan.", "Appears after the first simulation. Printable plan summary.", lang),
+              },
+              {
+                icon: "↻",
+                title: T("Bilan Annuel", "Annual Assessment", lang),
+                desc: T("Mise à jour annuelle de votre plan en 7 champs. Génère un rapport comparatif de 9 pages.", "Annual plan update in 7 fields. Generates a 9-page comparative report.", lang),
+              },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: 10 }}>
+                <span style={{ fontSize: 18, color: EK.gold, flexShrink: 0, lineHeight: 1.2 }}>{item.icon}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{item.title}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowHelp(false)}
+            style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer" }}
+          >
+            {T("Fermer l'aide", "Close help", lang)}
+          </button>
+        </div>
+      )}
+
+      {/* ═══ PLANNER IFRAME MODE (Avancé — 30+ modules, 190 paramètres) ═══ */}
       {viewMode === "planner" ? (
         <iframe
           ref={plannerRef}
@@ -1050,7 +1174,7 @@ function SimulateurContent() {
         ))}
         {/* Resume 1 page button */}
         {results && (
-          <button onClick={() => setShowResume(true)} style={{
+          <button onClick={() => { setShowResume(true); trackEvent(EVENTS.LAB_SUMMARY_OPENED); }} style={{
             background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6,
             color: "#fff", padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif", marginLeft: "auto",
@@ -1358,9 +1482,9 @@ function SimulateurContent() {
       <footer style={{ borderTop: `1px solid ${EK.border}`, padding: "16px 24px", textAlign: "center", fontSize: 12, color: EK.txMuted }}>
         buildfi.ca &middot; {fr ? "À titre informatif seulement" : "For informational purposes only"}
         <span style={{ margin: "0 8px" }}>|</span>
-        <a href="/confidentialite.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialité" : "Privacy"}</a>
+        <a href="/confidentialite" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Confidentialité" : "Privacy"}</a>
         <span style={{ margin: "0 8px" }}>|</span>
-        <a href="/conditions.html" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Conditions" : "Terms"}</a>
+        <a href="/conditions" style={{ color: EK.txMuted, textDecoration: "none" }}>{fr ? "Conditions" : "Terms"}</a>
       </footer>
 
       {/* ── Resume 1 page overlay ── */}
@@ -1396,6 +1520,8 @@ function SimulateurContent() {
                       setDefaults(new Set(Object.keys(savedData)));
                       // Derive disclosure from saved profile data
                       setDisclosure(disclosureFromQuizData(savedData));
+                      setParamSource({ type: "saved", label: sp.name });
+                      trackEvent(EVENTS.LAB_PROFILE_LOADED, { source: "saved" });
                       setShowPorteB(false);
                       setActiveTab("diagnostic");
                     }}
@@ -2879,6 +3005,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
       if (!res.ok || !data.success) throw new Error(data.error || "Bilan generation failed");
       setResult(data);
       setStatus("done");
+      trackEvent(EVENTS.LAB_ANNUAL_RUN, { grade: data.grade, successPct: data.successPct });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setStatus("error");

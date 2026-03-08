@@ -220,6 +220,8 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}
 input,select,textarea{font-size:16px}
 </style>
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
 <script src="/logo.js" defer></script>
 </head>
 <body>
@@ -523,7 +525,7 @@ input,select,textarea{font-size:16px}
 <section class="section section--sand" id="faq" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
   <div class="container">
     <div style="text-align:center">
-      <p class="section-label" id="faqLabel">Questions fréquentes</p>
+      <p class="section-label" id="faqLabel">FAQ</p>
       <h2 class="section-title" id="faqTitle">Questions fréquentes</h2>
     </div>
     <div class="faq-list" id="faqList">
@@ -743,7 +745,7 @@ var T = {
   disc4q: { fr:'\u00ab Je ne savais pas que reporter la RRQ \u00e0 70 ans me donnait 42\u00a0% de plus par mois. \u00bb', en:'\u201cI didn\u2019t know that deferring CPP to 70 gave me 42% more per month.\u201d' },
   disc4d: { fr:"Chaque ann\u00e9e de report change l\u2019\u00e9quation. Le bilan compare les sc\u00e9narios et montre l\u2019impact sur votre plan complet.", en:"Every year of deferral changes the equation. The report compares scenarios and shows the impact on your complete plan." },
   // FAQ
-  faqLabel: { fr:'Questions fréquentes', en:'Frequently asked questions' },
+  faqLabel: { fr:'FAQ', en:'FAQ' },
   faqTitle: { fr:'Questions fréquentes', en:'Frequently asked questions' },
   fq1: { fr:'Est-ce un conseil financier?', en:'Is this financial advice?' },
   fa1: { fr:"Non. BuildFi est un outil éducatif qui produit des projections statistiques basées sur les données que vous fournissez. Ce n\u2019est pas un conseil financier, fiscal ou juridique. Les résultats utilisent le conditionnel (« vous pourriez ») et ne remplacent pas l\u2019avis d\u2019un professionnel certifié. Consultez un planificateur financier ou un fiscaliste avant de prendre des décisions importantes.", en:"No. BuildFi is an educational tool that produces statistical projections based on the data you provide. It is not financial, tax, or legal advice. Results use conditional language and do not replace the advice of a certified professional. Consult a financial planner or tax specialist before making important decisions." },
@@ -1002,6 +1004,8 @@ buildFaqSchema();
   if (!ref) return;
   sessionStorage.setItem('bf_ref', ref);
   trackEvent('referral_landing', { ref: ref });
+  // Increment referral use counter (fire-and-forget analytics — non-blocking)
+  fetch('/api/referral/use', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code: ref }) }).catch(function(){});
   var badge = document.createElement('div');
   badge.style.cssText = 'position:fixed;top:80px;right:16px;z-index:999;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow-md);animation:fadeIn .4s ease-out';
   badge.textContent = lang === 'fr' ? '15\u00a0% de rabais appliqué' : '15% discount applied';
