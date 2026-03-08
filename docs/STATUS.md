@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-08 — v17 (shared report module, fiscal sync test, renderer cleanup, purple elimination)
+> Mis à jour: 2026-03-08 — v19 (Expert simulator E2E fix: auth race condition, CSP/iframe/CDN fixes, Decision Card on all reports, audit docs)
 
 ## PHASE ACTUELLE
-**ALL 4 TIERS PIPELINE-COMPLETE. Stripe keys all configured. /merci page handles all tiers. Reste: og-image, domain warmup, Bilan Annuel cron (Expert post-launch). Inter quiz/checkout pipeline à connecter E2E.**
+**ALL 4 TIERS PIPELINE-COMPLETE. Expert simulator E2E validated (auth + planner iframe working). Decision Card added to all 3 report types. Reste: og-image, domain warmup, Inter E2E, Bilan Annuel cron.**
 
 ---
 
@@ -153,6 +153,28 @@
 | S9 | Compliance (AMF, Law 25) | — | ✅ |
 | S10 | Full audit | 91 | ✅ |
 
+### Expert Simulator E2E Fix (2026-03-08) — 5 FIXES
+| Correctif | Catégorie | Statut |
+|-----------|-----------|--------|
+| Auth race condition — history.replaceState re-triggered denial | Auth Critical | ✅ FIXED (simulateur + expert pages) |
+| X-Frame-Options DENY → SAMEORIGIN | CSP/Iframe | ✅ FIXED (planner iframe was blocked) |
+| CSP script-src — cdn.jsdelivr.net + cdnjs.cloudflare.com | CSP/CDN | ✅ FIXED (React + xlsx for planner) |
+| CSP style-src/font-src — Google Fonts domains | CSP/Fonts | ✅ FIXED |
+| setPenIdx → sPIdx in planner postMessage bridge | JS Bug | ✅ FIXED (undefined reference at L7208) |
+| Auth diagnostic logging in auth.ts + kv.ts | Observability | ✅ ADDED |
+
+### Audit Documentation (2026-03-08)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| docs/audit/ (13 files) | ✅ | Full audit docs: quizzes, translators, MC engine, AI prompts, report renderers, API routes, Stripe, email, auth/storage, tests, compliance, architecture |
+
+### Decision Card — Report Top-of-Page (2026-03-08)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| report-html.js (Bilan) | ✅ | Grade + biggest risk + best lever + interpretation after header |
+| report-html-inter.js (Bilan 360) | ✅ | Same pattern, tax rate vulnerability added |
+| report-html-decum.js (Horizon) | ✅ | buildDecisionCardDecum() function, meltdown/CPP lever logic |
+
 ### Legal & Compliance (2026-03-04)
 | Composant | Statut | Détails |
 |-----------|--------|---------|
@@ -217,9 +239,10 @@
 - **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
 - **Allocation REER/CÉLI tool** — Standalone HTML, BuildFi brand, REPORT BASELINE URL params, AMF compliant
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
-- **Landing page v9** — Logo SVG, audit AMF/BSIF complété, launch pricing, feature lists à jour
+- **Landing page v10** — Stacking blocks logo, pulsing launch badge, decision helper below cards, bigger Oui/Non buttons, Plus Jakarta Sans, gold #c49a1a
 - **Quiz Essentiel** — Thin client, Stripe intégré, QPP deferral question, single-person only (couple=yes callout)
-- **Logo** — SVG flame, shared logo.js, light/dark variants
+- **Logo** — Stacking blocks (3 bars: foundation/building/independence), shared logo.js (single source of truth), light/dark/symbol SVG variants, Plus Jakarta Sans 700, viewBox 220×48, scale factors sm=0.7x md=1.0x lg=1.4x
+- **Brand refresh (2026-03-08)** — Gold #b8860b→#c49a1a everywhere (HTML, CSS, email, reports), Plus Jakarta Sans font, new hero tagline, og-image.png 1200×630, logo defer race condition fixed on all 8 deferred pages
 
 ---
 
@@ -249,9 +272,9 @@
 - buildMagicLinkUrl() force www.buildfi.ca pour éviter que le 307 redirect supprime le token
 - Toutes les URLs hardcodées dans reports/tools corrigées
 
-### 6. og-image.png — ⏳ EN COURS
+### 6. og-image.png — ✅ DONE
 - Image 1200x630 pour partages sociaux (Reddit, LinkedIn, etc.)
-- À placer dans public/og-image.png
+- Placé dans public/og-image.png (brand refresh 2026-03-08)
 
 ---
 
@@ -366,9 +389,9 @@ buildfi/
 │   ├── robots.txt                ✅ Disallow /outils/ + /outils/allocation-epargne.html
 │   └── outils/
 │       └── allocation-epargne.html ✅ Outil allocation REER/CÉLI (REPORT BASELINE, AMF footer)
-├── middleware.ts                  ✅ CSP headers
+├── middleware.ts                  ✅ CSP + security headers (SAMEORIGIN, CDN allowlist, Google Fonts)
 ├── tests/                        ✅ 453 MC + 200 debt + 685 Inter + 87 Expert translator + 103 S3 + 91 S10 + 91 report-shared + 135 fiscal-sync = 1,845 tests
-├── docs/                         8 fichiers de référence
+├── docs/                         8 fichiers de référence + docs/audit/ (13 audit files)
 └── CLAUDE.md                     Instructions Claude Code
 ```
 
@@ -386,12 +409,14 @@ buildfi/
 Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
-1. Create og-image.png (1200x630) for OG tags
+1. ~~Create og-image.png~~ ✅ Done (brand refresh 2026-03-08)
 2. Set up support@buildfi.ca (Cloudflare Email Routing)
 3. ~~Create STRIPE_PRICE_DECAISSEMENT~~ ✅ Done — all Stripe keys configured
-4. Domain warmup (mark emails as not-spam from multiple accounts)
-5. Soft launch organique (Reddit, LinkedIn, cercle privé)
-6. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+4. ~~Expert simulator E2E~~ ✅ Done (auth + planner iframe + CSP — 5 fixes, 2026-03-08)
+5. Domain warmup (mark emails as not-spam from multiple accounts)
+6. Soft launch organique (Reddit, LinkedIn, cercle privé)
+7. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
    - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
-7. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
-8. S11 Expert post-launch: feedback pipeline, A/B testing
+8. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
+9. S11 Expert post-launch: feedback pipeline, A/B testing
+10. Update SimulateurDeniedScreen text: "Expert" → "Laboratoire" (product rename not applied)

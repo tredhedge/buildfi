@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-08 — v16 (shared report module report-shared.ts, fiscal sync test, purple elimination, renderer cleanup)
+> Mis à jour: 2026-03-08 — v17 (brand refresh logo system, defer race condition fix, landing page UX)
 
 ---
 
@@ -295,7 +295,7 @@ Zero fonction MC côté client
 generateMockPreview() pour paywall (données fake)
 Stripe checkout intégré via fetch /api/checkout
 Quiz answers envoyées dans session.metadata (chunked si >500 chars)
-Logo inline fallback + /logo.js shared
+Logo: /logo.js shared (deferred) — injection inside DOMContentLoaded, NOT outside
 QPP deferral question added in Step 1 (qppAge)
 partnerWork added to STATE
 Single-person only: couple=yes → callout, no couple analysis
@@ -483,6 +483,8 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-037 | Décaissement: deathAge:105 hard cap with stochMort:true (CPM-2023 terminates sims earlier) | **NOUVEAU** |
 | DT-038 | Décaissement: SVG donut chart for success rate (stroke-dasharray animation) | **NOUVEAU** |
 | DT-039 | Décaissement: LAUNCH50 applies ($29.50 price), SECOND50 for second reports | **NOUVEAU** |
+| DT-040 | Logo system: /public/logo.js is single source of truth. Stacking blocks (3 bars), viewBox 220×48, scale sm=0.7x md=1.0x lg=1.4x. Navbar=md, footer=lg, quiz headers=md/lg. Inline SVGs in report renderers match same coordinates. Emails use text-only (SVG not supported by email clients). | **NOUVEAU** |
+| DT-041 | Logo injection: deferred logo.js requires typeof check INSIDE DOMContentLoaded callback (not outside). All 8 deferred pages use this pattern. 5 synchronous pages (quizzes, tools) don't need it. | **NOUVEAU** |
 
 ---
 
@@ -601,6 +603,9 @@ recommandation(s) / recommendation(s)
 | 2026-03-06 | **CCPC data path fix** — report-html-inter.js: bizRemun/bizSalaryPct read from params directly (not params._quiz), scale corrected (0-1 fraction → × 100 for display) | ✅ |
 | 2026-03-06 | **QPP/OAS heuristic fix** — quiz-translator-inter.ts: retAge-based heuristic (clamped) replaces hardcoded default 65, matches Essentiel translator 1:1 | ✅ |
 | 2026-03-07 | **Décaissement pipeline rebuild** — Full rebuild from Sonnet skeleton: 12 AI slots (was 10), 13-section report (was 12), DerivedProfile/RenderPlan/CompositeSignals, 9-combo voice matrix, SVG donut chart, continuous QPP factor, validateStep(), 4 responsive breakpoints, static fallbacks, AMF fixes, email tier-specific resources, landing page CSS class | ✅ |
+| 2026-03-08 | **Brand refresh** — Stacking blocks logo (replaces flame), gold #b8860b→#c49a1a everywhere (24+ files), Plus Jakarta Sans font, new hero tagline, og-image.png 1200×630, logo viewBox 220×48 (was 270×52), report inline logos 200×48 | ✅ |
+| 2026-03-08 | **Logo defer race condition fix** — typeof logoSVG check moved inside DOMContentLoaded on 6 pages (index, bilan, expert-landing, conditions, confidentialite, avis-legal). Root cause: deferred script not yet executed when inline script parsed. | ✅ |
+| 2026-03-08 | **Landing page UX** — Pulsing gold launch badge (was small static pill), decision helper moved below product cards (was above, opening off-screen), bigger Oui/Non buttons (18px, navy border, gold hover, 140px min-width) | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
@@ -647,3 +652,5 @@ recommandation(s) / recommendation(s)
 - **DNS propagation**: les records Resend (DKIM, SPF) peuvent prendre 24h — ne pas paniquer si la vérification échoue immédiatement.
 - **P0 fixes can be lost if working from stale file versions** — always verify critical fixes (basePayoff strategy, marginal rate label) are present after editing.
 - **OneDrive can lock .next/ files** — run `rm -rf .next` before build if EPERM errors occur.
+- **Deferred script race condition**: `<script src="/logo.js" defer>` runs AFTER HTML parsing but BEFORE DOMContentLoaded. If you check `typeof logoSVG` in an inline `<script>` OUTSIDE DOMContentLoaded, it will be undefined. Always check INSIDE the callback: `document.addEventListener('DOMContentLoaded', function() { if (typeof logoSVG === 'function') { ... } });`
+- **sed on Windows (MINGW)** converts LF→CRLF silently — creates ghost diffs in git status. Discard with `git checkout -- <files>` after verifying no real content changes.
