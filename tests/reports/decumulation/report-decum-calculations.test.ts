@@ -1,6 +1,6 @@
 // tests/report-decum-calculations.test.ts
 // Décaissement report renderer + translator + AI sanitization tests
-// Run: npx tsx tests/report-decum-calculations.test.ts
+// Run: npx tsx tests/reports/decumulation/report-decum-calculations.test.ts
 //
 // Covers:
 //   1. extractReportDataDecum — field extraction from MC results
@@ -8,9 +8,9 @@
 //   3. translateDecumToMC — quiz → MC parameter translation
 //   4. sanitizeAISlotsDecum — AI slot sanitization + AMF compliance
 
-import { extractReportDataDecum, renderReportDecum } from "../lib/report-html-decum";
-import { translateDecumToMC } from "../lib/quiz-translator-decum";
-import { sanitizeAISlotsDecum, AI_SLOTS_DECUM } from "../lib/ai-constants";
+import { extractReportDataDecum, renderReportDecum } from "../../../lib/report-html-decum";
+import { translateDecumToMC } from "../../../lib/quiz-translator-decum";
+import { sanitizeAISlotsDecum, AI_SLOTS_DECUM } from "../../../lib/ai-constants";
 
 let pass = 0;
 let fail = 0;
