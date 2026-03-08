@@ -151,7 +151,7 @@ function FeedbackContent() {
                   : "The 50% discount is applied automatically at checkout when you order a 2nd assessment."}
               </div>
               <a
-                href="https://www.buildfi.ca?second=1"
+                href={`https://www.buildfi.ca/quiz-essentiel.html?lang=${fr ? "fr" : "en"}&second=1`}
                 style={{ display: "inline-block", padding: "10px 20px", background: GOLD, color: "#fff", fontSize: 13, fontWeight: 600, borderRadius: 8, textDecoration: "none" }}
               >
                 {fr ? "Commander un 2e bilan \u00e0 50\u00a0% de rabais" : "Order a 2nd assessment at 50% off"}
