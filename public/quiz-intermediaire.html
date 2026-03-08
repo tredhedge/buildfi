@@ -73,26 +73,60 @@ input[type=number]{-moz-appearance:textfield}
   h2{font-size:19px!important}
   .rpt-grid3{grid-template-columns:1fr!important}
 }
+@media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
 <script src="/logo.js"></script>
 </head>
 <body>
-<div id="app">
-<div class="seo-shell" style="max-width:520px;margin:48px auto;padding:32px 24px;text-align:center">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan 360 — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Le bilan complet pour couples, propriétaires et incorporés.</h1>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6">16 sections, 5 000 scénarios Monte Carlo, narration IA. 10 à 15 minutes. Paiement unique.</p>
-  <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
-    <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:8px">Tout le Bilan, plus :</div>
-    <div style="font-size:13px;color:#555;line-height:1.8">
-      ✓ Analyse conjointe (revenus, retraite, décès)<br>
-      ✓ Portrait immobilier et hypothèque<br>
-      ✓ Stratégie fiscale et fractionnement de revenus<br>
-      ✓ Comparaison de 5 stratégies de décaissement<br>
-      ✓ CCPC (société par actions) si applicable
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Bilan 360 — buildfi.ca</div>
+    <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Le bilan complet pour couples, propriétaires et incorporés.</h1>
+    <p style="font-size:15px;color:#555;line-height:1.7;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto">16 sections. 5 000 scénarios. Narration IA. Paiement unique — 10 à 15 minutes.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto 28px;text-align:left">
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroAskLabel">Ce qu'on vous demandera</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroAskList">
+          ✓ Profil du couple (revenus, âges)<br>
+          ✓ Propriétés et hypothèques<br>
+          ✓ Épargne détaillée par compte<br>
+          ✓ Situation fiscale et CCPC<br>
+          ✓ Objectifs de retraite
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroGetLabel">Ce que vous recevrez</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroGetList">
+          ✓ Analyse conjointe complète<br>
+          ✓ Portrait immobilier<br>
+          ✓ Stratégie fiscale et fractionnement<br>
+          ✓ Comparaison de 5 stratégies<br>
+          ✓ CCPC si applicable
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:12px;color:#888;margin-bottom:20px" id="heroTrust">
+      <span>1 600+ tests automatisés</span>
+      <span>13 juridictions fiscales</span>
+      <span>Paiement unique — 29,50 $</span>
+    </div>
+
+    <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#96700a;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
+      <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Ayez sous la main : vos relevés de paie (les deux conjoints si applicable), soldes REER/CÉLI, détails hypothécaires et dernier avis de cotisation.</div>
+    </div>
+
+    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+
+    <div style="margin-bottom:24px">
+      <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
     </div>
   </div>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Couples, propriétaires, professionnels incorporés — ceux qui ont besoin d'une analyse approfondie.</p>
+</div>
+<div id="app">
+<div class="seo-shell" style="max-width:480px;margin:24px auto;padding:24px;text-align:center">
   <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
 </div>
 </div>
@@ -396,6 +430,21 @@ try{var saved=localStorage.getItem("buildfi_quiz_inter");if(saved){var parsed=JS
 function saveState(){try{localStorage.setItem("buildfi_quiz_inter",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
 
 // ============================================================
+// HERO TRANSLATIONS
+// ============================================================
+var heroT = {
+  heroAskLabel: { fr:"Ce qu'on vous demandera", en:"What we'll ask you" },
+  heroGetLabel: { fr:"Ce que vous recevrez", en:"What you'll receive" },
+  heroAskList: { fr:"✓ Profil du couple (revenus, âges)<br>✓ Propriétés et hypothèques<br>✓ Épargne détaillée par compte<br>✓ Situation fiscale et CCPC<br>✓ Objectifs de retraite", en:"✓ Couple profile (income, ages)<br>✓ Properties and mortgages<br>✓ Detailed savings by account<br>✓ Tax situation and CCPC<br>✓ Retirement goals" },
+  heroGetList: { fr:"✓ Analyse conjointe complète<br>✓ Portrait immobilier<br>✓ Stratégie fiscale et fractionnement<br>✓ Comparaison de 5 stratégies<br>✓ CCPC si applicable", en:"✓ Complete joint analysis<br>✓ Real estate portrait<br>✓ Tax strategy and income splitting<br>✓ Comparison of 5 strategies<br>✓ CCPC if applicable" },
+  heroTrust: { fr:'<span>1 600+ tests automatisés</span><span>13 juridictions fiscales</span><span>Paiement unique — 29,50 $</span>', en:'<span>1,600+ automated tests</span><span>13 tax jurisdictions</span><span>One-time payment — $29.50</span>' },
+  heroPrepLabel: { fr:"Avant de commencer", en:"Before you start" },
+  heroPrepText: { fr:"Ayez sous la main : vos relevés de paie (les deux conjoints si applicable), soldes REER/CÉLI, détails hypothécaires et dernier avis de cotisation.", en:"Have handy: pay stubs (both partners if applicable), RRSP/TFSA balances, mortgage details, and latest tax assessment." },
+  heroCta: { fr:"Commencer le questionnaire", en:"Start the questionnaire" },
+  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." }
+};
+
+// ============================================================
 // RENDER ROUTER
 // ============================================================
 function render(){
@@ -403,6 +452,12 @@ function render(){
   var s=STATE,q=s.quiz,fr=s.lang==="fr";
   document.documentElement.lang=s.lang;
   document.title=fr?"buildfi.ca \u2014 Bilan 360":"buildfi.ca \u2014 Snapshot 360";
+  Object.keys(heroT).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && heroT[id][fr ? 'fr' : 'en'] !== undefined) {
+      el.innerHTML = heroT[id][fr ? 'fr' : 'en'];
+    }
+  });
   saveState();
 
   if(s.showPaywall&&s.reportData){

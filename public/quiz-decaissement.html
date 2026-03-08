@@ -91,26 +91,58 @@ input[type=number]{-moz-appearance:textfield}
   .inp-sm{padding:10px!important;font-size:14px!important}
   .card{padding:14px 12px!important}
 }
+@media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
 <script src="/logo.js"></script>
 </head>
 <body>
-<div id="app">
-<div class="seo-shell" style="max-width:520px;margin:48px auto;padding:32px 24px;text-align:center">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Horizon — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Planifiez vos retraits à la retraite.</h1>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6">12 sections, timing RRQ/PSV optimal, analyse de robustesse, 6 scénarios Monte Carlo. 10 à 15 minutes. Paiement unique.</p>
-  <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
-    <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:8px">Ce que vous recevez :</div>
-    <div style="font-size:13px;color:#555;line-height:1.8">
-      ✓ Comparaison du timing RRQ/PSV (60, 65, 70 ans)<br>
-      ✓ Analyse de robustesse en cas de krach<br>
-      ✓ Ordre optimal de retrait (REER, CÉLI, non enregistré)<br>
-      ✓ Portrait successoral et fiscalité au décès<br>
-      ✓ Simulateur interactif de décaissement inclus
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Horizon — buildfi.ca</div>
+    <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Planifiez vos retraits à la retraite.</h1>
+    <p style="font-size:15px;color:#555;line-height:1.7;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto">12 sections. 6 scénarios Monte Carlo. Timing optimal RRQ/PSV. Paiement unique — 10 à 15 minutes.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto 28px;text-align:left">
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroAskLabel">Ce qu'on vous demandera</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroAskList">
+          ✓ Vos actifs (REER, CÉLI, non enregistré)<br>
+          ✓ Revenus de retraite et pensions<br>
+          ✓ Âge de retraite et flexibilité<br>
+          ✓ Tolérance aux baisses de marché
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroGetLabel">Ce que vous recevrez</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroGetList">
+          ✓ Comparaison RRQ/PSV (60, 65, 70 ans)<br>
+          ✓ Analyse de robustesse aux krachs<br>
+          ✓ Ordre optimal de retrait<br>
+          ✓ Simulateur interactif inclus
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:12px;color:#888;margin-bottom:20px" id="heroTrust">
+      <span>1 600+ tests automatisés</span>
+      <span>13 juridictions fiscales</span>
+      <span>Paiement unique — 29,50 $</span>
+    </div>
+
+    <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#96700a;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
+      <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Ayez sous la main : soldes approximatifs de vos comptes (REER, CÉLI, non enregistré), revenus de pension et date de retraite prévue.</div>
+    </div>
+
+    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+
+    <div style="margin-bottom:24px">
+      <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
     </div>
   </div>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Retraités et préretraités qui veulent savoir combien retirer, dans quel ordre, et quand demander les prestations gouvernementales.</p>
+</div>
+<div id="app">
+<div class="seo-shell" style="max-width:480px;margin:24px auto;padding:24px;text-align:center">
   <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
 </div>
 </div>
@@ -509,11 +541,29 @@ function validateStep(step, q, fr) {
 // ============================================================
 // RENDER ROUTER
 // ============================================================
+var heroT = {
+  heroAskLabel: { fr:"Ce qu'on vous demandera", en:"What we'll ask you" },
+  heroGetLabel: { fr:"Ce que vous recevrez", en:"What you'll receive" },
+  heroAskList: { fr:"✓ Vos actifs (REER, CÉLI, non enregistré)<br>✓ Revenus de retraite et pensions<br>✓ Âge de retraite et flexibilité<br>✓ Tolérance aux baisses de marché", en:"✓ Your assets (RRSP, TFSA, non-registered)<br>✓ Retirement income and pensions<br>✓ Retirement age and flexibility<br>✓ Tolerance for market downturns" },
+  heroGetList: { fr:"✓ Comparaison RRQ/PSV (60, 65, 70 ans)<br>✓ Analyse de robustesse aux krachs<br>✓ Ordre optimal de retrait<br>✓ Simulateur interactif inclus", en:"✓ CPP/OAS comparison (age 60, 65, 70)<br>✓ Crash resilience analysis<br>✓ Optimal withdrawal order<br>✓ Interactive simulator included" },
+  heroTrust: { fr:'<span>1 600+ tests automatisés</span><span>13 juridictions fiscales</span><span>Paiement unique — 29,50 $</span>', en:'<span>1,600+ automated tests</span><span>13 tax jurisdictions</span><span>One-time payment — $29.50</span>' },
+  heroPrepLabel: { fr:"Avant de commencer", en:"Before you start" },
+  heroPrepText: { fr:"Ayez sous la main : soldes approximatifs de vos comptes (REER, CÉLI, non enregistré), revenus de pension et date de retraite prévue.", en:"Have handy: approximate balances of your accounts (RRSP, TFSA, non-registered), pension income, and planned retirement date." },
+  heroCta: { fr:"Commencer le questionnaire", en:"Start the questionnaire" },
+  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." }
+};
+
 function render() {
   var app = document.getElementById("app");
   var s = STATE, q = s.quiz, fr = s.lang === "fr";
   document.documentElement.lang = s.lang;
   document.title = fr ? "buildfi.ca \u2014 Horizon" : "buildfi.ca \u2014 Horizon";
+  Object.keys(heroT).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && heroT[id][fr ? 'fr' : 'en'] !== undefined) {
+      el.innerHTML = heroT[id][fr ? 'fr' : 'en'];
+    }
+  });
   saveState();
 
   if (s.showPaywall && s.reportData) {

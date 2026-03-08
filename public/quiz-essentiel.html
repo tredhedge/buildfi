@@ -98,25 +98,64 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
   .inp-sm{padding:10px!important;font-size:14px!important}
   .card{padding:14px 12px!important}
 }
+@media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}
 </style>
 <script src="/logo.js"></script>
 </head>
 <body>
-<div id="app">
-<div class="seo-shell" style="max-width:520px;margin:48px auto;padding:32px 24px;text-align:center">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Votre portrait retraite en 5 à 8 minutes.</h1>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6">8 sections personnalisées, 5 000 scénarios Monte Carlo, narration IA. Paiement unique.</p>
-  <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:16px;margin:20px 0;text-align:left">
-    <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:8px">Ce que vous recevez :</div>
-    <div style="font-size:13px;color:#555;line-height:1.8">
-      ✓ Note de retraite (A+ à F) et taux de réussite<br>
-      ✓ Revenus projetés par source (RRQ, REER, CÉLI)<br>
-      ✓ Observations personnalisées par l'IA<br>
-      ✓ Guide PDF : Les bases de vos finances (13 pages)
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Bilan — buildfi.ca</div>
+    <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Votre portrait retraite en 5 à 8 minutes.</h1>
+    <p style="font-size:15px;color:#555;line-height:1.7;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto">8 sections personnalisées. 5 000 scénarios. Narration IA. Paiement unique — livré par courriel en quelques minutes.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto 28px;text-align:left">
+      <!-- Ce qu'on vous demandera -->
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroAskLabel">Ce qu'on vous demandera</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroAskList">
+          ✓ Votre âge et province<br>
+          ✓ Revenu et épargne actuelle<br>
+          ✓ Cotisations et objectif de retraite<br>
+          ✓ Tolérance au risque
+        </div>
+      </div>
+      <!-- Ce que vous recevrez -->
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroGetLabel">Ce que vous recevrez</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroGetList">
+          ✓ Note de retraite (A+ à F)<br>
+          ✓ Revenus projetés par source<br>
+          ✓ Observations IA personnalisées<br>
+          ✓ Guide PDF (13 pages)
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust row -->
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:12px;color:#888;margin-bottom:20px" id="heroTrust">
+      <span>1 600+ tests automatisés</span>
+      <span>13 juridictions fiscales</span>
+      <span>Paiement unique — 14,50 $</span>
+    </div>
+
+    <!-- Avant de commencer -->
+    <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#96700a;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
+      <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Ayez sous la main : votre dernier relevé de paie et le solde approximatif de vos comptes (REER, CÉLI).</div>
+    </div>
+
+    <!-- CTA -->
+    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+
+    <!-- Pas le bon produit? -->
+    <div style="margin-bottom:24px">
+      <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
     </div>
   </div>
-  <p style="color:#555;margin-bottom:12px;line-height:1.6"><strong>Pour qui?</strong> Employés, travailleurs autonomes et préretraités qui veulent un premier portrait clair.</p>
+</div>
+<div id="app">
+<div class="seo-shell" style="max-width:480px;margin:24px auto;padding:24px;text-align:center">
   <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
 </div>
 </div>
@@ -470,6 +509,19 @@ function provName(code){return(STATE.lang==="fr"?PROV_NAMES_FR:PROV_NAMES_EN)[co
 try{var saved=localStorage.getItem("buildfi_quiz_ess");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);}}}catch(e){}
 function saveState(){try{localStorage.setItem("buildfi_quiz_ess",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
 
+// Update hero language
+var heroT = {
+  heroAskLabel: { fr:"Ce qu'on vous demandera", en:"What we'll ask you" },
+  heroGetLabel: { fr:"Ce que vous recevrez", en:"What you'll receive" },
+  heroAskList: { fr:"✓ Votre âge et province<br>✓ Revenu et épargne actuelle<br>✓ Cotisations et objectif de retraite<br>✓ Tolérance au risque", en:"✓ Your age and province<br>✓ Income and current savings<br>✓ Contributions and retirement goal<br>✓ Risk tolerance" },
+  heroGetList: { fr:"✓ Note de retraite (A+ à F)<br>✓ Revenus projetés par source<br>✓ Observations IA personnalisées<br>✓ Guide PDF (13 pages)", en:"✓ Retirement grade (A+ to F)<br>✓ Projected income by source<br>✓ Personalized AI observations<br>✓ PDF guide (13 pages)" },
+  heroTrust: { fr:'<span>1 600+ tests automatisés</span><span>13 juridictions fiscales</span><span>Paiement unique — 14,50 $</span>', en:'<span>1,600+ automated tests</span><span>13 tax jurisdictions</span><span>One-time payment — $14.50</span>' },
+  heroPrepLabel: { fr:"Avant de commencer", en:"Before you start" },
+  heroPrepText: { fr:"Ayez sous la main : votre dernier relevé de paie et le solde approximatif de vos comptes (REER, CÉLI).", en:"Have handy: your latest pay stub and approximate balances of your accounts (RRSP, TFSA)." },
+  heroCta: { fr:"Commencer le questionnaire", en:"Start the questionnaire" },
+  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." }
+};
+
 
 function f$(n) {
   if (n == null || isNaN(n)) return "\u2014";
@@ -497,6 +549,12 @@ function render() {
   var t = function(f, e) { return fr ? f : e; };
   document.documentElement.lang = s.lang;
   document.title = fr ? "buildfi.ca \u2014 Bilan" : "buildfi.ca \u2014 Snapshot";
+  Object.keys(heroT).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && heroT[id][fr ? 'fr' : 'en'] !== undefined) {
+      el.innerHTML = heroT[id][fr ? 'fr' : 'en'];
+    }
+  });
   saveState();
 
   if (s.showPaywall && s.reportData) {
