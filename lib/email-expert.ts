@@ -30,29 +30,29 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
   const magicUrl = buildMagicLinkUrl(token);
 
   const subject = fr
-    ? "Votre acc\u00e8s Simulateur Expert \u2014 buildfi.ca"
-    : "Your Expert Simulator access \u2014 buildfi.ca";
+    ? "Votre acc\u00e8s Laboratoire \u2014 buildfi.ca"
+    : "Your Lab access \u2014 buildfi.ca";
 
   const s = {
     tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
     heading: isNewAccount
-      ? (fr ? "Bienvenue dans le Simulateur Expert" : "Welcome to the Expert Simulator")
+      ? (fr ? "Bienvenue dans le Laboratoire" : "Welcome to the Lab")
       : (fr ? "Votre lien d\u2019acc\u00e8s" : "Your access link"),
     bodyP1: isNewAccount
       ? (fr
-        ? "Merci pour votre achat. Votre Simulateur Expert est pr\u00eat. Cliquez le bouton ci-dessous pour y acc\u00e9der."
-        : "Thank you for your purchase. Your Expert Simulator is ready. Click the button below to access it.")
+        ? "Merci pour votre achat. Votre Laboratoire est pr\u00eat. Cliquez le bouton ci-dessous pour y acc\u00e9der."
+        : "Thank you for your purchase. Your Lab is ready. Click the button below to access it.")
       : (fr
-        ? "Voici votre nouveau lien d\u2019acc\u00e8s au Simulateur Expert. Ce lien remplace tout lien pr\u00e9c\u00e9dent."
-        : "Here is your new Expert Simulator access link. This link replaces any previous link."),
+        ? "Voici votre nouveau lien d\u2019acc\u00e8s au Laboratoire. Ce lien remplace tout lien pr\u00e9c\u00e9dent."
+        : "Here is your new Lab access link. This link replaces any previous link."),
     bodyP2: fr
       ? "Ce lien est permanent et personnel. Ajoutez-le \u00e0 vos favoris pour un acc\u00e8s rapide."
       : "This link is permanent and personal. Bookmark it for quick access.",
     cta: fr ? "Acc\u00e9der \u00e0 mon simulateur" : "Access my simulator",
     fallback: fr ? "Si le bouton ne fonctionne pas\u00a0:" : "If the button doesn\u2019t work:",
     fallbackLink: fr ? "Ouvrir directement" : "Open directly",
-    includes: fr ? "Votre acc\u00e8s Expert inclut\u00a0:" : "Your Expert access includes:",
-    feat1: fr ? "Simulateur illimit\u00e9 avec recalcul instantan\u00e9" : "Unlimited simulator with instant recalculation",
+    includes: fr ? "Votre acc\u00e8s Laboratoire inclut\u00a0:" : "Your Lab access includes:",
+    feat1: fr ? "Simulations illimit\u00e9es avec recalcul instantan\u00e9" : "Unlimited simulations with instant recalculation",
     feat2: fr ? "5 exports AI personnalis\u00e9s" : "5 personalized AI exports",
     feat3: fr ? "3 workflows\u00a0: Tester, Optimiser, Bilan Annuel" : "3 workflows: Test, Optimize, Annual Review",
     disclaimer: fr
@@ -161,8 +161,8 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\n${isNewAccount ? "Bienvenue dans le Simulateur Expert." : "Votre lien d'accès."}\n\nAccéder à mon simulateur: ${magicUrl}\n\nCe lien expire dans 24h. Si vous n'avez pas demandé cet accès, ignorez ce courriel.\n\nsupport@buildfi.ca | buildfi.ca`
-    : `${subject}\n\n${isNewAccount ? "Welcome to the Expert Simulator." : "Your access link."}\n\nAccess my simulator: ${magicUrl}\n\nThis link expires in 24h. If you did not request this access, ignore this email.\n\nsupport@buildfi.ca | buildfi.ca`;
+    ? `${subject}\n\n${isNewAccount ? "Bienvenue dans le Laboratoire." : "Votre lien d'accès."}\n\nAccéder à mon Laboratoire: ${magicUrl}\n\nCe lien expire dans 24h. Si vous n'avez pas demandé cet accès, ignorez ce courriel.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\n${isNewAccount ? "Welcome to the Lab." : "Your access link."}\n\nAccess my Lab: ${magicUrl}\n\nThis link expires in 24h. If you did not request this access, ignore this email.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
@@ -202,20 +202,20 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
   const referralUrl = `${base}?ref=${referralCode}`;
 
   const subject = fr
-    ? `Votre bilan Expert buildfi.ca est pr\u00eat \u2014 Note ${grade}`
-    : `Your buildfi.ca Expert assessment is ready \u2014 Grade ${grade}`;
+    ? `Votre bilan Laboratoire buildfi.ca est pr\u00eat \u2014 Note ${grade}`
+    : `Your buildfi.ca Lab assessment is ready \u2014 Grade ${grade}`;
 
   const preheader = fr
-    ? `Note ${grade} \u2014 taux de r\u00e9ussite ${successPct}%. Votre bilan Expert personnalis\u00e9 est pr\u00eat.`
-    : `Grade ${grade} \u2014 ${successPct}% success rate. Your personalized Expert assessment is ready.`;
+    ? `Note ${grade} \u2014 taux de r\u00e9ussite ${successPct}%. Votre bilan Laboratoire personnalis\u00e9 est pr\u00eat.`
+    : `Grade ${grade} \u2014 ${successPct}% success rate. Your personalized Lab assessment is ready.`;
 
   const s = {
     tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
-    tierLabel: fr ? "Bilan Expert" : "Expert Assessment",
+    tierLabel: fr ? "Bilan Laboratoire" : "Lab Assessment",
     successLabel: fr ? `Taux de r\u00e9ussite\u00a0: ${successPct}\u00a0%` : `Success rate: ${successPct}%`,
     bodyP1: fr
-      ? "Votre bilan Expert personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
-      : "Your personalized Expert assessment is ready. Click the button below to view it.",
+      ? "Votre bilan Laboratoire personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
+      : "Your personalized Lab assessment is ready. Click the button below to view it.",
     bodyP2: fr
       ? "Ce bilan est bas\u00e9 sur 5\u00a0000 sc\u00e9narios de votre situation financi\u00e8re. Chaque dollar provient directement du moteur de calcul\u00a0\u2014\u00a0aucune estimation approximative."
       : "This assessment is based on 5,000 scenarios of your financial situation. Every dollar comes directly from the calculation engine\u2009\u2014\u2009no rough estimates.",
@@ -376,8 +376,8 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\nVotre bilan Expert est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\nOuvrir mon simulateur: ${magicLinkUrl}\n\nCe lien est valide 30 jours.\n\nsupport@buildfi.ca | buildfi.ca`
-    : `${subject}\n\nYour Expert assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\nOpen my simulator: ${magicLinkUrl}\n\nThis link is valid for 30 days.\n\nsupport@buildfi.ca | buildfi.ca`;
+    ? `${subject}\n\nVotre bilan Laboratoire est prêt.\nNote: ${grade} | Taux de réussite: ${successPct}%\n\nConsulter mon bilan: ${downloadUrl}\nOuvrir mon Laboratoire: ${magicLinkUrl}\n\nCe lien est valide 30 jours.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour Lab assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\nOpen my Lab: ${magicLinkUrl}\n\nThis link is valid for 30 days.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
@@ -597,20 +597,20 @@ export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
   const simUrl = `${base}/acces?token=${token}`;
 
   const subject = fr
-    ? "Votre simulateur Expert expire dans 30 jours"
-    : "Your Expert simulator expires in 30 days";
+    ? "Votre Laboratoire expire dans 30 jours"
+    : "Your Lab expires in 30 days";
 
   const heading = fr
     ? "30 jours avant l\u2019expiration"
     : "30 days until expiration";
 
   const bodyP1 = fr
-    ? `Votre accès au Simulateur Expert expire le ${expFormatted}.`
-    : `Your Expert Simulator access expires on ${expFormatted}.`;
+    ? `Votre accès au Laboratoire expire le ${expFormatted}.`
+    : `Your Lab access expires on ${expFormatted}.`;
 
   const bodyP2 = fr
-    ? "Le renouvellement est de 29\u00a0$/an et inclut l\u2019accès continu au simulateur, 3 exports AI personnalisés et le Bilan Annuel."
-    : "Renewal is $29/year and includes continued simulator access, 3 personalized AI exports, and the Annual Assessment.";
+    ? "Le renouvellement est de 29\u00a0$/an et inclut l\u2019accès continu au Laboratoire, 3 exports AI personnalisés et le Bilan Annuel."
+    : "Renewal is $29/year and includes continued Lab access, 3 personalized AI exports, and the Annual Assessment.";
 
   // Value summary card
   const valueLines: string[] = [];
@@ -628,7 +628,7 @@ export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
 
   const cardContent = `
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Votre utilisation Expert" : "Your Expert usage"}</td></tr>
+                <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Votre utilisation Laboratoire" : "Your Lab usage"}</td></tr>
                 <tr><td style="font-family:${FONT};font-size:13px;color:${GRAY};line-height:2;">
                   ${valueLines.map(l => `&bull; ${l}`).join("<br/>")}
                 </td></tr>
@@ -651,8 +651,8 @@ export async function sendRenewalReminderJ30Email(params: RenewalEmailParams) {
   });
 
   const text = fr
-    ? `${subject}\n\nVotre simulateur Expert expire le ${expFormatted}.\nRenouvelez pour 29 $/an: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
-    : `${subject}\n\nYour Expert simulator expires on ${expFormatted}.\nRenew for $29/year: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
+    ? `${subject}\n\nVotre Laboratoire expire le ${expFormatted}.\nRenouvelez pour 29 $/an: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\nYour Lab expires on ${expFormatted}.\nRenew for $29/year: ${checkoutUrl}\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
@@ -684,16 +684,16 @@ export async function sendRenewalReminderJ7Email(params: RenewalEmailParams) {
   const simUrl = `${base}/acces?token=${token}`;
 
   const subject = fr
-    ? "Rappel : votre accès Expert expire dans 7 jours"
-    : "Reminder: your Expert access expires in 7 days";
+    ? "Rappel : votre accès Laboratoire expire dans 7 jours"
+    : "Reminder: your Lab access expires in 7 days";
 
   const heading = fr
     ? "7 jours restants"
     : "7 days remaining";
 
   const bodyP1 = fr
-    ? `Votre accès au Simulateur Expert expire le ${expFormatted}. Après cette date, le simulateur passera en lecture seule.`
-    : `Your Expert Simulator access expires on ${expFormatted}. After that date, the simulator will switch to read-only mode.`;
+    ? `Votre accès au Laboratoire expire le ${expFormatted}. Après cette date, le Laboratoire passera en lecture seule.`
+    : `Your Lab access expires on ${expFormatted}. After that date, the Lab will switch to read-only mode.`;
 
   const bodyP2 = fr
     ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} seront conservés 12 mois. Le renouvellement à 29\u00a0$/an réactive immédiatement l\u2019ensemble de vos outils.`
@@ -750,16 +750,16 @@ export async function sendRenewalExpiryEmail(params: RenewalEmailParams) {
   const simUrl = `${base}/acces?token=${token}`;
 
   const subject = fr
-    ? "Votre accès Expert expire aujourd\u2019hui"
-    : "Your Expert access expires today";
+    ? "Votre accès Laboratoire expire aujourd\u2019hui"
+    : "Your Lab access expires today";
 
   const heading = fr
     ? "Votre accès expire aujourd\u2019hui"
     : "Your access expires today";
 
   const bodyP1 = fr
-    ? "Votre accès au Simulateur Expert arrive à échéance. Une période de grâce de quelques jours vous permet encore de naviguer et de consulter vos données."
-    : "Your Expert Simulator access is expiring. A short grace period still allows you to browse and view your data.";
+    ? "Votre accès au Laboratoire arrive à échéance. Une période de grâce de quelques jours vous permet encore de naviguer et de consulter vos données."
+    : "Your Lab access is expiring. A short grace period still allows you to browse and view your data.";
 
   const bodyP2 = fr
     ? "Pour continuer à recalculer vos scénarios et générer des bilans AI, le renouvellement à 29\u00a0$/an réactive instantanément votre simulateur complet."
@@ -819,16 +819,16 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
   const checkoutUrl = renewalCheckoutUrl(to);
 
   const subject = fr
-    ? "Votre simulateur Expert est en lecture seule"
-    : "Your Expert simulator is in read-only mode";
+    ? "Votre Laboratoire est en lecture seule"
+    : "Your Lab is in read-only mode";
 
   const heading = fr
     ? "Votre simulateur est en lecture seule"
     : "Your simulator is in read-only mode";
 
   const bodyP1 = fr
-    ? `Votre accès Expert a expiré le ${expFormatted}. Le simulateur est maintenant en mode lecture seule\u00a0: vous pouvez consulter vos bilans existants, mais les recalculs et les exports AI ne sont plus disponibles.`
-    : `Your Expert access expired on ${expFormatted}. The simulator is now in read-only mode: you can view your existing assessments, but recalculations and AI exports are no longer available.`;
+    ? `Votre accès Laboratoire a expiré le ${expFormatted}. Le Laboratoire est maintenant en mode lecture seule\u00a0: vous pouvez consulter vos bilans existants, mais les recalculs et les exports AI ne sont plus disponibles.`
+    : `Your Lab access expired on ${expFormatted}. The Lab is now in read-only mode: you can view your existing assessments, but recalculations and AI exports are no longer available.`;
 
   const bodyP2 = fr
     ? `Vos ${profilesCount} profil${profilesCount !== 1 ? "s" : ""} et ${reportsCount} bilan${reportsCount !== 1 ? "s" : ""} sont préservés pendant 12 mois. Rien n\u2019est perdu.`
@@ -843,7 +843,7 @@ export async function sendRenewalGraceEmail(params: RenewalEmailParams) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr><td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:10px;">${fr ? "Ce que le renouvellement inclut" : "What renewal includes"}</td></tr>
                 <tr><td style="font-family:${FONT};font-size:13px;color:${GRAY};line-height:2;">
-                  &bull; ${fr ? "Simulateur illimité avec recalcul instantané" : "Unlimited simulator with instant recalculation"}<br/>
+                  &bull; ${fr ? "Simulations illimitées avec recalcul instantané" : "Unlimited simulations with instant recalculation"}<br/>
                   &bull; ${fr ? "3 exports AI personnalisés" : "3 personalized AI exports"}<br/>
                   &bull; ${fr ? "Bilan Annuel (vérification de janvier)" : "Annual Assessment (January check-up)"}<br/>
                   &bull; ${fr ? "Tous vos profils et données existants" : "All your existing profiles and data"}
@@ -934,8 +934,8 @@ export async function sendAnniversaryReminderEmail(params: AnniversaryReminderPa
     location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
     contact: fr ? "Une question\u00a0?" : "Questions?",
     unsubNote: fr
-      ? "Vous recevez ce courriel car vous avez un compte Simulateur Expert actif."
-      : "You are receiving this email because you have an active Expert Simulator account.",
+      ? "Vous recevez ce courriel car vous avez un compte Laboratoire actif."
+      : "You are receiving this email because you have an active Lab account.",
   };
 
   const questionsList = contextualQuestions
@@ -1055,18 +1055,18 @@ export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
   });
 
   const subject = fr
-    ? "F\u00e9licitations\u00a0! 1 an d\u2019acc\u00e8s Expert gratuit \u2014 buildfi.ca"
-    : "Congratulations! 1 free year of Expert access \u2014 buildfi.ca";
+    ? "F\u00e9licitations\u00a0! 1 an d\u2019acc\u00e8s Laboratoire gratuit \u2014 buildfi.ca"
+    : "Congratulations! 1 free year of Lab access \u2014 buildfi.ca";
 
   const s = {
     tagline: fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning",
-    heading: fr ? "1 an d\u2019acc\u00e8s Expert gratuit" : "1 free year of Expert access",
+    heading: fr ? "1 an d\u2019acc\u00e8s Laboratoire gratuit" : "1 free year of Lab access",
     bodyP1: fr
-      ? "Gr\u00e2ce \u00e0 vos 3 r\u00e9f\u00e9rences, vous avez d\u00e9bloqu\u00e9 une ann\u00e9e compl\u00e8te d\u2019acc\u00e8s Expert gratuit\u00a0!"
-      : "Thanks to your 3 referrals, you\u2019ve unlocked a full year of free Expert access!",
+      ? "Gr\u00e2ce \u00e0 vos 3 r\u00e9f\u00e9rences, vous avez d\u00e9bloqu\u00e9 une ann\u00e9e compl\u00e8te d\u2019acc\u00e8s Laboratoire gratuit\u00a0!"
+      : "Thanks to your 3 referrals, you\u2019ve unlocked a full year of free Lab access!",
     bodyP2: fr
-      ? `Votre acc\u00e8s Expert est d\u00e9sormais valide jusqu\u2019au ${expiryFormatted}. Vous avez aussi re\u00e7u 3 exports AI suppl\u00e9mentaires.`
-      : `Your Expert access is now valid until ${expiryFormatted}. You also received 3 additional AI exports.`,
+      ? `Votre acc\u00e8s Laboratoire est d\u00e9sormais valide jusqu\u2019au ${expiryFormatted}. Vous avez aussi re\u00e7u 3 exports AI suppl\u00e9mentaires.`
+      : `Your Lab access is now valid until ${expiryFormatted}. You also received 3 additional AI exports.`,
     bodyP3: fr
       ? "Continuez \u00e0 partager BuildFi \u2014 chaque nouvelle r\u00e9f\u00e9rence contribue \u00e0 rendre la planification financi\u00e8re accessible \u00e0 tous."
       : "Keep sharing BuildFi \u2014 every new referral helps make financial planning accessible to everyone.",
@@ -1129,8 +1129,8 @@ export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
 </html>`;
 
   const text = fr
-    ? `${subject}\n\n1 an d'accès Expert gratuit grâce à vos 3 références!\nValide jusqu'au ${expiryFormatted}. 3 exports AI supplémentaires inclus.\n\nsupport@buildfi.ca | buildfi.ca`
-    : `${subject}\n\n1 free year of Expert access thanks to your 3 referrals!\nValid until ${expiryFormatted}. 3 additional AI exports included.\n\nsupport@buildfi.ca | buildfi.ca`;
+    ? `${subject}\n\n1 an d'accès Laboratoire gratuit grâce à vos 3 références!\nValide jusqu'au ${expiryFormatted}. 3 exports AI supplémentaires inclus.\n\nsupport@buildfi.ca | buildfi.ca`
+    : `${subject}\n\n1 free year of Lab access thanks to your 3 referrals!\nValid until ${expiryFormatted}. 3 additional AI exports included.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",

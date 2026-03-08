@@ -105,6 +105,7 @@ export async function sendFeedbackEmail(params: {
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
@@ -165,6 +166,7 @@ export async function sendTestimonialRequestEmail(params: {
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
@@ -225,6 +227,7 @@ export async function sendFeedbackReminderEmail(params: {
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
@@ -269,7 +272,7 @@ export async function sendReferralConversionEmail(params: {
             : conversions === 3
               ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 1 export AI gratuit ajout\u00e9 \u00e0 votre compte." : "Reward unlocked: 1 free AI export added to your account.")
               : conversions === 5
-                ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 1 an d\u2019acc\u00e8s Expert gratuit\u00a0!" : "Reward unlocked: 1 free year of Expert access!")
+                ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 1 an d\u2019acc\u00e8s Laboratoire gratuit\u00a0!" : "Reward unlocked: 1 free year of Lab access!")
                 : (fr ? "Continuez \u00e0 partager pour d\u00e9bloquer plus de r\u00e9compenses." : "Keep sharing to unlock more rewards.")}
         </td></tr>`;
 
@@ -277,6 +280,7 @@ export async function sendReferralConversionEmail(params: {
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
+    replyTo: "support@buildfi.ca",
     to: [to],
     subject,
     html,
