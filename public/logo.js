@@ -1,7 +1,7 @@
 // /public/logo.js — BuildFi logo (single source of truth)
 // Usage: <script src="/logo.js"></script>
 // Then call: logoSVG("lg","light") or logoSVG("sm","dark")
-// Sizes: "lg" (1.2x), "md" (0.85x), "sm" (0.55x)
+// Sizes: "lg" (1.4x), "md" (1.0x), "sm" (0.7x)
 // Contexts: "light" (navy blocks on cream/white bg), "dark" (cream blocks on navy bg)
 //
 // Logo: 3 stacking blocks (foundation → building → independence)
@@ -16,7 +16,7 @@ function logoSVG(size, context) {
   var goldFill = "#c49a1a";
 
   // Scale factors
-  var s = size === "lg" ? 1.2 : size === "md" ? 0.85 : 0.55;
+  var s = size === "lg" ? 1.4 : size === "md" ? 1.0 : 0.7;
   var w = Math.round(220 * s);
   var h = Math.round(48 * s);
 
