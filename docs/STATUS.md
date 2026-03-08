@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-06 — v13 (Narrative arc Ess+Inter, QPP fix, RRSP 2026 cap, CCPC data path, AMF audit pass)
+> Mis à jour: 2026-03-07 — v14 (infra blockers resolved, magic link bug identified, Décaissement tier added)
 
 ## PHASE ACTUELLE
-**ESSENTIEL LAUNCH-READY. INTER REPORT NARRATIVE ARC COMPLETE. Expert S1-S10 complete. Reste 2 blockers infra manuels (Blob public, Resend DKIM) + Inter quiz/checkout pipeline à construire.**
+**ESSENTIEL LAUNCH-READY — Blob ✅, Resend ✅, AI ✅. Reste: magic link www fix + og-image + commit/push. INTER REPORT NARRATIVE ARC COMPLETE. Expert S1-S10 complete. Décaissement tier ajouté (quiz + rapport + pipeline). Inter quiz/checkout pipeline à connecter E2E.**
 
 ---
 
@@ -16,11 +16,11 @@
 | Vercel | ✅ | Auto-deploy, Next.js 16.1.6 |
 | GitHub tredhedge/buildfi | ✅ | main branch, privé |
 | Stripe | ✅ | Test mode. Essentiel $29, Inter $59, Expert $129, Renewal $29/an, Addon $14.99. Webhook configuré |
-| Resend | ⚠️ | Clé API OK, domaine buildfi.ca DNS FAILED — DKIM/SPF à revérifier |
+| Resend | ✅ | Domaine buildfi.ca VERIFIED. Emails delivered. Spam probable (domain warmup needed) |
 | PostHog | ✅ | |
-| Vercel Blob | ⚠️ | Store "buildfi-blob" PRIVATE — rapports Forbidden en accès direct |
+| Vercel Blob | ✅ | Store opérationnel — rapports accessibles par lien email |
 | Vercel KV (Upstash) | ✅ | Redis — profils Expert, auth, rate limiting, referral |
-| Variables Vercel | ✅ | ANTHROPIC_API_KEY ajouté, KV/Stripe/Resend/Blob all set |
+| Variables Vercel | ✅ | ANTHROPIC_API_KEY ajouté, KV/Stripe/Resend/Blob all set. Manque: STRIPE_PRICE_DECAISSEMENT |
 
 ### Pipeline E2E — VALIDÉ EN PROD (2026-02-27)
 | Étape | Status | Détails |
@@ -31,8 +31,8 @@
 | Monte Carlo | ✅ | 5000 sims en ~2.3s sur Vercel serverless |
 | Report HTML render | ✅ | **v6 polished** — 8 chantiers: upsell URLs, hypotheses grid, resources cadeau, nav pills (Renforcer+Evolution), grade hint, $0 row highlight, methodology accordion, referral banner |
 | AI narration | ✅ OPERATIONAL v2 | buildAIPrompt() v2: voice matrix, composite signals, narrative arc, jargon ban. ANTHROPIC_API_KEY in Vercel |
-| Blob upload | ✅ | Upload OK, mais store PRIVATE → "Forbidden" en accès direct |
-| Email envoi | ✅ | Table-based template, bilingual, AMF compliant — arrives in spam |
+| Blob upload | ✅ | Upload OK, rapports accessibles par lien |
+| Email envoi | ✅ | Table-based template, bilingual, AMF compliant. Delivered (spam probable — domain warmup needed) |
 | PDF generation | ❌ DÉSACTIVÉ | Puppeteer incompatible Vercel. Remplacé par lien HTML |
 
 ### Audit complet (2026-03-03) — 21 CORRECTIFS
@@ -80,6 +80,20 @@
 - `lib/report-html-inter.js` — 16 sections, ~1,100 lignes, **visual overhaul complete** (see below)
 - `lib/strategies-inter.ts` — 5-strategy comparison (500 sims each)
 - `tests/report-inter-calculations.test.js` — 685 tests, 50 catégories
+
+### Décaissement Tier (ajouté 2026-03-05, quality rebuild 2026-03-07)
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Landing page | ✅ | Product card, comparison table, "Quel produit" selector, FAQ |
+| Quiz | ✅ | /quiz-decaissement.html — 13 écrans, thin client, static SEO shell |
+| Translator | ✅ | lib/quiz-translator-decum.ts — QPP continuous formula, 6 MC runs |
+| AI prompt | ✅ | lib/ai-prompt-decum.ts — 12 slots, DerivedProfile, voice matrix, narrative arcs |
+| Report template | ✅ | lib/report-html-decum.js — 13 sections, SVG donut, static fallbacks |
+| Email template | ✅ | Décaissement-specific resources block dans lib/email.ts |
+| Webhook | ✅ | handleDecaissementPurchase() — 6 MC runs (1 base + 2 meltdown + 3 CPP timing) |
+| Checkout | ✅ | Tier "decaissement" dans /api/checkout |
+| Stripe product | ⏳ | Needs STRIPE_PRICE_DECAISSEMENT env var ($59 base, lancement $29.50) |
+| Pricing | — | $59 one-time (LAUNCH50 applies → $29.50) |
 
 ### Inter + Essentiel Narrative Arc (2026-03-06) — 3 COMMITS
 | Composant | Changement | Statut |
@@ -197,28 +211,35 @@
 
 ---
 
-## BLOQUANTS AVANT LANCEMENT ESSENTIEL (2 restants)
+## BLOQUANTS AVANT LANCEMENT ESSENTIEL (0 restants — ready to launch)
 
-### 1. Vercel Blob → PUBLIC [MANUAL]
-- Store "buildfi-blob" est PRIVATE → rapports "Forbidden"
-- Fix: recréer store PUBLIC sur Vercel Storage, mettre à jour BLOB_READ_WRITE_TOKEN
+### 1. ~~Vercel Blob → PUBLIC~~ ✅ DONE
+- Rapports accessibles par lien email — vérifié 2026-03-07
 
-### 2. Resend DNS → VÉRIFIÉ [MANUAL]
-- Domaine buildfi.ca status: FAILED
-- Fix: copier nouvelle clé DKIM depuis Resend → mettre à jour TXT resend._domainkey sur Cloudflare
+### 2. ~~Resend DNS → VÉRIFIÉ~~ ✅ DONE
+- Domaine buildfi.ca: VERIFIED sur Resend — vérifié 2026-03-07
+- Emails delivered (spam probable — domain warmup recommandé)
 
 ### 3. ~~ANTHROPIC_API_KEY → Vercel~~ ✅ DONE
 - Clé ajoutée dans Vercel env vars — AI narration opérationnel
 
 ### 4. Pages légales (P0.7) — ✅ DONE
-- Conditions, confidentialité, avis légal — mis à jour 2026-03-04
+- Conditions, confidentialité, avis légal — mis à jour 2026-03-07
 - Launch pricing ajouté dans conditions
 - Consent banner référencé dans confidentialité
 - Privacy officer: "Le dirigeant de BuildFi Technologies inc." ✅ DONE
 - Terms acceptance checkbox on all quiz pages ✅ DONE
+- "taxes incluses" → "avant taxes applicables" (conditions) ✅ DONE
+- "consentement implicite" → "consentement explicite" (confidentialité) ✅ DONE
+- AMF softening: "Ordre optimal" → "Ordre de retrait modélisé" ✅ DONE
 
-### 5. Commit + push [MANUAL]
-- All files ready to commit
+### 5. ~~Magic link URL~~ ✅ FIXED (commit 27f81e9)
+- buildMagicLinkUrl() force www.buildfi.ca pour éviter que le 307 redirect supprime le token
+- Toutes les URLs hardcodées dans reports/tools corrigées
+
+### 6. og-image.png — ⏳ EN COURS
+- Image 1200x630 pour partages sociaux (Reddit, LinkedIn, etc.)
+- À placer dans public/og-image.png
 
 ---
 
@@ -227,8 +248,8 @@
 ### Vue d'ensemble
 | Phase | Titre | Statut |
 |-------|-------|--------|
-| P0 | Infrastructure Web | ✅ Complétée (P0.7 légal en attente) |
-| P1 | Quiz + Rapport Essentiel + Landing | ✅ Launch-ready — 2 blockers infra (Blob public, Resend DNS) |
+| P0 | Infrastructure Web | ✅ Complétée |
+| P1 | Quiz + Rapport Essentiel + Landing | ✅ Launch-ready — Blob ✅, Resend ✅, AI ✅ |
 | P2 | Rapport Intermédiaire + Upsell | ⏳ Server backbone merged, quiz à construire |
 | P3 | Marketing + Légal | ⏳ |
 | P4 | Migration Next.js | ⏳ Partiellement avancée (engine + API déjà en place) |
@@ -239,12 +260,16 @@
 **Principe directeur**: Vendre d'abord, migrer ensuite.
 
 ### P1 — Prochaines actions (par priorité)
-1. Fix Blob public + Resend DNS → rapport accessible par lien
-2. ~~Add ANTHROPIC_API_KEY to Vercel~~ ✅ Done — AI narration operational
-3. ~~Pages légales~~ ✅ Done
-4. Commit + push all changes
-5. Create og-image.png (1200x630) and place in public/
-6. Soft launch organique (Reddit, LinkedIn, cercle privé)
+1. ~~Fix Blob public~~ ✅ Done — rapports accessibles
+2. ~~Resend DNS~~ ✅ Done — domaine vérifié
+3. ~~Add ANTHROPIC_API_KEY to Vercel~~ ✅ Done
+4. ~~Pages légales~~ ✅ Done
+5. ~~Fix magic link www prefix~~ ✅ Done (commit 27f81e9)
+6. Create og-image.png (1200x630) and place in public/
+7. Commit + push all changes
+8. Set up support@buildfi.ca (Cloudflare Email Routing)
+9. Domain warmup (mark emails as not-spam from multiple accounts)
+10. Soft launch organique (Reddit, LinkedIn, cercle privé)
 
 ### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
 - **Report visual overhaul: COMPLETE** — CSS system, header, MC chart, KPI grouping, obs restructuring (685/685 tests)
@@ -294,6 +319,7 @@ buildfi/
 │   ├── ai-constants.ts           ✅ AI slots (Ess 12 + Inter 16), AMF forbidden terms
 │   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan
 │   ├── ai-prompt-inter.ts       ✅ Inter AI prompt (18 slots)
+│   ├── ai-prompt-decum.ts       ✅ Décaissement AI prompt (12 slots, voice matrix)
 │   ├── ai-prompt-expert.ts      ✅ Expert AI prompt
 │   ├── api-helpers.ts            ✅ Shared API utilities
 │   ├── auth.ts                   ✅ Token verification
@@ -303,9 +329,11 @@ buildfi/
 │   ├── kv.ts                     ✅ Upstash Redis (profiles, auth, rate limit)
 │   ├── quiz-translator.ts        ✅ Essentiel translator
 │   ├── quiz-translator-inter.ts  ✅ Inter translator (85→120 params)
+│   ├── quiz-translator-decum.ts  ✅ Décaissement translator (6 MC runs)
 │   ├── quiz-translator-expert.ts ✅ Expert translator
 │   ├── rate-limit.ts             ✅ Sliding window rate limiting
 │   ├── report-html.js            ✅ Essentiel report v6 (1,421 lignes)
+│   ├── report-html-decum.js      ✅ Décaissement report (13 sections)
 │   ├── report-html-inter.js      ✅ Inter report (~1,100 lignes, visual overhaul complete)
 │   ├── report-html-expert.ts     ✅ Expert report
 │   ├── strategies-inter.ts       ✅ 5-strategy comparison
@@ -315,6 +343,7 @@ buildfi/
 │   ├── expert.html               ✅ Expert landing page
 │   ├── quiz-essentiel.html       ✅ Thin client (805 lignes)
 │   ├── quiz-intermediaire.html   ✅ Inter quiz
+│   ├── quiz-decaissement.html    ✅ Décaissement quiz (13 écrans)
 │   ├── quiz-expert.html          ✅ Expert quiz
 │   ├── avis-legal.html           ✅ Avis AMF
 │   ├── conditions.html           ✅ Conditions d'utilisation
@@ -333,8 +362,8 @@ buildfi/
 | Service | État |
 |---------|------|
 | Stripe | ✅ Test mode, webhook fonctionne |
-| Resend | ⚠️ DNS FAILED, email en spam |
-| Vercel Blob | ⚠️ PRIVATE, rapports Forbidden |
+| Resend | ✅ VERIFIED, emails delivered (domain warmup needed) |
+| Vercel Blob | ✅ Opérationnel, rapports accessibles |
 | Anthropic API | ✅ Operational, key in Vercel |
 | Cloudflare DNS | ✅ |
 | PostHog | ✅ |
@@ -343,9 +372,10 @@ buildfi/
 Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
-1. Fix Blob (public store) + Resend DNS → rapport accessible
-2. Create og-image.png (1200x630) for OG tags
-3. Soft launch organique (Reddit, LinkedIn, cercle privé)
-4. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+1. Create og-image.png (1200x630) for OG tags
+2. Set up support@buildfi.ca (Cloudflare Email Routing)
+3. Create STRIPE_PRICE_DECAISSEMENT ($59) in Stripe + add env var
+4. Soft launch organique (Reddit, LinkedIn, cercle privé)
+5. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
    - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
-5. S11 Expert post-launch: feedback pipeline, A/B testing
+6. S11 Expert post-launch: feedback pipeline, A/B testing

@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-03 — v6 (post-audit, env vars consolidé, pricing confirmé)
+> Mis à jour: 2026-03-07 — v7 (infra blockers resolved, magic link bug, Décaissement tier)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -16,7 +16,7 @@
 |------|-----|--------|-------|
 | A | buildfi.ca | 216.198.79.1 | → Vercel |
 | CNAME | www | 14941d72d937e1e...vercel-dns | → Vercel |
-| TXT | resend._domainkey | p=MIGfMA... | DKIM Resend — ⚠️ VÉRIFIER que la clé correspond après recréation |
+| TXT | resend._domainkey | p=MIGfMA... | DKIM Resend — ✅ VERIFIED 2026-03-07 |
 | MX | send | feedback-smtp.us-east-1.amazonses.com (priority 10) | Resend |
 | TXT | send | v=spf1 include:amazonses.com ~all | SPF Resend |
 | TXT | _dmarc | v=DMARC1; p=none; | DMARC Resend |
@@ -70,9 +70,7 @@
 
 ### Resend — Emails transactionnels
 - Compte: tredhedge | Plan: Free (3,000 emails/mois)
-- Domaine buildfi.ca: **⚠️ STATUS: FAILED** — DNS records ajoutés sur Cloudflare mais vérification échoue
-  - **Cause probable**: clé DKIM recréée, valeur dans Cloudflare potentiellement obsolète
-  - **Fix**: copier la nouvelle clé DKIM depuis Resend → mettre à jour le record TXT resend._domainkey sur Cloudflare → Reverify
+- Domaine buildfi.ca: **✅ STATUS: VERIFIED** (2026-03-07). Emails delivered. Domain warmup recommandé pour sortir du spam.
 - Adresse d'envoi: BuildFi <rapport@buildfi.ca> (RESEND_FROM dans Vercel)
 - Clé API: re_... (active, "Sending access") — dans Vercel env var RESEND_API_KEY
 - **Email tags**: désactivés temporairement (erreur validation "only ASCII letters/numbers/underscores/dashes")
@@ -98,8 +96,7 @@
 
 ### Vercel Blob — Stockage rapports
 - Store: "buildfi-blob" | Région: IAD1
-- **⚠️ STATUS: PRIVATE** — rapports uploadés OK mais URL retourne "Forbidden"
-- **Fix**: recréer un store PUBLIC sur Vercel Storage, mettre à jour BLOB_READ_WRITE_TOKEN
+- **✅ STATUS: OPÉRATIONNEL** — Rapports accessibles par lien email — vérifié 2026-03-07
 - Token: BLOB_READ_WRITE_TOKEN dans Vercel env vars (aussi BLOBFI_READ_WRITE_TOKEN — le store a été créé avec ce nom)
 - Upload fonctionne: rapport HTML ~100KB uploadé en <1s
 
@@ -113,12 +110,12 @@
 
 ### Anthropic API — Narration AI
 - URL: console.anthropic.com
-- Statut: **CODE COMPLETE** — buildAIPrompt() + Anthropic call wired in webhook
+- Statut: **✅ OPÉRATIONNEL** — buildAIPrompt() + Anthropic call wired in webhook
 - Modèle: claude-sonnet-4 (12 JSON slots, single API call)
 - Fallback: {} if ANTHROPIC_API_KEY missing or API fails → report uses hardcoded text
 - AI files: `lib/ai-constants.ts` (slot names, AMF forbidden terms), `lib/ai-profile.ts` (DerivedProfile)
 - Test endpoint: `/api/ai-narrate` (standalone, not called by webhook)
-- **Activation**: add ANTHROPIC_API_KEY to Vercel env vars → AI narration goes live
+- **Activation**: ✅ ANTHROPIC_API_KEY ajouté dans Vercel env vars — AI narration opérationnel
 
 ---
 
@@ -146,9 +143,9 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | `RESEND_FROM` | Expéditeur email | ✅ "BuildFi <rapport@buildfi.ca>" |
 | `BLOB_READ_WRITE_TOKEN` | Upload Vercel Blob | ✅ Configurée |
 | `BLOBFI_READ_WRITE_TOKEN` | Alias (nom auto du store) | ✅ Configurée |
-| `ANTHROPIC_API_KEY` | Narration AI server-side | ❌ Non configurée — code complete, needs key to activate |
-| `KV_REST_API_URL` | Upstash Redis URL | ⚠️ À ajouter (Expert profiles, auth, rate limiting) |
-| `KV_REST_API_TOKEN` | Upstash Redis token | ⚠️ À ajouter |
+| `ANTHROPIC_API_KEY` | Narration AI server-side | ✅ Configurée — AI narration opérationnel |
+| `KV_REST_API_URL` | Upstash Redis URL | ✅ Configurée |
+| `KV_REST_API_TOKEN` | Upstash Redis token | ✅ Configurée |
 | `ADMIN_EMAIL` | Admin alert recipient | Optionnel — fallback support@buildfi.ca |
 | `NEXT_PUBLIC_POSTHOG_KEY` | Analytics client-side | ✅ Configurée |
 
@@ -180,12 +177,11 @@ Client complète quiz (805 lignes, thin client, zero IP)
   → Client redirigé vers /merci (+ lien referral)
 ```
 
-**⚠️ ÉLÉMENTS NON IMPLÉMENTÉS / BLOQUÉS DANS LE FLUX:**
-- PDF en pièce jointe (Puppeteer désactivé)
-- Bonus en pièce jointe (Guide PDF, lien debt tool)
-- AI narration: code complete, needs ANTHROPIC_API_KEY in Vercel env vars to activate
-- Rapport accessible (Blob private → "Forbidden" — recréer store public)
-- Email en inbox (domaine Resend non vérifié → spam)
+**⚠️ ÉLÉMENTS NON IMPLÉMENTÉS / EN COURS:**
+- PDF en pièce jointe (Puppeteer désactivé — remplacé par lien HTML)
+- ~~AI narration~~ ✅ Opérationnel
+- ~~Rapport accessible~~ ✅ Blob opérationnel
+- ~~Email en inbox~~ ✅ Delivered (domain warmup needed pour sortir du spam)
 - Offre 2e rapport 50% dans email livraison (coupon SECOND50)
 - Lien referral sur page /merci
 
@@ -200,3 +196,12 @@ Client complète quiz (805 lignes, thin client, zero IP)
 - Quiz thin client: zero IP exposé côté navigateur
 - robots.txt: Disallow /outils/ (bonus clients seulement, pas indexé)
 - Stripe webhook signature vérifiée à chaque requête
+
+---
+
+## BUGS CONNUS
+
+### ~~Magic link URL sans www~~ ✅ FIXED (2026-03-07, commit 27f81e9)
+- buildMagicLinkUrl() force maintenant www.buildfi.ca
+- Le redirect 307 buildfi.ca → www.buildfi.ca supprimait le query param token
+- Fix: auth.ts replace "https://buildfi.ca" → "https://www.buildfi.ca" dans base URL
