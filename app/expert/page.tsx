@@ -262,10 +262,14 @@ function PortalContent() {
     }
   }, [apiHeaders, t]);
 
-  // Auth
+  // Auth — use ref to prevent re-auth after token is removed from URL
+  const initialTokenRef = useRef(tokenParam);
+  if (tokenParam && !initialTokenRef.current) initialTokenRef.current = tokenParam;
+
   useEffect(() => {
-    if (!tokenParam) { setAuthStatus("denied"); return; }
-    fetch(`/api/auth/verify?token=${tokenParam}`)
+    const tkn = initialTokenRef.current;
+    if (!tkn) { setAuthStatus("denied"); return; }
+    fetch(`/api/auth/verify?token=${tkn}`)
       .then(r => {
         if (!r.ok) throw new Error("Auth failed");
         return r.json();
@@ -284,7 +288,8 @@ function PortalContent() {
         }
       })
       .catch(() => setAuthStatus("denied"));
-  }, [tokenParam]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Denied ────────────────────────────────────────────────
   if (authStatus === "loading") {

@@ -691,6 +691,9 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
 function SimulateurContent() {
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get("token") || "";
+  // Capture initial token on first render — prevents re-auth after URL cleanup
+  const initialTokenRef = useRef(tokenFromUrl);
+  if (tokenFromUrl && !initialTokenRef.current) initialTokenRef.current = tokenFromUrl;
 
   // ── State ──
   const [authStatus, setAuthStatus] = useState<"loading" | "ok" | "denied">("loading");
@@ -725,9 +728,10 @@ function SimulateurContent() {
 
   // ── Auth gate ──
   useEffect(() => {
-    if (!tokenFromUrl) { setAuthStatus("denied"); return; }
-    setToken(tokenFromUrl);
-    fetch(`/api/auth/verify?token=${tokenFromUrl}`)
+    const tkn = initialTokenRef.current;
+    if (!tkn) { setAuthStatus("denied"); return; }
+    setToken(tkn);
+    fetch(`/api/auth/verify?token=${tkn}`)
       .then(async r => {
         if (!r.ok) {
           const err = await r.json().catch(() => ({}));
@@ -787,7 +791,8 @@ function SimulateurContent() {
         }
       })
       .catch(() => setAuthStatus("denied"));
-  }, [tokenFromUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Planner iframe postMessage bridge (bidirectional) ──
   useEffect(() => {
