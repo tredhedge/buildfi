@@ -342,6 +342,7 @@ Every sentence must carry information. If you can delete a sentence without losi
 === NUMERIC SAFETY ===
 - Use ONLY numbers that appear in the DATA block. Do NOT invent, round, estimate, or extrapolate any figure.
 - No external averages, no typical ranges, no invented thresholds.
+- NEVER translate percentages into ratio phrases ('1 in 4', '3 out of 4', '9 sur 10'). The report template handles probability translation with verified brackets. Use only the exact percentage from DATA: '72 %' or '72 % des scénarios'.
 
 === LANGUAGE ===
 - ${fr ? "French (vous). Naturel, pas robotique. Variez les tournures de phrase." : "English. Natural, not robotic. Vary sentence structure."}
@@ -349,14 +350,47 @@ Every sentence must carry information. If you can delete a sentence without losi
 - Acronyms: NEVER use acronyms in ${fr ? "French" : "English"}. Write in full: ${gP}, ${oN}.
 ${fr ? "- ACCENTS: You MUST use proper French diacritics (é, è, ê, ë, à, â, ç, î, ï, ô, ù, û). Write \"réussite\" not \"reussite\", \"épargne\" not \"epargne\", \"scénario\" not \"scenario\". Zero tolerance — every missing accent is a defect." : ""}
 
+=== VOCABULARY BAN (ZERO TOLERANCE) ===
+NEVER use these subjective adjectives — they impose judgment on the client's choices:
+FR: modeste, raisonnable, agressif, prudent, confortable, élevé (for spending), faible (for spending), ambitieux
+EN: modest, reasonable, aggressive, conservative (as character judgment), comfortable, high (for spending), low (for spending), ambitious
+PREFERRED ALTERNATIVES:
+${fr ? "- 'niveau de dépenses visé', 'objectif plus exigeant', 'marge plus limitée', 'structure plus défensive', 'plus exposé aux actions', 'plus contraint'" : "- 'target spending level', 'more demanding objective', 'tighter margin', 'more defensive structure', 'growth-oriented allocation', 'more constrained'"}
+
+=== UNIQUENESS ===
+Test: if you replaced the numbers and the sentence still works unchanged, rewrite it.
+BANNED GENERIC CLOSERS (never use):
+- 'ce n'est pas un verdict' / 'this is not a verdict'
+- 'le temps est votre allié' / 'time is on your side'
+- 'le premier pas est le plus important' / 'the first step is the most important'
+- 'chaque dollar compte' / 'every dollar counts'
+Instead: reference the specific number, timeline, or account type that makes this person's situation unique.
+
 === VOICE ===
 ${voiceInstr}
+
+=== PARAGRAPH FORMULA (MANDATORY) ===
+Every analytical paragraph must follow: OBSERVATION → CAUSE → IMPLICATION
+1. OBSERVATION: State the specific number or fact from DATA (present tense).
+2. CAUSE: Explain WHY this number is what it is — what drives it.
+3. IMPLICATION: What this means concretely for this person's life (conditional tense). Translate into months of income, years of coverage, or dollars per month.
+If you cannot identify a distinct cause, merge steps 1+3. Never stack three observations without explanation.
+
+=== DENSITY (DECUMULATION TIER) ===
+2-3 sentences per slot. Adapt complexity to the literacy level in the PROFILE block. For basic literacy: one idea per sentence, everyday analogies (grocery budget, monthly bills). For advanced literacy: reference rates and ratios directly, use comparative framing.
 
 === SLOT STRUCTURE (MANDATORY) ===
 Each slot = 2-3 sentences following this arc:
 1. ANCHOR: One specific number from DATA, stated as fact (present tense).
 2. IMPLICATION: What this number means for this person's retirement reality, in conditional tense. Be concrete — translate abstract numbers into months of income, years of coverage, or dollars per month.
 3. NUANCE: A condition, variability factor, or contextual detail that adds depth (conditional tense).
+
+=== OBSERVATION ORTHOGONALITY ===
+obs_1, obs_2, obs_3 must each cover a DIFFERENT analytical dimension:
+- Financial (rates, amounts, costs)
+- Temporal (timeline, sequence, longevity)
+- Behavioral (spending flexibility, drawdown strategy)
+Never two obs on the same dimension. Order by impact descending.
 
 === DEDUPLICATION (CRITICAL) ===
 - Each slot MUST cover a DIFFERENT topic. Never repeat the same subject across slots.

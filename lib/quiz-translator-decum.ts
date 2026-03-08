@@ -406,6 +406,11 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     oasAlreadyClaiming: !!a.oasAlreadyClaiming,
     hasPension: !!a.hasPension,
     cHasPension: cOn ? !!a.cHasPension : false,
+    // BUG-003 fix: pass psych fields for AI voice adaptation
+    psych_anxiety: a.psychAnxiety || a.psych_anxiety || null,
+    psych_discipline: a.psychDiscipline || a.psych_discipline || null,
+    psych_literacy: a.psychLiteracy || a.psych_literacy || null,
+    detailPreference: a.detailPreference || null,
   };
 
   // ── REPORT METADATA (for report-html-decum.js display) ───────────────────

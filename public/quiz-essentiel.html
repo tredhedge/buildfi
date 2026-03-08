@@ -103,7 +103,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 <script src="/logo.js"></script>
 </head>
 <body>
-<div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
+<div style="background:#faf8f4;padding:0"><a href="/bilan" id="heroBack" style="font-size:14px;font-weight:600;color:#888;text-decoration:none;padding:16px 24px;display:inline-block" onmouseover="this.style.color='#b8860b'" onmouseout="this.style.color='#888'">&larr; Retour au Bilan</a></div>
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(16px,3vw,32px) 20px 0;text-align:center">
   <div style="max-width:680px;margin:0 auto">
     <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Bilan — buildfi.ca</div>
     <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Votre portrait retraite en 5 à 8 minutes.</h1>
@@ -150,7 +151,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 
     <!-- Pas le bon produit? -->
     <div style="margin-bottom:24px">
-      <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
+      <a href="/" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
     </div>
   </div>
 </div>
@@ -519,7 +520,8 @@ var heroT = {
   heroPrepLabel: { fr:"Avant de commencer", en:"Before you start" },
   heroPrepText: { fr:"Ayez sous la main : votre dernier relevé de paie et le solde approximatif de vos comptes (REER, CÉLI).", en:"Have handy: your latest pay stub and approximate balances of your accounts (RRSP, TFSA)." },
   heroCta: { fr:"Commencer le questionnaire", en:"Start the questionnaire" },
-  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." }
+  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." },
+  heroBack: { fr:"\u2190 Retour au Bilan", en:"\u2190 Back to Snapshot" }
 };
 
 

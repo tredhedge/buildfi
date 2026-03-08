@@ -98,12 +98,29 @@ export function computeDerivedProfile(
   if (q.psych_literacy === "high") literacy = "advanced";
   else if (q.psych_literacy === "low") literacy = "basic";
   else if (q.psych_literacy === "medium") literacy = "intermediate";
-  else {
+  else if (!q.psych_literacy && (!quiz.monthlyContrib || quiz.monthlyContrib === 0)) {
+    // Décaissement-specific literacy heuristic
+    // When psych_literacy is null AND no monthly contributions (retiree),
+    // the standard savings-rate heuristic is meaningless. Use decum signals instead.
+    let litScore = 0;
+    if (q.spendingFlex === "high") litScore += 1;     // understands flexibility concept
+    if (q.meltdownPref === "reduce") litScore += 1;    // understands voluntary reduction
+    if (q.estatePref === "maximize" || q.estatePref === "spenddown") litScore += 1; // has a clear opinion
+    if (q.detailPreference === "detailed") litScore += 2; // explicitly wants depth
+    else if (q.detailPreference === "simple") litScore -= 1; // explicitly wants simplicity
+    // Non-default allocation choice suggests understanding
+    const allocR = q.allocRRaw || q.allocR || 0;
+    if (allocR > 0.70 || allocR < 0.40) litScore += 1;
+    literacy = litScore >= 3 ? "advanced" : litScore >= 1 ? "intermediate" : "basic";
+  } else if (!q.psych_literacy) {
+    // Original fallback for accumulation tiers (unchanged)
     let litScore = 0;
     if (q.savingsDetail) litScore += 2;
     if (q.risk && q.risk !== "balanced") litScore += 1;
     if (q.employer && q.employer !== "x" && q.employer !== "small") litScore += 1;
     literacy = litScore >= 3 ? "advanced" : litScore >= 1 ? "intermediate" : "basic";
+  } else {
+    literacy = "intermediate"; // safe fallback for unexpected psych_literacy values
   }
 
   // --- Complexity: count of active financial dimensions ---

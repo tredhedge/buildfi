@@ -78,7 +78,8 @@ input[type=number]{-moz-appearance:textfield}
 <script src="/logo.js"></script>
 </head>
 <body>
-<div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
+<div style="background:#faf8f4;padding:0"><a href="/bilan-360" id="heroBack" style="font-size:14px;font-weight:600;color:#888;text-decoration:none;padding:16px 24px;display:inline-block" onmouseover="this.style.color='#b8860b'" onmouseout="this.style.color='#888'">&larr; Retour au Bilan 360</a></div>
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(16px,3vw,32px) 20px 0;text-align:center">
   <div style="max-width:680px;margin:0 auto">
     <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Bilan 360 — buildfi.ca</div>
     <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Le bilan complet pour couples, propriétaires et incorporés.</h1>
@@ -121,7 +122,7 @@ input[type=number]{-moz-appearance:textfield}
     <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
 
     <div style="margin-bottom:24px">
-      <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
+      <a href="/" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
     </div>
   </div>
 </div>
@@ -441,7 +442,8 @@ var heroT = {
   heroPrepLabel: { fr:"Avant de commencer", en:"Before you start" },
   heroPrepText: { fr:"Ayez sous la main : vos relevés de paie (les deux conjoints si applicable), soldes REER/CÉLI, détails hypothécaires et dernier avis de cotisation.", en:"Have handy: pay stubs (both partners if applicable), RRSP/TFSA balances, mortgage details, and latest tax assessment." },
   heroCta: { fr:"Commencer le questionnaire", en:"Start the questionnaire" },
-  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." }
+  heroOther: { fr:"Pas le bon produit? Voir les autres options.", en:"Not the right product? See other options." },
+  heroBack: { fr:"\u2190 Retour au Bilan 360", en:"\u2190 Back to Snapshot 360" }
 };
 
 // ============================================================

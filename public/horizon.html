@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Horizon — Planifier vos retraits à la retraite | buildfi.ca</title>
+<meta name="description" content="Combien retirer, dans quel ordre, et quand demander la RRQ. Comparaison RRQ 60/65/70, test de robustesse, portrait successoral. Paiement unique.">
+<meta property="og:title" content="Horizon — Planifier vos retraits à la retraite | buildfi.ca">
+<meta property="og:description" content="Combien retirer, dans quel ordre, et quand demander la RRQ. Comparaison RRQ 60/65/70, test de robustesse, portrait successoral. Paiement unique.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buildfi.ca/horizon">
+<meta property="og:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:site_name" content="BuildFi">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<link rel="canonical" href="https://buildfi.ca/horizon">
+<link rel="alternate" hreflang="fr" href="https://buildfi.ca/horizon">
+<link rel="alternate" hreflang="en" href="https://buildfi.ca/horizon?lang=en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script id="faqSchema" type="application/ld+json"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1a2744;--navy-light:#2c3e6b;--navy-dark:#111b2e;
+  --gold:#b8860b;--gold-light:#d4a520;--gold-dark:#96700a;
+  --gold-wash:rgba(184,134,11,.06);--gold-wash-strong:rgba(184,134,11,.12);
+  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
+  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#777;
+  --border:#e8e0d4;--border-light:#f0ece4;
+  --success:#1a7a4c;--warning:#b89830;--danger:#b91c1c;
+  --blue:#4A7FC1;--blue-light:#6A9FE1;--blue-dark:#3A6FAF;
+  --blue-wash:rgba(74,127,193,.06);--blue-wash-strong:rgba(74,127,193,.12);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+  --shadow-gold:0 4px 20px rgba(184,134,11,.15);
+  --shadow-blue:0 4px 20px rgba(74,127,193,.15);
+  --shadow-card:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-data:'JetBrains Mono',monospace;
+  --max-content:1120px;--max-narrow:720px;--max-wide:1280px;
+  --section-py:clamp(72px,9vw,104px);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(16px,1.1vw,18px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:72px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");opacity:.5}
+img{max-width:100%;display:block}
+a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(--gold-dark)}
+.skip-nav{position:absolute;top:-100%;left:16px;z-index:9999;background:var(--navy);color:#fff;padding:12px 24px;border-radius:0 0 8px 8px;font-weight:700;font-size:14px}
+.skip-nav:focus{top:0}
+.container{width:100%;max-width:var(--max-content);margin:0 auto;padding:0 24px}
+.section{padding:var(--section-py) 0;position:relative}
+.section--sand{background:var(--sand)}
+.section--navy{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 50%,#2a4070 100%);color:#fff;position:relative;overflow:hidden}
+.section--navy::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(74,127,193,.1) 0%,transparent 60%);pointer-events:none}
+.section-label{font-family:var(--font-body);font-size:clamp(12px,.9vw,13px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.section--navy .section-label{color:var(--blue-light)}
+.section-title{font-family:var(--font-display);font-size:clamp(26px,3.2vw,40px);font-weight:700;line-height:1.12;color:var(--navy);margin-bottom:14px}
+.section--navy .section-title{color:#fff}
+.section-subtitle{font-size:clamp(16px,1.2vw,18px);color:var(--text-secondary);max-width:580px;line-height:1.65}
+.section--navy .section-subtitle{color:rgba(255,255,255,.7)}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-weight:700;border:none;cursor:pointer;transition:all .25s;text-decoration:none;letter-spacing:.2px}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:16px 32px;border-radius:var(--radius-md);font-size:16px;box-shadow:0 2px 8px rgba(184,134,11,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold),0 8px 24px rgba(184,134,11,.25);color:#fff}
+.btn-primary:active{transform:translateY(0)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .35s}
+.nav.scrolled{background:rgba(250,248,244,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04);padding:12px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-wide);margin:0 auto;padding:0 24px}
+.nav-logo{font-family:var(--font-body);font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:36px;list-style:none}
+.nav-links a{font-size:14px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:color .2s;position:relative}.nav-links a:hover{color:var(--navy)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s;border-radius:1px}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a.active{color:var(--navy)}
+.nav-links a.active::after{transform:scaleX(1)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all .25s;box-shadow:0 2px 8px rgba(184,134,11,.15)}.nav-cta:hover{transform:translateY(-1px);box-shadow:var(--shadow-gold);color:#fff}
+.nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px;width:40px;height:40px;position:relative}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--navy);position:absolute;left:9px;transition:all .3s}
+.nav-hamburger span:nth-child(1){top:12px}.nav-hamburger span:nth-child(2){top:19px}.nav-hamburger span:nth-child(3){top:26px}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg);top:19px}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg);top:19px}
+.nav-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(250,248,244,.98);backdrop-filter:blur(16px);padding:80px 24px 24px;flex-direction:column;gap:8px}
+.nav-drawer.open{display:flex}
+.nav-drawer a{display:block;padding:16px 0;font-size:18px;font-weight:600;color:var(--navy);text-decoration:none;border-bottom:1px solid var(--border-light)}
+.nav-drawer .nav-cta{display:block;text-align:center;margin-top:16px;padding:16px;border-radius:var(--radius-md);font-size:16px}
+@media(max-width:900px){.nav-links,.nav-right .nav-cta{display:none}.nav-hamburger{display:block}}
+
+/* ═══ HERO ═══ */
+.pp-hero{padding:clamp(80px,10vw,120px) 0 var(--section-py);text-align:center;position:relative;border-top:4px solid var(--blue)}
+.pp-hero::before{content:'';position:absolute;top:-20%;right:-15%;width:60%;height:140%;background:radial-gradient(ellipse,rgba(74,127,193,.05) 0%,transparent 65%);pointer-events:none}
+.pp-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.pp-back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--text-muted);text-decoration:none;margin-bottom:40px;transition:color .2s}
+.pp-back:hover{color:var(--gold)}
+.pp-hero-title{font-family:var(--font-display);font-size:clamp(40px,5.5vw,64px);font-weight:700;color:var(--navy);line-height:1.05;margin-bottom:8px;letter-spacing:-.5px}
+.pp-hero-subtitle{font-family:var(--font-display);font-size:clamp(18px,2vw,24px);font-weight:400;color:var(--text-secondary);margin-bottom:32px;font-style:italic}
+.pp-hero-price{margin-bottom:28px}
+.pp-hero-price-original{font-family:var(--font-data);font-size:clamp(18px,1.5vw,22px);color:var(--text-muted);text-decoration:line-through;margin-right:12px}
+.pp-hero-price-current{font-family:var(--font-data);font-size:clamp(36px,4.5vw,52px);font-weight:800;color:var(--navy)}
+.pp-hero-price-note{font-size:14px;color:var(--text-muted);margin-top:4px}
+.pp-hero-cta{margin-bottom:24px}
+.pp-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(74,127,193,.3)}
+
+/* ═══ POUR QUI ═══ */
+.pourqui-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:20px}
+.pourqui-item{display:flex;align-items:flex-start;gap:14px;font-size:clamp(15px,1.15vw,17px);color:var(--text-secondary);line-height:1.7}
+.pourqui-dot{width:10px;height:10px;flex-shrink:0;background:var(--blue);border-radius:50%;margin-top:8px}
+
+/* ═══ CE QUE VOUS RECEVEZ ═══ */
+.includes-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:14px}
+.includes-item{display:flex;align-items:flex-start;gap:12px;font-size:clamp(15px,1.1vw,17px);color:var(--text-primary);line-height:1.6}
+.includes-check{color:var(--success);font-weight:700;flex-shrink:0;font-size:16px;margin-top:2px}
+.includes-note{text-align:center;margin-top:24px;font-size:14px;color:var(--text-muted)}
+
+/* ═══ APERCU (dark section) ═══ */
+.apercu-container{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:32px}
+.apercu-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-lg);padding:28px 24px;text-align:center}
+.apercu-card h3{font-family:var(--font-display);font-size:16px;font-weight:700;color:#fff;margin-top:16px;margin-bottom:6px}
+.apercu-card p{font-size:13px;color:rgba(255,255,255,.6);line-height:1.55}
+.apercu-note{text-align:center;margin-top:28px;font-size:14px;color:rgba(255,255,255,.5);font-style:italic}
+
+/* ═══ STEPS ═══ */
+.steps-list{max-width:600px;margin:36px auto 0;display:flex;flex-direction:column;gap:24px}
+.step-item{display:flex;align-items:flex-start;gap:18px}
+.step-num{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;font-family:var(--font-data);font-size:14px;font-weight:700;margin-top:2px}
+.step-text{font-size:clamp(15px,1.15vw,17px);color:var(--text-primary);line-height:1.6}
+.step-text strong{color:var(--navy)}
+.steps-prep{max-width:600px;margin:32px auto 0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 24px;text-align:center}
+.steps-prep-label{font-size:14px;color:var(--text-muted);margin-bottom:4px}
+.steps-prep-value{font-size:15px;font-weight:600;color:var(--navy)}
+
+/* ═══ PRICING CTA ═══ */
+.pricing-cta{text-align:center}
+.pricing-cta .pp-hero-price{margin-bottom:24px}
+.pricing-reassurance{max-width:480px;margin:20px auto 0;font-size:14px;color:var(--text-muted);line-height:1.7}
+
+/* ═══ CROSS-SELL ═══ */
+.crosssell-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:14px}
+.crosssell-card{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 24px;text-decoration:none;transition:all .3s;gap:16px}
+.crosssell-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--gold)}
+.crosssell-info{flex:1}
+.crosssell-name{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.crosssell-desc{font-size:14px;color:var(--text-secondary)}
+.crosssell-arrow{font-size:18px;color:var(--gold);flex-shrink:0;font-weight:700;transition:transform .2s}
+.crosssell-card:hover .crosssell-arrow{transform:translateX(4px)}
+
+/* ═══ FAQ ═══ */
+.faq-list{max-width:var(--max-narrow);margin:32px auto 0}
+.faq-item{border-bottom:1px solid var(--border-light)}
+.faq-question{width:100%;background:none;border:none;text-align:left;cursor:pointer;padding:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);transition:color .2s}
+.faq-question:hover{color:var(--gold)}
+.faq-chevron{width:20px;height:20px;flex-shrink:0;transition:transform .3s;stroke:var(--text-muted);fill:none;stroke-width:2}
+.faq-item.open .faq-chevron{transform:rotate(90deg);stroke:var(--gold)}
+.faq-item.open .faq-question{color:var(--gold)}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-answer-inner{padding:0 0 18px;font-size:14px;color:var(--text-secondary);line-height:1.7;border-left:3px solid var(--gold);padding-left:20px;margin-left:2px}
+
+/* ═══ FOOTER ═══ */
+.footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
+.footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(184,134,11,.3),transparent)}
+.footer-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:52px}
+.footer-brand{font-size:26px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
+.footer-tagline{font-size:14px;color:rgba(255,255,255,.35);line-height:1.65;max-width:280px}
+.footer-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;padding:5px 0;transition:color .2s}.footer-col a:hover{color:var(--gold-light)}
+.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:13px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.2)}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.footer-bottom{flex-direction:column;gap:12px;text-align:center}}
+
+/* ═══ REVEAL ═══ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  body{padding-top:64px}
+  .pp-hero{padding-top:clamp(48px,8vw,80px)}
+  .apercu-container{grid-template-columns:1fr}
+  .crosssell-card{flex-direction:column;text-align:center;gap:8px}
+  .crosssell-arrow{transform:rotate(90deg)}
+  .crosssell-card:hover .crosssell-arrow{transform:rotate(90deg) translateX(4px)}
+}
+@media(max-width:700px){
+  .apercu-container{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .pp-hero-price-current{font-size:clamp(32px,10vw,44px)}
+  .step-item{gap:14px}
+  .step-num{width:32px;height:32px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-nav">Aller au contenu</a>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="nav" role="navigation" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
+    <ul class="nav-links">
+      <li><a href="/bilan">Bilan</a></li>
+      <li><a href="/bilan-360">Bilan 360</a></li>
+      <li><a href="/horizon" class="active">Horizon</a></li>
+      <li><a href="/expert/landing">Laboratoire</a></li>
+      <li><a href="/#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="/quiz-decaissement.html" class="nav-cta">Commencer</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/bilan">Bilan</a>
+  <a href="/bilan-360">Bilan 360</a>
+  <a href="/horizon">Horizon</a>
+  <a href="/expert/landing">Laboratoire</a>
+  <a href="/#faq">FAQ</a>
+  <a href="/quiz-decaissement.html" class="nav-cta">Commencer</a>
+</div>
+
+<!-- ═══ SECTION 1: HERO ═══ -->
+<section class="pp-hero" id="main">
+  <div class="container">
+    <a href="/" class="pp-back reveal"><span aria-hidden="true">&larr;</span> Retour &agrave; buildfi.ca</a>
+    <h1 class="pp-hero-title reveal reveal-delay-1">Horizon</h1>
+    <p class="pp-hero-subtitle reveal reveal-delay-1">Planifier vos retraits &agrave; la retraite</p>
+    <div class="pp-hero-price reveal reveal-delay-2">
+      <span class="pp-hero-price-original">59 $</span>
+      <span class="pp-hero-price-current">29,50 $</span>
+      <div class="pp-hero-price-note">paiement unique</div>
+    </div>
+    <div class="pp-hero-cta reveal reveal-delay-3">
+      <a href="/quiz-decaissement.html" class="btn btn-primary" data-track="product_page_cta_clicked" data-product="horizon">Commencer le questionnaire <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="reveal reveal-delay-4">
+      <span class="pp-badge">Retrait&eacute;s &middot; Pr&eacute;retrait&eacute;s</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: POUR QUI? ═══ -->
+<section class="section" id="pourqui">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Pour qui?</p>
+    <h2 class="section-title reveal">Ce bilan est con&ccedil;u pour vous si...</h2>
+    <div class="pourqui-list">
+      <div class="pourqui-item reveal">
+        <span class="pourqui-dot" aria-hidden="true"></span>
+        <span>Vous &ecirc;tes &agrave; la retraite ou vous y serez dans les 5 prochaines ann&eacute;es.</span>
+      </div>
+      <div class="pourqui-item reveal reveal-delay-1">
+        <span class="pourqui-dot" aria-hidden="true"></span>
+        <span>Vous vous demandez quand demander la RRQ &mdash; &agrave; 60, 65 ou 70 ans.</span>
+      </div>
+      <div class="pourqui-item reveal reveal-delay-2">
+        <span class="pourqui-dot" aria-hidden="true"></span>
+        <span>Vous voulez savoir combien retirer chaque ann&eacute;e sans &eacute;puiser votre &eacute;pargne.</span>
+      </div>
+      <div class="pourqui-item reveal reveal-delay-3">
+        <span class="pourqui-dot" aria-hidden="true"></span>
+        <span>Vous voulez tester ce qui arrive si les march&eacute;s baissent dans vos premi&egrave;res ann&eacute;es de retraite.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: CE QUE VOUS RECEVEZ ═══ -->
+<section class="section section--sand" id="includes">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Ce que vous recevez</p>
+    <h2 class="section-title reveal">Un bilan complet, pas un r&eacute;sum&eacute;.</h2>
+    <div class="includes-list">
+      <div class="includes-item reveal">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Bilan personnalis&eacute; &mdash; 13 sections, narration IA</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-1">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Comparaison timing RRQ/RPC &agrave; 60, 65 et 70 ans</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-1">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Test de robustesse : que se passe-t-il si les march&eacute;s baissent t&ocirc;t?</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-2">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Portrait successoral (ce que vous laisserez)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-2">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Analyse de couple (si applicable)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-3">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Strat&eacute;gie de d&eacute;cumulation (ordre de retrait mod&eacute;lis&eacute;)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-3">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Simulateur interactif pr&eacute;rempli depuis votre bilan</span>
+      </div>
+    </div>
+    <p class="includes-note reveal">Livr&eacute; par courriel en quelques minutes. Version imprimable incluse.</p>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: APERCU DU RAPPORT ═══ -->
+<section class="section section--navy" id="preview">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Aper&ccedil;u du rapport</p>
+    <h2 class="section-title reveal">Vos donn&eacute;es, analys&eacute;es en profondeur.</h2>
+    <div class="apercu-container">
+      <div class="apercu-card reveal">
+        <svg width="80" height="80" viewBox="0 0 80 80" style="margin:0 auto">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+          <circle cx="40" cy="40" r="32" fill="none" stroke="#4A7FC1" stroke-width="8" stroke-dasharray="155 46" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          <text x="40" y="44" text-anchor="middle" fill="#fff" font-family="var(--font-data)" font-size="16" font-weight="700">77%</text>
+        </svg>
+        <h3>Taux de r&eacute;ussite</h3>
+        <p>Pourcentage des sc&eacute;narios o&ugrave; votre &eacute;pargne dure toute votre vie.</p>
+      </div>
+      <div class="apercu-card reveal reveal-delay-1">
+        <svg width="80" height="80" viewBox="0 0 120 60" style="margin:0 auto">
+          <polyline points="5,50 25,42 45,35 65,30 85,28 105,38 115,48" fill="none" stroke="#4A7FC1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="5,50 25,45 45,40 65,38 85,40 105,50 115,55" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round"/>
+          <line x1="5" y1="55" x2="115" y2="55" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+        </svg>
+        <h3>Trajectoire du patrimoine</h3>
+        <p>&Eacute;volution de votre &eacute;pargne ann&eacute;e par ann&eacute;e, du d&eacute;but de la retraite jusqu'&agrave; la fin.</p>
+      </div>
+      <div class="apercu-card reveal reveal-delay-2">
+        <svg width="80" height="80" viewBox="0 0 100 70" style="margin:0 auto">
+          <rect x="10" y="45" width="20" height="20" rx="3" fill="rgba(255,255,255,.15)"/>
+          <rect x="40" y="30" width="20" height="35" rx="3" fill="rgba(74,127,193,.5)"/>
+          <rect x="70" y="15" width="20" height="50" rx="3" fill="#4A7FC1"/>
+          <text x="20" y="13" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="9" font-family="var(--font-data)">60</text>
+          <text x="50" y="13" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="9" font-family="var(--font-data)">65</text>
+          <text x="80" y="13" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="9" font-family="var(--font-data)">70</text>
+        </svg>
+        <h3>Comparaison RRQ</h3>
+        <p>Impact de chaque &acirc;ge de d&eacute;but sur votre revenu mensuel et votre taux de r&eacute;ussite.</p>
+      </div>
+    </div>
+    <p class="apercu-note reveal">Votre rapport sera g&eacute;n&eacute;r&eacute; &agrave; partir de vos donn&eacute;es r&eacute;elles.</p>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: COMMENT CA SE PASSE ═══ -->
+<section class="section" id="steps">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Comment &ccedil;a se passe</p>
+    <h2 class="section-title reveal">Trois &eacute;tapes. Quelques minutes.</h2>
+    <div class="steps-list">
+      <div class="step-item reveal">
+        <span class="step-num">1</span>
+        <span class="step-text"><strong>R&eacute;pondez au questionnaire</strong> &mdash; 8 &agrave; 12 minutes</span>
+      </div>
+      <div class="step-item reveal reveal-delay-1">
+        <span class="step-num">2</span>
+        <span class="step-text"><strong>Payez une seule fois</strong> &mdash; 29,50 $ (paiement s&eacute;curis&eacute; par Stripe)</span>
+      </div>
+      <div class="step-item reveal reveal-delay-2">
+        <span class="step-num">3</span>
+        <span class="step-text"><strong>Recevez votre Horizon par courriel</strong> &mdash; en quelques minutes</span>
+      </div>
+    </div>
+    <div class="steps-prep reveal reveal-delay-3">
+      <div class="steps-prep-label">Avant de commencer, ayez id&eacute;alement en main :</div>
+      <div class="steps-prep-value">Votre relev&eacute; de participation RRQ, soldes REER/C&Eacute;LI/FERR, et budget mensuel estim&eacute;.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 6: PRICING + CTA ═══ -->
+<section class="section section--sand" id="pricing">
+  <div class="container pricing-cta">
+    <h2 class="section-title reveal" style="text-align:center">Horizon</h2>
+    <div class="pp-hero-price reveal reveal-delay-1">
+      <span class="pp-hero-price-original">59 $</span>
+      <span class="pp-hero-price-current">29,50 $</span>
+      <div class="pp-hero-price-note">paiement unique</div>
+    </div>
+    <div class="reveal reveal-delay-2" style="text-align:center">
+      <a href="/quiz-decaissement.html" class="btn btn-primary" data-track="product_page_cta_clicked" data-product="horizon">Commencer le questionnaire <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="pricing-reassurance reveal reveal-delay-3">
+      <p>Erreur technique? On refait votre bilan sans frais.</p>
+      <p style="margin-top:6px">Votre achat est cr&eacute;dit&eacute; si vous passez &agrave; un produit sup&eacute;rieur.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 7: PAS LE BON PRODUIT? ═══ -->
+<section class="section" id="crosssell">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Pas le bon produit?</p>
+    <h2 class="section-title reveal">Trouvez celui qui vous convient.</h2>
+    <div class="crosssell-list">
+      <a href="/bilan" class="crosssell-card reveal">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Bilan</div>
+          <div class="crosssell-desc">Pour un premier portrait rapide</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/bilan-360" class="crosssell-card reveal reveal-delay-1">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Bilan 360</div>
+          <div class="crosssell-desc">Pour le portrait complet</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/expert/landing" class="crosssell-card reveal reveal-delay-2">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Laboratoire</div>
+          <div class="crosssell-desc">Pour tester chaque sc&eacute;nario</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 8: FAQ ═══ -->
+<section class="section section--sand" id="faq">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Questions fr&eacute;quentes</p>
+    <h2 class="section-title reveal">Ce que vous voulez savoir.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>Combien de temps &ccedil;a prend?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Le questionnaire prend 8 &agrave; 12 minutes. Votre Horizon arrive par courriel en quelques minutes.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>Qu'est-ce que le simulateur interactif inclus?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Le simulateur est un outil en ligne pr&eacute;rempli avec les donn&eacute;es de votre bilan. Vous pouvez ajuster vos retraits, tester diff&eacute;rentes dates de d&eacute;but de la RRQ, et voir l'impact sur votre trajectoire financi&egrave;re &mdash; sans refaire le questionnaire.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>Quelle est la diff&eacute;rence avec le Bilan 360?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Le Bilan 360 couvre l'accumulation et le portrait complet. Horizon est con&ccedil;u sp&eacute;cifiquement pour le retrait : quand prendre la RRQ, combien retirer, et comment votre plan r&eacute;siste aux krachs.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 9: FOOTER ═══ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">build<span>fi</span></div>
+        <p class="footer-tagline">Planification financi&egrave;re personnalis&eacute;e pour les Canadiens.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Produits</div>
+        <a href="/bilan">Bilan</a>
+        <a href="/bilan-360">Bilan 360</a>
+        <a href="/horizon">Horizon</a>
+        <a href="/expert/landing">Laboratoire</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Ressources</div>
+        <a href="/#faq">FAQ</a>
+        <a href="mailto:support@buildfi.ca">Contact</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">L&eacute;gal</div>
+        <a href="/confidentialite.html">Confidentialit&eacute;</a>
+        <a href="/conditions.html">Conditions d'utilisation</a>
+        <a href="/avis-legal.html">Avis l&eacute;gal</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">
+      BuildFi n'est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques bas&eacute;es sur la m&eacute;thode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifi&eacute; avant de prendre des d&eacute;cisions financi&egrave;res. BuildFi est un produit de BuildFi Technologies inc.
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 buildfi.ca &mdash; Tous droits r&eacute;serv&eacute;s</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script src="/logo.js" defer></script>
+<script>
+// Logo SVG injection
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof logoSVG === 'function') {
+    var nav = document.querySelector('.nav-logo');
+    if (nav) nav.innerHTML = logoSVG('sm','light');
+    var footer = document.querySelector('.footer-brand');
+    if (footer) footer.innerHTML = logoSVG('sm','dark');
+  }
+});
+(function(){
+'use strict';
+
+/* ─── TRACKING ─── */
+function trackEvent(name, props) {
+  try {
+    if (localStorage.getItem('buildfi_consent') === 'yes' && window.posthog) {
+      window.posthog.capture(name, props);
+    }
+  } catch(e) {}
+}
+
+/* ─── NAV SCROLL ─── */
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function() {
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+/* ─── HAMBURGER ─── */
+var hamburger = document.getElementById('hamburger');
+var drawer = document.getElementById('navDrawer');
+if (hamburger && drawer) {
+  hamburger.addEventListener('click', function() {
+    var open = drawer.classList.toggle('open');
+    hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  drawer.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+/* ─── REVEAL (IntersectionObserver) ─── */
+var reveals = document.querySelectorAll('.reveal');
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(function(el) { revealObs.observe(el); });
+
+/* ─── FAQ ACCORDION ─── */
+document.querySelectorAll('.faq-question').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(fi) {
+      fi.classList.remove('open');
+      fi.querySelector('.faq-answer').style.maxHeight = '0';
+      fi.querySelector('.faq-question').setAttribute('aria-expanded','false');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.faq-answer');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+      btn.setAttribute('aria-expanded','true');
+      trackEvent('faq_open', { q: btn.querySelector('span').textContent });
+    }
+  });
+});
+
+/* ─── FAQ SCHEMA ─── */
+function buildFaqSchema() {
+  var items = document.querySelectorAll('.faq-item');
+  var faqs = [];
+  items.forEach(function(item) {
+    var q = item.querySelector('.faq-question span');
+    var a = item.querySelector('.faq-answer-inner');
+    if (q && a) {
+      faqs.push({
+        '@type': 'Question',
+        name: q.textContent.trim(),
+        acceptedAnswer: { '@type': 'Answer', text: a.textContent.trim() }
+      });
+    }
+  });
+  var schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs };
+  var el = document.getElementById('faqSchema');
+  if (el) el.textContent = JSON.stringify(schema);
+}
+buildFaqSchema();
+
+/* ─── CTA TRACKING ─── */
+document.querySelectorAll('[data-track]').forEach(function(el) {
+  el.addEventListener('click', function() {
+    trackEvent(el.dataset.track, { product: el.dataset.product || 'horizon' });
+  });
+});
+
+/* ─── COOKIE CONSENT ─── */
+(function() {
+  try { if (localStorage.getItem('buildfi_consent')) return; } catch(e) { return; }
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">Accepter</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">Refuser</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { try { localStorage.setItem('buildfi_consent','yes'); } catch(e) {} bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { try { localStorage.setItem('buildfi_consent','no'); } catch(e) {} bar.remove(); });
+})();
+
+})();
+</script>
+</body>
+</html>

@@ -801,7 +801,7 @@ function renderExpertReport(
       + t("Les rendements suivent une distribution t de Student (df=5) pour mieux capturer les \u00e9v\u00e9nements extr\u00eames. ", "Returns follow a Student t-distribution (df=5) to better capture tail events. ")
       + t("Les constantes fiscales sont celles de 2026. ", "Tax constants are from 2026. ")
       + t("L'inflation de base est de " + ((D.inf || 0.02) * 100).toFixed(1) + "%. ", "Base inflation is " + ((D.inf || 0.02) * 100).toFixed(1) + "%. ")
-      + t("La mortalit\u00e9 suit les tables CPM-2014 avec am\u00e9lioration MI-2017.", "Mortality follows CPM-2014 tables with MI-2017 improvement.")
+      + t("La mortalit\u00e9 suit les tables CPM-2023.", "Mortality follows CPM-2023 tables.")
       + '</div>'
     );
     h += aiSlot("hypotheses_methodo");

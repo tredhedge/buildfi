@@ -22,14 +22,41 @@
   --max-narrow:720px;--radius-md:14px;
 }
 html{scroll-behavior:smooth}
-body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;padding-top:64px}
 a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
-.topnav{position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-light);padding:14px 0}
-.topnav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:0 24px}
-.topnav-brand{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--navy);text-decoration:none}
-.topnav-brand span{color:var(--gold)}
-.lang-btn{font-size:12px;font-weight:700;color:var(--text-muted);border:1px solid var(--border);padding:4px 10px;border-radius:8px;cursor:pointer;background:transparent}
-.lang-btn:hover{border-color:var(--gold);color:var(--gold)}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,248,244,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-light);padding:0;transition:box-shadow .3s}
+.nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,.06)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:0 24px;height:64px}
+.nav-logo{font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--navy);text-decoration:none}
+.nav-logo span{color:var(--gold-light)}
+.nav-links{display:flex;list-style:none;gap:28px;margin:0;padding:0}
+.nav-links a{font-size:14px;font-weight:500;color:var(--text-secondary);text-decoration:none;position:relative;padding:4px 0}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:2px;background:var(--gold-light);transition:width .25s}
+.nav-links a:hover{color:var(--navy)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:12px}
+.lang-toggle{font-size:12px;font-weight:700;color:var(--text-muted);border:1px solid var(--border);padding:4px 10px;border-radius:8px;cursor:pointer;background:transparent}
+.lang-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.nav-cta{display:inline-block;font-size:13px;font-weight:700;color:#fff;background:var(--gold);padding:8px 20px;border-radius:10px;text-decoration:none;transition:background .2s}
+.nav-cta:hover{background:var(--gold-light);color:#fff}
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px}
+.nav-hamburger span{display:block;width:100%;height:2px;background:var(--navy);border-radius:2px;transition:transform .3s,opacity .3s}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav-drawer{position:fixed;top:64px;left:0;right:0;background:var(--cream);border-bottom:1px solid var(--border-light);display:flex;flex-direction:column;padding:16px 24px;gap:4px;transform:translateY(-120%);transition:transform .3s;z-index:99}
+.nav-drawer.open{transform:translateY(0)}
+.nav-drawer a{font-size:15px;font-weight:500;color:var(--text-secondary);text-decoration:none;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.nav-drawer a:last-child{border-bottom:none}
+.nav-drawer a.nav-cta{color:#fff;background:var(--gold);text-align:center;border-radius:10px;margin-top:8px;padding:12px;border-bottom:none}
+@media(max-width:900px){
+  .nav-links{display:none}
+  .nav-cta:not(.nav-drawer .nav-cta){display:none}
+  .nav-hamburger{display:flex}
+}
+@media(max-width:700px){
+  .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important}
+}
 .legal-wrap{max-width:var(--max-narrow);margin:0 auto;padding:clamp(48px,6vw,80px) 24px clamp(64px,8vw,96px)}
 .legal-wrap h1{font-family:var(--font-display);font-size:clamp(28px,3.5vw,38px);font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.15}
 .legal-date{font-size:13px;color:var(--text-muted);margin-bottom:40px}
@@ -42,17 +69,38 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
 .disclaimer-box{background:#FDF8F3;border-left:4px solid var(--danger);padding:24px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:24px 0 32px}
 .disclaimer-box p{color:var(--text-secondary);margin-bottom:10px;font-size:14px;line-height:1.7}
 .disclaimer-box p:last-child{margin-bottom:0}
-.foot{text-align:center;padding:32px 24px;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border-light)}
 </style>
+<script src="/logo.js" defer></script>
 </head>
 <body>
 
-<nav class="topnav">
-  <div class="topnav-inner">
-    <a href="/" class="topnav-brand">build<span>fi</span></a>
-    <button class="lang-btn" onclick="toggleLang()">English</button>
+<nav class="nav" id="nav" role="navigation" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
+    <ul class="nav-links">
+      <li><a href="/bilan">Bilan</a></li>
+      <li><a href="/bilan-360">Bilan 360</a></li>
+      <li><a href="/horizon">Horizon</a></li>
+      <li><a href="/expert/landing">Laboratoire</a></li>
+      <li><a href="/#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="lang-toggle" id="langToggle" aria-label="Switch to English" onclick="toggleLang()">English</button>
+      <a href="/#products" class="nav-cta" id="navCta">Commencer</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/bilan">Bilan</a>
+  <a href="/bilan-360">Bilan 360</a>
+  <a href="/horizon">Horizon</a>
+  <a href="/expert/landing">Laboratoire</a>
+  <a href="/#faq">FAQ</a>
+  <a href="/#products" class="nav-cta">Commencer</a>
+</div>
 
 <div class="legal-wrap">
   <h1 id="lTitle">Avis légal</h1>
@@ -97,7 +145,37 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <p id="p8">Pour toute question : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a></p>
 </div>
 
-<div class="foot" id="footCopy">&copy; 2026 buildfi.ca — Tous droits réservés</div>
+<footer style="background:#111b2e;color:rgba(255,255,255,.7);padding:48px 0 24px;margin-top:64px">
+  <div style="max-width:1120px;margin:0 auto;padding:0 24px">
+    <div style="display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:40px" class="footer-grid">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:10px">build<span style="color:#d4a520">fi</span></div>
+        <p style="font-size:13px;color:rgba(255,255,255,.35);line-height:1.6" id="footDesc">Planification financière personnalisée pour les Canadiens.</p>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footProducts">Produits</div>
+        <a href="/bilan" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan</a>
+        <a href="/bilan-360" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
+        <a href="/horizon" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Horizon</a>
+        <a href="/expert/landing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Laboratoire</a>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footResources">Ressources</div>
+        <a href="/#faq" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">FAQ</a>
+        <a href="mailto:support@buildfi.ca" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Contact</a>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footLegal">Légal</div>
+        <a href="/confidentialite.html" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0" id="footPrivacy">Confidentialité</a>
+        <a href="/conditions.html" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0" id="footTerms">Conditions d'utilisation</a>
+        <a href="/avis-legal.html" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0" id="footDisclaimer">Avis légal</a>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px;font-size:12px;color:rgba(255,255,255,.2);text-align:center" id="footCopy">
+      &copy; 2026 buildfi.ca — Tous droits réservés
+    </div>
+  </div>
+</footer>
 
 <script>
 var lang = "fr";
@@ -129,7 +207,14 @@ var T = {
   p7: { fr:"Pour toute décision financière importante — planification de retraite, optimisation fiscale, stratégies de décaissement, assurances, succession — consultez un professionnel certifié : planificateur financier (Pl. Fin.), comptable professionnel agréé (CPA), fiscaliste, notaire ou conseiller juridique.", en:"For any important financial decision — retirement planning, tax optimization, withdrawal strategies, insurance, estate — consult a certified professional: financial planner (CFP), chartered professional accountant (CPA), tax specialist, notary, or legal counsel." },
   h8: { fr:"Contact", en:"Contact" },
   p8: { fr:"Pour toute question : <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>", en:"For any questions: <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>" },
-  footCopy: { fr:"\u00a9 2026 buildfi.ca — Tous droits réservés", en:"\u00a9 2026 buildfi.ca — All rights reserved" }
+  footCopy: { fr:"\u00a9 2026 buildfi.ca — Tous droits réservés", en:"\u00a9 2026 buildfi.ca — All rights reserved" },
+  footDesc: { fr:"Planification financière personnalisée pour les Canadiens.", en:"Personalized financial planning for Canadians." },
+  footProducts: { fr:"Produits", en:"Products" },
+  footResources: { fr:"Ressources", en:"Resources" },
+  footLegal: { fr:"Légal", en:"Legal" },
+  footPrivacy: { fr:"Confidentialité", en:"Privacy" },
+  footTerms: { fr:"Conditions d'utilisation", en:"Terms of Use" },
+  footDisclaimer: { fr:"Avis légal", en:"Legal Disclaimer" }
 };
 function applyLang(){
   for(var id in T){var el=document.getElementById(id);if(el){el.innerHTML=T[id][lang];}}
@@ -138,11 +223,42 @@ function applyLang(){
 }
 function toggleLang(){
   lang=lang==="fr"?"en":"fr";
-  document.querySelector(".lang-btn").textContent=lang==="fr"?"English":"Français";
+  document.querySelector(".lang-toggle").textContent=lang==="fr"?"English":"Français";
+  document.getElementById("navCta").textContent=lang==="fr"?"Commencer":"Get started";
   applyLang();
   history.replaceState(null,"",lang==="en"?"?lang=en":location.pathname);
 }
-if(new URLSearchParams(location.search).get("lang")==="en"){lang="en";document.querySelector(".lang-btn").textContent="Français";applyLang();}
+if(new URLSearchParams(location.search).get("lang")==="en"){lang="en";document.querySelector(".lang-toggle").textContent="Français";document.getElementById("navCta").textContent="Get started";applyLang();}
+
+// Nav scroll effect
+var nav=document.getElementById('nav');
+window.addEventListener('scroll',function(){if(nav)nav.classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+// Hamburger
+var hamburger = document.getElementById('hamburger');
+var drawer = document.getElementById('navDrawer');
+if (hamburger && drawer) {
+  hamburger.addEventListener('click', function() {
+    var open = drawer.classList.toggle('open');
+    hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  drawer.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+  });
+}
+// Logo SVG injection
+if (typeof logoSVG === 'function') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var navLogo = document.querySelector('.nav-logo');
+    if (navLogo) navLogo.innerHTML = logoSVG('sm','light');
+  });
+}
 </script>
 </body>
 </html>

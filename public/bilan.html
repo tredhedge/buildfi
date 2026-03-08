@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bilan — Votre portrait financier | buildfi.ca</title>
+<meta name="description" content="Votre premier portrait financier en 5 à 8 minutes. Note de retraite, projections, observations personnalisées. Paiement unique.">
+<meta property="og:title" content="Bilan — Votre portrait financier | buildfi.ca">
+<meta property="og:description" content="Votre premier portrait financier en 5 à 8 minutes. Note de retraite, projections, observations personnalisées. Paiement unique.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buildfi.ca/bilan">
+<meta property="og:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:site_name" content="BuildFi">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<script id="faqSchema" type="application/ld+json"></script>
+<link rel="canonical" href="https://buildfi.ca/bilan">
+<link rel="alternate" hreflang="fr" href="https://buildfi.ca/bilan">
+<link rel="alternate" hreflang="en" href="https://buildfi.ca/bilan?lang=en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1a2744;--navy-light:#2c3e6b;--navy-dark:#111b2e;
+  --gold:#b8860b;--gold-light:#d4a520;--gold-dark:#96700a;
+  --gold-wash:rgba(184,134,11,.06);--gold-wash-strong:rgba(184,134,11,.12);
+  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
+  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#777;
+  --border:#e8e0d4;--border-light:#f0ece4;
+  --success:#1a7a4c;--warning:#b89830;--danger:#b91c1c;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+  --shadow-gold:0 4px 20px rgba(184,134,11,.15);
+  --shadow-card:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-data:'JetBrains Mono',monospace;
+  --max-content:1120px;--max-narrow:720px;--max-wide:1280px;
+  --section-py:clamp(72px,9vw,104px);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(16px,1.1vw,18px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:72px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");opacity:.5}
+img{max-width:100%;display:block}
+a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(--gold-dark)}
+.container{width:100%;max-width:var(--max-content);margin:0 auto;padding:0 24px}
+.container--narrow{max-width:var(--max-narrow)}
+.section{padding:var(--section-py) 0;position:relative}
+.section--sand{background:var(--sand)}
+.section--navy{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 50%,#2a4070 100%);color:#fff;position:relative;overflow:hidden}
+.section--navy::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(184,134,11,.08) 0%,transparent 60%);pointer-events:none}
+.section-label{font-family:var(--font-body);font-size:clamp(12px,.9vw,13px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.section--navy .section-label{color:var(--gold-light)}
+.section-title{font-family:var(--font-display);font-size:clamp(26px,3.2vw,40px);font-weight:700;line-height:1.12;color:var(--navy);margin-bottom:14px}
+.section--navy .section-title{color:#fff}
+.section-subtitle{font-size:clamp(16px,1.2vw,18px);color:var(--text-secondary);max-width:580px;line-height:1.65}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-weight:700;border:none;cursor:pointer;transition:all .25s;text-decoration:none;letter-spacing:.2px}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:16px 32px;border-radius:var(--radius-md);font-size:16px;box-shadow:0 2px 8px rgba(184,134,11,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold),0 8px 24px rgba(184,134,11,.25);color:#fff}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:transparent;color:var(--navy);border:2px solid var(--border);padding:14px 28px;border-radius:var(--radius-md);font-size:15px}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+.btn-ghost{background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:8px 0}
+.btn-ghost:hover{color:var(--gold)}
+.section--navy .section-subtitle{color:rgba(255,255,255,.7)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .35s}
+.nav.scrolled{background:rgba(250,248,244,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04);padding:12px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-wide);margin:0 auto;padding:0 24px}
+.nav-logo{font-family:var(--font-body);font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:36px;list-style:none}
+.nav-links a{font-size:14px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:color .2s;position:relative}.nav-links a:hover{color:var(--navy)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s;border-radius:1px}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a.active{color:var(--navy)}
+.nav-links a.active::after{transform:scaleX(1)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all .25s;box-shadow:0 2px 8px rgba(184,134,11,.15)}.nav-cta:hover{transform:translateY(-1px);box-shadow:var(--shadow-gold);color:#fff}
+.nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px;width:40px;height:40px;position:relative}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--navy);position:absolute;left:9px;transition:all .3s}
+.nav-hamburger span:nth-child(1){top:12px}.nav-hamburger span:nth-child(2){top:19px}.nav-hamburger span:nth-child(3){top:26px}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg);top:19px}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg);top:19px}
+.nav-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(250,248,244,.98);backdrop-filter:blur(16px);padding:80px 24px 24px;flex-direction:column;gap:8px}
+.nav-drawer.open{display:flex}
+.nav-drawer a{display:block;padding:16px 0;font-size:18px;font-weight:600;color:var(--navy);text-decoration:none;border-bottom:1px solid var(--border-light)}
+.nav-drawer .nav-cta{display:block;text-align:center;margin-top:16px;padding:16px;border-radius:var(--radius-md);font-size:16px}
+@media(max-width:900px){.nav-links,.nav-right .nav-cta{display:none}.nav-hamburger{display:block}}
+
+/* ═══ HERO ═══ */
+.pp-hero{padding:clamp(80px,10vw,120px) 0 var(--section-py);text-align:center;position:relative}
+.pp-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.pp-back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--text-muted);text-decoration:none;margin-bottom:40px;transition:color .2s}
+.pp-back:hover{color:var(--gold)}
+.pp-hero-title{font-family:var(--font-display);font-size:clamp(40px,5.5vw,64px);font-weight:700;color:var(--navy);line-height:1.05;margin-bottom:8px;letter-spacing:-.5px}
+.pp-hero-subtitle{font-family:var(--font-display);font-size:clamp(18px,2vw,24px);font-weight:400;color:var(--text-secondary);margin-bottom:32px;font-style:italic}
+.pp-hero-price{margin-bottom:28px}
+.pp-hero-price-original{font-family:var(--font-data);font-size:clamp(18px,1.5vw,22px);color:var(--text-muted);text-decoration:line-through;margin-right:12px}
+.pp-hero-price-current{font-family:var(--font-data);font-size:clamp(36px,4.5vw,52px);font-weight:800;color:var(--navy)}
+.pp-hero-price-note{font-size:14px;color:var(--text-muted);margin-top:4px}
+.pp-hero-cta{margin-bottom:24px}
+.pp-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;background:var(--navy);color:#fff}
+
+/* ═══ POUR QUI ═══ */
+.pourqui-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:20px}
+.pourqui-item{display:flex;align-items:flex-start;gap:14px;font-size:clamp(15px,1.15vw,17px);color:var(--text-secondary);line-height:1.7}
+.pourqui-arrow{color:var(--gold);font-weight:700;flex-shrink:0;font-size:18px;margin-top:2px}
+
+/* ═══ CE QUE VOUS RECEVEZ ═══ */
+.includes-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:14px}
+.includes-item{display:flex;align-items:flex-start;gap:12px;font-size:clamp(15px,1.1vw,17px);color:var(--text-primary);line-height:1.6}
+.includes-check{color:var(--success);font-weight:700;flex-shrink:0;font-size:16px;margin-top:2px}
+.includes-note{text-align:center;margin-top:24px;font-size:14px;color:var(--text-muted)}
+
+/* ═══ REPORT PREVIEW ═══ */
+.preview-container{max-width:560px;margin:40px auto 0}
+.preview-mock{background:linear-gradient(160deg,var(--navy),var(--navy-light),#2a4070);border-radius:var(--radius-lg);padding:48px 40px;position:relative;overflow:hidden}
+.preview-mock::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 70%,rgba(184,134,11,.06) 0%,transparent 60%);pointer-events:none}
+.preview-mock-line{height:10px;border-radius:5px;background:rgba(255,255,255,.08);margin-bottom:14px}
+.preview-mock-line--short{width:45%}
+.preview-mock-line--medium{width:70%}
+.preview-mock-line--long{width:90%}
+.preview-mock-line--xshort{width:30%}
+.preview-mock-circle{width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.12);margin:24px auto;position:relative}
+.preview-mock-circle::after{content:'';position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(184,134,11,.2);border-top-color:rgba(184,134,11,.5);transform:rotate(45deg)}
+.preview-mock-wave{height:40px;margin:20px 0;position:relative;overflow:hidden}
+.preview-mock-wave svg{width:100%;height:100%}
+.preview-note{text-align:center;margin-top:20px;font-size:14px;color:rgba(255,255,255,.5)}
+
+/* ═══ STEPS ═══ */
+.steps-list{max-width:600px;margin:36px auto 0;display:flex;flex-direction:column;gap:24px}
+.step-item{display:flex;align-items:flex-start;gap:18px}
+.step-num{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;font-family:var(--font-data);font-size:14px;font-weight:700;margin-top:2px}
+.step-text{font-size:clamp(15px,1.15vw,17px);color:var(--text-primary);line-height:1.6}
+.step-text strong{color:var(--navy)}
+.steps-prep{max-width:600px;margin:32px auto 0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 24px;text-align:center}
+.steps-prep-label{font-size:14px;color:var(--text-muted);margin-bottom:4px}
+.steps-prep-value{font-size:15px;font-weight:600;color:var(--navy)}
+
+/* ═══ PRICING CTA ═══ */
+.pricing-cta{text-align:center}
+.pricing-cta .pp-hero-price{margin-bottom:24px}
+.pricing-reassurance{max-width:480px;margin:20px auto 0;font-size:14px;color:var(--text-muted);line-height:1.7}
+
+/* ═══ CROSS-SELL ═══ */
+.crosssell-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:14px}
+.crosssell-card{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 24px;text-decoration:none;transition:all .3s;gap:16px}
+.crosssell-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--gold)}
+.crosssell-info{flex:1}
+.crosssell-name{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.crosssell-desc{font-size:14px;color:var(--text-secondary)}
+.crosssell-arrow{font-size:18px;color:var(--gold);flex-shrink:0;font-weight:700;transition:transform .2s}
+.crosssell-card:hover .crosssell-arrow{transform:translateX(4px)}
+
+/* ═══ FAQ ═══ */
+.faq-list{max-width:var(--max-narrow);margin:32px auto 0}
+.faq-item{border-bottom:1px solid var(--border-light)}
+.faq-question{width:100%;background:none;border:none;text-align:left;cursor:pointer;padding:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);transition:color .2s}
+.faq-question:hover{color:var(--gold)}
+.faq-chevron{width:20px;height:20px;flex-shrink:0;transition:transform .3s;stroke:var(--text-muted);fill:none;stroke-width:2}
+.faq-item.open .faq-chevron{transform:rotate(90deg);stroke:var(--gold)}
+.faq-item.open .faq-question{color:var(--gold)}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-answer-inner{padding:0 0 18px;font-size:14px;color:var(--text-secondary);line-height:1.7;border-left:3px solid var(--gold);padding-left:20px;margin-left:2px}
+
+/* ═══ FOOTER ═══ */
+.footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
+.footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(184,134,11,.3),transparent)}
+.footer-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:52px}
+.footer-brand{font-size:26px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
+.footer-tagline{font-size:14px;color:rgba(255,255,255,.35);line-height:1.65;max-width:280px}
+.footer-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;padding:5px 0;transition:color .2s}.footer-col a:hover{color:var(--gold-light)}
+.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:13px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.2)}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr;gap:32px}.footer-bottom{flex-direction:column;gap:12px;text-align:center}}
+
+/* ═══ REVEAL ═══ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  body{padding-top:64px}
+  .pp-hero{padding-top:clamp(48px,8vw,80px)}
+  .preview-mock{padding:32px 24px}
+  .crosssell-card{flex-direction:column;text-align:center;gap:8px}
+  .crosssell-arrow{transform:rotate(90deg)}
+  .crosssell-card:hover .crosssell-arrow{transform:rotate(90deg) translateX(4px)}
+}
+@media(max-width:600px){
+  .pp-hero-price-current{font-size:clamp(32px,10vw,44px)}
+  .step-item{gap:14px}
+  .step-num{width:32px;height:32px;font-size:13px}
+}
+</style>
+<script src="/logo.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip-nav" style="position:absolute;top:-100%;left:16px;z-index:9999;background:var(--navy);color:#fff;padding:12px 24px;border-radius:0 0 8px 8px;font-weight:700;font-size:14px">Aller au contenu</a>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="nav" role="navigation" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
+    <ul class="nav-links">
+      <li><a href="/bilan" class="active">Bilan</a></li>
+      <li><a href="/bilan-360">Bilan 360</a></li>
+      <li><a href="/horizon">Horizon</a></li>
+      <li><a href="/expert/landing">Laboratoire</a></li>
+      <li><a href="/#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="/quiz-essentiel.html" class="nav-cta">Commencer</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/bilan">Bilan</a>
+  <a href="/bilan-360">Bilan 360</a>
+  <a href="/horizon">Horizon</a>
+  <a href="/expert/landing">Laboratoire</a>
+  <a href="/#faq">FAQ</a>
+  <a href="/quiz-essentiel.html" class="nav-cta">Commencer</a>
+</div>
+
+<!-- ═══ SECTION 1: HERO ═══ -->
+<section class="pp-hero" id="main">
+  <div class="container">
+    <a href="/" class="pp-back reveal"><span aria-hidden="true">&larr;</span> Retour &agrave; buildfi.ca</a>
+    <h1 class="pp-hero-title reveal reveal-delay-1">Bilan</h1>
+    <p class="pp-hero-subtitle reveal reveal-delay-1">Votre portrait financier</p>
+    <div class="pp-hero-price reveal reveal-delay-2">
+      <span class="pp-hero-price-original">29 $</span>
+      <span class="pp-hero-price-current">14,50 $</span>
+      <div class="pp-hero-price-note">paiement unique</div>
+    </div>
+    <div class="pp-hero-cta reveal reveal-delay-3">
+      <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="product_page_cta_clicked">Commencer le questionnaire <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="reveal reveal-delay-4">
+      <span class="pp-badge">Personnes seules</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: POUR QUI? ═══ -->
+<section class="section" id="pourqui">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Pour qui?</p>
+    <div class="pourqui-list">
+      <div class="pourqui-item reveal">
+        <span class="pourqui-arrow" aria-hidden="true">&rarr;</span>
+        <span>Vous avez 25 &agrave; 55 ans et vous n'avez jamais fait de bilan financier structur&eacute;.</span>
+      </div>
+      <div class="pourqui-item reveal reveal-delay-1">
+        <span class="pourqui-arrow" aria-hidden="true">&rarr;</span>
+        <span>Vous &eacute;pargnez, mais vous ne savez pas si c'est assez &mdash; ni si c'est dans les bons comptes.</span>
+      </div>
+      <div class="pourqui-item reveal reveal-delay-2">
+        <span class="pourqui-arrow" aria-hidden="true">&rarr;</span>
+        <span>Vous voulez un portrait clair sans y passer une journ&eacute;e.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: CE QUE VOUS RECEVEZ ═══ -->
+<section class="section section--sand" id="includes">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Ce que vous recevez</p>
+    <div class="includes-list">
+      <div class="includes-item reveal">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Rapport personnalis&eacute; &mdash; 8 sections, narration IA</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-1">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Note de retraite (A+ &agrave; F) avec pourcentage de r&eacute;ussite</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-1">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Jusqu'&agrave; 5 observations class&eacute;es par impact</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-2">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Projection du patrimoine ann&eacute;e par ann&eacute;e</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-2">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Analyse de risque (march&eacute;s, inflation, long&eacute;vit&eacute;)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-3">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Portrait de vos comptes (REER, C&Eacute;LI, non enregistr&eacute;)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-3">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>Guide PDF : Les bases de vos finances (13 pages)</span>
+      </div>
+      <div class="includes-item reveal reveal-delay-4">
+        <span class="includes-check" aria-hidden="true">&#10003;</span>
+        <span>1 outil interactif au choix (dettes ou allocation REER/C&Eacute;LI)</span>
+      </div>
+    </div>
+    <p class="includes-note reveal">Livr&eacute; par courriel en quelques minutes. Version imprimable incluse.</p>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: APERCU DU RAPPORT ═══ -->
+<section class="section section--navy" id="preview">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Aper&ccedil;u</p>
+    <h2 class="section-title reveal" style="color:#fff">Bilan</h2>
+    <div class="preview-container reveal reveal-delay-1">
+      <div class="preview-mock">
+        <div class="preview-mock-line preview-mock-line--medium"></div>
+        <div class="preview-mock-line preview-mock-line--long"></div>
+        <div class="preview-mock-line preview-mock-line--short"></div>
+        <div class="preview-mock-circle"></div>
+        <div class="preview-mock-line preview-mock-line--long"></div>
+        <div class="preview-mock-line preview-mock-line--medium"></div>
+        <div class="preview-mock-wave">
+          <svg viewBox="0 0 400 40" preserveAspectRatio="none" fill="none">
+            <path d="M0 30 Q50 10 100 25 T200 20 T300 28 T400 15" stroke="rgba(184,134,11,.3)" stroke-width="2" fill="none"/>
+            <path d="M0 35 Q50 20 100 30 T200 25 T300 33 T400 22" stroke="rgba(255,255,255,.1)" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <div class="preview-mock-line preview-mock-line--xshort"></div>
+        <div class="preview-mock-line preview-mock-line--medium"></div>
+        <div class="preview-mock-line preview-mock-line--long"></div>
+      </div>
+      <p class="preview-note">Votre rapport sera g&eacute;n&eacute;r&eacute; &agrave; partir de vos donn&eacute;es r&eacute;elles.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: COMMENT CA SE PASSE ═══ -->
+<section class="section" id="steps">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Comment &ccedil;a se passe</p>
+    <div class="steps-list">
+      <div class="step-item reveal">
+        <span class="step-num">1</span>
+        <span class="step-text"><strong>R&eacute;pondez au questionnaire</strong> &mdash; 5 &agrave; 8 minutes</span>
+      </div>
+      <div class="step-item reveal reveal-delay-1">
+        <span class="step-num">2</span>
+        <span class="step-text"><strong>Payez une seule fois</strong> &mdash; 14,50 $ (paiement s&eacute;curis&eacute; par Stripe)</span>
+      </div>
+      <div class="step-item reveal reveal-delay-2">
+        <span class="step-num">3</span>
+        <span class="step-text"><strong>Recevez votre Bilan par courriel</strong> &mdash; en quelques minutes</span>
+
+      </div>
+    </div>
+    <div class="steps-prep reveal reveal-delay-3">
+      <div class="steps-prep-label">Avant de commencer, ayez id&eacute;alement en main :</div>
+      <div class="steps-prep-value">Aucun document requis. Vos estimations suffisent.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 6: PRICING + CTA ═══ -->
+<section class="section section--sand" id="pricing">
+  <div class="container pricing-cta">
+    <h2 class="section-title reveal" style="text-align:center">Bilan</h2>
+    <div class="pp-hero-price reveal reveal-delay-1">
+      <span class="pp-hero-price-original">29 $</span>
+      <span class="pp-hero-price-current">14,50 $</span>
+      <div class="pp-hero-price-note">paiement unique</div>
+    </div>
+    <div class="reveal reveal-delay-2" style="text-align:center">
+      <a href="/quiz-essentiel.html" class="btn btn-primary" data-track="product_page_cta_clicked">Commencer le questionnaire <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="pricing-reassurance reveal reveal-delay-3">
+      <p>Erreur technique? On refait votre rapport sans frais.</p>
+      <p style="margin-top:6px">Votre achat est cr&eacute;dit&eacute; si vous passez &agrave; un produit sup&eacute;rieur.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 7: PAS LE BON PRODUIT? ═══ -->
+<section class="section" id="crosssell">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Pas le bon produit?</p>
+    <div class="crosssell-list">
+      <a href="/bilan-360" class="crosssell-card reveal">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Bilan 360</div>
+          <div class="crosssell-desc">Pour le portrait complet</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/horizon" class="crosssell-card reveal reveal-delay-1">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Horizon</div>
+          <div class="crosssell-desc">Pour planifier vos retraits</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/expert/landing" class="crosssell-card reveal reveal-delay-2">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Laboratoire</div>
+          <div class="crosssell-desc">Pour tester chaque sc&eacute;nario</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 8: FAQ ═══ -->
+<section class="section section--sand" id="faq">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Questions fr&eacute;quentes</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>Combien de temps &ccedil;a prend?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Le questionnaire prend 5 &agrave; 8 minutes. Votre Bilan arrive par courriel en quelques minutes.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>Qu'est-ce que 5 000 sc&eacute;narios?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Au lieu de vous donner une seule projection optimiste, notre moteur simule votre plan dans 5 000 conditions diff&eacute;rentes: march&eacute;s haussiers, r&eacute;cessions, inflation variable, long&eacute;vit&eacute; accrue. C'est ce qu'on appelle une simulation Monte Carlo &mdash; une m&eacute;thode couramment utilis&eacute;e par les actuaires et les planificateurs financiers. Votre note de retraite refl&egrave;te le pourcentage de ces sc&eacute;narios o&ugrave; votre argent dure toute votre vie.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span>C'est suffisant si je suis en couple?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Le Bilan analyse votre situation individuelle. Pour une analyse conjointe, le Bilan 360 couvre les deux revenus et l'impact du d&eacute;c&egrave;s du premier conjoint.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 9: FOOTER ═══ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">build<span>fi</span></div>
+        <p class="footer-tagline">Planification financi&egrave;re personnalis&eacute;e pour les Canadiens.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Produits</div>
+        <a href="/bilan">Bilan</a>
+        <a href="/bilan-360">Bilan 360</a>
+        <a href="/horizon">Horizon</a>
+        <a href="/expert/landing">Laboratoire</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Ressources</div>
+        <a href="/#faq">FAQ</a>
+        <a href="mailto:support@buildfi.ca">Contact</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">L&eacute;gal</div>
+        <a href="/confidentialite.html">Confidentialit&eacute;</a>
+        <a href="/conditions.html">Conditions d'utilisation</a>
+        <a href="/avis-legal.html">Avis l&eacute;gal</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">
+      BuildFi n'est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques bas&eacute;es sur la m&eacute;thode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifi&eacute; avant de prendre des d&eacute;cisions financi&egrave;res. BuildFi est un produit de BuildFi Technologies inc.
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 buildfi.ca &mdash; Tous droits r&eacute;serv&eacute;s</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+// Logo SVG injection
+if (typeof logoSVG === 'function') {
+  document.addEventListener('DOMContentLoaded', function() {
+    var nav = document.querySelector('.nav-logo');
+    if (nav) nav.innerHTML = logoSVG('sm','light');
+    var footer = document.querySelector('.footer-brand');
+    if (footer) footer.innerHTML = logoSVG('sm','dark');
+  });
+}
+(function(){
+'use strict';
+
+/* ─── NAV SCROLL ─── */
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function() {
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+/* ─── HAMBURGER ─── */
+var hamburger = document.getElementById('hamburger');
+var drawer = document.getElementById('navDrawer');
+if (hamburger && drawer) {
+  hamburger.addEventListener('click', function() {
+    var open = drawer.classList.toggle('open');
+    hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  drawer.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+/* ─── REVEAL ─── */
+var reveals = document.querySelectorAll('.reveal');
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(function(el) { revealObs.observe(el); });
+
+/* ─── FAQ ACCORDION ─── */
+document.querySelectorAll('.faq-question').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(fi) {
+      fi.classList.remove('open');
+      fi.querySelector('.faq-answer').style.maxHeight = '0';
+      fi.querySelector('.faq-question').setAttribute('aria-expanded','false');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.faq-answer');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+      btn.setAttribute('aria-expanded','true');
+      trackEvent('faq_open', { q: btn.querySelector('span').textContent });
+    }
+  });
+});
+
+/* ─── TRACKING ─── */
+function trackEvent(name, props) {
+  try {
+    if (localStorage.getItem('buildfi_consent') === 'yes' && window.posthog) {
+      window.posthog.capture(name, props);
+    }
+  } catch(e) {}
+}
+
+/* CTA tracking */
+document.querySelectorAll('[data-track]').forEach(function(el) {
+  el.addEventListener('click', function() {
+    trackEvent(el.dataset.track, { product: 'bilan' });
+  });
+});
+
+/* ─── COOKIE CONSENT ─── */
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">Accepter</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">Refuser</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
+
+function buildFaqSchema() {
+  var items = [];
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    var q = item.querySelector('.faq-question span');
+    var a = item.querySelector('.faq-answer-inner');
+    if (q && a) items.push({ '@type':'Question', name: q.textContent, acceptedAnswer: { '@type':'Answer', text: a.textContent } });
+  });
+  var schema = { '@context':'https://schema.org', '@type':'FAQPage', mainEntity: items };
+  var el = document.getElementById('faqSchema');
+  if (el) el.textContent = JSON.stringify(schema);
+}
+buildFaqSchema();
+})();
+</script>
+</body>
+</html>
