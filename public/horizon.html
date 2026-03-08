@@ -123,6 +123,8 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .includes-item{display:flex;align-items:flex-start;gap:12px;font-size:clamp(15px,1.1vw,17px);color:var(--text-primary);line-height:1.6}
 .includes-check{color:var(--success);font-weight:700;flex-shrink:0;font-size:16px;margin-top:2px}
 .includes-note{text-align:center;margin-top:24px;font-size:14px;color:var(--text-muted)}
+@keyframes bonusPulse{0%,100%{box-shadow:0 0 0 0 rgba(74,127,193,.15)}50%{box-shadow:0 0 0 8px rgba(74,127,193,0)}}
+.bonus-block.visible{animation:bonusPulse 2s ease-in-out 2}
 
 /* ═══ APERCU (dark section) ═══ */
 .apercu-container{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:32px}
@@ -195,6 +197,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 }
 @media(max-width:700px){
   .apercu-container{grid-template-columns:1fr}
+  .bonus-block div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
 }
 @media(max-width:560px){
   .pp-hero-price-current{font-size:clamp(32px,10vw,44px)}
@@ -310,12 +313,29 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
         <span class="includes-check" aria-hidden="true">&#10003;</span>
         <span>Strat&eacute;gie de d&eacute;cumulation (ordre de retrait mod&eacute;lis&eacute;)</span>
       </div>
-      <div class="includes-item reveal reveal-delay-3">
-        <span class="includes-check" aria-hidden="true">&#10003;</span>
-        <span>Simulateur interactif pr&eacute;rempli depuis votre bilan</span>
-      </div>
     </div>
     <p class="includes-note reveal">Livr&eacute; par courriel en quelques minutes. Version imprimable incluse.</p>
+
+    <!-- BONUS -->
+    <div class="bonus-block reveal" style="max-width:640px;margin:40px auto 0;border:2px solid rgba(74,127,193,.2);border-radius:var(--radius-md);padding:28px 24px;background:rgba(74,127,193,.03)">
+      <p style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#4A7FC1;margin-bottom:16px">Bonus inclus</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A7FC1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <div>
+            <p style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">Simulateur interactif</p>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">Pr&eacute;rempli depuis votre bilan. Ajustez vos retraits, testez diff&eacute;rentes dates RRQ, voyez l'impact en temps r&eacute;el.</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A7FC1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <div>
+            <p style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">Gestionnaire de dettes</p>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">Comparez les strat&eacute;gies de remboursement et voyez le co&ucirc;t r&eacute;el de chaque dette.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
