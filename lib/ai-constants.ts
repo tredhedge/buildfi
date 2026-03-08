@@ -104,7 +104,7 @@ export function sanitizeAISlotsDecum(raw: Record<string, any>): AINarrationDecum
 
 // AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements
 export const FORBIDDEN_TERMS =
-  /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bdans ce contexte\b|\bpar ailleurs\b|\ben outre\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b|\bin this context\b|\bajouterait\b|\bconstituerait\b|\bpermetrait\b/i;
+  /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bdans ce contexte\b|\bpar ailleurs\b|\ben outre\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b|\bin this context\b|\bajouterait\b|\bconstituerait\b|\bpermetrait\b|\bpermettrait\b/i;
 
 /**
  * Sanitize raw AI output into safe, compliant slot values.

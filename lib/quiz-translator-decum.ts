@@ -337,7 +337,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     // Properties
     props,
     // Cost basis (non-reg)
-    costBase: Math.round(nr),
+    costBase: Math.round(nr * 0.5),  // ~50% unrealized gains assumed for retirees
     // ── MANDATORY FIXED PARAMS ──────────────────────────────
     fatT: true,             // t-Student df=5 fat tails
     eqVol: 0.16,            // equity volatility (annualized std dev)
@@ -420,6 +420,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     govQppMonthly: Math.round(qppBenefit / 12),
     govOasMonthly: Math.round(oasBenefit / 12),
     govPenMonthly: penType === "db" ? penM : 0,
+    cPenMonthly: cOn && cPenType === "db" ? cPenM : 0,
     govTotalMonthly: Math.round(qppBenefit / 12) + Math.round(oasBenefit / 12) + (penType === "db" ? penM : 0),
     govCoveragePct: retSpM > 0
       ? Math.min(100, Math.round(

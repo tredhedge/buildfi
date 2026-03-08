@@ -383,12 +383,13 @@ function rebuildFlexOptions() {
 // ── URL params pre-fill ──────────────────────────────────────────────
 (function() {
   var p = new URLSearchParams(window.location.search);
-  if (p.get("age")) document.getElementById("age").value = p.get("age");
-  if (p.get("income")) document.getElementById("income").value = p.get("income");
-  if (p.get("allocR")) { document.getElementById("allocR").value = p.get("allocR"); }
-  if (p.get("province")) document.getElementById("prov").value = p.get("province");
-  if (p.get("couple")) { /* future */ }
+  var fields = {age:"age",income:"income",allocR:"allocR",province:"prov",portfolio:"portfolio",qpp:"qppMonthly",oas:"oasMonthly",pension:"pension"};
+  for (var k in fields) {
+    var v = p.get(k);
+    if (v) { var el = document.getElementById(fields[k]); if (el) el.value = v; }
+  }
   if (p.get("lang") === "en") setLang("en");
+  calc();
 })();
 
 // ── Helpers ──────────────────────────────────────────────────────────

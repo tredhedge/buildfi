@@ -98,7 +98,7 @@ export async function sendFeedbackEmail(params: {
           </table>
         </td></tr>
         <tr><td style="font-family:${FONT};font-size:13px;color:${GOLD};font-weight:600;text-align:center;padding-bottom:24px;">
-          ${fr ? "Votre avis d\u00e9bloque un coupon de 50 % sur votre prochain achat." : "Your feedback unlocks a 50% coupon on your next purchase."}
+          ${fr ? "Votre avis d\u00e9bloque 50\u00a0% de rabais sur un 2e bilan. Le rabais est appliqu\u00e9 automatiquement au paiement." : "Your feedback unlocks 50% off a 2nd assessment. The discount is applied automatically at checkout."}
         </td></tr>`;
 
   const html = emailWrapper(lang, fr ? "Donnez votre avis \u2014 2 secondes" : "Share your feedback \u2014 2 seconds", body);
@@ -191,8 +191,8 @@ export async function sendFeedbackReminderEmail(params: {
   const fr = lang === "fr";
 
   const subject = fr
-    ? "Dernier rappel \u2014 votre coupon 50 % vous attend"
-    : "Last reminder \u2014 your 50% coupon awaits";
+    ? "Dernier rappel \u2014 50 % de rabais sur un 2e bilan"
+    : "Last reminder \u2014 50% off a 2nd assessment";
 
   const stars = [5, 4, 3, 2, 1].map(n =>
     `<a href="${BASE_URL}/api/feedback?token=${feedbackToken}&rating=${n}" style="color:${n <= 3 ? '#d4cec4' : GOLD};text-decoration:none;font-size:28px;padding:0 3px;">&#9733;</a>`
@@ -204,8 +204,8 @@ export async function sendFeedbackReminderEmail(params: {
         </td></tr>
         <tr><td style="font-family:${FONT};font-size:14px;color:#555;line-height:1.8;padding-bottom:20px;">
           ${fr
-            ? "Vous n\u2019avez pas encore \u00e9valu\u00e9 votre rapport buildfi.ca. Un clic suffit \u2014 et cela d\u00e9bloque un coupon de 50 %."
-            : "You haven\u2019t rated your buildfi.ca report yet. One click is all it takes \u2014 and it unlocks a 50% coupon."}
+            ? "Vous n\u2019avez pas encore \u00e9valu\u00e9 votre bilan buildfi.ca. Un clic suffit \u2014 et cela d\u00e9bloque 50\u00a0% de rabais sur un 2e bilan, appliqu\u00e9 automatiquement au paiement."
+            : "You haven\u2019t rated your buildfi.ca assessment yet. One click is all it takes \u2014 and it unlocks 50% off a 2nd assessment, applied automatically at checkout."}
         </td></tr>
         <tr><td align="center" style="padding-bottom:20px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
@@ -221,7 +221,7 @@ export async function sendFeedbackReminderEmail(params: {
           ${fr ? "Ceci est notre dernier rappel \u2014 nous ne vous \u00e9crirons plus \u00e0 ce sujet." : "This is our last reminder \u2014 we won\u2019t email you about this again."}
         </td></tr>`;
 
-  const html = emailWrapper(lang, fr ? "Dernier rappel \u2014 coupon 50 %" : "Last reminder \u2014 50% coupon", body);
+  const html = emailWrapper(lang, fr ? "Dernier rappel \u2014 50 % sur un 2e bilan" : "Last reminder \u2014 50% off a 2nd assessment", body);
 
   const { error } = await resend.emails.send({
     from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",

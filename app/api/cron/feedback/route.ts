@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   for (const record of allRecords) {
     try {
       const days = daysSince(record.purchaseDate);
-      const lang = "fr" as const; // Default to FR; could store lang in record in future
+      const lang = record.lang || "fr";
 
       // J+3: Send feedback request if not yet sent and >= 3 days
       if (!record.j3Sent && days >= 3) {

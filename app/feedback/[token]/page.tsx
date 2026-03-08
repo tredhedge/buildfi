@@ -45,6 +45,14 @@ function FeedbackContent() {
   const [testimonialText, setTestimonialText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Detect language from browser (fallback FR for Quebec market)
+  const [fr, setFr] = useState(true);
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.language) {
+      setFr(navigator.language.startsWith("fr"));
+    }
+  }, []);
+
   // Fetch existing feedback record
   useEffect(() => {
     async function load() {
@@ -97,7 +105,7 @@ function FeedbackContent() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontFamily: "'DM Sans', sans-serif", color: "#999", fontSize: 14 }}>Chargement...</div>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", color: "#999", fontSize: 14 }}>{fr ? "Chargement..." : "Loading..."}</div>
       </div>
     );
   }
@@ -105,8 +113,8 @@ function FeedbackContent() {
   if (error === "not_found") {
     return (
       <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: DARK, marginBottom: 8 }}>Lien invalide</div>
-        <div style={{ fontSize: 14, color: "#666" }}>Ce lien de feedback n&apos;existe pas ou a expir&eacute;.</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: DARK, marginBottom: 8 }}>{fr ? "Lien invalide" : "Invalid link"}</div>
+        <div style={{ fontSize: 14, color: "#666" }}>{fr ? "Ce lien de feedback n\u2019existe pas ou a expir\u00e9." : "This feedback link doesn\u2019t exist or has expired."}</div>
       </div>
     );
   }
@@ -114,8 +122,8 @@ function FeedbackContent() {
   if (error) {
     return (
       <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: DARK, marginBottom: 8 }}>Erreur</div>
-        <div style={{ fontSize: 14, color: "#666" }}>Impossible de charger le formulaire. Veuillez r&eacute;essayer.</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: DARK, marginBottom: 8 }}>{fr ? "Erreur" : "Error"}</div>
+        <div style={{ fontSize: 14, color: "#666" }}>{fr ? "Impossible de charger le formulaire. Veuillez r\u00e9essayer." : "Unable to load the form. Please try again."}</div>
       </div>
     );
   }
@@ -127,26 +135,34 @@ function FeedbackContent() {
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#9733;</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 12, fontFamily: "Newsreader, Georgia, serif" }}>
-            Merci pour votre avis !
+            {fr ? "Merci pour votre avis\u00a0!" : "Thank you for your feedback!"}
           </div>
           <div style={{ fontSize: 14, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
-            Votre feedback nous aide directement &agrave; am&eacute;liorer buildfi.ca.
+            {fr ? "Votre avis nous aide directement \u00e0 am\u00e9liorer buildfi.ca." : "Your feedback directly helps us improve buildfi.ca."}
           </div>
           {data?.couponUnlocked && (
-            <div style={{ background: "#f0ebe3", borderRadius: 10, padding: "16px 20px", border: `1px solid ${BORDER}` }}>
+            <div style={{ background: "#f0ebe3", borderRadius: 10, padding: "16px 20px", border: `1px solid ${BORDER}`, marginBottom: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 6 }}>
-                Rabais d&eacute;bloqu&eacute;
+                {fr ? "50\u00a0% de rabais d\u00e9bloqu\u00e9" : "50% discount unlocked"}
               </div>
-              <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
-                50 % de rabais appliqu&eacute; automatiquement sur votre prochain achat buildfi.ca. Valide 90 jours.
+              <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                {fr
+                  ? "Le rabais de 50\u00a0% est appliqu\u00e9 automatiquement au paiement lorsque vous commandez un 2e bilan."
+                  : "The 50% discount is applied automatically at checkout when you order a 2nd assessment."}
               </div>
+              <a
+                href="https://www.buildfi.ca?second=1"
+                style={{ display: "inline-block", padding: "10px 20px", background: GOLD, color: "#fff", fontSize: 13, fontWeight: 600, borderRadius: 8, textDecoration: "none" }}
+              >
+                {fr ? "Commander un 2e bilan \u00e0 50\u00a0% de rabais" : "Order a 2nd assessment at 50% off"}
+              </a>
             </div>
           )}
           <a
             href="https://www.buildfi.ca"
-            style={{ display: "inline-block", marginTop: 24, padding: "10px 24px", background: GOLD, color: "#fff", fontSize: 14, fontWeight: 600, borderRadius: 8, textDecoration: "none" }}
+            style={{ display: "inline-block", marginTop: 8, padding: "10px 24px", background: data?.couponUnlocked ? "transparent" : GOLD, color: data?.couponUnlocked ? "#666" : "#fff", fontSize: 14, fontWeight: 600, borderRadius: 8, textDecoration: "none", border: data?.couponUnlocked ? `1px solid ${BORDER}` : "none" }}
           >
-            Retour &agrave; buildfi.ca
+            {fr ? "Retour \u00e0 buildfi.ca" : "Back to buildfi.ca"}
           </a>
         </div>
       </div>
@@ -166,7 +182,7 @@ function FeedbackContent() {
         {/* Star rating */}
         <div style={{ background: CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: "28px 24px", marginBottom: 16, textAlign: "center" }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: DARK, marginBottom: 16 }}>
-            Comment &eacute;valuez-vous votre bilan ?
+            {fr ? "Comment \u00e9valuez-vous votre bilan\u00a0?" : "How would you rate your assessment?"}
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
             {[1, 2, 3, 4, 5].map((n) => (
@@ -183,14 +199,14 @@ function FeedbackContent() {
                   padding: "0 4px",
                   lineHeight: 1,
                 }}
-                aria-label={`${n} sur 5`}
+                aria-label={fr ? `${n} sur 5` : `${n} out of 5`}
               >
                 &#9733;
               </button>
             ))}
           </div>
           <div style={{ fontSize: 12, color: "#999", marginTop: 8 }}>
-            {rating > 0 ? `${rating}/5` : "Cliquez une \u00e9toile"}
+            {rating > 0 ? `${rating}/5` : (fr ? "Cliquez une \u00e9toile" : "Click a star")}
           </div>
         </div>
 
@@ -198,7 +214,7 @@ function FeedbackContent() {
         {rating > 0 && (
           <div style={{ background: CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: "20px 24px", marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 12 }}>
-              Recommanderiez-vous buildfi.ca &agrave; un proche ?
+              {fr ? "Recommanderiez-vous buildfi.ca \u00e0 un proche\u00a0?" : "Would you recommend buildfi.ca to someone you know?"}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button
@@ -216,7 +232,7 @@ function FeedbackContent() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                Oui
+                {fr ? "Oui" : "Yes"}
               </button>
               <button
                 onClick={() => setNps(false)}
@@ -233,7 +249,7 @@ function FeedbackContent() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                Pas pour l&apos;instant
+                {fr ? "Pas pour l\u2019instant" : "Not right now"}
               </button>
             </div>
           </div>
@@ -243,12 +259,12 @@ function FeedbackContent() {
         {rating > 0 && (
           <div style={{ background: CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: "20px 24px", marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 8 }}>
-              Un commentaire ? <span style={{ fontWeight: 400, color: "#999" }}>(optionnel)</span>
+              {fr ? "Un commentaire\u00a0?" : "Any comments?"} <span style={{ fontWeight: 400, color: "#999" }}>({fr ? "optionnel" : "optional"})</span>
             </div>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, 500))}
-              placeholder="Ce qui vous a plu, ce qui pourrait &ecirc;tre am&eacute;lior&eacute;..."
+              placeholder={fr ? "Ce qui vous a plu, ce qui pourrait \u00eatre am\u00e9lior\u00e9..." : "What you liked, what could be improved..."}
               style={{
                 width: "100%",
                 minHeight: 80,
@@ -272,16 +288,16 @@ function FeedbackContent() {
         {rating >= 4 && nps === true && (
           <div style={{ background: CARD, borderRadius: 12, border: `1px solid ${BORDER}`, padding: "20px 24px", marginBottom: 16 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 4 }}>
-              Pouvons-nous utiliser votre avis comme t&eacute;moignage ?
+              {fr ? "Pouvons-nous utiliser votre avis comme t\u00e9moignage\u00a0?" : "Can we use your feedback as a testimonial?"}
             </div>
             <div style={{ fontSize: 12, color: "#999", marginBottom: 12, lineHeight: 1.5 }}>
-              Votre t&eacute;moignage aide d&apos;autres personnes &agrave; d&eacute;couvrir buildfi.ca.
+              {fr ? "Votre t\u00e9moignage aide d\u2019autres personnes \u00e0 d\u00e9couvrir buildfi.ca." : "Your testimonial helps others discover buildfi.ca."}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {([
-                { value: "named" as const, label: "Oui, avec mon pr\u00e9nom" },
-                { value: "anonymous" as const, label: "Oui, de fa\u00e7on anonyme" },
-                { value: "none" as const, label: "Non merci" },
+                { value: "named" as const, label: fr ? "Oui, avec mon pr\u00e9nom" : "Yes, with my first name" },
+                { value: "anonymous" as const, label: fr ? "Oui, de fa\u00e7on anonyme" : "Yes, anonymously" },
+                { value: "none" as const, label: fr ? "Non merci" : "No thanks" },
               ]).map((opt) => (
                 <button
                   key={opt.value}
@@ -309,7 +325,7 @@ function FeedbackContent() {
                 <textarea
                   value={testimonialText}
                   onChange={(e) => setTestimonialText(e.target.value.slice(0, 300))}
-                  placeholder="Votre t&eacute;moignage en quelques mots..."
+                  placeholder={fr ? "Votre t\u00e9moignage en quelques mots..." : "Your testimonial in a few words..."}
                   style={{
                     width: "100%",
                     minHeight: 60,
@@ -350,12 +366,12 @@ function FeedbackContent() {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            {submitting ? "Envoi..." : "Envoyer mon avis"}
+            {submitting ? (fr ? "Envoi..." : "Sending...") : (fr ? "Envoyer mon avis" : "Submit my feedback")}
           </button>
         )}
 
         <div style={{ textAlign: "center", fontSize: 11, color: "#bbb", marginTop: 16 }}>
-          buildfi.ca &mdash; Planification financi&egrave;re accessible
+          buildfi.ca &mdash; {fr ? "Planification financi\u00e8re accessible" : "Accessible financial planning"}
         </div>
       </div>
     </div>

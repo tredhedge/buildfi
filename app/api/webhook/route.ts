@@ -40,8 +40,10 @@ import {
   incrementExportCredit,
   renewExpertProfile,
   markProcessed,
+  unmarkProcessed,
   createFeedbackRecord,
   createReferralRecord,
+  getFeedbackByEmail,
 } from "@/lib/kv";
 import { randomUUID } from "crypto";
 import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
@@ -204,7 +206,7 @@ async function handleCheckoutCompleted(
 
     // Generate feedback token for star ratings in report + email
     const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "expert");
+    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "expert", lang);
 
     if (tier === "intermediaire") {
       // ── Intermédiaire pipeline ──────────────────────────
@@ -367,15 +369,27 @@ async function handleDecaissementPurchase(
     // ── AI narration ──────────────────────────────────────
     const aiStart = Date.now();
     const prompt = buildAIPromptDecum(D, params, fr, quiz);
-    const ai: AINarrationDecum = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsDecum);
+    let ai: AINarrationDecum;
+    try {
+      ai = await Promise.race([
+        callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsDecum),
+        new Promise<AINarrationDecum>((_, reject) =>
+          setTimeout(() => reject(new Error("AI timeout 60s")), 60000)
+        ),
+      ]);
+    } catch (aiErr) {
+      console.warn("[webhook] Décaissement AI failed/timed out, using static fallbacks:", aiErr);
+      ai = {} as AINarrationDecum;
+    }
     console.log(`[webhook] Décaissement AI in ${Date.now() - aiStart}ms`);
 
     // ── Feedback token ────────────────────────────────────
     const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, "decaissement");
+    await createFeedbackRecord(feedbackToken, email, "decaissement", lang);
 
     // ── Simulator URL ─────────────────────────────────────
     const simParts: string[] = [];
+    if (lang === "en") simParts.push(`lang=en`);
     if (params.age) simParts.push(`age=${params.age}`);
     if (params.retIncome) simParts.push(`income=${Math.round(params.retIncome as number)}`);
     if (params.allocR) simParts.push(`allocR=${params.allocR}`);
@@ -419,6 +433,10 @@ async function handleDecaissementPurchase(
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Décaissement processing failed";
     console.error("[webhook] Décaissement error:", err);
+    // Clear idempotency flag so Stripe retries can re-process
+    await unmarkProcessed(sessionId).catch((e) =>
+      console.error("[webhook] Failed to unmark processed:", e)
+    );
     await sendAdminAlert(
       "Décaissement pipeline failed",
       `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
@@ -525,7 +543,7 @@ async function handleExpertPurchase(
 
       // Generate feedback token for expert report
       const expertFeedbackToken = randomUUID();
-      await createFeedbackRecord(expertFeedbackToken, email, "expert");
+      await createFeedbackRecord(expertFeedbackToken, email, "expert", lang);
 
       const reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, expertFeedbackToken);
 
@@ -660,10 +678,12 @@ async function handleReferralConversion(
     `[webhook] Referral ${code}: conversion #${updated.conversions} by ${buyerEmail}`
   );
 
-  // Notify referrer
+  // Notify referrer (look up their language from feedback record)
+  const referrerFeedback = await getFeedbackByEmail(updated.referrerEmail);
+  const referrerLang = referrerFeedback?.lang || "fr";
   await sendReferralConversionEmail({
     to: updated.referrerEmail,
-    lang: "fr",
+    lang: referrerLang,
     conversions: updated.conversions,
   }).catch((err) =>
     console.error("[webhook] Referral notification email failed:", err)

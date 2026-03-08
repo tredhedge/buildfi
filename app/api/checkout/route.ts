@@ -238,8 +238,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (err: unknown) {
     console.error("Checkout error:", err);
-    const message =
-      err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Checkout session creation failed. Please try again." }, { status: 500 });
   }
 }

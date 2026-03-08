@@ -95,7 +95,7 @@ export function buildAIPromptDecum(
   const gkActive = !!params.gkOn;
   const alreadyClaiming = q.qppAlreadyClaiming === true || q.qppAlreadyClaiming === "true";
   const totalWealth = (params.rrsp ?? 0) + (params.tfsa ?? 0) + (params.nr ?? 0) +
-    (params.cRrspBal ?? 0) + (params.cTfsaBal ?? 0) + (params.cNrBal ?? 0);
+    (params.cRRSP ?? 0) + (params.cTFSA ?? 0) + (params.cNR ?? 0);
   const wdRate = D.initialRate ?? 0;
 
   // Longevity + spending concern
@@ -104,8 +104,8 @@ export function buildAIPromptDecum(
   if (successPct < 55)
     worryPatterns.push("WORRY PATTERN [critical-sustainability]: Success rate below 55%. Lead EVERY slot with the reassuring data point first. One idea per sentence. Build confidence gradually — do not stack risks. Focus on controllable factors.");
   // OAS clawback zone
-  if ((params.retIncome ?? 0) > 90000)
-    worryPatterns.push("WORRY PATTERN [oas-clawback]: Income above OAS recovery threshold ($90,997 in 2026). tax_timing_obs MUST address this — quantify the recovery tax impact. Frame as mathematical cost, not criticism.");
+  if ((params.retIncome ?? 0) > 95000)
+    worryPatterns.push("WORRY PATTERN [oas-clawback]: Income above OAS recovery threshold ($95,323 in 2026). tax_timing_obs MUST address this — quantify the recovery tax impact. Frame as mathematical cost, not criticism.");
   // Heavy RRSP with forced conversion
   if (totalWealth > 0 && (params.rrsp ?? 0) / totalWealth > 0.65)
     worryPatterns.push("WORRY PATTERN [rrsp-concentration]: 65%+ of savings in RRSP/RRIF. tax_timing_obs should address RRIF minimum conversion schedule and taxable income implications. obs slots should explore the registered/non-registered balance.");
@@ -137,7 +137,7 @@ export function buildAIPromptDecum(
     obsPool.push({ topic: "rrif-conversion", instr: "RRIF conversion dynamics: " + Math.round((params.rrsp ?? 0) / totalWealth * 100) + "% of savings in registered accounts. Minimum withdrawals increase with age (forced at 71). Observe the taxable income trajectory and interaction with government benefits." });
 
   if ((params.retIncome ?? 0) > 80000)
-    obsPool.push({ topic: "oas-threshold", instr: "OAS recovery tax zone: income of " + Math.round(params.retIncome ?? 0) + "$/yr approaches or exceeds the threshold ($90,997 in 2026). Each dollar above triggers 15% recovery. Quantify the impact in annual dollars." });
+    obsPool.push({ topic: "oas-threshold", instr: "OAS recovery tax zone: income of " + Math.round(params.retIncome ?? 0) + "$/yr approaches or exceeds the threshold ($95,323 in 2026). Each dollar above triggers 15% recovery. Quantify the impact in annual dollars." });
 
   if (gkActive && D.gkCutFreq !== null && D.gkCutFreq > 0.15)
     obsPool.push({ topic: "spending-volatility", instr: "Spending adjustment frequency: cuts triggered in " + Math.round((D.gkCutFreq ?? 0) * 100) + "% of simulated years. Average cut when triggered: " + Math.round((D.gkAvgCut ?? 0) * 100) + "%. What this means for monthly budget predictability. Frame in dollar terms." });
@@ -294,7 +294,7 @@ export function buildAIPromptDecum(
 
   const incomeMixHint = gP + " " + (rpt.govQppMonthly ?? 0) + "$/mo + " + oN + " " + (rpt.govOasMonthly ?? 0) + "$/mo" + ((rpt.govPenMonthly ?? 0) > 0 ? " + DB pension " + (rpt.govPenMonthly ?? 0) + "$/mo" : "") + " = " + govMonthly + "$/mo total guaranteed. This covers " + Math.round(govCoveragePct * 100) + "% of the " + Math.round(retIncome / 12) + "$/mo target. The remaining " + Math.max(0, Math.round(retIncome / 12 - govMonthly)) + "$/mo comes from portfolio withdrawals. Activation ages: " + gP + " at " + (params.qppAge ?? 65) + ", " + oN + " at " + (params.oasAge ?? 65) + ".";
 
-  const taxTimingHint = "RRSP/RRIF balance: " + fmt(params.rrsp ?? 0) + "$" + (totalWealth > 0 ? " (" + Math.round((params.rrsp ?? 0) / totalWealth * 100) + "% of liquid savings)" : "") + ". RRIF minimum conversion begins at 71 (forced taxable withdrawals that increase with age). OAS recovery threshold: $90,997 (2026) — every dollar above triggers 15% recovery tax. " + (retIncome > 90000 ? "Current target income of " + fmt(retIncome) + "$ is ABOVE the threshold — OAS recovery is active." : retIncome > 80000 ? "Current target of " + fmt(retIncome) + "$ approaches the threshold." : "Current target is below the threshold.") + " Pension income splitting: " + (couple ? "available — could reduce household tax burden." : "N/A (single profile).") + " Observe tax implications of the drawdown sequence. DO NOT prescribe tax strategy.";
+  const taxTimingHint = "RRSP/RRIF balance: " + fmt(params.rrsp ?? 0) + "$" + (totalWealth > 0 ? " (" + Math.round((params.rrsp ?? 0) / totalWealth * 100) + "% of liquid savings)" : "") + ". RRIF minimum conversion begins at 71 (forced taxable withdrawals that increase with age). OAS recovery threshold: $95,323 (2026) — every dollar above triggers 15% recovery tax. " + (retIncome > 90000 ? "Current target income of " + fmt(retIncome) + "$ is ABOVE the threshold — OAS recovery is active." : retIncome > 80000 ? "Current target of " + fmt(retIncome) + "$ approaches the threshold." : "Current target is below the threshold.") + " Pension income splitting: " + (couple ? "available — could reduce household tax burden." : "N/A (single profile).") + " Observe tax implications of the drawdown sequence. DO NOT prescribe tax strategy.";
 
   const meltdownHint = meltIsBase
     ? "Income is already at or below the meltdown target (" + fmt(meltTarget) + "$/yr). Margin is zero. Observe what this means for spending flexibility and whether further reduction is feasible."

@@ -334,6 +334,11 @@ export async function markProcessed(sessionId: string): Promise<boolean> {
   return result === "OK";
 }
 
+export async function unmarkProcessed(sessionId: string): Promise<void> {
+  // Remove idempotency flag so Stripe retries can re-process on failure
+  await redis.del(KEYS.processed(sessionId));
+}
+
 // ── Feedback Loop ─────────────────────────────────────────
 
 export interface FeedbackRecord {
@@ -348,6 +353,7 @@ export interface FeedbackRecord {
   testimonialConsent: "named" | "anonymous" | "none" | null;
   testimonialText: string | null;
   source: "report" | "email_j3" | "email_j7" | "page" | null;
+  lang: "fr" | "en";
   couponUnlocked: boolean;
   j3Sent: boolean;
   j7Sent: boolean;
@@ -357,7 +363,8 @@ export interface FeedbackRecord {
 export async function createFeedbackRecord(
   token: string,
   email: string,
-  tier: "essentiel" | "intermediaire" | "expert" | "decaissement"
+  tier: "essentiel" | "intermediaire" | "expert" | "decaissement",
+  lang: "fr" | "en" = "fr"
 ): Promise<FeedbackRecord> {
   const norm = normalizeEmail(email);
   const record: FeedbackRecord = {
@@ -372,6 +379,7 @@ export async function createFeedbackRecord(
     testimonialConsent: null,
     testimonialText: null,
     source: null,
+    lang,
     couponUnlocked: false,
     j3Sent: false,
     j7Sent: false,

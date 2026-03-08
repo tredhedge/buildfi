@@ -43,7 +43,7 @@ export async function sendReportEmail(params: SendReportParams) {
     : `${subject}\n\nYour personalized assessment is ready.\nGrade: ${grade} | Success rate: ${successPct}%\n\nView my assessment: ${downloadUrl}\n\nThis link is valid for 30 days.\n\nThis tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.\n\nsupport@buildfi.ca | buildfi.ca`;
 
   const { data, error } = await resend.emails.send({
-    from: process.env.RESEND_FROM || "BuildFi <bilan@buildfi.ca>",
+    from: process.env.RESEND_FROM || "BuildFi <rapport@buildfi.ca>",
     replyTo: "support@buildfi.ca",
     to: [to],
     subject,
