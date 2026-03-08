@@ -22,8 +22,15 @@ const CPP_MAX_2026    = 1306;   // CPP max à 65 ans, 2026 ($/mois)
 const OAS_65_2026     = 727;    // PSV/OAS à 65 ans, 2026 ($/mois)
 const OAS_70_2026     = 1036;   // PSV/OAS à 70 ans, 2026 ($/mois)
 
-// QPP/CPP timing factors vs baseline at 65
-const QPP_FACTOR: Record<number, number> = { 60: 0.640, 65: 1.000, 70: 1.420 };
+// QPP/CPP timing adjustment factors vs baseline at 65
+// Early: 0.6%/month penalty (7.2%/year) for each month before 65
+// Late: 0.7%/month bonus (8.4%/year) for each month after 65
+function qppFactor(age: number): number {
+  if (age <= 60) return 0.640;
+  if (age >= 70) return 1.420;
+  if (age < 65) return 1.0 - (65 - age) * 0.072;
+  return 1.0 + (age - 65) * 0.084;
+}
 
 // -- Meltdown target: first federal bracket 2026 (income ceiling for tax efficiency) --
 const MELT_TARGET_2026 = 58523;
@@ -98,7 +105,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   } else {
     // Not yet claimed — use planned age + heuristic if amount not provided
     qppAge = Math.max(60, Math.min(70, a.qppPlannedAge || 65));
-    const factor = QPP_FACTOR[qppAge] || 1.0;
+    const factor = qppFactor(qppAge);
     if (a.qppMonthly > 0) {
       qppBenefit = a.qppMonthly * 12;
     } else {
@@ -303,7 +310,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
 
   const params: Record<string, any> = {
     // Identity
-    age, retAge, sex, prov, sal, deathAge,
+    age, retAge, sex, prov, sal, deathAge, retIncome,
     // Savings
     rrsp, tfsa, nr,
     rrspC, tfsaC, nrC, // all zero — no active contributions
@@ -333,6 +340,8 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     costBase: Math.round(nr),
     // ── MANDATORY FIXED PARAMS ──────────────────────────────
     fatT: true,             // t-Student df=5 fat tails
+    eqVol: 0.16,            // equity volatility (annualized std dev)
+    bndVol: 0.06,           // bond volatility (annualized std dev)
     stochMort: true,        // mortalité stochastique CPM-2023
     stochInf: false,
     // Spending smile curve
@@ -375,10 +384,10 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     cRRSPC: 0, cTFSAC: 0, cNRC: 0, // no couple contributions
     cAvgE: 0,
     cQppYrs: cOn ? Math.min(40, Math.max(0, cAge - 18)) : 0,
-    cQppAge: oasAge,  // partner QPP timing: conservative — same as main (heuristic)
+    cQppAge: cOn ? Math.max(60, Math.min(70, cAge >= 60 ? cAge : 65)) : 0,  // partner QPP: use partner age if 60+, else 65
     cOasAge: oasAge,
     cRetSpM: cOn ? Math.round(retSpM * 0.5) : 0, // equal spending split for couple
-    cDeath: cSex === "F" ? 95 : 93,
+    cDeath: 105,  // same hard cap as main person — stochMort=true handles realistic mortality via CPM-2023
     // Life insurance — not collected in decum quiz
     lifeInsBenefit: 0, lifeInsPremium: 0,
     cLifeInsBenefit: 0, cLifeInsPremium: 0,

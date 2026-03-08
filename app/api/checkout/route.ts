@@ -2,7 +2,7 @@
 // Creates a Stripe Checkout Session — supports 3 checkout types:
 //   type=report (default): Ess/Inter/Expert/Decaissement report purchase with quiz data
 //   type=addon: Expert AI export addon ($14.99)
-//   type=second: 2nd report at 50% off (SECOND50 coupon) or DECUM50 for decaissement
+//   type=second: 2nd report at 50% off (SECOND50 coupon, applies to all tiers including decaissement)
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";

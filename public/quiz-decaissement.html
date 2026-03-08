@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Bilan de décaissement</title>
-<meta name="description" content="Optimisez votre stratégie de retrait à la retraite. Timing RRQ/PSV, analyse meltdown, 6 scénarios Monte Carlo. Paiement unique 29,50 $.">
+<meta name="description" content="Analysez la durabilité de vos retraits à la retraite. Timing RRQ/PSV, analyse meltdown, 6 scénarios Monte Carlo. Paiement unique 29,50 $.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -19,10 +19,11 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A
 }
 .qs{animation:fadeIn .4s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bd);border-radius:3px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:var(--bd);border-radius:4px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
 .pbtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s}
 .pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,148,74,.25)}
+.pbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
 .pbtn-sec{display:block;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bgc);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:var(--ts);transition:border-color .2s;font-family:'DM Sans',sans-serif}
 .pbtn-sec:hover{border-color:var(--g)}
 .card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
@@ -51,19 +52,42 @@ input[type=number]{-moz-appearance:textfield}
 .phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
 .info-box{background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
 @media print{body{background:#fff}.no-print{display:none!important}}
-@media(min-width:900px){
+/* --- TABLET (768px+) --- */
+@media(min-width:768px){
   body{font-size:16px}
-  .qs h2{font-size:24px!important}
-  .pbtn{font-size:16px!important;padding:18px 20px!important}
+  .fld-label{font-size:15px!important}
+  .inp{font-size:17px!important;padding:15px 16px!important}
+  .inp-sm{font-size:16px!important;padding:13px 14px!important}
+  .pbtn{font-size:17px!important;padding:18px!important}
+  .back-btn{font-size:14px!important;padding:12px 24px!important}
+  .card{padding:18px!important}
+  .chip{font-size:15px!important;padding:10px 20px!important}
+  input[type=range]::-webkit-slider-thumb{width:32px;height:32px}
 }
+/* --- DESKTOP (1024px+) --- */
+@media(min-width:1024px){
+  body{font-size:17px}
+  .qs h2{font-size:26px!important}
+  .fld-label{font-size:16px!important}
+  .inp{font-size:18px!important;padding:16px 18px!important}
+  .inp-sm{font-size:17px!important;padding:14px 16px!important}
+  .pbtn{font-size:18px!important;padding:20px!important}
+  .back-btn{font-size:14px!important}
+  .card{padding:20px 18px!important}
+}
+/* --- MOBILE ≤640px --- */
 @media(max-width:640px){
   .rpt-grid2{grid-template-columns:1fr!important}
   .rpt-flex{flex-direction:column!important}
 }
-@media(max-width:480px){
+/* --- SMALL MOBILE ≤400px --- */
+@media(max-width:400px){
   body{font-size:14px}
   h1{font-size:22px!important}
-  h2{font-size:19px!important}
+  h2{font-size:18px!important}
+  .inp{padding:12px!important;font-size:15px!important}
+  .inp-sm{padding:10px!important;font-size:14px!important}
+  .card{padding:14px 12px!important}
 }
 </style>
 <script src="/logo.js"></script>
@@ -82,8 +106,8 @@ input[type=number]{-moz-appearance:textfield}
 <noscript>
 <div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px">
   <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Bilan Décaissement — buildfi.ca</div>
-  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Optimisez votre stratégie de retrait à la retraite.</h1>
-  <p style="color:#555;margin-bottom:16px;line-height:1.6">12 sections personnalisées — timing RRQ/PSV optimal, analyse meltdown, comparaison de 6 scénarios de retrait, résilience aux krachs en phase de décaissement. Paiement unique — 29,50 $.</p>
+  <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Analysez la durabilité de vos retraits à la retraite.</h1>
+  <p style="color:#555;margin-bottom:16px;line-height:1.6">12 sections personnalisées — timing RRQ/PSV, analyse meltdown, comparaison de 6 scénarios de retrait, résilience aux krachs en phase de décaissement. Paiement unique — 29,50 $.</p>
   <p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong> Activez JavaScript dans votre navigateur pour y accéder.</p>
   <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
   <p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier. Consultez un planificateur financier certifié avant toute décision importante.</p>
@@ -413,6 +437,12 @@ var MICRO_COPY = {
 function go(step) {
   var prev = STATE.step;
   var q = STATE.quiz;
+  var fr = STATE.lang === "fr";
+
+  // Validate current step before advancing
+  if (typeof step === "number" && typeof prev === "number" && step > prev) {
+    if (!validateStep(prev, q, fr)) return;
+  }
 
   // Skip step 7 if not applicable
   if (step === 7 && !isStep7Visible(q)) {
@@ -450,6 +480,19 @@ function uqd(key, rawVal) {
   STATE.quiz[key] = isNaN(n) ? (rawVal === "" || rawVal == null ? 0 : STATE.quiz[key]) : n;
   clearTimeout(_dTimer[key]);
   _dTimer[key] = setTimeout(function() { saveState(); }, 600);
+}
+
+function validateStep(step, q, fr) {
+  if (step === 1) {
+    if (q.age < 50 || q.age > 95) { alert(fr ? "L'âge doit être entre 50 et 95 ans." : "Age must be between 50 and 95."); return false; }
+  }
+  if (step === 2) {
+    if (q.retirementStatus !== "retired" && q.retAge && q.retAge <= q.age) { alert(fr ? "L'âge de retraite doit être supérieur à votre âge actuel." : "Retirement age must be greater than your current age."); return false; }
+  }
+  if (step === 6) {
+    if (!q.retIncome || q.retIncome <= 0) { alert(fr ? "Veuillez entrer un revenu de retraite désiré supérieur à 0 $." : "Please enter a desired retirement income greater than $0."); return false; }
+  }
+  return true;
 }
 
 // ============================================================
@@ -540,6 +583,21 @@ function renderConfirm(q, lang) {
   if (q.age < 50 || q.age > 90) warnings.push(t("\u00c2ge (" + q.age + ") hors de la plage normale (50\u201390). V\u00e9rifiez.", "Age (" + q.age + ") outside normal range (50\u201390). Please verify."));
   if (q.retIncome <= 0) warnings.push(t("Revenu cible non saisi. Un montant est n\u00e9cessaire pour les projections.", "Target income not entered. An amount is needed for projections."));
   if (q.retirementStatus !== "retired" && q.retAge <= q.age) warnings.push(t("\u00c2ge de retraite pr\u00e9vu (" + q.retAge + ") doit \u00eatre sup\u00e9rieur \u00e0 l\u2019\u00e2ge actuel (" + q.age + ").", "Planned retirement age (" + q.retAge + ") must be greater than current age (" + q.age + ")."));
+  var wdRate = 0;
+  var totalSav = (q.rrspBal||0) + (q.tfsaBal||0) + (q.nrBal||0);
+  if (q.couple === "yes") totalSav += (q.cRrspBal||0) + (q.cTfsaBal||0) + (q.cNrBal||0);
+  var govM = 0;
+  if (q.qppMonthly > 0) govM += q.qppMonthly;
+  else if (!q.qppAlreadyClaiming) govM += (isQC ? 1364 : 1306);
+  if (q.oasMonthly > 0) govM += q.oasMonthly;
+  else if (!q.oasAlreadyClaiming) govM += 727;
+  if (q.hasPension && q.penMonthly > 0) govM += q.penMonthly;
+  var gapM = Math.max(0, (q.retIncome || 0) / 12 - govM);
+  if (totalSav > 0 && gapM > 0) wdRate = Math.round(gapM * 12 / totalSav * 1000) / 10;
+  if (wdRate > 6) warnings.push(t("Taux de retrait initial \u00e9lev\u00e9 (" + wdRate + " %). Les experts consid\u00e8rent g\u00e9n\u00e9ralement qu\u2019un taux sup\u00e9rieur \u00e0 4-5 % pourrait r\u00e9duire la durabilit\u00e9 du portefeuille.", "High initial withdrawal rate (" + wdRate + "%). Experts generally consider rates above 4-5% could reduce portfolio sustainability."));
+  if (totalSav === 0 && (q.retIncome||0) > govM * 12) warnings.push(t("Aucune \u00e9pargne d\u00e9clar\u00e9e, mais le revenu cible d\u00e9passe les revenus garantis.", "No savings declared, but target income exceeds guaranteed income."));
+  if (q.allocR >= 0.70 && q.age >= 75) warnings.push(t("R\u00e9partition en actions \u00e9lev\u00e9e (" + Math.round(q.allocR * 100) + " %) pour un profil de " + q.age + " ans.", "High equity allocation (" + Math.round(q.allocR * 100) + "%) for a " + q.age + "-year-old profile."));
+  if (q.retirementStatus !== "retired" && q.retAge && q.retAge <= q.age) warnings.push(t("L\u2019\u00e2ge de retraite est inf\u00e9rieur ou \u00e9gal \u00e0 votre \u00e2ge actuel.", "Retirement age is less than or equal to your current age."));
 
   var html = '<div style="max-width:580px;margin:0 auto;padding:32px 20px 80px">';
   html += '<div style="text-align:center;margin-bottom:24px">';
@@ -594,6 +652,12 @@ function renderConfirm(q, lang) {
     html += scard(t("Contexte additionnel", "Additional context"), ctxContent, 11);
   }
 
+  if (warnings.length > 0) {
+    html += '<div style="background:var(--ambg);border:1px solid rgba(184,152,48,.2);border-radius:10px;padding:14px 16px;margin:16px 0">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--am);margin-bottom:6px">' + t("Points \u00e0 v\u00e9rifier","Items to verify") + '</div>';
+    warnings.forEach(function(w) { html += '<div style="font-size:13px;color:var(--ts);margin-bottom:4px;line-height:1.5">\u26a0 ' + w + '</div>'; });
+    html += '</div>';
+  }
   html += '<div style="margin-top:24px">';
   html += '<button class="pbtn" onclick="go(\'loading\')" style="font-size:16px">' + t("Tout est exact \u2014 g\u00e9n\u00e9rer mon bilan \u2192", "All correct \u2014 generate my assessment \u2192") + '</button>';
   html += '<button onclick="go(11)" class="pbtn-sec">' + t("Retour aux questions", "Back to questions") + '</button>';
@@ -622,7 +686,7 @@ function renderQuiz(step, q, lang) {
       + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:5px 14px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:11px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
       // Logo
       + '<div style="text-align:center;margin-bottom:32px">'
-      + '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:24px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>'
+      + '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("lg","light") : '<div style="font-size:24px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>'
       + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan de d\u00e9caissement", "Retirement Drawdown Report") + '</div>'
       + '</div>'
       // Headline
@@ -638,10 +702,24 @@ function renderQuiz(step, q, lang) {
             + '</p></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:14px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Continuer avec le Bilan de d\u00e9caissement", "Continue with the Retirement Drawdown Report") + '</div></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:14px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire \u2192", "To the Interm\u00e9diaire Report \u2192") + '</div></div>'
-          : '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:15px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("R\u00e9treite d\u00e9j\u00e0 en cours ou imminente", "Retirement already started or imminent") + '</div></div>'
+          : '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'decumulating\'});STATE._routeUnsure=false;go(1)"><div style="font-weight:700;font-size:15px">' + t("Je suis \u00e0 la retraite ou \u00e0 moins de 2 ans de la retraite", "I\u2019m retired or within 2 years of retiring") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Retraite d\u00e9j\u00e0 en cours ou imminente", "Retirement already started or imminent") + '</div></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'accumulating\'});window.location.href=\'/quiz-intermediaire.html\'"><div style="font-weight:700;font-size:15px">' + t("Je suis encore en phase d\u2019\u00e9pargne active \u2014 je travaille toujours", "I\u2019m still actively saving \u2014 I\u2019m still working") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Vers le Rapport Interm\u00e9diaire", "To the Interm\u00e9diaire Report") + ' \u2192</div></div>'
             + '<div tabindex="0" class="card" onclick="ph(\'decum_routing_screen\',{value:\'unsure\'});STATE._routeUnsure=true;render()"><div style="font-weight:700;font-size:15px">' + t("Je ne suis pas s\u00fbr\u00b7e", "I\u2019m not sure") + '</div><div style="font-size:12px;color:var(--ts);margin-top:4px">' + t("Voir une explication", "See an explanation") + '</div></div>'
         )
+      + '<div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:24px">'
+      + '<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:var(--gnbg);font-size:11px;font-weight:600;color:var(--gn)">'
+      + '<span style="font-size:13px">\ud83d\udcca</span> 5\u00a0000 ' + t("sc\u00e9narios simul\u00e9s","scenarios simulated") + '</div>'
+      + '<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:var(--gbg);font-size:11px;font-weight:600;color:var(--g)">'
+      + '<span style="font-size:13px">\ud83c\udde8\ud83c\udde6</span> ' + t("Donn\u00e9es canadiennes","Canadian data") + '</div>'
+      + '<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:var(--bga);font-size:11px;font-weight:600;color:var(--pr)">'
+      + '<span style="font-size:13px">\ud83d\udd12</span> ' + t("Aucun compte requis","No account needed") + '</div>'
+      + '</div>'
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;margin-top:20px;text-align:left">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">' + t("Documents sugg\u00e9r\u00e9s","Suggested documents") + '</div>'
+      + '<div style="font-size:13px;color:var(--ts);line-height:1.8">'
+      + t("\u2713 Relev\u00e9 REER / FERR / C\u00c9LI<br>\u2713 Relev\u00e9 RRQ ou estimation (mon dossier Service Canada)<br>\u2713 D\u00e9tails de pension d\u2019employeur (s\u2019il y a lieu)<br>\u2713 Derni\u00e8re d\u00e9claration de revenus",
+         "\u2713 RRSP / RRIF / TFSA statements<br>\u2713 CPP/QPP statement or estimate (My Service Canada)<br>\u2713 Employer pension details (if applicable)<br>\u2713 Most recent tax return")
+      + '</div></div>'
       + '</div>';
   }
 

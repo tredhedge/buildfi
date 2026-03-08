@@ -339,7 +339,7 @@ export async function markProcessed(sessionId: string): Promise<boolean> {
 export interface FeedbackRecord {
   token: string;
   email: string;
-  tier: "essentiel" | "intermediaire" | "expert";
+  tier: "essentiel" | "intermediaire" | "expert" | "decaissement";
   purchaseDate: string; // ISO 8601
   rating: number | null; // 1-5
   ratingDate: string | null;
@@ -357,7 +357,7 @@ export interface FeedbackRecord {
 export async function createFeedbackRecord(
   token: string,
   email: string,
-  tier: "essentiel" | "intermediaire" | "expert"
+  tier: "essentiel" | "intermediaire" | "expert" | "decaissement"
 ): Promise<FeedbackRecord> {
   const norm = normalizeEmail(email);
   const record: FeedbackRecord = {

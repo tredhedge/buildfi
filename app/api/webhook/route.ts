@@ -372,7 +372,7 @@ async function handleDecaissementPurchase(
 
     // ── Feedback token ────────────────────────────────────
     const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, "intermediaire"); // closest existing type
+    await createFeedbackRecord(feedbackToken, email, "decaissement");
 
     // ── Simulator URL ─────────────────────────────────────
     const simParts: string[] = [];

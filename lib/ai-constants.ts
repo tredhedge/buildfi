@@ -62,12 +62,14 @@ export const AI_SLOTS_DECUM = [
   "longevity_context",
   "spending_flex_obs",
   "income_mix_obs",
+  "tax_timing_obs",
   "meltdown_obs",
   "cpp_timing_obs",
   "sequence_obs",
   "estate_obs",
   "obs_1",
   "obs_2",
+  "obs_3",
 ] as const;
 
 export type AISlotKeyDecum = (typeof AI_SLOTS_DECUM)[number];
@@ -75,6 +77,7 @@ export type AINarrationDecum = Partial<Record<AISlotKeyDecum, string>>;
 
 export const AI_SLOT_MAX_LENGTH_DECUM: Partial<Record<AISlotKeyDecum, number>> = {
   snapshot_intro: 600,
+  tax_timing_obs: 600,
   meltdown_obs: 600,
   estate_obs: 400,
 };
