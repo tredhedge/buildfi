@@ -7,13 +7,13 @@
 import { useState, FormEvent } from "react";
 
 const MARINE = "#1a2744";
-const GOLD = "#b8860b";
+const GOLD = "#c49a1a";
 const BG = "#faf8f4";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";
 const GRAY = "#666666";
 const DARK = "#1A1208";
-const GOLD_LIGHT = "#C4944A";
+const GOLD_LIGHT = "#c49a1a";
 
 export default function AccesPage() {
   const [email, setEmail] = useState("");

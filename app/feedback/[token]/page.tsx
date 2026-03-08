@@ -7,7 +7,7 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
-const GOLD = "#C4944A";
+const GOLD = "#c49a1a";
 const DARK = "#1a2744";
 const BG = "#FEFCF9";
 const CARD = "#ffffff";
@@ -194,7 +194,7 @@ function FeedbackContent() {
                   border: "none",
                   cursor: "pointer",
                   fontSize: 36,
-                  color: n <= rating ? "#b8860b" : "#d4cec4",
+                  color: n <= rating ? "#c49a1a" : "#d4cec4",
                   transition: "color 0.15s",
                   padding: "0 4px",
                   lineHeight: 1,
@@ -224,7 +224,7 @@ function FeedbackContent() {
                   padding: "10px",
                   borderRadius: 8,
                   border: `1.5px solid ${nps === true ? GOLD : BORDER}`,
-                  background: nps === true ? "rgba(196,148,74,0.08)" : CARD,
+                  background: nps === true ? "rgba(196,154,26,0.08)" : CARD,
                   color: nps === true ? GOLD : "#666",
                   fontWeight: 600,
                   fontSize: 13,
@@ -306,7 +306,7 @@ function FeedbackContent() {
                     padding: "10px 14px",
                     borderRadius: 8,
                     border: `1.5px solid ${testimonialConsent === opt.value ? GOLD : BORDER}`,
-                    background: testimonialConsent === opt.value ? "rgba(196,148,74,0.08)" : CARD,
+                    background: testimonialConsent === opt.value ? "rgba(196,154,26,0.08)" : CARD,
                     color: testimonialConsent === opt.value ? GOLD : "#555",
                     fontWeight: 600,
                     fontSize: 13,

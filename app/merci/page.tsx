@@ -7,7 +7,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 
-const GOLD = "#C4944A";
+const GOLD = "#c49a1a";
 const GREEN = "#2A8C46";
 const MARINE = "#1a2744";
 

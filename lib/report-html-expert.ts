@@ -30,7 +30,7 @@ function fPct(n: number | null | undefined): string {
   return Math.round(n) + "\u00a0%";
 }
 function gCol(s: number): string {
-  return s >= 0.9 ? "#1a7a4c" : s >= 0.75 ? "#b8860b" : "#b91c1c";
+  return s >= 0.9 ? "#1a7a4c" : s >= 0.75 ? "#c49a1a" : "#b91c1c";
 }
 
 // ── extractReportDataExpert ─────────────────────────────────────────
@@ -174,14 +174,14 @@ function renderExpertReport(
   // HTML helpers
   const aiSlot = (key: ExpertSectionKey, fallback?: string): string => {
     const text = ai[key];
-    if (text) return '<div style="font-size:14px;color:#1a1208;line-height:1.85;margin:14px 0;padding:16px 20px;background:#faf8f4;border-radius:10px;border-left:3px solid #b8860b">' + text + '</div>';
+    if (text) return '<div style="font-size:14px;color:#1a1208;line-height:1.85;margin:14px 0;padding:16px 20px;background:#faf8f4;border-radius:10px;border-left:3px solid #c49a1a">' + text + '</div>';
     if (fallback) return '<div style="font-size:13px;color:#666;line-height:1.7;margin:10px 0;font-style:italic">' + fallback + '</div>';
     return '';
   };
   const secH = (n: number, title: string, sub?: string): string =>
     '<div style="margin-bottom:48px;page-break-inside:avoid">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #b8860b">'
-    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#b8860b,#d4a85a);color:#fff;font-size:13px;font-weight:800;flex-shrink:0;font-family:\'JetBrains Mono\',monospace">' + n + '</span>'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #c49a1a">'
+    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c49a1a,#d4a85a);color:#fff;font-size:13px;font-weight:800;flex-shrink:0;font-family:\'JetBrains Mono\',monospace">' + n + '</span>'
     + '<div><div style="font-family:Newsreader,Georgia,serif;font-size:18px;font-weight:700;color:#1a2744">' + title + '</div>'
     + (sub ? '<div style="font-size:11px;color:#666;margin-top:2px">' + sub + '</div>' : '')
     + '</div></div>';
@@ -189,8 +189,8 @@ function renderExpertReport(
   const card = (inner: string, s?: string): string =>
     '<div style="background:#ffffff;border:1px solid #d4cec4;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.03);' + (s || '') + '">' + inner + '</div>';
   const kp = (v: string, l: string, c?: string, sub?: string): string =>
-    '<div style="text-align:center;padding:18px 14px 14px;border:1px solid #d4cec4;border-radius:12px;background:#ffffff;border-top:3px solid ' + (c || '#b8860b') + '">'
-    + '<div style="font-family:\'JetBrains Mono\',monospace;font-size:20px;font-weight:800;color:' + (c || '#b8860b') + '">' + v + '</div>'
+    '<div style="text-align:center;padding:18px 14px 14px;border:1px solid #d4cec4;border-radius:12px;background:#ffffff;border-top:3px solid ' + (c || '#c49a1a') + '">'
+    + '<div style="font-family:\'JetBrains Mono\',monospace;font-size:20px;font-weight:800;color:' + (c || '#c49a1a') + '">' + v + '</div>'
     + '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:#666;margin-top:5px;font-weight:600;line-height:1.3">' + l + '</div>'
     + (sub ? '<div style="font-size:10px;color:#999;margin-top:2px">' + sub + '</div>' : '')
     + '</div>';
@@ -201,7 +201,7 @@ function renderExpertReport(
   const obs = (title: string, text: string, type: "insight" | "watch" | "info" | "risk"): string => {
     const c: Record<string, [string, string]> = {
       insight: ["rgba(26,122,76,0.06)", "#1a7a4c"],
-      watch: ["rgba(184,134,11,0.06)", "#b8860b"],
+      watch: ["rgba(196,154,26,0.06)", "#c49a1a"],
       info: ["rgba(26,39,68,0.04)", "#1a2744"],
       risk: ["rgba(185,28,28,0.06)", "#b91c1c"],
     };
@@ -298,7 +298,7 @@ function renderExpertReport(
     + '<div style="columns:2;column-gap:24px">';
   tocSections.forEach((s, i) => {
     h += '<div style="font-size:12px;padding:4px 0;break-inside:avoid;color:#666">'
-      + '<span style="font-family:\'JetBrains Mono\',monospace;color:#b8860b;font-weight:700;margin-right:6px">' + (i + 1) + '</span>'
+      + '<span style="font-family:\'JetBrains Mono\',monospace;color:#c49a1a;font-weight:700;margin-right:6px">' + (i + 1) + '</span>'
       + s.label + '</div>';
   });
   h += '</div></div>';
@@ -351,11 +351,11 @@ function renderExpertReport(
         svg += '<text x="' + (PL - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="9" fill="#999" font-family="\'JetBrains Mono\',monospace">' + Math.round(mx * g / 4 / 1000) + 'K</text>';
       }
       // P5-P95 band
-      svg += '<polygon points="' + pts("rp95") + ' ' + ptsRev("rp5") + '" fill="rgba(184,134,11,0.08)"/>';
+      svg += '<polygon points="' + pts("rp95") + ' ' + ptsRev("rp5") + '" fill="rgba(196,154,26,0.08)"/>';
       // P25-P75 band
-      svg += '<polygon points="' + pts("rp75") + ' ' + ptsRev("rp25") + '" fill="rgba(184,134,11,0.2)"/>';
+      svg += '<polygon points="' + pts("rp75") + ' ' + ptsRev("rp25") + '" fill="rgba(196,154,26,0.2)"/>';
       // Median line
-      svg += '<polyline points="' + pts("rp50") + '" fill="none" stroke="#b8860b" stroke-width="2.5" stroke-linejoin="round"/>';
+      svg += '<polyline points="' + pts("rp50") + '" fill="none" stroke="#c49a1a" stroke-width="2.5" stroke-linejoin="round"/>';
       // Retirement marker
       const retIdx = ages.indexOf(D.retAge);
       if (retIdx >= 0) {
@@ -368,9 +368,9 @@ function renderExpertReport(
           svg += '<text x="' + sx(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="8" fill="#999" font-family="\'JetBrains Mono\',monospace">' + a + '</text>';
       });
       // Legend
-      svg += '<rect x="' + PL + '" y="3" width="10" height="10" fill="rgba(184,134,11,0.08)" rx="2"/><text x="' + (PL + 13) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P5\u2013P95</text>';
-      svg += '<rect x="' + (PL + 65) + '" y="3" width="10" height="10" fill="rgba(184,134,11,0.2)" rx="2"/><text x="' + (PL + 78) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P25\u2013P75</text>';
-      svg += '<line x1="' + (PL + 140) + '" x2="' + (PL + 155) + '" y1="8" y2="8" stroke="#b8860b" stroke-width="2.5"/><text x="' + (PL + 158) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">' + t("M\u00e9diane", "Median") + '</text>';
+      svg += '<rect x="' + PL + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.08)" rx="2"/><text x="' + (PL + 13) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P5\u2013P95</text>';
+      svg += '<rect x="' + (PL + 65) + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.2)" rx="2"/><text x="' + (PL + 78) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P25\u2013P75</text>';
+      svg += '<line x1="' + (PL + 140) + '" x2="' + (PL + 155) + '" y1="8" y2="8" stroke="#c49a1a" stroke-width="2.5"/><text x="' + (PL + 158) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">' + t("M\u00e9diane", "Median") + '</text>';
       svg += '</svg>';
       h += card(svg);
     }
@@ -378,7 +378,7 @@ function renderExpertReport(
     // KPI row
     h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px" class="rpt-grid2">';
     h += kp(f$(D.rP5F), "P5", "#b91c1c", t("Sc\u00e9nario pessimiste", "Pessimistic scenario"));
-    h += kp(f$(D.rP25F), "P25", "#b8860b");
+    h += kp(f$(D.rP25F), "P25", "#c49a1a");
     h += kp(f$(D.rP75F), "P75", "#1a7a4c");
     h += kp(f$(D.rP95F), "P95", "#1a7a4c", t("Sc\u00e9nario optimiste", "Optimistic scenario"));
     h += '</div>';
@@ -404,7 +404,7 @@ function renderExpertReport(
       { v: D.qppMonthly, c: "#1a7a4c", l: gP },
       { v: D.oasMonthly, c: "#4680C0", l: oN },
       { v: D.dbPensionMonthly, c: "#4680C0", l: t("Pension employeur", "Employer pension") },
-      { v: D.gapMonthly, c: "#b8860b", l: t("\u00c9pargne personnelle", "Personal savings") },
+      { v: D.gapMonthly, c: "#c49a1a", l: t("\u00c9pargne personnelle", "Personal savings") },
     ].filter(i => i.v > 0);
     const total = Math.max(1, items.reduce((s, i) => s + i.v, 0));
 
@@ -461,8 +461,8 @@ function renderExpertReport(
       }
       // Total line
       const ptsStr = data.map((d, i) => sx2(i) + "," + sy2(d.tot)).join(" ");
-      svg2 += '<polygon points="' + ptsStr + ' ' + sx2(data.length - 1) + ',' + (PT2 + CH2) + ' ' + PL + ',' + (PT2 + CH2) + '" fill="rgba(184,134,11,0.12)"/>';
-      svg2 += '<polyline points="' + ptsStr + '" fill="none" stroke="#b8860b" stroke-width="2" stroke-linejoin="round"/>';
+      svg2 += '<polygon points="' + ptsStr + ' ' + sx2(data.length - 1) + ',' + (PT2 + CH2) + ' ' + PL + ',' + (PT2 + CH2) + '" fill="rgba(196,154,26,0.12)"/>';
+      svg2 += '<polyline points="' + ptsStr + '" fill="none" stroke="#c49a1a" stroke-width="2" stroke-linejoin="round"/>';
       // Retirement marker
       const ri = ages.indexOf(D.retAge);
       if (ri >= 0) {
@@ -489,7 +489,7 @@ function renderExpertReport(
         h += '<tr style="border-bottom:1px solid #e8e4db">'
           + '<td style="padding:8px;font-family:\'JetBrains Mono\',monospace;font-weight:600">' + row.age + '</td>'
           + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#b91c1c">' + f$(row.p25) + '</td>'
-          + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#b8860b">' + f$(row.p50) + '</td>'
+          + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#c49a1a">' + f$(row.p50) + '</td>'
           + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#1a7a4c">' + f$(row.p75) + '</td>'
           + '</tr>';
       });
@@ -849,7 +849,7 @@ function renderExpertReport(
   // ═══ REFERRAL ═══
   h += '<div style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
   h += t("Partagez BuildFi avec un proche \u2014 15\u00a0% de rabais appliqu\u00e9 automatiquement via votre lien.", "Share BuildFi with someone you know \u2014 15% off applied automatically through your link.");
-  h += ' <a href="https://www.buildfi.ca" style="color:#C4944A;text-decoration:none;font-weight:600">buildfi.ca</a>';
+  h += ' <a href="https://www.buildfi.ca" style="color:#c49a1a;text-decoration:none;font-weight:600">buildfi.ca</a>';
   h += '</div>';
 
   // ── Footer ──────────────────────────────────────────────────────
@@ -857,9 +857,9 @@ function renderExpertReport(
     + 'buildfi.ca \u2014 ' + t("\u00c0 titre informatif seulement", "For informational purposes only")
     + ' \u2014 ' + REPORT_VERSION_EXPERT
     + '<div style="margin-top:6px;font-size:10px">'
-    + '<a href="https://www.buildfi.ca/conditions.html" style="color:#C4944A;text-decoration:none">' + t("Conditions","Terms") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/confidentialite.html" style="color:#C4944A;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/avis-legal.html" style="color:#C4944A;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
+    + '<a href="https://www.buildfi.ca/conditions.html" style="color:#c49a1a;text-decoration:none">' + t("Conditions","Terms") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/confidentialite.html" style="color:#c49a1a;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/avis-legal.html" style="color:#c49a1a;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
     + '</div></div>';
 
   h += '</div>'; // end report body

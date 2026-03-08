@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Simulateur de décaissement — BuildFi</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
 <script src="/logo.js"></script>
 <style>
 :root {
   --cream:#faf8f4; --sand:#f0ece3; --card:#ffffff;
   --navy:#1a2744; --navy-mid:#2c3e6b;
-  --gold:#b8860b; --gold-light:#d4a520; --gold-wash:rgba(184,134,11,0.08); --gold-border:rgba(184,134,11,0.28);
+  --gold:#c49a1a; --gold-light:#d4af37; --gold-wash:rgba(196,154,26,0.08); --gold-border:rgba(196,154,26,0.28);
   --green:#1a7a4c; --green-wash:rgba(26,122,76,0.08); --green-border:rgba(26,122,76,0.28);
   --red:#b91c1c; --red-wash:rgba(185,28,28,0.07); --red-border:rgba(185,28,28,0.22);
   --blue:#1e40af; --blue-wash:rgba(30,64,175,0.07);
@@ -324,8 +325,8 @@ input[type="range"]:focus{box-shadow:none}
     <div class="chart-title" lang-en>Portfolio trajectory (simplified estimate)</div>
     <div class="chart-wrap"><svg id="traj-chart" viewBox="0 0 600 200" width="100%"></svg></div>
     <div class="chart-legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#b8860b;"></div><span lang-fr>Médiane estimée</span><span lang-en>Estimated median</span></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#b8860b;opacity:0.3;width:20px;height:10px;border-radius:3px;"></div><span lang-fr>Fourchette probable (±30 %)</span><span lang-en>Probable range (±30%)</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c49a1a;"></div><span lang-fr>Médiane estimée</span><span lang-en>Estimated median</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c49a1a;opacity:0.3;width:20px;height:10px;border-radius:3px;"></div><span lang-fr>Fourchette probable (±30 %)</span><span lang-en>Probable range (±30%)</span></div>
     </div>
   </div>
 
@@ -417,7 +418,7 @@ function gradeFromSucc(pct) {
 function gradeColor(g) {
   if (g==="A+"||g==="A") return "#1a7a4c";
   if (g==="B+"||g==="B") return "#1e40af";
-  if (g==="C+"||g==="C") return "#b8860b";
+  if (g==="C+"||g==="C") return "#c49a1a";
   return "#b91c1c";
 }
 function cardClass(pct) {
@@ -585,8 +586,8 @@ function drawTrajChart(traj, startAge, portfolio) {
     axisLabels += '<text x="'+ xp(i) +'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#999">'+(startAge+i)+'</text>';
   }
 
-  var svg = '<polygon points="'+ optLine +" "+ pessPts +'" fill="#b8860b" fill-opacity="0.12"/>' +
-    '<polyline points="'+ medLine +'" fill="none" stroke="#b8860b" stroke-width="2.5"/>' +
+  var svg = '<polygon points="'+ optLine +" "+ pessPts +'" fill="#c49a1a" fill-opacity="0.12"/>' +
+    '<polyline points="'+ medLine +'" fill="none" stroke="#c49a1a" stroke-width="2.5"/>' +
     axisLabels +
     '<text x="'+ PL +'" y="'+(PT+8)+'" font-size="9" fill="#999">'+ fmtK(maxP, LANG==="fr") +'</text>' +
     '<text x="'+ PL +'" y="'+(PT+chartH)+'" font-size="9" fill="#999">0 $</text>';

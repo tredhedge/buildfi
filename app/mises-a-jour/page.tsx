@@ -7,7 +7,7 @@
 import { useState } from "react";
 
 const MARINE = "#1a2744";
-const GOLD = "#b8860b";
+const GOLD = "#c49a1a";
 const BG = "#faf8f4";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";

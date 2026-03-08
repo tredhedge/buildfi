@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="description" content="Planificateur de retraite FIRE canadien avec simulation Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif}#root{min-height:100vh}
+<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c49a1a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif}#root{min-height:100vh}
 .fire-content [style*="overflow"] table thead th,.fire-content [style*="overflow"] table thead td,.fire-content [style*="overflow"] table thead tr{position:sticky;top:0;z-index:2;background:#2c2820;box-shadow:0 1px 0 #443e34}
 
 
@@ -18,7 +18,7 @@
 .kpi-tip:hover::after{opacity:1;visibility:visible;transition:opacity .25s ease 1.2s,visibility 0s linear 0s}
 
 .sb-tip{position:relative}
-.sb-tip .sb-tip-icon{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:50%;background:rgba(192,138,78,0.15);color:#c4944a;font-size:9px;cursor:help;margin-left:4px;vertical-align:middle;flex-shrink:0}
+.sb-tip .sb-tip-icon{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:50%;background:rgba(192,138,78,0.15);color:#c49a1a;font-size:9px;cursor:help;margin-left:4px;vertical-align:middle;flex-shrink:0}
 .sb-tip .sb-tip-box{position:absolute;left:0;top:100%;background:#2c2820;color:#c8c4bf;border:1px solid #3e3830;border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.5;width:270px;z-index:9999;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .2s ease .8s,visibility 0s linear .8s;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 .sb-tip:hover .sb-tip-box{opacity:1;visibility:visible;transition:opacity .2s ease .8s,visibility 0s linear 0s}
 .fire-content [role="status"]{color:var(--text-secondary,#a09a94)}
@@ -814,7 +814,7 @@ if (typeof window !== "undefined" && window.__PLANNER_CONFIG) {
   Object.assign(CFG, window.__PLANNER_CONFIG);
 }
 
-const CL_DARK = { bg: "#242018", cd: "#2c2820", s2: "#353028", bd: "#443e34", bd2: "#5a5348", tx: "#d4cec4", al: "#eee8dd", dm: "#9a8e80", ac: "#c4944a", bl: "#5a94c4", gn: "#3d9a5e", rd: "#c45050", or: "#c48a40", go: "#b8a440", pr: "#7a60b0", tl: "#48a898", gd: "#2e6840", cp: "#8b5cf6" };
+const CL_DARK = { bg: "#242018", cd: "#2c2820", s2: "#353028", bd: "#443e34", bd2: "#5a5348", tx: "#d4cec4", al: "#eee8dd", dm: "#9a8e80", ac: "#c49a1a", bl: "#5a94c4", gn: "#3d9a5e", rd: "#c45050", or: "#c48a40", go: "#b8a440", pr: "#7a60b0", tl: "#48a898", gd: "#2e6840", cp: "#8b5cf6" };
 const CL_LIGHT = { bg: "#f4f0ea", cd: "#e8e4dc", s2: "#ddd8d0", bd: "#d0c8bc", bd2: "#b8b0a4", tx: "#2a2420", al: "#1a1610", dm: "#847e6e", ac: "#8a6a30", bl: "#3470a8", gn: "#2c7e44", rd: "#b83838", or: "#b07028", go: "#96842a", pr: "#6050a0", tl: "#309080", gd: "#206038", cp: "#7c3aed" };
 var CL = CL_DARK;
 // \u2550\u2550\u2550 Reusable Style Objects \u2550\u2550\u2550
@@ -6581,7 +6581,7 @@ var reportHTML = useMemo(function() {
 
   // Helpers
   var R = function(l, v) { return '<tr><td class="rl">' + l + '</td><td class="rv">' + v + '</td></tr>'; };
-  var KPI = function(v, l, c) { return '<div class="kpi" style="border-top:3px solid '+(c||'#c4944a')+'"><div class="kpi-v" style="color:'+(c||'#c4944a')+'">'+v+'</div><div class="kpi-l">'+l+'</div></div>'; };
+  var KPI = function(v, l, c) { return '<div class="kpi" style="border-top:3px solid '+(c||'#c49a1a')+'"><div class="kpi-v" style="color:'+(c||'#c49a1a')+'">'+v+'</div><div class="kpi-l">'+l+'</div></div>'; };
   var Sec = function(num, t) { return '<h3 class="sec'+(num>1?' pb':'')+'"><span class="sec-n">'+num+'</span>'+t+'</h3>'; };
   var Card = function(c) { return '<div class="cd">'+c+'</div>'; };
   var Ins = function(t) { return '<div class="insight">'+t+'</div>'; };
@@ -6628,10 +6628,10 @@ var reportHTML = useMemo(function() {
     '*{box-sizing:border-box;margin:0;padding:0}' +
     'body{font-family:"DM Sans",-apple-system,system-ui,sans-serif;max-width:820px;margin:0 auto;padding:24px 28px;color:#1a1a1a;font-size:'+(ess?'14':'13')+'px;line-height:1.6;background:#fff}' +
     '.mono{font-family:"JetBrains Mono",monospace;font-weight:500}' +
-    'h1{font-size:'+(ess?'30':'26')+'px;color:#c4944a;font-weight:800;letter-spacing:-.5px;line-height:1.2}' +
+    'h1{font-size:'+(ess?'30':'26')+'px;color:#c49a1a;font-weight:800;letter-spacing:-.5px;line-height:1.2}' +
     'h2{font-size:14px;color:#666;font-weight:400;margin-top:2px}' +
-    '.sec{font-size:13px;color:#c4944a;border-bottom:2px solid #c4944a;padding-bottom:4px;margin:20px 0 10px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px}' +
-    '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#c4944a;color:#fff;font-size:11px;font-weight:800;flex-shrink:0}' +
+    '.sec{font-size:13px;color:#c49a1a;border-bottom:2px solid #c49a1a;padding-bottom:4px;margin:20px 0 10px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px}' +
+    '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#c49a1a;color:#fff;font-size:11px;font-weight:800;flex-shrink:0}' +
     '.cd{border:1px solid #e8e0d4;border-radius:8px;padding:12px;background:#fefcf9;break-inside:avoid;margin-bottom:8px}' +
     'table{width:100%;border-collapse:collapse}' +
     '.rl{padding:5px 10px;color:#444;border-bottom:1px solid #f0ece4;font-size:11px}.rv{padding:5px 10px;font-weight:600;border-bottom:1px solid #f0ece4;font-size:11px;text-align:right;font-family:"JetBrains Mono",monospace}' +
@@ -6646,18 +6646,18 @@ var reportHTML = useMemo(function() {
     '.ai-block{background:#f7f5ff;border:1px solid #c8c0e8;border-left:4px solid #7c60b8;border-radius:6px;padding:12px 14px;font-size:11px;color:#333;margin:8px 0;break-inside:avoid}' +
     '.ai-badge{display:inline-block;background:#e8e0f8;color:#7c60b8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}.ai-block p{margin-top:4px;line-height:1.7}' +
     '.tbl{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0}' +
-    '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:#c4944a;background:#f9f7f2;border-bottom:2px solid #e8e0d4}.tbl th:first-child{text-align:left}' +
+    '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:#c49a1a;background:#f9f7f2;border-bottom:2px solid #e8e0d4}.tbl th:first-child{text-align:left}' +
     '.tbl td{padding:4px 6px;text-align:right;border-bottom:1px solid #f0ece4;font-family:"JetBrains Mono",monospace;font-size:10px}.tbl td:first-child{text-align:left;font-family:"DM Sans",sans-serif}' +
     '.tbl tr.ret{font-weight:700;background:#faf8f3}' +
     '.timeline{background:#f9f7f2;border:1px solid #e8e0d4;border-radius:8px;padding:12px;margin:10px 0}' +
     '.tl-item{display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid #f0ece4}.tl-item:last-child{border-bottom:none}' +
-    '.tl-age{background:#c4944a;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;min-width:36px;text-align:center;font-family:"JetBrains Mono",monospace}' +
+    '.tl-age{background:#c49a1a;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;min-width:36px;text-align:center;font-family:"JetBrains Mono",monospace}' +
     '.tl-txt{font-size:11px;color:#555}' +
     '.ft{text-align:center;margin-top:20px;padding-top:10px;border-top:1px solid #e0d8c8;font-size:9px;color:#aaa;line-height:1.8}' +
     '.disclaimer{margin-top:14px;padding:14px;background:#fdf3f3;border:1px solid #e8c8c8;border-radius:8px;font-size:9px;color:#777;line-height:1.7;text-align:center;break-inside:avoid}' +
-    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid #c4944a;margin-bottom:10px}' +
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid #c49a1a;margin-bottom:10px}' +
     '.hdr-right{text-align:right;font-size:11px;color:#666;line-height:1.8}' +
-    '.ver{background:#f5efe5;color:#c4944a;padding:2px 10px;border-radius:10px;font-size:9px;font-weight:800}' +
+    '.ver{background:#f5efe5;color:#c49a1a;padding:2px 10px;border-radius:10px;font-size:9px;font-weight:800}' +
     '.meth-p{font-size:11px;color:#555;line-height:1.8;margin-bottom:8px}' +
     '.meth-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}' +
     '.meth-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#666;padding:3px 6px;background:#f9f7f2;border-radius:4px;border:1px solid #f0ece4}' +
@@ -6716,7 +6716,7 @@ var reportHTML = useMemo(function() {
     h += '</div>';
     // Executive summary
     h += '<div class="cd" style="font-size:11px;line-height:1.8;color:#444">';
-    h += '<strong style="color:#c4944a">'+(fr?'Sommaire ex\u00e9cutif':'Executive summary')+'</strong><br/>';
+    h += '<strong style="color:#c49a1a">'+(fr?'Sommaire ex\u00e9cutif':'Executive summary')+'</strong><br/>';
     h += (fr?'Ce plan projette un taux de succ\u00e8s de <strong>'+Math.round(mc.succ*100)+'%</strong> sur '+nSim+' simulations Monte Carlo.':'This plan projects a <strong>'+Math.round(mc.succ*100)+'%</strong> success rate over '+nSim+' Monte Carlo simulations.');
     h += (fr?' Le patrimoine m\u00e9dian (P50) atteint <strong>'+f$(mc.rMedF||mc.medF)+'</strong> en dollars r\u00e9els \u00e0 l\u2019horizon.':' Median wealth (P50) reaches <strong>'+f$(mc.rMedF||mc.medF)+'</strong> in real dollars at horizon.');
     h += (fr?' Les prestations gouvernementales couvrent <strong>'+_replRatio+'%</strong> des d\u00e9penses':' Government benefits cover <strong>'+_replRatio+'%</strong> of spending');
@@ -6744,8 +6744,8 @@ var reportHTML = useMemo(function() {
 
   if (cOn) {
     h += '<div class="g2">';
-    h += '<div class="cd"><div style="font-weight:700;color:#c4944a;margin-bottom:6px;font-size:12px">'+(cName||(fr?"Titulaire":"Primary"))+'</div><table>'+R(fr?"\u00c2ge":"Age",age+(fr?" ans":" yrs"))+R(fr?"Retraite":"Retirement",retAge+(fr?" ans":" yrs"))+R(fr?"Salaire":"Salary",fD(sal))+R("REER/RRSP",fD(rrsp))+R("CELI/TFSA",fD(tfsa))+R("NR",fD(nr))+(exp&&(liraBal||0)>0?R("LIRA",fD(liraBal)):'')+R(fr?"Cotis./an":"Contrib./yr",fD(rrspC+tfsaC+nrC))+'</table></div>';
-    h += '<div class="cd"><div style="font-weight:700;color:#c4944a;margin-bottom:6px;font-size:12px">'+(cSpouseName||(fr?"Conjoint(e)":"Spouse"))+'</div><table>'+R(fr?"\u00c2ge":"Age",(cAge||age)+(fr?" ans":" yrs"))+R(fr?"Retraite":"Retirement",(cRetAge||retAge)+(fr?" ans":" yrs"))+(cSal?R(fr?"Salaire":"Salary",fD(cSal)):'')+R("REER/RRSP",fD(cRRSP||0))+R("CELI/TFSA",fD(cTFSA||0))+R("NR",fD(cNR||0))+'</table></div>';
+    h += '<div class="cd"><div style="font-weight:700;color:#c49a1a;margin-bottom:6px;font-size:12px">'+(cName||(fr?"Titulaire":"Primary"))+'</div><table>'+R(fr?"\u00c2ge":"Age",age+(fr?" ans":" yrs"))+R(fr?"Retraite":"Retirement",retAge+(fr?" ans":" yrs"))+R(fr?"Salaire":"Salary",fD(sal))+R("REER/RRSP",fD(rrsp))+R("CELI/TFSA",fD(tfsa))+R("NR",fD(nr))+(exp&&(liraBal||0)>0?R("LIRA",fD(liraBal)):'')+R(fr?"Cotis./an":"Contrib./yr",fD(rrspC+tfsaC+nrC))+'</table></div>';
+    h += '<div class="cd"><div style="font-weight:700;color:#c49a1a;margin-bottom:6px;font-size:12px">'+(cSpouseName||(fr?"Conjoint(e)":"Spouse"))+'</div><table>'+R(fr?"\u00c2ge":"Age",(cAge||age)+(fr?" ans":" yrs"))+R(fr?"Retraite":"Retirement",(cRetAge||retAge)+(fr?" ans":" yrs"))+(cSal?R(fr?"Salaire":"Salary",fD(cSal)):'')+R("REER/RRSP",fD(cRRSP||0))+R("CELI/TFSA",fD(cTFSA||0))+R("NR",fD(cNR||0))+'</table></div>';
     h += '</div>';
   } else {
     h += '<div class="g2">';
@@ -6765,7 +6765,7 @@ var reportHTML = useMemo(function() {
     if ((fhsaBal||0)>0) _alSlices.push({pct:fhsaBal,c:'#2aa198',l:'CELIAPP/FHSA'});
     var _alSvg='',_alAng=0,_alR=35,_alCx=45,_alCy=45;
     _alSlices.forEach(function(s){if(s.pct<=0)return;var a=(s.pct/totalBal)*Math.PI*2;var x1=_alCx+_alR*Math.sin(_alAng);var y1=_alCy-_alR*Math.cos(_alAng);_alAng+=a;var x2=_alCx+_alR*Math.sin(_alAng);var y2=_alCy-_alR*Math.cos(_alAng);var lf=a>Math.PI?1:0;_alSvg+='<path d="M'+_alCx+','+_alCy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+_alR+','+_alR+' 0 '+lf+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+s.c+'"/>';});
-    _alSvg+='<circle cx="'+_alCx+'" cy="'+_alCy+'" r="20" fill="#fff"/><text x="'+_alCx+'" y="'+(_alCy+4)+'" font-size="9" fill="#c4944a" font-weight="700" text-anchor="middle" font-family="JetBrains Mono,monospace">'+fD(totalBal)+'</text>';
+    _alSvg+='<circle cx="'+_alCx+'" cy="'+_alCy+'" r="20" fill="#fff"/><text x="'+_alCx+'" y="'+(_alCy+4)+'" font-size="9" fill="#c49a1a" font-weight="700" text-anchor="middle" font-family="JetBrains Mono,monospace">'+fD(totalBal)+'</text>';
     var _alLeg = '';
     _alSlices.forEach(function(s){if(s.pct<=0)return;_alLeg+='<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:8px;height:8px;border-radius:2px;background:'+s.c+'"></div>'+s.l+': <strong class="mono" style="font-size:11px">'+fD(s.pct)+'</strong> <span style="color:#999">('+Math.round(s.pct/totalBal*100)+'%)</span></div>';});
     h += '<div style="display:flex;align-items:center;gap:16px;margin:8px 0;padding:10px;background:#fefcf9;border:1px solid #e8e0d4;border-radius:8px;break-inside:avoid">';
@@ -6787,11 +6787,11 @@ var reportHTML = useMemo(function() {
   var bw=Math.max(2,Math.min(10,(svgW-70)/cd2.length-1));
   cd2.forEach(function(d,i){
     var x=62+i*(bw+1);var total=d.mp_total||0;var bH=(svgH-48)*(total/maxW);var y=svgH-24-bH;
-    if(ess){bars+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bH+'" fill="#c4944a" rx="1"/>';}
+    if(ess){bars+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bH+'" fill="#c49a1a" rx="1"/>';}
     else{var rr=(d.mp_rr||0)/Math.max(1,total)*bH;var tt=(d.mp_tf||0)/Math.max(1,total)*bH;bars+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+rr+'" fill="#4680c0" rx="1"/><rect x="'+x+'" y="'+(y+rr)+'" width="'+bw+'" height="'+tt+'" fill="#2a8c46" rx="1"/><rect x="'+x+'" y="'+(y+rr+tt)+'" width="'+bw+'" height="'+(bH-rr-tt)+'" fill="#b89830" rx="1"/>';}
     if(d.age%10===0||d.age===retAge)xLbl+='<text x="'+(x+bw/2)+'" y="'+(svgH-8)+'" font-size="8" fill="#777" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.age+'</text>';
   });
-  if(retAge>age){var rx=62+cd2.findIndex(function(d2){return d2.age>=retAge;})*(bw+1);rL='<line x1="'+rx+'" x2="'+rx+'" y1="10" y2="'+(svgH-24)+'" stroke="#c4944a" stroke-dasharray="3,2" stroke-width="1"/><text x="'+(rx+3)+'" y="16" font-size="8" fill="#c4944a" font-weight="700">'+(fr?"Retraite":"Ret.")+'</text>';}
+  if(retAge>age){var rx=62+cd2.findIndex(function(d2){return d2.age>=retAge;})*(bw+1);rL='<line x1="'+rx+'" x2="'+rx+'" y1="10" y2="'+(svgH-24)+'" stroke="#c49a1a" stroke-dasharray="3,2" stroke-width="1"/><text x="'+(rx+3)+'" y="16" font-size="8" fill="#c49a1a" font-weight="700">'+(fr?"Retraite":"Ret.")+'</text>';}
   h+='<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+svgW+' '+svgH+'" style="border:1px solid #e8e0d4;border-radius:8px;background:#fefcf9" role="img">'+yLbl+bars+rL+xLbl;
   if(!ess)h+='<rect x="'+(svgW-220)+'" y="3" width="6" height="6" fill="#4680c0" rx="1"/><text x="'+(svgW-210)+'" y="9" font-size="8" fill="#777">REER/RRSP</text><rect x="'+(svgW-165)+'" y="3" width="6" height="6" fill="#2a8c46" rx="1"/><text x="'+(svgW-155)+'" y="9" font-size="8" fill="#777">CELI/TFSA</text><rect x="'+(svgW-115)+'" y="3" width="6" height="6" fill="#b89830" rx="1"/><text x="'+(svgW-105)+'" y="9" font-size="8" fill="#777">NR/'+fr?'Autres':'Other'+'</text>';
   h+='</svg>';
@@ -6815,9 +6815,9 @@ var reportHTML = useMemo(function() {
     _fPts.forEach(function(d,i){ if(d.age%10===0||d.age===retAge) _fXL+='<text x="'+_fX(i)+'" y="'+(_fH-2)+'" font-size="8" fill="#777" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.age+'</text>'; });
     // Retirement line
     var _retI = _fPts.findIndex(function(d){return d.age>=retAge;});
-    var _fRetL = _retI >= 0 ? '<line x1="'+_fX(_retI)+'" x2="'+_fX(_retI)+'" y1="5" y2="'+(_fH-15)+'" stroke="#c4944a" stroke-dasharray="3,2" stroke-width="1"/>' : '';
+    var _fRetL = _retI >= 0 ? '<line x1="'+_fX(_retI)+'" x2="'+_fX(_retI)+'" y1="5" y2="'+(_fH-15)+'" stroke="#c49a1a" stroke-dasharray="3,2" stroke-width="1"/>' : '';
     h += '<div style="margin-top:10px"><div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px">'+(fr?'Trajectoire m\u00e9diane du patrimoine (r\u00e9el)':'Median wealth trajectory (real)')+'</div>';
-    h += '<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+_fW+' '+_fH+'" style="border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9">'+_fYL+_fRetL+'<path d="'+_p50+'" fill="none" stroke="#c4944a" stroke-width="2"/>'+_fXL+'</svg></div>';
+    h += '<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+_fW+' '+_fH+'" style="border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9">'+_fYL+_fRetL+'<path d="'+_p50+'" fill="none" stroke="#c49a1a" stroke-width="2"/>'+_fXL+'</svg></div>';
   }
 
   // Milestone table
@@ -6826,7 +6826,7 @@ var reportHTML = useMemo(function() {
   milestones.forEach(function(ma){
     var pd = mc.pD.find(function(d){return d.age===ma;});
     if(!pd)return;
-    if(ess){msRows+='<tr><td>'+ma+(fr?' ans':' yrs')+'</td><td class="mono" style="text-align:right;font-weight:700;color:#c4944a">'+f$(pd.mp_total||0)+'</td></tr>';}
+    if(ess){msRows+='<tr><td>'+ma+(fr?' ans':' yrs')+'</td><td class="mono" style="text-align:right;font-weight:700;color:#c49a1a">'+f$(pd.mp_total||0)+'</td></tr>';}
     else{msRows+='<tr'+(ma===retAge?' class="ret"':'')+'><td>'+ma+'</td><td style="color:#4680c0">'+fD(pd.mp_rr||0)+'</td><td style="color:#2a8c46">'+fD(pd.mp_tf||0)+'</td><td style="color:#b89830">'+fD(pd.mp_nr||0)+'</td>'+(exp?'<td>'+fD((pd.mp_lira||0)+(pd.mp_dc||0)+(pd.mp_pe||0)+(pd.mp_pm||0)+(pd.mp_fhsa||0))+'</td>':'')+'<td style="font-weight:700">'+fD(pd.mp_total||0)+'</td>'+(exp?'<td>'+fD(pd.rmp_total||0)+'</td>':'')+'</tr>';}
   });
   if(ess){h+='<table class="tbl" style="margin-top:8px"><tbody>'+msRows+'</tbody></table>';}
@@ -6860,7 +6860,7 @@ var reportHTML = useMemo(function() {
       var x=62+i*(_iBW+2),sp=r.spend||0,bH=(_iH-36)*(sp/_iMax),y=_iH-15-bH;
       var q=(r.rrq||0)/Math.max(1,sp)*bH,o=(r.psv||0)/Math.max(1,sp)*bH,g=(r.srg||r.gis||0)/Math.max(1,sp)*bH,pe=(r.pen||r.pt||0)/Math.max(1,sp)*bH,w=bH-q-o-g-pe;
       var cy=y;
-      if(w>0){_iB+='<rect x="'+x+'" y="'+cy+'" width="'+_iBW+'" height="'+w+'" fill="#c4944a" rx="1"/>';cy+=w;}
+      if(w>0){_iB+='<rect x="'+x+'" y="'+cy+'" width="'+_iBW+'" height="'+w+'" fill="#c49a1a" rx="1"/>';cy+=w;}
       if(pe>0){_iB+='<rect x="'+x+'" y="'+cy+'" width="'+_iBW+'" height="'+pe+'" fill="#4680c0" rx="1"/>';cy+=pe;}
       if(g>0){_iB+='<rect x="'+x+'" y="'+cy+'" width="'+_iBW+'" height="'+g+'" fill="#2aa198" rx="1"/>';cy+=g;}
       if(o>0){_iB+='<rect x="'+x+'" y="'+cy+'" width="'+_iBW+'" height="'+o+'" fill="#2a8c46" rx="1"/>';cy+=o;}
@@ -6870,7 +6870,7 @@ var reportHTML = useMemo(function() {
       if(r.age%5===0||r.age===retAge)_iL+='<text x="'+(x+_iBW/2)+'" y="'+(_iH-5)+'" font-size="8" fill="#777" text-anchor="middle" font-family="JetBrains Mono,monospace">'+r.age+'</text>';
     });
     var _iYL='';[0,.5,1].forEach(function(f4){var yy=_iH-18-(_iH-36)*f4;_iYL+='<line x1="60" x2="'+_iW+'" y1="'+yy+'" y2="'+yy+'" stroke="#e8e0d4" stroke-width=".5"/><text x="56" y="'+(yy+3)+'" font-size="8" fill="#777" text-anchor="end" font-family="JetBrains Mono,monospace">'+fD(Math.round(_iMax*f4))+'</text>';});
-    var _iLeg='<g transform="translate(62,4)"><rect width="6" height="6" fill="#c4944a" rx="1"/><text x="8" y="6" font-size="8" fill="#777">'+(fr?'Retraits':'Withdr.')+'</text><rect x="52" width="6" height="6" fill="#7c60b8" rx="1"/><text x="60" y="6" font-size="8" fill="#777">'+qppLbl+'</text><rect x="86" width="6" height="6" fill="#2a8c46" rx="1"/><text x="94" y="6" font-size="8" fill="#777">PSV/OAS</text><rect x="136" width="6" height="6" fill="#2aa198" rx="1"/><text x="144" y="6" font-size="8" fill="#777">SRG/GIS</text><rect x="184" width="6" height="6" fill="#4680c0" rx="1"/><text x="192" y="6" font-size="8" fill="#777">Pension</text><line x1="224" x2="236" y1="4" y2="4" stroke="#cc4444" stroke-width="2"/><text x="240" y="6" font-size="8" fill="#777">'+(fr?'Imp\u00f4ts':'Tax')+'</text></g>';
+    var _iLeg='<g transform="translate(62,4)"><rect width="6" height="6" fill="#c49a1a" rx="1"/><text x="8" y="6" font-size="8" fill="#777">'+(fr?'Retraits':'Withdr.')+'</text><rect x="52" width="6" height="6" fill="#7c60b8" rx="1"/><text x="60" y="6" font-size="8" fill="#777">'+qppLbl+'</text><rect x="86" width="6" height="6" fill="#2a8c46" rx="1"/><text x="94" y="6" font-size="8" fill="#777">PSV/OAS</text><rect x="136" width="6" height="6" fill="#2aa198" rx="1"/><text x="144" y="6" font-size="8" fill="#777">SRG/GIS</text><rect x="184" width="6" height="6" fill="#4680c0" rx="1"/><text x="192" y="6" font-size="8" fill="#777">Pension</text><line x1="224" x2="236" y1="4" y2="4" stroke="#cc4444" stroke-width="2"/><text x="240" y="6" font-size="8" fill="#777">'+(fr?'Imp\u00f4ts':'Tax')+'</text></g>';
     h+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px">'+(fr?'Sources de revenus par \u00e2ge':'Income sources by age')+'</div>';
     h+='<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+_iW+' '+_iH+'" style="border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9">'+_iYL+_iB+_iL+_iLeg+'</svg>';
   }
@@ -6891,7 +6891,7 @@ var reportHTML = useMemo(function() {
     h += '<div class="g2" style="margin-top:8px">';
     h += '<div class="cd"><table>'+R(qppLbl+(fr?" \u00e0 ":" at ")+qppAge+(fr?" ans":""),fD(qppM2)+"/m")+R("PSV/OAS"+(fr?" \u00e0 ":" at ")+oasAge+(fr?" ans":""),fD(oasM2)+"/m")+(penType!=="none"?R("Pension",penType.toUpperCase()+(penType==="db"?": "+fD(penM)+"/m":": "+fD(dcBal))):'')+'</table></div>';
     if (cOn) {
-      h += '<div class="cd"><div style="font-weight:600;color:#c4944a;font-size:11px;margin-bottom:4px">'+(fr?"Conjoint(e)":"Spouse")+'</div><table>'+R(qppLbl+(fr?" \u00e0 ":" at ")+(cQppAge||65)+(fr?" ans":""),fD(cQppM2)+"/m")+R("PSV/OAS"+(fr?" \u00e0 ":" at ")+(cOasAge||65)+(fr?" ans":""),fD(cOasM2)+"/m")+'</table></div>';
+      h += '<div class="cd"><div style="font-weight:600;color:#c49a1a;font-size:11px;margin-bottom:4px">'+(fr?"Conjoint(e)":"Spouse")+'</div><table>'+R(qppLbl+(fr?" \u00e0 ":" at ")+(cQppAge||65)+(fr?" ans":""),fD(cQppM2)+"/m")+R("PSV/OAS"+(fr?" \u00e0 ":" at ")+(cOasAge||65)+(fr?" ans":""),fD(cOasM2)+"/m")+'</table></div>';
     } else {
       h += '<div class="cd"><table>'+R(fr?"Rev. gouv. total":"Total gov. income",'<strong>'+fD(Math.round(govM))+'</strong>/m')+R(fr?"Couverture":"Coverage",Math.round(covRatio*100)+'% '+(fr?'des d\u00e9penses':'of spending'))+R(fr?"\u00c9cart \u00e0 combler":"Gap to fill",fD(Math.round(gapM))+'/m')+'</table></div>';
     }
@@ -6920,7 +6920,7 @@ var reportHTML = useMemo(function() {
     var _mB=Math.min(_hB-1,Math.max(0,Math.floor(((mc.rMedF||mc.medF)-Math.max(0,_hMn))/_hBW2)));
     _hCt.forEach(function(c,i){var bH=_hPk>0?(c/_hPk)*(_hSH-20):0;var x=40+i*_hBrW;var cl=i<=_mB?'#b89830':'#2a8c46';if(i*_hBW2+Math.max(0,_hMn)<=0)cl='#cc4444';_hBrs+='<rect x="'+x+'" y="'+(_hSH-10-bH)+'" width="'+Math.max(1,_hBrW-1)+'" height="'+bH+'" fill="'+cl+'" rx="1" opacity=".8"/>';});
     var _mX2=40+_mB*_hBrW+_hBrW/2;
-    _hBrs+='<line x1="'+_mX2+'" x2="'+_mX2+'" y1="5" y2="'+(_hSH-10)+'" stroke="#c4944a" stroke-width="2" stroke-dasharray="3,2"/><text x="'+(_mX2+4)+'" y="12" font-size="8" fill="#c4944a" font-weight="700">P50</text>';
+    _hBrs+='<line x1="'+_mX2+'" x2="'+_mX2+'" y1="5" y2="'+(_hSH-10)+'" stroke="#c49a1a" stroke-width="2" stroke-dasharray="3,2"/><text x="'+(_mX2+4)+'" y="12" font-size="8" fill="#c49a1a" font-weight="700">P50</text>';
     h+='<div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px">'+(fr?'Distribution MC \u2014 patrimoine final ('+nSim+' sc\u00e9narios)':'MC Distribution \u2014 final wealth ('+nSim+' scenarios)')+'</div>';
     h+='<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+_hSW+' '+_hSH+'" style="border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9"><text x="60" y="'+(_hSH-1)+'" font-size="8" fill="#777" font-family="JetBrains Mono,monospace">'+fD(Math.max(0,Math.round(_hMn)))+'</text><text x="'+(_hSW/2)+'" y="'+(_hSH-1)+'" font-size="8" fill="#777" text-anchor="middle" font-family="JetBrains Mono,monospace">'+(fr?'Patrimoine final ($)':'Final wealth ($)')+'</text><text x="'+(_hSW-5)+'" y="'+(_hSH-1)+'" font-size="8" fill="#777" font-family="JetBrains Mono,monospace" text-anchor="end">'+fD(Math.round(_hMx))+'</text>'+_hBrs+'</svg>';
     // Percentile row (Expert)
@@ -7073,7 +7073,7 @@ var reportHTML = useMemo(function() {
       var cf=(pr.rm||0)-mp-(pr.pt+pr.ins+pr.ox)/12;
       var _eqPct = pr.val > 0 ? Math.round(eq/pr.val*100) : 0;
       var _cfClr = cf >= 0 ? '#2a8c46' : '#cc4444';
-      h+='<div class="cd" style="border-left:4px solid '+(cf>=0?'#2a8c46':'#b89830')+'"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-weight:700;color:#c4944a;font-size:12px">'+(pr.nm||(fr?"Propri\u00e9t\u00e9 ":"Property ")+(i+1))+'</div><div style="font-size:10px;color:#888">'+(fr?"\u00c9quit\u00e9: ":"Equity: ")+'<strong style="color:#c4944a">'+_eqPct+'%</strong></div></div>';
+      h+='<div class="cd" style="border-left:4px solid '+(cf>=0?'#2a8c46':'#b89830')+'"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-weight:700;color:#c49a1a;font-size:12px">'+(pr.nm||(fr?"Propri\u00e9t\u00e9 ":"Property ")+(i+1))+'</div><div style="font-size:10px;color:#888">'+(fr?"\u00c9quit\u00e9: ":"Equity: ")+'<strong style="color:#c49a1a">'+_eqPct+'%</strong></div></div>';
       h+='<div class="g4"><table>'+R(fr?"Valeur":"Value",'<strong>'+fD(pr.val)+'</strong>')+R(fr?"\u00c9quit\u00e9":"Equity",fD(eq))+'</table><table>'+R(fr?"Hypoth\u00e8que":"Mortgage",fD(pr.mb))+R(fr?"Paiement":"Payment",fD(Math.round(mp))+"/m")+'</table><table>'+R(fr?"Loyer":"Rent",pr.rm?fD(pr.rm)+"/m":"\u2014")+R("Cashflow",'<span style="color:'+_cfClr+'">'+fD(Math.round(cf))+"/m</span>")+'</table><table>'+R(fr?"Appr.":"Appr.",pc(pr.ri)+(fr?"/an":"/yr"))+(pr.sa>0?R(fr?"Vente \u00e0":"Sale at",pr.sa+(fr?" ans":" yrs")):'')+'</table></div></div>';
     });
   }
@@ -7089,7 +7089,7 @@ var reportHTML = useMemo(function() {
     h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=200?(fr?'Aucune':'None'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>',fr?'Ruine P5':'Ruin P5',(mc.p5Ruin||999)>=200?'#2a8c46':'#cc4444');
     h += '</div>';
     if (mc.gkOn) {
-      h+=Card('<div style="font-weight:700;color:#c4944a;font-size:12px;margin-bottom:6px">Guyton-Klinger</div><div class="g4"><table>'+R(fr?"Baisses moy.":"Avg cuts",Math.round(mc.gkAvgCuts||0))+R(fr?"Hausses moy.":"Avg raises",Math.round(mc.gkAvgRaises||0))+'</table><table>'+R(fr?"Facteur min.":"Min factor",((mc.gkAvgMinFactor||1)*100).toFixed(0)+"%")+R(fr?"S\u00e9rie max":"Max streak",Math.round(mc.gkAvgMaxStreak||0))+'</table></div>');
+      h+=Card('<div style="font-weight:700;color:#c49a1a;font-size:12px;margin-bottom:6px">Guyton-Klinger</div><div class="g4"><table>'+R(fr?"Baisses moy.":"Avg cuts",Math.round(mc.gkAvgCuts||0))+R(fr?"Hausses moy.":"Avg raises",Math.round(mc.gkAvgRaises||0))+'</table><table>'+R(fr?"Facteur min.":"Min factor",((mc.gkAvgMinFactor||1)*100).toFixed(0)+"%")+R(fr?"S\u00e9rie max":"Max streak",Math.round(mc.gkAvgMaxStreak||0))+'</table></div>');
     }
     var _riskObs = [];
     if ((mc.rVar5||mc.var5) > totalBal * 2) _riskObs.push(fr?'Le 5e percentile de richesse ('+f$(mc.rVar5||mc.var5)+') demeure sup\u00e9rieur au double du capital initial, indiquant une robustesse structurelle.':'The 5th percentile wealth ('+f$(mc.rVar5||mc.var5)+') remains above double the initial capital, indicating structural robustness.');
@@ -7134,7 +7134,7 @@ var reportHTML = useMemo(function() {
 
   // Notes
   if (cNotes) {
-    h += '<div style="margin-top:10px"><div style="font-size:11px;font-weight:700;color:#c4944a;margin-bottom:4px">Notes</div><div class="cd" style="white-space:pre-line;font-size:10px;line-height:1.7">'+cNotes.replace(/</g,"&lt;")+'</div></div>';
+    h += '<div style="margin-top:10px"><div style="font-size:11px;font-weight:700;color:#c49a1a;margin-bottom:4px">Notes</div><div class="cd" style="white-space:pre-line;font-size:10px;line-height:1.7">'+cNotes.replace(/</g,"&lt;")+'</div></div>';
   }
 
   // Disclaimer
@@ -15695,7 +15695,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 
 }catch(e){
   var _errDiv = document.getElementById("root");
-  _errDiv.innerHTML='<div style="padding:40px;font-family:"DM Sans",system-ui;max-width:600px;margin:0 auto"><h2 style="color:#cc4444">\u26a0\ufe0f Erreur / Error</h2><p style="color:#666;margin:12px 0">Une erreur est survenue. Essayez de recharger la page.<br/>An error occurred. Try reloading the page.</p><button onclick="location.reload()" style="padding:10px 24px;background:#c4944a;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-weight:700">\ud83d\udd04 Recharger / Reload</button><details style="margin-top:20px;font-size:11px;color:#888"><summary>Technical details</summary><pre style="margin-top:8px;padding:12px;background:#f5f5f5;border-radius:4px;overflow:auto;font-size:10px;max-height:300px">'+e.stack+'</pre></details></div>';
+  _errDiv.innerHTML='<div style="padding:40px;font-family:"DM Sans",system-ui;max-width:600px;margin:0 auto"><h2 style="color:#cc4444">\u26a0\ufe0f Erreur / Error</h2><p style="color:#666;margin:12px 0">Une erreur est survenue. Essayez de recharger la page.<br/>An error occurred. Try reloading the page.</p><button onclick="location.reload()" style="padding:10px 24px;background:#c49a1a;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-weight:700">\ud83d\udd04 Recharger / Reload</button><details style="margin-top:20px;font-size:11px;color:#888"><summary>Technical details</summary><pre style="margin-top:8px;padding:12px;background:#f5f5f5;border-radius:4px;overflow:auto;font-size:10px;max-height:300px">'+e.stack+'</pre></details></div>';
 }
 </script>
 <script>

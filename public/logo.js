@@ -2,23 +2,31 @@
 // Usage: <script src="/logo.js"></script>
 // Then call: logoSVG("lg","light") or logoSVG("sm","dark")
 // Sizes: "lg" (1.2x), "md" (0.85x), "sm" (0.55x)
-// Contexts: "light" (dark text), "dark" (cream text)
+// Contexts: "light" (navy blocks on cream/white bg), "dark" (cream blocks on navy bg)
+//
+// Logo: 3 stacking blocks (foundation → building → independence)
+// Font: Plus Jakarta Sans 700
+// Colors: navy #1a2744, gold #c49a1a, cream #faf8f4
 
 function logoSVG(size, context) {
   var isDark = context === "dark";
-  var tFill = isDark ? "#F0E4D4" : "#1A1A1A";
+  var blockFill = isDark ? "#faf8f4" : "#1a2744";
+  var midOpacity = isDark ? "0.40" : "0.50";
+  var textFill = isDark ? "#faf8f4" : "#1a2744";
+  var goldFill = "#c49a1a";
+
+  // Scale factors
   var s = size === "lg" ? 1.2 : size === "md" ? 0.85 : 0.55;
-  var w = Math.round(180 * s);
+  var w = Math.round(270 * s);
   var h = Math.round(52 * s);
-  var uid = "emb" + size + Math.random().toString(36).slice(2, 6);
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 180 52" style="display:block">'
-    + '<defs><linearGradient id="' + uid + '" x1="0" y1="1" x2="0" y2="0">'
-    + '<stop offset="0%" stop-color="#C45A2C"/><stop offset="100%" stop-color="#E8A84C"/>'
-    + '</linearGradient></defs>'
-    + '<path d="M14 46 C14 46 8 30 14 18 C20 6 26 12 26 22 C26 12 32 0 38 10 C44 22 38 32 38 32" '
-    + 'stroke="url(#' + uid + ')" stroke-width="3" fill="none" stroke-linecap="round"/>'
-    + '<text x="48" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" '
-    + 'fill="' + tFill + '" letter-spacing="-1.2">build</text>'
-    + '<text x="131" y="36" font-family="DM Sans,sans-serif" font-size="32" font-weight="800" '
-    + 'fill="url(#' + uid + ')" letter-spacing="-1.2">fi</text></svg>';
+
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 270 52" style="display:block">'
+    + '<g transform="translate(0,2)">'
+    + '<rect x="0" y="34" width="25" height="7" rx="1.8" fill="' + blockFill + '"/>'
+    + '<rect x="3.5" y="23.5" width="23.5" height="7" rx="1.8" fill="' + blockFill + '" opacity="' + midOpacity + '"/>'
+    + '<rect x="7" y="13" width="22" height="7" rx="1.8" fill="' + goldFill + '"/>'
+    + '</g>'
+    + '<text x="42" y="41" font-family="\'Plus Jakarta Sans\',sans-serif" font-size="35" font-weight="700" letter-spacing="-0.6">'
+    + '<tspan fill="' + textFill + '">build</tspan><tspan fill="' + goldFill + '">fi</tspan>'
+    + '</text></svg>';
 }

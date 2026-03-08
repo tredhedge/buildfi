@@ -1,6 +1,6 @@
 "use client";
 // /components/ErrorBoundary.tsx — Reusable React error boundary
-// BuildFi brand: #faf8f4, #1a2744, #C4944A
+// BuildFi brand: #faf8f4, #1a2744, #c49a1a
 
 import { Component, ReactNode } from "react";
 
@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           </p>
           <p style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>
             Rechargez la page ou contactez-nous à{" "}
-            <a href="mailto:support@buildfi.ca" style={{ color: "#C4944A", textDecoration: "none" }}>
+            <a href="mailto:support@buildfi.ca" style={{ color: "#c49a1a", textDecoration: "none" }}>
               support@buildfi.ca
             </a>
           </p>
@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             onClick={() => window.location.reload()}
             style={{
               padding: "10px 24px",
-              background: "#C4944A",
+              background: "#c49a1a",
               color: "#fff",
               fontSize: 14,
               fontWeight: 600,

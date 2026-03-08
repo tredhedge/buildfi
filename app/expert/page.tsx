@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 // ── Expert Kit colors ──────────────────────────────────────────────
 const EK = {
   bg: "#faf8f4", card: "#ffffff", sable: "#e8e4db",
-  border: "#d4cec4", marine: "#1a2744", gold: "#b8860b",
+  border: "#d4cec4", marine: "#1a2744", gold: "#c49a1a",
   tx: "#1a1208", txDim: "#666", txMuted: "#999",
   green: "#1a7a4c", red: "#b91c1c", cream: "#faf8f4",
 };
@@ -104,7 +104,7 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
         </div>
 
         {/* Padlock icon */}
-        <div style={{ margin: "0 auto 16px", width: 48, height: 48, borderRadius: 12, background: "rgba(184,134,11,.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ margin: "0 auto 16px", width: 48, height: 48, borderRadius: 12, background: "rgba(196,154,26,.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
@@ -445,7 +445,7 @@ function PortalContent() {
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                     <div style={{
                       width: 40, height: 40, borderRadius: 10,
-                      background: r.type === "bilan" ? "rgba(26,39,68,0.08)" : "rgba(184,134,11,0.08)",
+                      background: r.type === "bilan" ? "rgba(26,39,68,0.08)" : "rgba(196,154,26,0.08)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 18, color: r.type === "bilan" ? EK.marine : EK.gold,
                     }}>

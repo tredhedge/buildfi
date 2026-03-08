@@ -25,7 +25,7 @@ const DK = {
   bg: "#242018", card: "#2c2820", s2: "#353028",
   border: "#443e34", borderLight: "#5a5348",
   tx: "#d4cec4", txDim: "#9a8e80", txMuted: "#6e6458",
-  accent: "#c4944a", accentBg: "rgba(196,148,74,.1)",
+  accent: "#c49a1a", accentBg: "rgba(196,154,26,.1)",
   red: "#c45050", redBg: "rgba(196,80,80,.08)",
   green: "#3d9a5e", greenBg: "rgba(61,154,94,.08)",
   blue: "#5a94c4", blueBg: "rgba(90,148,196,.08)",
@@ -830,7 +830,7 @@ export default function DebtTool() {
         const monthlyInt = d.bal * (d.rate || 0) / 12;
 
         return (
-          <Card key={i} ref={(el) => { debtCardRefs.current[i] = el; }} style={{ borderLeft: `4px solid ${severityColor(d.rate)}`, padding: 12, boxShadow: highlightDebt === i ? "0 0 0 3px rgba(184,134,11,.35)" : "none", transition: "box-shadow .3s" }}>
+          <Card key={i} ref={(el) => { debtCardRefs.current[i] = el; }} style={{ borderLeft: `4px solid ${severityColor(d.rate)}`, padding: 12, boxShadow: highlightDebt === i ? "0 0 0 3px rgba(196,154,26,.35)" : "none", transition: "box-shadow .3s" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                 {coupleOn && (

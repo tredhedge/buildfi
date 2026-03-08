@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FONT = "'Helvetica Neue',Helvetica,Arial,sans-serif";
 const BG = "#FEFCF9";
 const DARK = "#1A1208";
-const GOLD = "#C4944A";
+const GOLD = "#c49a1a";
 const GRAY = "#666666";
 const BORDER = "#E8E0D4";
 const CARD_BG = "#F8F4EE";
@@ -90,8 +90,8 @@ function buildEmailHTML(params: {
     tierLabel: fr ? `Bilan ${tierName}` : `${tierName} Assessment`,
     successLabel: fr ? `Taux de r\u00e9ussite\u00a0: ${successPct}\u00a0%` : `Success rate: ${successPct}%`,
     bodyP1: fr
-      ? "Votre bilan de retraite personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
-      : "Your personalized retirement assessment is ready. Click the button below to view it.",
+      ? "Votre bilan personnalis\u00e9 est pr\u00eat. Cliquez le bouton ci-dessous pour le consulter."
+      : "Your personalized assessment is ready. Click the button below to view it.",
     // E-7: "Monte Carlo" removed — replaced with "scénarios"
     bodyP2: fr
       ? "Ce rapport est bas\u00e9 sur 5\u00a0000 sc\u00e9narios de votre situation financi\u00e8re. Chaque dollar provient directement du moteur de calcul\u00a0\u2014\u00a0aucune estimation approximative."

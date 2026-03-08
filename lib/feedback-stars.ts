@@ -9,7 +9,7 @@ export function buildStarRatingBlock(feedbackToken: string, fr: boolean): string
   let h = '<style>'
     + '.bf-star{display:inline-block;font-size:32px;color:#d4cec4;text-decoration:none;'
     + 'transition:color .15s;cursor:pointer;padding:0 4px;line-height:1}'
-    + '.bf-star:hover,.bf-star:hover~.bf-star{color:#b8860b}'
+    + '.bf-star:hover,.bf-star:hover~.bf-star{color:#c49a1a}'
     + '</style>';
   h += '<div style="text-align:center;padding:28px 0;border-top:1px solid #e8e4db;margin:20px 0 28px" class="no-print">';
   h += '<div style="font-size:14px;color:#1a1208;font-weight:600;margin-bottom:14px">';

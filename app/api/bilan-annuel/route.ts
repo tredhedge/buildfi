@@ -243,9 +243,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
 <div class="container">
 
 <!-- Header -->
-<div style="text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #b8860b">
+<div style="text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #c49a1a">
   <div style="font-size:24px;font-weight:800;color:#1a2744;font-family:'Newsreader',serif">buildfi.ca</div>
-  <div style="font-size:11px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin:4px 0 16px">
+  <div style="font-size:11px;color:#c49a1a;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin:4px 0 16px">
     ${fr ? "Bilan Annuel" : "Annual Assessment"} ${year}
   </div>
   <div style="font-size:13px;color:#666">
@@ -262,7 +262,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
       fr ? "Taux de réussite" : "Success rate",
       `${successPct}%`,
       prevPct !== null ? `${deltaPct >= 0 ? "+" : ""}${deltaPct} pts` : undefined,
-      successPct >= 80 ? "#1a7a4c" : successPct >= 60 ? "#b8860b" : "#b91c1c"
+      successPct >= 80 ? "#1a7a4c" : successPct >= 60 ? "#c49a1a" : "#b91c1c"
     )}
     ${kpiBox(
       fr ? "Patrimoine médian" : "Median wealth",
@@ -275,7 +275,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
       comparison.deltas ? `${comparison.deltas.assets >= 0 ? "+" : ""}${f$(comparison.deltas.assets)}` : undefined
     )}
   </div>
-  ${ai.summaryAI ? `<div style="${bodyStyle};margin-top:12px;padding:12px 16px;background:#faf8f4;border-left:3px solid #b8860b;border-radius:0 6px 6px 0">${escapeHTML(ai.summaryAI)}</div>` : ""}
+  ${ai.summaryAI ? `<div style="${bodyStyle};margin-top:12px;padding:12px 16px;background:#faf8f4;border-left:3px solid #c49a1a;border-radius:0 6px 6px 0">${escapeHTML(ai.summaryAI)}</div>` : ""}
 </div>
 
 <!-- Page 2: Comparison -->
@@ -291,7 +291,7 @@ ${comparison.history.length >= 2 ? `
   <h2 style="${h2Style}">${fr ? "Historique comparatif" : "Year-over-year comparison"}</h2>
   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
     <thead>
-      <tr style="border-bottom:2px solid #b8860b">
+      <tr style="border-bottom:2px solid #c49a1a">
         <th style="text-align:left;padding:8px;color:#666">${fr ? "Année" : "Year"}</th>
         <th style="text-align:center;padding:8px;color:#666">${fr ? "Taux de réussite" : "Success rate"}</th>
         <th style="text-align:center;padding:8px;color:#666">${fr ? "Note" : "Grade"}</th>
@@ -303,7 +303,7 @@ ${comparison.history.length >= 2 ? `
       ${comparison.history.map((h, i) => `
         <tr style="border-bottom:1px solid #e8e4db;${i === 0 ? "font-weight:700;background:#faf8f4" : ""}">
           <td style="padding:8px">${h.year}${i === 0 ? (fr ? " (actuel)" : " (current)") : ""}</td>
-          <td style="text-align:center;padding:8px;color:${Math.round(h.successRate * 100) >= 80 ? "#1a7a4c" : Math.round(h.successRate * 100) >= 60 ? "#b8860b" : "#b91c1c"}">${Math.round(h.successRate * 100)}%</td>
+          <td style="text-align:center;padding:8px;color:${Math.round(h.successRate * 100) >= 80 ? "#1a7a4c" : Math.round(h.successRate * 100) >= 60 ? "#c49a1a" : "#b91c1c"}">${Math.round(h.successRate * 100)}%</td>
           <td style="text-align:center;padding:8px;font-weight:600">${h.grade}</td>
           ${comparison.history.some(h2 => h2.medianWealth > 0) ? `<td style="text-align:center;padding:8px">${h.medianWealth > 0 ? f$(h.medianWealth) : "—"}</td>` : ""}
           ${comparison.history.some(h2 => h2.totalAssets > 0) ? `<td style="text-align:center;padding:8px">${h.totalAssets > 0 ? f$(h.totalAssets) : "—"}</td>` : ""}
@@ -315,7 +315,7 @@ ${comparison.history.length >= 2 ? `
 
 <!-- Pages 3-6: Scenario cards (BUG 17: distinct card styling) -->
 <div style="margin:24px 0;padding:16px 0">
-  <h2 style="font-size:16px;font-weight:700;color:#1a2744;margin:0 0 16px;font-family:'Newsreader',Georgia,serif;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #b8860b;padding-bottom:8px">
+  <h2 style="font-size:16px;font-weight:700;color:#1a2744;margin:0 0 16px;font-family:'Newsreader',Georgia,serif;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #c49a1a;padding-bottom:8px">
     ${fr ? "Observations par theme" : "Observations by theme"}
   </h2>
   <div style="display:grid;gap:16px">
@@ -339,9 +339,9 @@ ${comparison.history.length >= 2 ? `
     </div>
 
     <!-- Card C: Tax optimization -->
-    <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #b8860b;overflow:hidden">
+    <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #c49a1a;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#b8860b;color:#fff;font-size:12px;font-weight:800">C</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#c49a1a;color:#fff;font-size:12px;font-weight:800">C</span>
         <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Optimisation fiscale" : "Tax optimization"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.taxAI || (fr ? "Le modèle a analysé les stratégies fiscales disponibles selon votre situation." : "The model analyzed available tax strategies based on your situation."))}</div>

@@ -5,32 +5,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Laboratoire</title>
 <meta name="description" content="Simulateur de retraite interactif. 190+ paramètres, sessions illimitées, exports IA, optimiseur automatique. Monte Carlo 5 000 scénarios.">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A1A1A}
 :root{
-  --g:#C4944A;--gl:#D4A85A;--gn:#2A8C46;--gnl:#3AA856;--am:#B89830;
+  --g:#c49a1a;--gl:#D4A85A;--gn:#2A8C46;--gnl:#3AA856;--am:#B89830;
   --rd:#CC4444;--bl:#4680C0;--pr:#7C60B8;--tx:#1A1A1A;--ts:#555;--tm:#888;
   --bg:#FEFCF9;--bgc:#fff;--bd:#E8E0D4;--bdl:#F0ECE4;
-  --gbg:rgba(196,148,74,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
+  --gbg:rgba(196,154,26,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
   --rdbg:rgba(204,68,68,.06);--bga:rgba(124,96,184,.04);
   --blbg:rgba(70,128,192,.06);--cpbg:rgba(124,96,184,.06);
 }
 .qs{animation:fadeIn .4s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--bd);border-radius:3px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,148,74,.3)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,154,26,.3)}
 .pbtn{display:block;width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s}
-.pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,148,74,.25)}
+.pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,154,26,.25)}
 .pbtn-sec{display:block;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bgc);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:var(--ts);transition:border-color .2s}
 .pbtn-sec:hover{border-color:var(--g)}
 .card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
 .card:hover{border-color:var(--gl);background:#FDF8F0}
-.card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,148,74,.25);transform:scale(1.02)}
+.card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,154,26,.25);transform:scale(1.02)}
 .chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:13px;cursor:pointer;transition:all .2s;margin:3px}
 .chip:hover{border-color:var(--gl);background:#FDF8F0}
-.chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,148,74,.2)}
+.chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,154,26,.2)}
 .back-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:11px;font-weight:600;cursor:pointer;color:var(--ts)}
 .loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin:0 3px;animation:bounce .6s infinite alternate}
 .loading-dot:nth-child(2){animation-delay:.2s}
@@ -40,13 +40,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;heigh
 .fld-label{font-size:12px;font-weight:700;color:var(--ts);display:block;margin-bottom:5px;letter-spacing:.2px}
 .fld-sub{font-size:11px;color:var(--tm);margin-top:3px;line-height:1.5}
 .inp{width:100%;padding:11px 13px;border-radius:8px;border:1.5px solid var(--bd);font-size:15px;font-family:'DM Sans',sans-serif;background:var(--bgc);color:var(--tx);transition:border-color .15s}
-.inp:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,148,74,.1)}
+.inp:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(196,154,26,.1)}
 .inp-sm{padding:9px 11px;font-size:13px}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield}
 .section-head{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;padding:14px 0 8px;border-bottom:2px solid var(--gbg);margin:20px 0 14px}
 .phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
-.info-box{background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.info-box{background:var(--gbg);border:1px solid rgba(196,154,26,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
 .info-box-note{font-size:11px;color:var(--tm);font-style:italic;margin-top:8px}
 @media print{body{background:#fff}.no-print{display:none!important}}
 @media(min-width:900px){
@@ -77,7 +77,7 @@ input[type=number]{-moz-appearance:textfield}
 <body>
 <div id="quiz-hero" style="background:#faf8f4;padding:clamp(32px,5vw,48px) 20px 0;text-align:center">
   <div style="max-width:680px;margin:0 auto">
-    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#b8860b;margin-bottom:12px">Laboratoire — buildfi.ca</div>
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#c49a1a;margin-bottom:12px">Laboratoire — buildfi.ca</div>
     <h1 style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Testez vos décisions de retraite avant de les prendre.</h1>
     <p style="font-size:15px;color:#555;line-height:1.7;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto">190+ paramètres. Sessions illimitées. 5 exports IA. Paiement unique — optimisé pour ordinateur.</p>
 
@@ -110,12 +110,12 @@ input[type=number]{-moz-appearance:textfield}
       <span>Paiement unique — 64,50 $</span>
     </div>
 
-    <div style="background:rgba(184,134,11,.06);border:1px solid rgba(184,134,11,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
-      <div style="font-size:12px;font-weight:700;color:#96700a;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
+    <div style="background:rgba(196,154,26,.06);border:1px solid rgba(196,154,26,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#a68016;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
       <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Ayez sous la main : relevés de paie (les deux conjoints si applicable), soldes de tous vos comptes, détails hypothécaires et dernier avis de cotisation.</div>
     </div>
 
-    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#C4944A,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#c49a1a,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
 
     <div style="margin-bottom:24px">
       <a href="/index.html#products" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a>
@@ -124,16 +124,16 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 <div id="app">
 <div class="seo-shell" style="max-width:480px;margin:24px auto;padding:24px;text-align:center">
-  <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
+  <p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#c49a1a">support@buildfi.ca</a></p>
 </div>
 </div>
 <noscript>
 <div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px">
-  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8860b;margin-bottom:10px">Laboratoire — buildfi.ca</div>
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#c49a1a;margin-bottom:10px">Laboratoire — buildfi.ca</div>
   <h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Testez vos décisions de retraite avant de les prendre.</h1>
   <p style="color:#555;margin-bottom:16px;line-height:1.6">190 paramètres, sessions illimitées, 5 exports AI inclus. Optimiseur automatique, stress tests, analyse CCPC, décaissement. Expérience optimale sur ordinateur. Paiement unique — 64,50 $.</p>
   <p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong> Activez JavaScript dans votre navigateur pour y accéder.</p>
-  <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#b8860b">support@buildfi.ca</a></p>
+  <p style="color:#555;margin-bottom:8px;line-height:1.6">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#c49a1a">support@buildfi.ca</a></p>
   <p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier. Consultez un planificateur financier certifié avant toute décision importante.</p>
 </div>
 </noscript>
@@ -259,7 +259,7 @@ function generateMockPreviewExpert(q) {
 function renderPaywall(D, lang) {
   var fr = lang === "fr";
   var t = function(f, e) { return fr ? f : e; };
-  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#b8860b" : "#b91c1c";
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#c49a1a" : "#b91c1c";
   var gradeLabel = D.successPct >= 80 ? t("Votre plan est solide","Your plan is solid") : D.successPct >= 60 ? t("Votre plan a du potentiel","Your plan has potential") : t("Votre plan a besoin d'ajustements","Your plan needs adjustments");
   var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:DM Sans,sans-serif">';
   h += '<div style="text-align:center;margin-bottom:32px">';
@@ -267,7 +267,7 @@ function renderPaywall(D, lang) {
   h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Laboratoire","Lab") + '</div>';
   h += '</div>';
   h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
-  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
+  h += '<div style="font-size:12px;color:#c49a1a;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
   h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
   h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de scénarios réussis","of scenarios succeeded") + '</div>';
   h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
@@ -301,7 +301,7 @@ function renderPaywall(D, lang) {
   h += '<div style="text-align:center;margin-bottom:20px">';
   h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Simulateur complet — paiement unique","Full simulator — one-time payment") + '</div>';
   h += '<div style="margin-bottom:4px"><span style="font-size:18px;text-decoration:line-through;color:#aaa;margin-right:8px">129 $</span><span style="font-size:42px;font-weight:800;color:#1a2744">64,50 <span style="font-size:20px">$</span></span></div>';
-  h += '<div style="font-size:12px;color:#b8860b;font-weight:600;margin-bottom:4px">' + t("Lancement \u2014 50 % de rabais","Launch \u2014 50% off") + '</div>';
+  h += '<div style="font-size:12px;color:#c49a1a;font-weight:600;margin-bottom:4px">' + t("Lancement \u2014 50 % de rabais","Launch \u2014 50% off") + '</div>';
   h += '<div style="font-size:12px;color:#888;margin-bottom:4px">CAD</div>';
   h += '<div style="font-size:11px;color:#aaa;margin-bottom:20px">' + t("Renouvellement : 29 $/an","Renewal: $29/year") + '</div>';
   // Upgrade banner
@@ -315,9 +315,9 @@ function renderPaywall(D, lang) {
   h += '<input id="buyer-email" type="email" value="' + (_upgradeEmail || '') + '" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px">';
   h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
   h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
-  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#b8860b">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#b8860b">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#b8860b">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#b8860b">Legal notice</a>.');
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis legal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
   h += '</label>';
-  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">';
   h += t("Acc\u00e9der au Laboratoire \u2014 64,50 $","Access Lab \u2014 $64.50");
   h += '</button>';
   h += '</div>';
@@ -964,7 +964,7 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<span style="font-weight:700;color:var(--g)">'+confLabels[q.confidence-1]+'</span>'
       +'<span>'+confLabels[4]+'</span></div>'
       +'<div style="font-size:11px;color:var(--tm);margin-top:6px">'+t("Calibre la profondeur des explications dans le rapport.","Calibrates the depth of explanations in the report.")+'</div></div>'
-      +'<div style="background:var(--gbg);border:1px solid rgba(196,148,74,.2);border-radius:10px;padding:14px;margin-top:4px">'
+      +'<div style="background:var(--gbg);border:1px solid rgba(196,154,26,.2);border-radius:10px;padding:14px;margin-top:4px">'
       +'<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:6px">'+t("Prochaine étape","Next step")+'</div>'
       +'<p style="font-size:12px;color:var(--ts);line-height:1.6">'+t("Deux dernières étapes : événements futurs et préférences du simulateur, puis les sections spécialisées selon votre profil.","Two more steps: future events and simulator preferences, then specialized sections based on your profile.")+'</p>'
       +'</div>'
@@ -1422,7 +1422,7 @@ document.addEventListener("keydown",function(e){
   bar.id = 'consentBar';
   bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
   bar.innerHTML = '<span>' + cl + '</span>'
-    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#b8860b,#d4a520);color:#fff">' + aLbl + '</button>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff">' + aLbl + '</button>'
     + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + dLbl + '</button>';
   document.body.appendChild(bar);
   document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });

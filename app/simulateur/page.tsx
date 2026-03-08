@@ -14,7 +14,7 @@ const EK = {
   sable: "#e8e4db",
   border: "#d4cec4",
   marine: "#1a2744",
-  gold: "#b8860b",
+  gold: "#c49a1a",
   tx: "#1a1208",
   txDim: "#666666",
   txMuted: "#999999",
@@ -637,7 +637,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
           </button>
         </div>
 
-        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(184,134,11,.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(196,154,26,.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={EK.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
@@ -992,7 +992,7 @@ function SimulateurContent() {
           <button
             onClick={() => setViewMode(v => v === "planner" ? "react" : "planner")}
             style={{
-              background: viewMode === "planner" ? "rgba(184,134,11,0.2)" : "none",
+              background: viewMode === "planner" ? "rgba(196,154,26,0.2)" : "none",
               border: `1px solid ${viewMode === "planner" ? EK.gold : "rgba(255,255,255,0.2)"}`,
               borderRadius: 6, color: viewMode === "planner" ? EK.gold : "#fff",
               padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
@@ -1031,7 +1031,7 @@ function SimulateurContent() {
           { key: "bilan" as const, fr: "Bilan Annuel", en: "Annual Assessment" },
         ] as const).map(w => (
           <button key={w.key} onClick={() => setActiveWorkflow(activeWorkflow === w.key ? "none" : w.key)} style={{
-            background: activeWorkflow === w.key ? "rgba(184,134,11,0.2)" : "rgba(255,255,255,0.08)",
+            background: activeWorkflow === w.key ? "rgba(196,154,26,0.2)" : "rgba(255,255,255,0.08)",
             border: `1px solid ${activeWorkflow === w.key ? EK.gold : "rgba(255,255,255,0.15)"}`, borderRadius: 6,
             color: EK.gold, padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
             fontFamily: "'DM Sans', sans-serif", position: "relative",
@@ -1327,7 +1327,7 @@ function SimulateurContent() {
                 style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: activeTab === tab ? 700 : 500,
                   color: activeTab === tab ? EK.gold : EK.txDim,
-                  background: activeTab === tab ? "rgba(184,134,11,0.08)" : "transparent",
+                  background: activeTab === tab ? "rgba(196,154,26,0.08)" : "transparent",
                   border: "none", borderBottom: activeTab === tab ? `2px solid ${EK.gold}` : "2px solid transparent",
                   borderRadius: "6px 6px 0 0", cursor: "pointer", whiteSpace: "nowrap",
                   fontFamily: "'DM Sans', sans-serif",
@@ -1888,7 +1888,7 @@ function ProjectionTab({ results, params, lang }: TabProps) {
                 return (
                   <tr key={r.age} style={{
                     borderBottom: `1px solid ${EK.sable}`,
-                    background: isRetAge ? "rgba(184,134,11,0.06)" : "transparent",
+                    background: isRetAge ? "rgba(196,154,26,0.06)" : "transparent",
                     borderLeft: isRetAge ? `3px solid ${EK.gold}` : "3px solid transparent",
                   }}>
                     <td style={{ padding: "4px 6px", fontWeight: isRetAge ? 700 : 500, color: EK.marine }}>{r.age}</td>
@@ -2334,7 +2334,7 @@ function StrategieTab({ results, params, lang }: TabProps) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {Object.entries(stratLabels).map(([key, s]) => (
             <div key={key} style={{
-              background: key === wStrat ? "rgba(184,134,11,0.08)" : EK.bg,
+              background: key === wStrat ? "rgba(196,154,26,0.08)" : EK.bg,
               border: `2px solid ${key === wStrat ? EK.gold : EK.border}`,
               borderRadius: 10, padding: 14,
             }}>
@@ -2567,7 +2567,7 @@ function OptimiseurTab({ results, params, lang }: TabProps) {
       )}
 
       {/* Call to action */}
-      <Card style={{ textAlign: "center", padding: 32, background: `linear-gradient(135deg, rgba(26,39,68,0.03), rgba(184,134,11,0.05))` }}>
+      <Card style={{ textAlign: "center", padding: 32, background: `linear-gradient(135deg, rgba(26,39,68,0.03), rgba(196,154,26,0.05))` }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
           {fr ? "Optimiseur automatique" : "Automatic optimizer"}
         </div>
@@ -3198,8 +3198,8 @@ function ResumeOverlay({ results, params, lang, onClose }: {
                   <text x={cPL - 4} y={yy + 3} textAnchor="end" fontSize="7" fill="#999" fontFamily="'JetBrains Mono', monospace">{Math.round(mx * g / 4 / 1000)}K</text>
                 </g>;
               })}
-              <polygon points={cpts("rp95") + " " + cptsRev("rp5")} fill="rgba(184,134,11,0.08)"/>
-              <polygon points={cpts("rp75") + " " + cptsRev("rp25")} fill="rgba(184,134,11,0.2)"/>
+              <polygon points={cpts("rp95") + " " + cptsRev("rp5")} fill="rgba(196,154,26,0.08)"/>
+              <polygon points={cpts("rp75") + " " + cptsRev("rp25")} fill="rgba(196,154,26,0.2)"/>
               <polyline points={cpts("rp50")} fill="none" stroke={EK.gold} strokeWidth="2" strokeLinejoin="round"/>
               {pD.map((r: any, i: number) => {
                 if (r.age === retAge) return <line key={i} x1={csx(i)} x2={csx(i)} y1={cPT} y2={cPT + cCH} stroke={EK.marine} strokeDasharray="3,2" strokeWidth="0.8"/>;

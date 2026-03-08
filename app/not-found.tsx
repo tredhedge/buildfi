@@ -1,5 +1,5 @@
 // /app/not-found.tsx — Custom 404 page
-// BuildFi brand style: #faf8f4 background, #1a2744 marine, #C4944A gold
+// BuildFi brand style: #faf8f4 background, #1a2744 marine, #c49a1a gold
 
 export default function NotFound() {
   return (
@@ -18,7 +18,7 @@ export default function NotFound() {
         buildfi.ca
       </div>
       <div style={{
-        fontSize: 11, color: "#C4944A", fontWeight: 600,
+        fontSize: 11, color: "#c49a1a", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: 2, marginBottom: 48,
       }}>
         Planification financière accessible
@@ -40,23 +40,23 @@ export default function NotFound() {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
         <a href="/" style={{
           display: "inline-block", padding: "12px 28px",
-          background: "#C4944A", color: "#fff", fontSize: 14, fontWeight: 600,
+          background: "#c49a1a", color: "#fff", fontSize: 14, fontWeight: 600,
           borderRadius: 8, textDecoration: "none",
         }}>
           Retour à l&apos;accueil
         </a>
         <a href="/quiz-essentiel.html" style={{
           display: "inline-block", padding: "12px 28px",
-          background: "transparent", color: "#C4944A", fontSize: 14, fontWeight: 600,
+          background: "transparent", color: "#c49a1a", fontSize: 14, fontWeight: 600,
           borderRadius: 8, textDecoration: "none",
-          border: "2px solid #C4944A",
+          border: "2px solid #c49a1a",
         }}>
           Commencer mon bilan
         </a>
       </div>
 
       <div style={{ fontSize: 12, color: "#999", marginTop: 48 }}>
-        <a href="mailto:support@buildfi.ca" style={{ color: "#C4944A", textDecoration: "none" }}>
+        <a href="mailto:support@buildfi.ca" style={{ color: "#c49a1a", textDecoration: "none" }}>
           support@buildfi.ca
         </a>
       </div>

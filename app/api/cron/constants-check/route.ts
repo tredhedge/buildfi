@@ -264,7 +264,7 @@ function buildEmailHTML(
 <html>
 <head><meta charset="utf-8"></head>
 <body style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#FEFCF9;color:#1A1208;padding:20px;max-width:800px;margin:0 auto">
-  <h1 style="color:#C4944A;margin-bottom:4px">BuildFi Constants Check</h1>
+  <h1 style="color:#c49a1a;margin-bottom:4px">BuildFi Constants Check</h1>
   <p style="color:#666;margin-top:0">Tax Year ${taxYear} &rarr; checking for ${nextTaxYear} updates</p>
   <p style="font-size:18px">${statusBadge}</p>
   <hr style="border-color:#E8E0D4">
@@ -313,7 +313,7 @@ function buildEmailHTML(
   // Checklist section
   html += `
   <hr style="border-color:#E8E0D4">
-  <h2 style="color:#C4944A">Annual Update Checklist</h2>
+  <h2 style="color:#c49a1a">Annual Update Checklist</h2>
   <p style="color:#666;font-size:14px">Files to update when constants change:</p>
   <table style="border-collapse:collapse;width:100%;font-size:13px">
     <tr style="background:#F8F4EE">
