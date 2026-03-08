@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 > Graphe de dépendances complet de l'infrastructure BuildFi. Consulter AVANT de modifier un composant.
-> Mis à jour: 2026-03-07 — v4 (infra blockers resolved, /merci all tiers, email/cron inventory corrected, Stripe all keys)
+> Mis à jour: 2026-03-08 — v5 (report-shared.ts shared module, fiscal sync test, purple elimination, renderer cleanup)
 > Statut : ✅ existe | 🔨 à construire | ⚠️ bloqué | 📋 planifié
 
 ---
@@ -75,7 +75,9 @@
 | quiz_translator | translateToMC() | Quiz answers → 190 MC params · server-side (Ess/Inter/Expert/Decum) | All | ✅ |
 | quiz_translator_decum | translateDecumToMC() | Decum quiz → MC params · continuous QPP factor · GK flexibility | Decum | ✅ |
 | ai_prompt_decum | buildAIPromptDecum() | 12 slots · DerivedProfile · 9-combo voice · 4 arcs · 7 worry patterns | Decum | ✅ |
-| test_suite | Suite de Tests | 453 MC + 200 debt tool = 653 tests | All | ✅ |
+| report_shared | Shared Report Helpers | grade, color, formatting, probTranslation · report-shared.ts | All | ✅ |
+| display_utils | Display Formatting | Normalized display values · display-utils.ts | All | ✅ |
+| test_suite | Suite de Tests | 453 MC + 200 debt + 685 Inter + 87 Expert + 103 S3 + 91 S10 + 91 shared + 135 fiscal = 1,845 tests | All | ✅ |
 
 ### F. Delivery & Reports
 
@@ -159,6 +161,7 @@ quiz_ess, quiz_inter, quiz_expert → stripe → webhook
 webhook → quiz_translator → mc_engine → tax_engine (fiscalité)
 webhook → mc_engine → ai_narration ← ai_profile, ai_serializer
 ai_narration → amf_lint → report_ess|inter|expert
+report_ess, report_inter, report_decum ← report_shared (grade, color, formatting, probTranslation)
 report_* → blob → resend → client inbox
 webhook → merci (redirect)
 ```
@@ -326,7 +329,7 @@ veille_regl → page_changelog
 
 | Statut | Count | Composants |
 |--------|-------|-----------|
-| ✅ Existe | 45+ | mc_engine, tax_engine, quiz_ess, quiz_decum, report_ess, report_decum, landing, merci (all tiers), debt_tool, simul_decum, guide_101, guide_201, logo_system, quiz_translator (all 4), ai_profile, ai_prompt_decum, test_suite, email_livraison_ess/inter/decum/expert, email_magic_link, email_feedback (J+3/J+7/J+14), email_renouvellement, email_anniversaire, vercel, kv, blob, resend, posthog, cloudflare, github, anthropic_api, robots_txt, stripe (all tiers), webhook (all tiers), health_check, admin_dashboard, cron_feedback, cron_remind, amf_lint (partiel) |
+| ✅ Existe | 47+ | mc_engine, tax_engine, quiz_ess, quiz_decum, report_ess, report_decum, report_shared, display_utils, landing, merci (all tiers), debt_tool, simul_decum, guide_101, guide_201, logo_system, quiz_translator (all 4), ai_profile, ai_prompt_decum, test_suite, email_livraison_ess/inter/decum/expert, email_magic_link, email_feedback (J+3/J+7/J+14), email_renouvellement, email_anniversaire, vercel, kv, blob, resend, posthog, cloudflare, github, anthropic_api, robots_txt, stripe (all tiers), webhook (all tiers), health_check, admin_dashboard, cron_feedback, cron_remind, amf_lint (partiel) |
 | ⚠️ Bloqué | 0 | ~~blob, resend, anthropic_api~~ — all resolved |
 | 🔨 À construire | ~20 | quiz Inter/Expert (exists but E2E not connected), simulateur, portail, pages légales (exist but 🔨), upgrades, A/B, email referral notif, email pré-suppression, bilan annuel cron trigger + 3 emails, print export, page_vente_expert, page_feedback, page_changelog, page_404, page_500, ai_serializer |
 | 📋 Planifié (Phase 3+) | 4 | articles_seo, page_blog, veille_regl, fb_pixel |
@@ -339,4 +342,4 @@ veille_regl → page_changelog
 
 ---
 
-*67+ composants · 90+ connexions · 12 crons · 15 routes API · 15 email templates · 6 clés KV.*
+*69+ composants · 93+ connexions · 12 crons · 15 routes API · 15 email templates · 6 clés KV.*

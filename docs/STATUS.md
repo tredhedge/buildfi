@@ -1,6 +1,6 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-07 — v16 (product rename: Essentiel→Bilan, Intermédiaire→Bilan 360, Décaissement→Horizon, Expert→Laboratoire. Internal keys unchanged. See CLAUDE.md mapping table.)
+> Mis à jour: 2026-03-08 — v17 (shared report module, fiscal sync test, renderer cleanup, purple elimination)
 
 ## PHASE ACTUELLE
 **ALL 4 TIERS PIPELINE-COMPLETE. Stripe keys all configured. /merci page handles all tiers. Reste: og-image, domain warmup, Bilan Annuel cron (Expert post-launch). Inter quiz/checkout pipeline à connecter E2E.**
@@ -116,6 +116,17 @@
 | `report-html.js` | Upsell : "16 sections" → "Jusqu'à 16 sections adaptées à votre profil" | ✅ |
 | `report-html.js` | 3 violations AMF éliminées (Concentrez-vous, constituerait, devrait) | ✅ |
 | `quiz-translator*.ts` + `constants-registry.ts` | Plafond REER 31 560 → 33 810 $ (limite CRA 2026) | ✅ |
+
+### Report Quality Overhaul (2026-03-08) — 5 PHASES
+| Phase | Composant | Statut |
+|-------|-----------|--------|
+| 1 | `lib/report-shared.ts` — shared helpers extracted from 3 renderers (grade mapping, colors, formatting, escHtml, probTranslation with tier-aware wording). 91/91 tests. | ✅ |
+| 1 | All 3 renderers import from report-shared.ts, local duplicates removed (gradeFromSuccess, gradeColor, gCol, gradeLabel, probTranslation, escHtml, fPct→fmtPctInt) | ✅ |
+| 1 | Purple (#7C60B8) fully eliminated from all report renderers → gold (#C4944A) or blue (#4680C0) | ✅ |
+| 2 | `tests/fiscal-constants-sync.test.ts` — 135 tests verifying engine inline constants match fiscal-2026.ts (14 federal + 13×9 provincial + metadata) | ✅ |
+| 3 | Webhook/KV fixes: "decaissement" tier in FeedbackRecord type union, correct feedback tier in webhook, stale DECUM50 comment fixed | ✅ |
+| 4 | `lib/ai-prompt-decum.ts` — full rebuild: DerivedProfile, 9-combo voice matrix, 4 narrative arcs, 6 worry patterns, dynamic obs routing, enriched DATA block, 12 AI slots, AMF compliant | ✅ |
+| 5 | `lib/ai-constants.ts` — AI_SLOTS_DECUM updated to 12 entries (added tax_timing_obs, obs_3), max length overrides, sanitize function | ✅ |
 
 ### Inter Report Visual Overhaul (2026-03-05) — 6 SESSIONS, 685/685 TESTS
 | Session | Composant | Statut |
@@ -317,7 +328,7 @@ buildfi/
 │   ├── expert/page.tsx           ✅ Expert redirect
 │   └── outils/dettes/page.jsx   ✅ Debt tool (1,475 lignes)
 ├── lib/
-│   ├── ai-constants.ts           ✅ AI slots (Ess 12 + Inter 16), AMF forbidden terms
+│   ├── ai-constants.ts           ✅ AI slots (Ess 12 + Inter 16 + Decum 12), AMF forbidden terms
 │   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan
 │   ├── ai-prompt-inter.ts       ✅ Inter AI prompt (18 slots)
 │   ├── ai-prompt-decum.ts       ✅ Décaissement AI prompt (12 slots, voice matrix)
@@ -333,9 +344,11 @@ buildfi/
 │   ├── quiz-translator-decum.ts  ✅ Décaissement translator (6 MC runs)
 │   ├── quiz-translator-expert.ts ✅ Expert translator
 │   ├── rate-limit.ts             ✅ Sliding window rate limiting
-│   ├── report-html.js            ✅ Essentiel report v6 (1,421 lignes)
-│   ├── report-html-decum.js      ✅ Décaissement report (13 sections)
-│   ├── report-html-inter.js      ✅ Inter report (~1,100 lignes, visual overhaul complete)
+│   ├── report-shared.ts           ✅ Shared report helpers (grade, color, formatting, probTranslation)
+│   ├── display-utils.ts           ✅ Normalized display formatting helpers
+│   ├── report-html.js            ✅ Essentiel report v6 (imports report-shared)
+│   ├── report-html-decum.js      ✅ Décaissement report (13 sections, imports report-shared)
+│   ├── report-html-inter.js      ✅ Inter report (~1,100 lignes, imports report-shared)
 │   ├── report-html-expert.ts     ✅ Expert report
 │   ├── strategies-inter.ts       ✅ 5-strategy comparison
 │   └── tracking.ts               ✅ PostHog tracking
@@ -354,7 +367,7 @@ buildfi/
 │   └── outils/
 │       └── allocation-epargne.html ✅ Outil allocation REER/CÉLI (REPORT BASELINE, AMF footer)
 ├── middleware.ts                  ✅ CSP headers
-├── tests/                        ✅ 453 MC + 200 debt + 685 Inter + 87 Expert translator + 103 S3 + 91 S10 = 1,619 tests
+├── tests/                        ✅ 453 MC + 200 debt + 685 Inter + 87 Expert translator + 103 S3 + 91 S10 + 91 report-shared + 135 fiscal-sync = 1,845 tests
 ├── docs/                         8 fichiers de référence
 └── CLAUDE.md                     Instructions Claude Code
 ```

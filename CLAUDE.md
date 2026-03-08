@@ -60,9 +60,11 @@ buildfi/
 │   ├── quiz-translator-expert.ts  # Expert translator
 │   ├── quiz-translator-decum.ts   # Décaissement translator (continuous QPP factor, GK flexibility)
 │   ├── ai-prompt-expert.ts        # Expert AI prompt
-│   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (1,421 lines)
-│   ├── report-html-inter.js       # Intermediaire 16-section report (1,003 lines)
-│   ├── report-html-decum.js       # Décaissement 13-section report (SVG donut, 6 MC runs)
+│   ├── report-shared.ts            # Shared report helpers (grade, color, formatting, probTranslation)
+│   ├── display-utils.ts            # Normalized display formatting helpers
+│   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (imports report-shared)
+│   ├── report-html-inter.js       # Intermediaire 16-section report (imports report-shared)
+│   ├── report-html-decum.js       # Décaissement 13-section report (imports report-shared)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
 │   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
 │   ├── email-expert.ts            # Expert emails: magic link + report delivery
@@ -87,7 +89,9 @@ buildfi/
 │   ├── s1-infrastructure.test.ts  # S1 Expert infra tests (29 tests)
 │   ├── s3-api.test.ts             # S3 API simulate/optimize tests (103 tests)
 │   ├── s10-audit.test.ts          # S10 full audit tests (91 tests)
-│   └── quiz-translator-expert.test.ts  # Expert translator tests (87 tests)
+│   ├── quiz-translator-expert.test.ts  # Expert translator tests (87 tests)
+│   ├── report-shared.test.ts      # Shared report helpers tests (91 tests)
+│   └── fiscal-constants-sync.test.ts  # Engine vs fiscal-2026.ts sync (135 tests)
 ├── docs/                          # Project documentation (8 files)
 │   ├── STATUS.md                  # Current state + roadmap — read first each session
 │   ├── SERVICES.md                # Accounts, DNS, credentials, env vars, payment flows
@@ -227,6 +231,7 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **ALL INFRA BLOCKERS RESOLVED** — Blob public ✅, Resend verified ✅, Anthropic key ✅, magic link www ✅
 - **/merci page tier-aware** — Dedicated flows for Ess/Inter/Decum/Expert (steps, tools, upsell, done message)
 - **Feedback/cron pipeline exists** — J+3/J+7/J+14 emails, renewal cycle, anniversary, admin dashboard
+- **REPORT QUALITY OVERHAUL (2026-03-08)** — report-shared.ts extracted (91/91 tests), fiscal-constants-sync.test.ts (135/135), all purple eliminated, renderers import shared module, webhook/kv decaissement tier fixed, AI prompt decum fully rebuilt
 - Next: og-image, domain warmup, Inter E2E, Bilan Annuel cron, S11-S14 post-launch
 
 ## Commands
@@ -243,6 +248,12 @@ npx jest tests/s1-infrastructure.test.ts   # S1 infra (29 tests)
 npx jest tests/s3-api.test.ts              # S3 API simulate/optimize (103 tests)
 npx jest tests/s10-audit.test.ts           # S10 full audit (91 tests)
 npx jest tests/quiz-translator-expert.test.ts  # Expert translator (87 tests)
+```
+
+### Report & fiscal test commands
+```bash
+npx tsx tests/report-shared.test.ts            # Shared helpers (91 tests)
+npx tsx tests/fiscal-constants-sync.test.ts    # Engine vs fiscal-2026.ts (135 tests)
 ```
 
 ### Validation checks before commit

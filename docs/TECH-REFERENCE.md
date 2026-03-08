@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-07 — v15 (Décaissement pipeline rebuild — 12 AI slots, 13-section report, DerivedProfile, SVG donut)
+> Mis à jour: 2026-03-08 — v16 (shared report module report-shared.ts, fiscal sync test, purple elimination, renderer cleanup)
 
 ---
 
@@ -188,6 +188,45 @@ Features:
   - CPP timing comparison (60 vs 65 vs 70)
   - Guyton-Klinger spending flexibility rules display
   - Print theme: gold→brown, break-inside:avoid
+```
+
+### Shared Report Helpers (lib/report-shared.ts — 181 lines)
+```
+Single source of truth for report helpers shared across Ess/Inter/Decum renderers.
+Extracted 2026-03-08 to eliminate duplicated logic across 3 files.
+
+Exports:
+  gradeFromSuccess(pct)     → Grade (A+ through F, 8-level scale)
+  gradeColor(grade)         → hex color (#2A8C46 green, #4680C0 blue, #E0882A amber, #CC4444 red)
+  successColor(succ)        → traffic-light color (legacy, ratio 0-1)
+  gradeLabel(pct, fr)       → human-readable ("Très solide" / "Very solid", etc.)
+  fmtDollars(n, fr)         → locale-formatted with " $" suffix (uses toLocaleString)
+  fmtNumber(n, fr)          → locale-formatted (no suffix)
+  fmtPct(n)                 → "4.5 %" format
+  fmtPctRaw(n)              → rounded to 1 decimal (numeric)
+  fmtPctInt(n)              → "72%" format
+  escHtml(s)                → HTML entity escaping (&, <, >, ")
+  probTranslation(pct, fr, tier) → 9-bracket human-readable probability (tier-aware wording)
+
+Note: f$() in Inter and fDol() in Ess are NOT extracted — they use regex-based
+formatting with different separator chars vs fmtDollars (toLocaleString).
+Replacing them would change report output. Left as local functions.
+
+Tests: tests/report-shared.test.ts (91 tests)
+```
+
+### Fiscal Constants Sync (tests/fiscal-constants-sync.test.ts — 135 tests)
+```
+Verifies that engine inline constants (lib/engine/index.js lines 16-56)
+match the reference copy in lib/constants/fiscal-2026.ts.
+
+Coverage:
+  - 14 federal constants (brackets, rates, personal, OAS, GIS, QPP, TFSA)
+  - 13 provinces × 9 fields (brackets, rates, deduction, abatement, credits)
+  - Metadata validation (year, verifiedDate, sources)
+
+Run: npx tsx tests/fiscal-constants-sync.test.ts
+Purpose: Catch divergence when annual fiscal updates are applied to one file but not the other.
 ```
 
 ### Quiz Décaissement — quiz-decaissement.html
