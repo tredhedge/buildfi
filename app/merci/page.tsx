@@ -27,9 +27,9 @@ const STEPS_REPORT: Step[] = [
 ];
 
 const STEPS_EXPERT: Step[] = [
-  { fr: "Profil Expert créé", en: "Expert profile created", durationMs: 2000 },
+  { fr: "Profil Laboratoire créé", en: "Lab profile created", durationMs: 2000 },
   { fr: "5 000 scénarios en cours...", en: "Running 5,000 scenarios...", durationMs: 3000 },
-  { fr: "Narration Expert (4 lots parallèles)...", en: "Expert narration (4 parallel batches)...", durationMs: 5000 },
+  { fr: "Narration Laboratoire (4 lots parallèles)...", en: "Lab narration (4 parallel batches)...", durationMs: 5000 },
   { fr: "Bilan initial généré", en: "Initial assessment generated", durationMs: 2000 },
   { fr: "Lien magique envoyé", en: "Magic link sent", durationMs: 1500 },
 ];
@@ -221,8 +221,8 @@ function ConfirmationContent() {
         <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, marginBottom: 32 }}>
           {done
             ? (isExpert
-              ? (fr ? "Votre bilan Expert est prêt. Un lien magique a été envoyé à votre courriel pour accéder au simulateur."
-                    : "Your Expert assessment is ready. A magic link has been sent to your email to access the simulator.")
+              ? (fr ? "Votre bilan Laboratoire est prêt. Un lien magique a été envoyé à votre courriel pour accéder au simulateur."
+                    : "Your Lab assessment is ready. A magic link has been sent to your email to access the simulator.")
               : tier === "decaissement"
               ? (fr ? "Votre bilan de décaissement est en route — 6 scénarios analysés. Vérifiez votre boîte de réception dans les prochaines minutes."
                     : "Your decumulation assessment is on its way — 6 scenarios analyzed. Check your inbox in the next few minutes.")
@@ -289,8 +289,8 @@ function ConfirmationContent() {
               <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>
                 {isExpert
                   ? (fr
-                    ? "Vous recevrez un lien magique et votre bilan initial par courriel (rapport@buildfi.ca). Le lien magique vous donne accès au simulateur Expert illimité."
-                    : "You'll receive a magic link and your initial assessment by email (rapport@buildfi.ca). The magic link gives you access to the unlimited Expert simulator.")
+                    ? "Vous recevrez un lien magique et votre bilan initial par courriel (rapport@buildfi.ca). Le lien magique vous donne accès au Laboratoire illimité."
+                    : "You'll receive a magic link and your initial assessment by email (rapport@buildfi.ca). The magic link gives you access to the unlimited Lab.")
                   : (fr
                     ? "Si vous ne voyez pas le courriel dans 5 minutes, vérifiez votre dossier indésirables (spam). Le bilan est envoyé par rapport@buildfi.ca."
                     : "If you don't see the email within 5 minutes, check your spam folder. The assessment is sent from rapport@buildfi.ca.")}
@@ -305,14 +305,14 @@ function ConfirmationContent() {
               }}>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                   {tier === "essentiel"
-                    ? (fr ? "Allez plus loin avec l'Intermédiaire" : "Go further with the Intermediate report")
-                    : (fr ? "Passez au simulateur Expert" : "Upgrade to the Expert simulator")}
+                    ? (fr ? "Allez plus loin avec le Bilan 360" : "Go further with Snapshot 360")
+                    : (fr ? "Passez au Laboratoire" : "Upgrade to the Lab")}
                 </div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 14 }}>
                   {tier === "essentiel"
                     ? (fr
-                      ? "Analyse de couple, immobilier, stratégies fiscales et 16 sections détaillées — tout ce qui manque au bilan Essentiel."
-                      : "Couple analysis, real estate, tax strategies, and 16 detailed sections — everything the Essentiel assessment doesn't cover.")
+                      ? "Analyse de couple, immobilier, stratégies fiscales et 16 sections détaillées — tout ce qui manque au Bilan."
+                      : "Couple analysis, real estate, tax strategies, and 16 detailed sections — everything the Snapshot doesn't cover.")
                     : (fr
                       ? "Simulateur illimité, 5 exports IA, et la capacité de tester chaque décision financière avant de la prendre."
                       : "Unlimited simulator, 5 AI exports, and the ability to test every financial decision before making it.")}
@@ -329,8 +329,8 @@ function ConfirmationContent() {
                   }}
                 >
                   {tier === "essentiel"
-                    ? (fr ? "Intermédiaire — 59 $" : "Intermediate — $59")
-                    : (fr ? "Expert — 129 $" : "Expert — $129")}
+                    ? (fr ? "Bilan 360 — 59 $" : "Snapshot 360 — $59")
+                    : (fr ? "Laboratoire — 129 $" : "Lab — $129")}
                 </a>
               </div>
             )}
@@ -363,7 +363,7 @@ function ConfirmationContent() {
                       }}
                     >
                       <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
-                        {fr ? "Simulateur de décaissement" : "Decumulation Simulator"}
+                        {fr ? "Simulateur de décaissement" : "Drawdown Simulator"}
                       </div>
                       <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
                         {fr ? "Vos données de bilan sont pré-remplies. Ajustez revenus, allocation et moment de vos rentes." : "Your assessment data is pre-filled. Adjust income, allocation, and pension timing."}
