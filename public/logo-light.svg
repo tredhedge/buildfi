@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="270" height="52" viewBox="0 0 270 52">
-  <g transform="translate(0,2)">
-    <rect x="0" y="34" width="25" height="7" rx="1.8" fill="#1a2744"/>
-    <rect x="3.5" y="23.5" width="23.5" height="7" rx="1.8" fill="#1a2744" opacity="0.50"/>
-    <rect x="7" y="13" width="22" height="7" rx="1.8" fill="#c49a1a"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="48" viewBox="0 0 220 48">
+  <g>
+    <rect x="0" y="32" width="28" height="8" rx="2" fill="#1a2744"/>
+    <rect x="4" y="22" width="26" height="8" rx="2" fill="#1a2744" opacity="0.50"/>
+    <rect x="8" y="12" width="24" height="8" rx="2" fill="#c49a1a"/>
   </g>
-  <text x="42" y="41" font-family="'Plus Jakarta Sans',sans-serif" font-size="35" font-weight="700" letter-spacing="-0.6">
+  <text x="40" y="38" font-family="'Plus Jakarta Sans',sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5">
     <tspan fill="#1a2744">build</tspan><tspan fill="#c49a1a">fi</tspan>
   </text>
 </svg>

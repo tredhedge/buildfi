@@ -17,16 +17,18 @@ function logoSVG(size, context) {
 
   // Scale factors
   var s = size === "lg" ? 1.2 : size === "md" ? 0.85 : 0.55;
-  var w = Math.round(270 * s);
-  var h = Math.round(52 * s);
+  var w = Math.round(220 * s);
+  var h = Math.round(48 * s);
 
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 270 52" style="display:block">'
-    + '<g transform="translate(0,2)">'
-    + '<rect x="0" y="34" width="25" height="7" rx="1.8" fill="' + blockFill + '"/>'
-    + '<rect x="3.5" y="23.5" width="23.5" height="7" rx="1.8" fill="' + blockFill + '" opacity="' + midOpacity + '"/>'
-    + '<rect x="7" y="13" width="22" height="7" rx="1.8" fill="' + goldFill + '"/>'
+  // ViewBox 0 0 220 48 — tighter than 270 52, blocks are proportionally larger
+  // Blocks: bottom=widest (foundation), mid=offset right (building), top=gold (independence)
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 220 48" style="display:block">'
+    + '<g>'
+    + '<rect x="0" y="32" width="28" height="8" rx="2" fill="' + blockFill + '"/>'
+    + '<rect x="4" y="22" width="26" height="8" rx="2" fill="' + blockFill + '" opacity="' + midOpacity + '"/>'
+    + '<rect x="8" y="12" width="24" height="8" rx="2" fill="' + goldFill + '"/>'
     + '</g>'
-    + '<text x="42" y="41" font-family="\'Plus Jakarta Sans\',sans-serif" font-size="35" font-weight="700" letter-spacing="-0.6">'
+    + '<text x="40" y="38" font-family="\'Plus Jakarta Sans\',sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5">'
     + '<tspan fill="' + textFill + '">build</tspan><tspan fill="' + goldFill + '">fi</tspan>'
     + '</text></svg>';
 }
