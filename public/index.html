@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>buildfi.ca — Planification financière personnalisée</title>
 <meta name="description" content="BuildFi analyse votre situation financière dans des milliers de scénarios. Portrait clair, paiement unique, 13 juridictions. À partir de 14,50 $.">
-<meta property="og:title" content="BuildFi — Voyez si votre retraite tient vraiment">
+<meta property="og:title" content="BuildFi — Voyez si votre plan tient vraiment">
 <meta property="og:description" content="Planification financière personnalisée pour les Canadiens. Des milliers de scénarios, un portrait clair, un paiement unique.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buildfi.ca/">
@@ -258,15 +258,16 @@ input,select,textarea{font-size:16px}
       <div class="hero-text">
         <p class="section-label reveal" id="heroLabel">Planification financière canadienne</p>
         <h1 class="hero-headline reveal reveal-delay-1" id="heroTitle">
-          Voyez si votre retraite tient vraiment.
+          Voyez si votre plan tient vraiment.
         </h1>
         <p class="hero-sub reveal reveal-delay-2" id="heroSub">
-          En quelques minutes, recevez votre note de retraite, vos revenus projetés année par année, vos principaux risques et votre prochain levier à examiner. Fiscalité canadienne détaillée. Pas d'abonnement. Pas de compte à créer.
+          En quelques minutes, obtenez votre note, vos risques et le premier levier à examiner.
         </p>
         <div class="hero-actions reveal reveal-delay-3">
-          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Voir les produits <span aria-hidden="true">↓</span></a>
+          <a href="#products" class="btn btn-primary" id="heroCta" data-track="hero_cta">Trouver mon point de départ <span aria-hidden="true">→</span></a>
           <span class="hero-actions-price" id="heroPrice">À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29 $</span> <strong>14,50 $</strong> · Paiement unique</span>
         </div>
+        <p class="reveal reveal-delay-3" style="font-size:14px;color:var(--text-muted);margin-top:16px;line-height:1.6;max-width:480px" id="heroRecognition">Pour ceux qui se demandent s'ils épargnent assez, s'ils pourront décrocher à temps, ou s'ils font les bons choix.</p>
         <div class="hero-trust reveal reveal-delay-4">
           <div class="hero-trust-item" id="trust1">
             <svg class="hero-trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -297,21 +298,7 @@ input,select,textarea{font-size:16px}
   </div>
 </section>
 
-<!-- ═══ SECTION 2: VOUS VOUS RECONNAISSEZ? ═══ -->
-<section style="padding:clamp(40px,5vw,56px) 0;position:relative" id="recognize">
-  <div class="container container--narrow">
-    <p style="font-size:clamp(15px,1.15vw,17px);font-weight:600;color:var(--text-muted);margin-bottom:20px;letter-spacing:.3px" id="recTitle">Vous vous reconnaissez?</p>
-    <div style="border-left:3px solid var(--gold-wash-strong);padding-left:24px;display:flex;flex-direction:column;gap:14px">
-      <p style="font-family:var(--font-display);font-size:clamp(15px,1.1vw,17px);font-style:italic;color:var(--text-secondary);line-height:1.65" id="rec1">« Est-ce que j'épargne assez — ou pas du tout? »</p>
-      <p style="font-family:var(--font-display);font-size:clamp(15px,1.1vw,17px);font-style:italic;color:var(--text-secondary);line-height:1.65" id="rec2">« Est-ce que je peux prendre ma retraite à 58 ans? »</p>
-      <p style="font-family:var(--font-display);font-size:clamp(15px,1.1vw,17px);font-style:italic;color:var(--text-secondary);line-height:1.65" id="rec3">« Quand demander la RRQ — à 60, 65 ou 70 ans? »</p>
-      <p style="font-family:var(--font-display);font-size:clamp(15px,1.1vw,17px);font-style:italic;color:var(--text-secondary);line-height:1.65" id="rec4">« Mon plan survit-il si les marchés baissent dans mes premières années de retraite? »</p>
-      <p style="font-family:var(--font-display);font-size:clamp(15px,1.1vw,17px);font-style:italic;color:var(--text-secondary);line-height:1.65" id="rec5">« Est-ce que j'ai besoin d'un planificateur, ou je peux commencer seul? »</p>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SECTION 3: COMMENT ÇA MARCHE ═══ -->
+<!-- ═══ SECTION 2: COMMENT ÇA MARCHE ═══ -->
 <section class="section" id="howItWorks" style="background:var(--sand);padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
   <div class="container" style="text-align:center">
     <p class="section-label" id="hiwLabel">Comment ça marche</p>
@@ -353,8 +340,8 @@ input,select,textarea{font-size:16px}
       <h2 class="section-title" id="productsTitle">Choisissez selon votre situation — pas selon votre niveau.</h2>
     </div>
 
-    <!-- Decision helper -->
-    <div class="dh-wrap" id="decisionHelper">
+    <!-- Decision helper (collapsed by default) -->
+    <div class="dh-wrap" id="decisionHelper" style="display:none">
       <p class="dh-intro" id="dhIntro">Pas sûr par où commencer?</p>
       <!-- Q1 -->
       <div id="dh-q1" class="dh-step">
@@ -454,10 +441,43 @@ input,select,textarea{font-size:16px}
     <div style="text-align:center;margin-top:28px" class="reveal">
       <div style="display:inline-block;padding:8px 20px;background:var(--gold-wash-strong);border:1px solid rgba(184,134,11,.15);border-radius:20px;font-size:13px;font-weight:700;color:var(--gold-dark)" id="productsEarly">Lancement — 50 % de rabais</div>
     </div>
+    <div style="text-align:center;margin-top:20px" class="reveal">
+      <button onclick="var dh=document.getElementById('decisionHelper');var v=dh.style.display==='none';dh.style.display=v?'':'none';this.querySelector('span').textContent=v?(lang==='fr'?'Masquer':'Hide'):(lang==='fr'?'Répondez à 3 questions':'Answer 3 questions');if(v)dh.scrollIntoView({behavior:'smooth',block:'nearest'})" class="btn-ghost" id="dhToggle" style="font-size:14px;color:var(--text-muted);cursor:pointer;background:none;border:none;font-family:var(--font-body);font-weight:600">
+        <span id="dhToggleText">Pas sûr? Répondez à 3 questions</span> <span aria-hidden="true" style="margin-left:4px">→</span>
+      </button>
+    </div>
   </div>
 </section>
 
-<!-- ═══ SECTION 4: CE QU'ON FAIT DIFFÉREMMENT ═══ -->
+<!-- ═══ SECTION 4: CE QUE NOS CLIENTS DÉCOUVRENT ═══ -->
+<section class="section" id="discoveries" style="padding-top:clamp(48px,6vw,64px);padding-bottom:clamp(48px,6vw,64px)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:40px">
+      <p class="section-label" id="discLabel">Résultats</p>
+      <h2 class="section-title" id="discTitle">Ce que nos clients découvrent</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" id="discGrid">
+      <div class="why-card reveal" style="border-left:3px solid var(--gold-wash-strong)">
+        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc1q">« J'épargnais dans le mauvais compte depuis 8 ans. »</p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc1d">La différence entre REER et CÉLI peut valoir des dizaines de milliers de dollars sur 20 ans. Votre bilan montre exactement l'impact sur votre situation.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1" style="border-left:3px solid var(--gold-wash-strong)">
+        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc2q">« Je pouvais prendre ma retraite 3 ans plus tôt que je pensais. »</p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc2d">Beaucoup de gens sous-estiment ce que leurs gouvernements (RRQ, PSV, SRG) leur verseront. La simulation intègre chaque source de revenu, année par année.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1" style="border-left:3px solid var(--gold-wash-strong)">
+        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc3q">« Mon plan ne survivait pas un krach dans les 5 premières années. »</p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc3d">Un portefeuille solide en moyenne peut s'effondrer si les mauvaises années arrivent tôt. Les scénarios de stress testent exactement ça.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-2" style="border-left:3px solid var(--gold-wash-strong)">
+        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc4q">« Je ne savais pas que reporter la RRQ à 70 ans me donnait 42 % de plus par mois. »</p>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc4d">Chaque année de report change l'équation. Le bilan compare les scénarios et montre l'impact sur votre plan complet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: CE QU'ON FAIT DIFFÉREMMENT ═══ -->
 <section class="section" id="why" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
   <div class="container">
     <div style="text-align:center">
@@ -492,34 +512,6 @@ input,select,textarea{font-size:16px}
         </div>
         <h3 class="why-card-title" id="why4t">Vos données restent confidentielles.</h3>
         <p class="why-card-desc" id="why4d">Nous ne vendons jamais vos données. Votre numéro de carte n'est jamais vu ni conservé par BuildFi — le paiement est géré par Stripe (PCI DSS niveau 1). Vos données financières sont traitées de façon sécurisée et conservées uniquement selon notre <a href="/confidentialite.html" style="color:var(--gold);text-decoration:underline">politique de confidentialité</a>.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SECTION 6: CE QUE NOS CLIENTS DÉCOUVRENT ═══ -->
-<section class="section" id="discoveries" style="padding-top:clamp(48px,6vw,64px);padding-bottom:clamp(48px,6vw,64px)">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:40px">
-      <p class="section-label" id="discLabel">Résultats</p>
-      <h2 class="section-title" id="discTitle">Ce que nos clients découvrent</h2>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" id="discGrid">
-      <div class="why-card reveal" style="border-left:3px solid var(--gold-wash-strong)">
-        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc1q">« J'épargnais dans le mauvais compte depuis 8 ans. »</p>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc1d">La différence entre REER et CÉLI peut valoir des dizaines de milliers de dollars sur 20 ans. Votre bilan montre exactement l'impact sur votre situation.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1" style="border-left:3px solid var(--gold-wash-strong)">
-        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc2q">« Je pouvais prendre ma retraite 3 ans plus tôt que je pensais. »</p>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc2d">Beaucoup de gens sous-estiment ce que leurs gouvernements (RRQ, PSV, SRG) leur verseront. La simulation intègre chaque source de revenu, année par année.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1" style="border-left:3px solid var(--gold-wash-strong)">
-        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc3q">« Mon plan ne survivait pas un krach dans les 5 premières années. »</p>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc3d">Un portefeuille solide en moyenne peut s'effondrer si les mauvaises années arrivent tôt. Les scénarios de stress testent exactement ça.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-2" style="border-left:3px solid var(--gold-wash-strong)">
-        <p style="font-family:var(--font-display);font-size:clamp(16px,1.2vw,18px);font-weight:600;font-style:italic;color:var(--navy);line-height:1.4;margin-bottom:12px" id="disc4q">« Je ne savais pas que reporter la RRQ à 70 ans me donnait 42 % de plus par mois. »</p>
-        <p style="font-size:14px;color:var(--text-secondary);line-height:1.65" id="disc4d">Chaque année de report change l'équation. Le bilan compare les scénarios et montre l'impact sur votre plan complet.</p>
       </div>
     </div>
   </div>
@@ -578,7 +570,7 @@ input,select,textarea{font-size:16px}
     <h2 class="section-title" id="finalTitle">Vous méritez de savoir où vous en êtes.</h2>
     <p class="section-subtitle" style="margin:14px auto 36px" id="finalSubtitle">Un portrait clair, un paiement unique.</p>
     <div class="final-cta-actions">
-      <a href="#products" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Voir les produits <span aria-hidden="true">↑</span></a>
+      <a href="#products" class="btn btn-primary" data-track="final_cta" id="finalCtaPrimary">Trouver mon point de départ <span aria-hidden="true">↑</span></a>
     </div>
     <p class="final-cta-trust" id="finalTrust">Paiement unique · Livraison instantanée · Données non revendues</p>
   </div>
@@ -657,14 +649,16 @@ var T = {
   skipNav: { fr:'Aller au contenu', en:'Skip to content' },
   // Hero
   heroLabel: { fr:'Planification financière canadienne', en:'Canadian financial planning' },
-  heroTitle: { fr:'Voyez si votre retraite tient vraiment.', en:'See if your retirement really holds up.' },
-  heroSub: { fr:"En quelques minutes, recevez votre note de retraite, vos revenus projet\u00e9s ann\u00e9e par ann\u00e9e, vos principaux risques et votre prochain levier \u00e0 examiner. Fiscalit\u00e9 canadienne d\u00e9taill\u00e9e. Pas d\u2019abonnement. Pas de compte \u00e0 cr\u00e9er.", en:"In a few minutes, get your retirement grade, your projected income year by year, your main risks, and your next lever to examine. Detailed Canadian taxation. No subscription. No account to create." },
-  heroCta: { fr:'Voir les produits \u2193', en:'See products \u2193' },
+  heroTitle: { fr:'Voyez si votre plan tient vraiment.', en:'See if your plan really holds up.' },
+  heroSub: { fr:"En quelques minutes, obtenez votre note, vos risques et le premier levier \u00e0 examiner.", en:"In a few minutes, get your grade, your risks, and the first lever to examine." },
+  heroCta: { fr:'Trouver mon point de d\u00e9part \u2192', en:'Find my starting point \u2192' },
   heroPrice: { fr:'À partir de <span style="text-decoration:line-through;color:var(--text-muted)">29\u00a0$</span> <strong>14,50\u00a0$</strong> \u00b7 Paiement unique', en:'Starting at <span style="text-decoration:line-through;color:var(--text-muted)">$29</span> <strong>$14.50</strong> \u00b7 One-time payment' },
   trust1: { fr:'Données non revendues', en:'Data never sold' },
   trust2: { fr:'5 à 15\u00a0min', en:'5 to 15\u00a0min' },
   trust3: { fr:'Paiement unique', en:'One payment' },
   trust4: { fr:'13 juridictions', en:'13 jurisdictions' },
+  heroRecognition: { fr:"Pour ceux qui se demandent s\u2019ils \u00e9pargnent assez, s\u2019ils pourront d\u00e9crocher \u00e0 temps, ou s\u2019ils font les bons choix.", en:"For those wondering if they\u2019re saving enough, if they can retire on time, or if they\u2019re making the right choices." },
+  dhToggleText: { fr:'Pas s\u00fbr? R\u00e9pondez \u00e0 3 questions', en:'Not sure? Answer 3 questions' },
   gradeLabel: { fr:'Votre note de retraite', en:'Your retirement grade' },
   gradePill: { fr:'En bonne voie', en:'On track' },
   // How it works
@@ -735,13 +729,6 @@ var T = {
   why3d: { fr:"RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR — chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.", en:"CPP, OAS, GIS, RRSP, TFSA, FHSA, RRIF — every government program is modeled. Built for Canadian taxation from the first line of code." },
   why4t: { fr:'Vos données restent confidentielles.', en:'Your data stays confidential.' },
   why4d: { fr:"Nous ne vendons jamais vos données. Votre numéro de carte n\u2019est jamais vu ni conservé par BuildFi — le paiement est géré par Stripe (PCI DSS niveau\u00a01). Vos données financières sont traitées de façon sécurisée et conservées uniquement selon notre <a href=\"/confidentialite.html\" style=\"color:var(--gold);text-decoration:underline\">politique de confidentialité</a>.", en:"We never sell your data. Your card number is never seen or stored by BuildFi — payment is handled by Stripe (PCI DSS Level\u00a01). Your financial data is handled securely and retained only per our <a href=\"/confidentialite.html\" style=\"color:var(--gold);text-decoration:underline\">privacy policy</a>." },
-  // Recognize section
-  recTitle: { fr:'Vous vous reconnaissez?', en:'Sound familiar?' },
-  rec1: { fr:'\u00ab Est-ce que j\u2019\u00e9pargne assez — ou pas du tout? \u00bb', en:'\u201cAm I saving enough — or not at all?\u201d' },
-  rec2: { fr:'\u00ab Est-ce que je peux prendre ma retraite \u00e0 58 ans? \u00bb', en:'\u201cCan I retire at 58?\u201d' },
-  rec3: { fr:'\u00ab Quand demander la RRQ — \u00e0 60, 65 ou 70 ans? \u00bb', en:'\u201cWhen should I claim CPP — at 60, 65, or 70?\u201d' },
-  rec4: { fr:'\u00ab Mon plan survit-il si les march\u00e9s baissent dans mes premi\u00e8res ann\u00e9es de retraite? \u00bb', en:'\u201cDoes my plan survive if markets drop in my first years of retirement?\u201d' },
-  rec5: { fr:'\u00ab Est-ce que j\u2019ai besoin d\u2019un planificateur, ou je peux commencer seul? \u00bb', en:'\u201cDo I need a planner, or can I start on my own?\u201d' },
   // Discoveries section
   discLabel: { fr:'R\u00e9sultats', en:'Results' },
   discTitle: { fr:'Ce que nos clients d\u00e9couvrent', en:'What our clients discover' },
@@ -769,7 +756,7 @@ var T = {
   // Final CTA
   finalTitle: { fr:'Vous méritez de savoir où vous en êtes.', en:'You deserve to know where you stand.' },
   finalSubtitle: { fr:'Un portrait clair, un paiement unique.', en:'A clear portrait, one payment.' },
-  finalCtaPrimary: { fr:'Voir les produits \u2191', en:'See products \u2191' },
+  finalCtaPrimary: { fr:'Trouver mon point de d\u00e9part \u2191', en:'Find my starting point \u2191' },
   finalTrust: { fr:'Paiement unique \u00b7 Livraison instantanée \u00b7 Données non revendues', en:'One-time payment \u00b7 Instant delivery \u00b7 Data never sold' },
   stickyText: { fr:'À partir de <span style="text-decoration:line-through;opacity:.6">29\u00a0$</span> <span>14,50\u00a0$</span>', en:'Starting at <span style="text-decoration:line-through;opacity:.6">$29</span> <span>$14.50</span>' },
   stickyBtn: { fr:'Commencer \u2192', en:'Get started \u2192' },
