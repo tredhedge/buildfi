@@ -728,8 +728,12 @@ function SimulateurContent() {
     if (!tokenFromUrl) { setAuthStatus("denied"); return; }
     setToken(tokenFromUrl);
     fetch(`/api/auth/verify?token=${tokenFromUrl}`)
-      .then(r => {
-        if (!r.ok) throw new Error("Auth failed");
+      .then(async r => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          console.error("[auth] Verify failed:", r.status, err);
+          throw new Error(err.error || "Auth failed");
+        }
         return r.json();
       })
       .then(data => {

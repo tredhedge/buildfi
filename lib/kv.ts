@@ -143,10 +143,20 @@ export async function getExpertProfileByToken(
   token: string
 ): Promise<{ email: string; profile: ExpertProfile } | null> {
   const email = await redis.get<string>(KEYS.token(token));
-  if (!email) return null;
+  if (!email) {
+    console.log(`[kv] token:${token.slice(0, 8)}... → no email found`);
+    return null;
+  }
 
   const profile = await redis.get<ExpertProfile>(KEYS.expert(email));
-  if (!profile || profile.token !== token) return null;
+  if (!profile) {
+    console.log(`[kv] expert:${email} → no profile found`);
+    return null;
+  }
+  if (profile.token !== token) {
+    console.log(`[kv] Token mismatch for ${email}: profile has ${profile.token.slice(0, 8)}..., got ${token.slice(0, 8)}...`);
+    return null;
+  }
 
   return { email, profile };
 }

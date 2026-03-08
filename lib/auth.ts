@@ -27,25 +27,35 @@ export async function verifyToken(req: NextRequest): Promise<AuthResult> {
   const token = tokenFromQuery || tokenFromHeader;
 
   if (!token) {
+    console.log("[auth] No token provided in query or header");
     return { authenticated: false, error: "No token provided" };
   }
 
   if (!UUID_RE.test(token)) {
+    console.log(`[auth] Invalid token format: ${token.slice(0, 8)}...`);
     return { authenticated: false, error: "Invalid token format" };
   }
 
-  const result = await getExpertProfileByToken(token);
-  if (!result) {
-    return { authenticated: false, error: "Token not found" };
+  try {
+    const result = await getExpertProfileByToken(token);
+    if (!result) {
+      console.log(`[auth] Token not found in KV: ${token.slice(0, 8)}...`);
+      return { authenticated: false, error: "Token not found" };
+    }
+
+    const { email, profile } = result;
+
+    if (new Date(profile.expiry) < new Date()) {
+      console.log(`[auth] Token expired for ${email}, expiry: ${profile.expiry}`);
+      return { authenticated: false, error: "Token expired" };
+    }
+
+    console.log(`[auth] Token verified for ${email}`);
+    return { authenticated: true, email, profile };
+  } catch (err) {
+    console.error("[auth] KV lookup error:", err);
+    return { authenticated: false, error: "KV lookup failed" };
   }
-
-  const { email, profile } = result;
-
-  if (new Date(profile.expiry) < new Date()) {
-    return { authenticated: false, error: "Token expired" };
-  }
-
-  return { authenticated: true, email, profile };
 }
 
 export function buildMagicLinkUrl(token: string): string {
