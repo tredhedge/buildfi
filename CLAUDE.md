@@ -1,7 +1,17 @@
 # CLAUDE.md — BuildFi (buildfi.ca)
 
 ## What is this project?
-BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Three tiers: Essentiel $29, Intermediaire $59, Expert $129. One-time payments (Expert renews $29/year). Anti-bullshit, anti-generic.
+BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Four tiers: Bilan $29, Bilan 360 $59, Horizon $59, Laboratoire $129. One-time payments (Laboratoire renews $29/year). Anti-bullshit, anti-generic.
+
+## Product Name Mapping (2026-03-07)
+| Internal key | Customer FR | Customer EN | Subtitle FR | Subtitle EN |
+|---|---|---|---|---|
+| essentiel | Bilan | Snapshot | Votre portrait financier | Your financial portrait |
+| intermediaire | Bilan 360 | Snapshot 360 | Couple, immobilier, fiscalité, succession | Couples, real estate, tax, succession |
+| decaissement | Horizon | Horizon | Planifier vos retraits à la retraite | Plan your retirement withdrawals |
+| expert | Laboratoire | Lab | Tester vos décisions avant d'agir | Test your decisions before acting |
+
+**CRITICAL**: Internal identifiers (env vars, file names, function names, Stripe keys, type values) keep the OLD names (essentiel, intermediaire, decaissement, expert). Only customer-facing display text uses the NEW names.
 
 ## Tech Stack
 - **Framework**: Next.js 16 on Vercel (auto-deploy from main)
@@ -13,14 +23,14 @@ BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte
 - **Analytics**: PostHog
 
 ## Pricing (confirmed 2026-03-07)
-| Tier | Price | Model |
-|------|-------|-------|
-| Essentiel | $29 one-time ($14.50 with LAUNCH50) | 1 report, 8 sections, AI narration |
-| Intermediaire | $59 one-time ($29.50 with LAUNCH50) | 1 report, 16 sections, couple, immo, fiscal |
-| Décaissement | $59 one-time ($29.50 with LAUNCH50) | 1 report, 13 sections, 6 MC runs, 12 AI slots |
-| Expert | $129 one-time ($64.50 with LAUNCH50) | Simulator unlimited + 5 AI exports |
-| Expert renewal | $29/year | Simulator + 3 AI exports + Bilan Annuel |
-| Export AI addon | $14.99 | 1 additional AI report |
+| Tier (internal key) | Display Name | Price | Model |
+|------|------|-------|-------|
+| essentiel | Bilan / Snapshot | $29 one-time ($14.50 with LAUNCH50) | 1 report, 8 sections, AI narration |
+| intermediaire | Bilan 360 / Snapshot 360 | $59 one-time ($29.50 with LAUNCH50) | 1 report, 16 sections, couple, immo, fiscal |
+| decaissement | Horizon | $59 one-time ($29.50 with LAUNCH50) | 1 report, 13 sections, 6 MC runs, 12 AI slots |
+| expert | Laboratoire / Lab | $129 one-time ($64.50 with LAUNCH50) | Simulator unlimited + 5 AI exports |
+| expert renewal | Laboratoire renewal | $29/year | Simulator + 3 AI exports + Bilan Annuel |
+| Export AI addon | — | $14.99 | 1 additional AI report |
 
 ## Repository Structure
 ```

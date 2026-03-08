@@ -1,6 +1,6 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-07 — v15 (tier audit: /merci décaissement handler, Stripe keys all configured, feature inventory corrected)
+> Mis à jour: 2026-03-07 — v16 (product rename: Essentiel→Bilan, Intermédiaire→Bilan 360, Décaissement→Horizon, Expert→Laboratoire. Internal keys unchanged. See CLAUDE.md mapping table.)
 
 ## PHASE ACTUELLE
 **ALL 4 TIERS PIPELINE-COMPLETE. Stripe keys all configured. /merci page handles all tiers. Reste: og-image, domain warmup, Bilan Annuel cron (Expert post-launch). Inter quiz/checkout pipeline à connecter E2E.**
