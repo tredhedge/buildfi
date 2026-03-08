@@ -743,6 +743,21 @@ input,select,textarea{font-size:16px}
   </div>
 </section>
 
+<!-- ═══ QUI EST DERRIÈRE BUILDFI ═══ -->
+<section class="section" id="behind" style="padding-top:clamp(48px,6vw,64px);padding-bottom:clamp(48px,6vw,64px)">
+  <div class="container container--narrow">
+    <div style="text-align:center;margin-bottom:32px">
+      <p class="section-label" id="behindLabel">À propos</p>
+      <h2 class="section-title" id="behindTitle">Construit par quelqu'un qui cherchait le même outil.</h2>
+    </div>
+    <div style="font-size:clamp(15px,1.15vw,17px);color:var(--text-secondary);line-height:1.75;max-width:640px;margin:0 auto">
+      <p style="margin-bottom:20px" id="behindP1">BuildFi est né d'une frustration simple: les outils de planification financière au Canada sont soit trop simplistes pour être utiles, soit réservés aux professionnels. Il n'existait rien entre le calculateur gratuit qui suppose 6 % par année et le planificateur qui facture 1 500 $ pour un plan.</p>
+      <p style="margin-bottom:20px" id="behindP2">BuildFi est construit au Québec par un développeur-ingénieur qui voulait un outil rigoureux, accessible et honnête — pour lui-même d'abord, puis pour tous les Canadiens qui méritent de comprendre leur situation financière sans jargon et sans vendeur de fonds.</p>
+      <p id="behindP3">Le moteur est validé par plus de 1 600 tests automatisés. La fiscalité couvre les 13 juridictions canadiennes. Et chaque dollar que vous voyez dans votre rapport a été vérifié.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ SECTION 4: FAQ ═══ -->
 <section class="section section--sand" id="faq" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
   <div class="container">
@@ -1060,6 +1075,12 @@ var T = {
   why5d: { fr:"RRQ, PSV, SRG, REER, CÉLI, CELIAPP, FERR \u2014 chaque programme gouvernemental est modélisé. Construit pour la fiscalité canadienne dès la première ligne de code.", en:"CPP, OAS, GIS, RRSP, TFSA, FHSA, RRIF \u2014 every government program is modeled. Built for Canadian taxation from the first line of code." },
   why6t: { fr:'Vos données restent confidentielles.', en:'Your data stays confidential.' },
   why6d: { fr:"Nous ne vendons jamais vos donn\u00e9es. Votre num\u00e9ro de carte n\u2019est jamais vu ni conserv\u00e9 par BuildFi \u2014 le paiement est g\u00e9r\u00e9 par Stripe (PCI DSS niveau\u00a01). Vos donn\u00e9es financi\u00e8res sont trait\u00e9es de fa\u00e7on s\u00e9curis\u00e9e et conserv\u00e9es uniquement selon notre <a href=\"/confidentialite.html\" style=\"color:var(--g);text-decoration:underline\">politique de confidentialit\u00e9</a>.", en:"We never sell your data. Your card number is never seen or stored by BuildFi \u2014 payment is handled by Stripe (PCI DSS Level\u00a01). Your financial data is handled securely and retained only per our <a href=\"/confidentialite.html\" style=\"color:var(--g);text-decoration:underline\">privacy policy</a>." },
+  // Behind BuildFi
+  behindLabel: { fr:'\u00c0 propos', en:'About' },
+  behindTitle: { fr:"Construit par quelqu\u2019un qui cherchait le m\u00eame outil.", en:'Built by someone who was looking for the same tool.' },
+  behindP1: { fr:"BuildFi est n\u00e9 d\u2019une frustration simple\u00a0: les outils de planification financi\u00e8re au Canada sont soit trop simplistes pour \u00eatre utiles, soit r\u00e9serv\u00e9s aux professionnels. Il n\u2019existait rien entre le calculateur gratuit qui suppose 6\u00a0% par ann\u00e9e et le planificateur qui facture 1\u00a0500\u00a0$ pour un plan.", en:"BuildFi started from a simple frustration: financial planning tools in Canada are either too simplistic to be useful, or reserved for professionals. There was nothing between the free calculator that assumes 6% per year and the planner who charges $1,500 for a plan." },
+  behindP2: { fr:"BuildFi est construit au Qu\u00e9bec par un d\u00e9veloppeur-ing\u00e9nieur qui voulait un outil rigoureux, accessible et honn\u00eate \u2014 pour lui-m\u00eame d\u2019abord, puis pour tous les Canadiens qui m\u00e9ritent de comprendre leur situation financi\u00e8re sans jargon et sans vendeur de fonds.", en:"BuildFi is built in Quebec by a developer-engineer who wanted a rigorous, accessible, and honest tool \u2014 for himself first, then for every Canadian who deserves to understand their financial situation without jargon and without fund salespeople." },
+  behindP3: { fr:"Le moteur est valid\u00e9 par plus de 1\u00a0600 tests automatis\u00e9s. La fiscalit\u00e9 couvre les 13 juridictions canadiennes. Et chaque dollar que vous voyez dans votre rapport a \u00e9t\u00e9 v\u00e9rifi\u00e9.", en:"The engine is validated by over 1,600 automated tests. The tax model covers all 13 Canadian jurisdictions. And every dollar you see in your report has been verified." },
   // Preview
   previewLabel: { fr:'Aperçu du rapport', en:'Report preview' },
   previewTitle: { fr:'Ce que contient chaque rapport', en:'What each report contains' },
