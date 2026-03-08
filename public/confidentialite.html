@@ -60,14 +60,14 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <h2 id="h2">2. Données collectées</h2>
   <p id="p2a">Nous collectons les catégories de données suivantes :</p>
   <ul>
-    <li id="p2b"><strong>Courriel</strong> : utilisé pour la livraison des bilans, l'authentification Expert et les communications de service</li>
+    <li id="p2b"><strong>Courriel</strong> : utilisé pour la livraison des bilans, l'authentification Laboratoire et les communications de service</li>
     <li id="p2c"><strong>Réponses au questionnaire</strong> : données financières saisies dans le quiz (âge, revenu, épargne, etc.) — utilisées exclusivement pour générer votre simulation</li>
     <li id="p2d"><strong>Données de paiement</strong> : traitées directement par Stripe. buildfi.ca ne stocke aucun numéro de carte</li>
     <li id="p2e"><strong>Données de navigation</strong> : cookies analytiques (PostHog) — langue, pages visitées, interactions anonymisées</li>
   </ul>
 
   <h2 id="h3">3. Finalités du traitement</h2>
-  <p id="p3">Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.</p>
+  <p id="p3">Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Laboratoire (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.</p>
 
   <h2 id="h4">4. Base juridique</h2>
   <p id="p4">Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement explicite (cookies analytiques, recueilli via la bannière de consentement). Vous pouvez retirer votre consentement pour les cookies en effaçant les données du site dans votre navigateur.</p>
@@ -75,7 +75,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <h2 id="h5">5. Stockage et sécurité</h2>
   <p id="p5a">Les données sont stockées sur des infrastructures sécurisées :</p>
   <ul>
-    <li id="p5b"><strong>Vercel KV</strong> (Upstash Redis) : profils Expert, tokens d'authentification — centres de données nord-américains, chiffrement en transit et au repos</li>
+    <li id="p5b"><strong>Vercel KV</strong> (Upstash Redis) : profils Laboratoire, tokens d'authentification — centres de données nord-américains, chiffrement en transit et au repos</li>
     <li id="p5c"><strong>Vercel Blob</strong> : bilans générés (HTML) — stockage sécurisé, accès par URL unique</li>
     <li id="p5d"><strong>Stripe</strong> : données de paiement — certifié PCI DSS Niveau 1</li>
   </ul>
@@ -83,8 +83,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <h2 id="h6">6. Rétention des données</h2>
   <p id="p6a">Les données sont conservées selon les durées suivantes :</p>
   <ul>
-    <li id="p6b"><strong>Bilans Essentiel/Intermédiaire/Décaissement</strong> : 12 mois après génération</li>
-    <li id="p6c"><strong>Profils Expert</strong> : 12 mois après expiration de l'abonnement</li>
+    <li id="p6b"><strong>Bilans Bilan/Bilan 360/Horizon</strong> : 12 mois après génération</li>
+    <li id="p6c"><strong>Profils Laboratoire</strong> : 12 mois après expiration de l'abonnement</li>
     <li id="p6d"><strong>Données de paiement</strong> : selon les politiques de rétention de Stripe</li>
     <li id="p6e"><strong>Données analytiques</strong> : 12 mois (PostHog), anonymisées</li>
   </ul>
@@ -108,7 +108,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
     <li id="p8e"><strong>Portabilité</strong> : recevoir vos données dans un format structuré (JSON)</li>
     <li id="p8f"><strong>Désindexation</strong> : demander le retrait de vos informations des moteurs de recherche</li>
   </ul>
-  <p id="p8g">Les utilisateurs Expert peuvent télécharger leurs données et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>. Délai de réponse : 30 jours.</p>
+  <p id="p8g">Les utilisateurs du Laboratoire peuvent télécharger leurs données et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>. Délai de réponse : 30 jours.</p>
 
   <h2 id="h9">9. Cookies et suivi</h2>
   <p id="p9">buildfi.ca utilise des témoins (cookies) analytiques (PostHog) pour mesurer l'utilisation du site (pages visitées, taux de conversion). Aucun cookie publicitaire ou de suivi inter-sites n'est utilisé. Les données analytiques ne sont pas liées à votre identité. Lors de votre première visite, une bannière de consentement vous permet d'accepter ou de refuser ces témoins. Votre choix est enregistré localement et peut être modifié en effaçant les données du site dans votre navigateur.</p>
@@ -138,23 +138,23 @@ var T = {
   p1: { fr:"BuildFi Technologies inc., opérant le site buildfi.ca, est responsable de la collecte et du traitement de vos renseignements personnels conformément à la Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE) et à la Loi 25 du Québec (Loi modernisant des dispositions législatives en matière de protection des renseignements personnels).", en:"BuildFi Technologies inc., operating buildfi.ca, is responsible for collecting and processing your personal information in accordance with the Personal Information Protection and Electronic Documents Act (PIPEDA) and Quebec's Law 25 (Act to Modernize Legislative Provisions as Regards the Protection of Personal Information)." },
   h2: { fr:"2. Données collectées", en:"2. Data Collected" },
   p2a: { fr:"Nous collectons les catégories de données suivantes :", en:"We collect the following categories of data:" },
-  p2b: { fr:"<strong>Courriel</strong> : utilisé pour la livraison des bilans, l'authentification Expert et les communications de service", en:"<strong>Email</strong>: used for assessment delivery, Expert authentication, and service communications" },
+  p2b: { fr:"<strong>Courriel</strong> : utilisé pour la livraison des bilans, l'authentification Laboratoire et les communications de service", en:"<strong>Email</strong>: used for assessment delivery, Lab authentication, and service communications" },
   p2c: { fr:"<strong>Réponses au questionnaire</strong> : données financières saisies dans le quiz (âge, revenu, épargne, etc.) — utilisées exclusivement pour générer votre simulation", en:"<strong>Quiz responses</strong>: financial data entered in the quiz (age, income, savings, etc.) — used exclusively to generate your simulation" },
   p2d: { fr:"<strong>Données de paiement</strong> : traitées directement par Stripe. buildfi.ca ne stocke aucun numéro de carte", en:"<strong>Payment data</strong>: processed directly by Stripe. buildfi.ca does not store any card numbers" },
   p2e: { fr:"<strong>Données de navigation</strong> : cookies analytiques (PostHog) — langue, pages visitées, interactions anonymisées", en:"<strong>Browsing data</strong>: analytics cookies (PostHog) — language, pages visited, anonymized interactions" },
   h3: { fr:"3. Finalités du traitement", en:"3. Purpose of Processing" },
-  p3: { fr:"Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.", en:"Your data is used to: generate your assessments and simulations, deliver purchases by email, manage your Expert account (authentication, credits, history), and improve the service through anonymized analytics." },
+  p3: { fr:"Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Laboratoire (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.", en:"Your data is used to: generate your assessments and simulations, deliver purchases by email, manage your Lab account (authentication, credits, history), and improve the service through anonymized analytics." },
   h4: { fr:"4. Base juridique", en:"4. Legal Basis" },
   p4: { fr:"Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement explicite (cookies analytiques, recueilli via la bannière de consentement). Vous pouvez retirer votre consentement pour les cookies en effaçant les données du site dans votre navigateur.", en:"Processing is based on contract performance (generating the ordered assessment/simulation) and explicit consent (analytics cookies, collected via the consent banner). You can withdraw your consent for cookies by clearing your browser's site data." },
   h5: { fr:"5. Stockage et sécurité", en:"5. Storage and Security" },
   p5a: { fr:"Les données sont stockées sur des infrastructures sécurisées :", en:"Data is stored on secure infrastructure:" },
-  p5b: { fr:"<strong>Vercel KV</strong> (Upstash Redis) : profils Expert, tokens d'authentification — centres de données nord-américains, chiffrement en transit et au repos", en:"<strong>Vercel KV</strong> (Upstash Redis): Expert profiles, authentication tokens — North American data centers, encrypted in transit and at rest" },
+  p5b: { fr:"<strong>Vercel KV</strong> (Upstash Redis) : profils Laboratoire, tokens d'authentification — centres de données nord-américains, chiffrement en transit et au repos", en:"<strong>Vercel KV</strong> (Upstash Redis): Lab profiles, authentication tokens — North American data centers, encrypted in transit and at rest" },
   p5c: { fr:"<strong>Vercel Blob</strong> : bilans générés (HTML) — stockage sécurisé, accès par URL unique", en:"<strong>Vercel Blob</strong>: generated assessments (HTML) — secure storage, access via unique URL" },
   p5d: { fr:"<strong>Stripe</strong> : données de paiement — certifié PCI DSS Niveau 1", en:"<strong>Stripe</strong>: payment data — PCI DSS Level 1 certified" },
   h6: { fr:"6. Rétention des données", en:"6. Data Retention" },
   p6a: { fr:"Les données sont conservées selon les durées suivantes :", en:"Data is retained for the following periods:" },
-  p6b: { fr:"<strong>Bilans Essentiel/Intermédiaire/Décaissement</strong> : 12 mois après génération", en:"<strong>Essential/Intermediate/Decumulation assessments</strong>: 12 months after generation" },
-  p6c: { fr:"<strong>Profils Expert</strong> : 12 mois après expiration de l'abonnement", en:"<strong>Expert profiles</strong>: 12 months after subscription expiry" },
+  p6b: { fr:"<strong>Bilans Bilan/Bilan 360/Horizon</strong> : 12 mois après génération", en:"<strong>Snapshot/Snapshot 360/Horizon assessments</strong>: 12 months after generation" },
+  p6c: { fr:"<strong>Profils Laboratoire</strong> : 12 mois après expiration de l'abonnement", en:"<strong>Lab profiles</strong>: 12 months after subscription expiry" },
   p6d: { fr:"<strong>Données de paiement</strong> : selon les politiques de rétention de Stripe", en:"<strong>Payment data</strong>: per Stripe's retention policies" },
   p6e: { fr:"<strong>Données analytiques</strong> : 12 mois (PostHog), anonymisées", en:"<strong>Analytics data</strong>: 12 months (PostHog), anonymized" },
   h7: { fr:"7. Partage et vente de données", en:"7. Data Sharing and Sale" },
@@ -171,7 +171,7 @@ var T = {
   p8d: { fr:"<strong>Suppression</strong> : demander la suppression de vos données (sauf obligations légales de rétention)", en:"<strong>Deletion</strong>: request deletion of your data (except where legally required to retain)" },
   p8e: { fr:"<strong>Portabilité</strong> : recevoir vos données dans un format structuré (JSON)", en:"<strong>Portability</strong>: receive your data in a structured format (JSON)" },
   p8f: { fr:"<strong>Désindexation</strong> : demander le retrait de vos informations des moteurs de recherche", en:"<strong>De-indexing</strong>: request removal of your information from search engines" },
-  p8g: { fr:"Les utilisateurs Expert peuvent télécharger leurs données et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Délai de réponse : 30 jours.", en:"Expert users can download their data and request account deletion directly from the portal. For other requests: <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Response time: 30 days." },
+  p8g: { fr:"Les utilisateurs du Laboratoire peuvent télécharger leurs données et demander la suppression de leur compte directement depuis le portail. Pour les autres demandes : <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Délai de réponse : 30 jours.", en:"Lab users can download their data and request account deletion directly from the portal. For other requests: <a href=\"mailto:support@buildfi.ca\">support@buildfi.ca</a>. Response time: 30 days." },
   h9: { fr:"9. Cookies et suivi", en:"9. Cookies and Tracking" },
   p9: { fr:"buildfi.ca utilise des témoins (cookies) analytiques (PostHog) pour mesurer l'utilisation du site (pages visitées, taux de conversion). Aucun cookie publicitaire ou de suivi inter-sites n'est utilisé. Les données analytiques ne sont pas liées à votre identité. Lors de votre première visite, une bannière de consentement vous permet d'accepter ou de refuser ces témoins. Votre choix est enregistré localement et peut être modifié en effaçant les données du site dans votre navigateur.", en:"buildfi.ca uses analytics cookies (PostHog) to measure site usage (pages visited, conversion rates). No advertising or cross-site tracking cookies are used. Analytics data is not linked to your identity. On your first visit, a consent banner lets you accept or decline these cookies. Your choice is stored locally and can be changed by clearing your browser's site data." },
   h10: { fr:"10. Transfert international", en:"10. International Transfer" },
