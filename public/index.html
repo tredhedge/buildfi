@@ -287,6 +287,7 @@ input,select,textarea{font-size:16px}
 .engine-item-title{font-family:var(--font-body);font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px}
 .engine-item-desc{font-size:14px;color:var(--text-secondary);line-height:1.6}
 @media(max-width:700px){.engine-grid{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}}
+@media(max-width:700px){.proof-grid{grid-template-columns:1fr!important;max-width:400px;margin-left:auto;margin-right:auto}}
 .product-includes{margin-bottom:16px;padding:12px 0;border-top:1px solid var(--border-light)}
 .product-includes-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
 .product-card--expert .product-includes-label{color:rgba(255,255,255,.4)}
@@ -484,6 +485,60 @@ input,select,textarea{font-size:16px}
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ═══ REPORT VISUAL PROOF ═══ -->
+<section class="section section--navy" id="reportProof" style="padding-top:clamp(56px,7vw,80px);padding-bottom:clamp(56px,7vw,80px)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:40px">
+      <p class="section-label" id="proofLabel">Extrait d'un rapport réel</p>
+      <h2 class="section-title" style="color:#fff" id="proofTitle">Ce que vous recevez</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:960px;margin:0 auto" class="proof-grid">
+      <!-- GRADE CARD MOCK -->
+      <div class="reveal" style="background:linear-gradient(150deg,#111b2e,#1a2744,#2c3e6b);border-radius:20px;padding:32px 24px;text-align:center;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.3)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold-light);margin-bottom:20px" id="proofGradeLabel">Votre note de retraite</div>
+        <div style="position:relative;width:120px;height:120px;margin:0 auto 16px">
+          <svg viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8" stroke-dasharray="326.7" stroke-dashoffset="71.9" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-data);font-size:42px;font-weight:800;color:#fff">B+</div>
+        </div>
+        <div style="font-family:var(--font-data);font-size:14px;color:rgba(255,255,255,.5);margin-bottom:14px">78 %</div>
+        <div style="display:inline-block;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(26,122,76,.2);color:#5ce0a0" id="proofGradePill">En bonne voie</div>
+      </div>
+      <!-- PROJECTION SNIPPET -->
+      <div class="reveal reveal-delay-1" style="background:linear-gradient(150deg,#111b2e,#1a2744,#2c3e6b);border-radius:20px;padding:32px 24px;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.3)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold-light);margin-bottom:20px" id="proofProjLabel">Patrimoine projeté</div>
+        <svg viewBox="0 0 240 140" style="width:100%;height:auto" aria-hidden="true">
+          <!-- P75 band -->
+          <path d="M20,110 Q60,95 100,75 Q140,55 180,35 Q200,28 220,25" fill="none" stroke="rgba(92,224,160,.15)" stroke-width="40" stroke-linecap="round"/>
+          <!-- P50 median -->
+          <path d="M20,110 Q60,100 100,85 Q140,70 180,55 Q200,48 220,42" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- P25 band -->
+          <path d="M20,110 Q60,108 100,102 Q140,95 180,88 Q200,85 220,82" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <!-- Labels -->
+          <text x="222" y="27" fill="rgba(92,224,160,.6)" font-size="9" font-family="var(--font-data)">P75</text>
+          <text x="222" y="44" fill="var(--gold)" font-size="9" font-family="var(--font-data)">P50</text>
+          <text x="222" y="84" fill="rgba(255,255,255,.3)" font-size="9" font-family="var(--font-data)">P25</text>
+          <!-- Axis labels -->
+          <text x="20" y="130" fill="rgba(255,255,255,.25)" font-size="8" font-family="var(--font-data)" id="proofAxisStart">65 ans</text>
+          <text x="190" y="130" fill="rgba(255,255,255,.25)" font-size="8" font-family="var(--font-data)" id="proofAxisEnd">95 ans</text>
+        </svg>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:12px;text-align:center;line-height:1.5" id="proofProjDesc">Trois bandes: scénario favorable, médian et défavorable.</div>
+      </div>
+      <!-- AI NARRATION QUOTE -->
+      <div class="reveal reveal-delay-2" style="background:linear-gradient(150deg,#111b2e,#1a2744,#2c3e6b);border-radius:20px;padding:32px 24px;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.3);display:flex;flex-direction:column">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold-light);margin-bottom:20px" id="proofNarrLabel">Narration IA</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.75;flex-grow:1;border-left:3px solid var(--gold);padding-left:16px" id="proofNarrText">
+          &laquo; Votre plan résiste dans 78 % des scénarios simulés. Le facteur ayant le plus d'impact dans cette simulation serait d'augmenter vos cotisations CÉLI de 200 $/mois — cela pourrait améliorer votre taux de réussite de 6 à 8 points. &raquo;
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:16px;text-align:right;font-style:italic" id="proofNarrNote">Exemple de narration</div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:14px;color:rgba(255,255,255,.4);margin-top:32px;line-height:1.6" id="proofFooter">Chaque rapport est personnalisé selon vos données. Aucun bilan n'est identique.</p>
   </div>
 </section>
 
@@ -1081,6 +1136,19 @@ var T = {
   behindP1: { fr:"BuildFi est n\u00e9 d\u2019une frustration simple\u00a0: les outils de planification financi\u00e8re au Canada sont soit trop simplistes pour \u00eatre utiles, soit r\u00e9serv\u00e9s aux professionnels. Il n\u2019existait rien entre le calculateur gratuit qui suppose 6\u00a0% par ann\u00e9e et le planificateur qui facture 1\u00a0500\u00a0$ pour un plan.", en:"BuildFi started from a simple frustration: financial planning tools in Canada are either too simplistic to be useful, or reserved for professionals. There was nothing between the free calculator that assumes 6% per year and the planner who charges $1,500 for a plan." },
   behindP2: { fr:"BuildFi est construit au Qu\u00e9bec par un d\u00e9veloppeur-ing\u00e9nieur qui voulait un outil rigoureux, accessible et honn\u00eate \u2014 pour lui-m\u00eame d\u2019abord, puis pour tous les Canadiens qui m\u00e9ritent de comprendre leur situation financi\u00e8re sans jargon et sans vendeur de fonds.", en:"BuildFi is built in Quebec by a developer-engineer who wanted a rigorous, accessible, and honest tool \u2014 for himself first, then for every Canadian who deserves to understand their financial situation without jargon and without fund salespeople." },
   behindP3: { fr:"Le moteur est valid\u00e9 par plus de 1\u00a0600 tests automatis\u00e9s. La fiscalit\u00e9 couvre les 13 juridictions canadiennes. Et chaque dollar que vous voyez dans votre rapport a \u00e9t\u00e9 v\u00e9rifi\u00e9.", en:"The engine is validated by over 1,600 automated tests. The tax model covers all 13 Canadian jurisdictions. And every dollar you see in your report has been verified." },
+  // Report proof
+  proofLabel: { fr:"Extrait d\u2019un rapport réel", en:'From a real report' },
+  proofTitle: { fr:'Ce que vous recevez', en:'What you receive' },
+  proofGradeLabel: { fr:'Votre note de retraite', en:'Your retirement grade' },
+  proofGradePill: { fr:'En bonne voie', en:'On track' },
+  proofProjLabel: { fr:'Patrimoine projeté', en:'Projected wealth' },
+  proofProjDesc: { fr:'Trois bandes\u00a0: scénario favorable, médian et défavorable.', en:'Three bands: favorable, median, and unfavorable scenarios.' },
+  proofNarrLabel: { fr:'Narration IA', en:'AI narration' },
+  proofNarrText: { fr:'\u00ab\u00a0Votre plan résiste dans 78\u00a0% des scénarios simulés. Le facteur ayant le plus d\u2019impact dans cette simulation serait d\u2019augmenter vos cotisations CÉLI de 200\u00a0$/mois \u2014 cela pourrait améliorer votre taux de réussite de 6 à 8 points.\u00a0\u00bb', en:'\u201cYour plan holds in 78% of simulated scenarios. The factor with the greatest impact in this simulation would be increasing your TFSA contributions by $200/month \u2014 this could improve your success rate by 6 to 8 points.\u201d' },
+  proofNarrNote: { fr:'Exemple de narration', en:'Sample narration' },
+  proofFooter: { fr:"Chaque rapport est personnalisé selon vos données. Aucun bilan n\u2019est identique.", en:'Every report is personalized to your data. No two are alike.' },
+  proofAxisStart: { fr:'65 ans', en:'Age 65' },
+  proofAxisEnd: { fr:'95 ans', en:'Age 95' },
   // Preview
   previewLabel: { fr:'Aperçu du rapport', en:'Report preview' },
   previewTitle: { fr:'Ce que contient chaque rapport', en:'What each report contains' },
