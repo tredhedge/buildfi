@@ -288,6 +288,9 @@ input,select,textarea{font-size:16px}
 .engine-item-desc{font-size:14px;color:var(--text-secondary);line-height:1.6}
 @media(max-width:700px){.engine-grid{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}}
 @media(max-width:700px){.proof-grid{grid-template-columns:1fr!important;max-width:400px;margin-left:auto;margin-right:auto}}
+.dh-step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:12px}
+.dh-btn{flex:1;padding:12px 24px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);font-family:var(--font-body);font-size:15px;font-weight:600;color:var(--navy);cursor:pointer;transition:all .2s}
+.dh-btn:hover{border-color:var(--gold);background:var(--gold-wash-strong);color:var(--gold-dark)}
 .product-includes{margin-bottom:16px;padding:12px 0;border-top:1px solid var(--border-light)}
 .product-includes-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px}
 .product-card--expert .product-includes-label{color:rgba(255,255,255,.4)}
@@ -732,27 +735,42 @@ input,select,textarea{font-size:16px}
       <p class="section-label" id="chooserLabel">Quel produit me convient?</p>
       <h2 class="section-title" id="chooserTitle">Trouvez votre point de départ.</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;max-width:960px;margin:0 auto">
-      <a href="/quiz-essentiel.html" style="display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:22px 20px;text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm)" onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='var(--shadow-gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:8px" id="ch1badge">Bilan — 14,50 $</div>
-        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3" id="ch1title">Je commence à planifier</div>
-        <div style="font-size:14px;color:var(--text-secondary);line-height:1.6" id="ch1desc">Célibataire ou salarié, vous voulez un portrait honnête de votre situation en moins de 10 minutes.</div>
-      </a>
-      <a href="/quiz-intermediaire.html" style="display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:22px 20px;text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm)" onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='var(--shadow-gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:8px" id="ch2badge">Bilan 360 — 29,50 $</div>
-        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3" id="ch2title">En couple, propriétaire ou incorporé</div>
-        <div style="font-size:14px;color:var(--text-secondary);line-height:1.6" id="ch2desc">Analyse conjointe, portrait immobilier, stratégie fiscale, CCPC. Le bilan complet.</div>
-      </a>
-      <a href="/quiz-decaissement.html" style="display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:22px 20px;text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm)" onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='var(--shadow-gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:8px" id="ch3badge">Horizon — 29,50 $</div>
-        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3" id="ch3title">Je prends ma retraite bientôt</div>
-        <div style="font-size:14px;color:var(--text-secondary);line-height:1.6" id="ch3desc">Vous avez accumulé. La question maintenant: combien retirer, dans quel ordre, et quand demander la RRQ?</div>
-      </a>
-      <a href="/expert" style="display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:22px 20px;text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm)" onmouseover="this.style.borderColor='var(--gold)';this.style.boxShadow='var(--shadow-gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:8px" id="ch4badge">Laboratoire — 64,50 $</div>
-        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3" id="ch4title">Je veux tester chaque scénario</div>
-        <div style="font-size:14px;color:var(--text-secondary);line-height:1.6" id="ch4desc">Simulateur interactif, sessions illimitées, 5 exports AI. Pour ceux qui veulent explorer toutes les options.</div>
-      </a>
+    <!-- Interactive decision helper -->
+    <div id="decisionHelper" style="max-width:560px;margin:0 auto">
+      <!-- Q1 -->
+      <div id="dh-q1" class="dh-step">
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;line-height:1.4" id="dhQ1">Êtes-vous déjà à la retraite ou en train de retirer de l'épargne-retraite?</div>
+        <div style="display:flex;gap:12px">
+          <button class="dh-btn" onclick="dhAnswer(1,'yes')" id="dhYes1">Oui</button>
+          <button class="dh-btn" onclick="dhAnswer(1,'no')" id="dhNo1">Non</button>
+        </div>
+      </div>
+      <!-- Q2 (shown if Q1=no) -->
+      <div id="dh-q2" class="dh-step" style="display:none">
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;line-height:1.4" id="dhQ2">Êtes-vous en couple, propriétaire, ou incorporé (CCPC)?</div>
+        <div style="display:flex;gap:12px">
+          <button class="dh-btn" onclick="dhAnswer(2,'yes')" id="dhYes2">Oui</button>
+          <button class="dh-btn" onclick="dhAnswer(2,'no')" id="dhNo2">Non</button>
+        </div>
+      </div>
+      <!-- Q3 (shown if Q2=no) -->
+      <div id="dh-q3" class="dh-step" style="display:none">
+        <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;line-height:1.4" id="dhQ3">Voulez-vous tester plusieurs scénarios vous-même dans un simulateur interactif?</div>
+        <div style="display:flex;gap:12px">
+          <button class="dh-btn" onclick="dhAnswer(3,'yes')" id="dhYes3">Oui</button>
+          <button class="dh-btn" onclick="dhAnswer(3,'no')" id="dhNo3">Non</button>
+        </div>
+      </div>
+      <!-- Result -->
+      <div id="dh-result" style="display:none;margin-top:8px">
+        <div style="background:var(--card);border:2px solid var(--gold);border-radius:var(--radius-md);padding:28px 24px;box-shadow:var(--shadow-gold);text-align:center">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:8px" id="dhResultLabel">Notre suggestion</div>
+          <div style="font-size:28px;font-weight:800;color:var(--navy);margin-bottom:6px" id="dhResultName"></div>
+          <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px" id="dhResultDesc"></div>
+          <a id="dhResultLink" href="#" class="btn btn--gold" style="display:inline-block">Commencer</a>
+        </div>
+        <button onclick="dhReset()" style="display:block;margin:16px auto 0;background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;text-decoration:underline" id="dhRestart">Recommencer</button>
+      </div>
     </div>
   </div>
 </section>
@@ -1188,18 +1206,17 @@ var T = {
   // Chooser
   chooserLabel: { fr:'Quel produit me convient?', en:'Which product fits me?' },
   chooserTitle: { fr:'Trouvez votre point de d\u00e9part.', en:'Find your starting point.' },
-  ch1badge: { fr:'Bilan \u2014 14,50\u00a0$', en:'Snapshot \u2014 $14.50' },
-  ch1title: { fr:'Je commence \u00e0 planifier', en:'I\u2019m starting to plan' },
-  ch1desc: { fr:'C\u00e9libataire ou salari\u00e9, vous voulez un portrait honn\u00eate de votre situation en moins de 10 minutes.', en:'Single or salaried, you want an honest picture of your situation in under 10 minutes.' },
-  ch2badge: { fr:'Bilan 360 \u2014 29,50\u00a0$', en:'Snapshot 360 \u2014 $29.50' },
-  ch2title: { fr:'En couple, propri\u00e9taire ou incorpor\u00e9', en:'Couple, homeowner, or incorporated' },
-  ch2desc: { fr:'Analyse conjointe, portrait immobilier, strat\u00e9gie fiscale, CCPC. Le bilan complet.', en:'Joint analysis, real estate portrait, tax strategy, CCPC. The complete assessment.' },
-  ch3badge: { fr:'Horizon \u2014 29,50\u00a0$', en:'Horizon \u2014 $29.50' },
-  ch3title: { fr:'Je prends ma retraite bient\u00f4t', en:'I\u2019m retiring soon' },
-  ch3desc: { fr:'Vous avez accumul\u00e9. La question maintenant\u00a0: combien retirer, dans quel ordre, et quand demander la RRQ?', en:'You\u2019ve accumulated. Now the question: how much to withdraw, in what order, and when to take CPP?' },
-  ch4badge: { fr:'Laboratoire \u2014 64,50\u00a0$', en:'Lab \u2014 $64.50' },
-  ch4title: { fr:'Je veux tester chaque sc\u00e9nario', en:'I want to test every scenario' },
-  ch4desc: { fr:'Simulateur interactif, sessions illimit\u00e9es, 5 exports AI. Pour ceux qui veulent explorer toutes les options.', en:'Interactive simulator, unlimited sessions, 5 AI exports. For those who want to explore every option.' },
+  dhQ1: { fr:"\u00cates-vous d\u00e9j\u00e0 \u00e0 la retraite ou en train de retirer de l\u2019\u00e9pargne-retraite?", en:'Are you already retired or withdrawing from retirement savings?' },
+  dhYes1: { fr:'Oui', en:'Yes' },
+  dhNo1: { fr:'Non', en:'No' },
+  dhQ2: { fr:"\u00cates-vous en couple, propri\u00e9taire, ou incorpor\u00e9 (CCPC)?", en:'Are you in a couple, a homeowner, or incorporated (CCPC)?' },
+  dhYes2: { fr:'Oui', en:'Yes' },
+  dhNo2: { fr:'Non', en:'No' },
+  dhQ3: { fr:'Voulez-vous tester plusieurs sc\u00e9narios vous-m\u00eame dans un simulateur interactif?', en:'Do you want to test multiple scenarios yourself in an interactive simulator?' },
+  dhYes3: { fr:'Oui', en:'Yes' },
+  dhNo3: { fr:'Non', en:'No' },
+  dhResultLabel: { fr:'Notre suggestion', en:'Our suggestion' },
+  dhRestart: { fr:'Recommencer', en:'Start over' },
   // FAQ
   faqLabel: { fr:'Questions fréquentes', en:'Frequently asked questions' },
   faqTitle: { fr:'Tout savoir sur votre retraite', en:'Everything you need to know' },
@@ -1420,6 +1437,42 @@ function buildFaqSchema() {
 
 document.getElementById('langToggle').addEventListener('click', toggleLang);
 document.getElementById('footLangToggle').addEventListener('click', toggleLang);
+
+/* ─── DECISION HELPER ─── */
+var dhProducts = {
+  horizon:  { name:{fr:'Horizon',en:'Horizon'}, desc:{fr:'Optimisez vos retraits, le timing RRQ/PSV et la résilience aux krachs.',en:'Optimize your withdrawals, CPP/OAS timing, and crash resilience.'}, link:'/quiz-decaissement.html', cta:{fr:'Commencer le questionnaire Horizon',en:'Start the Horizon questionnaire'} },
+  bilan360: { name:{fr:'Bilan 360',en:'Snapshot 360'}, desc:{fr:'Analyse conjointe, portrait immobilier, stratégie fiscale et succession.',en:'Joint analysis, real estate portrait, tax strategy, and succession.'}, link:'/quiz-intermediaire.html', cta:{fr:'Commencer le questionnaire Bilan 360',en:'Start the Snapshot 360 questionnaire'} },
+  lab:      { name:{fr:'Laboratoire',en:'Lab'}, desc:{fr:'Simulateur interactif, sessions illimitées, 5 exports IA. Testez chaque décision.',en:'Interactive simulator, unlimited sessions, 5 AI exports. Test every decision.'}, link:'/expert', cta:{fr:'Découvrir le Laboratoire',en:'Discover the Lab'} },
+  bilan:    { name:{fr:'Bilan',en:'Snapshot'}, desc:{fr:'Votre portrait financier en 5 à 8 minutes. Le point de départ idéal.',en:'Your financial portrait in 5 to 8 minutes. The ideal starting point.'}, link:'/quiz-essentiel.html', cta:{fr:'Commencer le questionnaire Bilan',en:'Start the Snapshot questionnaire'} }
+};
+function dhAnswer(q, ans) {
+  if (q === 1 && ans === 'yes') dhShow('horizon');
+  else if (q === 1) { document.getElementById('dh-q1').style.display='none'; document.getElementById('dh-q2').style.display=''; }
+  else if (q === 2 && ans === 'yes') dhShow('bilan360');
+  else if (q === 2) { document.getElementById('dh-q2').style.display='none'; document.getElementById('dh-q3').style.display=''; }
+  else if (q === 3 && ans === 'yes') dhShow('lab');
+  else dhShow('bilan');
+  trackEvent('decision_helper', { question: q, answer: ans });
+}
+function dhShow(key) {
+  var p = dhProducts[key];
+  document.getElementById('dh-q1').style.display='none';
+  document.getElementById('dh-q2').style.display='none';
+  document.getElementById('dh-q3').style.display='none';
+  document.getElementById('dhResultName').textContent = p.name[lang];
+  document.getElementById('dhResultDesc').textContent = p.desc[lang];
+  var lnk = document.getElementById('dhResultLink');
+  lnk.href = p.link + '?lang=' + lang;
+  lnk.textContent = p.cta[lang];
+  document.getElementById('dh-result').style.display = '';
+}
+function dhReset() {
+  document.getElementById('dh-result').style.display='none';
+  document.getElementById('dh-q1').style.display='';
+  document.getElementById('dh-q2').style.display='none';
+  document.getElementById('dh-q3').style.display='none';
+}
+
 applyLang();
 buildFaqSchema();
 
