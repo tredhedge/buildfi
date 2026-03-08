@@ -49,6 +49,8 @@ export async function verifyToken(req: NextRequest): Promise<AuthResult> {
 }
 
 export function buildMagicLinkUrl(token: string): string {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  let base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
+  // Ensure www — buildfi.ca 307-redirects to www and strips query params
+  base = base.replace("https://buildfi.ca", "https://www.buildfi.ca");
   return `${base}/simulateur?token=${token}`;
 }
