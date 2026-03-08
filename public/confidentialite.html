@@ -52,7 +52,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
 
 <div class="legal-wrap">
   <h1 id="lTitle">Politique de confidentialité</h1>
-  <p class="legal-date" id="lDate">Dernière mise à jour : 4 mars 2026</p>
+  <p class="legal-date" id="lDate">Dernière mise à jour : 7 mars 2026</p>
 
   <h2 id="h1">1. Responsable du traitement</h2>
   <p id="p1">BuildFi Technologies inc., opérant le site buildfi.ca, est responsable de la collecte et du traitement de vos renseignements personnels conformément à la Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE) et à la Loi 25 du Québec (Loi modernisant des dispositions législatives en matière de protection des renseignements personnels).</p>
@@ -70,7 +70,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <p id="p3">Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.</p>
 
   <h2 id="h4">4. Base juridique</h2>
-  <p id="p4">Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement implicite (navigation, cookies analytiques). Vous pouvez retirer votre consentement pour les cookies en désactivant le suivi dans votre navigateur.</p>
+  <p id="p4">Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement explicite (cookies analytiques, recueilli via la bannière de consentement). Vous pouvez retirer votre consentement pour les cookies en effaçant les données du site dans votre navigateur.</p>
 
   <h2 id="h5">5. Stockage et sécurité</h2>
   <p id="p5a">Les données sont stockées sur des infrastructures sécurisées :</p>
@@ -83,7 +83,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#96700a}
   <h2 id="h6">6. Rétention des données</h2>
   <p id="p6a">Les données sont conservées selon les durées suivantes :</p>
   <ul>
-    <li id="p6b"><strong>Bilans Essentiel/Intermédiaire</strong> : 12 mois après génération</li>
+    <li id="p6b"><strong>Bilans Essentiel/Intermédiaire/Décaissement</strong> : 12 mois après génération</li>
     <li id="p6c"><strong>Profils Expert</strong> : 12 mois après expiration de l'abonnement</li>
     <li id="p6d"><strong>Données de paiement</strong> : selon les politiques de rétention de Stripe</li>
     <li id="p6e"><strong>Données analytiques</strong> : 12 mois (PostHog), anonymisées</li>
@@ -133,7 +133,7 @@ var lang = "fr";
 var T = {
   pageTitle: { fr:"Politique de confidentialité — buildfi.ca", en:"Privacy Policy — buildfi.ca" },
   lTitle: { fr:"Politique de confidentialité", en:"Privacy Policy" },
-  lDate: { fr:"Dernière mise à jour : 4 mars 2026", en:"Last updated: March 4, 2026" },
+  lDate: { fr:"Dernière mise à jour : 7 mars 2026", en:"Last updated: March 7, 2026" },
   h1: { fr:"1. Responsable du traitement", en:"1. Data Controller" },
   p1: { fr:"BuildFi Technologies inc., opérant le site buildfi.ca, est responsable de la collecte et du traitement de vos renseignements personnels conformément à la Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE) et à la Loi 25 du Québec (Loi modernisant des dispositions législatives en matière de protection des renseignements personnels).", en:"BuildFi Technologies inc., operating buildfi.ca, is responsible for collecting and processing your personal information in accordance with the Personal Information Protection and Electronic Documents Act (PIPEDA) and Quebec's Law 25 (Act to Modernize Legislative Provisions as Regards the Protection of Personal Information)." },
   h2: { fr:"2. Données collectées", en:"2. Data Collected" },
@@ -145,7 +145,7 @@ var T = {
   h3: { fr:"3. Finalités du traitement", en:"3. Purpose of Processing" },
   p3: { fr:"Vos données sont utilisées pour : générer vos bilans et simulations, livrer vos achats par courriel, administrer votre compte Expert (authentification, crédits, historique), et améliorer le service par des analyses anonymisées.", en:"Your data is used to: generate your assessments and simulations, deliver purchases by email, manage your Expert account (authentication, credits, history), and improve the service through anonymized analytics." },
   h4: { fr:"4. Base juridique", en:"4. Legal Basis" },
-  p4: { fr:"Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement implicite (navigation, cookies analytiques). Vous pouvez retirer votre consentement pour les cookies en désactivant le suivi dans votre navigateur.", en:"Processing is based on contract performance (generating the ordered assessment/simulation) and implied consent (browsing, analytics cookies). You can withdraw your consent for cookies by disabling tracking in your browser." },
+  p4: { fr:"Le traitement repose sur l'exécution du contrat (génération du bilan/simulation commandé) et le consentement explicite (cookies analytiques, recueilli via la bannière de consentement). Vous pouvez retirer votre consentement pour les cookies en effaçant les données du site dans votre navigateur.", en:"Processing is based on contract performance (generating the ordered assessment/simulation) and explicit consent (analytics cookies, collected via the consent banner). You can withdraw your consent for cookies by clearing your browser's site data." },
   h5: { fr:"5. Stockage et sécurité", en:"5. Storage and Security" },
   p5a: { fr:"Les données sont stockées sur des infrastructures sécurisées :", en:"Data is stored on secure infrastructure:" },
   p5b: { fr:"<strong>Vercel KV</strong> (Upstash Redis) : profils Expert, tokens d'authentification — centres de données nord-américains, chiffrement en transit et au repos", en:"<strong>Vercel KV</strong> (Upstash Redis): Expert profiles, authentication tokens — North American data centers, encrypted in transit and at rest" },
@@ -153,7 +153,7 @@ var T = {
   p5d: { fr:"<strong>Stripe</strong> : données de paiement — certifié PCI DSS Niveau 1", en:"<strong>Stripe</strong>: payment data — PCI DSS Level 1 certified" },
   h6: { fr:"6. Rétention des données", en:"6. Data Retention" },
   p6a: { fr:"Les données sont conservées selon les durées suivantes :", en:"Data is retained for the following periods:" },
-  p6b: { fr:"<strong>Bilans Essentiel/Intermédiaire</strong> : 12 mois après génération", en:"<strong>Essential/Intermediate assessments</strong>: 12 months after generation" },
+  p6b: { fr:"<strong>Bilans Essentiel/Intermédiaire/Décaissement</strong> : 12 mois après génération", en:"<strong>Essential/Intermediate/Decumulation assessments</strong>: 12 months after generation" },
   p6c: { fr:"<strong>Profils Expert</strong> : 12 mois après expiration de l'abonnement", en:"<strong>Expert profiles</strong>: 12 months after subscription expiry" },
   p6d: { fr:"<strong>Données de paiement</strong> : selon les politiques de rétention de Stripe", en:"<strong>Payment data</strong>: per Stripe's retention policies" },
   p6e: { fr:"<strong>Données analytiques</strong> : 12 mois (PostHog), anonymisées", en:"<strong>Analytics data</strong>: 12 months (PostHog), anonymized" },
