@@ -34,6 +34,16 @@ const STEPS_EXPERT: Step[] = [
   { fr: "Lien magique envoyé", en: "Magic link sent", durationMs: 1500 },
 ];
 
+const STEPS_DECUM: Step[] = [
+  { fr: "5 000 scénarios de base...", en: "Running 5,000 base scenarios...", durationMs: 3000 },
+  { fr: "Scénarios de crise (marché baissier)...", en: "Crisis scenarios (bear market)...", durationMs: 2500 },
+  { fr: "Comparaison du moment optimal RPC/RRQ...", en: "Comparing optimal CPP/QPP timing...", durationMs: 2500 },
+  { fr: "Analyse fiscale de décaissement...", en: "Decumulation tax analysis...", durationMs: 2000 },
+  { fr: "Narration personnalisée...", en: "Personalized narration...", durationMs: 4000 },
+  { fr: "Mise en page du bilan...", en: "Assessment layout...", durationMs: 1500 },
+  { fr: "Envoi par courriel...", en: "Sending by email...", durationMs: 2000 },
+];
+
 function ShareSection({ fr, refCode }: { fr: boolean; refCode: string | null }) {
   const [copied, setCopied] = useState(false);
   const base = "https://www.buildfi.ca";
@@ -146,7 +156,7 @@ function ConfirmationContent() {
   const fr = lang === "fr";
   const refCode = searchParams.get("ref");
 
-  const steps = tier === "expert" ? STEPS_EXPERT : STEPS_REPORT;
+  const steps = tier === "expert" ? STEPS_EXPERT : tier === "decaissement" ? STEPS_DECUM : STEPS_REPORT;
   const [currentStep, setCurrentStep] = useState(0);
   const [done, setDone] = useState(false);
 
@@ -213,6 +223,9 @@ function ConfirmationContent() {
             ? (isExpert
               ? (fr ? "Votre bilan Expert est prêt. Un lien magique a été envoyé à votre courriel pour accéder au simulateur."
                     : "Your Expert assessment is ready. A magic link has been sent to your email to access the simulator.")
+              : tier === "decaissement"
+              ? (fr ? "Votre bilan de décaissement est en route — 6 scénarios analysés. Vérifiez votre boîte de réception dans les prochaines minutes."
+                    : "Your decumulation assessment is on its way — 6 scenarios analyzed. Check your inbox in the next few minutes.")
               : (fr ? "Votre bilan personnalisé est en route. Vérifiez votre boîte de réception dans les prochaines minutes."
                     : "Your personalized assessment is on its way. Check your inbox in the next few minutes."))
             : (fr ? "Nous préparons votre analyse personnalisée. Chaque étape prend quelques secondes."
@@ -285,7 +298,7 @@ function ConfirmationContent() {
             </div>
 
             {/* Tier-specific upsell */}
-            {tier !== "expert" && (
+            {(tier === "essentiel" || tier === "intermediaire") && (
               <div style={{
                 background: "linear-gradient(135deg, #1a2744 0%, #2a3a5c 100%)",
                 borderRadius: 12, padding: "22px 22px", marginBottom: 20, textAlign: "left", color: "#fff",
@@ -323,65 +336,92 @@ function ConfirmationContent() {
             )}
 
             {/* Bonus tools section */}
-            {(tier === "essentiel" || tier === "intermediaire") && (
+            {(tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") && (
               <div style={{ marginBottom: 20, textAlign: "left" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1208", marginBottom: 6 }}>
-                  {tier === "intermediaire"
+                  {tier === "decaissement"
+                    ? (fr ? "Votre simulateur interactif inclus" : "Your included interactive simulator")
+                    : tier === "intermediaire"
                     ? (fr ? "Vos deux outils inclus" : "Your two included tools")
                     : (fr ? "Votre outil interactif — à vous de choisir" : "Your interactive tool — your choice")}
                 </div>
                 <div style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginBottom: 14 }}>
-                  {tier === "intermediaire"
+                  {tier === "decaissement"
+                    ? (fr ? "Testez différents scénarios de retrait, d'allocation et de moment optimal pour vos rentes." : "Test different withdrawal scenarios, allocations, and optimal timing for your pensions.")
+                    : tier === "intermediaire"
                     ? (fr ? "Utilisez celui qui correspond à votre situation en ce moment — ou les deux." : "Use the one that fits your situation right now — or both.")
                     : (fr ? "Un outil inclus avec votre rapport. Choisissez celui qui correspond à votre situation en ce moment." : "One tool included with your report. Choose the one that fits your situation right now.")}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                  {/* Card A */}
-                  <a
-                    href={tier === "intermediaire" ? "/outils/allocation-epargne.html" : "/outils/dettes"}
-                    style={{
-                      flex: "1 1 200px", minWidth: 200, background: "#fff",
-                      border: "1.5px solid #E8E0D4", borderRadius: 12,
-                      padding: "18px 18px", textDecoration: "none", display: "block",
-                    }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
-                      {tier === "intermediaire"
-                        ? (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")
-                        : (fr ? "Outil de gestion de dettes" : "Debt Management Tool")}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
-                      {tier === "intermediaire"
-                        ? (fr ? "Vos données de rapport sont pré-remplies" : "Your report data is pre-filled")
-                        : (fr ? "Pour analyser et accélérer votre remboursement" : "To analyze and accelerate your repayment")}
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
-                      {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
-                    </span>
-                  </a>
-                  {/* Card B */}
-                  <a
-                    href={tier === "intermediaire" ? "/outils/dettes" : "/outils/allocation-epargne.html"}
-                    style={{
-                      flex: "1 1 200px", minWidth: 200, background: "#fff",
-                      border: "1.5px solid #E8E0D4", borderRadius: 12,
-                      padding: "18px 18px", textDecoration: "none", display: "block",
-                    }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
-                      {tier === "intermediaire"
-                        ? (fr ? "Outil de gestion de dettes" : "Debt Management Tool")
-                        : (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
-                      {tier === "intermediaire"
-                        ? (fr ? "Analysez vos dettes et vos options de remboursement" : "Analyze your debts and repayment options")
-                        : (fr ? "Pour savoir où placer votre prochain dollar" : "To know where to put your next dollar")}
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
-                      {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
-                    </span>
-                  </a>
+                  {tier === "decaissement" ? (
+                    <a
+                      href={`/outils/decaissement-simulateur.html?lang=${lang}`}
+                      style={{
+                        flex: "1 1 200px", minWidth: 200, background: "#fff",
+                        border: "1.5px solid #E8E0D4", borderRadius: 12,
+                        padding: "18px 18px", textDecoration: "none", display: "block",
+                      }}
+                    >
+                      <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
+                        {fr ? "Simulateur de décaissement" : "Decumulation Simulator"}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                        {fr ? "Vos données de bilan sont pré-remplies. Ajustez revenus, allocation et moment de vos rentes." : "Your assessment data is pre-filled. Adjust income, allocation, and pension timing."}
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
+                        {fr ? "Ouvrir le simulateur \u2192" : "Open simulator \u2192"}
+                      </span>
+                    </a>
+                  ) : (
+                    <>
+                      {/* Card A */}
+                      <a
+                        href={tier === "intermediaire" ? "/outils/allocation-epargne.html" : "/outils/dettes"}
+                        style={{
+                          flex: "1 1 200px", minWidth: 200, background: "#fff",
+                          border: "1.5px solid #E8E0D4", borderRadius: 12,
+                          padding: "18px 18px", textDecoration: "none", display: "block",
+                        }}
+                      >
+                        <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
+                          {tier === "intermediaire"
+                            ? (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")
+                            : (fr ? "Outil de gestion de dettes" : "Debt Management Tool")}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                          {tier === "intermediaire"
+                            ? (fr ? "Vos données de rapport sont pré-remplies" : "Your report data is pre-filled")
+                            : (fr ? "Pour analyser et accélérer votre remboursement" : "To analyze and accelerate your repayment")}
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
+                          {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
+                        </span>
+                      </a>
+                      {/* Card B */}
+                      <a
+                        href={tier === "intermediaire" ? "/outils/dettes" : "/outils/allocation-epargne.html"}
+                        style={{
+                          flex: "1 1 200px", minWidth: 200, background: "#fff",
+                          border: "1.5px solid #E8E0D4", borderRadius: 12,
+                          padding: "18px 18px", textDecoration: "none", display: "block",
+                        }}
+                      >
+                        <div style={{ fontSize: 14, fontWeight: 700, color: MARINE, marginBottom: 6 }}>
+                          {tier === "intermediaire"
+                            ? (fr ? "Outil de gestion de dettes" : "Debt Management Tool")
+                            : (fr ? "Allocation REER/CÉLI" : "RRSP/TFSA Allocation Tool")}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginBottom: 12 }}>
+                          {tier === "intermediaire"
+                            ? (fr ? "Analysez vos dettes et vos options de remboursement" : "Analyze your debts and repayment options")
+                            : (fr ? "Pour savoir où placer votre prochain dollar" : "To know where to put your next dollar")}
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>
+                          {fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192"}
+                        </span>
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -400,7 +440,7 @@ function ConfirmationContent() {
                   : "Your 2nd assessment is automatically 50% off."}
               </div>
               <a
-                href={tier === "intermediaire"
+                href={tier === "intermediaire" || tier === "decaissement"
                   ? `/quiz-essentiel.html?lang=${fr ? "fr" : "en"}&second=1`
                   : `/quiz-intermediaire.html?lang=${fr ? "fr" : "en"}&second=1`}
                 style={{
