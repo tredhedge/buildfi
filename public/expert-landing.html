@@ -343,14 +343,14 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 <section class="section" id="comparison">
   <div class="container" style="text-align:center">
     <p class="section-label" id="compLabel">Comparaison</p>
-    <h2 class="section-title" style="text-align:center" id="compTitle">Laboratoire vs Essentiel et Intermédiaire</h2>
+    <h2 class="section-title" style="text-align:center" id="compTitle">Laboratoire vs Bilan et Bilan 360</h2>
     <div class="comp-wrap">
       <table class="comp-table">
         <thead>
           <tr>
             <th id="ctHF">Fonctionnalité</th>
-            <th id="ctHE">Essentiel<br><span class="price-was">29 $</span> <strong>14,50 $</strong></th>
-            <th id="ctHI">Intermédiaire<br><span class="price-was">59 $</span> <strong>29,50 $</strong></th>
+            <th id="ctHE">Bilan<br><span class="price-was">29 $</span> <strong>14,50 $</strong></th>
+            <th id="ctHI">Bilan 360<br><span class="price-was">59 $</span> <strong>29,50 $</strong></th>
             <th class="cx" id="ctHX">Laboratoire<br><span class="price-was">129 $</span> <strong>64,50 $</strong></th>
           </tr>
         </thead>
@@ -391,8 +391,8 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
       <div class="nfe-col nfe-no">
         <h3 id="nfeNoTitle">Pas pour vous si :</h3>
         <ul>
-          <li id="nfeN1">Vous voulez juste une note rapide &rarr; <a href="/quiz-essentiel.html">Essentiel (14,50 $)</a></li>
-          <li id="nfeN2">Vous voulez un portrait complet sans simulateur &rarr; <a href="/quiz-intermediaire.html">Intermédiaire (29,50 $)</a></li>
+          <li id="nfeN1">Vous voulez juste une note rapide &rarr; <a href="/bilan">Bilan (14,50 $)</a></li>
+          <li id="nfeN2">Vous voulez un portrait complet sans simulateur &rarr; <a href="/bilan-360">Bilan 360 (29,50 $)</a></li>
         </ul>
       </div>
     </div>
@@ -534,8 +534,8 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
     <h2 class="section-title" style="text-align:center" id="faqTitle">Ce que vous voulez savoir.</h2>
     <div class="faq-list">
       <div class="faq-item">
-        <button class="faq-q"><span id="fq1">Quelle est la différence avec le bilan Essentiel?</span><span class="arrow">&#8964;</span></button>
-        <div class="faq-a"><div class="faq-a-inner" id="fa1">Le bilan Essentiel est un portrait unique. Le Laboratoire vous permet de tester des dizaines de scénarios en temps réel et de voir instantanément l'impact de chaque décision.</div></div>
+        <button class="faq-q"><span id="fq1">Quelle est la différence avec le Bilan?</span><span class="arrow">&#8964;</span></button>
+        <div class="faq-a"><div class="faq-a-inner" id="fa1">Le Bilan est un portrait unique. Le Laboratoire vous permet de tester des dizaines de scénarios en temps réel et de voir instantanément l'impact de chaque décision.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q"><span id="fq2">Est-ce que j'ai besoin de connaissances financières?</span><span class="arrow">&#8964;</span></button>
@@ -546,8 +546,8 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
         <div class="faq-a"><div class="faq-a-inner" id="fa3">Votre accès expire. Vos exports restent accessibles. Vous pouvez renouveler pour 29 $/an.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q"><span id="fq4">Puis-je commencer par Essentiel et passer au Laboratoire?</span><span class="arrow">&#8964;</span></button>
-        <div class="faq-a"><div class="faq-a-inner" id="fa4">Oui. Votre achat Essentiel est crédité sur le prix du Laboratoire.</div></div>
+        <button class="faq-q"><span id="fq4">Puis-je commencer par le Bilan et passer au Laboratoire?</span><span class="arrow">&#8964;</span></button>
+        <div class="faq-a"><div class="faq-a-inner" id="fa4">Oui. Votre achat Bilan ou Bilan 360 est crédité sur le prix du Laboratoire.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q"><span id="fq5">Le simulateur fonctionne-t-il sur mobile?</span><span class="arrow">&#8964;</span></button>
@@ -565,7 +565,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
     <div class="trust-grid">
       <div class="trust-item">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span id="tr1">Moteur validé par 453 tests automatisés</span>
+        <span id="tr1">Moteur validé par plus de 1 600 tests automatisés</span>
       </div>
       <div class="trust-item">
         <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -674,10 +674,10 @@ var T = {
 
   // ── Comparison ──
   compLabel: { fr:'Comparaison', en:'Comparison' },
-  compTitle: { fr:'Laboratoire vs Essentiel et Interm\u00e9diaire', en:'Lab vs Essential and Intermediate' },
+  compTitle: { fr:'Laboratoire vs Bilan et Bilan 360', en:'Lab vs Snapshot and Snapshot 360' },
   ctHF: { fr:'Fonctionnalit\u00e9', en:'Feature' },
-  ctHE: { fr:'Essentiel<br><span class="price-was">29\u00a0$</span> <strong>14,50\u00a0$</strong>', en:'Essential<br><span class="price-was">$29</span> <strong>$14.50</strong>' },
-  ctHI: { fr:'Interm\u00e9diaire<br><span class="price-was">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Intermediate<br><span class="price-was">$59</span> <strong>$29.50</strong>' },
+  ctHE: { fr:'Bilan<br><span class="price-was">29\u00a0$</span> <strong>14,50\u00a0$</strong>', en:'Snapshot<br><span class="price-was">$29</span> <strong>$14.50</strong>' },
+  ctHI: { fr:'Bilan 360<br><span class="price-was">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Snapshot 360<br><span class="price-was">$59</span> <strong>$29.50</strong>' },
   ctHX: { fr:'Laboratoire<br><span class="price-was">129\u00a0$</span> <strong>64,50\u00a0$</strong>', en:'Lab<br><span class="price-was">$129</span> <strong>$64.50</strong>' },
   ct1: { fr:'Sc\u00e9narios Monte Carlo', en:'Monte Carlo scenarios' },
   ctE1: { fr:'5 000', en:'5,000' },
@@ -726,8 +726,8 @@ var T = {
   nfeY3: { fr:'Vous voulez comprendre les chiffres, pas juste une note', en:'You want to understand the numbers, not just a grade' },
   nfeY4: { fr:'Vous souhaitez un bilan annuel pour suivre votre progression', en:'You want an annual review to track your progress' },
   nfeNoTitle: { fr:'Pas pour vous si :', en:'Not for you if:' },
-  nfeN1: { fr:'Vous voulez juste une note rapide \u2192 <a href="/quiz-essentiel.html">Essentiel (14,50\u00a0$)</a>', en:'You just want a quick grade \u2192 <a href="/quiz-essentiel.html">Essential ($14.50)</a>' },
-  nfeN2: { fr:'Vous voulez un portrait complet sans simulateur \u2192 <a href="/quiz-intermediaire.html">Interm\u00e9diaire (29,50\u00a0$)</a>', en:'You want a full portrait without a simulator \u2192 <a href="/quiz-intermediaire.html">Intermediate ($29.50)</a>' },
+  nfeN1: { fr:'Vous voulez juste une note rapide \u2192 <a href="/bilan">Bilan (14,50\u00a0$)</a>', en:'You just want a quick grade \u2192 <a href="/bilan">Snapshot ($14.50)</a>' },
+  nfeN2: { fr:'Vous voulez un portrait complet sans simulateur \u2192 <a href="/bilan-360">Bilan 360 (29,50\u00a0$)</a>', en:'You want a full portrait without a simulator \u2192 <a href="/bilan-360">Snapshot 360 ($29.50)</a>' },
 
   // ── Pour qui ──
   pqLabel: { fr:'Id\u00e9al pour', en:'Ideal for' },
@@ -790,21 +790,21 @@ var T = {
   // ── FAQ ──
   faqLabel: { fr:'Questions fr\u00e9quentes', en:'Frequently asked questions' },
   faqTitle: { fr:'Ce que vous voulez savoir.', en:'What you want to know.' },
-  fq1: { fr:'Quelle est la diff\u00e9rence avec le bilan Essentiel?', en:'What\u2019s the difference from the Essential assessment?' },
-  fa1: { fr:'Le bilan Essentiel est un portrait unique. Le Laboratoire vous permet de tester des dizaines de sc\u00e9narios en temps r\u00e9el et de voir instantan\u00e9ment l\u2019impact de chaque d\u00e9cision.', en:'The Essential assessment is a one-time portrait. The Lab lets you test dozens of scenarios in real time and instantly see the impact of every decision.' },
+  fq1: { fr:'Quelle est la diff\u00e9rence avec le Bilan?', en:'What\u2019s the difference from the Snapshot?' },
+  fa1: { fr:'Le Bilan est un portrait unique. Le Laboratoire vous permet de tester des dizaines de sc\u00e9narios en temps r\u00e9el et de voir instantan\u00e9ment l\u2019impact de chaque d\u00e9cision.', en:'The Snapshot is a one-time portrait. The Lab lets you test dozens of scenarios in real time and instantly see the impact of every decision.' },
   fq2: { fr:'Est-ce que j\u2019ai besoin de connaissances financi\u00e8res?', en:'Do I need financial knowledge?' },
   fa2: { fr:'Des connaissances de base (REER, CELI, RRQ) sont utiles. Le simulateur est con\u00e7u pour les gens qui veulent comprendre leurs chiffres, pas juste recevoir un bilan.', en:'Basic knowledge (RRSP, TFSA, CPP) is helpful. The simulator is designed for people who want to understand their numbers, not just receive an assessment.' },
   fq3: { fr:'Que se passe-t-il apr\u00e8s 12 mois?', en:'What happens after 12 months?' },
   fa3: { fr:'Votre acc\u00e8s expire. Vos exports restent accessibles. Vous pouvez renouveler pour 29\u00a0$/an.', en:'Your access expires. Your exports remain accessible. You can renew for $29/year.' },
-  fq4: { fr:'Puis-je commencer par Essentiel et passer au Laboratoire?', en:'Can I start with Essential and upgrade to the Lab?' },
-  fa4: { fr:'Oui. Votre achat Essentiel est cr\u00e9dit\u00e9 sur le prix du Laboratoire.', en:'Yes. Your Essential purchase is credited toward the Lab price.' },
+  fq4: { fr:'Puis-je commencer par le Bilan et passer au Laboratoire?', en:'Can I start with the Snapshot and upgrade to the Lab?' },
+  fa4: { fr:'Oui. Votre achat Bilan ou Bilan 360 est cr\u00e9dit\u00e9 sur le prix du Laboratoire.', en:'Yes. Your Snapshot or Snapshot 360 purchase is credited toward the Lab price.' },
   fq5: { fr:'Le simulateur fonctionne-t-il sur mobile?', en:'Does the simulator work on mobile?' },
   fa5: { fr:'Le simulateur est con\u00e7u pour ordinateur. Un avertissement s\u2019affiche sur mobile (\u00e9cran trop petit pour les tableaux et graphiques).', en:'The simulator is designed for desktop. A warning appears on mobile (screen too small for tables and charts).' },
 
   // ── Trust ──
   trustLabel: { fr:'Rigueur', en:'Rigor' },
   trustTitle: { fr:'Construit pour \u00eatre v\u00e9rifi\u00e9.', en:'Built to be verified.' },
-  tr1: { fr:'Moteur valid\u00e9 par 453 tests automatis\u00e9s', en:'Engine validated by 453 automated tests' },
+  tr1: { fr:'Moteur valid\u00e9 par plus de 1\u00a0600 tests automatis\u00e9s', en:'Engine validated by over 1,600 automated tests' },
   tr2: { fr:'Fiscalit\u00e9 13 provinces, constantes 2026', en:'Taxes for 13 provinces, 2026 constants' },
   tr3: { fr:'Tables de mortalit\u00e9 CPM-2023 (Institut canadien des actuaires)', en:'CPM-2023 mortality tables (Canadian Institute of Actuaries)' },
   tr4: { fr:'Aucune publicit\u00e9. Aucune vente de donn\u00e9es.', en:'No advertising. No data sales.' },
