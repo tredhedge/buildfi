@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 > Graphe de dépendances complet de l'infrastructure BuildFi. Consulter AVANT de modifier un composant.
-> Mis à jour: 2026-03-02 — v2 (audit exhaustif, 60+ composants, 80+ connexions)
+> Mis à jour: 2026-03-07 — v4 (infra blockers resolved, /merci all tiers, email/cron inventory corrected, Stripe all keys)
 > Statut : ✅ existe | 🔨 à construire | ⚠️ bloqué | 📋 planifié
 
 ---
@@ -22,9 +22,11 @@
 | quiz_inter | Quiz Intermédiaire | 80+ champs · 8 étapes · UX immersive | Inter | 🔨 |
 | quiz_expert | Quiz Expert | Inter + bloc H · ~20 champs | Expert | 🔨 |
 | simulateur | Simulateur Expert | Illimité · 3 workflows · déterministe + MC async | Expert | 🔨 |
-| merci | Page /merci | Skeleton loader · grade live · referral · offre 2e rapport | All | ✅ basique, 🔨 améliorée |
+| merci | Page /merci | Tier-aware steps (Ess/Inter/Decum/Expert) · referral · tools · upsell · attribution | All | ✅ |
 | portail | Portail /expert | Dashboard · profils · crédits · historique · exports | Expert | 🔨 |
 | page_vente_expert | Page vente Expert | Hero · workflows · features · pricing · FAQ | Expert | 🔨 |
+| quiz_decum | Quiz Décaissement | 13 écrans · thin client · validateStep · trust badges | Decum | ✅ |
+| simul_decum | Simulateur Décaissement | URL pre-fill · standalone interactive tool | Decum | ✅ |
 | debt_tool | Outil Dettes | Bonus · 6 tabs · 1,863 lignes · 200/200 tests · FINAL | Ess+Inter | ✅ |
 | page_feedback | Page /feedback/{token} | Questions segmentées par tier | All | 🔨 |
 | page_changelog | Page /mises-a-jour | Changelog public · constantes · features | All | 🔨 |
@@ -53,8 +55,8 @@
 
 | ID | Composant | Détails | Tier | Statut |
 |----|-----------|---------|------|--------|
-| stripe | Stripe Checkout | $29/$59/$129 · coupons SECOND50/REFERRAL15 | All | ✅ Ess, 🔨 reste |
-| webhook | Webhook Stripe | /api/webhook · checkout + subscription events | All | ✅ Ess, 🔨 Expert |
+| stripe | Stripe Checkout | $29/$59/$129/$59 decum · coupons LAUNCH50/SECOND50/REFERRAL15 | All | ✅ Ess+Decum, 🔨 reste |
+| webhook | Webhook Stripe | /api/webhook · checkout + subscription events · handleDecaissementPurchase | All | ✅ Ess+Decum, 🔨 Expert |
 | upgrade | Upgrade Path | Crédit Ess→Inter ($30) · Inter→Expert ($70) | All | 🔨 |
 | referral | Programme Referral | 50% off référent · 15% off référé · paliers 1/3/5 | All | 🔨 |
 | second50 | 2e Rapport 50% | Coupon SECOND50 · 90j · débloqué par feedback | All | 🔨 |
@@ -63,15 +65,17 @@
 
 | ID | Composant | Détails | Tier | Statut |
 |----|-----------|---------|------|--------|
-| mc_engine | Moteur Monte Carlo | 5,000 sims · ~2.3s · 190 params · 38 exports · 436 tests | All | ✅ |
+| mc_engine | Moteur Monte Carlo | 5,000 sims · ~2.3s · 190 params · 38 exports · 453 tests | All | ✅ |
 | tax_engine | Moteur Fiscal | 13 provinces · 173 constantes · parité vérifiée | All | ✅ |
 | optimizer | Optimiseur | 8 axes · screening 1K + full MC 5K · optimizeDecum() | Expert | ✅ engine, 🔨 API |
 | ai_narration | AI Narration | Claude Sonnet · 12 slots JSON · DerivedProfile · fallback {} | All | ✅ code, ⚠️ needs key |
 | ai_profile | DerivedProfile | anxiety, discipline, literacy, friction, theme · ai-profile.ts | All | ✅ |
 | ai_serializer | Serializer Adaptatif | _serializeForAI(tier, results, profile) · sections conditionnelles | All | 🔨 |
 | amf_lint | Lint AMF | 3 couches · build + runtime + design · ai-constants.ts | All | ✅ partiel, 🔨 CI/CD |
-| quiz_translator | translateToMC() | Quiz answers → 190 MC params · server-side | All | ✅ |
-| test_suite | Suite de Tests | 436 MC + 200 debt tool = 636 tests | All | ✅ |
+| quiz_translator | translateToMC() | Quiz answers → 190 MC params · server-side (Ess/Inter/Expert/Decum) | All | ✅ |
+| quiz_translator_decum | translateDecumToMC() | Decum quiz → MC params · continuous QPP factor · GK flexibility | Decum | ✅ |
+| ai_prompt_decum | buildAIPromptDecum() | 12 slots · DerivedProfile · 9-combo voice · 4 arcs · 7 worry patterns | Decum | ✅ |
+| test_suite | Suite de Tests | 453 MC + 200 debt tool = 653 tests | All | ✅ |
 
 ### F. Delivery & Reports
 
@@ -79,6 +83,7 @@
 |----|-----------|---------|------|--------|
 | report_ess | Rapport Essentiel | v6 · 8 sections · grade ring · fan chart · AI · 1,421 lignes | Ess | ✅ |
 | report_inter | Rapport Intermédiaire | 16 sections · couple · immo · fiscal | Inter | 🔨 |
+| report_decum | Rapport Décaissement | 13 sections · SVG donut · 6 MC runs · 12 AI slots | Decum | ✅ |
 | report_expert | Rapport Expert | 12-25 sections · adaptatif par profil | Expert | 🔨 |
 | resume_1p | Résumé 1 Page | Illimité · PNG · print-friendly | Expert | 🔨 |
 | bilan_input | Bilan Annuel — Input | 7 champs (revenus, épargne, dettes, immo, objectifs, frais, conjoint) | Expert | 🔨 |
@@ -91,15 +96,17 @@
 | ID | Composant | Trigger | Statut |
 |----|-----------|---------|--------|
 | email_livraison_ess | Livraison Essentiel (grade + rapport + bonus + 2e rapport) | Webhook post-achat | ✅ v2 |
-| email_livraison_inter | Livraison Intermédiaire | Webhook post-achat | 🔨 |
-| email_livraison_expert | Livraison Expert (+ magic link) | Webhook post-achat | 🔨 |
-| email_magic_link | Magic Link connexion Expert | Demande auth | 🔨 |
-| email_feedback_j3 | Feedback J+3 (étoiles + NPS + coupon 50%) | Cron J+3 | 🔨 |
-| email_testimonial_j7 | Témoignage J+7 (nommé/anonyme/non) | Cron J+7 si qualifié | 🔨 |
-| email_2e_rapport | Offre 2e Rapport 50% | Email livraison + J+14 | 🔨 |
+| email_livraison_inter | Livraison Intermédiaire (tier-aware conditional) | Webhook post-achat | ✅ |
+| email_livraison_decum | Livraison Décaissement (grade + rapport + simulateur + guide) | Webhook post-achat | ✅ |
+| email_livraison_expert | Livraison Expert (+ magic link) | Webhook post-achat | ✅ |
+| email_magic_link | Magic Link connexion Expert | Demande auth | ✅ |
+| email_feedback_j3 | Feedback J+3 (étoiles + NPS + coupon 50%) | Cron J+3 | ✅ |
+| email_testimonial_j7 | Témoignage J+7 (nommé/anonyme/non) | Cron J+7 si qualifié | ✅ |
+| email_reminder_j14 | Rappel J+14 (dernier rappel feedback) | Cron J+14 | ✅ |
+| email_2e_rapport | Offre 2e Rapport 50% | Email livraison + /merci CTA | ⏳ CTA exists, dedicated email needed |
 | email_referral_notif | Referral Notification (conversion + récompense) | Webhook conversion | 🔨 |
-| email_renouvellement_j30 | Renouvellement J-30 | Cron J-30 expiry | 🔨 |
-| email_renouvellement_j7 | Renouvellement J-7 (+ valeur reçue) | Cron J-7 expiry | 🔨 |
+| email_renouvellement | Renouvellement J-30/J-7/J-0/J+3 cycle | Cron renewal | ✅ |
+| email_anniversaire | Anniversaire 6 mois (recalculation) | Cron anniversary | ✅ |
 | email_pre_suppression | Pré-suppression J-30 (téléchargez profil) | Cron J-30 post-expiry | 🔨 |
 | email_bilan_dec | Bilan Décembre (préparez vos chiffres) | Cron 1er déc | 🔨 |
 | email_bilan_jan | Bilan Janvier (votre bilan est prêt) | Cron 2 jan | 🔨 |
@@ -109,12 +116,12 @@
 
 | ID | Composant | Détails | Statut |
 |----|-----------|---------|--------|
-| feedback | Pipeline Feedback | J+0 étoiles · J+3 email · NPS · page complète | 🔨 |
-| testimonials | Témoignages Auto | J+7 si qualifié → consent → landing | 🔨 |
+| feedback | Pipeline Feedback | J+0 étoiles · J+3 email · NPS · page complète | ✅ (cron + email-feedback.ts) |
+| testimonials | Témoignages Auto | J+7 si qualifié → consent → landing | ✅ (email trigger), 🔨 (landing display) |
 | ab_testing | A/B Testing PostHog | Feature flags · 4 expériences · guide autonomie | 🔨 |
-| cron_feedback | Crons Feedback | J+3, J+7, J+14 | 🔨 |
-| cron_remind | Crons Rappels Expert | 6 mois anniversaire · renouvellement J-30/J-7 | 🔨 |
-| cron_bilan | Crons Bilan Annuel | Décembre · janvier · février | 🔨 |
+| cron_feedback | Crons Feedback | J+3, J+7, J+14 | ✅ api/cron/feedback |
+| cron_remind | Crons Rappels Expert | 6 mois anniversaire · renouvellement J-30/J-7/J-0/J+3 | ✅ api/cron/renewal + anniversary |
+| cron_bilan | Crons Bilan Annuel | Décembre · janvier · février | 🔨 (trigger missing) |
 | veille_regl | Veille Réglementaire | RSS → SEO + bannière in-app + changelog | 📋 Phase 3 |
 
 ### I. Infrastructure
@@ -123,20 +130,20 @@
 |----|-----------|---------|--------|
 | vercel | Vercel | Hosting · serverless · crons · Next.js 16 | ✅ |
 | kv | Vercel KV | Profils · feedback · referral · changelog · alerts | ✅ |
-| blob | Vercel Blob | Rapports HTML · store "buildfi-blob" | ⚠️ PRIVATE |
-| resend | Resend | Emails · 3,000/mois free | ⚠️ DKIM cassé |
+| blob | Vercel Blob | Rapports HTML · store "buildfi-blob" | ✅ PUBLIC |
+| resend | Resend | Emails · 3,000/mois free · domain VERIFIED | ✅ |
 | posthog | PostHog | Analytics · A/B · feature flags · 1M events | ✅ |
 | cloudflare | Cloudflare DNS | A · CNAME · SPF · DKIM · DMARC · MX | ✅ |
 | github | GitHub | tredhedge/buildfi · privé · main | ✅ |
-| anthropic_api | Anthropic API | Claude Sonnet · narration | ⚠️ key pas dans Vercel |
+| anthropic_api | Anthropic API | Claude Sonnet · narration | ✅ key in Vercel |
 | fb_pixel | Facebook Pixel | Conversion tracking pubs | 📋 pas configuré |
 
 ### J. Admin & Monitoring
 
 | ID | Composant | Détails | Statut |
 |----|-----------|---------|--------|
-| health_check | /api/health | Teste KV, MC, Anthropic, Resend, Blob | 🔨 |
-| admin_dashboard | Dashboard Admin | Logs · erreurs · rapports · feedback alerts | 🔨 |
+| health_check | /api/health | Teste KV, MC, Anthropic, Resend, Blob | ✅ |
+| admin_dashboard | Dashboard Admin | Health · profiles · email stats · activity log | ✅ app/admin/page.tsx (420L) |
 | robots_txt | robots.txt | Disallow /outils/ | ✅ |
 
 ---
@@ -154,6 +161,18 @@ webhook → mc_engine → ai_narration ← ai_profile, ai_serializer
 ai_narration → amf_lint → report_ess|inter|expert
 report_* → blob → resend → client inbox
 webhook → merci (redirect)
+```
+
+### Décaissement Flow (achat)
+```
+landing → quiz_decum ($59 → $29.50 with LAUNCH50)
+quiz_decum → stripe → webhook
+webhook → quiz_translator_decum → mc_engine (6 runs: 1×5K + 2×1K meltdown + 3×1K CPP)
+webhook → mc_engine → ai_prompt_decum ← ai_profile (DerivedProfile, RenderPlan, CompositeSignals)
+ai_prompt_decum → amf_lint → report_decum (13 sections, SVG donut)
+report_decum → blob → resend → client inbox
+webhook → merci (redirect)
+simul_decum ← quiz_decum (URL pre-fill)
 ```
 
 ### Expert Ecosystem
@@ -307,16 +326,17 @@ veille_regl → page_changelog
 
 | Statut | Count | Composants |
 |--------|-------|-----------|
-| ✅ Existe | 23 | mc_engine, tax_engine, quiz_ess, report_ess, landing, merci (basique), debt_tool, guide_101, guide_201, logo_system, quiz_translator, ai_profile, test_suite, email_livraison_ess, vercel, kv, posthog, cloudflare, github, robots_txt, stripe (Ess), webhook (Ess), amf_lint (partiel) |
-| ⚠️ Bloqué | 3 | blob (PRIVATE), resend (DKIM), anthropic_api (key) |
-| 🔨 À construire | ~35 | Tous les quiz Inter/Expert, simulateur, portail, pages légales, upgrades, referral, feedback, témoignages, A/B, tous crons, admin, 13 email templates, reports Inter/Expert, bilan annuel 3 phases, print export, page_vente_expert, page_feedback, page_changelog, page_404, page_500, ai_serializer, health_check |
+| ✅ Existe | 45+ | mc_engine, tax_engine, quiz_ess, quiz_decum, report_ess, report_decum, landing, merci (all tiers), debt_tool, simul_decum, guide_101, guide_201, logo_system, quiz_translator (all 4), ai_profile, ai_prompt_decum, test_suite, email_livraison_ess/inter/decum/expert, email_magic_link, email_feedback (J+3/J+7/J+14), email_renouvellement, email_anniversaire, vercel, kv, blob, resend, posthog, cloudflare, github, anthropic_api, robots_txt, stripe (all tiers), webhook (all tiers), health_check, admin_dashboard, cron_feedback, cron_remind, amf_lint (partiel) |
+| ⚠️ Bloqué | 0 | ~~blob, resend, anthropic_api~~ — all resolved |
+| 🔨 À construire | ~20 | quiz Inter/Expert (exists but E2E not connected), simulateur, portail, pages légales (exist but 🔨), upgrades, A/B, email referral notif, email pré-suppression, bilan annuel cron trigger + 3 emails, print export, page_vente_expert, page_feedback, page_changelog, page_404, page_500, ai_serializer |
 | 📋 Planifié (Phase 3+) | 4 | articles_seo, page_blog, veille_regl, fb_pixel |
 
 ### Bloquants immédiats (avant lancement Essentiel)
-1. **blob** → recréer store PUBLIC
-2. **resend** → corriger DKIM Cloudflare
-3. **anthropic_api** → ajouter ANTHROPIC_API_KEY Vercel
+~~1. **blob** → recréer store PUBLIC~~ ✅ DONE
+~~2. **resend** → corriger DKIM Cloudflare~~ ✅ DONE
+~~3. **anthropic_api** → ajouter ANTHROPIC_API_KEY Vercel~~ ✅ DONE
+**0 bloquants restants.**
 
 ---
 
-*60+ composants · 80+ connexions · 12 crons · 15 routes API · 14 email templates · 6 clés KV.*
+*67+ composants · 90+ connexions · 12 crons · 15 routes API · 15 email templates · 6 clés KV.*

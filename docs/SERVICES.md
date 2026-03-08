@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-07 — v7 (infra blockers resolved, magic link bug, Décaissement tier)
+> Mis à jour: 2026-03-07 — v8 (Stripe keys all configured, email template inventory corrected, /merci décaissement)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -48,10 +48,11 @@
 | Produit | Prix | Price ID | Status |
 |---------|------|----------|--------|
 | Rapport Essentiel | **$29 CAD** one-time | STRIPE_PRICE_ESSENTIEL | ✅ Configuré |
-| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ⚠️ À configurer en live |
-| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ⚠️ À configurer en live |
-| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ⚠️ À configurer en live |
-| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ⚠️ À configurer en live |
+| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ✅ Configuré |
+| Rapport Décaissement | **$59 CAD** one-time | STRIPE_PRICE_DECAISSEMENT | ✅ Configuré |
+| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ✅ Configuré |
+| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ✅ Configuré |
+| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ✅ Configuré |
 
 - **Coupons Stripe:**
   - `SECOND50` : 50% off, single-use, lié à l'email du premier achat (2e rapport)
@@ -79,18 +80,21 @@
 
 | Template | Contenu | Status |
 |----------|---------|--------|
-| Livraison Essentiel | Grade + lien rapport HTML + bonus + offre 2e rapport 50% | ✅ V2 — table-based, bilingual, AMF compliant. ⚠️ Ajouter offre 2e rapport |
-| Livraison Intermédiaire | Grade + lien rapport HTML + bonus + offre 2e rapport 50% | ❌ À créer |
-| Livraison Expert | Grade + lien rapport + accès simulateur | ❌ À créer |
-| Feedback J+3 | "Comment était votre bilan?" + étoiles + NPS + coupon 50% débloqué | ❌ À créer |
-| Témoignage J+7 | "Seriez-vous d'accord pour un témoignage?" (si rating ≥4 ET NPS Oui) | ❌ À créer |
-| 2e rapport offre | "Un 2e bilan à 50%" + lien checkout coupon | ❌ À créer |
-| Referral notification | "Quelqu'un a utilisé votre lien" + statut récompenses | ❌ À créer |
-| Renouvellement J-30 | "Votre accès expire dans 30 jours" | ❌ À créer |
-| Renouvellement J-7 | Rappel + résumé valeur reçue | ❌ À créer |
-| Pré-suppression J-30 | "Téléchargez votre profil avant suppression" | ❌ À créer |
+| Livraison Essentiel | Grade + lien rapport HTML + bonus tools + offre 2e rapport 50% | ✅ V2 — table-based, bilingual, AMF compliant, tier-aware tool blocs |
+| Livraison Intermédiaire | Grade + lien rapport HTML + 2 tools (alloc+dettes) + offre 2e rapport | ✅ Tier-aware conditional in lib/email.ts |
+| Livraison Décaissement | Grade + lien rapport + simulateur link + guide décaissement | ✅ Tier-aware conditional in lib/email.ts |
+| Livraison Expert | Grade + lien rapport + magic link simulateur | ✅ lib/email-expert.ts |
+| Feedback J+3 | "Comment était votre bilan?" + étoiles + NPS + coupon 50% | ✅ lib/email-feedback.ts + cron/feedback |
+| Témoignage J+7 | "Seriez-vous d'accord pour un témoignage?" (si rating ≥4 ET NPS Oui) | ✅ lib/email-feedback.ts |
+| Rappel J+14 | Dernier rappel feedback + étoiles | ✅ lib/email-feedback.ts |
+| Renouvellement J-30/J-7/J-0/J+3 | Cycle rappel renouvellement Expert | ✅ cron/renewal |
+| Anniversaire 6 mois | Rappel recalculation Expert | ✅ cron/anniversary |
+| 2e rapport offre | "Un 2e bilan à 50%" + lien checkout coupon | ⏳ Coupon SECOND50 wired, CTA on /merci, email mention needed |
+| Referral notification | "Quelqu'un a utilisé votre lien" + statut récompenses | ⏳ À créer |
+| Bilan Annuel (Déc/Jan/Fév) | 3-email cycle pour bilan annuel Expert | ⏳ Cron trigger non implémenté |
+| Pré-suppression J-30 | "Téléchargez votre profil avant suppression" | ⏳ À créer |
 
-**Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", upsell Intermédiaire ($59), bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Reçu en spam (domaine non vérifié).
+**Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", tier-aware upsell + tool blocs, bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Domain verified (warmup needed for inbox placement).
 
 ---
 
@@ -132,10 +136,11 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 |----------|-------|--------|
 | `STRIPE_SECRET_KEY` | Checkout + Webhook | ✅ Configurée |
 | `STRIPE_PRICE_ESSENTIEL` | Price ID Essentiel $29 | ✅ Configurée |
-| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ⚠️ À ajouter en live |
-| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ⚠️ À ajouter en live |
-| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ⚠️ À ajouter en live |
-| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ⚠️ À ajouter en live |
+| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ✅ Configurée |
+| `STRIPE_PRICE_DECAISSEMENT` | Price ID Décaissement $59 | ✅ Configurée |
+| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ✅ Configurée |
+| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ✅ Configurée |
+| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ✅ Configurée |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhook signature | ✅ Configurée (whsec_...) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout client-side | ✅ Configurée |
 | `NEXT_PUBLIC_BASE_URL` | URLs dans le code | ✅ Configurée |
@@ -177,13 +182,17 @@ Client complète quiz (805 lignes, thin client, zero IP)
   → Client redirigé vers /merci (+ lien referral)
 ```
 
-**⚠️ ÉLÉMENTS NON IMPLÉMENTÉS / EN COURS:**
-- PDF en pièce jointe (Puppeteer désactivé — remplacé par lien HTML)
+**Statut des fonctionnalités:**
+- ~~PDF en pièce jointe~~ Remplacé par lien HTML (Puppeteer incompatible Vercel)
 - ~~AI narration~~ ✅ Opérationnel
 - ~~Rapport accessible~~ ✅ Blob opérationnel
 - ~~Email en inbox~~ ✅ Delivered (domain warmup needed pour sortir du spam)
-- Offre 2e rapport 50% dans email livraison (coupon SECOND50)
-- Lien referral sur page /merci
+- ~~Offre 2e rapport 50%~~ ✅ SECOND50 coupon wired in checkout + CTA on /merci
+- ~~Lien referral sur page /merci~~ ✅ ShareSection avec lien 15% off
+- ~~Feedback J+3/J+7/J+14~~ ✅ lib/email-feedback.ts + cron
+- ~~Admin dashboard~~ ✅ app/admin/page.tsx (health, profiles, email stats)
+- ~~Export AI quota~~ ✅ Enforced in api/export (check before MC, decrement after)
+- Bilan Annuel cron trigger — ⏳ (API exists, cron trigger missing)
 
 ---
 

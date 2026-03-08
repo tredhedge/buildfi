@@ -6,18 +6,19 @@ BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte
 ## Tech Stack
 - **Framework**: Next.js 16 on Vercel (auto-deploy from main)
 - **Payments**: Stripe Checkout (hosted), webhook at /api/webhook
-- **Email**: Resend (buildfi.ca domain, DNS needs DKIM/SPF fix)
+- **Email**: Resend (buildfi.ca domain, VERIFIED, domain warmup needed)
 - **Storage**: Vercel Blob (reports), Vercel KV (data/profiles)
 - **MC Engine**: Custom Monte Carlo, 5000 sims, t-Student df=5, ~2.3s serverless
 - **AI Narration**: Anthropic API claude-sonnet-4 (server-side ONLY, key in Vercel env vars)
 - **Analytics**: PostHog
 
-## Pricing (confirmed 2026-03-02)
+## Pricing (confirmed 2026-03-07)
 | Tier | Price | Model |
 |------|-------|-------|
-| Essentiel | $29 one-time | 1 report, 8 sections, AI narration |
-| Intermediaire | $59 one-time | 1 report, 16 sections, couple, immo, fiscal |
-| Expert | $129 one-time | Simulator unlimited + 5 AI exports |
+| Essentiel | $29 one-time ($14.50 with LAUNCH50) | 1 report, 8 sections, AI narration |
+| Intermediaire | $59 one-time ($29.50 with LAUNCH50) | 1 report, 16 sections, couple, immo, fiscal |
+| Décaissement | $59 one-time ($29.50 with LAUNCH50) | 1 report, 13 sections, 6 MC runs, 12 AI slots |
+| Expert | $129 one-time ($64.50 with LAUNCH50) | Simulator unlimited + 5 AI exports |
 | Expert renewal | $29/year | Simulator + 3 AI exports + Bilan Annuel |
 | Export AI addon | $14.99 | 1 additional AI report |
 
@@ -39,16 +40,19 @@ buildfi/
 │   │   └── tests.js               # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
-│   ├── ai-constants.ts            # AI slot names (Ess 13 + Inter 16), AMF forbidden terms, sanitization
+│   ├── ai-constants.ts            # AI slot names (Ess 13 + Inter 16 + Decum 12), AMF forbidden terms, sanitization
 │   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals, psych overrides)
 │   ├── ai-prompt-inter.ts         # Intermediaire AI prompt (18 slots, DerivedProfile enrichment)
+│   ├── ai-prompt-decum.ts         # Décaissement AI prompt (12 slots, 9-combo voice, 4 arcs, 7 worry patterns)
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
 │   ├── quiz-translator.ts         # Essentiel quiz answers → MC params
 │   ├── quiz-translator-inter.ts   # Intermediaire 85 fields → 120 MC params
 │   ├── quiz-translator-expert.ts  # Expert translator
+│   ├── quiz-translator-decum.ts   # Décaissement translator (continuous QPP factor, GK flexibility)
 │   ├── ai-prompt-expert.ts        # Expert AI prompt
 │   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (1,421 lines)
 │   ├── report-html-inter.js       # Intermediaire 16-section report (1,003 lines)
+│   ├── report-html-decum.js       # Décaissement 13-section report (SVG donut, 6 MC runs)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
 │   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
 │   ├── email-expert.ts            # Expert emails: magic link + report delivery
@@ -60,9 +64,11 @@ buildfi/
 │   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
 │   ├── quiz-intermediaire.html    # Intermediaire quiz
 │   ├── quiz-expert.html           # Expert quiz (1,323 lines)
-│   ├── index.html                 # Landing page v9
+│   ├── quiz-decaissement.html     # Décaissement quiz (13 screens, validateStep, trust badges)
+│   ├── index.html                 # Landing page v9 (4 product cards)
 │   ├── expert.html                # Expert landing page
 │   ├── planner-expert.html        # Expert planner (source of truth for Expert engine)
+│   ├── outils/decaissement-simulateur.html  # Décaissement interactive simulator
 │   ├── logo.js                    # Shared SVG logo
 │   ├── logo-dark.svg, logo-light.svg
 │   └── robots.txt
@@ -94,7 +100,7 @@ buildfi/
 | **SERVICES.md** | DNS, Stripe, Resend, Blob, env vars, payment flows | Infra/deployment tasks |
 | **TECH-REFERENCE.md** | Code standards, audit history, AMF rules | Before writing code |
 | **STRATEGY.md** | Brand voice, competitors, pricing, landing page | Marketing/copy tasks |
-| **ARCHITECTURE.md** | Component dependency graph (60+ nodes) | Before modifying a component |
+| **ARCHITECTURE.md** | Component dependency graph (67+ nodes) | Before modifying a component |
 | **STRATEGY-EXPERT-PLAN.md** | Expert tier spec (22 sections) — the bible | Expert tier development |
 | **EXPERT-EXECUTION-PLAN.md** | Session-by-session build plan (S1-S14) | Expert tier execution |
 | **EXPERT-IDENTITY-ALIGNMENT.md** | Brand conformity grids per surface | Building visible UI |
@@ -113,6 +119,19 @@ Quiz thin client (zero IP exposed)
   → Vercel Blob upload
   → Resend email with link
 ```
+
+## Décaissement Tier — Key Concepts
+- **Thesis**: Retirement drawdown analysis — "will my money last?" for Canadians already retired or near retirement
+- **6 MC runs**: 1 base (5000 sims) + 2 meltdown (1000 each: year 1 + year 5) + 3 CPP timing (1000 each: age 60/65/70)
+- **13-section report**: SVG donut, profile, trajectory, income, tax efficiency, decum order, flexibility, stress test, CPP timing, succession, observations, hypotheses, methodology
+- **12 AI slots**: snapshot_intro, longevity_context, spending_flex_obs, income_mix_obs, tax_timing_obs, meltdown_obs, cpp_timing_obs, sequence_obs, estate_obs, obs_1, obs_2, obs_3
+- **DerivedProfile + 9-combo voice matrix**: same behavioral profiling as Ess/Inter (ai-profile.ts)
+- **4 narrative arcs**: sustainability, resilience, optimization, caution
+- **QPP factor**: continuous formula (7.2%/yr early, 8.4%/yr late) — not 3-entry lookup
+- **GK flexibility**: rigid (gkOn:false), moderate (gkMaxCut:0.20), flexible (gkMaxCut:0.25)
+- **deathAge**: 105 hard cap (stochMort CPM-2023 terminates sims earlier)
+- **Pricing**: $59 base, $29.50 with LAUNCH50
+- **Files**: quiz-decaissement.html, quiz-translator-decum.ts, ai-prompt-decum.ts, report-html-decum.js, ai-constants.ts (AI_SLOTS_DECUM)
 
 ## Expert Tier — Key Concepts
 - **Thesis**: Essentiel/Inter sell the answer. Expert sells the capacity to explore.
@@ -193,8 +212,12 @@ Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchorin
 - **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation
 - **Cookie consent on quiz pages** — Law 25 compliance, localStorage gate, bilingual
 - **Privacy officer** — "Le dirigeant de BuildFi Technologies inc." designated (Law 25 §3.5)
-- Essentiel: near launch, 2 infra blockers (Blob public, Resend DNS)
-- Next: S11-S14 post-launch (feedback, A/B, bilan annuel crons, admin)
+- **DÉCAISSEMENT PIPELINE REBUILT (2026-03-07)** — Full rebuild: 12 AI slots, 13-section report, DerivedProfile/9-combo voice, SVG donut, continuous QPP factor, 4 responsive breakpoints, validateStep(), static fallbacks, AMF-compliant
+- **ALL STRIPE KEYS CONFIGURED** — All 6 products (Ess/Inter/Decum/Expert/Renewal/Addon) have price IDs in Vercel env vars
+- **ALL INFRA BLOCKERS RESOLVED** — Blob public ✅, Resend verified ✅, Anthropic key ✅, magic link www ✅
+- **/merci page tier-aware** — Dedicated flows for Ess/Inter/Decum/Expert (steps, tools, upsell, done message)
+- **Feedback/cron pipeline exists** — J+3/J+7/J+14 emails, renewal cycle, anniversary, admin dashboard
+- Next: og-image, domain warmup, Inter E2E, Bilan Annuel cron, S11-S14 post-launch
 
 ## Commands
 ```bash
@@ -228,6 +251,7 @@ npm run build
 ```
 STRIPE_SECRET_KEY, STRIPE_PRICE_ESSENTIEL, STRIPE_WEBHOOK_SECRET
 STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT
+STRIPE_PRICE_DECAISSEMENT
 STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, NEXT_PUBLIC_BASE_URL
 RESEND_API_KEY, RESEND_FROM

@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-07 — v14 (infra blockers resolved, magic link bug identified, Décaissement tier added)
+> Mis à jour: 2026-03-07 — v15 (tier audit: /merci décaissement handler, Stripe keys all configured, feature inventory corrected)
 
 ## PHASE ACTUELLE
-**ESSENTIEL LAUNCH-READY — Blob ✅, Resend ✅, AI ✅. Reste: magic link www fix + og-image + commit/push. INTER REPORT NARRATIVE ARC COMPLETE. Expert S1-S10 complete. Décaissement tier ajouté (quiz + rapport + pipeline). Inter quiz/checkout pipeline à connecter E2E.**
+**ALL 4 TIERS PIPELINE-COMPLETE. Stripe keys all configured. /merci page handles all tiers. Reste: og-image, domain warmup, Bilan Annuel cron (Expert post-launch). Inter quiz/checkout pipeline à connecter E2E.**
 
 ---
 
@@ -15,12 +15,12 @@
 | Domaine buildfi.ca | ✅ | Cloudflare DNS, pointe vers Vercel |
 | Vercel | ✅ | Auto-deploy, Next.js 16.1.6 |
 | GitHub tredhedge/buildfi | ✅ | main branch, privé |
-| Stripe | ✅ | Test mode. Essentiel $29, Inter $59, Expert $129, Renewal $29/an, Addon $14.99. Webhook configuré |
+| Stripe | ✅ | Test mode. All 5 products configured (Ess $29, Inter $59, Decum $59, Expert $129, Renewal $29/an, Addon $14.99). Webhook configuré |
 | Resend | ✅ | Domaine buildfi.ca VERIFIED. Emails delivered. Spam probable (domain warmup needed) |
 | PostHog | ✅ | |
 | Vercel Blob | ✅ | Store opérationnel — rapports accessibles par lien email |
 | Vercel KV (Upstash) | ✅ | Redis — profils Expert, auth, rate limiting, referral |
-| Variables Vercel | ✅ | ANTHROPIC_API_KEY ajouté, KV/Stripe/Resend/Blob all set. Manque: STRIPE_PRICE_DECAISSEMENT |
+| Variables Vercel | ✅ | All env vars configured: ANTHROPIC_API_KEY, KV, Stripe (all 5 price IDs), Resend, Blob |
 
 ### Pipeline E2E — VALIDÉ EN PROD (2026-02-27)
 | Étape | Status | Détails |
@@ -92,7 +92,8 @@
 | Email template | ✅ | Décaissement-specific resources block dans lib/email.ts |
 | Webhook | ✅ | handleDecaissementPurchase() — 6 MC runs (1 base + 2 meltdown + 3 CPP timing) |
 | Checkout | ✅ | Tier "decaissement" dans /api/checkout |
-| Stripe product | ⏳ | Needs STRIPE_PRICE_DECAISSEMENT env var ($59 base, lancement $29.50) |
+| Stripe product | ✅ | STRIPE_PRICE_DECAISSEMENT configured ($59 base, LAUNCH50 → $29.50) |
+| /merci page | ✅ | Dedicated STEPS_DECUM animation, simulator CTA, no upsell for retirees |
 | Pricing | — | $59 one-time (LAUNCH50 applies → $29.50) |
 
 ### Inter + Essentiel Narrative Arc (2026-03-06) — 3 COMMITS
@@ -312,7 +313,7 @@ buildfi/
 │   │   ├── referral/generate/route.ts ✅ Referral link + stats
 │   │   ├── simulate/route.ts     ✅ MC simulation
 │   │   └── webhook/route.ts      ✅ MC → AI → Blob → Email (idempotent, admin alerts)
-│   ├── merci/page.tsx            ✅ Thank you page
+│   ├── merci/page.tsx            ✅ Thank you page (tier-aware: Ess/Inter/Expert/Decum)
 │   ├── expert/page.tsx           ✅ Expert redirect
 │   └── outils/dettes/page.jsx   ✅ Debt tool (1,475 lignes)
 ├── lib/
@@ -353,7 +354,7 @@ buildfi/
 │   └── outils/
 │       └── allocation-epargne.html ✅ Outil allocation REER/CÉLI (REPORT BASELINE, AMF footer)
 ├── middleware.ts                  ✅ CSP headers
-├── tests/                        ✅ 453 MC + 200 debt + 87 Expert translator + 103 S3 + 91 S10 = 934 tests
+├── tests/                        ✅ 453 MC + 200 debt + 685 Inter + 87 Expert translator + 103 S3 + 91 S10 = 1,619 tests
 ├── docs/                         8 fichiers de référence
 └── CLAUDE.md                     Instructions Claude Code
 ```
@@ -374,8 +375,10 @@ Détails complets: docs/SERVICES.md
 ## PROCHAINE SESSION
 1. Create og-image.png (1200x630) for OG tags
 2. Set up support@buildfi.ca (Cloudflare Email Routing)
-3. Create STRIPE_PRICE_DECAISSEMENT ($59) in Stripe + add env var
-4. Soft launch organique (Reddit, LinkedIn, cercle privé)
-5. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+3. ~~Create STRIPE_PRICE_DECAISSEMENT~~ ✅ Done — all Stripe keys configured
+4. Domain warmup (mark emails as not-spam from multiple accounts)
+5. Soft launch organique (Reddit, LinkedIn, cercle privé)
+6. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
    - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
-6. S11 Expert post-launch: feedback pipeline, A/B testing
+7. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
+8. S11 Expert post-launch: feedback pipeline, A/B testing

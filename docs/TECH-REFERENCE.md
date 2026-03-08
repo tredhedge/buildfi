@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-06 — v14 (Inter + Ess narrative arc, QPP heuristic, CCPC data path, RRSP cap 33810)
+> Mis à jour: 2026-03-07 — v15 (Décaissement pipeline rebuild — 12 AI slots, 13-section report, DerivedProfile, SVG donut)
 
 ---
 
@@ -164,6 +164,92 @@ quiz-translator-inter.ts (85 fields → 120 MC params):
   - bizSalaryPct stored as fraction 0-1: (a.bizSalaryPct || 50) / 100
 ```
 
+### Report HTML Décaissement (lib/report-html-decum.js)
+```
+13 sections: Note (SVG donut), Profil, Trajectoire, Revenus, Fiscalité,
+             Décaissement optimal, Flexibilité, Stress test, CPP timing,
+             Succession, Observations, Hypothèses, Méthodologie
+
+Key functions:
+  extractReportDataDecum(mc, params, meltdownResults, cppTimingResults)
+  renderReportDecum(D, mc, quiz, lang, aiSlots, meltdownResults, cppTimingResults)
+
+Features:
+  - SVG donut chart with stroke-dasharray animation (success rate visualization)
+  - SVG logo (not text-based)
+  - 12 AI slots with static fallbacks (never empty strings)
+  - validateMC guard at top
+  - bridge() narrative connectors between sections
+  - AMF-compliant: "Ordre de décaissement modélisé" (not "optimal")
+  - P10/P90 → "Scénario pessimiste (10%)" / "Scénario optimiste (90%)"
+  - OAS recovery tax threshold ($90,997 in 2026)
+  - RRIF minimum withdrawal table
+  - Meltdown scenarios (market crash year 1 + year 5)
+  - CPP timing comparison (60 vs 65 vs 70)
+  - Guyton-Klinger spending flexibility rules display
+  - Print theme: gold→brown, break-inside:avoid
+```
+
+### Quiz Décaissement — quiz-decaissement.html
+```
+13 screens (Screen 0 welcome + 12 quiz screens) · thin client · zero MC côté client
+Screen 0: welcome + trust badges (5000 scenarios, Canadian data, no account) + documents prep card
+validateStep(): age 50-95, retAge > age, retIncome > 0
+Confirm screen: warnings for withdrawal rate, savings gaps, allocation/age mismatch
+4 responsive breakpoints: 768px tablet, 1024px desktop, 640px mobile, 400px small mobile
+Range slider: 28px thumb, 8px track
+Terms acceptance checkbox (CPA compliance)
+Cookie consent bar (Law 25)
+Logo "lg" size
+Pricing: 29,50 $ (LAUNCH50 applied)
+```
+
+### Décaissement AI Prompt (lib/ai-prompt-decum.ts)
+```
+buildAIPromptDecum(D, params, lang, quiz, meltdownResults, cppTimingResults)
+  → computeDerivedProfile() + computeRenderPlan() + computeCompositeSignals()
+  → Voice matrix: 9 combos (tone × literacy: warm/balanced/data-forward × basic/intermediate/advanced)
+  → 4 narrative arcs: sustainability, resilience, optimization, caution
+  → 7 worry patterns: longevity, market-crash, inflation, spending, oas-clawback, estate, healthcare
+  → Dynamic obs routing: 8 topic candidates priority-ordered by profile signals
+    (couple-coordination, withdrawal-sustainability, rrif-conversion, oas-threshold,
+     spending-volatility, home-equity, debt-in-retirement, unique-insight)
+  → Enriched DATA block: profile, wealth, income, results, allocation, spending, meltdown, cppTiming, estate, signals
+  → Per-slot hints with anchor/implication/nuance structure
+  → 12 slots: snapshot_intro, longevity_context, spending_flex_obs, income_mix_obs,
+    tax_timing_obs, meltdown_obs, cpp_timing_obs, sequence_obs, estate_obs, obs_1, obs_2, obs_3
+  → Full AMF compliance: filler ban, numeric safety, accent enforcement, conditional tense
+  → Fallback: {} if ANTHROPIC_API_KEY missing or API error
+
+quiz-translator-decum.ts:
+  - QPP factor: continuous function (7.2%/yr early penalty, 8.4%/yr late bonus)
+  - cQppAge: partner age if 60+, else 65
+  - deathAge: 105 (stochMort hard cap, not 93/95 medians)
+  - allocR: capped [0.30, 0.75], glide:true, glideSpd:0.01
+  - GK flexibility: rigid→gkOn:false, moderate→gkOn:true+gkMaxCut:0.20, flexible→gkOn:true+gkMaxCut:0.25
+  - stochMort:true, fatT:true, wStrat:"optimal"
+  - Meltdown target: 58523 (first federal bracket 2026)
+  - eqVol: 0.16, bndVol: 0.06
+```
+
+### Décaissement Pipeline (Webhook)
+```
+handleDecaissementPurchase() in app/api/webhook/route.ts:
+  → translateDecumToMC(quizAnswers) → params
+  → 6 MC runs:
+    1. Base run: 5000 sims (full fidelity)
+    2. Meltdown year 1: 1000 sims (market crash at retirement start)
+    3. Meltdown year 5: 1000 sims (market crash 5 years into retirement)
+    4. CPP at 60: 1000 sims (early pension)
+    5. CPP at 65: 1000 sims (standard pension)
+    6. CPP at 70: 1000 sims (deferred pension)
+  → extractReportDataDecum(mc, params, meltdownResults, cppTimingResults)
+  → buildAIPromptDecum(D, params, lang, quiz, meltdownResults, cppTimingResults)
+  → callAnthropic(sys, usr) → sanitizeAISlotsDecum()
+  → renderReportDecum(D, mc, quiz, lang, aiSlots, meltdownResults, cppTimingResults)
+  → Blob upload → Resend email → createFeedbackRecord (tier: "decaissement")
+```
+
 ### Quiz thin client — quiz-essentiel.html
 ```
 Zero fonction MC côté client
@@ -186,7 +272,7 @@ AI narration: calls Anthropic API (claude-sonnet-4) → 12 JSON slots
   → Falls back to {} if ANTHROPIC_API_KEY missing or API error
 PDF generation: DÉSACTIVÉ (@sparticuz/chromium incompatible Vercel)
 Email tags: DÉSACTIVÉS (erreur validation ASCII)
-Blob access: "private" (store privé — à migrer vers public)
+Blob access: "public" (store opérationnel — rapports accessibles par lien)
 ```
 
 ### Debt Tool (app/outils/dettes/page.jsx — 1,863 lignes)
@@ -351,7 +437,13 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-030 | Debt tool info/compliance modal (4 tabs: notice, scope, assumptions, privacy) | **NOUVEAU** |
 | DT-031 | Debt tool print/PDF via window.print() with summary page | **NOUVEAU** |
 | DT-032 | Debt tool mobile bottom bar (<560px fixed nav) | **NOUVEAU** |
-| DT-033 | bridge(fr, en) narrative connector pattern — italic muted bilingual text between report sections (Ess + Inter) | **NOUVEAU** |
+| DT-033 | bridge(fr, en) narrative connector pattern — italic muted bilingual text between report sections (Ess + Inter + Decum) | **NOUVEAU** |
+| DT-034 | Décaissement: 6 MC runs per report (1×5K base + 2×1K meltdown + 3×1K CPP timing) | **NOUVEAU** |
+| DT-035 | Décaissement: DerivedProfile + RenderPlan + CompositeSignals behavioral profiling (same as Ess/Inter) | **NOUVEAU** |
+| DT-036 | Décaissement: continuous QPP factor formula (7.2%/yr early, 8.4%/yr late) replaces 3-entry lookup | **NOUVEAU** |
+| DT-037 | Décaissement: deathAge:105 hard cap with stochMort:true (CPM-2023 terminates sims earlier) | **NOUVEAU** |
+| DT-038 | Décaissement: SVG donut chart for success rate (stroke-dasharray animation) | **NOUVEAU** |
+| DT-039 | Décaissement: LAUNCH50 applies ($29.50 price), SECOND50 for second reports | **NOUVEAU** |
 
 ---
 
@@ -469,6 +561,7 @@ recommandation(s) / recommendation(s)
 | 2026-03-06 | **AMF 3 violations fixed** — report-html.js: "Concentrez-vous" → observational, "constituerait" → "pourrait", "devrait faire" → "gagnerait à" | ✅ |
 | 2026-03-06 | **CCPC data path fix** — report-html-inter.js: bizRemun/bizSalaryPct read from params directly (not params._quiz), scale corrected (0-1 fraction → × 100 for display) | ✅ |
 | 2026-03-06 | **QPP/OAS heuristic fix** — quiz-translator-inter.ts: retAge-based heuristic (clamped) replaces hardcoded default 65, matches Essentiel translator 1:1 | ✅ |
+| 2026-03-07 | **Décaissement pipeline rebuild** — Full rebuild from Sonnet skeleton: 12 AI slots (was 10), 13-section report (was 12), DerivedProfile/RenderPlan/CompositeSignals, 9-combo voice matrix, SVG donut chart, continuous QPP factor, validateStep(), 4 responsive breakpoints, static fallbacks, AMF fixes, email tier-specific resources, landing page CSS class | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"
