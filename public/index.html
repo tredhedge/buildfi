@@ -140,6 +140,9 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .product-card--inter:hover{box-shadow:var(--shadow-lg),var(--shadow-gold)}
 .product-card--expert{background:linear-gradient(150deg,var(--navy),var(--navy-light));color:#fff;border-color:transparent;box-shadow:var(--shadow-card),0 8px 32px rgba(26,39,68,.15)}
 .product-card--expert:hover{box-shadow:0 12px 40px rgba(26,39,68,.25)}
+.product-card--decum{border:2px solid #4A7FC1;box-shadow:0 1px 8px rgba(74,127,193,0.10)}
+.product-card--decum:hover{border-color:#3A6FAF;box-shadow:0 4px 20px rgba(74,127,193,0.18)}
+.product-card--decum .product-badge{background:#4A7FC1;box-shadow:0 2px 8px rgba(74,127,193,.3)}
 .product-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;font-size:11px;font-weight:800;padding:5px 18px;border-radius:20px;letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 8px rgba(184,134,11,.3)}
 .product-persona{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);margin-bottom:12px}
 .product-card--expert .product-persona{color:var(--gold-light)}
@@ -556,8 +559,8 @@ input,select,textarea{font-size:16px}
       </div>
 
       <!-- DÉCAISSEMENT -->
-      <div class="product-card reveal reveal-delay-2" style="border:2px solid #4A7FC1;box-shadow:0 1px 8px rgba(74,127,193,0.10);">
-        <div class="product-badge" id="prodDecumBadge" style="background:#4A7FC1;">Déjà à la retraite</div>
+      <div class="product-card product-card--decum reveal reveal-delay-2">
+        <div class="product-badge" id="prodDecumBadge">Déjà à la retraite</div>
         <div class="product-persona" id="prodDecumPersona">Vous vivez de votre épargne</div>
         <div class="product-name" id="prodDecumName">Décaissement</div>
         <div class="product-price">
