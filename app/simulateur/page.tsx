@@ -707,6 +707,7 @@ function SimulateurContent() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["general"]));
   const [showPorteB, setShowPorteB] = useState(false);
   const [showMobileBanner, setShowMobileBanner] = useState(true);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [disclosure, setDisclosure] = useState({ couple: false, homeowner: false, pension: false, ccpc: false, taxWorry: false, growthRisk: false });
   // Sophistication level from quiz (BUG 4 fix: rapide = core tabs only, personnalise = disclosure-based, avance = iframe)
   const [sophistication, setSophistication] = useState<"rapide" | "personnalise" | "avance" | undefined>(undefined);
@@ -1270,8 +1271,25 @@ function SimulateurContent() {
       <div style={{ display: "flex", minHeight: "calc(100vh - 120px)" }}>
 
         {/* ═══ SIDEBAR ═══ */}
-        <aside style={{ width: 320, minWidth: 320, borderRight: `1px solid ${EK.border}`, background: EK.card, overflowY: "auto", padding: "16px 14px", flexShrink: 0 }}>
-          <style>{`@media (max-width: 767px) { aside { display: none !important; } }`}</style>
+        <aside className={mobileDrawerOpen ? "mobile-open" : ""} style={{ width: 320, minWidth: 320, borderRight: `1px solid ${EK.border}`, background: EK.card, overflowY: "auto", padding: "16px 14px", flexShrink: 0, position: "relative" }}>
+          <style>{`
+            @media (max-width: 767px) {
+              aside {
+                position: fixed !important; left: 0; top: 0; bottom: 0; z-index: 999;
+                transform: translateX(-100%); transition: transform 0.25s ease;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+              }
+              aside.mobile-open { transform: translateX(0) !important; }
+            }
+          `}</style>
+          <button
+            className="mobile-drawer-close"
+            onClick={() => setMobileDrawerOpen(false)}
+            style={{ display: "none", position: "absolute", top: 12, right: 12, background: "none", border: "none", fontSize: 20, color: EK.txDim, cursor: "pointer", zIndex: 10 }}
+          >
+            <style>{`@media (max-width: 767px) { .mobile-drawer-close { display: block !important; } }`}</style>
+            ×
+          </button>
           <div style={{ fontSize: 13, fontWeight: 700, color: EK.marine, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 12 }}>
             {fr ? "Paramètres" : "Parameters"}
           </div>
@@ -1469,8 +1487,43 @@ function SimulateurContent() {
           )}
         </aside>
 
+        {/* Mobile drawer backdrop */}
+        {mobileDrawerOpen && (
+          <div
+            onClick={() => setMobileDrawerOpen(false)}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+              zIndex: 998, display: "none",
+            }}
+          >
+            <style>{`@media (max-width: 767px) { div[style*="z-index: 998"] { display: block !important; } }`}</style>
+          </div>
+        )}
+
         {/* ═══ MAIN CONTENT ═══ */}
         <main style={{ flex: 1, padding: "16px 24px", overflowY: "auto", minWidth: 0 }}>
+          <style>{`@media (max-width: 767px) { main { padding: 12px 12px !important; } }`}</style>
+
+          {/* Mobile params toggle */}
+          <div className="mobile-params-toggle" style={{ display: "none" }}>
+            <style>{`@media (max-width: 767px) { .mobile-params-toggle { display: flex !important; } }`}</style>
+            <button
+              onClick={() => setMobileDrawerOpen(o => !o)}
+              style={{
+                width: "100%", padding: "10px 16px", background: EK.card,
+                border: `1px solid ${EK.border}`, borderRadius: 8, marginBottom: 12,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 600, color: EK.marine }}>
+                {fr ? "Paramètres" : "Parameters"}
+              </span>
+              <span style={{ fontSize: 12, color: EK.txDim }}>
+                {fr ? "Modifier \u25B8" : "Edit \u25B8"}
+              </span>
+            </button>
+          </div>
 
           {/* ── Tab bar ── */}
           <div role="tablist" aria-label={fr ? "Sections du simulateur" : "Simulator sections"} style={{ display: "flex", gap: 4, overflowX: "auto", marginBottom: 16, paddingBottom: 4, borderBottom: `1px solid ${EK.border}` }}>
@@ -1494,6 +1547,11 @@ function SimulateurContent() {
               </button>
             ))}
           </div>
+          <style>{`
+            @media (max-width: 767px) {
+              [role="tablist"] { padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+            }
+          `}</style>
 
           {/* ── Tab content ── */}
           <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>

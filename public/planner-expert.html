@@ -7283,6 +7283,33 @@ var reportHTML = useMemo(function() {
     if (s.lang) setLang(s.lang);
   };
 
+  // ── Expose state snapshot for parent iframe bridge ──
+  if (window.self !== window.top) {
+    window._bfState = {
+      age: age, sex: sex, prov: prov, retAge: retAge, deathAge: deathAge,
+      sal: sal, retSpM: retSpM,
+      rrsp: rrsp, tfsa: tfsa, nr: nr,
+      rrspC: rrspC, tfsaC: tfsaC, nrC: nrC,
+      allocR: allocR, allocT: allocT, allocN: allocN,
+      merR: merR, merT: merT, merN: merN,
+      qppAge: qppAge, avgE: avgE, qppYrs: qppYrs, oasAge: oasAge,
+      penType: penType, penM: penM, penIdx: penIdx,
+      wStrat: wStrat, melt: melt, meltTgt: meltTgt,
+      split: split, splitP: splitP,
+      inf: inf, nSim: nSim,
+      cOn: cOn, cAge: cAge, cSex: cSex, cRetAge: cRetAge,
+      cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
+      cSal: cSal, cRetSpM: cRetSpM,
+      cQppAge: cQppAge, cOasAge: cOasAge,
+      liraBal: liraBal,
+      fatT: fatT, stochMort: stochMort, stochInf: stochInf,
+      gkOn: gkOn, gkCeil: gkCeil, gkFloor: gkFloor,
+      gkCut: gkCut, gkRaise: gkRaise, gkMaxCut: gkMaxCut,
+      bridge: bridge, dcBal: dcBal,
+      props: props, debts: debts
+    };
+  }
+
   // Listen for postMessage from parent window
   useEffect(function() {
     function handleMessage(evt) {
@@ -15737,6 +15764,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
   try {
     window.parent.postMessage({ type: "buildfi-planner-ready" }, window.location.origin);
   } catch(e) {}
+
+  // ── Debounced state sync: planner → parent ──
+  // Every 2s, check if planner state changed and notify parent React wrapper
+  var _lastSnap = null;
+  setInterval(function() {
+    if (!window._bfState) return;
+    var snap = JSON.stringify(window._bfState);
+    if (snap === _lastSnap) return;
+    _lastSnap = snap;
+    try {
+      window.parent.postMessage(
+        { type: "buildfi-params-update", params: window._bfState },
+        window.location.origin
+      );
+    } catch(e) {}
+  }, 2000);
 })();
 </script>
 <script>if('serviceWorker' in navigator && window.self === window.top){navigator.serviceWorker.register('./sw.js').catch(function(){})}</script></body></html>

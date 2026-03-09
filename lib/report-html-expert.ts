@@ -633,6 +633,7 @@ function renderExpertReport(
         + '<div style="font-family:\'JetBrains Mono\',monospace;font-size:18px;font-weight:800;color:#b91c1c">' + s.delta + '%</div></div>';
     });
     h += '</div>';
+    h += '<div style="font-size:10px;color:#888;font-style:italic;margin:-6px 0 12px;padding-left:2px">' + t("Estimations basées sur des coefficients historiques, pas des simulations additionnelles.", "Estimates based on historical coefficients, not additional simulations.") + '</div>';
     h += aiSlot("stress_tests");
     h += secEnd();
   }

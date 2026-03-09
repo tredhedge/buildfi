@@ -1753,6 +1753,46 @@ export default function DebtTool() {
         </div>
       </div>
 
+      {/* Bridge CTA: debt tool → retirement planning */}
+      <div className="no-print" style={{ background: DK.s2, borderTop: `1px solid ${DK.border}`, padding: "24px 16px" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: DK.tx, marginBottom: 8, lineHeight: 1.4 }}>
+            {fr
+              ? "Comment cette dette affecte-t-elle votre retraite?"
+              : "How does this debt affect your retirement?"}
+          </div>
+          <div style={{ fontSize: 13, color: DK.txDim, lineHeight: 1.6, marginBottom: 16 }}>
+            {fr
+              ? "La dette est un morceau du plan. BuildFi simule 5 000 scénarios de retraite canadiens — impôts, RRQ/PSV, inflation, marchés — pour voir si votre argent dure."
+              : "Debt is one piece of the plan. BuildFi simulates 5,000 Canadian retirement scenarios — taxes, CPP/OAS, inflation, markets — to see if your money lasts."}
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            {(coupleOn || mortgages.length > 0) ? (
+              <a href={`/bilan-360?lang=${lang}`} style={{
+                display: "inline-block", padding: "10px 20px", fontSize: 14, fontWeight: 700,
+                background: DK.accent, color: "#1a1714", borderRadius: 8, textDecoration: "none",
+                transition: "opacity .2s"
+              }}>
+                {fr ? "Bilan 360 — couples et propriétaires" : "Snapshot 360 — couples & homeowners"}
+                <span style={{ marginLeft: 6 }} aria-hidden="true">→</span>
+              </a>
+            ) : (
+              <a href={`/bilan?lang=${lang}`} style={{
+                display: "inline-block", padding: "10px 20px", fontSize: 14, fontWeight: 700,
+                background: DK.accent, color: "#1a1714", borderRadius: 8, textDecoration: "none",
+                transition: "opacity .2s"
+              }}>
+                {fr ? "Bilan — votre portrait financier" : "Snapshot — your financial portrait"}
+                <span style={{ marginLeft: 6 }} aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: DK.txMuted, marginTop: 10 }}>
+            {fr ? "Paiement unique, rapport livré par courriel." : "One-time payment, report delivered by email."}
+          </div>
+        </div>
+      </div>
+
       {/* Info / Compliance modal */}
       {showInfo && (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}

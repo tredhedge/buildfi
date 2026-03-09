@@ -71,7 +71,7 @@ export function buildAIPromptDecum(
     "balanced+advanced": "Write like a portfolio analyst briefing a knowledgeable retiree. Direct, confident, precise. Reference rates, coverage ratios, and withdrawal percentages without hedging. Implications should be specific and quantified.",
     "data-forward+basic": "Write like a data scientist explaining to a friend over dinner. Lead with the most striking number. Explain its meaning in one plain sentence. Keep it punchy — short sentences, clear cause-effect.",
     "data-forward+intermediate": "Write like a Bloomberg terminal summary for a retail investor. Dense but readable. Each sentence carries a data point or an implication. No filler. Comparative framing preferred (X vs Y).",
-    "data-forward+advanced": "Write like a quant analyst's internal memo. Maximum density. Reference withdrawal rates, coverage ratios, real vs nominal, fee drag, OAS recovery thresholds. Every sentence must carry information. Zero fluff.",
+    "data-forward+advanced": "Write like a portfolio analyst's concise briefing. Maximum density. Reference withdrawal rates, coverage ratios, real vs nominal, fee drag percentages, OAS recovery thresholds. Every sentence must carry information. Zero fluff.",
   };
   const voiceKey = plan.tone + "+" + profile.literacy;
   const voiceInstr = voiceMatrix[voiceKey] || voiceMatrix["balanced+intermediate"];
@@ -348,7 +348,7 @@ Every sentence must carry information. If you can delete a sentence without losi
 
 === LANGUAGE ===
 - ${fr ? "French (vous). Naturel, pas robotique. Variez les tournures de phrase." : "English. Natural, not robotic. Vary sentence structure."}
-- Grade 10 reading level. Short sentences. No jargon.
+- ${profile.literacy === "advanced" ? "Grade 12 reading level. Precise financial vocabulary OK (withdrawal rate, coverage ratio, real return, OAS clawback). Still keep sentences short and declarative." : "Grade 10 reading level. Short sentences. No jargon."}
 - Acronyms: NEVER use acronyms in ${fr ? "French" : "English"}. Write in full: ${gP}, ${oN}.
 ${fr ? "- ACCENTS: You MUST use proper French diacritics (é, è, ê, ë, à, â, ç, î, ï, ô, ù, û). Write \"réussite\" not \"reussite\", \"épargne\" not \"epargne\", \"scénario\" not \"scenario\". Zero tolerance — every missing accent is a defect." : ""}
 

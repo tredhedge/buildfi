@@ -134,8 +134,17 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 .hiw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto}
 @media(max-width:700px){.hiw-grid{grid-template-columns:1fr!important;max-width:400px;margin-left:auto;margin-right:auto}}
 
-/* ═══ PRODUCTS (compact routing cards) ═══ */
-.products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+/* ═══ PRODUCTS (two-family layout) ═══ */
+.product-family{margin-bottom:40px}
+.product-family:last-child{margin-bottom:0}
+.family-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.family-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.family-icon--reports{background:var(--gold-wash-strong);color:var(--gold-dark)}
+.family-icon--sim{background:rgba(26,23,20,.08);color:var(--navy)}
+.family-name{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--navy)}
+.family-desc{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;max-width:600px}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.products-grid--single{grid-template-columns:1fr;max-width:380px}
 .product-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 24px 28px;display:flex;flex-direction:column;transition:all .3s;position:relative;box-shadow:var(--shadow-card);text-align:center}
 .product-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
 .product-card.highlighted{border:2px solid var(--gold);box-shadow:var(--shadow-card),var(--shadow-gold)}
@@ -345,62 +354,83 @@ input,select,textarea{font-size:16px}
       <h2 class="section-title" id="productsTitle">Choisissez selon votre situation — pas selon votre niveau.</h2>
     </div>
 
-    <!-- 4 compact product cards -->
-    <div class="products-grid">
-      <!-- BILAN -->
-      <div class="product-card reveal" id="card-bilan">
-        <div class="product-badge" id="badgeEss">Premier portrait</div>
-        <div class="product-name" id="prodEssName">Bilan</div>
-        <div class="product-subtitle" id="prodEssSub">Vous êtes seul(e) et voulez savoir où vous en êtes.</div>
-        <div class="product-price">
-          <span class="product-price-original" id="prodEssOrig">29 $</span>
-          <span class="product-price-current" id="prodEssCurr">14,50 $</span>
+    <!-- FAMILY 1: Reports / Diagnostics -->
+    <div class="product-family" id="family-reports">
+      <div class="family-header">
+        <div class="family-icon family-icon--reports" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
-        <div class="product-price-note" id="prodEssNote">paiement unique</div>
-        <p class="product-oneliner" id="prodEssOneliner">Votre note, vos projections, vos risques — en 5 à 8 minutes.</p>
-        <a href="/bilan" class="product-link" data-track="product_card_clicked" data-product="bilan" id="prodEssLink">En savoir plus <span aria-hidden="true">→</span></a>
+        <div class="family-name" id="familyReportsName">Recevoir un diagnostic</div>
       </div>
-
-      <!-- BILAN 360 -->
-      <div class="product-card reveal reveal-delay-1" id="card-bilan360">
-        <div class="product-badge product-badge--gold" id="badgeInter">Situation complexe</div>
-        <div class="product-name" id="prodInterName">Bilan 360</div>
-        <div class="product-subtitle" id="prodInterSub">Votre situation inclut un couple, une propriété ou une entreprise.</div>
-        <div class="product-price">
-          <span class="product-price-original" id="prodInterOrig">59 $</span>
-          <span class="product-price-current" id="prodInterCurr">29,50 $</span>
+      <p class="family-desc" id="familyReportsDesc">Vous répondez à un questionnaire, on simule 5 000 scénarios et vous recevez un bilan personnalisé par courriel.</p>
+      <div class="products-grid">
+        <!-- BILAN -->
+        <div class="product-card reveal" id="card-bilan">
+          <div class="product-badge" id="badgeEss">Premier portrait</div>
+          <div class="product-name" id="prodEssName">Bilan</div>
+          <div class="product-subtitle" id="prodEssSub">Vous êtes seul(e) et voulez savoir où vous en êtes.</div>
+          <div class="product-price">
+            <span class="product-price-original" id="prodEssOrig">29 $</span>
+            <span class="product-price-current" id="prodEssCurr">14,50 $</span>
+          </div>
+          <div class="product-price-note" id="prodEssNote">paiement unique</div>
+          <p class="product-oneliner" id="prodEssOneliner">Votre note, vos projections, vos risques — en 5 à 8 minutes.</p>
+          <a href="/bilan" class="product-link" data-track="product_card_clicked" data-product="bilan" id="prodEssLink">En savoir plus <span aria-hidden="true">→</span></a>
         </div>
-        <div class="product-price-note" id="prodInterNote">paiement unique</div>
-        <p class="product-oneliner" id="prodInterOneliner">Tout ce que le Bilan couvre, plus l'immobilier, la fiscalité de couple et la succession.</p>
-        <a href="/bilan-360" class="product-link" data-track="product_card_clicked" data-product="bilan360" id="prodInterLink">En savoir plus <span aria-hidden="true">→</span></a>
+
+        <!-- BILAN 360 -->
+        <div class="product-card reveal reveal-delay-1" id="card-bilan360">
+          <div class="product-badge product-badge--gold" id="badgeInter">Situation complexe</div>
+          <div class="product-name" id="prodInterName">Bilan 360</div>
+          <div class="product-subtitle" id="prodInterSub">Votre situation inclut un couple, une propriété ou une entreprise.</div>
+          <div class="product-price">
+            <span class="product-price-original" id="prodInterOrig">59 $</span>
+            <span class="product-price-current" id="prodInterCurr">29,50 $</span>
+          </div>
+          <div class="product-price-note" id="prodInterNote">paiement unique</div>
+          <p class="product-oneliner" id="prodInterOneliner">Tout ce que le Bilan couvre, plus l'immobilier, la fiscalité de couple et la succession.</p>
+          <a href="/bilan-360" class="product-link" data-track="product_card_clicked" data-product="bilan360" id="prodInterLink">En savoir plus <span aria-hidden="true">→</span></a>
+        </div>
+
+        <!-- HORIZON -->
+        <div class="product-card reveal reveal-delay-2" id="card-horizon">
+          <div class="product-badge product-badge--blue" id="badgeDecum">Retraités · Préretraités</div>
+          <div class="product-name" id="prodDecumName">Horizon</div>
+          <div class="product-subtitle" id="prodDecumSub">Vous êtes à la retraite ou vous vous y préparez.</div>
+          <div class="product-price">
+            <span class="product-price-original" id="prodDecumOrig">59 $</span>
+            <span class="product-price-current" id="prodDecumCurr">29,50 $</span>
+          </div>
+          <div class="product-price-note" id="prodDecumNote">paiement unique</div>
+          <p class="product-oneliner" id="prodDecumOneliner">Combien retirer, dans quel ordre, et si votre argent dure toute votre vie.</p>
+          <a href="/horizon" class="product-link" data-track="product_card_clicked" data-product="horizon" id="prodDecumLink">En savoir plus <span aria-hidden="true">→</span></a>
+        </div>
       </div>
+    </div>
 
-      <!-- HORIZON -->
-      <div class="product-card reveal reveal-delay-2" id="card-horizon">
-        <div class="product-badge product-badge--blue" id="badgeDecum">Retraités · Préretraités</div>
-        <div class="product-name" id="prodDecumName">Horizon</div>
-        <div class="product-subtitle" id="prodDecumSub">Vous êtes à la retraite ou vous vous y préparez.</div>
-        <div class="product-price">
-          <span class="product-price-original" id="prodDecumOrig">59 $</span>
-          <span class="product-price-current" id="prodDecumCurr">29,50 $</span>
+    <!-- FAMILY 2: Simulator / Lab -->
+    <div class="product-family" id="family-simulator">
+      <div class="family-header">
+        <div class="family-icon family-icon--sim" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <div class="product-price-note" id="prodDecumNote">paiement unique</div>
-        <p class="product-oneliner" id="prodDecumOneliner">Combien retirer, dans quel ordre, et si votre argent dure toute votre vie.</p>
-        <a href="/horizon" class="product-link" data-track="product_card_clicked" data-product="horizon" id="prodDecumLink">En savoir plus <span aria-hidden="true">→</span></a>
+        <div class="family-name" id="familySimName">Tester mes décisions moi-même</div>
       </div>
-
-      <!-- LABORATOIRE -->
-      <div class="product-card reveal reveal-delay-3" id="card-lab" style="background:linear-gradient(150deg,var(--navy),var(--navy-light));border-color:transparent">
-        <div class="product-badge product-badge--navy-light" id="badgeExp">Autonomie totale</div>
-        <div class="product-name" style="color:#fff" id="prodExpName">Laboratoire</div>
-        <div class="product-subtitle" style="color:rgba(255,255,255,.5)" id="prodExpSub">Vous voulez tester vous-même plusieurs scénarios.</div>
-        <div class="product-price">
-          <span class="product-price-original" style="color:rgba(255,255,255,.4)" id="prodExpOrig">129 $</span>
-          <span class="product-price-current" style="color:#fff" id="prodExpCurr">64,50 $</span>
+      <p class="family-desc" id="familySimDesc">Vous explorez vos scénarios en temps réel dans un simulateur interactif. Sessions illimitées.</p>
+      <div class="products-grid products-grid--single">
+        <!-- LABORATOIRE -->
+        <div class="product-card reveal" id="card-lab" style="background:linear-gradient(150deg,var(--navy),var(--navy-light));border-color:transparent">
+          <div class="product-badge product-badge--navy-light" id="badgeExp">Autonomie totale</div>
+          <div class="product-name" style="color:#fff" id="prodExpName">Laboratoire</div>
+          <div class="product-subtitle" style="color:rgba(255,255,255,.5)" id="prodExpSub">Vous voulez tester vous-même plusieurs scénarios.</div>
+          <div class="product-price">
+            <span class="product-price-original" style="color:rgba(255,255,255,.4)" id="prodExpOrig">129 $</span>
+            <span class="product-price-current" style="color:#fff" id="prodExpCurr">64,50 $</span>
+          </div>
+          <div class="product-price-note" style="color:rgba(255,255,255,.4)" id="prodExpNote">paiement unique</div>
+          <p class="product-oneliner" style="color:rgba(255,255,255,.7)" id="prodExpOneliner">Testez chaque décision avant de la prendre. Simulateur illimité, 190 paramètres.</p>
+          <a href="/expert/landing" class="product-link" style="color:var(--gold-light)" data-track="product_card_clicked" data-product="lab" id="prodExpLink">En savoir plus <span aria-hidden="true">→</span></a>
         </div>
-        <div class="product-price-note" style="color:rgba(255,255,255,.4)" id="prodExpNote">paiement unique</div>
-        <p class="product-oneliner" style="color:rgba(255,255,255,.7)" id="prodExpOneliner">Testez chaque décision avant de la prendre. Simulateur illimité.</p>
-        <a href="/expert/landing" class="product-link" style="color:var(--gold-light)" data-track="product_card_clicked" data-product="lab" id="prodExpLink">En savoir plus <span aria-hidden="true">→</span></a>
       </div>
     </div>
 
@@ -680,6 +710,10 @@ var T = {
   // Products
   productsLabel: { fr:'Quel produit est pour vous?', en:'Which product is for you?' },
   productsTitle: { fr:'Choisissez selon votre situation \u2014 pas selon votre niveau.', en:'Choose based on your situation \u2014 not your level.' },
+  familyReportsName: { fr:'Recevoir un diagnostic', en:'Get a diagnosis' },
+  familyReportsDesc: { fr:'Vous r\u00e9pondez \u00e0 un questionnaire, on simule 5\u00a0000 sc\u00e9narios et vous recevez un bilan personnalis\u00e9 par courriel.', en:'You answer a questionnaire, we simulate 5,000 scenarios, and you receive a personalized report by email.' },
+  familySimName: { fr:'Tester mes d\u00e9cisions moi-m\u00eame', en:'Test my decisions myself' },
+  familySimDesc: { fr:'Vous explorez vos sc\u00e9narios en temps r\u00e9el dans un simulateur interactif. Sessions illimit\u00e9es.', en:'You explore your scenarios in real time in an interactive simulator. Unlimited sessions.' },
   badgeEss: { fr:'Premier portrait', en:'First portrait' },
   badgeInter: { fr:'Situation complexe', en:'Complex situation' },
   badgeDecum: { fr:'Retrait\u00e9s \u00b7 Pr\u00e9retrait\u00e9s', en:'Retirees \u00b7 Pre-retirees' },
@@ -704,7 +738,7 @@ var T = {
   prodDecumOneliner: { fr:'Combien retirer, dans quel ordre, et si votre argent dure toute votre vie.', en:'How much to withdraw, in what order, and if your money lasts your whole life.' },
   prodExpName: { fr:'Laboratoire', en:'Lab' },
   prodExpSub: { fr:'Vous voulez tester vous-m\u00eame plusieurs sc\u00e9narios.', en:'You want to test multiple scenarios yourself.' },
-  prodExpOneliner: { fr:'Testez chaque d\u00e9cision avant de la prendre. Simulateur illimit\u00e9.', en:'Test every decision before you make it. Unlimited simulator.' },
+  prodExpOneliner: { fr:'Testez chaque d\u00e9cision avant de la prendre. Simulateur illimit\u00e9, 190 param\u00e8tres.', en:'Test every decision before you make it. Unlimited simulator, 190 parameters.' },
   prodEssOrig: { fr:'29\u00a0$', en:'$29' },
   prodEssCurr: { fr:'14,50\u00a0$', en:'$14.50' },
   prodInterOrig: { fr:'59\u00a0$', en:'$59' },

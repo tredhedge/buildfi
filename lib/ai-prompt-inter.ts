@@ -38,7 +38,7 @@ export function buildAIPromptInter(
     "balanced+advanced": "Write like a portfolio analyst briefing a knowledgeable client. Direct, confident, precise. Reference rates, ratios, and percentages without hedging. Implications should be specific and quantified.",
     "data-forward+basic": "Write like a data scientist explaining to a friend. Lead with the most striking number. Explain its meaning in one plain sentence. Keep it punchy — short sentences, clear cause-effect.",
     "data-forward+intermediate": "Write like a Bloomberg terminal summary for a retail investor. Dense but readable. Each sentence carries a data point or an implication. No filler. Comparative framing preferred.",
-    "data-forward+advanced": "Write like a quant analyst's internal memo. Maximum density. Reference withdrawal rates, coverage ratios, real vs nominal, fee drag basis points. Every sentence must carry information. Zero fluff.",
+    "data-forward+advanced": "Write like a portfolio analyst's concise briefing. Maximum density. Reference withdrawal rates, coverage ratios, real vs nominal, fee drag percentages. Every sentence must carry information. Zero fluff.",
   };
   const voiceKey = plan.tone + "+" + profile.literacy;
   const voiceInstr = voiceMatrix[voiceKey] || voiceMatrix["balanced+intermediate"];
@@ -358,7 +358,7 @@ export function buildAIPromptInter(
     + "- NEVER translate percentages into ratio phrases ('1 in 4', '3 out of 4', '9 sur 10'). The report template handles probability translation with verified brackets. Use only the exact percentage from DATA: '72 %' or '72 % des scénarios'.\n"
     + "\n=== LANGUAGE ===\n"
     + "- " + (fr ? "French (vous). Naturel, pas robotique. Variez les tournures de phrase." : "English. Natural, not robotic. Vary sentence structure.") + "\n"
-    + "- Grade 10 reading level. Short sentences. No jargon.\n"
+    + "- " + (profile.literacy === "advanced" ? "Grade 12 reading level. Precise financial vocabulary OK (withdrawal rate, coverage ratio, real return). Still keep sentences short and declarative." : "Grade 10 reading level. Short sentences. No jargon.") + "\n"
     + "- Acronyms: NEVER use acronyms. Write in full: " + gP + ", " + oN + ".\n"
     + (fr ? "- ACCENTS: You MUST use proper French diacritics (é, è, ê, ë, à, â, ç, î, ï, ô, ù, û). Write \"réussite\" not \"reussite\", \"épargne\" not \"epargne\", \"scénario\" not \"scenario\". Zero tolerance — every missing accent is a defect.\n" : "")
     + "\n=== VOCABULARY BAN (ZERO TOLERANCE) ===\n"
