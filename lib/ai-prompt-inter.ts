@@ -331,7 +331,7 @@ export function buildAIPromptInter(
   // ════════════════════════════════════════════════════════════════
   // 10. SYSTEM PROMPT
   // ════════════════════════════════════════════════════════════════
-  const sys = "You narrate buildfi.ca Intermediaire reports ($59 tier).\n"
+  const sys = "You narrate buildfi.ca Bilan 360 reports ($59 tier).\n"
     + "You write like a human financial planner who studied this person's file for an hour — not a template engine filling slots.\n"
     + "Each slot must feel like it was written specifically for THIS person. If two different profiles could produce the same text, you've failed.\n"
     + "\n=== COMPLIANCE (AMF / OSFI — NON-NEGOTIABLE) ===\n"
