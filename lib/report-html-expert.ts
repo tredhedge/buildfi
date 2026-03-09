@@ -858,9 +858,9 @@ function renderExpertReport(
     + 'buildfi.ca \u2014 ' + t("\u00c0 titre informatif seulement", "For informational purposes only")
     + ' \u2014 ' + REPORT_VERSION_EXPERT
     + '<div style="margin-top:6px;font-size:10px">'
-    + '<a href="https://www.buildfi.ca/conditions.html" style="color:#c49a1a;text-decoration:none">' + t("Conditions","Terms") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/confidentialite.html" style="color:#c49a1a;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/avis-legal.html" style="color:#c49a1a;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
+    + '<a href="https://www.buildfi.ca/conditions" style="color:#c49a1a;text-decoration:none">' + t("Conditions","Terms") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/confidentialite" style="color:#c49a1a;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/avis-legal" style="color:#c49a1a;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
     + '</div></div>';
 
   h += '</div>'; // end report body

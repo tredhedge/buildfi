@@ -221,11 +221,11 @@ function ConfirmationContent() {
         <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, marginBottom: 32 }}>
           {done
             ? (isExpert
-              ? (fr ? "Votre bilan Laboratoire est prêt. Un lien magique a été envoyé à votre courriel pour accéder au simulateur."
-                    : "Your Lab assessment is ready. A magic link has been sent to your email to access the simulator.")
+              ? (fr ? "Votre simulateur est prêt. Un lien magique a été envoyé à votre courriel — cliquez pour accéder au Laboratoire."
+                    : "Your simulator is ready. A magic link has been sent to your email — click to access the Lab.")
               : tier === "decaissement"
-              ? (fr ? "Votre bilan de décaissement est en route — 6 scénarios analysés. Vérifiez votre boîte de réception dans les prochaines minutes."
-                    : "Your decumulation assessment is on its way — 6 scenarios analyzed. Check your inbox in the next few minutes.")
+              ? (fr ? "Votre bilan Horizon est en route — 6 scénarios de retrait analysés. Vérifiez votre boîte de réception dans les prochaines minutes."
+                    : "Your Horizon assessment is on its way — 6 withdrawal scenarios analyzed. Check your inbox in the next few minutes.")
               : (fr ? "Votre bilan personnalisé est en route. Vérifiez votre boîte de réception dans les prochaines minutes."
                     : "Your personalized assessment is on its way. Check your inbox in the next few minutes."))
             : (fr ? "Nous préparons votre analyse personnalisée. Chaque étape prend quelques secondes."
@@ -340,17 +340,17 @@ function ConfirmationContent() {
               <div style={{ marginBottom: 20, textAlign: "left" }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1208", marginBottom: 6 }}>
                   {tier === "decaissement"
-                    ? (fr ? "Votre simulateur interactif inclus" : "Your included interactive simulator")
+                    ? (fr ? "Prochaine étape : testez vos scénarios de retrait" : "Next step: test your withdrawal scenarios")
                     : tier === "intermediaire"
-                    ? (fr ? "Vos deux outils inclus" : "Your two included tools")
-                    : (fr ? "Votre outil interactif — à vous de choisir" : "Your interactive tool — your choice")}
+                    ? (fr ? "Prochaine étape : agir sur un aspect de votre plan" : "Next step: act on one part of your plan")
+                    : (fr ? "Prochaine étape : agir sur un aspect de votre plan" : "Next step: act on one part of your plan")}
                 </div>
                 <div style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginBottom: 14 }}>
                   {tier === "decaissement"
-                    ? (fr ? "Testez différents scénarios de retrait, d'allocation et de moment optimal pour vos rentes." : "Test different withdrawal scenarios, allocations, and optimal timing for your pensions.")
+                    ? (fr ? "Votre bilan est le diagnostic. Le simulateur est l'espace d'action — ajustez retraits, allocation et timing de vos rentes en temps réel." : "Your assessment is the diagnosis. The simulator is the action workspace — adjust withdrawals, allocation, and pension timing in real time.")
                     : tier === "intermediaire"
-                    ? (fr ? "Utilisez celui qui correspond à votre situation en ce moment — ou les deux." : "Use the one that fits your situation right now — or both.")
-                    : (fr ? "Un outil inclus avec votre rapport. Choisissez celui qui correspond à votre situation en ce moment." : "One tool included with your report. Choose the one that fits your situation right now.")}
+                    ? (fr ? "Votre bilan est le diagnostic complet. Ces outils vous permettent d'agir sur un aspect précis — dettes ou répartition d'épargne." : "Your assessment is the full diagnosis. These tools let you act on a specific aspect — debt or savings allocation.")
+                    : (fr ? "Votre bilan est le diagnostic. L'outil vous permet d'agir sur un aspect précis de votre plan." : "Your assessment is the diagnosis. The tool lets you act on a specific part of your plan.")}
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                   {tier === "decaissement" ? (

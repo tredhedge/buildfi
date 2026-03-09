@@ -288,7 +288,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
   <div class="container">
     <a href="/" class="pp-back reveal"><span aria-hidden="true">&larr;</span> <span id="heroBack">Retour &agrave; buildfi.ca</span></a>
     <h1 class="pp-hero-title reveal reveal-delay-1" id="heroTitle">Laboratoire</h1>
-    <p class="pp-hero-subtitle reveal reveal-delay-1" id="heroSub">Tester vos d&eacute;cisions de retraite avant de les prendre.</p>
+    <p class="pp-hero-subtitle reveal reveal-delay-1" id="heroSub">Le simulateur interactif BuildFi &mdash; testez vos d&eacute;cisions de retraite avant de les prendre.</p>
     <div class="pp-hero-price reveal reveal-delay-2">
       <span class="pp-hero-price-original">129 $</span>
       <span class="pp-hero-price-current">64,50 $</span>
@@ -300,7 +300,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
     <div class="reveal reveal-delay-4">
       <span class="pp-badge" id="heroBadge">5 exports AI inclus</span>
     </div>
-    <p class="pp-hero-desktop reveal reveal-delay-4" id="heroDesktop">Exp&eacute;rience optimale sur ordinateur &mdash; tablette et mobile partiellement support&eacute;s.</p>
+    <p class="pp-hero-desktop reveal reveal-delay-4" id="heroDesktop">Le mode Guid&eacute; fonctionne sur tablette et mobile. Le mode Avanc&eacute; est con&ccedil;u pour ordinateur.</p>
   </div>
 </section>
 
@@ -419,7 +419,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 <section class="section" id="comparison">
   <div class="container" style="text-align:center">
     <p class="section-label reveal" id="compLabel">Comparaison</p>
-    <h2 class="section-title reveal" style="text-align:center" id="compTitle">Laboratoire vs Bilan et Bilan 360</h2>
+    <h2 class="section-title reveal" style="text-align:center" id="compTitle">Laboratoire vs Bilan, Bilan 360 et Horizon</h2>
     <div class="comp-wrap reveal reveal-delay-1">
       <table class="comp-table">
         <thead>
@@ -427,19 +427,20 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
             <th id="ctHF">Fonctionnalit&eacute;</th>
             <th id="ctHE">Bilan<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">29 $</span> <strong>14,50 $</strong></th>
             <th id="ctHI">Bilan 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59 $</span> <strong>29,50 $</strong></th>
+            <th id="ctHD">Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59 $</span> <strong>29,50 $</strong></th>
             <th class="cx" id="ctHX">Laboratoire<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">129 $</span> <strong>64,50 $</strong></th>
           </tr>
         </thead>
         <tbody>
-          <tr><td id="ct1">Sc&eacute;narios Monte Carlo</td><td id="ctE1">5 000</td><td id="ctI1">5 000</td><td class="cx" id="ctX1">1 000 &ndash; 5 000 en temps r&eacute;el</td></tr>
-          <tr><td id="ct2">Grade retraite</td><td id="ctE2">Oui</td><td id="ctI2">Oui</td><td class="cx" id="ctX2">Oui + &eacute;volution en direct</td></tr>
-          <tr><td id="ct3">Strat&eacute;gies</td><td id="ctE3" class="comp-no">Non</td><td id="ctI3">5 compar&eacute;es</td><td class="cx" id="ctX3">Illimit&eacute;es + optimiseur</td></tr>
-          <tr><td id="ct4">Simulations interactives</td><td id="ctE4" class="comp-no">Non</td><td id="ctI4" class="comp-no">Non</td><td class="cx" id="ctX4">Oui &mdash; tester chaque d&eacute;cision</td></tr>
-          <tr><td id="ct5">Couple</td><td id="ctE5" class="comp-no">Non</td><td id="ctI5">Oui</td><td class="cx" id="ctX5">Oui + conjoint(e) mod&eacute;lis&eacute;(e)</td></tr>
-          <tr><td id="ct6">CCPC / Entreprise</td><td id="ctE6" class="comp-no">Non</td><td id="ctI6">Oui</td><td class="cx" id="ctX6">Oui + extraction optimale</td></tr>
-          <tr><td id="ct7">Immobilier</td><td id="ctE7" class="comp-no">Non</td><td id="ctI7">Oui</td><td class="cx" id="ctX7">Oui + downsizing + locatif</td></tr>
-          <tr><td id="ct8">Rapport AI</td><td id="ctE8">1 bilan</td><td id="ctI8">1 bilan</td><td class="cx" id="ctX8">5 exports (+ 14,99 $/extra)</td></tr>
-          <tr><td id="ct9">Acc&egrave;s</td><td id="ctE9">1 rapport</td><td id="ctI9">1 rapport</td><td class="cx" id="ctX9">12 mois illimit&eacute;</td></tr>
+          <tr><td id="ct1">Sc&eacute;narios Monte Carlo</td><td id="ctE1">5 000</td><td id="ctI1">5 000</td><td id="ctD1">5 000 + 6 runs</td><td class="cx" id="ctX1">1 000 &ndash; 5 000 en temps r&eacute;el</td></tr>
+          <tr><td id="ct2">Grade retraite</td><td id="ctE2">Oui</td><td id="ctI2">Oui</td><td id="ctD2">Oui</td><td class="cx" id="ctX2">Oui + &eacute;volution en direct</td></tr>
+          <tr><td id="ct3">Strat&eacute;gies</td><td id="ctE3" class="comp-no">Non</td><td id="ctI3">5 compar&eacute;es</td><td id="ctD3">Timing RRQ 60/65/70</td><td class="cx" id="ctX3">Illimit&eacute;es + optimiseur</td></tr>
+          <tr><td id="ct4">Simulations interactives</td><td id="ctE4" class="comp-no">Non</td><td id="ctI4" class="comp-no">Non</td><td id="ctD4" class="comp-no">Non</td><td class="cx" id="ctX4">Oui &mdash; tester chaque d&eacute;cision</td></tr>
+          <tr><td id="ct5">Couple</td><td id="ctE5" class="comp-no">Non</td><td id="ctI5">Oui</td><td id="ctD5" class="comp-no">Non</td><td class="cx" id="ctX5">Oui + conjoint(e) mod&eacute;lis&eacute;(e)</td></tr>
+          <tr><td id="ct6">Analyse de d&eacute;caissement</td><td id="ctE6" class="comp-no">Non</td><td id="ctI6" class="comp-no">Non</td><td id="ctD6">Oui &mdash; retraits, fiscalit&eacute;, robustesse</td><td class="cx" id="ctX6">Oui + contr&ocirc;le total</td></tr>
+          <tr><td id="ct7">Stress test (meltdown)</td><td id="ctE7" class="comp-no">Non</td><td id="ctI7" class="comp-no">Non</td><td id="ctD7">Oui &mdash; an 1 + an 5</td><td class="cx" id="ctX7">Oui + param&egrave;tres ajustables</td></tr>
+          <tr><td id="ct8">Rapport AI</td><td id="ctE8">1 bilan</td><td id="ctI8">1 bilan</td><td id="ctD8">1 bilan</td><td class="cx" id="ctX8">5 exports (+ 14,99 $/extra)</td></tr>
+          <tr><td id="ct9">Acc&egrave;s</td><td id="ctE9">1 rapport</td><td id="ctI9">1 rapport</td><td id="ctD9">1 rapport</td><td class="cx" id="ctX9">12 mois illimit&eacute;</td></tr>
         </tbody>
       </table>
     </div>
@@ -453,7 +454,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 <section class="section section--sand" id="honesty">
   <div class="container">
     <p class="section-label reveal" id="nfeLabel">Transparence</p>
-    <h2 class="section-title reveal" id="nfeTitle">Le Laboratoire n'est pas pour tout le monde.</h2>
+    <h2 class="section-title reveal" id="nfeTitle">Le simulateur n'est pas pour tout le monde.</h2>
     <div class="nfe-grid reveal reveal-delay-1">
       <div class="nfe-col nfe-yes">
         <h3 id="nfeYesTitle">Pour vous si :</h3>
@@ -469,6 +470,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
         <ul>
           <li id="nfeN1">Vous voulez juste une note rapide &rarr; <a href="/bilan">Bilan (14,50 $)</a></li>
           <li id="nfeN2">Vous voulez un portrait complet sans simulateur &rarr; <a href="/bilan-360">Bilan 360 (29,50 $)</a></li>
+          <li id="nfeN3">Vous &ecirc;tes retrait&eacute; et voulez savoir si votre argent va durer &rarr; <a href="/horizon">Horizon (29,50 $)</a></li>
         </ul>
       </div>
     </div>
@@ -638,7 +640,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
           <span id="fq5">Le simulateur fonctionne-t-il sur mobile?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Le simulateur est con&ccedil;u pour ordinateur. Un avertissement s'affiche sur mobile (&eacute;cran trop petit pour les tableaux et graphiques).</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Le mode Guid&eacute; fonctionne sur tablette et mobile. Le mode Avanc&eacute; est con&ccedil;u pour ordinateur.</div></div>
       </div>
     </div>
   </div>
@@ -684,7 +686,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
       <a href="/quiz-expert.html" class="btn btn-primary" id="finalCta" data-track="product_page_cta_clicked">Acc&eacute;der au simulateur <span aria-hidden="true">&rarr;</span></a>
     </div>
     <div class="pricing-reassurance reveal reveal-delay-3">
-      <p id="finalAlt">Pas pr&ecirc;t? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan &agrave; 14,50 $</a></p>
+      <p id="finalAlt">Pas pr&ecirc;t? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan &agrave; 14,50 $</a> &mdash; <span id="finalAltHorizon">ou <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon &agrave; 29,50 $</a> pour les retrait&eacute;s</span></p>
     </div>
   </div>
 </section>
@@ -692,26 +694,27 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
 <!-- ═══ SECTION 13: PAS LE BON PRODUIT? ═══ -->
 <section class="section" id="crosssell">
   <div class="container" style="text-align:center">
-    <p class="section-label reveal">Pas le bon produit?</p>
+    <p class="section-label reveal">Vous pr&eacute;f&eacute;rez recevoir un diagnostic?</p>
+    <h2 class="section-title reveal" style="font-size:clamp(22px,2.5vw,30px)">Le simulateur n'est pas pour tout le monde. Nos bilans font le travail pour vous.</h2>
     <div class="crosssell-list">
       <a href="/bilan" class="crosssell-card reveal">
         <div class="crosssell-info">
-          <div class="crosssell-name">Bilan</div>
-          <div class="crosssell-desc">Pour un premier portrait financier</div>
+          <div class="crosssell-name">Bilan &mdash; 14,50 $</div>
+          <div class="crosssell-desc">Premier portrait clair sans manipuler de simulateur. 5 &agrave; 8 minutes, bilan livr&eacute; par courriel.</div>
         </div>
         <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
       </a>
       <a href="/bilan-360" class="crosssell-card reveal reveal-delay-1">
         <div class="crosssell-info">
-          <div class="crosssell-name">Bilan 360</div>
-          <div class="crosssell-desc">Pour le portrait complet</div>
+          <div class="crosssell-name">Bilan 360 &mdash; 29,50 $</div>
+          <div class="crosssell-desc">Situation complexe? Couple, immobilier, succession &mdash; le rapport complet fait pour vous.</div>
         </div>
         <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
       </a>
       <a href="/horizon" class="crosssell-card reveal reveal-delay-2">
         <div class="crosssell-info">
-          <div class="crosssell-name">Horizon</div>
-          <div class="crosssell-desc">Pour planifier vos retraits</div>
+          <div class="crosssell-name">Horizon &mdash; 29,50 $</div>
+          <div class="crosssell-desc">Retrait&eacute; ou pr&eacute;retrait&eacute;? Le bilan de revenu de retraite &mdash; retraits, timing RRQ, robustesse.</div>
         </div>
         <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
       </a>
@@ -776,11 +779,11 @@ var T = {
   // ── Hero ──
   heroBack: { fr:'Retour \u00e0 buildfi.ca', en:'Back to buildfi.ca' },
   heroTitle: { fr:'Laboratoire', en:'Lab' },
-  heroSub: { fr:'Tester vos d\u00e9cisions de retraite avant de les prendre.', en:'Test your retirement decisions before you make them.' },
+  heroSub: { fr:'Le simulateur interactif BuildFi \u2014 testez vos d\u00e9cisions de retraite avant de les prendre.', en:'BuildFi\u2019s interactive simulator \u2014 test your retirement decisions before you make them.' },
   heroPriceNote: { fr:'paiement unique \u2014 acc\u00e8s 12 mois', en:'one-time payment \u2014 12-month access' },
   heroCta: { fr:'Acc\u00e9der au simulateur \u2192', en:'Access the simulator \u2192' },
   heroBadge: { fr:'5 exports AI inclus', en:'5 AI exports included' },
-  heroDesktop: { fr:'Exp\u00e9rience optimale sur ordinateur \u2014 tablette et mobile partiellement support\u00e9s.', en:'Best experience on desktop \u2014 tablet and mobile partially supported.' },
+  heroDesktop: { fr:'Le mode Guid\u00e9 fonctionne sur tablette et mobile. Le mode Avanc\u00e9 est con\u00e7u pour ordinateur.', en:'Guided Mode works on tablet and mobile. Advanced Mode is designed for desktop.' },
 
   // ── Mocks ──
   mockLabel: { fr:'Ce que vous obtenez', en:'What you get' },
@@ -821,52 +824,62 @@ var T = {
 
   // ── Comparison ──
   compLabel: { fr:'Comparaison', en:'Comparison' },
-  compTitle: { fr:'Laboratoire vs Bilan et Bilan 360', en:'Lab vs Snapshot and Snapshot 360' },
+  compTitle: { fr:'Laboratoire vs Bilan, Bilan 360 et Horizon', en:'Lab vs Snapshot, Snapshot 360 and Horizon' },
   ctHF: { fr:'Fonctionnalit\u00e9', en:'Feature' },
   ctHE: { fr:'Bilan<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">29\u00a0$</span> <strong>14,50\u00a0$</strong>', en:'Snapshot<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$29</span> <strong>$14.50</strong>' },
   ctHI: { fr:'Bilan 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Snapshot 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$59</span> <strong>$29.50</strong>' },
+  ctHD: { fr:'Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$59</span> <strong>$29.50</strong>' },
   ctHX: { fr:'Laboratoire<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">129\u00a0$</span> <strong>64,50\u00a0$</strong>', en:'Lab<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$129</span> <strong>$64.50</strong>' },
   ct1: { fr:'Sc\u00e9narios Monte Carlo', en:'Monte Carlo scenarios' },
   ctE1: { fr:'5 000', en:'5,000' },
   ctI1: { fr:'5 000', en:'5,000' },
+  ctD1: { fr:'5 000 + 6 runs', en:'5,000 + 6 runs' },
   ctX1: { fr:'1 000 \u2013 5 000 en temps r\u00e9el', en:'1,000 \u2013 5,000 in real time' },
   ct2: { fr:'Grade retraite', en:'Retirement grade' },
   ctE2: { fr:'Oui', en:'Yes' },
   ctI2: { fr:'Oui', en:'Yes' },
+  ctD2: { fr:'Oui', en:'Yes' },
   ctX2: { fr:'Oui + \u00e9volution en direct', en:'Yes + live updates' },
   ct3: { fr:'Strat\u00e9gies', en:'Strategies' },
   ctE3: { fr:'Non', en:'No' },
   ctI3: { fr:'5 compar\u00e9es', en:'5 compared' },
+  ctD3: { fr:'Timing RRQ 60/65/70', en:'CPP timing 60/65/70' },
   ctX3: { fr:'Illimit\u00e9es + optimiseur', en:'Unlimited + optimizer' },
   ct4: { fr:'Simulations interactives', en:'Interactive simulations' },
   ctE4: { fr:'Non', en:'No' },
   ctI4: { fr:'Non', en:'No' },
+  ctD4: { fr:'Non', en:'No' },
   ctX4: { fr:'Oui \u2014 tester chaque d\u00e9cision', en:'Yes \u2014 test every decision' },
   ct5: { fr:'Couple', en:'Couple' },
   ctE5: { fr:'Non', en:'No' },
   ctI5: { fr:'Oui', en:'Yes' },
+  ctD5: { fr:'Non', en:'No' },
   ctX5: { fr:'Oui + conjoint(e) mod\u00e9lis\u00e9(e)', en:'Yes + spouse modeled' },
-  ct6: { fr:'CCPC / Entreprise', en:'CCPC / Business' },
+  ct6: { fr:'Analyse de d\u00e9caissement', en:'Drawdown analysis' },
   ctE6: { fr:'Non', en:'No' },
-  ctI6: { fr:'Oui', en:'Yes' },
-  ctX6: { fr:'Oui + extraction optimale', en:'Yes + optimal extraction' },
-  ct7: { fr:'Immobilier', en:'Real estate' },
+  ctI6: { fr:'Non', en:'No' },
+  ctD6: { fr:'Oui \u2014 retraits, fiscalit\u00e9, robustesse', en:'Yes \u2014 withdrawals, tax, resilience' },
+  ctX6: { fr:'Oui + contr\u00f4le total', en:'Yes + full control' },
+  ct7: { fr:'Stress test (meltdown)', en:'Stress test (meltdown)' },
   ctE7: { fr:'Non', en:'No' },
-  ctI7: { fr:'Oui', en:'Yes' },
-  ctX7: { fr:'Oui + downsizing + locatif', en:'Yes + downsizing + rental' },
+  ctI7: { fr:'Non', en:'No' },
+  ctD7: { fr:'Oui \u2014 an 1 + an 5', en:'Yes \u2014 year 1 + year 5' },
+  ctX7: { fr:'Oui + param\u00e8tres ajustables', en:'Yes + adjustable parameters' },
   ct8: { fr:'Rapport AI', en:'AI report' },
   ctE8: { fr:'1 bilan', en:'1 assessment' },
   ctI8: { fr:'1 bilan', en:'1 assessment' },
+  ctD8: { fr:'1 bilan', en:'1 assessment' },
   ctX8: { fr:'5 exports (+ 14,99\u00a0$/extra)', en:'5 exports (+ $14.99/extra)' },
   ct9: { fr:'Acc\u00e8s', en:'Access' },
   ctE9: { fr:'1 rapport', en:'1 report' },
   ctI9: { fr:'1 rapport', en:'1 report' },
+  ctD9: { fr:'1 rapport', en:'1 report' },
   ctX9: { fr:'12 mois illimit\u00e9', en:'12 months unlimited' },
   compCta: { fr:'Choisir le Laboratoire \u2014 64,50 $ \u2192', en:'Choose the Lab \u2014 $64.50 \u2192' },
 
   // ── Not for everyone ──
   nfeLabel: { fr:'Transparence', en:'Transparency' },
-  nfeTitle: { fr:'Le Laboratoire n\u2019est pas pour tout le monde.', en:'The Lab isn\u2019t for everyone.' },
+  nfeTitle: { fr:'Le simulateur n\u2019est pas pour tout le monde.', en:'The simulator isn\u2019t for everyone.' },
   nfeYesTitle: { fr:'Pour vous si :', en:'For you if:' },
   nfeY1: { fr:'Vous voulez tester plusieurs sc\u00e9narios avant de d\u00e9cider', en:'You want to test multiple scenarios before deciding' },
   nfeY2: { fr:'Votre situation est complexe : couple, immo, incorporation, pensions multiples', en:'Your situation is complex: couple, real estate, incorporation, multiple pensions' },
@@ -875,6 +888,7 @@ var T = {
   nfeNoTitle: { fr:'Pas pour vous si :', en:'Not for you if:' },
   nfeN1: { fr:'Vous voulez juste une note rapide \u2192 <a href="/bilan">Bilan (14,50\u00a0$)</a>', en:'You just want a quick grade \u2192 <a href="/bilan">Snapshot ($14.50)</a>' },
   nfeN2: { fr:'Vous voulez un portrait complet sans simulateur \u2192 <a href="/bilan-360">Bilan 360 (29,50\u00a0$)</a>', en:'You want a full portrait without a simulator \u2192 <a href="/bilan-360">Snapshot 360 ($29.50)</a>' },
+  nfeN3: { fr:'Vous \u00eates retrait\u00e9 et voulez savoir si votre argent va durer \u2192 <a href="/horizon">Horizon (29,50\u00a0$)</a>', en:'You\u2019re retired and want to know if your money will last \u2192 <a href="/horizon">Horizon ($29.50)</a>' },
 
   // ── Pour qui ──
   pqLabel: { fr:'Id\u00e9al pour', en:'Ideal for' },
@@ -946,7 +960,7 @@ var T = {
   fq4: { fr:'Puis-je commencer par le Bilan et passer au Laboratoire?', en:'Can I start with the Snapshot and upgrade to the Lab?' },
   fa4: { fr:'Oui. Votre achat Bilan ou Bilan 360 est cr\u00e9dit\u00e9 sur le prix du Laboratoire.', en:'Yes. Your Snapshot or Snapshot 360 purchase is credited toward the Lab price.' },
   fq5: { fr:'Le simulateur fonctionne-t-il sur mobile?', en:'Does the simulator work on mobile?' },
-  fa5: { fr:'Le simulateur est con\u00e7u pour ordinateur. Un avertissement s\u2019affiche sur mobile (\u00e9cran trop petit pour les tableaux et graphiques).', en:'The simulator is designed for desktop. A warning appears on mobile (screen too small for tables and charts).' },
+  fa5: { fr:'Le mode Guid\u00e9 fonctionne sur tablette et mobile. Le mode Avanc\u00e9 est con\u00e7u pour ordinateur.', en:'Guided Mode works on tablet and mobile. Advanced Mode is designed for desktop.' },
 
   // ── Trust ──
   trustLabel: { fr:'Rigueur', en:'Rigor' },
@@ -960,7 +974,8 @@ var T = {
   finalTitle: { fr:'Prenez le contr\u00f4le de votre retraite.', en:'Take control of your retirement.' },
   finalSub: { fr:'12 mois d\u2019acc\u00e8s | 5 exports AI | Mises \u00e0 jour incluses', en:'12-month access | 5 AI exports | Updates included' },
   finalCta: { fr:'Acc\u00e9der au simulateur \u2192', en:'Access the simulator \u2192' },
-  finalAlt: { fr:'Pas pr\u00eat? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan \u00e0 14,50 $</a>', en:'Not ready? <a href="/bilan" style="color:var(--gold);font-weight:600">Start with the Snapshot at $14.50</a>' },
+  finalAlt: { fr:'Pas pr\u00eat? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan \u00e0 14,50\u00a0$</a>', en:'Not ready? <a href="/bilan" style="color:var(--gold);font-weight:600">Start with the Snapshot at $14.50</a>' },
+  finalAltHorizon: { fr:'ou <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon \u00e0 29,50\u00a0$</a> pour les retrait\u00e9s', en:'or <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon at $29.50</a> for retirees' },
 
   // ── Footer ──
   footTagline: { fr:'Planification financi\u00e8re personnalis\u00e9e pour les Canadiens.', en:'Personalized financial planning for Canadians.' },

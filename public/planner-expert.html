@@ -7139,7 +7139,7 @@ var reportHTML = useMemo(function() {
 
   // Disclaimer
   h += '<div class="disclaimer"><strong>\u26a0 '+(fr?'Mise en garde':'Disclaimer')+'</strong><br/>'+(fr?'Ce rapport est g\u00e9n\u00e9r\u00e9 \u00e0 des fins \u00e9ducatives et informationnelles uniquement. Il ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont bas\u00e9es sur des simulations Monte Carlo avec des hypoth\u00e8ses qui peuvent ne pas se r\u00e9aliser. Consultez un planificateur financier certifi\u00e9 (Pl. Fin.) ou un conseiller en placement inscrit avant toute d\u00e9cision financi\u00e8re.':'This report is generated for educational and informational purposes only. It does not constitute financial, tax, or legal advice. Projections are based on Monte Carlo simulations with assumptions that may not materialize. Consult a certified financial planner (CFP) or registered investment advisor before making financial decisions.')+'</div>';
-  h += '<div class="ft">buildfi.ca \u00b7 '+today+' \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='essentiel'?(fr?'Essentiel':'Essential'):rm==='standard'?'Standard':'Expert')+'</div>';
+  h += '<div class="ft">buildfi.ca \u00b7 '+today+' \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='essentiel'?(fr?'Bilan':'Snapshot'):rm==='standard'?(fr?'Bilan 360':'Snapshot 360'):(fr?'Laboratoire':'Lab'))+'</div>';
   h += '</body></html>';
   return h;
 
@@ -8834,9 +8834,9 @@ React.createElement("div", { style: { background: CL.s2, borderRadius: RAD.sm + 
   merR > 0.025 ? React.createElement("div", { className: "warn-badge", style: { marginTop: 4 } }, "\u26a0\ufe0f MER > 2.5%") : null,
   retSpM * 12 > sal * 0.9 && sal > 0 ? React.createElement("div", { className: "warn-badge", style: { marginTop: 4 } }, "\u26a0\ufe0f ", lang === "fr" ? "D\u00e9penses retraite > 90% du salaire" : "Retirement spending > 90% of salary") : null,
   mode === "essentiel" && React.createElement("div", { style: { margin: "10px 0 4px", padding: "10px", background: CL.cd, borderRadius: RAD.md, border: "1px solid rgba(80,144,200,0.2)" } },
-    React.createElement("div", { style: { fontSize: FS.base, fontWeight: FW.medium, color: CL.bl, marginBottom: 4 } }, lang === "fr" ? "Explorez le mode Standard" : "Explore Standard mode"),
+    React.createElement("div", { style: { fontSize: FS.base, fontWeight: FW.medium, color: CL.bl, marginBottom: 4 } }, lang === "fr" ? "Explorez le mode Bilan 360" : "Explore Snapshot 360 mode"),
     React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, lang === "fr" ? "Couple int\u00e9gr\u00e9, What-If interactif, meltdown REER, 3 propri\u00e9t\u00e9s, d\u00e9caissement d\u00e9taill\u00e9, export..." : "Integrated couple, What-If, RRSP meltdown, 3 properties, decumulation, export..."),
-    React.createElement("button", { onClick: function() { _setMode("standard"); }, style: { marginTop: 6, width: "100%", padding: "6px", background: CL.bl, color: CL.al, border: "none", borderRadius: RAD.sm, fontSize: FS.base, fontWeight: FW.medium, cursor: "pointer" } }, lang === "fr" ? "Passer en Standard \u2192" : "Switch to Standard \u2192"))
+    React.createElement("button", { onClick: function() { _setMode("standard"); }, style: { marginTop: 6, width: "100%", padding: "6px", background: CL.bl, color: CL.al, border: "none", borderRadius: RAD.sm, fontSize: FS.base, fontWeight: FW.medium, cursor: "pointer" } }, lang === "fr" ? "Passer en Bilan 360 \u2192" : "Switch to Snapshot 360 \u2192"))
 ))), React.createElement("div", { style: sty.main, className: "fire-main" },
 React.createElement("div", { style: sty.head },
   mcComputing && React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: 3, background: CL.bd, zIndex: 100, overflow: "hidden" } },
@@ -11807,7 +11807,7 @@ StratBadge(true),
     React.createElement("div", { style: { display: "flex", gap: 2, background: CL.s2, borderRadius: RAD.sm, padding: 2 } },
       ["essentiel", "standard", "expert"].map(function(m) {
         var active = (rptMode || mode) === m;
-        return React.createElement("button", { key: m, onClick: function() { setRptMode(m); }, style: { padding: "4px 12px", background: active ? CL.ac : "transparent", color: active ? CL.bg : CL.dm, border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: active ? FW.bold : FW.normal, cursor: "pointer", textTransform: "capitalize", transition: "all 0.15s" } }, m === "essentiel" ? (lang === "fr" ? "Essentiel" : "Essential") : m === "standard" ? "Standard" : "Expert");
+        return React.createElement("button", { key: m, onClick: function() { setRptMode(m); }, style: { padding: "4px 12px", background: active ? CL.ac : "transparent", color: active ? CL.bg : CL.dm, border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: active ? FW.bold : FW.normal, cursor: "pointer", textTransform: "capitalize", transition: "all 0.15s" } }, m === "essentiel" ? (lang === "fr" ? "Bilan" : "Snapshot") : m === "standard" ? (lang === "fr" ? "Bilan 360" : "Snapshot 360") : (lang === "fr" ? "Laboratoire" : "Lab"));
       })
     ),
     // Language toggle
@@ -13451,9 +13451,9 @@ tab === 19 && (function() {
 
     // Locked teaser for Standard mode
     locked && E("div", { style: { padding: 16, background: CL.cd, border: "2px dashed " + CL.ac, borderRadius: RAD.md + 2, textAlign: "center", marginBottom: 16 } },
-      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2] } }, "\ud83d\udd13 ", lang === "fr" ? "Mode Expert requis" : "Expert Mode Required"),
+      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2] } }, "\ud83d\udd13 ", lang === "fr" ? "Mode Laboratoire requis" : "Lab Mode Required"),
       E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5, maxWidth: 450, margin: "0 auto" } },
-        lang === "fr" ? "L'analyse compl\u00e8te d'alpha fiscal montre le d\u00e9tail ann\u00e9e par ann\u00e9e des \u00e9conomies d'imp\u00f4t, la ventilation par strat\u00e9gie et le graphique cumulatif. Passez en mode Expert pour d\u00e9bloquer." : "Full tax alpha analysis shows year-by-year tax savings detail, strategy breakdown and cumulative chart. Switch to Expert mode to unlock."),
+        lang === "fr" ? "L'analyse compl\u00e8te d'alpha fiscal montre le d\u00e9tail ann\u00e9e par ann\u00e9e des \u00e9conomies d'imp\u00f4t, la ventilation par strat\u00e9gie et le graphique cumulatif. Passez en mode Laboratoire pour d\u00e9bloquer." : "Full tax alpha analysis shows year-by-year tax savings detail, strategy breakdown and cumulative chart. Switch to Lab mode to unlock."),
       E("div", { style: { marginTop: 8, fontSize: FS.base, color: CL.gn, fontWeight: FW.medium } }, lang === "fr" ? "Aper\u00e7u: votre alpha fiscal estim\u00e9 est de ~" + f$(Math.round(taxAlpha)) : "Preview: your estimated tax alpha is ~" + f$(Math.round(taxAlpha)))
     ),
 
@@ -14743,9 +14743,9 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
       Hd(fr ? "Les 3 modes" : "The 3 modes"),
       E("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 } },
         [
-          [fr ? "Essentiel" : "Essential", fr ? "5 onglets, vocabulaire simple. Id\u00e9al pour d\u00e9couvrir l'outil." : "5 tabs, simple terms. Ideal for discovering the tool.", CL.gn],
-          ["Standard", fr ? "~10 onglets, fiscalit\u00e9, optimiseur. Pour valider votre plan." : "~10 tabs, tax, optimizer. To validate your plan.", CL.bl],
-          ["Expert", fr ? "Acc\u00e8s complet, tous les leviers. Pour tout optimiser." : "Full access, all levers. To optimize everything.", CL.or]
+          [fr ? "Bilan" : "Snapshot", fr ? "5 onglets, vocabulaire simple. Id\u00e9al pour d\u00e9couvrir l'outil." : "5 tabs, simple terms. Ideal for discovering the tool.", CL.gn],
+          [fr ? "Bilan 360" : "Snapshot 360", fr ? "~10 onglets, fiscalit\u00e9, optimiseur. Pour valider votre plan." : "~10 tabs, tax, optimizer. To validate your plan.", CL.bl],
+          [fr ? "Laboratoire" : "Lab", fr ? "Acc\u00e8s complet, tous les leviers. Pour tout optimiser." : "Full access, all levers. To optimize everything.", CL.or]
         ].map(function(m, i) { return E("div", { key: i, style: { padding: 10, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, textAlign: "center" } },
           E("div", { style: { fontWeight: FW.bold, color: m[2], fontSize: FS.md, marginBottom: 4 } }, m[0]),
           E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, m[1])); })
@@ -14760,13 +14760,13 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
     // ============ SUB 1: LES ONGLETS ============
     _gSub === 1 && E(React.Fragment, null,
       Hd(fr ? "Les onglets de l'outil" : "The tool's tabs"),
-      P(fr ? "Les onglets visibles d\u00e9pendent de votre mode (Essentiel, Standard, Expert). Voici ce que chacun contient:" : "Visible tabs depend on your mode (Essential, Standard, Expert). Here's what each contains:"),
+      P(fr ? "Les onglets visibles d\u00e9pendent de votre mode (Bilan, Bilan 360, Laboratoire). Voici ce que chacun contient:" : "Visible tabs depend on your mode (Snapshot, Snapshot 360, Lab). Here's what each contains:"),
       [
         [fr ? "Diagnostic" : "Diagnostic", fr ? "Tableau de bord principal. Note de A+ \u00e0 F, indicateurs cl\u00e9s, observations personnalis\u00e9es et distribution Monte Carlo." : "Main dashboard. Grade from A+ to F, key indicators, personalized observations and Monte Carlo distribution.", "essentiel"],
         [fr ? "Revenus" : "Income", fr ? "D\u00e9composition de vos revenus \u00e0 la retraite: RRQ/PSV, pension, retraits REER/CELI. Inclut le diagramme Sankey (flux visuels), le cash-flow annuel et la strat\u00e9gie de d\u00e9caissement." : "Breakdown of retirement income: QPP/OAS, pension, RRSP/TFSA withdrawals. Includes Sankey diagram (visual flows), annual cash flow and decumulation strategy.", "essentiel"],
         [fr ? "Projection" : "Projection", fr ? "\u00c9volution de votre patrimoine ann\u00e9e par ann\u00e9e avec l'\u00e9ventail de sc\u00e9narios (fan chart P5\u2013P95)." : "Year-by-year wealth evolution with scenario fan chart (P5\u2013P95).", "essentiel"],
         [fr ? "Patrimoine" : "Wealth", fr ? "D\u00e9tail de vos comptes (REER, CELI, NR), bilan net et estimation de l'imp\u00f4t au d\u00e9c\u00e8s." : "Account detail (RRSP, TFSA, non-reg), net balance and estate tax estimation.", "essentiel"],
-        [fr ? "Fiscalit\u00e9" : "Tax", fr ? "Paliers d'imposition combin\u00e9s, imp\u00f4t annuel projet\u00e9, strat\u00e9gies fiscales (meltdown, fractionnement). Inclut Alpha fiscal en mode Expert." : "Combined tax brackets, projected annual tax, tax strategies (meltdown, splitting). Includes Tax Alpha in Expert mode.", "standard"],
+        [fr ? "Fiscalit\u00e9" : "Tax", fr ? "Paliers d'imposition combin\u00e9s, imp\u00f4t annuel projet\u00e9, strat\u00e9gies fiscales (meltdown, fractionnement). Inclut Alpha fiscal en mode Laboratoire." : "Combined tax brackets, projected annual tax, tax strategies (meltdown, splitting). Includes Tax Alpha in Lab mode.", "standard"],
         [fr ? "Analyse" : "Analysis", fr ? "Stress tests (krachs, inflation, stagflation), What-If, Tornado et Impact des frais de gestion. Regroup\u00e9s dans un m\u00eame onglet." : "Stress tests (crashes, inflation, stagflation), What-If, Tornado and Fee Impact analysis. Grouped in one tab.", "essentiel"],
         [fr ? "Optimiseur" : "Optimizer", fr ? "Optimisation automatique sur 8 axes: \u00e2ge RRQ/PSV, meltdown, glide path, allocation, etc." : "Automatic optimization across 8 axes: QPP/OAS age, meltdown, glide path, allocation, etc.", "standard"],
         [fr ? "Strat\u00e9gie" : "Strategy", fr ? "Analyse comparative Rente vs Rachat (pension DB) et Dette vs Investissement." : "Comparative analysis Annuity vs Commuted Value (DB pension) and Debt vs Invest.", "expert"],
@@ -14849,7 +14849,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
       Qa(fr ? "Immigrant r\u00e9cent et PSV partielle?" : "Recent immigrant and partial OAS?",
          fr ? "La PSV requiert 10 ans de r\u00e9sidence minimum pour y avoir droit, et 40 ans pour la prestation compl\u00e8te. Si vous avez 20 ans de r\u00e9sidence, vous recevrez 50% (20/40). Le profil Fatima & Karim illustre ce sc\u00e9nario avec 5 ans au Canada." : "OAS requires a minimum of 10 years of residence to qualify, and 40 years for the full benefit. If you have 20 years of residence, you'll receive 50% (20/40). The Fatima & Karim profile illustrates this scenario with 5 years in Canada."),
       Qa(fr ? "Diff\u00e9rence entre les 3 modes?" : "Difference between the 3 modes?",
-         fr ? "Essentiel: 5 onglets, vocabulaire simple, 3 KPIs. Id\u00e9al pour une premi\u00e8re exploration. Standard: ~10 onglets, fiscalit\u00e9, optimiseur, termes techniques. Pour valider votre plan. Expert: 18+ onglets, PE/PM, Tornado, tous les leviers. Pour tout optimiser." : "Essential: 5 tabs, simple vocabulary, 3 KPIs. Ideal for first exploration. Standard: ~10 tabs, tax, optimizer, technical terms. To validate your plan. Expert: 18+ tabs, PE/PM, Tornado, all levers. To optimize everything."),
+         fr ? "Bilan: 5 onglets, vocabulaire simple, 3 KPIs. Id\u00e9al pour une premi\u00e8re exploration. Bilan 360: ~10 onglets, fiscalit\u00e9, optimiseur, termes techniques. Pour valider votre plan. Laboratoire: 18+ onglets, PE/PM, Tornado, tous les leviers. Pour tout optimiser." : "Snapshot: 5 tabs, simple vocabulary, 3 KPIs. Ideal for first exploration. Snapshot 360: ~10 tabs, tax, optimizer, technical terms. To validate your plan. Lab: 18+ tabs, PE/PM, Tornado, all levers. To optimize everything."),
       Qa(fr ? "L'outil remplace-t-il un planificateur financier?" : "Does the tool replace a financial planner?",
          fr ? "Non. L'outil est \u00e9ducatif et informatif. Il vous aide \u00e0 comprendre votre situation et \u00e0 pr\u00e9parer une conversation productive avec un professionnel. Pour des d\u00e9cisions importantes, consultez un planificateur financier certifi\u00e9 (Pl. Fin.)." : "No. The tool is educational and informational. It helps you understand your situation and prepare for a productive conversation with a professional. For important decisions, consult a certified financial planner."),
       Qa(fr ? "Qu'est-ce que la mortalit\u00e9 stochastique?" : "What is stochastic mortality?",

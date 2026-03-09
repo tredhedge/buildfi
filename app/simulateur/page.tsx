@@ -631,7 +631,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
           <div>
             <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine, fontFamily: "'Newsreader', serif" }}>buildfi.ca</div>
-            <div style={{ fontSize: 11, color: EK.gold, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 2 }}>Simulateur Expert</div>
+            <div style={{ fontSize: 11, color: EK.gold, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 2 }}>{fr ? "Laboratoire" : "Lab"}</div>
           </div>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
             {fr ? "EN" : "FR"}
@@ -645,7 +645,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
         </div>
 
         <h1 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, fontFamily: "'Newsreader', serif" }}>
-          {fr ? "Accès réservé aux membres Expert" : "Access reserved for Expert members"}
+          {fr ? "Accès réservé aux membres Laboratoire" : "Access reserved for Lab members"}
         </h1>
         <p style={{ fontSize: 15, color: EK.txDim, lineHeight: 1.7, marginBottom: 24 }}>
           {fr
@@ -654,7 +654,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
         </p>
 
         <a href="/expert/landing" style={{ display: "block", padding: "13px 28px", background: EK.marine, color: "#fff", borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
-          {fr ? "Découvrir le simulateur Expert" : "Discover the Expert simulator"}
+          {fr ? "Découvrir le Laboratoire" : "Discover the Lab"}
         </a>
 
         {/* Resend form */}
@@ -1065,6 +1065,16 @@ function SimulateurContent() {
               const next = viewMode === "planner" ? "react" : "planner";
               trackEvent(EVENTS.LAB_MODE_SWITCH, { from: viewMode === "planner" ? "planner" : "guided", to: next === "planner" ? "planner" : "guided" });
               if (next === "planner") trackEvent(EVENTS.LAB_PLANNER_OPENED, { source: "mode_switch" });
+              // Sync planner state to React BEFORE switching to guided mode
+              // (eliminates 2s race — setInterval may not have fired yet)
+              if (next === "react" && plannerRef.current?.contentWindow) {
+                try {
+                  const bfState = (plannerRef.current.contentWindow as unknown as { _bfState?: Record<string, unknown> })._bfState;
+                  if (bfState && typeof bfState === "object") {
+                    setParams(prev => ({ ...prev, ...bfState }));
+                  }
+                } catch (_) { /* cross-origin or iframe not ready — ignore, periodic sync still works */ }
+              }
               setViewMode(next);
             }}
             style={{
@@ -1175,7 +1185,7 @@ function SimulateurContent() {
           key={`planner-${lang}`}
           src={`/planner-expert.html?lang=${lang}`}
           style={{ width: "100%", height: results ? "calc(100vh - 89px)" : "calc(100vh - 56px)", border: "none", display: "block" }}
-          title={fr ? "Simulateur Expert BuildFi" : "BuildFi Expert Simulator"}
+          title={fr ? "Laboratoire BuildFi" : "BuildFi Lab"}
           allow="clipboard-write"
         />
         </>
