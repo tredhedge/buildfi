@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-08 — v17 (brand refresh logo system, defer race condition fix, landing page UX)
+> Mis à jour: 2026-03-08 — v18 (Phase 2 coherence, sync bridge 130+ params, analytics wired, report parity, conversion architecture)
 
 ---
 
@@ -301,6 +301,33 @@ partnerWork added to STATE
 Single-person only: couple=yes → callout, no couple analysis
 ```
 
+### Expert Simulator — Planner ↔ React Sync Bridge
+```
+Architecture: React wrapper (app/simulateur/page.tsx) embeds planner-expert.html in iframe.
+Two modes: "Guided" (React UI, ~50 params) and "Advanced" (full planner iframe, 190+ params).
+
+Sync directions:
+  React → Planner: postMessage "buildfi-load-params" on planner ready or mode switch
+    → _applyParams(s) in planner maps 130+ keys to useState setters
+  Planner → React: window._bfState object (130+ params, same keys as _applyParams)
+    → 2s debounced setInterval pushes _bfState via postMessage "buildfi-params-update"
+    → On "← Mode Guidé" click: direct iframe read of _bfState (eliminates 2s race)
+
+_bfState categories (130+ params):
+  Profile/timing (5), Employment (2), Registered accounts + contributions (6),
+  Allocation + MER (6), Government benefits (4), Pension/annuities (4),
+  Withdrawal strategy (5), Modeling (7), Lifecycle events (4),
+  Couple (17), Guardrails (6), Bridge/DC (2), Properties + debts (2 arrays),
+  RESP (6), CCPC/Business (21), FHSA (2), FTQ (2),
+  Budget items (9), Insurance (8), Lang (1)
+
+Critical: _bfState MUST match _applyParams 1:1. If a param is added to _applyParams,
+it must also be added to _bfState — otherwise data is silently lost on mode switch.
+
+Mobile: Guided Mode uses slide-in drawer for sidebar params (translateX transform).
+Planner iframe shows explicit desktop-only warning with fallback option.
+```
+
 ### Webhook — app/api/webhook/route.ts
 ```
 maxDuration: 60s
@@ -485,6 +512,13 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-039 | Décaissement: LAUNCH50 applies ($29.50 price), SECOND50 for second reports | **NOUVEAU** |
 | DT-040 | Logo system: /public/logo.js is single source of truth. Stacking blocks (3 bars), viewBox 220×48, scale sm=0.7x md=1.0x lg=1.4x. Navbar=md, footer=lg, quiz headers=md/lg. Inline SVGs in report renderers match same coordinates. Emails use text-only (SVG not supported by email clients). | **NOUVEAU** |
 | DT-041 | Logo injection: deferred logo.js requires typeof check INSIDE DOMContentLoaded callback (not outside). All 8 deferred pages use this pattern. 5 synchronous pages (quizzes, tools) don't need it. | **NOUVEAU** |
+| DT-042 | Planner ↔ React bidirectional sync: _bfState exposes 130+ params matching _applyParams 1:1. Direct iframe read on mode switch (eliminates 2s setInterval race). Debounced 2s interval as fallback for live updates. | **NOUVEAU** |
+| DT-043 | AI prompt literacy-adaptive: Grade 12 for advanced users (precise financial vocab OK), Grade 10 for basic/intermediate. Applies to all 3 AI prompt builders (Ess/Inter/Decum). | **NOUVEAU** |
+| DT-044 | Landing page two-family layout: "Recevoir un diagnostic" (3-col: Bilan/360/Horizon) + "Tester mes décisions" (1-col: Laboratoire). Responsive 3→2→1 col. | **NOUVEAU** |
+| DT-045 | PostHog analytics: analytics-config.js (key) + analytics-init.js (bootstrap with Law 25 consent gate). Loaded on all static HTML pages. Next.js pages use NEXT_PUBLIC_POSTHOG_KEY env var. CSP allows *.posthog.com. | **NOUVEAU** |
+| DT-046 | Report parity: all 3 renderers have DM Sans font, print-color-adjust, .no-print class, break-inside:avoid, print/PDF button, referral section, legal footer links, FEEDBACK_STARS placeholder. | **NOUVEAU** |
+| DT-047 | Stress test disclaimer on Inter + Expert reports: "Estimations basées sur des coefficients historiques, pas des simulations additionnelles." Clarifies sensitivity analysis ≠ full MC runs. | **NOUVEAU** |
+| DT-048 | Product naming: internal keys unchanged (essentiel/intermediaire/decaissement/expert). Customer-facing display only: Bilan/Bilan 360/Horizon/Laboratoire (FR), Snapshot/Snapshot 360/Horizon/Lab (EN). Planner mode selector, guide, FAQ, report footer, simulator UI all use customer names. | **NOUVEAU** |
 
 ---
 
@@ -606,6 +640,13 @@ recommandation(s) / recommendation(s)
 | 2026-03-08 | **Brand refresh** — Stacking blocks logo (replaces flame), gold #b8860b→#c49a1a everywhere (24+ files), Plus Jakarta Sans font, new hero tagline, og-image.png 1200×630, logo viewBox 220×48 (was 270×52), report inline logos 200×48 | ✅ |
 | 2026-03-08 | **Logo defer race condition fix** — typeof logoSVG check moved inside DOMContentLoaded on 6 pages (index, bilan, expert-landing, conditions, confidentialite, avis-legal). Root cause: deferred script not yet executed when inline script parsed. | ✅ |
 | 2026-03-08 | **Landing page UX** — Pulsing gold launch badge (was small static pill), decision helper moved below product cards (was above, opening off-screen), bigger Oui/Non buttons (18px, navy border, gold hover, 140px min-width) | ✅ |
+
+| 2026-03-08 | **Phase 1 Lab coherence** — Planner rebrand (Bilan/360/Lab mode names), simulator UX (mobile banner per mode, help section), postMessage bridge setPenIdx→sPIdx fix | ✅ |
+| 2026-03-08 | **Phase 2 product coherence** — Landing two-family layout, mobile drawer, AI literacy-adaptive, report footers/print/referral/legal, stress test disclaimers, debt tool bridge CTA | ✅ |
+| 2026-03-08 | **Conversion architecture** — Two product families on landing, reason-based cross-sell in reports (reduced promo density), product-specific CTAs on product pages | ✅ |
+| 2026-03-08 | **Sync bridge expansion** — _bfState 58→130+ params (CCPC, RESP, budget, insurance, couple extras, events). Direct _bfState read on mode switch eliminates 2s race. ai-prompt-inter "Intermediaire"→"Bilan 360" | ✅ |
+| 2026-03-08 | **PostHog analytics wired** — Key set in analytics-config.js (was placeholder). Scripts added to 3 product pages (had data-track but no PostHog loaded). All static pages now instrumented. | ✅ |
+| 2026-03-08 | **Report audit** — CSS token fixes (--bg-card var), DM Sans font parity across all 3 renderers, nav label consistency, reduced upsell density in reports | ✅ |
 
 ### Prochains audits
 - **R19** (P1.6): Quiz UX — mobile iPhone SE, drop-offs, test "ma mère comprendrait"

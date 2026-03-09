@@ -1,9 +1,9 @@
 # STATUS.md
 > État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-08 — v19 (Expert simulator E2E fix: auth race condition, CSP/iframe/CDN fixes, Decision Card on all reports, audit docs)
+> Mis à jour: 2026-03-08 — v20 (Phase 2 polish, conversion architecture, sync bridge, analytics, report audit, product page CTAs)
 
 ## PHASE ACTUELLE
-**ALL 4 TIERS PIPELINE-COMPLETE. Expert simulator E2E validated (auth + planner iframe working). Decision Card added to all 3 report types. Reste: og-image, domain warmup, Inter E2E, Bilan Annuel cron.**
+**ALL 4 TIERS PIPELINE-COMPLETE. Product coherence pass done (naming, sync bridge, mobile UX, analytics). Reste: domain warmup, Inter E2E, Bilan Annuel cron, soft launch.**
 
 ---
 
@@ -17,7 +17,7 @@
 | GitHub tredhedge/buildfi | ✅ | main branch, privé |
 | Stripe | ✅ | Test mode. All 5 products configured (Ess $29, Inter $59, Decum $59, Expert $129, Renewal $29/an, Addon $14.99). Webhook configuré |
 | Resend | ✅ | Domaine buildfi.ca VERIFIED. Emails delivered. Spam probable (domain warmup needed) |
-| PostHog | ✅ | |
+| PostHog | ✅ | Key configured in analytics-config.js, wired to all static pages |
 | Vercel Blob | ✅ | Store opérationnel — rapports accessibles par lien email |
 | Vercel KV (Upstash) | ✅ | Redis — profils Expert, auth, rate limiting, referral |
 | Variables Vercel | ✅ | All env vars configured: ANTHROPIC_API_KEY, KV, Stripe (all 5 price IDs), Resend, Blob |
@@ -175,6 +175,26 @@
 | report-html-inter.js (Bilan 360) | ✅ | Same pattern, tax rate vulnerability added |
 | report-html-decum.js (Horizon) | ✅ | buildDecisionCardDecum() function, meltdown/CPP lever logic |
 
+### Phase 2 Product Coherence (2026-03-08) — 16 COMMITS
+| Composant | Statut | Détails |
+|-----------|--------|---------|
+| Landing page restructure | ✅ | Two product families: "Recevoir un diagnostic" (Bilan/360/Horizon) + "Tester mes décisions" (Laboratoire). 3-col → 2-col → 1-col responsive. |
+| Product page CTAs | ✅ | "Commencer le questionnaire" → product-specific CTAs ("Obtenir mon Bilan", "Planifier mes retraits"). "Bonus inclus" → "Outils inclus". Split final CTA (diagnostic + simulator). |
+| Conversion cross-sell | ✅ | Reason-based cross-links in reports (reduced promo density), debt tool → Bilan/360 bridge CTA |
+| Mobile simulator UX | ✅ | Slide-in drawer for sidebar params (was hidden on mobile), backdrop + close button, params toggle bar |
+| AI prompt literacy | ✅ | Grade 12 reading level for advanced users (was Grade 10 for all), voice matrix "portfolio analyst" (was "quant analyst") |
+| Décaissement report | ✅ | DM Sans font, print-color-adjust, print/PDF button, referral section, legal footer links, FEEDBACK_STARS placeholder |
+| Report audit | ✅ | CSS token fixes, font parity (DM Sans all 3 renderers), nav label consistency, stress test disclaimers (Inter + Expert) |
+| Planner naming | ✅ | Mode selector: Essentiel/Standard/Expert → Bilan/Bilan 360/Laboratoire (FR) / Snapshot/Snapshot 360/Lab (EN). Guide, FAQ, upsell, report footer all updated. |
+| Simulator naming | ✅ | "Simulateur Expert" → "Laboratoire"/"Lab". Auth screen, CTA, title all updated. |
+| Nav naming | ✅ | "Laboratoire" → "Simulateur" in nav links across product and legal pages |
+| Lab landing Horizon | ✅ | Comparison table expanded: 4 columns (Bilan/360/Horizon/Lab), 9 feature rows incl. drawdown analysis + stress test. "Pas pour vous si" routes to Horizon for retirees. |
+| Mobile messaging | ✅ | Consistent across hero + FAQ: "Le mode Guidé fonctionne sur tablette et mobile. Le mode Avancé est conçu pour ordinateur." |
+| Copy consistency | ✅ | "30+ modules" → "190 paramètres" / "contrôle total" everywhere. "190+" → "190" in quiz meta. |
+| Sync bridge P0 fix | ✅ | _bfState expanded 58→130+ params (CCPC 21, RESP 6, budget 9, insurance 8, couple extras, lifecycle events). Direct _bfState read on mode switch eliminates 2s race condition. |
+| PostHog analytics | ✅ | Key set in analytics-config.js (was placeholder). Scripts added to bilan.html, bilan-360.html, horizon.html (had data-track but no analytics loaded). |
+| Planner state sync | ✅ | window._bfState exposed for parent iframe bridge. Debounced 2s interval sync planner → parent React wrapper. |
+
 ### Legal & Compliance (2026-03-04)
 | Composant | Statut | Détails |
 |-----------|--------|---------|
@@ -239,7 +259,7 @@
 - **Debt tool** — 6 tabs, progressive disclosure, 7 strategies, 200 tests
 - **Allocation REER/CÉLI tool** — Standalone HTML, BuildFi brand, REPORT BASELINE URL params, AMF compliant
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
-- **Landing page v10** — Stacking blocks logo, pulsing launch badge, decision helper below cards, bigger Oui/Non buttons, Plus Jakarta Sans, gold #c49a1a
+- **Landing page v11** — Two product families (diagnostics + simulator), split final CTA, decision helper auto-expand on mobile, product-specific CTAs, DM Sans font
 - **Quiz Essentiel** — Thin client, Stripe intégré, QPP deferral question, single-person only (couple=yes callout)
 - **Logo** — Stacking blocks (3 bars: foundation/building/independence), shared logo.js (single source of truth), light/dark/symbol SVG variants, Plus Jakarta Sans 700, viewBox 220×48, scale factors sm=0.7x md=1.0x lg=1.4x
 - **Brand refresh (2026-03-08)** — Gold #b8860b→#c49a1a everywhere (HTML, CSS, email, reports), Plus Jakarta Sans font, new hero tagline, og-image.png 1200×630, logo defer race condition fixed on all 8 deferred pages
@@ -349,7 +369,8 @@ buildfi/
 │   │   └── webhook/route.ts      ✅ MC → AI → Blob → Email (idempotent, admin alerts)
 │   ├── merci/page.tsx            ✅ Thank you page (tier-aware: Ess/Inter/Expert/Decum)
 │   ├── expert/page.tsx           ✅ Expert redirect
-│   └── outils/dettes/page.jsx   ✅ Debt tool (1,475 lignes)
+│   ├── simulateur/page.tsx       ✅ Expert simulator (mobile drawer, sync bridge, Laboratoire branding)
+│   └── outils/dettes/page.jsx   ✅ Debt tool (1,863 lignes, bridge CTA to Bilan/360)
 ├── lib/
 │   ├── ai-constants.ts           ✅ AI slots (Ess 12 + Inter 16 + Decum 12), AMF forbidden terms
 │   ├── ai-profile.ts            ✅ DerivedProfile + RenderPlan
@@ -376,7 +397,7 @@ buildfi/
 │   ├── strategies-inter.ts       ✅ 5-strategy comparison
 │   └── tracking.ts               ✅ PostHog tracking
 ├── public/
-│   ├── index.html                ✅ Landing page v9 (feature lists Ess 3 items / Inter 5 items)
+│   ├── index.html                ✅ Landing page v11 (two product families, split CTA)
 │   ├── expert.html               ✅ Expert landing page
 │   ├── quiz-essentiel.html       ✅ Thin client (805 lignes)
 │   ├── quiz-intermediaire.html   ✅ Inter quiz
@@ -386,6 +407,11 @@ buildfi/
 │   ├── conditions.html           ✅ Conditions d'utilisation
 │   ├── confidentialite.html      ✅ Politique de confidentialité
 │   ├── logo.js, logo-*.svg       ✅ Logo système
+│   ├── bilan.html                ✅ Bilan product page (analytics wired)
+│   ├── bilan-360.html            ✅ Bilan 360 product page (analytics wired)
+│   ├── horizon.html              ✅ Horizon product page (analytics wired)
+│   ├── analytics-config.js       ✅ PostHog key (single source of truth for static pages)
+│   ├── analytics-init.js         ✅ PostHog bootstrap (Law 25 consent gate)
 │   ├── robots.txt                ✅ Disallow /outils/ + /outils/allocation-epargne.html
 │   └── outils/
 │       └── allocation-epargne.html ✅ Outil allocation REER/CÉLI (REPORT BASELINE, AMF footer)
@@ -409,14 +435,12 @@ buildfi/
 Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
-1. ~~Create og-image.png~~ ✅ Done (brand refresh 2026-03-08)
-2. Set up support@buildfi.ca (Cloudflare Email Routing)
-3. ~~Create STRIPE_PRICE_DECAISSEMENT~~ ✅ Done — all Stripe keys configured
-4. ~~Expert simulator E2E~~ ✅ Done (auth + planner iframe + CSP — 5 fixes, 2026-03-08)
-5. Domain warmup (mark emails as not-spam from multiple accounts)
-6. Soft launch organique (Reddit, LinkedIn, cercle privé)
-7. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
+1. Set up support@buildfi.ca (Cloudflare Email Routing)
+2. Domain warmup (mark emails as not-spam from multiple accounts)
+3. Soft launch organique (Reddit, LinkedIn, cercle privé)
+4. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
    - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
-8. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
-9. S11 Expert post-launch: feedback pipeline, A/B testing
-10. Update SimulateurDeniedScreen text: "Expert" → "Laboratoire" (product rename not applied)
+5. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
+6. S11 Expert post-launch: feedback pipeline, A/B testing
+7. Product page bilingual support (bilan.html, bilan-360.html, horizon.html — currently FR-only)
+8. Referral notification email (webhook tracks conversions but no email sent to referrer)
