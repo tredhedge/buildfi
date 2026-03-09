@@ -7286,27 +7286,69 @@ var reportHTML = useMemo(function() {
   // ── Expose state snapshot for parent iframe bridge ──
   if (window.self !== window.top) {
     window._bfState = {
+      // Profile / timing
       age: age, sex: sex, prov: prov, retAge: retAge, deathAge: deathAge,
+      // Employment
       sal: sal, retSpM: retSpM,
+      // Registered accounts + contributions
       rrsp: rrsp, tfsa: tfsa, nr: nr,
       rrspC: rrspC, tfsaC: tfsaC, nrC: nrC,
+      // Allocation + MER
       allocR: allocR, allocT: allocT, allocN: allocN,
       merR: merR, merT: merT, merN: merN,
+      // Government benefits
       qppAge: qppAge, avgE: avgE, qppYrs: qppYrs, oasAge: oasAge,
-      penType: penType, penM: penM, penIdx: penIdx,
+      // Pension / annuities
+      penType: penType, penM: penM, penIdx: penIdx, liraBal: liraBal,
+      // Withdrawal strategy
       wStrat: wStrat, melt: melt, meltTgt: meltTgt,
       split: split, splitP: splitP,
-      inf: inf, nSim: nSim,
-      cOn: cOn, cAge: cAge, cSex: cSex, cRetAge: cRetAge,
-      cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
+      // Modeling
+      inf: inf, nSim: nSim, fatT: fatT,
+      stochMort: stochMort, stochInf: stochInf,
+      nrTaxDrag: nrTaxDrag, costBase: costBase,
+      glide: glide, glideSpd: glideSpd,
+      // Lifecycle events
+      ev1Age: ev1Age, ev1Amt: ev1Amt, ev2Age: ev2Age, ev2Amt: ev2Amt,
+      // Couple
+      cOn: cOn, cAge: cAge, cSex: cSex, cRetAge: cRetAge, cDeath: cDeath,
+      cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR, cLiraBal: cLiraBal,
+      cRRSPC: cRRSPC, cTFSAC: cTFSAC, cNRC: cNRC,
       cSal: cSal, cRetSpM: cRetSpM,
-      cQppAge: cQppAge, cOasAge: cOasAge,
-      liraBal: liraBal,
-      fatT: fatT, stochMort: stochMort, stochInf: stochInf,
+      cQppAge: cQppAge, cOasAge: cOasAge, cAvgE: cAvgE, cQppYrs: cQppYrs,
+      cPenType: cPenType, cPenM: cPenM,
+      // Guardrails
       gkOn: gkOn, gkCeil: gkCeil, gkFloor: gkFloor,
       gkCut: gkCut, gkRaise: gkRaise, gkMaxCut: gkMaxCut,
+      // Bridge / DC
       bridge: bridge, dcBal: dcBal,
-      props: props, debts: debts
+      // Properties + debts
+      props: props, debts: debts,
+      // RESP
+      respOn: respOn, respContrib: respContrib, respYrsLeft: respYrsLeft,
+      respReturnAge: respReturnAge, respKids: respKids, respAlready: respAlready,
+      // CCPC / Business
+      bizOn: bizOn, bizType: bizType, bizRevenue: bizRevenue, bizVolatility: bizVolatility,
+      bizExpenses: bizExpenses, bizRemun: bizRemun, bizSalaryPct: bizSalaryPct,
+      bizRetainedEarnings: bizRetainedEarnings, bizInvAlloc: bizInvAlloc,
+      bizExtractMode: bizExtractMode, bizExtractYrs: bizExtractYrs, bizOasOptim: bizOasOptim,
+      bizSaleAge: bizSaleAge, bizSalePrice: bizSalePrice, bizSaleACB: bizSaleACB, bizLCGE: bizLCGE,
+      bizDebtBal: bizDebtBal, bizDebtRate: bizDebtRate, bizDebtAmort: bizDebtAmort,
+      ippOn: ippOn, ippBal: ippBal,
+      // FHSA
+      fhsaBal: fhsaBal, cFhsaBal: cFhsaBal,
+      // FTQ
+      ftqOn: ftqOn, ftqAmt: ftqAmt,
+      // Budget items
+      revSec: revSec,
+      bLogement: bLogement, bTransport: bTransport, bAlim: bAlim, bFamille: bFamille,
+      bTelecom: bTelecom, bLoisirs: bLoisirs, bAssur: bAssur, bAutre: bAutre,
+      // Insurance
+      insViePrime: insViePrime, insVieCov: insVieCov, insVieDur: insVieDur,
+      insInvPrime: insInvPrime, insInvCov: insInvCov,
+      insMGPrime: insMGPrime, insMGCov: insMGCov, insColPrime: insColPrime,
+      // Lang
+      lang: lang
     };
   }
 
