@@ -82,6 +82,8 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   const cRRSP = cOn ? Math.max(0, Math.round(a.cRrspBal || a.cRrsp || a.cRRSP || 0)) : 0;
   const cTFSA = cOn ? Math.max(0, Math.round(a.cTfsaBal || a.cTfsa || a.cTFSA || 0)) : 0;
   const cNR   = cOn ? Math.max(0, Math.round(a.cNrBal   || a.cNr   || a.cNR   || 0)) : 0;
+  const liraBal  = Math.max(0, Math.round(a.liraBal || a.lira || 0));
+  const cLiraBal = cOn ? Math.max(0, Math.round(a.cLiraBal || a.cLira || 0)) : 0;
 
   // No active contributions in decumulation
   const rrspC = 0;
@@ -371,7 +373,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     // FHSA / LIRA / other accounts
     fhsaBal: 0, fhsaC: 0, fhsaForHome: false, fhsaHomeAge: 0,
     ftqOn: false,
-    liraBal: Math.max(0, Math.round(a.liraBal || a.lira || 0)),
+    liraBal,
     // Capital gains inclusion rates
     cgIncLo: 0.5, cgIncHi: 0.6667, cgThresh: 250000,
     // Business
@@ -386,7 +388,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     cAge, cSex,
     cRetAge: cOn ? (a.cAge || 0) : 0, // partner retirement = partner current age (already retired)
     cSal: 0,     // no partner employment income
-    cRRSP, cTFSA, cNR, cLiraBal: cOn ? Math.max(0, Math.round(a.cLiraBal || a.cLira || 0)) : 0,
+    cRRSP, cTFSA, cNR, cLiraBal,
     cPenType, cPenM, cPenIdx,
     cDCBal: 0,
     cRRSPC: 0, cTFSAC: 0, cNRC: 0, // no couple contributions
@@ -424,8 +426,8 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   // ── REPORT METADATA (for report-html-decum.js display) ───────────────────
   params._report = {
     // Wealth summary
-    rrsp, tfsa, nr, cRRSP, cTFSA, cNR,
-    totalLiquidSavings: rrsp + tfsa + nr + (cOn ? cRRSP + cTFSA + cNR : 0),
+    rrsp, tfsa, nr, liraBal, cRRSP, cTFSA, cNR, cLiraBal,
+    totalLiquidSavings: rrsp + tfsa + nr + liraBal + (cOn ? cRRSP + cTFSA + cNR + cLiraBal : 0),
     homeValue, homeMortgage,
     homeEquity: Math.max(0, homeValue - homeMortgage),
     totalDebt,

@@ -441,6 +441,9 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
           <tr><td id="ct7">Stress test (meltdown)</td><td id="ctE7" class="comp-no">Non</td><td id="ctI7" class="comp-no">Non</td><td id="ctD7">Oui &mdash; an 1 + an 5</td><td class="cx" id="ctX7">Oui + param&egrave;tres ajustables</td></tr>
           <tr><td id="ct8">Rapport AI</td><td id="ctE8">1 bilan</td><td id="ctI8">1 bilan</td><td id="ctD8">1 bilan</td><td class="cx" id="ctX8">5 exports (+ 14,99 $/extra)</td></tr>
           <tr><td id="ct9">Acc&egrave;s</td><td id="ctE9">1 rapport</td><td id="ctI9">1 rapport</td><td id="ctD9">1 rapport</td><td class="cx" id="ctX9">12 mois illimit&eacute;</td></tr>
+          <tr><td id="ct10">Immobilier</td><td id="ctE10" class="comp-no">Non</td><td id="ctI10">1 r&eacute;sidence + 3 locatifs</td><td id="ctD10" class="comp-no">Non</td><td class="cx" id="ctX10">Illimit&eacute;s + Smith, HELOC, refi, DPA par immeuble</td></tr>
+          <tr><td id="ct11">CCPC</td><td id="ctE11" class="comp-no">Non</td><td id="ctI11">Revenu corporatif</td><td id="ctD11" class="comp-no">Non</td><td class="cx" id="ctX11">Extraction compl&egrave;te, RDTOH, LCGE, dissolution</td></tr>
+          <tr><td id="ct12">Variables</td><td id="ctE12">~30</td><td id="ctI12">~85</td><td id="ctD12">~50</td><td class="cx" id="ctX12">190+ avec contr&ocirc;le total</td></tr>
         </tbody>
       </table>
     </div>
@@ -482,6 +485,7 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
   <div class="container" style="text-align:center">
     <p class="section-label reveal" id="pqLabel">Id&eacute;al pour</p>
     <h2 class="section-title reveal" id="pqTitle">Le Laboratoire est con&ccedil;u pour vous si...</h2>
+    <p class="section-subtitle reveal" style="margin:0 auto 32px;text-align:center" id="pqSub">Le Bilan 360 mod&eacute;lise pour vous. Le Laboratoire vous donne le contr&ocirc;le.</p>
     <div class="pq-grid">
       <div class="pq-card reveal">
         <div class="pq-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -490,13 +494,13 @@ a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(
       </div>
       <div class="pq-card reveal reveal-delay-1">
         <div class="pq-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-        <h3 id="pq2t">Propri&eacute;taires avec hypoth&egrave;que active</h3>
-        <p id="pq2d">Testez le downsizing, le Smith Manoeuvre, le remboursement acc&eacute;l&eacute;r&eacute;.</p>
+        <h3 id="pq2t">Propri&eacute;taires et investisseurs immobiliers</h3>
+        <p id="pq2d">Propri&eacute;t&eacute;s illimit&eacute;es, Smith Manoeuvre, HELOC, refinancement, DPA par immeuble. Le Bilan 360 mod&eacute;lise jusqu'&agrave; 3 locatifs &mdash; le Laboratoire n'a aucune limite.</p>
       </div>
       <div class="pq-card reveal reveal-delay-2">
         <div class="pq-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
         <h3 id="pq3t">Entrepreneurs et CCPC</h3>
-        <p id="pq3d">Extraction dividende vs salaire, RDTOH, LCGE, dissolution.</p>
+        <p id="pq3d">Salaire vs dividende par ann&eacute;e, RDTOH, LCGE, dissolution, extraction pluri-annuelle. Le Bilan 360 int&egrave;gre le revenu corporatif &mdash; le Laboratoire vous laisse tester chaque sc&eacute;nario.</p>
       </div>
       <div class="pq-card reveal reveal-delay-3">
         <div class="pq-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
@@ -875,6 +879,21 @@ var T = {
   ctI9: { fr:'1 rapport', en:'1 report' },
   ctD9: { fr:'1 rapport', en:'1 report' },
   ctX9: { fr:'12 mois illimit\u00e9', en:'12 months unlimited' },
+  ct10: { fr:'Immobilier', en:'Real estate' },
+  ctE10: { fr:'Non', en:'No' },
+  ctI10: { fr:'1 r\u00e9sidence + 3 locatifs', en:'1 residence + 3 rentals' },
+  ctD10: { fr:'Non', en:'No' },
+  ctX10: { fr:'Illimit\u00e9s + Smith, HELOC, refi, DPA par immeuble', en:'Unlimited + Smith, HELOC, refi, CCA per property' },
+  ct11: { fr:'CCPC', en:'CCPC' },
+  ctE11: { fr:'Non', en:'No' },
+  ctI11: { fr:'Revenu corporatif', en:'Corporate income' },
+  ctD11: { fr:'Non', en:'No' },
+  ctX11: { fr:'Extraction compl\u00e8te, RDTOH, LCGE, dissolution', en:'Full extraction, RDTOH, LCGE, dissolution' },
+  ct12: { fr:'Variables', en:'Variables' },
+  ctE12: { fr:'~30', en:'~30' },
+  ctI12: { fr:'~85', en:'~85' },
+  ctD12: { fr:'~50', en:'~50' },
+  ctX12: { fr:'190+ avec contr\u00f4le total', en:'190+ with full control' },
   compCta: { fr:'Choisir le Laboratoire \u2014 64,50 $ \u2192', en:'Choose the Lab \u2014 $64.50 \u2192' },
 
   // ── Not for everyone ──
@@ -893,12 +912,13 @@ var T = {
   // ── Pour qui ──
   pqLabel: { fr:'Id\u00e9al pour', en:'Ideal for' },
   pqTitle: { fr:'Le Laboratoire est con\u00e7u pour vous si...', en:'The Lab is designed for you if...' },
+  pqSub: { fr:'Le Bilan 360 mod\u00e9lise pour vous. Le Laboratoire vous donne le contr\u00f4le.', en:'Snapshot 360 models for you. The Lab gives you control.' },
   pq1t: { fr:'Couples avec des situations complexes', en:'Couples with complex situations' },
   pq1d: { fr:'Mod\u00e9lisez les deux revenus, pensions, d\u00e9c\u00e8s, fractionnement.', en:'Model both incomes, pensions, death, income splitting.' },
-  pq2t: { fr:'Propri\u00e9taires avec hypoth\u00e8que active', en:'Homeowners with active mortgage' },
-  pq2d: { fr:'Testez le downsizing, le Smith Manoeuvre, le remboursement acc\u00e9l\u00e9r\u00e9.', en:'Test downsizing, the Smith Manoeuvre, accelerated repayment.' },
+  pq2t: { fr:'Propri\u00e9taires et investisseurs immobiliers', en:'Homeowners and real estate investors' },
+  pq2d: { fr:'Propri\u00e9t\u00e9s illimit\u00e9es, Smith Manoeuvre, HELOC, refinancement, DPA par immeuble. Le Bilan 360 mod\u00e9lise jusqu\u2019\u00e0 3 locatifs \u2014 le Laboratoire n\u2019a aucune limite.', en:'Unlimited properties, Smith Manoeuvre, HELOC, refinancing, CCA per property. Snapshot 360 models up to 3 rentals \u2014 the Lab has no limit.' },
   pq3t: { fr:'Entrepreneurs et CCPC', en:'Entrepreneurs and CCPC' },
-  pq3d: { fr:'Extraction dividende vs salaire, RDTOH, LCGE, dissolution.', en:'Dividend vs salary extraction, RDTOH, LCGE, dissolution.' },
+  pq3d: { fr:'Salaire vs dividende par ann\u00e9e, RDTOH, LCGE, dissolution, extraction pluri-annuelle. Le Bilan 360 int\u00e8gre le revenu corporatif \u2014 le Laboratoire vous laisse tester chaque sc\u00e9nario.', en:'Salary vs dividend by year, RDTOH, LCGE, dissolution, multi-year extraction. Snapshot 360 integrates corporate income \u2014 the Lab lets you test every scenario.' },
   pq4t: { fr:'Pr\u00e9-retrait\u00e9s 55-65', en:'Pre-retirees 55-65' },
   pq4d: { fr:'Testez le pont pr\u00e9-RRQ, le d\u00e9caissement REER/FERR, la strat\u00e9gie PSV.', en:'Test the pre-CPP bridge, RRSP/RRIF drawdown, OAS strategy.' },
 

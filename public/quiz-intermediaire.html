@@ -380,9 +380,10 @@ var STATE={
     rrsp:45000,tfsa:22000,nr:5000,lira:0,dcBal:0,monthlyContrib:600,
     cRrsp:0,cTfsa:0,cNr:0,cLira:0,
     debts:[],homeowner:false,homeValue:0,mortgage:0,mortgageAmort:20,
-    heloc:0,helocRate:6.5,hasRental:false,
-    rentalValue:0,rentalMortgage:0,rentalAmort:20,rentalIncome:0,rentalExpenses:0,
-    rentalDpaAccum:0,rentalSaleAge:0,
+    heloc:0,helocRate:6.5,rentalCount:0,
+    rental1Name:"",rental1Value:0,rental1Mortgage:0,rental1Amort:20,rental1Income:0,rental1Expenses:0,rental1DpaAccum:0,rental1SaleAge:0,
+    rental2Name:"",rental2Value:0,rental2Mortgage:0,rental2Amort:20,rental2Income:0,rental2Expenses:0,rental2DpaAccum:0,rental2SaleAge:0,
+    rental3Name:"",rental3Value:0,rental3Mortgage:0,rental3Amort:20,rental3Income:0,rental3Expenses:0,rental3DpaAccum:0,rental3SaleAge:0,
     lifestyle:"active",retSpMCustom:0,risk:"balanced",allocCustom:70,retSpM:0,
     parttime:"no",parttimeAmount:0,parttimeYears:0,
     worries:[],objective:"",
@@ -410,10 +411,11 @@ function detectBlocks(q){
   if((q.penType&&q.penType!=="none")||q.employer==="gov")blocks.push("B");
   if(q.couple==="yes")blocks.push("C");
   if(q.homeowner)blocks.push("D");
-  if(q.hasRental)blocks.push("D2");
+  for(var _ri=1;_ri<=Math.min(3,q.rentalCount||0);_ri++)blocks.push("D2_"+_ri);
   blocks.push("E");
+  var _rentalTotal=0;for(var _rti=1;_rti<=Math.min(3,q.rentalCount||0);_rti++)_rentalTotal+=(q["rental"+_rti+"Value"]||0);
   var totalAssets=(q.rrsp||0)+(q.tfsa||0)+(q.nr||0)+(q.lira||0)+(q.dcBal||0)
-    +(q.homeValue||0)+(q.rentalValue||0)+(q.couple==="yes"?(q.cRrsp||0)+(q.cTfsa||0)+(q.cNr||0):0);
+    +(q.homeValue||0)+_rentalTotal+(q.couple==="yes"?(q.cRrsp||0)+(q.cTfsa||0)+(q.cNr||0):0);
   if(totalAssets>100000||(q.lifeInsBenefit||0)>0)blocks.push("F");
   var srcs=q.sources||[q.source||"employed"];
   if(srcs.indexOf("ccpc")>=0)blocks.push("G");
@@ -429,7 +431,7 @@ function fPct(n){if(n==null||isNaN(n))return"\u2014";return Math.round(n)+"%";}
 function gCol(s){return s>=0.9?"#2A8C46":s>=0.75?"#B89830":"#CC4444";}
 
 // -- localStorage persistence --
-try{var saved=localStorage.getItem("buildfi_quiz_inter");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);}}}catch(e){}
+try{var saved=localStorage.getItem("buildfi_quiz_inter");if(saved){var parsed=JSON.parse(saved);if(parsed&&parsed.quiz&&parsed.step!=null){STATE.step=parsed.step;STATE.lang=parsed.lang||"fr";STATE.quiz=Object.assign(STATE.quiz,parsed.quiz);if(parsed.quiz.hasRental&&!parsed.quiz.rentalCount){STATE.quiz.rentalCount=1;STATE.quiz.rental1Value=parsed.quiz.rentalValue||0;STATE.quiz.rental1Mortgage=parsed.quiz.rentalMortgage||0;STATE.quiz.rental1Amort=parsed.quiz.rentalAmort||20;STATE.quiz.rental1Income=parsed.quiz.rentalIncome||0;STATE.quiz.rental1Expenses=parsed.quiz.rentalExpenses||0;STATE.quiz.rental1DpaAccum=parsed.quiz.rentalDpaAccum||0;STATE.quiz.rental1SaleAge=parsed.quiz.rentalSaleAge||0;}}}}catch(e){}
 function saveState(){try{localStorage.setItem("buildfi_quiz_inter",JSON.stringify({step:STATE.step,lang:STATE.lang,quiz:STATE.quiz}));}catch(e){}}
 
 // ============================================================
@@ -691,7 +693,7 @@ function renderConfirm(q,lang){
   ,6);
 
   // 5. Immobilier (if applicable)
-  if(q.homeowner||q.hasRental){
+  if(q.homeowner||(q.rentalCount||0)>0){
     var immo="";
     if(q.homeowner){
       immo+=row(t("Valeur de la propriété","Home value"),fmt(q.homeValue),(q.homeValue||0)<=0);
@@ -699,9 +701,13 @@ function renderConfirm(q,lang){
       if((q.mortgage||0)>0)immo+=row(t("Amortissement restant","Remaining amort"),q.mortgageAmort+" "+t("ans","yrs"));
       if((q.heloc||0)>0)immo+=row("HELOC",fmt(q.heloc));
     }
-    if(q.hasRental){
-      immo+=row(t("Bien locatif","Rental property"),fmt(q.rentalValue));
-      if((q.rentalIncome||0)>0)immo+=row(t("Revenus locatifs","Rental income"),fmt(q.rentalIncome)+t("/an","/yr"));
+    for(var _cri=1;_cri<=(q.rentalCount||0);_cri++){
+      var _cpfx="rental"+_cri;
+      if((q[_cpfx+"Value"]||0)>0){
+        var _cname=q[_cpfx+"Name"]||(t("Bien locatif #","Rental #")+_cri);
+        immo+=row(_cname,fmt(q[_cpfx+"Value"]));
+        if((q[_cpfx+"Income"]||0)>0)immo+=row(t("Revenus locatifs","Rental income"),fmt(q[_cpfx+"Income"])+t("/an","/yr"));
+      }
     }
     html+=scard(t("Immobilier","Real estate"),immo,5);
   }
@@ -972,13 +978,14 @@ function renderQuiz(step,q,lang,activeBlocks){
       +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.heloc||0)+'" oninput="uqd(\'heloc\',this.value)" /></div>'
       +'</div></div>':'';
 
-    var rentalQ='<div class="fld-block" style="margin-top:16px"><label class="fld-label">'+t("Êtes-vous propriétaire d'un bien locatif ?","Do you own a rental property?")+'</label>'
-      +'<div style="font-size:11px;color:var(--tm);margin-bottom:6px">'+t("Condo, duplex, chalet ou immeuble à revenus","Condo, duplex, cottage or income property")+'</div>'
+    var rentalQ='<div class="fld-block" style="margin-top:16px"><label class="fld-label">'+t("Combien de biens locatifs possédez-vous ?","How many rental properties do you own?")+'</label>'
+      +'<div style="font-size:11px;color:var(--tm);margin-bottom:6px">'+t("Condos, duplex, chalets ou immeubles à revenus","Condos, duplexes, cottages or income properties")+'</div>'
       +'<div style="display:flex;gap:8px">'
-      +[{v:true,l:t("Oui","Yes"),d:t("Un bloc séparé vous sera présenté","A separate section will follow")},{v:false,l:t("Non","No"),d:""}].map(function(o){
-        return'<div class="card'+(q.hasRental===o.v?" sel":"")+'" onclick="uq(\'hasRental\','+o.v+')" style="flex:1;padding:12px 14px;text-align:center">'
-          +'<div style="font-weight:600;font-size:14px">'+o.l+'</div>'
-          +(o.d?'<div style="font-size:11px;color:var(--ts);margin-top:3px">'+o.d+'</div>':'')
+      +[0,1,2,3].map(function(n){
+        return'<div class="card'+((q.rentalCount||0)===n?" sel":"")+'" onclick="uq(\'rentalCount\','+n+')" style="flex:1;padding:12px 14px;text-align:center">'
+          +'<div style="font-weight:700;font-size:18px">'+n+'</div>'
+          +(n===0?'<div style="font-size:11px;color:var(--ts);margin-top:2px">'+t("Aucun","None")+'</div>':'')
+          +(n>0?'<div style="font-size:11px;color:var(--ts);margin-top:2px">'+t("bien","prop.")+(n>1?"s":"")+'</div>':'')
           +'</div>';
       }).join("")+'</div></div>';
 
@@ -1226,53 +1233,59 @@ function renderQuiz(step,q,lang,activeBlocks){
     ,"D");
   }
 
-  // ── BLOC D2: Bien locatif ────────────────────────────────
-  if(step==="BD2"){
+  // ── BLOC D2_n: Biens locatifs (1-3) ─────────────────────
+  var _d2m=typeof step==="string"&&step.match(/^BD2_(\d)$/);
+  if(_d2m){
+    var _ri=parseInt(_d2m[1]),_pfx="rental"+_ri,_rc=Math.min(3,q.rentalCount||0);
+    var _saleAge=q[_pfx+"SaleAge"]||0;
+    var _inc=q[_pfx+"Income"]||0,_exp=q[_pfx+"Expenses"]||0;
     return wrap(
-      '<div class="phase-badge">'+t("Analyse — Bien locatif","Analysis — Rental property")+'</div>'
-      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Votre bien locatif","Your rental property")+'</h2>'
-      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Les revenus, charges et la stratégie de vente de votre bien locatif sont intégrés dans la simulation de retraite et l'analyse fiscale.","Rental income, expenses, and your exit strategy are fully integrated in the retirement simulation and tax analysis.")+'</p>'
+      '<div class="phase-badge">'+t("Analyse — Bien locatif "+_ri+" de "+_rc,"Analysis — Rental property "+_ri+" of "+_rc)+'</div>'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">'+t("Bien locatif #"+_ri,"Rental property #"+_ri)+'</h2>'
+      +'<p style="font-size:13px;color:var(--ts);margin-bottom:22px;line-height:1.6">'+t("Les revenus, charges et la stratégie de vente sont intégrés dans la simulation de retraite et l'analyse fiscale.","Rental income, expenses, and exit strategy are fully integrated in the retirement simulation and tax analysis.")+'</p>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
-      +'<div class="section-head">'+t("Valeur et financement","Value and financing")+'</div>'
+      +'<div class="section-head">'+t("Identification et valeur","Identification and value")+'</div>'
+      +'<div style="margin-bottom:12px"><label class="fld-label">'+t("Nom du bien (facultatif)","Property name (optional)")+'</label>'
+      +'<input class="inp inp-sm" type="text" placeholder="'+t("Ex: Condo Laval, Duplex Plateau","Ex: Laval Condo, Plateau Duplex")+'" value="'+(q[_pfx+"Name"]||"")+'" oninput="uq(\''+_pfx+'Name\',this.value)" /></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Valeur marchande estimée","Estimated market value")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalValue||0)+'" oninput="uqd(\'rentalValue\',this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q[_pfx+"Value"]||0)+'" oninput="uqd(\''+_pfx+'Value\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Solde hypothécaire","Mortgage balance")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q.rentalMortgage||0)+'" oninput="uqd(\'rentalMortgage\',this.value)" /></div>'
+      +'<input class="inp inp-sm" type="number" min="0" step="5000" value="'+(q[_pfx+"Mortgage"]||0)+'" oninput="uqd(\''+_pfx+'Mortgage\',this.value)" /></div>'
       +'<div><label class="fld-label">'+t("Amortissement restant","Remaining amortization")+' ('+t("années","years")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q.rentalAmort||20)+'" oninput="uqd(\'rentalAmort\',this.value)" /></div>'
-      +'<div><label class="fld-label">'+t("DPA (déduction pour amortissement) accumulée","Accumulated CCA")+' ($)</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q.rentalDpaAccum||0)+'" oninput="uqd(\'rentalDpaAccum\',this.value)" />'
-      +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Si vous avez réclamé la DPA dans vos déclarations","If you've claimed CCA on your returns")+'</div></div>'
+      +'<input class="inp inp-sm" type="number" min="0" max="30" value="'+(q[_pfx+"Amort"]||20)+'" oninput="uqd(\''+_pfx+'Amort\',this.value)" /></div>'
+      +'<div><label class="fld-label">'+t("DPA accumulée","Accumulated CCA")+' ($)</label>'
+      +'<input class="inp inp-sm" type="number" min="0" step="1000" value="'+(q[_pfx+"DpaAccum"]||0)+'" oninput="uqd(\''+_pfx+'DpaAccum\',this.value)" />'
+      +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Si vous avez réclamé la DPA","If you\'ve claimed CCA")+'</div></div>'
       +'</div></div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Revenus et charges annuels","Annual income and expenses")+'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
       +'<div><label class="fld-label">'+t("Revenu locatif brut","Gross rental income")+' ($/'+t("an","yr")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalIncome||0)+'" oninput="uqd(\'rentalIncome\',this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+_inc+'" oninput="uqd(\''+_pfx+'Income\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Loyers perçus avant dépenses","Rents received before expenses")+'</div></div>'
       +'<div><label class="fld-label">'+t("Charges déductibles","Deductible expenses")+' ($/'+t("an","yr")+')</label>'
-      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+(q.rentalExpenses||0)+'" oninput="uqd(\'rentalExpenses\',this.value)" />'
+      +'<input class="inp inp-sm" type="number" min="0" step="500" value="'+_exp+'" oninput="uqd(\''+_pfx+'Expenses\',this.value)" />'
       +'<div style="font-size:10px;color:var(--tm);margin-top:2px">'+t("Entretien, taxes, assurance, intérêts","Maintenance, taxes, insurance, interest")+'</div></div>'
       +'</div>'
-      +(q.rentalIncome>0||q.rentalExpenses>0?'<div style="margin-top:10px;padding:10px 12px;background:var(--gbg);border-radius:7px;font-size:13px">'
-        +'<strong>'+t("Revenu net locatif estimé :","Est. net rental income:")+'</strong> '+f$((q.rentalIncome||0)-(q.rentalExpenses||0))+t("/an","/yr")
-        +' ('+f$(Math.round(((q.rentalIncome||0)-(q.rentalExpenses||0))/12))+t("/mois","/mo")+')</div>':'')
+      +(_inc>0||_exp>0?'<div style="margin-top:10px;padding:10px 12px;background:var(--gbg);border-radius:7px;font-size:13px">'
+        +'<strong>'+t("Revenu net locatif estimé :","Est. net rental income:")+'</strong> '+f$(_inc-_exp)+t("/an","/yr")
+        +' ('+f$(Math.round((_inc-_exp)/12))+t("/mois","/mo")+')</div>':'')
       +'</div>'
       +'<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
       +'<div class="section-head">'+t("Stratégie de sortie","Exit strategy")+'</div>'
       +'<label class="fld-label">'+t("Vente planifiée ?","Sale planned?")+'</label>'
       +'<div style="display:flex;gap:8px;margin-top:4px">'
       +[{v:true,l:t("Oui","Yes")},{v:false,l:t("Non / au décès","No / at death")}].map(function(o){
-        return'<div class="card'+(q.rentalSaleAge>0===o.v?" sel":"")+'" onclick="uq(\'rentalSaleAge\','+(o.v?q.retAge+5:0)+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
+        return'<div class="card'+(_saleAge>0===o.v?" sel":"")+'" onclick="uq(\''+_pfx+'SaleAge\','+(o.v?q.retAge+5:0)+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';
       }).join("")+'</div>'
-      +(q.rentalSaleAge>0?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge de vente prévu","Planned sale age")+'</label>'
-        +'<input class="inp" type="number" min="40" max="90" value="'+q.rentalSaleAge+'" oninput="uqd(\'rentalSaleAge\',this.value)" /></div>':'')
-      +'<div style="font-size:11px;color:var(--tm);margin-top:10px">'+t("Le gain en capital sera calculé selon le prix de vente estimé, la valeur actuelle et la DPA accumulée.","Capital gain will be calculated based on estimated sale price, current value, and accumulated CCA.")+'</div>'
+      +(_saleAge>0?'<div style="margin-top:10px"><label class="fld-label">'+t("Âge de vente prévu","Planned sale age")+'</label>'
+        +'<input class="inp" type="number" min="40" max="90" value="'+_saleAge+'" oninput="uqd(\''+_pfx+'SaleAge\',this.value)" /></div>':'')
+      +'<div style="font-size:11px;color:var(--tm);margin-top:10px">'+t("Le gain en capital sera calculé selon la valeur actuelle et la DPA accumulée.","Capital gain will be calculated based on current value and accumulated CCA.")+'</div>'
       +'</div>'
-      +'<button class="pbtn" onclick="goNextBlock(\'D2\')">'+t("Continuer","Continue")+'</button>'
-      +'<button class="back-btn" onclick="goPrevBlock(\'D2\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
-    ,"D2");
+      +'<button class="pbtn" onclick="goNextBlock(\'D2_'+_ri+'\')">'+t("Continuer","Continue")+'</button>'
+      +'<button class="back-btn" onclick="goPrevBlock(\'D2_'+_ri+'\')" style="margin-top:10px;width:100%;text-align:center">'+t("Retour","Back")+'</button>'
+    ,"D2_"+_ri);
   }
 
   // ── BLOC E: Gouvernemental ───────────────────────────────

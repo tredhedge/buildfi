@@ -160,21 +160,31 @@ export function translateToMCInter(a: Record<string, any>) {
     });
   }
 
-  if (a.hasRental && (a.rentalValue || 0) > 0) {
-    props.push({
-      on: true, name: "Bien locatif", pri: false, val: a.rentalValue || 0,
-      mb: a.rentalMortgage || 0,
-      mr: 0.055, ma: a.rentalAmort || 20,
-      ri: 0.035, rm: (a.rentalIncome || 0) / 12,
-      ox: (a.rentalExpenses || 0) / 12,
-      pt: 0, ins: 0,
-      sa: a.rentalSaleAge || 0, cg: 0.5, landPct: 0.25,
-      heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false,
-      refiAge: 0, refiAmt: 0, dsAge: 0, dpaOn: false, dpaRate: 0.04,
-      ucc: (a.rentalValue || 0) * 0.5,
-      origBldg: (a.rentalValue || 0) * 0.75,
-      totalDpa: a.rentalDpaAccum || 0,
-    });
+  // Multi-rental (up to 3) — also handles legacy single-rental format
+  const rentalCount = Math.min(3, a.rentalCount || (a.hasRental ? 1 : 0));
+  for (let ri = 1; ri <= rentalCount; ri++) {
+    const pfx = `rental${ri}`;
+    // Legacy compat: rental1* fields may not exist if old hasRental=true format
+    const rv = a[pfx + "Value"] || (ri === 1 ? a.rentalValue || 0 : 0);
+    const rmb = a[pfx + "Mortgage"] || (ri === 1 ? a.rentalMortgage || 0 : 0);
+    const rma = a[pfx + "Amort"] || (ri === 1 ? a.rentalAmort || 20 : 20);
+    const rInc = a[pfx + "Income"] || (ri === 1 ? a.rentalIncome || 0 : 0);
+    const rExp = a[pfx + "Expenses"] || (ri === 1 ? a.rentalExpenses || 0 : 0);
+    const rDpa = a[pfx + "DpaAccum"] || (ri === 1 ? a.rentalDpaAccum || 0 : 0);
+    const rSale = a[pfx + "SaleAge"] || (ri === 1 ? a.rentalSaleAge || 0 : 0);
+    if (rv > 0) {
+      props.push({
+        on: true, name: a[pfx + "Name"] || `Bien locatif ${ri}`,
+        pri: false, val: rv,
+        mb: rmb, mr: 0.055, ma: rma,
+        ri: 0.035, rm: rInc / 12, ox: rExp / 12,
+        pt: 0, ins: 0,
+        sa: rSale, cg: 0.5, landPct: 0.25,
+        heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false,
+        refiAge: 0, refiAmt: 0, dsAge: 0, dpaOn: false, dpaRate: 0.04,
+        ucc: rv * 0.5, origBldg: rv * 0.75, totalDpa: rDpa,
+      });
+    }
   }
 
   // Debts
@@ -284,7 +294,7 @@ export function translateToMCInter(a: Record<string, any>) {
     lifestyle: a.lifestyle || "active",
     parttime: a.parttime || "no", worries: a.worries || [],
     objective: a.objective || "", confidence: a.confidence || 3,
-    homeowner: a.homeowner || false, hasRental: a.hasRental || false,
+    homeowner: a.homeowner || false, rentalCount,
     succObjective: a.succObjective || "neutral",
     psych_anxiety: a.psychAnxiety || null,
     psych_discipline: a.psychDiscipline || null,
@@ -302,8 +312,28 @@ export function translateToMCInter(a: Record<string, any>) {
     equity: props.length > 0 && props[0].pri ? Math.max(0, props[0].val - props[0].mb) : 0,
     mortFreeAge,
     mortPayment,
-    hasRental: a.hasRental || false,
-    rentalIncome: a.rentalIncome || 0, rentalExpenses: a.rentalExpenses || 0,
+    hasRental: rentalCount > 0,
+    rentals: (() => {
+      const out: any[] = [];
+      for (let ri2 = 1; ri2 <= rentalCount; ri2++) {
+        const p2 = `rental${ri2}`;
+        const rv2 = a[p2 + "Value"] || (ri2 === 1 ? a.rentalValue || 0 : 0);
+        if (rv2 > 0) {
+          const inc2 = a[p2 + "Income"] || (ri2 === 1 ? a.rentalIncome || 0 : 0);
+          const exp2 = a[p2 + "Expenses"] || (ri2 === 1 ? a.rentalExpenses || 0 : 0);
+          const mb2 = a[p2 + "Mortgage"] || (ri2 === 1 ? a.rentalMortgage || 0 : 0);
+          out.push({
+            name: a[p2 + "Name"] || `Bien locatif ${ri2}`,
+            value: rv2, mortgage: mb2, equity: Math.max(0, rv2 - mb2),
+            income: inc2, expenses: exp2, cashFlow: inc2 - exp2,
+          });
+        }
+      }
+      return out;
+    })(),
+    rentalTotalValue: (() => { let s = 0; for (let i = 1; i <= rentalCount; i++) s += (a[`rental${i}Value`] || (i === 1 ? a.rentalValue || 0 : 0)); return s; })(),
+    rentalTotalIncome: (() => { let s = 0; for (let i = 1; i <= rentalCount; i++) s += (a[`rental${i}Income`] || (i === 1 ? a.rentalIncome || 0 : 0)); return s; })(),
+    rentalTotalExpenses: (() => { let s = 0; for (let i = 1; i <= rentalCount; i++) s += (a[`rental${i}Expenses`] || (i === 1 ? a.rentalExpenses || 0 : 0)); return s; })(),
     bizOn,
     lifeIns: a.lifeInsBenefit || 0, cLifeIns: a.cLifeInsBenefit || 0,
     totalLiquidSavings: rrsp + tfsa + nr + liraBal + dcBal2 +

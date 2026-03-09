@@ -100,9 +100,10 @@ export function buildAIPromptInter(
   const taxDiffPerYear = D.sal > 0 ? Math.round(D.sal * Math.abs((D.taxCurrentEffective || 0) - (D.taxRetirementEffective || 0)) / 100) : 0;
 
   const ptSlot = D.ptM > 0 ? "Part-time bridge: " + D.ptM + "$/mo × " + D.ptYrs + "yrs — delays portfolio withdrawal." : "";
-  const propSlot = rp.mortBal > 0
+  const propSlot = (rp.mortBal > 0
     ? (rp.mortFreeAge > (params.retAge || 65) ? "MORTGAGE IN RETIREMENT: extends " + (rp.mortFreeAge - (params.retAge || 65)) + " years past retirement. " + (rp.mortPayment || 0) + "$/mo added to retirement spending."
-      : "Mortgage paid by age " + rp.mortFreeAge + " — housing costs drop at retirement.") : "";
+      : "Mortgage paid by age " + rp.mortFreeAge + " — housing costs drop at retirement.") : "")
+    + (rp.rentals && rp.rentals.length > 0 ? " RENTAL PORTFOLIO: " + rp.rentals.length + " propert" + (rp.rentals.length > 1 ? "ies" : "y") + ", total value " + (rp.rentalTotalValue || 0) + "$, net cash-flow " + ((rp.rentalTotalIncome || 0) - (rp.rentalTotalExpenses || 0)) + "$/yr." : "");
 
   // WIN/FIX maps (ported from Essentiel)
   const winMap: Record<string, string> = {
@@ -164,6 +165,12 @@ export function buildAIPromptInter(
 
   if (signals.mortgageInRetirement)
     obsPool.push({ topic: "mortgage-retirement", labelFr: "Hypothèque à la retraite", labelEn: "Mortgage in retirement", instr: "Mortgage extends " + signals.mortgageInRetirement.yearsInRet + " years into retirement at " + signals.mortgageInRetirement.payment + "$/mo. Total retirement mortgage cost: " + (signals.mortgageInRetirement.payment * 12 * signals.mortgageInRetirement.yearsInRet) + "$. Impact on withdrawal sustainability." });
+
+  if (rp.rentals && rp.rentals.length >= 2) {
+    const _rTotCF = rp.rentals.reduce((s: number, r: any) => s + (r.cashFlow || 0), 0);
+    const _rTotEq = rp.rentals.reduce((s: number, r: any) => s + (r.equity || 0), 0);
+    obsPool.push({ topic: "rental-portfolio", labelFr: "Portefeuille locatif", labelEn: "Rental portfolio", instr: "Rental portfolio: " + rp.rentals.length + " properties generating " + _rTotCF + "$/yr net cash-flow. Total rental equity: " + _rTotEq + "$. What this income stream and equity concentration mean for retirement cash-flow coverage and portfolio withdrawal pressure." });
+  }
 
   if (signals.bizExtractWindow)
     obsPool.push({ topic: "biz-extract", labelFr: "Fenêtre d'extraction", labelEn: "Extraction window", instr: "Business extraction window: " + signals.bizExtractWindow.yearsToSale + " years until potential sale vs " + signals.bizExtractWindow.yearsTilRet + " years until retirement. The timing gap between these events affects dividend/salary mix optimization." });
@@ -251,6 +258,12 @@ export function buildAIPromptInter(
     },
     debt: rp.debtBal > 0 ? { total: rp.debtBal, annual: rp.debtAnnualCost } : null,
     property: rp.homeVal > 0 ? { value: rp.homeVal, mortgage: rp.mortBal, equity: rp.equity } : null,
+    rentalPortfolio: rp.rentals && rp.rentals.length > 0 ? {
+      count: rp.rentals.length,
+      properties: rp.rentals.map((r: any) => ({ name: r.name, value: r.value, mortgage: r.mortgage, rent: r.income, expenses: r.expenses, cashFlow: r.cashFlow })),
+      totalValue: rp.rentalTotalValue || 0,
+      totalCashFlow: (rp.rentalTotalIncome || 0) - (rp.rentalTotalExpenses || 0),
+    } : null,
     gov: {
       qpp: D.qppMonthly, oas: D.oasMonthly, pension: D.dbPensionMonthly,
       total: D.govMonthly, cover: D.coveragePct,
