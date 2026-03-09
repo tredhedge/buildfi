@@ -8149,7 +8149,7 @@ React.createElement("button", { onClick: function() {
   }, style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, padding: "2px 6px", cursor: "pointer", fontWeight: FW.bold } }, lang === "fr" ? "EN" : "FR"),
 null
 )), React.createElement("div", { style: { display: "flex", gap: 2, marginBottom: 6, background: CL.cd, borderRadius: RAD.sm + 2, padding: 3, border: "1px solid " + CL.bd } },
-  [["essentiel", lang==="fr"?"\ud83d\udfe2 Essentiel":"\ud83d\udfe2 Essential", CL.gn], ["standard", "\ud83d\udd35 Standard", CL.bl], ["expert", "\ud83d\udfe0 Expert", CL.or]].map(function(m) {
+  [["essentiel", lang==="fr"?"\ud83d\udfe2 Bilan":"\ud83d\udfe2 Snapshot", CL.gn], ["standard", lang==="fr"?"\ud83d\udd35 Bilan 360":"\ud83d\udd35 Snapshot 360", CL.bl], ["expert", lang==="fr"?"\ud83d\udfe0 Laboratoire":"\ud83d\udfe0 Lab", CL.or]].map(function(m) {
     return React.createElement("button", { key: m[0], onClick: function() { _setMode(m[0]); },
       style: { flex: 1, padding: "5px 4px", fontSize: FS.base, fontWeight: mode === m[0] ? 700 : 500,
         background: mode === m[0] ? m[2] : "transparent",
