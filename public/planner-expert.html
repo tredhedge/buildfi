@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planificateur Retraite FIRE Pro+ v11.12.9</title>
+<title>BuildFi Laboratoire</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1714">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FIRE Planner">
+<meta name="apple-mobile-web-app-title" content="BuildFi Lab">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="description" content="Planificateur de retraite FIRE canadien avec simulation Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.">
+<meta name="description" content="BuildFi Laboratoire — simulateur de retraite canadien avec Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c49a1a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif}#root{min-height:100vh}
 .fire-content [style*="overflow"] table thead th,.fire-content [style*="overflow"] table thead td,.fire-content [style*="overflow"] table thead tr{position:sticky;top:0;z-index:2;background:#2c2820;box-shadow:0 1px 0 #443e34}
@@ -868,8 +868,8 @@ var sx = function() { var r = {}; for (var i = 0; i < arguments.length; i++) { v
 
 
 const T_FR = {
-  title: "Planificateur de Retraite Pro",
-  sub: "Planificateur de retraite canadien",
+  title: "BuildFi Laboratoire",
+  sub: "Simulateur de retraite canadien",
   tabs: ["Monte Carlo", "Comptes", "Revenus", "Immobilier", "Fiscalit\u00e9", "M\u00e9triques", "Sensibilit\u00e9", "Projection", "Succession", "Sommaire", "\u2014", "Donn\u00e9es", "Bilan", "Cash-flow", "Debug", "D\u00e9finitions", "D\u00e9caissement", "Rente vs Rachat", "Dette vs Invest.", "Alpha fiscal", "Impact frais", "Optimiseur couple", "M\u00e9thodologie"],
   sim: "\u25b6 Simuler",
   age: "\u00c2ge",
@@ -1016,8 +1016,8 @@ const T_FR = {
   lifeExpect: "Esp\u00e9rance de vie"
 };
 const T_EN = {
-  title: "Retirement Planner Pro",
-  sub: "Canadian Retirement Planner",
+  title: "BuildFi Lab",
+  sub: "Canadian retirement simulator",
   tabs: ["Monte Carlo", "Accounts", "Income", "Real Estate", "Tax", "Metrics", "Sensitivity", "Projection", "Estate", "Summary", "\u2014", "Data", "Balance", "Cash-flow", "Debug", "Definitions", "Decumulation", "Pension vs CV", "Debt vs Invest.", "Tax Alpha", "Fee Impact", "Gov Pension Opt.", "Methodology"],
   sim: "\u25b6 Simulate",
   age: "Age",
@@ -6680,7 +6680,7 @@ var reportHTML = useMemo(function() {
   if (cAddr) h += '<span style="font-size:11px">'+cAddr+'</span><br/>';
   if (cPhone) h += '<span style="font-size:11px">'+cPhone+'</span><br/>';
   if (cEmail) h += '<span style="font-size:9px;color:#4680c0">'+cEmail+'</span><br/>';
-  h += '<span class="ver">v11.12.9</span>';
+  h += '<span class="ver">BuildFi</span>';
   h += '</div></div>';
 
   // Grade
@@ -7139,7 +7139,7 @@ var reportHTML = useMemo(function() {
 
   // Disclaimer
   h += '<div class="disclaimer"><strong>\u26a0 '+(fr?'Mise en garde':'Disclaimer')+'</strong><br/>'+(fr?'Ce rapport est g\u00e9n\u00e9r\u00e9 \u00e0 des fins \u00e9ducatives et informationnelles uniquement. Il ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont bas\u00e9es sur des simulations Monte Carlo avec des hypoth\u00e8ses qui peuvent ne pas se r\u00e9aliser. Consultez un planificateur financier certifi\u00e9 (Pl. Fin.) ou un conseiller en placement inscrit avant toute d\u00e9cision financi\u00e8re.':'This report is generated for educational and informational purposes only. It does not constitute financial, tax, or legal advice. Projections are based on Monte Carlo simulations with assumptions that may not materialize. Consult a certified financial planner (CFP) or registered investment advisor before making financial decisions.')+'</div>';
-  h += '<div class="ft">FIRE Planner Pro+ \u00b7 '+today+' \u00b7 v11.12.9 \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='essentiel'?(fr?'Essentiel':'Essential'):rm==='standard'?'Standard':'Expert')+'</div>';
+  h += '<div class="ft">buildfi.ca \u00b7 '+today+' \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='essentiel'?(fr?'Essentiel':'Essential'):rm==='standard'?'Standard':'Expert')+'</div>';
   h += '</body></html>';
   return h;
 
@@ -7373,7 +7373,7 @@ var reportHTML = useMemo(function() {
     setAiLoading(true);
     setAiReport(null);
     var payload = _serializeForAI(tier, rl);
-    var sysPrompt = 'You are a Canadian retirement planning analyst generating a report section for FIRE Planner Pro+, a Monte Carlo simulation tool.\n\nKEY DEFINITIONS:\n- Success rate: % of MC simulations where savings last until death\n- Tax alpha: cumulative tax savings from optimized vs naive withdrawal strategy (positive = savings)\n- OAS clawback: years where taxable income exceeds ~$95K, causing Old Age Security reduction (15% recovery tax)\n- Meltdown: accelerated RRSP-to-RRIF conversion to reduce future tax burden\n- VaR P5: 5th percentile final wealth (worst 5% of scenarios)\n- CVaR P5: expected wealth in worst 5% of scenarios\n- Median ruin: age at which savings deplete in median scenario (999 or None = never depletes)\n- Go-Go/Slow-Go/No-Go: Blanchett spending smile model phases\n- MER: Management Expense Ratio (annual fund fees)\n\nCRITICAL RULES \u2014 LEGAL COMPLIANCE:\n1. OBSERVATIONAL LANGUAGE ONLY. Use: "The projections indicate...", "The data suggests...", "The modeling reveals..."\n2. NEVER DIRECTIVE. No: "You should...", "We recommend...", "Consider..."\n3. NO FINANCIAL ADVICE. Present observations about the mathematical model only.\n4. CITE SPECIFIC NUMBERS from data.\n5. PROFESSIONAL TONE. No emojis, no exclamation marks. ' + (fr ? 'French Canadian register (vous).' : 'Canadian English register.') + '\n6. RESPOND ONLY IN VALID JSON. No markdown, no backticks, no preamble.';
+    var sysPrompt = 'You are a Canadian retirement planning analyst generating a report section for BuildFi Lab, a Monte Carlo simulation tool.\n\nKEY DEFINITIONS:\n- Success rate: % of MC simulations where savings last until death\n- Tax alpha: cumulative tax savings from optimized vs naive withdrawal strategy (positive = savings)\n- OAS clawback: years where taxable income exceeds ~$95K, causing Old Age Security reduction (15% recovery tax)\n- Meltdown: accelerated RRSP-to-RRIF conversion to reduce future tax burden\n- VaR P5: 5th percentile final wealth (worst 5% of scenarios)\n- CVaR P5: expected wealth in worst 5% of scenarios\n- Median ruin: age at which savings deplete in median scenario (999 or None = never depletes)\n- Go-Go/Slow-Go/No-Go: Blanchett spending smile model phases\n- MER: Management Expense Ratio (annual fund fees)\n\nCRITICAL RULES \u2014 LEGAL COMPLIANCE:\n1. OBSERVATIONAL LANGUAGE ONLY. Use: "The projections indicate...", "The data suggests...", "The modeling reveals..."\n2. NEVER DIRECTIVE. No: "You should...", "We recommend...", "Consider..."\n3. NO FINANCIAL ADVICE. Present observations about the mathematical model only.\n4. CITE SPECIFIC NUMBERS from data.\n5. PROFESSIONAL TONE. No emojis, no exclamation marks. ' + (fr ? 'French Canadian register (vous).' : 'Canadian English register.') + '\n6. RESPOND ONLY IN VALID JSON. No markdown, no backticks, no preamble.';
     var userPrompt;
     if (tier === 'essentiel') {
       userPrompt = 'Analyze this retirement plan for a simplified client report. Write for someone with no financial background.\n\nDATA:\n' + payload + '\n\nRespond in ' + (fr?'French':'English') + ' as JSON:\n{"verdict": "2-3 sentences explaining what the grade means in plain language."}';
@@ -7426,7 +7426,7 @@ var reportHTML = useMemo(function() {
     var H = function(t) { out.push(""); out.push(J(["\u2550\u2550\u2550 " + t + " \u2550\u2550\u2550"])); out.push(""); };
     var grade = mc.succ >= 0.95 ? "A+" : mc.succ >= 0.9 ? "A" : mc.succ >= 0.85 ? "B+" : mc.succ >= 0.8 ? "B" : mc.succ >= 0.7 ? "C" : "D";
     out.push(J([fr ? "RAPPORT DE PLANIFICATION RETRAITE" : "RETIREMENT PLANNING REPORT"]));
-    out.push(J([(fr ? "Client: " : "Client: ") + (cName || "\u2014"), (fr ? "Date: " : "Date: ") + today, "v11.12.9", nSim + " simulations MC"]));
+    out.push(J([(fr ? "Client: " : "Client: ") + (cName || "\u2014"), (fr ? "Date: " : "Date: ") + today, "BuildFi", nSim + " simulations MC"]));
     H(fr ? "R\u00c9SUM\u00c9 EX\u00c9CUTIF" : "EXECUTIVE SUMMARY");
     out.push(J([fr ? "M\u00e9trique" : "Metric", fr ? "Valeur" : "Value", fr ? "Unit\u00e9" : "Unit"]));
     out.push(J([fr ? "Taux de succ\u00e8s" : "Success rate", Math.round(mc.succ * 100), "%"]));
@@ -7845,8 +7845,8 @@ var _wizFinish = function() {
   try { localStorage.setItem("fire_sbf", JSON.stringify(_newF)); } catch(e) {}
   setShowProg(true); setShowWiz(false); localStorage.setItem("fire_used", "1"); setTab(5);
 };
-var _vBan = useState(function() { try { return localStorage.getItem("fire_dismiss_v") !== "v11.12.9"; } catch(e) { return true; } }), showVerBanner = _vBan[0], setShowVerBanner = _vBan[1];
-var _dismissVer = function() { setShowVerBanner(false); try { localStorage.setItem("fire_dismiss_v", "v11.12.9"); } catch(e) {} };
+var _vBan = useState(function() { try { return localStorage.getItem("bf_dismiss_v") !== "1"; } catch(e) { return true; } }), showVerBanner = _vBan[0], setShowVerBanner = _vBan[1];
+var _dismissVer = function() { setShowVerBanner(false); try { localStorage.setItem("bf_dismiss_v", "1"); } catch(e) {} };
   // === SPRINT 2: RESTRUCTURED WIZARD (6 steps) ===
   var _wizValErrs = [];
   if (wizStep >= 2) {
@@ -8114,7 +8114,7 @@ wizStep === 4 && React.createElement("div", null,
           lang === "fr" ? "Lancer mon analyse" : "Run my analysis") : null)));
 
 return React.createElement("div", { style: sty.wrap, className: "fire-wrap" }, React.createElement("a", { href: "#fire-main", style: { position: "absolute", left: "-9999px", top: "auto", width: "1px", height: "1px", overflow: "hidden", zIndex: 9999 }, onFocus: function(e) { e.target.style.left = "10px"; e.target.style.top = "10px"; e.target.style.width = "auto"; e.target.style.height = "auto"; }, onBlur: function(e) { e.target.style.left = "-9999px"; } }, lang === "fr" ? "Aller au contenu" : "Skip to content"), _wizardOverlay, React.createElement("div", { className: sty.sideMob && mobSbOpen ? "fire-backdrop fire-backdrop-visible" : "fire-backdrop", onClick: function() { setMobSb(false); }, style: { cursor: "pointer" } }),
-React.createElement("div", { style: sty.side, className: pan ? (sty.sideMob && !mobSbOpen ? "fire-side fire-side-collapsed" : "fire-side") : "fire-side fire-side-collapsed", role: "complementary", "aria-label": lang === "fr" ? "Param\u00e8tres du plan" : "Plan settings" }, pan && React.createElement(React.Fragment, null, React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 } }, React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac } }, t.title, " ", React.createElement("span", { style: { fontSize: FS.base, color: CL.dm } }, "v11.12.9")), React.createElement("div", { style: { display: "flex", gap: 3 } }, React.createElement("button", { onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("fire_dark", nd ? "1" : "0"); },
+React.createElement("div", { style: sty.side, className: pan ? (sty.sideMob && !mobSbOpen ? "fire-side fire-side-collapsed" : "fire-side") : "fire-side fire-side-collapsed", role: "complementary", "aria-label": lang === "fr" ? "Param\u00e8tres du plan" : "Plan settings" }, pan && React.createElement(React.Fragment, null, React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 } }, React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac } }, t.title, " ", React.createElement("span", { style: { fontSize: FS.base, color: CL.dm } }, "BuildFi")), React.createElement("div", { style: { display: "flex", gap: 3 } }, React.createElement("button", { onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("fire_dark", nd ? "1" : "0"); },
     style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.md, padding: "2px 6px", cursor: "pointer", lineHeight: 1.3 } }, dark ? "\u2600\ufe0f" : "\ud83c\udf19"),
 React.createElement("button", { onClick: function() { setShowWiz(true); setWizStep(0); }, title: lang === "fr" ? "Relancer l'assistant" : "Relaunch wizard", style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.dm, fontSize: FS.md, padding: "2px 6px", cursor: "pointer", lineHeight: 1.3 } }, "\ud83e\uddd9"),
 React.createElement("button", { onClick: function() {
@@ -12281,7 +12281,7 @@ tab === 13 && mc && React.createElement("div", { style: { padding: 16 } }, _ctxS
           _tF===0?"":"\u274c"," ",lang==="fr"?"Tests automatis\u00e9s":"Automated Tests",": ",_tP,"/",_tT," ",lang==="fr"?"r\u00e9ussis":"passed",
           _tF>0?" ("+_tF+" "+(lang==="fr"?"\u00e9chou\u00e9s":"failed")+")":""
         ),
-        React.createElement("div",{style:{fontSize:FS.xxs,color:CL.dm}},"v11.12.9")
+        React.createElement("div",{style:{fontSize:FS.xxs,color:CL.dm}},"BuildFi")
       ),
       React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))",gap:4}},
         ["Tax","QPP","OAS","GIS","RRIF","MC"].map(function(cat){
@@ -14656,7 +14656,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
 
       // --- Welcome block ---
       E("div", { style: { padding: 16, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: 16 } },
-        E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.ac, marginBottom: 8 } }, fr ? "Bienvenue dans FIRE Planner Pro+" : "Welcome to FIRE Planner Pro+"),
+        E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.ac, marginBottom: 8 } }, fr ? "Bienvenue dans le Laboratoire BuildFi" : "Welcome to BuildFi Lab"),
         P(fr ? "Cet outil teste la solidit\u00e9 de votre plan de retraite en simulant " + nSim + " sc\u00e9narios \u00e9conomiques diff\u00e9rents \u2014 incluant des krachs boursiers, de l'inflation \u00e9lev\u00e9e et une long\u00e9vit\u00e9 variable. C'est un crash test pour vos finances." : "This tool stress-tests your retirement plan by simulating " + nSim + " different economic scenarios \u2014 including market crashes, high inflation and variable longevity. It's a crash test for your finances."),
         P(fr ? "Votre note (A+ \u00e0 F) repr\u00e9sente le pourcentage de ces sc\u00e9narios o\u00f9 votre argent dure toute votre vie. Cible: A- (90%+)." : "Your grade (A+ to F) represents the percentage of scenarios where your money lasts your entire life. Target: A- (90%+).")
       ),
@@ -14718,7 +14718,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
         [
           [fr ? "Essentiel" : "Essential", fr ? "5 onglets, vocabulaire simple. Id\u00e9al pour d\u00e9couvrir l'outil." : "5 tabs, simple terms. Ideal for discovering the tool.", CL.gn],
           ["Standard", fr ? "~10 onglets, fiscalit\u00e9, optimiseur. Pour valider votre plan." : "~10 tabs, tax, optimizer. To validate your plan.", CL.bl],
-          ["Expert", fr ? "18+ onglets, tous les leviers. Pour tout optimiser." : "18+ tabs, all levers. To optimize everything.", CL.or]
+          ["Expert", fr ? "Acc\u00e8s complet, tous les leviers. Pour tout optimiser." : "Full access, all levers. To optimize everything.", CL.or]
         ].map(function(m, i) { return E("div", { key: i, style: { padding: 10, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, textAlign: "center" } },
           E("div", { style: { fontWeight: FW.bold, color: m[2], fontSize: FS.md, marginBottom: 4 } }, m[0]),
           E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, m[1])); })
@@ -15057,7 +15057,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
         E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, borderBottom: "1px solid " + CL.bd, paddingBottom: 4, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "baseline" } },
           E("span", null, fr ? "M\u00e9thodologie & Transparence" : "Methodology & Transparency"),
           E("span", { style: { display: "flex", gap: 8, alignItems: "center" } },
-            E("span", { style: { fontSize: FS.sm, color: CL.or, fontWeight: FW.medium } }, "v11.12.9"),
+            E("span", { style: { fontSize: FS.sm, color: CL.or, fontWeight: FW.medium } }, "BuildFi"),
             mc && mc.revData && E("button", { onClick: function() {
               var hd = ["Age","RevImp","Tax","QPP","OAS","Pen","RRIF","Melt","Draw","wTF","wNR","GIS","NetInc"];
               var rows = (mc.medRevData || mc.revData).map(function(r) { return [r.age, Math.round(r.taxInc||0), Math.round(r.tax||0), Math.round(r.tiQPP||0), Math.round(r.tiOAS||0), Math.round(r.tiPen||0), Math.round(r.tiRRIF||0), Math.round(r.wMelt||0), Math.round(r.wFromRR||0), Math.round(r.wFromTF||0), Math.round(r.wFromNR||0), Math.round(r.gis||0), Math.round(r.netInc||0)]; });
@@ -15065,7 +15065,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
             }, style: { padding: "4px 10px", background: CL.s2, color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.sm, cursor: "pointer" } }, "\ud83d\udce5 CSV")
           )
         ),
-        _P(fr ? "Cette section d\u00e9taille le moteur de calcul, les hypoth\u00e8ses et les donn\u00e9es de r\u00e9f\u00e9rence utilis\u00e9s par FIRE Planner Pro+. Toutes les valeurs refl\u00e8tent vos param\u00e8tres actuels." : "This section details the calculation engine, assumptions and reference data used by FIRE Planner Pro+. All values reflect your current settings."),
+        _P(fr ? "Cette section d\u00e9taille le moteur de calcul, les hypoth\u00e8ses et les donn\u00e9es de r\u00e9f\u00e9rence utilis\u00e9s par BuildFi Lab. Toutes les valeurs refl\u00e8tent vos param\u00e8tres actuels." : "This section details the calculation engine, assumptions and reference data used by BuildFi Lab. All values reflect your current settings."),
 
     _S(lang === "fr" ? "1. Moteur Monte Carlo" : "1. Monte Carlo Engine",
       E("div", null,
@@ -15684,11 +15684,11 @@ React.createElement("div", { style: { padding: "6px 12px", fontSize: FS.sm, colo
     if (!reportHTML || reportHTML.length < 100) { alert(lang === "fr" ? "Lancez une simulation d'abord." : "Run a simulation first."); return; }
     var blob = new Blob(["<!DOCTYPE html>" + reportHTML], { type: "text/html" });
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "FIRE_Report_" + (new Date()).toISOString().slice(0,10) + ".html"; a.click();
+    a.download = "BuildFi_Report_" + (new Date()).toISOString().slice(0,10) + ".html"; a.click();
   }, style: { display: "none" } }, ""),
 React.createElement("div", { style: { position: "fixed", bottom: 0, left: 0, right: 0, textAlign: "center", padding: "3px 8px", fontSize: FS.xxs, color: CL.dm, background: CL.bg, borderTop: "1px solid " + CL.bd + "30", zIndex: 90, opacity: 0.7 } },
   lang === "fr" ? "Outil éducatif — ne constitue pas un conseil financier. Consultez un professionnel qualifié." : "Educational tool — does not constitute financial advice. Consult a qualified professional."),
-React.createElement("div", { style: { position: "fixed", bottom: 22, right: 8, fontSize: FS.xs, color: CL.bd, opacity: 0.5 } }, "v11.12.9 \u00b7 ", nSim, " MC \u00b7 CPM 2023")));
+React.createElement("div", { style: { position: "fixed", bottom: 22, right: 8, fontSize: FS.xs, color: CL.bd, opacity: 0.5 } }, "BuildFi \u00b7 ", nSim, " MC \u00b7 CPM 2023")));
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));

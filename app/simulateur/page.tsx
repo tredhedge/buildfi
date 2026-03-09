@@ -1091,7 +1091,7 @@ function SimulateurContent() {
       </header>
 
       {/* ── Help panel (collapsible below header) ── */}
-      {showHelp && viewMode !== "planner" && (
+      {showHelp && (
         <div style={{ background: "#132057", borderBottom: `1px solid rgba(255,255,255,0.1)`, padding: "16px 24px" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
             {[
@@ -1144,16 +1144,40 @@ function SimulateurContent() {
         </div>
       )}
 
-      {/* ═══ PLANNER IFRAME MODE (Avancé — 30+ modules, 190 paramètres) ═══ */}
+      {/* ═══ PLANNER IFRAME MODE ═══ */}
       {viewMode === "planner" ? (
+        <>
+        {/* ── Planner summary rail ── */}
+        {results && (
+          <div style={{
+            background: "#0f1a3d", borderBottom: "1px solid rgba(255,255,255,0.08)",
+            padding: "6px 24px", display: "flex", alignItems: "center", gap: 20,
+            fontSize: 12, color: "rgba(255,255,255,0.6)", flexWrap: "wrap",
+          }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: results.successRate >= 0.75 ? EK.green : results.successRate >= 0.55 ? EK.gold : EK.red }}>
+                {results.grade}
+              </span>
+              <span>{fPct(results.successRate)}</span>
+            </span>
+            <span>{fr ? "Patrimoine médian" : "Median wealth"}: <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#fff" }}>{f$(results.medianWealth)}</span></span>
+            {results.estate?.medianNet !== undefined && (
+              <span>{fr ? "Succession" : "Estate"}: <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#fff" }}>{f$(results.estate.medianNet)}</span></span>
+            )}
+            <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+              {fr ? "Dernière simulation Mode Guidé" : "Last Guided Mode simulation"}
+            </span>
+          </div>
+        )}
         <iframe
           ref={plannerRef}
           key={`planner-${lang}`}
           src={`/planner-expert.html?lang=${lang}`}
-          style={{ width: "100%", height: "calc(100vh - 56px)", border: "none", display: "block" }}
+          style={{ width: "100%", height: results ? "calc(100vh - 89px)" : "calc(100vh - 56px)", border: "none", display: "block" }}
           title={fr ? "Simulateur Expert BuildFi" : "BuildFi Expert Simulator"}
           allow="clipboard-write"
         />
+        </>
       ) : (
       <>
       {/* ── Workflow buttons ── */}
@@ -1380,8 +1404,8 @@ function SimulateurContent() {
             )}
           </SidebarGroup>
 
-          {/* ── Avancé ── */}
-          <SidebarGroup title={fr ? "Avancé" : "Advanced"} expanded={expandedGroups.has("avance")} onToggle={() => toggleGroup("avance")}>
+          {/* ── Hypothèses ── */}
+          <SidebarGroup title={fr ? "Hypothèses" : "Assumptions"} expanded={expandedGroups.has("avance")} onToggle={() => toggleGroup("avance")}>
             <InputRow label={fr ? "Allocation actions (%)" : "Equity allocation (%)"}>
               <NumInput value={Math.round((params.allocR as number) * 100)} onChange={v => { const a = v / 100; setParam("allocR", a); setParam("allocT", a); setParam("allocN", Math.max(0.3, a - 0.2)); }} step={5} min={0} max={100} prefix="%" isDefault={defaults.has("allocR")} />
             </InputRow>
@@ -1639,9 +1663,16 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
   if (!results) {
     return (
       <Card>
-        <div style={{ textAlign: "center", padding: 40, color: EK.txDim }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{fr ? "Sélectionnez un profil pour commencer" : "Select a profile to begin"}</div>
-          <div style={{ fontSize: 13 }}>{fr ? "Utilisez le sélecteur de profil ou modifiez les paramètres." : "Use the profile selector or modify parameters."}</div>
+        <div style={{ textAlign: "center", padding: "48px 24px", color: EK.txDim }}>
+          <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.25 }}>◑</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: EK.marine, marginBottom: 10 }}>
+            {fr ? "Prêt à simuler" : "Ready to simulate"}
+          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.7, maxWidth: 420, margin: "0 auto" }}>
+            {fr
+              ? "Lancez une simulation en ajustant les paramètres à gauche. Le modèle explore 1\u00A0000 trajectoires Monte Carlo pour évaluer la solidité de votre plan."
+              : "Run a simulation by adjusting parameters on the left. The model explores 1,000 Monte Carlo trajectories to evaluate the strength of your plan."}
+          </div>
         </div>
       </Card>
     );
@@ -2941,6 +2972,24 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
               );
             })}
           </div>
+
+          {/* What changed summary */}
+          {optimizeResults.top10?.[0]?.params_changed && (
+            <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(196,154,26,0.06)", borderRadius: 6, border: `1px solid rgba(196,154,26,0.15)`, fontSize: 13, color: EK.txDim }}>
+              <span style={{ fontWeight: 700, color: EK.marine, fontSize: 12 }}>
+                {fr ? "Meilleur scénario combiné" : "Best combined scenario"}:
+              </span>{" "}
+              {fr ? "Note" : "Grade"} {optimizeResults.top10[0].grade} — {fPct(optimizeResults.top10[0].successRate)} — {f$(optimizeResults.top10[0].medianWealth)}
+              <div style={{ marginTop: 4, fontSize: 12, color: EK.txMuted }}>
+                {Object.entries(optimizeResults.top10[0].params_changed).map(([k, v], i) => (
+                  <span key={k}>
+                    {i > 0 && " · "}
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{k}</span>: {String(v)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Meta */}
           <div style={{ marginTop: 10, fontSize: 11, color: EK.txMuted, textAlign: "right" }}>
