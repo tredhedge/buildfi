@@ -1,6 +1,6 @@
 # SERVICES.md
 > Tous les comptes, configurations backend, DNS, credentials, flux de paiement.
-> Mis à jour: 2026-03-07 — v8 (Stripe keys all configured, email template inventory corrected, /merci décaissement)
+> Mis à jour: 2026-03-09 — v9 (PIVOT 3 produits: Bilan Pro + Laboratoire + Export AI. Old 4-tier pricing deprecated.)
 > NE JAMAIS mettre les valeurs secrètes dans ce fichier — noms seulement.
 
 ---
@@ -43,18 +43,31 @@
 
 ### Stripe — Paiements
 - Compte: BuildFi | Mode actuel: **TEST** (pas encore live)
-- Produits:
+
+> **⚠️ PIVOT 2026-03-09**: Old prices below will be replaced. See PLAN-PIVOT.md §Phase 2.
+
+- **Produits DEPRECATED (ancien 4 tiers):**
 
 | Produit | Prix | Price ID | Status |
 |---------|------|----------|--------|
-| Rapport Essentiel | **$29 CAD** one-time | STRIPE_PRICE_ESSENTIEL | ✅ Configuré |
-| Rapport Intermédiaire | **$59 CAD** one-time | STRIPE_PRICE_INTERMEDIAIRE | ✅ Configuré |
-| Rapport Décaissement | **$59 CAD** one-time | STRIPE_PRICE_DECAISSEMENT | ✅ Configuré |
-| Expert | **$129 CAD** one-time | STRIPE_PRICE_EXPERT | ✅ Configuré |
-| Expert Renouvellement | **$29 CAD/an** récurrent | STRIPE_PRICE_EXPERT_RENEWAL | ✅ Configuré |
-| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ✅ Configuré |
+| ~~Rapport Essentiel~~ | ~~$29 CAD one-time~~ | STRIPE_PRICE_ESSENTIEL | ❌ DEPRECATED |
+| ~~Rapport Intermédiaire~~ | ~~$59 CAD one-time~~ | STRIPE_PRICE_INTERMEDIAIRE | ❌ DEPRECATED |
+| ~~Rapport Décaissement~~ | ~~$59 CAD one-time~~ | STRIPE_PRICE_DECAISSEMENT | ❌ DEPRECATED |
+| ~~Expert~~ | ~~$129 CAD one-time~~ | STRIPE_PRICE_EXPERT | ❌ DEPRECATED |
+| ~~Expert Renouvellement~~ | ~~$29 CAD/an récurrent~~ | STRIPE_PRICE_EXPERT_RENEWAL | ❌ DEPRECATED |
+
+- **Produits NEW (pivot 3 produits):**
+
+| Produit | Prix | Price ID | Status |
+|---------|------|----------|--------|
+| Bilan Pro | **$19.99 CAD** one-time | STRIPE_PRICE_BILAN_PRO | ⏳ À créer |
+| Laboratoire | **$49.99 CAD** one-time | STRIPE_PRICE_LABORATOIRE | ⏳ À créer |
+| Laboratoire Renouvellement | **$29.99 CAD/an** récurrent | STRIPE_PRICE_LABORATOIRE_RENEWAL | ⏳ À créer |
+| Export AI additionnel | **$14.99 CAD** one-time | STRIPE_PRICE_EXPORT_ADDON | ✅ Configuré (inchangé) |
 
 - **Coupons Stripe:**
+  - `LAUNCH-BP` : 100% off, limit 50, Bilan Pro (à créer)
+  - `LAUNCH-LAB` : 50% off, limit 50, Laboratoire (à créer)
   - `SECOND50` : 50% off, single-use, lié à l'email du premier achat (2e rapport)
   - `REFERRAL15` : 15% off, single-use, généré dynamiquement par lien referral
 
@@ -80,18 +93,19 @@
 
 | Template | Contenu | Status |
 |----------|---------|--------|
-| Livraison Essentiel | Grade + lien rapport HTML + bonus tools + offre 2e rapport 50% | ✅ V2 — table-based, bilingual, AMF compliant, tier-aware tool blocs |
-| Livraison Intermédiaire | Grade + lien rapport HTML + 2 tools (alloc+dettes) + offre 2e rapport | ✅ Tier-aware conditional in lib/email.ts |
-| Livraison Décaissement | Grade + lien rapport + simulateur link + guide décaissement | ✅ Tier-aware conditional in lib/email.ts |
-| Livraison Expert | Grade + lien rapport + magic link simulateur | ✅ lib/email-expert.ts |
+| Livraison Essentiel (DEPRECATED) | Grade + lien rapport HTML + bonus tools + offre 2e rapport 50% | ✅ V2 — table-based, bilingual, AMF compliant, tier-aware tool blocs |
+| Livraison Bilan Pro (accum) | Grade + lien rapport HTML + 2 tools (alloc+dettes) + offre 2e rapport | ✅ Tier-aware conditional in lib/email.ts |
+| Livraison Bilan Pro (décaissement) | Grade + lien rapport + simulateur link + guide décaissement | ✅ Tier-aware conditional in lib/email.ts |
+| Livraison Laboratoire | Grade + lien rapport + magic link simulateur | ✅ lib/email-expert.ts |
 | Feedback J+3 | "Comment était votre bilan?" + étoiles + NPS + coupon 50% | ✅ lib/email-feedback.ts + cron/feedback |
 | Témoignage J+7 | "Seriez-vous d'accord pour un témoignage?" (si rating ≥4 ET NPS Oui) | ✅ lib/email-feedback.ts |
 | Rappel J+14 | Dernier rappel feedback + étoiles | ✅ lib/email-feedback.ts |
-| Renouvellement J-30/J-7/J-0/J+3 | Cycle rappel renouvellement Expert | ✅ cron/renewal |
-| Anniversaire 6 mois | Rappel recalculation Expert | ✅ cron/anniversary |
+| Rappel BA | Rappel bilan annuel (trimestriel/annuel) | ⏳ À créer |
+| Renouvellement J-30/J-7/J-0/J+3 | Cycle rappel renouvellement Laboratoire | ✅ cron/renewal |
+| Anniversaire 6 mois | Rappel recalculation Laboratoire | ✅ cron/anniversary |
 | 2e rapport offre | "Un 2e bilan à 50%" + lien checkout coupon | ⏳ Coupon SECOND50 wired, CTA on /merci, email mention needed |
 | Referral notification | "Quelqu'un a utilisé votre lien" + statut récompenses | ⏳ À créer |
-| Bilan Annuel (Déc/Jan/Fév) | 3-email cycle pour bilan annuel Expert | ⏳ Cron trigger non implémenté |
+| Bilan Annuel (Déc/Jan/Fév) | 3-email cycle pour bilan annuel Laboratoire | ⏳ Cron trigger non implémenté |
 | Pré-suppression J-30 | "Téléchargez votre profil avant suppression" | ⏳ À créer |
 
 **Email template v2 actuel**: Table-based layout (email client compatible), grade card dark, bouton "Consulter mon rapport", tier-aware upsell + tool blocs, bilingual FR/EN, AMF compliant disclaimers, footer Montréal. Domain verified (warmup needed for inbox placement).
@@ -135,12 +149,15 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 | Variable | Usage | Status |
 |----------|-------|--------|
 | `STRIPE_SECRET_KEY` | Checkout + Webhook | ✅ Configurée |
-| `STRIPE_PRICE_ESSENTIEL` | Price ID Essentiel $29 | ✅ Configurée |
-| `STRIPE_PRICE_INTERMEDIAIRE` | Price ID Intermédiaire $59 | ✅ Configurée |
-| `STRIPE_PRICE_DECAISSEMENT` | Price ID Décaissement $59 | ✅ Configurée |
-| `STRIPE_PRICE_EXPERT` | Price ID Expert $129 | ✅ Configurée |
-| `STRIPE_PRICE_EXPERT_RENEWAL` | Price ID Renouvellement $29/an | ✅ Configurée |
-| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ✅ Configurée |
+| `STRIPE_PRICE_ESSENTIEL` | ~~Price ID Essentiel $29~~ | ❌ DEPRECATED — old pricing |
+| `STRIPE_PRICE_INTERMEDIAIRE` | ~~Price ID Intermédiaire $59~~ | ❌ DEPRECATED — old pricing |
+| `STRIPE_PRICE_DECAISSEMENT` | ~~Price ID Décaissement $59~~ | ❌ DEPRECATED — old pricing |
+| `STRIPE_PRICE_EXPERT` | ~~Price ID Expert $129~~ | ❌ DEPRECATED — replaced by STRIPE_PRICE_LABORATOIRE |
+| `STRIPE_PRICE_EXPERT_RENEWAL` | ~~Price ID Renouvellement $29/an~~ | ❌ DEPRECATED — replaced by STRIPE_PRICE_LABORATOIRE_RENEWAL |
+| `STRIPE_PRICE_BILAN_PRO` | Price ID Bilan Pro $19.99 | ⏳ À créer |
+| `STRIPE_PRICE_LABORATOIRE` | Price ID Laboratoire $49.99 | ⏳ À créer |
+| `STRIPE_PRICE_LABORATOIRE_RENEWAL` | Price ID Renouvellement $29.99/an | ⏳ À créer |
+| `STRIPE_PRICE_EXPORT_ADDON` | Price ID Export AI $14.99 | ✅ Configurée (inchangé) |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhook signature | ✅ Configurée (whsec_...) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Checkout client-side | ✅ Configurée |
 | `NEXT_PUBLIC_BASE_URL` | URLs dans le code | ✅ Configurée |
@@ -165,6 +182,8 @@ Configurées dans: Vercel → Project Settings → Environment Variables (All En
 ---
 
 ## FLUX DE PAIEMENT — IMPLÉMENTÉ ✅
+
+> **⚠️ Flow below describes the pre-pivot Essentiel pipeline. Post-pivot flow: see PLAN-PIVOT.md §Phase 2 + CLAUDE.md Pipeline sections.**
 
 ```
 Client complète quiz (805 lignes, thin client, zero IP)

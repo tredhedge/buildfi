@@ -1,6 +1,6 @@
 # TECH-REFERENCE.md
 > Architecture, décisions de code, audits, conformité AMF.
-> Mis à jour: 2026-03-08 — v18 (Phase 2 coherence, sync bridge 130+ params, analytics wired, report parity, conversion architecture)
+> Mis à jour: 2026-03-09 — v19 (Pivot 4→3 products: BA gratuit / Bilan Pro / Laboratoire. Old tier names deprecated.)
 
 ---
 
@@ -22,6 +22,7 @@ Lignes 14,500–15,157 : TESTS EMBARQUÉS (436 engine tests, 54 catégories, 0 f
 ```
 
 ### Pipeline Quiz → Paiement → Rapport (PRODUCTION)
+> ⚠️ Pipeline below describes the pre-pivot Essentiel flow. Post-pivot: Bilan Pro routes to Inter (accum) or Decum (décaissement) pipeline. See CLAUDE.md for updated pipeline diagrams.
 ```
 Quiz thin client (805 lignes, zero IP)
   → Paywall avec preview blurred
@@ -381,8 +382,8 @@ QC test fix: $250K correctly falls in to:258482 bracket (rate 0.5253, not top 0.
 
 ### Guides éducatifs (bonus)
 ```
-guide-101-les-bases-de-vos-finances.pdf   — 13 pages, bonus Essentiel
-guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + Expert
+guide-101-les-bases-de-vos-finances.pdf   — 13 pages, bonus Bilan Pro
+guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Bilan Pro + Laboratoire
   → Sources Python: guide_101.py (v8), guide_201_301.py (v2)
   → Audit AMF: 0 infraction, disclaimers début + fin
   → Livraison: pièce jointe email post-achat (À INTÉGRER)
@@ -425,10 +426,12 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 ### Upgrade Hooks dans le rapport (upsell dynamique)
 | Déclencheur | Teaser affiché | Tier cible |
 |-------------|----------------|-----------|
-| Propriétaire | "Votre valeur immobilière n'est pas incluse dans cette analyse" | Intermédiaire |
-| Couple | "Le fractionnement de revenus pourrait réduire vos impôts" | Intermédiaire |
-| Dette > $30K | "Votre plan de remboursement a plusieurs chemins d'optimisation" | Intermédiaire |
-| Succès < 70% | "Votre plan pourrait bénéficier d'ajustements — testez différents leviers" | Expert |
+| Propriétaire | "Votre valeur immobilière n'est pas incluse dans cette analyse" | Bilan Pro |
+| Couple | "Le fractionnement de revenus pourrait réduire vos impôts" | Bilan Pro |
+| Dette > $30K | "Votre plan de remboursement a plusieurs chemins d'optimisation" | Bilan Pro |
+| Succès < 70% | "Votre plan pourrait bénéficier d'ajustements — testez différents leviers" | Laboratoire |
+
+> Note: These hooks will be updated in PLAN-PIVOT.md Phase 4.
 
 ---
 
@@ -514,11 +517,12 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DT-041 | Logo injection: deferred logo.js requires typeof check INSIDE DOMContentLoaded callback (not outside). All 8 deferred pages use this pattern. 5 synchronous pages (quizzes, tools) don't need it. | **NOUVEAU** |
 | DT-042 | Planner ↔ React bidirectional sync: _bfState exposes 130+ params matching _applyParams 1:1. Direct iframe read on mode switch (eliminates 2s setInterval race). Debounced 2s interval as fallback for live updates. | **NOUVEAU** |
 | DT-043 | AI prompt literacy-adaptive: Grade 12 for advanced users (precise financial vocab OK), Grade 10 for basic/intermediate. Applies to all 3 AI prompt builders (Ess/Inter/Decum). | **NOUVEAU** |
-| DT-044 | Landing page two-family layout: "Recevoir un diagnostic" (3-col: Bilan/360/Horizon) + "Tester mes décisions" (1-col: Laboratoire). Responsive 3→2→1 col. | **NOUVEAU** |
+| DT-044 | DEPRECATED — pre-pivot layout. Post-pivot: 3 products (BA gratuit / Bilan Pro / Laboratoire). See PLAN-PIVOT.md Phase 5. | **DEPRECATED** |
 | DT-045 | PostHog analytics: analytics-config.js (key) + analytics-init.js (bootstrap with Law 25 consent gate). Loaded on all static HTML pages. Next.js pages use NEXT_PUBLIC_POSTHOG_KEY env var. CSP allows *.posthog.com. | **NOUVEAU** |
 | DT-046 | Report parity: all 3 renderers have DM Sans font, print-color-adjust, .no-print class, break-inside:avoid, print/PDF button, referral section, legal footer links, FEEDBACK_STARS placeholder. | **NOUVEAU** |
 | DT-047 | Stress test disclaimer on Inter + Expert reports: "Estimations basées sur des coefficients historiques, pas des simulations additionnelles." Clarifies sensitivity analysis ≠ full MC runs. | **NOUVEAU** |
-| DT-048 | Product naming: internal keys unchanged (essentiel/intermediaire/decaissement/expert). Customer-facing display only: Bilan/Bilan 360/Horizon/Laboratoire (FR), Snapshot/Snapshot 360/Horizon/Lab (EN). Planner mode selector, guide, FAQ, report footer, simulator UI all use customer names. | **NOUVEAU** |
+| DT-048 | Product naming: internal keys unchanged (essentiel/intermediaire/decaissement/expert). PIVOT: customer-facing names are now Bilan Annuel (free), Bilan Pro ($19.99), Laboratoire ($49.99). Old display names (Bilan/Bilan 360/Horizon/Snapshot/Snapshot 360/Lab) are deprecated. | **MIS À JOUR** |
+| DT-049 | Pivot: 4 tiers → 3 products. BA gratuit (client-side React, localStorage, deterministic projection). Bilan Pro $19.99 (routes to Inter accum or Decum décaissement pipeline). Laboratoire $49.99 + $29.99/yr (rebrand of Expert $129). Internal keys unchanged. See docs/PLAN-PIVOT.md. | **NOUVEAU** |
 
 ---
 
@@ -529,7 +533,7 @@ guide-201-optimiser-votre-retraite.pdf    — 19 pages, bonus Intermédiaire + E
 | DB-001 | One-time payment — différenciateur vs ffPro.ca | Décidé |
 | DB-002 | Québec FR en premier | Décidé |
 | DB-003 | Organique d'abord, pubs ensuite | Décidé |
-| DB-004 | Ess $29, Inter $59, Expert $129 one-time, renouvellement $29/an | Décidé |
+| DB-004 | PIVOT: BA gratuit, Bilan Pro $19.99, Laboratoire $49.99 + $29.99/an renewal. Old pricing (Ess $29, Inter $59, Expert $129) deprecated. | Décidé |
 | DB-005 | Entreprise individuelle (CCPC si >30K$/an) | Décidé |
 | DB-007 | Stripe Checkout hébergé | Décidé |
 | DB-009 | Compte bancaire séparé dès jour 1 | Décidé, non négociable |

@@ -1,6 +1,6 @@
 # STRATEGY.md
 > Brand, positionnement, marketing, compétiteurs, pricing, copy.
-> Mis à jour: 2026-03-03 — v6 (pricing confirmé $29/$59/$129, post-audit)
+> Mis à jour: 2026-03-09 — v7 (pivot 4 tiers → 3 produits, BA gratuit, Bilan Pro $19.99, Lab $49.99)
 
 ---
 
@@ -12,7 +12,7 @@
 
 **The One Thing**: We explain your retirement in language you actually understand.
 
-**Catégorie**: Personalized retirement assessment (NOT calculator, NOT simulator, NOT tool)
+**Catégorie**: Personalized retirement assessment + free financial hub (NOT calculator, NOT simulator, NOT tool)
 
 ### Hero Slogan (confirmé 2026-02-27 — landing v9)
 - **FR**: "Savoir si votre argent va durer."
@@ -23,7 +23,7 @@
 ### Trust Grid (in hero, NO separate proof bar)
 1. Vos données ne sont jamais stockées
 2. Résultats en 5 minutes
-3. Un seul paiement, pas d'abonnement
+3. Gratuit pour commencer. Un paiement pour le rapport complet.
 4. 100 % adapté à la réalité canadienne — chaque province, chaque règle
 
 ### Les Cinq Ennemis
@@ -48,7 +48,7 @@ Remplacer un salaire d'économiste au gouvernement fédéral. Avoir le choix —
 Produit consumer optimisé, zéro employé, marges 85%+, 20-25h/semaine.
 - An 1 : $15K–$40K (calibration ads, témoignages, itération)
 - An 2 : $40K–$80K (SEO porte fruit, referral actif, CAC connu)
-- An 3 : $80K–$130K (3 tiers matures, Bilan Annuel récurrent)
+- An 3 : $80K–$130K (3 produits matures, Bilan Pro récurrent)
 - An 5 : $150K–$250K (marque établie, traffic organique 40-50%)
 - An 8 : $200K–$350K (plafond solo atteint, produit en pilote automatique)
 
@@ -57,7 +57,7 @@ Tier Pro white-label à $99/mois par siège. Mêmes rapports, branding planifica
 ~15,000 planificateurs financiers certifiés au Canada. Cible : 200-500 sièges.
 - An 3 : Lancement tier Pro
 - An 5 : $400K–$600K (consumer + 200-300 sièges pro)
-- An 8 : $500K–$800K (consumer + 500 sièges pro + Bilan Annuel récurrent)
+- An 8 : $500K–$800K (consumer + 500 sièges pro + Bilan Pro récurrent)
 Requiert : portail pro, multi-tenant, white-label, possiblement 1 employé (ventes/support).
 
 **Trajectoire C — Exit (optionnel)**
@@ -70,11 +70,11 @@ Acquéreurs potentiels : Wealthsimple, banques canadiennes, Optiml, firmes de pl
 Rester en lifestyle solo (A) ou pousser le B2B (B). Les deux sont valides. Le moteur MC, les rapports, et la fiscalité supportent les deux. C'est une décision de vie, pas une décision technique.
 
 ### Hypothèses de modélisation revenus
-- Mix conservateur : 60% Ess ($29), 30% Inter ($59), 10% Expert ($129) → moyenne $46/client
-- Mix optimiste : 40% Ess, 35% Inter, 25% Expert → moyenne $58/client
-- Taux de conversion landing→achat : 2% (standard industrie)
-- Trafic requis pour $100K/an : 8,500-10,800 visiteurs/mois
-- Revenus additionnels : 2e rapport 50% ($14.50-$64.50), exports Expert $14.99, renouvellements $29/an
+- Free BA acquisition → 60% Bilan Pro ($19.99), 40% Lab conversions ($49.99) → average $31/paying customer BUT higher volume from free funnel
+- Bilan Pro rachat annuel = recurring revenue stream (users re-run yearly for updated snapshot)
+- Taux de conversion BA gratuit → Bilan Pro : 8-15% (higher than cold traffic — user already invested time)
+- Taux de conversion landing→BA gratuit : 15-25% (zero friction, no payment)
+- Revenus additionnels : exports Laboratoire $14.99, renouvellements Lab $29.99/an
 - Coûts opérationnels : Vercel (~$20/mois), Resend (~$0), Anthropic API (~$0.03-0.10/rapport), Stripe 2.9%+30¢
 
 ### Marché adressable
@@ -84,10 +84,10 @@ Rester en lifestyle solo (A) ou pousser le B2B (B). Les deux sont valides. Le mo
 - Le segment "entre le calculateur gratuit et le planificateur à $3,000" est quasi vide au Canada
 
 ### Pain points marché validés (forums, Reddit, Canadian Money Forum, RFD, 2024-2025)
-1. **"Rien entre trop simple et trop complexe"** — Les outils sont soit des calculateurs à 3 champs, soit des plateformes intimidantes. BuildFi Essentiel à $29 comble ce trou.
+1. **"Rien entre trop simple et trop complexe"** — Les outils sont soit des calculateurs à 3 champs, soit des plateformes intimidantes. BuildFi Bilan Annuel gratuit + Bilan Pro à $19.99 comble ce trou.
 2. **"Tout est fait pour les Américains"** — 401(k), Roth IRA, Social Security. Les Canadiens adaptent ou abandonnent. BuildFi est Canada-native, 13 provinces.
-3. **"Les outils canadiens meurent ou coûtent trop cher"** — Retireware fermé (2021). Naviplan $2,000+/an. Conquest B2B only. Optiml $99-600/an. BuildFi Essentiel = $29 one-time.
-4. **"Le séquencement RRSP/TFSA/NR est LE problème"** — Sujet #1 sur tous les forums. Quand prendre le RPC? Dans quel ordre décaisser? BuildFi Intermédiaire/Expert y répond avec la waterfall + optimiseur.
+3. **"Les outils canadiens meurent ou coûtent trop cher"** — Retireware fermé (2021). Naviplan $2,000+/an. Conquest B2B only. Optiml $99-600/an. BuildFi Bilan Pro = $19.99 one-time.
+4. **"Le séquencement RRSP/TFSA/NR est LE problème"** — Sujet #1 sur tous les forums. Quand prendre le RPC? Dans quel ordre décaisser? BuildFi Bilan Pro et Laboratoire y répondent avec la waterfall + optimiseur.
 5. **"Je ne fais pas confiance aux résultats"** — Les gens comparent 3-4 outils et obtiennent des résultats différents. Fan chart MC + méthodologie transparente + tooltips "Ce que cela signifie" = confiance.
 6. **"55% des Canadiens n'ont pas de plan"** — Marché énorme, sous-desservi.
 7. **"Le français n'existe pas"** — Zéro outil de planification retraite bilingue FR/EN au niveau consommateur.
@@ -111,46 +111,54 @@ Rester en lifestyle solo (A) ou pousser le B2B (B). Les deux sont valides. Le mo
 
 ## 4. PRICING
 
-### Structure confirmée (2026-03-02)
+### Structure confirmée (2026-03-09 — PIVOT)
 | Produit | Prix | Modèle |
 |---------|------|--------|
-| Essentiel | **$29 CAD** | One-time, 1 rapport |
-| Intermédiaire | **$59 CAD** | One-time, 1 rapport |
-| Expert | **$129 CAD** | One-time, simulateur + 5 exports AI |
-| Expert renouvellement | **$29/an** | Simulateur + 3 exports + Bilan Annuel |
-| Export AI additionnel | **$14.99** | 1 rapport avec narration IA |
+| Bilan Annuel | **GRATUIT** | Hub central, projection 5 ans, snapshots, localStorage |
+| Bilan Pro | **$19.99 CAD** | One-time, rapport AI adaptatif (accum OU décaissement) |
+| Laboratoire | **$49.99 CAD** | One-time + $29.99/an renewal, simulateur + BA inclus |
+| Export AI additionnel | **$14.99** | 1 rapport avec narration IA (Laboratoire) |
 
 **Note Stripe**: automatic_tax désactivé. Prix HT, taxes ajoutées au checkout quand inscription TPS/TVQ active.
 
-### Psychologie
-- Decoy: $59 entre $29 et $129. Marqué "POPULAIRE".
-- Upgrade credit: nous créditons l'achat précédent vers le niveau supérieur.
+### Lancement
+| Offre | Code | Limite |
+|-------|------|--------|
+| 50 Bilan Pro gratuits | LAUNCH-BP | Contre review/feedback |
+| 50 Lab à 50% off | LAUNCH-LAB | Early adopters ($24.99) |
 
-### ⚠️ POLITIQUE DE REMBOURSEMENT — AUCUN REMBOURSEMENT
+### Psychologie
+- BA gratuit = acquisition massive, zéro friction
+- Cap 5 ans déterministe = upsell naturel vers Bilan Pro
+- Bilan Pro $19.99 = impulse buy, rachète annuellement
+- Lab $49.99 = 3-10x moins cher que compétition (Optiml $199/an)
+
+### POLITIQUE DE REMBOURSEMENT — AUCUN REMBOURSEMENT
 Produit numérique, livraison instantanée. Si erreur technique → correction/reproduction sans frais. C'est tout. Ne JAMAIS écrire "garantie satisfaction", "30 jours", "sans risque", ou "money-back" nulle part.
 
 ### Bonuses inclus (confirmé 2026-02-27, noms exacts)
 | Bonus | Nom exact | Inclus dans |
 |-------|-----------|------------|
-| Outil interactif de gestion de dettes | debt-tool.jsx (buildfi.ca/outils/dettes) | Essentiel + Intermédiaire |
-| Guide éducatif 101 | "Les bases de vos finances" (13p PDF) | Essentiel |
-| Guide éducatif 201+301 | "Optimiser votre retraite" (19p PDF) | Intermédiaire + Expert |
+| Outil interactif de gestion de dettes | debt-tool.jsx (buildfi.ca/outils/dettes) | Bilan Pro |
+| Guide éducatif 101 | "Les bases de vos finances" (13p PDF) | Bilan Pro |
+| Guide éducatif 201+301 | "Optimiser votre retraite" (19p PDF) | Bilan Pro + Laboratoire |
 
 ---
 
-## 5. PRODUCT POSITIONING (confirmé 2026-02-27)
+## 5. PRODUCT POSITIONING (2026-03-09 — PIVOT)
 
 ### Per-product personas & CTAs
 | Produit | Persona FR | CTA FR | CTA EN |
 |---------|------------|--------|--------|
-| Essentiel | "Vous commencez à planifier" | "Obtenir ma note →" | "Get my grade →" |
-| Intermédiaire | "Vous voulez aller plus loin" | "Analyser ma situation →" | "Analyze my situation →" |
-| Expert | "Tout ce que vous avez toujours cherché" | "Voir le simulateur →" | "See the simulator →" |
+| Bilan Annuel | "Vous voulez savoir où vous en êtes" | "Commencer gratuitement →" | "Start for free →" |
+| Bilan Pro | "Vous voulez savoir si ça tient au-delà de 5 ans" | "Obtenir mon Bilan Pro →" | "Get my Bilan Pro →" |
+| Laboratoire | "Vous voulez explorer et tester vos décisions" | "Accéder au Laboratoire →" | "Access the Lab →" |
 
-### Segmentation rules
-- **Essentiel = personnes seules SEULEMENT.** Couple → minimum Intermédiaire.
-- **Intermédiaire = couples, propriétaires, stratégie fiscale.**
-- **Expert = simulateur complet.** 190+ paramètres, 12 modules, CCPC, stress tests.
+### Segmentation
+- **Bilan Annuel**: Tout le monde. C'est le point d'entrée.
+- **Bilan Pro Accum**: < 55 ans, phase accumulation, couples, propriétaires, CCPC
+- **Bilan Pro Décaissement**: > 55 ans ou retraités, séquencement CPP/OAS, décumulation
+- **Laboratoire**: Power users, gens qui veulent explorer des scénarios, FIRE, CCPC optimisation
 
 ---
 
@@ -185,7 +193,7 @@ Produit numérique, livraison instantanée. Si erreur technique → correction/r
 | Couleur | Hex | Usage |
 |---------|-----|-------|
 | Marine | #1a2744 | Titres, nav |
-| Or | #b8860b | CTAs, premium |
+| Or | #c49a1a | CTAs, premium |
 | Crème | #faf8f4 | Fond |
 | Sable | #e8e4db | Cartes |
 | Forêt | #1a7a4c | Succès |
@@ -194,33 +202,33 @@ Produit numérique, livraison instantanée. Si erreur technique → correction/r
 ### Typo: Newsreader (display) · DM Sans (body) · JetBrains Mono (data)
 
 ### Logo
-- SVG flame logo: /public/logo-light.svg, /public/logo-dark.svg
-- Shared JS: /public/logo.js — logoSVG(size, context)
-- Intégré dans: landing page (JS injection), quiz (inline fallback), email (texte pour l'instant — SVG à intégrer)
+- SVG stacking blocks logo (3 bars): /public/logo-light.svg, /public/logo-dark.svg
+- Shared JS: /public/logo.js — logoSVG(size, context), viewBox 220x48
+- Scale: sm=0.7x md=1.0x lg=1.4x
+- Font: Plus Jakarta Sans 700 (Google Fonts)
+- Intégré dans: landing page (JS injection), quiz (inline fallback), email (texte — SVG non supporté par clients email)
+- Reports: inline SVGs (200x48 header, 140x34 footer) matching logo.js coordinates
 
 ---
 
-## 8. LANDING PAGE STRUCTURE (v9, 2026-02-27)
+## 8. LANDING PAGE STRUCTURE (3 produits — PIVOT 2026-03-09)
 
-1. **Hero** — "Savoir si votre argent va durer." + trust grid intégré
-2. **Trouvez votre bilan** — 3 product cards avec personas, descriptions, features, CTAs différenciés
-3. **Bonus inclus** — Section dédiée: outil de dettes + guides éducatifs
-4. **Aperçu des produits** — Layout 2 colonnes: Essentiel, Intermédiaire, Simulateur Expert
-5. **Prix** — Comparison pricing + table collapsible
-6. **FAQ** — 7 questions (no-refund policy correcte)
-7. **Final CTA**
+1. **Hero** — "Où en êtes-vous financièrement?" + trust grid
+2. **Bilan Annuel** — CTA "Commencer gratuitement" (gratuit, projection 5 ans)
+3. **3 product cards** — BA gratuit / Bilan Pro $19.99 / Laboratoire $49.99
+4. **MC proof point** — "5,000 scénarios" before products
+5. **Comparison table** — 3 colonnes (gratuit / pro / lab)
+6. **FAQ** — 7 questions updated for 3-product model
+7. **Final CTA** — Split: diagnostic (Bilan Pro) + simulator (Laboratoire)
 8. **Footer** — disclaimer AMF, liens légaux
 
-**Supprimé depuis v4**: Proof bar, "Why BuildFi", free tool teaser, testimonials placeholder, redondance "Find your fit" vs "Pricing" (fusionné).
-
-**Audit AMF/BSIF landing v9**: Complété 2026-02-27. 0 terme interdit. Détails dans HANDOFF-LANDING-V9.md.
-
 ---
 
-## 9. COMPÉTITEURS (mis à jour 2026-03-02)
+## 9. COMPÉTITEURS (mis à jour 2026-03-09)
 
 | Compétiteur | Prix | Modèle | Langue | Notre avantage |
 |-------------|------|--------|--------|----------------|
+| **BuildFi** | Gratuit → $49.99 | Hub gratuit + rapport + simulateur | FR/EN natif | Seul avec hub gratuit + MC avancé. One-shot. |
 | **Optiml.ca** | $99–$600/an (sub) | Self-serve plateforme | EN only | One-time + FR + rapport livré + prix 3-12x moins |
 | **ProjectionLab** | $109/an ou $799 lifetime | Self-serve plateforme | EN (presets CA) | Canada-native vs preset + FR + simplicité |
 | **Boldin** | $144/an | Self-serve plateforme | EN only | Canadien + FR + one-time |
@@ -234,23 +242,29 @@ Produit numérique, livraison instantanée. Si erreur technique → correction/r
 
 ### Avantages compétitifs BuildFi (validés par data marché)
 1. **Seul bilingue FR/EN** au niveau consommateur
-2. **One-time $29** vs subscriptions $99-600/an — impulse buy vs commitment
-3. **Rapport livré** vs plateforme self-serve — tangible, partageable, archivable
-4. **AI narration sur-mesure** (DerivedProfile) — personne ne fait ça
-5. **MC robuste** (5K sims, fat tails t-Student, mortalité stochastique CPM 2023)
-6. **Canada-native** (13 provinces, 173 constantes) vs presets internationaux
-7. **Bilan Annuel** (Phase 3) — check-up annuel unique dans le marché
+2. **Gratuit pour commencer** — BA gratuit vs subscriptions $99-600/an
+3. **Bilan Pro $19.99 one-time** — impulse buy vs commitment annuel
+4. **Rapport livré** vs plateforme self-serve — tangible, partageable, archivable
+5. **AI narration sur-mesure** (DerivedProfile) — personne ne fait ça
+6. **MC robuste** (5K sims, fat tails t-Student, mortalité stochastique CPM 2023)
+7. **Canada-native** (13 provinces, 173 constantes) vs presets internationaux
+8. **Hub gratuit + rapport payant** — unique dans le marché canadien
 
 ### Faiblesses honnêtes vs compétiteurs
-- Pas de self-serve interactif (Ess/Inter = rapport statique, Expert = simulateur)
 - Pas d'account linking (Optiml a Wealthica)
-- Pas d'accumulation phase en profondeur (focus décumulation)
 - Pas de communauté (Optiml a support, ProjectionLab a Discord)
 - Pas encore lancé (Optiml = 10,000+ clients, 3 ans d'avance en marché)
 
 ---
 
-## 10. DÉCISIONS STRATÉGIQUES RÉCENTES (2026-02-27)
+## 10. DÉCISIONS STRATÉGIQUES RÉCENTES
+
+### Pivot 4 tiers → 3 produits (2026-03-09)
+- BA gratuit comme hub central — acquisition et rétention
+- Bilan Pro $19.99 — consolidation Essentiel + Intermédiaire + Décaissement
+- Laboratoire $49.99 — rebrand Expert avec prix réduit
+- Outils dettes/allocation gated derrière Bilan Pro
+- Détail complet: docs/PLAN-PIVOT.md
 
 ### Pivot PDF → rapport HTML hébergé
 - Puppeteer + @sparticuz/chromium ne fonctionne pas sur Vercel serverless

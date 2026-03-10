@@ -1,5 +1,6 @@
-# BuildFi Expert Tier — Audit Prompt
+# BuildFi — Audit Prompt
 ## Run at the end of every build session, or any time features ship to main.
+> Updated 2026-03-09 — adapted for 3-product pivot (BA / Bilan Pro / Laboratoire)
 
 You are auditing the BuildFi Expert tier (Laboratoire) for correctness, consistency, and compliance. Do not fix anything yet — produce a prioritized issue list first.
 
@@ -100,6 +101,7 @@ For each canonical URL path (e.g., `/conditions`):
 Search all `href=` values in `app/` and `public/` for `.html` extension links:
 - If a Next.js rewrite exists for that page, the link should use the clean path (e.g., `/expert/landing` not `/expert-landing.html`).
 - Flag: `grep -rn "expert-landing\.html\|bilan\.html\|bilan-360\.html\|horizon\.html" app/`
+- Post-pivot: bilan.html, bilan-360.html, horizon.html are DEPRECATED → should redirect (301) to BA or Bilan Pro landing
 
 ### 4c. Lang param propagation
 For CTAs that link between pages (quiz → landing → merci → simulateur → portal):
@@ -113,7 +115,7 @@ For CTAs that link between pages (quiz → landing → merci → simulateur → 
 ### 5a. Test count claims
 Find all claims about test counts or validation in public-facing copy:
 - `grep -rn "tests automatisés\|automated tests\|tests couvrant\|0 failures" public/ app/`
-- Cross-check each claim against the actual test suite counts in `CLAUDE.md` (current: 453 engine, 200 debt, 91 report-shared, 135 fiscal-sync, 87 expert-translator, 103 S3, 29 S1, 91 S10 = 1,189 total).
+- Cross-check each claim against the actual test suite counts in `CLAUDE.md` (current: 453 engine, 200 debt, 91 report-shared, 135 fiscal-sync, 87 expert-translator, 103 S3, 29 S1, 91 S10 = ~1,189 total).
 - Flag mismatches.
 
 ### 5b. Product capability claims

@@ -1,13 +1,54 @@
 # STATUS.md
-> État actuel du projet + feuille de route. Envoyer ce fichier à Claude en début de session.
-> Mis à jour: 2026-03-08 — v20 (Phase 2 polish, conversion architecture, sync bridge, analytics, report audit, product page CTAs)
+> État actuel du projet. Consulter en début de CHAQUE session.
+> Mis à jour: 2026-03-09 — v21 (PIVOT: 4 tiers → 3 produits)
 
 ## PHASE ACTUELLE
-**ALL 4 TIERS PIPELINE-COMPLETE. Product coherence pass done (naming, sync bridge, mobile UX, analytics). Reste: domain warmup, Inter E2E, Bilan Annuel cron, soft launch.**
+**PIVOT EN COURS.** Migration de 4 tiers (Bilan $29, Bilan 360 $59, Horizon $59, Laboratoire $129) vers 3 produits:
+- **Bilan Annuel** (GRATUIT) — Hub central, net worth tracker, projection 5 ans
+- **Bilan Pro** ($19.99) — Rapport AI adaptatif (accum OU décaissement)
+- **Laboratoire** ($49.99 + $29.99/an) — Simulateur 190 params + BA inclus
+
+**Référence d'exécution: docs/PLAN-PIVOT.md** (168 tâches, 6 phases)
 
 ---
 
-## CE QUI EST FAIT
+## CE QUI CHANGE AVEC LE PIVOT
+
+### Produits deprecated
+| Ancien | Prix | Remplacé par |
+|--------|------|-------------|
+| Bilan (essentiel) | $29 | Bilan Annuel (gratuit) + Bilan Pro ($19.99) |
+| Bilan 360 (intermediaire) | $59 | Bilan Pro accum path ($19.99) |
+| Horizon (decaissement) | $59 | Bilan Pro décaissement path ($19.99) |
+| Laboratoire (expert) | $129 | Laboratoire ($49.99 + $29.99/an) |
+
+### Clés internes INCHANGÉES
+Les internal keys restent: essentiel, intermediaire, decaissement, expert.
+Seul le display text et le routing changent.
+
+### Stripe — anciens prix à remplacer
+Les price IDs actuels (STRIPE_PRICE_ESSENTIEL, STRIPE_PRICE_INTERMEDIAIRE, etc.) pointent vers les anciens prix.
+Nouveaux produits Stripe à créer: Bilan Pro $19.99, Laboratoire $49.99, Laboratoire renewal $29.99/an.
+Voir PLAN-PIVOT.md §Phase 2 pour le détail.
+
+### Infrastructure réutilisée à 100%
+MC engine, report renderers, AI prompts, translators, KV, Blob, Resend, Stripe patterns — tout reste.
+
+---
+
+## PROGRESSION PIVOT
+| Phase | Statut | Ref |
+|-------|--------|-----|
+| 1. Bilan Annuel (hub gratuit) | ⬜ À faire | PLAN-PIVOT.md §Phase 1 |
+| 2. Stripe + Checkout + Webhook | ⬜ À faire | PLAN-PIVOT.md §Phase 2 |
+| 3. Laboratoire (rebrand) | ⬜ À faire | PLAN-PIVOT.md §Phase 3 |
+| 4. Bilan Pro (quiz adaptatif) | ⬜ À faire | PLAN-PIVOT.md §Phase 4 |
+| 5. Site + Landing + Emails | ⬜ À faire | PLAN-PIVOT.md §Phase 5 |
+| 6. Polish + Distribution | ⬜ À faire | PLAN-PIVOT.md §Phase 6 |
+
+---
+
+## CE QUI EST FAIT (pré-pivot — tout fonctionnel, réutilisé par le pivot)
 
 ### Infrastructure (P0)
 | Service | Statut | Notes |
@@ -15,7 +56,7 @@
 | Domaine buildfi.ca | ✅ | Cloudflare DNS, pointe vers Vercel |
 | Vercel | ✅ | Auto-deploy, Next.js 16.1.6 |
 | GitHub tredhedge/buildfi | ✅ | main branch, privé |
-| Stripe | ✅ | Test mode. All 5 products configured (Ess $29, Inter $59, Decum $59, Expert $129, Renewal $29/an, Addon $14.99). Webhook configuré |
+| Stripe | ✅ | Test mode. ANCIENS prix configurés (Ess $29, Inter $59, Decum $59, Expert $129, Renewal $29/an, Addon $14.99). Webhook configuré. **Nouveaux prix à créer pour le pivot.** |
 | Resend | ✅ | Domaine buildfi.ca VERIFIED. Emails delivered. Spam probable (domain warmup needed) |
 | PostHog | ✅ | Key configured in analytics-config.js, wired to all static pages |
 | Vercel Blob | ✅ | Store opérationnel — rapports accessibles par lien email |
@@ -136,7 +177,7 @@
 | S2 | MC fan chart fusion — S6 remplacé par graphe pleine vie (D.age→D.deathAge) en SVG 740×370, utilise `D.pD` rows, marqueur retraite, 5 bandes percentiles (P5→P95), légende, fallback smoothstep | ✅ |
 | S3 | KPI grouping — 11 KPIs en 3 sous-groupes (Patrimoine `.kg4`, Revenus & Succession `.kg4`, Risques `.kg`); `kp()` migré vers classes CSS; callouts `.co.cogn` ajoutés après chaque secH() pour S1/S3/S5/S6/S7/S8 | ✅ |
 | S4 | Observations + best lever — `obs()` 4e param bullets; métriques topic-keyed (gov-coverage/fee-impact/withdrawal-stress/bridge-period/mortgage-retirement/obs_1); callout "Levier le plus efficace" en S8 quand stratégie domine de >2pp | ✅ |
-| S5 | Fixes mineurs — "Groupe d'âge" accent corrigé; Action no 1 restructurée en `.co.cogn` (label→name→why); emoji 🎯 retiré (brand rules) | ✅ |
+| S5 | Fixes mineurs — "Groupe d'âge" accent corrigé; Action no 1 restructurée en `.co.cogn` (label→name→why); emoji retiré (brand rules) | ✅ |
 | Audit | Fix `.kp` CSS — `background:var(--bgc)` manquant sur les cartes KPI non-modifiées (bleu/vert marque) — régression visuelle corrigée | ✅ |
 
 ### Expert Tier — Sessions S1-S10 Complétées (2026-03-02 → 2026-03-04)
@@ -261,93 +302,8 @@
 - **Guides PDF** — 101 (13p) + 201/301 (19p), audit AMF 0 infraction
 - **Landing page v11** — Two product families (diagnostics + simulator), split final CTA, decision helper auto-expand on mobile, product-specific CTAs, DM Sans font
 - **Quiz Essentiel** — Thin client, Stripe intégré, QPP deferral question, single-person only (couple=yes callout)
-- **Logo** — Stacking blocks (3 bars: foundation/building/independence), shared logo.js (single source of truth), light/dark/symbol SVG variants, Plus Jakarta Sans 700, viewBox 220×48, scale factors sm=0.7x md=1.0x lg=1.4x
-- **Brand refresh (2026-03-08)** — Gold #b8860b→#c49a1a everywhere (HTML, CSS, email, reports), Plus Jakarta Sans font, new hero tagline, og-image.png 1200×630, logo defer race condition fixed on all 8 deferred pages
-
----
-
-## BLOQUANTS AVANT LANCEMENT ESSENTIEL (0 restants — ready to launch)
-
-### 1. ~~Vercel Blob → PUBLIC~~ ✅ DONE
-- Rapports accessibles par lien email — vérifié 2026-03-07
-
-### 2. ~~Resend DNS → VÉRIFIÉ~~ ✅ DONE
-- Domaine buildfi.ca: VERIFIED sur Resend — vérifié 2026-03-07
-- Emails delivered (spam probable — domain warmup recommandé)
-
-### 3. ~~ANTHROPIC_API_KEY → Vercel~~ ✅ DONE
-- Clé ajoutée dans Vercel env vars — AI narration opérationnel
-
-### 4. Pages légales (P0.7) — ✅ DONE
-- Conditions, confidentialité, avis légal — mis à jour 2026-03-07
-- Launch pricing ajouté dans conditions
-- Consent banner référencé dans confidentialité
-- Privacy officer: "Le dirigeant de BuildFi Technologies inc." ✅ DONE
-- Terms acceptance checkbox on all quiz pages ✅ DONE
-- "taxes incluses" → "avant taxes applicables" (conditions) ✅ DONE
-- "consentement implicite" → "consentement explicite" (confidentialité) ✅ DONE
-- AMF softening: "Ordre optimal" → "Ordre de retrait modélisé" ✅ DONE
-
-### 5. ~~Magic link URL~~ ✅ FIXED (commit 27f81e9)
-- buildMagicLinkUrl() force www.buildfi.ca pour éviter que le 307 redirect supprime le token
-- Toutes les URLs hardcodées dans reports/tools corrigées
-
-### 6. og-image.png — ✅ DONE
-- Image 1200x630 pour partages sociaux (Reddit, LinkedIn, etc.)
-- Placé dans public/og-image.png (brand refresh 2026-03-08)
-
----
-
-## ROADMAP
-
-### Vue d'ensemble
-| Phase | Titre | Statut |
-|-------|-------|--------|
-| P0 | Infrastructure Web | ✅ Complétée |
-| P1 | Quiz + Rapport Essentiel + Landing | ✅ Launch-ready — Blob ✅, Resend ✅, AI ✅ |
-| P2 | Rapport Intermédiaire + Upsell | ⏳ Server backbone merged, quiz à construire |
-| P3 | Marketing + Légal | ⏳ |
-| P4 | Migration Next.js | ⏳ Partiellement avancée (engine + API déjà en place) |
-| P5 | Scale Consumer | ⏳ An 2-3 |
-| P6 | B2B Planificateurs | ⏳ An 3-5, décision de vie |
-| P7 | Maturité | ⏳ An 5-8 |
-
-**Principe directeur**: Vendre d'abord, migrer ensuite.
-
-### P1 — Prochaines actions (par priorité)
-1. ~~Fix Blob public~~ ✅ Done — rapports accessibles
-2. ~~Resend DNS~~ ✅ Done — domaine vérifié
-3. ~~Add ANTHROPIC_API_KEY to Vercel~~ ✅ Done
-4. ~~Pages légales~~ ✅ Done
-5. ~~Fix magic link www prefix~~ ✅ Done (commit 27f81e9)
-6. Create og-image.png (1200x630) and place in public/
-7. Commit + push all changes
-8. Set up support@buildfi.ca (Cloudflare Email Routing)
-9. Domain warmup (mark emails as not-spam from multiple accounts)
-10. Soft launch organique (Reddit, LinkedIn, cercle privé)
-
-### P2 — Intermédiaire (go/no-go: 30+ ventes Essentiel + upsell > 15%)
-- **Report visual overhaul: COMPLETE** — CSS system, header, MC chart, KPI grouping, obs restructuring (685/685 tests)
-- **Narrative arc: COMPLETE** — bridge() helper, 8 connectors, objective callout, worries badges, S9 verdict, CCPC compare, S16 closing box
-- **Quiz step 7 simplified** — decaissement question removed, engine handles via wStrat=optimal
-- Quiz Intermédiaire thin client — à connecter E2E (quiz existe, checkout pipeline à câbler)
-- Checkout pipeline /api/checkout → webhook → report-html-inter.js — à connecter E2E
-- Server backbone already merged (translator, report, AI prompt, strategies)
-
-### Expert — Sessions S1-S10 ✅ COMPLETE | S11-S14 Post-launch
-- S1 Infra ✅ | S2 Quiz ✅ | S3 API ✅ | S4 Simulateur ✅ | S5 Workflows ✅
-- S6 Reports ✅ | S7 Exports ✅ | S8 Landing ✅ | S9 Compliance ✅ | S10 Audit ✅
-- S11-S14: Post-launch (feedback pipeline, A/B, bilan annuel crons, admin dashboard)
-- Détails: docs/EXPERT-EXECUTION-PLAN.md
-
-### Jalons financiers
-| Jalon | Cible |
-|-------|-------|
-| Première vente | Semaine du lancement |
-| 100 clients | An 1, mois 6-8 |
-| $1,000/mois récurrent | An 1, mois 8-12 |
-| Remplacer 50% salaire gov | An 2 (~$50K/an) |
-| Remplacer 100% salaire gov | An 3 (~$100K/an) |
+- **Logo** — Stacking blocks (3 bars: foundation/building/independence), shared logo.js (single source of truth), light/dark/symbol SVG variants, Plus Jakarta Sans 700, viewBox 220x48, scale factors sm=0.7x md=1.0x lg=1.4x
+- **Brand refresh (2026-03-08)** — Gold #b8860b→#c49a1a everywhere (HTML, CSS, email, reports), Plus Jakarta Sans font, new hero tagline, og-image.png 1200x630, logo defer race condition fixed on all 8 deferred pages
 
 ---
 
@@ -424,7 +380,7 @@ buildfi/
 ## SERVICES EXTERNES
 | Service | État |
 |---------|------|
-| Stripe | ✅ Test mode, webhook fonctionne |
+| Stripe | ✅ Test mode, webhook fonctionne. **Anciens prix — nouveaux à créer pour le pivot.** |
 | Resend | ✅ VERIFIED, emails delivered (domain warmup needed) |
 | Vercel Blob | ✅ Opérationnel, rapports accessibles |
 | Anthropic API | ✅ Operational, key in Vercel |
@@ -435,12 +391,7 @@ buildfi/
 Détails complets: docs/SERVICES.md
 
 ## PROCHAINE SESSION
-1. Set up support@buildfi.ca (Cloudflare Email Routing)
-2. Domain warmup (mark emails as not-spam from multiple accounts)
-3. Soft launch organique (Reddit, LinkedIn, cercle privé)
-4. Inter E2E pipeline — câbler quiz-intermediaire.html → /api/checkout → webhook → report-html-inter.js
-   - Ajouter question `objective` à l'étape 7 du quiz (alimente le callout toujours-on dans le rapport)
-5. Bilan Annuel cron (Expert post-launch — January trigger for active Expert profiles)
-6. S11 Expert post-launch: feedback pipeline, A/B testing
-7. Product page bilingual support (bilan.html, bilan-360.html, horizon.html — currently FR-only)
-8. Referral notification email (webhook tracks conversions but no email sent to referrer)
+1. Phase 1: Intégrer BA JSX v4 dans app/outils/bilan-annuel/page.tsx
+2. Phase 1: Tests BA (projection, localStorage, ratios, PMT)
+3. Phase 1: Cookie consent + PostHog sur BA
+4. Démarrer domain warmup Resend (en parallèle, prend 2-4 semaines)

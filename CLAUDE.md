@@ -1,17 +1,44 @@
 # CLAUDE.md — BuildFi (buildfi.ca)
 
 ## What is this project?
-BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Four tiers: Bilan $29, Bilan 360 $59, Horizon $59, Laboratoire $129. One-time payments (Laboratoire renews $29/year). Anti-bullshit, anti-generic.
+BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte Carlo simulation to generate personalized financial reports. Three products: Bilan Annuel (FREE hub), Bilan Pro ($19.99 one-shot report), Laboratoire ($49.99 + $29.99/yr simulator). Anti-bullshit, anti-generic.
 
-## Product Name Mapping (2026-03-07)
-| Internal key | Customer FR | Customer EN | Subtitle FR | Subtitle EN |
-|---|---|---|---|---|
-| essentiel | Bilan | Snapshot | Votre portrait financier | Your financial portrait |
-| intermediaire | Bilan 360 | Snapshot 360 | Couple, immobilier, fiscalité, succession | Couples, real estate, tax, succession |
-| decaissement | Horizon | Horizon | Planifier vos retraits à la retraite | Plan your retirement withdrawals |
-| expert | Laboratoire | Lab | Tester vos décisions avant d'agir | Test your decisions before acting |
+**PIVOT IN PROGRESS (March 2026)**: Migrating from 4 paid tiers to 3 products with a free hub. Master execution plan: docs/PLAN-PIVOT.md (177 tasks, 6 phases).
+
+## Product Structure (post-pivot)
+| Product | Internal key(s) | Price | What it is |
+|---------|----------------|-------|------------|
+| **Bilan Annuel** (BA) | `bilan_annuel` | FREE | Net worth tracker + 5-year deterministic projection + snapshots + evolution. Hub central. Client-side React. |
+| **Bilan Pro** | `bilan_pro` → routes to `intermediaire` (accum) or `decaissement` (décaissement) | $19.99 one-shot | AI adaptive report. Routing question selects accum or décaissement path. Pré-rempli du BA. Outils dettes + allocation inclus. MC 5,000 sims. |
+| **Laboratoire** | `expert` | $49.99 + $29.99/yr | Full simulator 190 params + BA inclus. Magic link auth. Tornado, backtesting, CPP/OAS optim, CCPC. |
 
 **CRITICAL**: Internal identifiers (env vars, file names, function names, Stripe keys, type values) keep the OLD names (essentiel, intermediaire, decaissement, expert). Only customer-facing display text uses the NEW names.
+
+### What was deprecated
+| Old tier | Old price | What happened |
+|----------|-----------|---------------|
+| Bilan (essentiel) $29 | $29 | Replaced by BA gratuit |
+| Bilan 360 (intermediaire) $59 | $59 | Absorbed into Bilan Pro accum path |
+| Horizon (decaissement) $59 | $59 | Absorbed into Bilan Pro décaissement path |
+| Laboratoire (expert) $129 | $129 | Repriced to $49.99 + $29.99/yr |
+
+### The virtuous cycle
+```
+BA gratuit → "au-delà de 5 ans?" → Bilan Pro $19.99
+                                        ↓
+BA mis à jour → rachète Bilan Pro → données fraîches
+                                        ↓
+"et si je changeais X?" → Laboratoire $49.99
+```
+
+### Key Architectural Decisions (DA-01 to DA-06)
+- **DA-01**: Bilan Pro = routing between existing Inter (accum) and Decum (décaissement) pipelines, NOT a new unified quiz
+- **DA-02**: BA = Next.js page at app/outils/bilan-annuel/page.tsx (not static HTML)
+- **DA-03**: BA → Bilan Pro bridge via localStorage → quiz pre-fill
+- **DA-04**: BA → Laboratoire bridge via localStorage → KV profile seed at checkout
+- **DA-05**: Outils (dettes + allocation) gated behind Bilan Pro — moved from static HTML to app/outils/ as Next.js pages with server-side auth
+- **DA-06**: Internal keys unchanged — `bilan_pro` is NEW type in checkout, routes to `intermediaire` or `decaissement`
+- Full details: docs/PLAN-PIVOT.md §DÉCISIONS ARCHITECTURALES
 
 ## Tech Stack
 - **Framework**: Next.js 16 on Vercel (auto-deploy from main)
@@ -22,16 +49,6 @@ BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS that uses Monte
 - **AI Narration**: Anthropic API claude-sonnet-4 (server-side ONLY, key in Vercel env vars)
 - **Analytics**: PostHog
 
-## Pricing (confirmed 2026-03-07)
-| Tier (internal key) | Display Name | Price | Model |
-|------|------|-------|-------|
-| essentiel | Bilan / Snapshot | $29 one-time ($14.50 with LAUNCH50) | 1 report, 8 sections, AI narration |
-| intermediaire | Bilan 360 / Snapshot 360 | $59 one-time ($29.50 with LAUNCH50) | 1 report, 16 sections, couple, immo, fiscal |
-| decaissement | Horizon | $59 one-time ($29.50 with LAUNCH50) | 1 report, 13 sections, 6 MC runs, 12 AI slots |
-| expert | Laboratoire / Lab | $129 one-time ($64.50 with LAUNCH50) | Simulator unlimited + 5 AI exports |
-| expert renewal | Laboratoire renewal | $29/year | Simulator + 3 AI exports + Bilan Annuel |
-| Export AI addon | — | $14.99 | 1 additional AI report |
-
 ## Repository Structure
 ```
 buildfi/
@@ -40,123 +57,145 @@ buildfi/
 │   │   ├── ai-narrate/route.ts    # Standalone AI narration test endpoint
 │   │   ├── auth/verify/route.ts   # GET — token verification → profile summary
 │   │   ├── auth/magic-link/route.ts # POST — send fresh magic link email
-│   │   ├── checkout/route.ts      # Stripe checkout (report/addon/second types)
+│   │   ├── checkout/route.ts      # Stripe checkout — handles bilan_pro routing + expert + addon
 │   │   ├── referral/generate/route.ts # GET — referral link + stats
 │   │   └── webhook/route.ts       # Stripe webhook → MC/Expert/addon/referral/renewal
-│   ├── expert/                    # Expert tier pages (simulateur, portail, landing)
+│   ├── expert/                    # Laboratoire pages (simulateur, portail, landing)
 │   ├── merci/                     # Post-purchase thank you page
-│   ├── outils/dettes/
-│   │   ├── page.jsx               # Debt tool (1,863 lines, React JSX)
-│   │   └── tests.js               # Inline tests
+│   ├── outils/
+│   │   ├── bilan-annuel/page.tsx  # 🔨 BA hub (React, client-side, localStorage)
+│   │   └── dettes/
+│   │       ├── page.jsx           # Debt tool (1,863 lines, React JSX) — gated behind Bilan Pro
+│   │       └── tests.js           # Inline tests
 │   └── page.tsx                   # Redirect → landing
 ├── lib/
-│   ├── ai-constants.ts            # AI slot names (Ess 13 + Inter 16 + Decum 12), AMF forbidden terms, sanitization
+│   ├── ai-constants.ts            # AI slot names (Inter 16 + Decum 12), AMF forbidden terms, sanitization
 │   ├── ai-profile.ts              # DerivedProfile + RenderPlan (behavioral signals, psych overrides)
-│   ├── ai-prompt-inter.ts         # Intermediaire AI prompt (18 slots, DerivedProfile enrichment)
-│   ├── ai-prompt-decum.ts         # Décaissement AI prompt (12 slots, 9-combo voice, 4 arcs, 7 worry patterns)
+│   ├── ai-prompt-inter.ts         # Bilan Pro Accum AI prompt (18 slots, DerivedProfile enrichment)
+│   ├── ai-prompt-decum.ts         # Bilan Pro Décaissement AI prompt (12 slots, 9-combo voice, 4 arcs)
+│   ├── ai-prompt-expert.ts        # Laboratoire AI prompt
 │   ├── engine/index.js            # MC engine (2,426 lines, 38 exports)
-│   ├── quiz-translator.ts         # Essentiel quiz answers → MC params
-│   ├── quiz-translator-inter.ts   # Intermediaire 85 fields → 120 MC params
-│   ├── quiz-translator-expert.ts  # Expert translator
-│   ├── quiz-translator-decum.ts   # Décaissement translator (continuous QPP factor, GK flexibility)
-│   ├── ai-prompt-expert.ts        # Expert AI prompt
-│   ├── report-shared.ts            # Shared report helpers (grade, color, formatting, probTranslation)
-│   ├── display-utils.ts            # Normalized display formatting helpers
-│   ├── report-html.js             # Essentiel report v6 + buildAIPrompt() (imports report-shared)
-│   ├── report-html-inter.js       # Intermediaire 16-section report (imports report-shared)
-│   ├── report-html-decum.js       # Décaissement 13-section report (imports report-shared)
+│   ├── quiz-translator.ts         # Essentiel quiz answers → MC params (deprecated — was for old Bilan $29)
+│   ├── quiz-translator-inter.ts   # Bilan Pro Accum: 85 fields → 120 MC params
+│   ├── quiz-translator-decum.ts   # Bilan Pro Décaissement: continuous QPP factor, GK flexibility
+│   ├── quiz-translator-expert.ts  # Laboratoire translator
+│   ├── report-shared.ts           # Shared report helpers (grade, color, formatting, probTranslation)
+│   ├── display-utils.ts           # Normalized display formatting helpers
+│   ├── report-html.js             # Essentiel report v6 (deprecated — was for old Bilan $29)
+│   ├── report-html-inter.js       # Bilan Pro Accum: 16-section report (imports report-shared)
+│   ├── report-html-decum.js       # Bilan Pro Décaissement: 13-section report (imports report-shared)
 │   ├── strategies-inter.ts        # 5-strategy comparison engine (500 sims each)
 │   ├── email.ts                   # Resend email templates (table-based, bilingual, tier-aware)
-│   ├── email-expert.ts            # Expert emails: magic link + report delivery
-│   ├── kv.ts                      # Upstash Redis — Expert profiles, referrals, idempotency
+│   ├── email-expert.ts            # Laboratoire emails: magic link + report delivery
+│   ├── kv.ts                      # Upstash Redis — Laboratoire profiles, referrals, idempotency
 │   ├── auth.ts                    # Token verification (query param + Bearer header)
 │   ├── rate-limit.ts              # Sliding-window rate limiting (exports 20/day, recalcs 100/day)
 │   └── pdf-generator.ts           # DISABLED (Puppeteer incompatible with serverless)
 ├── public/
-│   ├── quiz-essentiel.html        # Thin client quiz (zero IP exposed)
-│   ├── quiz-intermediaire.html    # Intermediaire quiz
-│   ├── quiz-expert.html           # Expert quiz (1,323 lines)
-│   ├── quiz-decaissement.html     # Décaissement quiz (13 screens, validateStep, trust badges)
-│   ├── index.html                 # Landing page v9 (4 product cards)
-│   ├── expert.html                # Expert landing page
-│   ├── planner-expert.html        # Expert planner (source of truth for Expert engine)
-│   ├── outils/decaissement-simulateur.html  # Décaissement interactive simulator
+│   ├── quiz-essentiel.html        # DEPRECATED — was for old Bilan $29 tier
+│   ├── quiz-intermediaire.html    # Bilan Pro Accum quiz (to be adapted with routing question)
+│   ├── quiz-expert.html           # Laboratoire quiz (1,323 lines)
+│   ├── quiz-decaissement.html     # Bilan Pro Décaissement quiz (13 screens, validateStep)
+│   ├── index.html                 # Landing page (to be rebuilt for 3-product structure)
+│   ├── expert.html                # Laboratoire landing page
+│   ├── planner-expert.html        # Laboratoire planner (source of truth for engine)
+│   ├── outils/decaissement-simulateur.html  # Décaissement simulator (free, with CTA)
 │   ├── logo.js                    # Shared SVG logo
 │   ├── logo-dark.svg, logo-light.svg
 │   └── robots.txt
 ├── tests/
 │   ├── debt-tool-tests.js         # Debt tool test suite (200 tests)
-│   ├── s1-infrastructure.test.ts  # S1 Expert infra tests (29 tests)
+│   ├── s1-infrastructure.test.ts  # S1 Laboratoire infra tests (29 tests)
 │   ├── s3-api.test.ts             # S3 API simulate/optimize tests (103 tests)
 │   ├── s10-audit.test.ts          # S10 full audit tests (91 tests)
-│   ├── quiz-translator-expert.test.ts  # Expert translator tests (87 tests)
+│   ├── quiz-translator-expert.test.ts  # Laboratoire translator tests (87 tests)
 │   ├── report-shared.test.ts      # Shared report helpers tests (91 tests)
 │   └── fiscal-constants-sync.test.ts  # Engine vs fiscal-2026.ts sync (135 tests)
-├── docs/                          # Project documentation (8 files)
-│   ├── STATUS.md                  # Current state + roadmap — read first each session
+├── docs/                          # Project documentation
+│   ├── PLAN-PIVOT.md              # ⭐ Master execution plan (156 tasks, 6 phases) — READ FIRST
+│   ├── STATUS.md                  # Current state — being updated for pivot
 │   ├── SERVICES.md                # Accounts, DNS, credentials, env vars, payment flows
 │   ├── TECH-REFERENCE.md          # Architecture, code standards, audits, AMF compliance
-│   ├── STRATEGY.md                # Brand, positioning, marketing, competitors, pricing
-│   ├── ARCHITECTURE.md            # Dependency graph, 60+ components, 80+ connections
-│   ├── STRATEGY-EXPERT-PLAN.md    # Expert tier bible — product, pricing, segments, bilan annuel
-│   ├── EXPERT-EXECUTION-PLAN.md   # Expert build sessions S1-S14, audits, manual steps
-│   └── EXPERT-IDENTITY-ALIGNMENT.md # Brand conformity grids per Expert component
+│   ├── STRATEGY.md                # Brand, positioning, pricing, competitors (v7 pivot)
+│   ├── ARCHITECTURE.md            # Dependency graph — being updated for pivot
+│   └── STRATEGY-EXPERT-PLAN.md    # Laboratoire tier spec (22 sections)
 ├── planner.html                   # Source of truth (~15,600 lines, 453 tests)
-├── quiz-essentiel.html            # Root copy (legacy)
-├── quiz-intermediaire.html        # Intermediaire quiz (WIP)
 └── CLAUDE.md                      # This file
 ```
 
 ## Documentation Guide
 | Doc | Purpose | When to read |
 |-----|---------|-------------|
-| **STATUS.md** | What's done, what's blocked, roadmap, next actions | Start of every session |
+| **PLAN-PIVOT.md** | Master execution plan: 156 tasks, 6 phases, dependencies, tracking | Start of EVERY session, before STATUS.md |
+| **STATUS.md** | What's done, what's blocked, historical changelog | Context on what was already built |
 | **SERVICES.md** | DNS, Stripe, Resend, Blob, env vars, payment flows | Infra/deployment tasks |
 | **TECH-REFERENCE.md** | Code standards, audit history, AMF rules | Before writing code |
-| **STRATEGY.md** | Brand voice, competitors, pricing, landing page | Marketing/copy tasks |
-| **ARCHITECTURE.md** | Component dependency graph (67+ nodes) | Before modifying a component |
-| **STRATEGY-EXPERT-PLAN.md** | Expert tier spec (22 sections) — the bible | Expert tier development |
-| **EXPERT-EXECUTION-PLAN.md** | Session-by-session build plan (S1-S14) | Expert tier execution |
-| **EXPERT-IDENTITY-ALIGNMENT.md** | Brand conformity grids per surface | Building visible UI |
+| **STRATEGY.md** | Brand voice, competitors, pricing, landing page (v7 pivot) | Marketing/copy tasks |
+| **ARCHITECTURE.md** | Component dependency graph | Before modifying a component |
+| **STRATEGY-EXPERT-PLAN.md** | Laboratoire tier spec (22 sections) | Laboratoire development |
 
-## Pipeline (Production — Essentiel/Intermediaire)
+## Pipeline — Bilan Pro (Production Target)
 ```
-Quiz thin client (zero IP exposed)
-  → POST /api/checkout → Stripe
-  → Payment → webhook checkout.session.completed
-  → translateToMC(quizAnswers)
-  → runMC(params, 5000) (~2.3s)
-  → extractReportData(mc, params) → object D
-  → buildAIPrompt(D, params, fr, quiz) → {sys, usr}
-  → callAnthropic(sys, usr) → AI slots (or {} if no key / error)
-  → renderReportHTML(D, mc, quiz, lang, ai, costDelay, minReturn)
-  → Vercel Blob upload
-  → Resend email with link
+BA hub (client-side, localStorage)
+  → Client clicks "Bilan Pro" CTA
+  → Routing question: accumulation or décaissement?
+  → Quiz pre-filled from BA data (DA-03)
+  → POST /api/checkout (type: bilan_pro, path: accum|decum)
+  → Stripe Checkout $19.99
+  → webhook checkout.session.completed
+  → Route to correct translator + renderer:
+      Accum: translateToMCInter() → runMC(5000) → report-html-inter.js
+      Decum: translateToMCDecum() → runMC(5000) → report-html-decum.js
+  → callAnthropic() → AI slots
+  → renderReport → Vercel Blob upload → Resend email
 ```
 
-## Décaissement Tier — Key Concepts
-- **Thesis**: Retirement drawdown analysis — "will my money last?" for Canadians already retired or near retirement
-- **6 MC runs**: 1 base (5000 sims) + 2 meltdown (1000 each: year 1 + year 5) + 3 CPP timing (1000 each: age 60/65/70)
-- **13-section report**: SVG donut, profile, trajectory, income, tax efficiency, decum order, flexibility, stress test, CPP timing, succession, observations, hypotheses, methodology
-- **12 AI slots**: snapshot_intro, longevity_context, spending_flex_obs, income_mix_obs, tax_timing_obs, meltdown_obs, cpp_timing_obs, sequence_obs, estate_obs, obs_1, obs_2, obs_3
-- **DerivedProfile + 9-combo voice matrix**: same behavioral profiling as Ess/Inter (ai-profile.ts)
-- **4 narrative arcs**: sustainability, resilience, optimization, caution
+## Pipeline — Laboratoire (Production Target)
+```
+BA hub or direct landing
+  → Quiz Expert (seeds from BA data via DA-04)
+  → POST /api/checkout (type: expert)
+  → Stripe Checkout $49.99
+  → webhook → Magic link → KV profile
+  → Simulator (190 params, unlimited recalcs, MC 1000/5000)
+  → AI exports (5/year, 3/renewal)
+```
+
+## Bilan Pro — Key Concepts
+### Accum Path (via intermediaire pipeline)
+- **16-section report**: couple, immobilier, fiscalité, succession, 5-strategy comparison
+- **18 AI slots**: DerivedProfile enrichment, 9-combo voice matrix
+- **85 quiz fields** → 120 MC params via quiz-translator-inter.ts
+
+### Décaissement Path (via decaissement pipeline)
+- **13-section report**: SVG donut, trajectory, income, tax efficiency, stress test, CPP timing
+- **12 AI slots**: snapshot_intro, longevity, spending, income_mix, tax, meltdown, cpp_timing, sequence, estate, obs_1/2/3
+- **6 MC runs**: 1 base (5000) + 2 meltdown (1000 each) + 3 CPP timing (1000 each)
+- **DerivedProfile + 9-combo voice, 4 narrative arcs, 7 worry patterns**
 - **QPP factor**: continuous formula (7.2%/yr early, 8.4%/yr late) — not 3-entry lookup
-- **GK flexibility**: rigid (gkOn:false), moderate (gkMaxCut:0.20), flexible (gkMaxCut:0.25)
 - **deathAge**: 105 hard cap (stochMort CPM-2023 terminates sims earlier)
-- **Pricing**: $59 base, $29.50 with LAUNCH50
-- **Files**: quiz-decaissement.html, quiz-translator-decum.ts, ai-prompt-decum.ts, report-html-decum.js, ai-constants.ts (AI_SLOTS_DECUM)
 
-## Expert Tier — Key Concepts
-- **Thesis**: Essentiel/Inter sell the answer. Expert sells the capacity to explore.
+## Laboratoire — Key Concepts
+- **Thesis**: BA and Bilan Pro sell the answer. Laboratoire sells the capacity to explore.
 - **Simulator**: Unlimited recalculations, MC 1000 sims (screening) or 5000 (formal exports)
 - **3 Workflows**: "Tester une decision" / "Optimiser automatiquement" / "Bilan Annuel"
 - **Progressive disclosure**: Tabs activated by quiz data + mode guided by segment (Couple/CCPC/Pre-retraite/FIRE)
 - **Auth**: Magic link + Vercel KV, token-based, rate-limited
 - **Exports**: 5 AI exports (year 1), 3 (renewal). Resume 1-page unlimited. Bilan Annuel hors quota.
-- **Bilan Annuel**: January check-up — 7 fields input → MC → 9-page comparative report
+- **Pricing**: $49.99 initial + $29.99/yr renewal
 - **Full spec**: docs/STRATEGY-EXPERT-PLAN.md (22 sections)
-- **Build plan**: docs/EXPERT-EXECUTION-PLAN.md (10 pre-launch + 4 post-launch sessions)
+
+## Bilan Annuel (BA) — Key Concepts
+- **Thesis**: Free hub. Builds trust. Captures real data. Conversion lever to Bilan Pro and Lab.
+- **Client-side React**: app/outils/bilan-annuel/page.tsx (useState, useEffect, useMemo)
+- **Storage**: localStorage key `buildfi_bilan_v4`, JSON export/import
+- **Express mode**: 6 fields, ~60s — revenue/expenses/RRSP/TFSA/debts/age
+- **Full mode**: accounts, properties, debts, mortgages, pension, couple
+- **Projection**: 5-year deterministic (not MC) — `project5Years(data, overrides)`
+- **What-if**: 3 scenarios (increased RRSP, delayed retirement, reduced expenses)
+- **Snapshots**: Save current state, compare year-over-year evolution
+- **MC preview** (conversion CTA): /api/ba-preview — 1,000 sims, returns P10/P90 at 5 years
+- **No login required**: Entirely client-side, no server dependency
 
 ## Critical Rules — READ BEFORE EVERY TASK
 
@@ -177,7 +216,6 @@ Quiz thin client (zero IP exposed)
 - Target: 12/10 — never "good enough"
 - No emoji in UI text, labels, or plans (report icons like data-driven TL;DR are OK)
 - Grade 10 reading level for all client-facing text
-- Zero acronyms in Essentiel tier — write "Regime de rentes du Quebec" not RRQ
 - Province-aware: RRQ (QC) vs RPC (other provinces), CELI vs TFSA
 - Bilingual FR/EN in all text
 - Static fallbacks if Anthropic API fails — report must work without AI
@@ -195,7 +233,8 @@ Quiz thin client (zero IP exposed)
 - AI narration calls go through /api/ backend route, never browser fetch
 - Quiz thin client: zero MC functions client-side
 - Stripe webhook URL: www.buildfi.ca (not buildfi.ca — 307 redirect loses POST body)
-- **MC always server-side** — the engine never runs in the browser (Expert simulator uses /api/simulate)
+- **MC always server-side** — the engine never runs in the browser (Laboratoire simulator uses /api/simulate)
+- **BA is client-side exception** — deterministic projection only, no MC, no API keys
 
 ### Debt Tool Rules
 - **200 tests, 0 failures required** (`node tests/debt-tool-tests.js`)
@@ -206,33 +245,23 @@ Quiz thin client (zero IP exposed)
 ## Brand Voice
 Clear. Warm. Confident. Anti-bullshit. Grade 10 reading level. No price anchoring ("a planner would charge $1,500") inside the tool — that's for marketing only.
 
-### Vocabulary (Expert-specific)
+### Vocabulary
 - "bilan" / "assessment" — NOT "rapport" / "report" (except formal context)
 - "simulateur" / "laboratoire" — NOT "dashboard" / "outil" / "platform"
 - "observations" / "constats" — NOT "recommandations" / "conseils"
 - "leviers identifies" — NOT "plan d'action" / "optimisez"
-- Full vocabulary grid: docs/EXPERT-IDENTITY-ALIGNMENT.md §3.1
 
 ## Current Status (March 2026)
-- **P0.6 COMPLETED** — E2E pipeline validated
-- **AI NARRATION v2 (2026-03-05)** — Voice matrix (9 combos), 8 composite signals, dynamic obs_2, narrative arc, worry combos, FIRE bridge, jargon ban, grade-10 readability
-- **Report v6 MERGED + POLISHED** — 15 rendering improvements applied
-- **Engine audit COMPLETED (2026-03-02)** — 20 bugs fixed, 17 new tests (453/453 pass)
-- **Intermediaire server backbone MERGED** — ai-prompt-inter.ts, quiz-translator-inter.ts, report-html-inter.js
-- **Debt tool UX restructured** — progressive tabs, micro-CTAs, 9 cherry-picks (health signals, guided focus, URL share, print/PDF, mobile bar, info modal), 200/200 tests
-- **Email template refactored** — table-based, AMF compliant, bilingual
-- **Expert planning COMPLETE** — STRATEGY-EXPERT-PLAN v4, EXECUTION-PLAN, IDENTITY-ALIGNMENT all documented
-- **EXPERT S1-S10 COMPLETE (2026-03-04)** — All 10 pre-launch Expert sessions done (29+87+103+91 tests)
-- **Terms acceptance checkbox** — Quebec CPA compliance, 3 quiz pages + checkout API server validation
-- **Cookie consent on quiz pages** — Law 25 compliance, localStorage gate, bilingual
-- **Privacy officer** — "Le dirigeant de BuildFi Technologies inc." designated (Law 25 §3.5)
-- **DÉCAISSEMENT PIPELINE REBUILT (2026-03-07)** — Full rebuild: 12 AI slots, 13-section report, DerivedProfile/9-combo voice, SVG donut, continuous QPP factor, 4 responsive breakpoints, validateStep(), static fallbacks, AMF-compliant
-- **ALL STRIPE KEYS CONFIGURED** — All 6 products (Ess/Inter/Decum/Expert/Renewal/Addon) have price IDs in Vercel env vars
-- **ALL INFRA BLOCKERS RESOLVED** — Blob public ✅, Resend verified ✅, Anthropic key ✅, magic link www ✅
-- **/merci page tier-aware** — Dedicated flows for Ess/Inter/Decum/Expert (steps, tools, upsell, done message)
-- **Feedback/cron pipeline exists** — J+3/J+7/J+14 emails, renewal cycle, anniversary, admin dashboard
-- **REPORT QUALITY OVERHAUL (2026-03-08)** — report-shared.ts extracted (91/91 tests), fiscal-constants-sync.test.ts (135/135), all purple eliminated, renderers import shared module, webhook/kv decaissement tier fixed, AI prompt decum fully rebuilt
-- Next: og-image, domain warmup, Inter E2E, Bilan Annuel cron, S11-S14 post-launch
+- **PIVOT ANNOUNCED (2026-03-09)** — 4 tiers → 3 products. Master plan: docs/PLAN-PIVOT.md
+- **Phase 1 target**: Build Bilan Annuel (BA hub, client-side React, express + full mode)
+- **Phase 2 target**: Stripe/Checkout/Webhook for bilan_pro routing
+- **Phase 3 target**: Laboratoire rebrand ($129 → $49.99)
+- **Phase 4 target**: Bilan Pro quiz routing + pre-fill + tool gating
+- **Phase 5 target**: Site rebuild (landing, emails, /merci)
+- **Phase 6 target**: Polish + distribution (SEO, domain warmup, PWA)
+- **All existing pipelines**: Ess/Inter/Decum/Expert — fully built, tested, deployed (pre-pivot)
+- **Tests**: 200 debt + 453 engine + 91 report-shared + 135 fiscal-sync + 310 expert = ~1,189 total
+- **Infra**: All Stripe keys, Blob, Resend, Anthropic, KV — configured and operational
 
 ## Commands
 ```bash
@@ -242,16 +271,12 @@ node tests/debt-tool-tests.js  # Debt tool tests (200 tests)
 vercel --prod                  # Manual deploy
 ```
 
-### Expert test commands
+### Test commands
 ```bash
-npx jest tests/s1-infrastructure.test.ts   # S1 infra (29 tests)
-npx jest tests/s3-api.test.ts              # S3 API simulate/optimize (103 tests)
-npx jest tests/s10-audit.test.ts           # S10 full audit (91 tests)
-npx jest tests/quiz-translator-expert.test.ts  # Expert translator (87 tests)
-```
-
-### Report & fiscal test commands
-```bash
+npx jest tests/s1-infrastructure.test.ts       # Laboratoire infra (29 tests)
+npx jest tests/s3-api.test.ts                  # API simulate/optimize (103 tests)
+npx jest tests/s10-audit.test.ts               # Full audit (91 tests)
+npx jest tests/quiz-translator-expert.test.ts  # Laboratoire translator (87 tests)
 npx tsx tests/report-shared.test.ts            # Shared helpers (91 tests)
 npx tsx tests/fiscal-constants-sync.test.ts    # Engine vs fiscal-2026.ts (135 tests)
 ```
@@ -270,14 +295,18 @@ npm run build
 
 ## Key Environment Variables
 ```
-STRIPE_SECRET_KEY, STRIPE_PRICE_ESSENTIEL, STRIPE_WEBHOOK_SECRET
-STRIPE_PRICE_INTERMEDIAIRE, STRIPE_PRICE_EXPERT
-STRIPE_PRICE_DECAISSEMENT
-STRIPE_PRICE_EXPERT_RENEWAL, STRIPE_PRICE_EXPORT_ADDON
+STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_BILAN_PRO              # NEW — to be created for $19.99
+STRIPE_PRICE_EXPERT                  # Laboratoire $49.99 (to be updated from $129)
+STRIPE_PRICE_EXPERT_RENEWAL          # Laboratoire renewal $29.99/yr
+STRIPE_PRICE_EXPORT_ADDON            # $14.99 addon
+STRIPE_PRICE_ESSENTIEL               # DEPRECATED — old Bilan $29
+STRIPE_PRICE_INTERMEDIAIRE           # DEPRECATED — old Bilan 360 $59
+STRIPE_PRICE_DECAISSEMENT            # DEPRECATED — old Horizon $59
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, NEXT_PUBLIC_BASE_URL
 RESEND_API_KEY, RESEND_FROM
 BLOB_READ_WRITE_TOKEN
-KV_REST_API_URL, KV_REST_API_TOKEN  # Upstash Redis (Expert profiles, auth, rate limiting)
-ANTHROPIC_API_KEY              # Server-side only — add to Vercel to activate AI narration
+KV_REST_API_URL, KV_REST_API_TOKEN  # Upstash Redis (Laboratoire profiles, auth, rate limiting)
+ANTHROPIC_API_KEY                    # Server-side only
 NEXT_PUBLIC_POSTHOG_KEY
 ```
