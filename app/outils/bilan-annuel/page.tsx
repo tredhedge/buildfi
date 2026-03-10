@@ -379,9 +379,53 @@ export default function BilanAnnuel() {
     const snap = {id:uid(),date:new Date().toISOString().split("T")[0],note:saveNote,...totals};
     setData((p: any) => ({...p,snapshots:[...p.snapshots,snap]}));
     setSaveNote(""); setShowSaveConfirm(false); setShowReminder(true);
+    trackEvent("ba_snapshot_saved", { netWorth: totals.netWorth, snapshotCount: (data.snapshots?.length || 0) + 1 });
   };
 
   const storageUsed = useMemo(() => { if (typeof window === "undefined") return "0"; try { const s = localStorage.getItem(STORAGE_KEY); return s ? (new Blob([s]).size / 1024).toFixed(1) : "0"; } catch { return "?"; } }, [data]);
+
+  // BA-SEC-06: localStorage quota check
+  const [storageError, setStorageError] = useState("");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const used = new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size;
+      if (used > 4.5 * 1024 * 1024) setStorageError(fr ? "Stockage presque plein. Exportez vos données." : "Storage almost full. Export your data.");
+      else setStorageError("");
+    } catch { setStorageError(fr ? "Erreur de stockage" : "Storage error"); }
+  }, [data, fr]);
+
+  // BA-SEC-01: Cookie consent (Law 25)
+  const [showConsent, setShowConsent] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem("buildfi_consent")) setShowConsent(true);
+  }, []);
+  const acceptConsent = useCallback(() => {
+    localStorage.setItem("buildfi_consent", "yes");
+    setShowConsent(false);
+    // BA-SEC-02: Init PostHog after consent
+    if (typeof window !== "undefined" && (window as any).__bf_consentGranted) (window as any).__bf_consentGranted();
+  }, []);
+  const declineConsent = useCallback(() => {
+    localStorage.setItem("buildfi_consent", "no");
+    setShowConsent(false);
+  }, []);
+
+  // BA-SEC-02: PostHog tracking helper
+  const trackEvent = useCallback((name: string, props?: Record<string, any>) => {
+    try {
+      if (typeof window !== "undefined" && localStorage.getItem("buildfi_consent") === "yes" && (window as any).posthog) {
+        (window as any).posthog.capture(name, props);
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  // Track tab changes
+  useEffect(() => { if (tab >= 0) trackEvent("ba_tab_change", { tab: tabs[tab] }); }, [tab, tabs, trackEvent]);
+
+  // BA-SEC-05: XSS sanitize for text labels
+  const sanitize = (s: string) => typeof s === "string" ? s.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c] || c)) : s;
 
   // ═══════════════════════════════════════════════════
   // WELCOME SCREEN (tab === -1)
@@ -615,7 +659,7 @@ export default function BilanAnnuel() {
         <input type="email" value={reminderEmail} onChange={(e: any)=>setReminderEmail(e.target.value)} placeholder={fr?"votre@courriel.ca":"your@email.ca"} aria-label="Email"
           style={{ width:"100%",background:CL.bg,border:`1px solid ${CL.bd}`,borderRadius:RAD.sm,color:CL.al,fontSize:FS.sm,padding:"8px 10px",outline:"none",marginBottom:12,boxSizing:"border-box" }}/>
         <div style={{ display:"flex",gap:8 }}>
-          <button onClick={()=>{up("reminder",{email:reminderEmail,frequency:data.reminder?.frequency||"quarterly",enabled:true});setShowReminder(false);}}
+          <button onClick={()=>{up("reminder",{email:reminderEmail,frequency:data.reminder?.frequency||"quarterly",enabled:true});setShowReminder(false);fetch("/api/ba-reminder/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:reminderEmail,frequency:data.reminder?.frequency||"quarterly",lang:fr?"fr":"en"})}).catch(()=>{});trackEvent("ba_reminder_subscribe",{frequency:data.reminder?.frequency||"quarterly"});}}
             style={{ flex:1,padding:"10px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.md,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer" }}>{fr?"Activer":"Enable"}</button>
           <button onClick={()=>setShowReminder(false)} style={{ padding:"10px 16px",background:"transparent",color:CL.dm,border:`1px solid ${CL.bd}`,borderRadius:RAD.md,fontSize:FS.sm,cursor:"pointer" }}>{fr?"Non merci":"Skip"}</button>
         </div>
@@ -634,7 +678,7 @@ export default function BilanAnnuel() {
           { l:fr?"Valeur nette":"Net worth", v:f$(totals.netWorth), c:totals.netWorth>=0?CL.gn:CL.rd, sub:nd!=null?`${nd>=0?"+":""}${f$(nd)}`:undefined, trend:nd!=null?(nd>0?"up":nd<0?"down":undefined):undefined,
             tip:fr?"Actifs totaux moins passifs totaux. C'est votre richesse réelle.":"Total assets minus total liabilities. Your real wealth." },
           { l:fr?"Actifs":"Assets", v:f$(totals.totalAssets), c:CL.bl, tip:fr?"Somme de vos comptes, propriétés et autres actifs.":"Sum of accounts, properties, and other assets." },
-          { l:fr?"Passifs":"Liabilities", v:f$(totals.totalDebts), c:CL.rd, tip:fr?"Hypothèques + dettes. Ce que vous devez.":"Mortgages + debts. What you owe." },
+          { l:fr?"Passifs":"Liabilities", v:f$(totals.totalDebts), c:CL.rd, tip:fr?"Hypothèques + dettes. Total de vos obligations.":"Mortgages + debts. What you owe." },
           { l:fr?"Endettement":"Debt ratio", v:pct(totals.debtRatio), c:totals.debtRatio>.5?CL.rd:totals.debtRatio>.3?CL.or:CL.gn,
             quality:totals.debtRatio<=.3?{level:"good",text:fr?"Sain (<30%)":"Healthy (<30%)"}:totals.debtRatio<=.5?{level:"watch",text:fr?"À surveiller":"Watch (30-50%)"}:{level:"bad",text:fr?"Élevé (>50%)":"High (>50%)"},
             tip:fr?"Passifs ÷ actifs. Sous 30% = sain. Au-dessus de 50% = élevé.":"Liabilities ÷ assets. Below 30% = healthy. Above 50% = high." },
@@ -940,12 +984,26 @@ export default function BilanAnnuel() {
       <SaveModal show={showSaveConfirm} onConfirm={doSave} onCancel={()=>setShowSaveConfirm(false)} totals={totals} fr={fr}/>
       <InfoModal show={showInfo} onClose={()=>setShowInfo(false)} fr={fr}/>
 
+      {/* BA-SEC-01: Cookie consent banner */}
+      {showConsent && (
+        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9998,background:"rgba(36,32,24,.97)",backdropFilter:"blur(8px)",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:16,flexWrap:"wrap",fontSize:14,color:"rgba(255,255,255,.85)",borderTop:`1px solid ${CL.bd}`}}>
+          <span>{fr?"Ce site utilise des témoins analytiques pour améliorer l'expérience.":"This site uses analytics cookies to improve the experience."}</span>
+          <button onClick={acceptConsent} style={{padding:"8px 20px",border:"none",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:`linear-gradient(135deg,#c49a1a,#d4af37)`,color:"#fff"}}>{fr?"Accepter":"Accept"}</button>
+          <button onClick={declineConsent} style={{padding:"8px 20px",border:"1px solid rgba(255,255,255,.25)",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:"transparent",color:"rgba(255,255,255,.7)"}}>{fr?"Refuser":"Decline"}</button>
+        </div>
+      )}
+
+      {/* BA-SEC-06: Storage warning */}
+      {storageError && <div style={{padding:"8px 16px",background:CL.rd,color:"#fff",fontSize:FS.xs,textAlign:"center"}}>{storageError}</div>}
+
       <div style={{padding:"12px 16px",borderBottom:`1px solid ${CL.bd}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${CL.ac},#d4a856)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="#1a1a2e" strokeWidth={2.5} strokeLinecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
-          </div>
-          <div><div style={{fontSize:FS.lg,fontWeight:FW.bold,color:CL.al,letterSpacing:-.3}}>{fr?"Bilan Annuel":"Balance Sheet"}</div><div style={{fontSize:FS.xxs,color:CL.dm}}>buildfi.ca</div></div>
+          {/* BA-FEAT-06: BuildFi logo (inline SVG matching logo.js) */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="110" height="24" viewBox="0 0 220 48">
+            <g><rect x="0" y="32" width="28" height="8" rx="2" fill={CL.al}/><rect x="4" y="22" width="26" height="8" rx="2" fill={CL.al} opacity={0.5}/><rect x="8" y="12" width="24" height="8" rx="2" fill={CL.ac}/></g>
+            <text x="40" y="38" fontFamily="'DM Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill={CL.al}>build</tspan><tspan fill={CL.ac}>fi</tspan></text>
+          </svg>
+          <div style={{borderLeft:`1px solid ${CL.bd}`,paddingLeft:10,marginLeft:2}}><div style={{fontSize:FS.sm,fontWeight:FW.bold,color:CL.al,letterSpacing:-.3}}>{fr?"Bilan Annuel":"Balance Sheet"}</div></div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{textAlign:"right"}}><div style={{fontSize:20,fontWeight:FW.bold,color:totals.netWorth>=0?CL.gn:CL.rd,fontFamily:"'JetBrains Mono'"}}>{f$(totals.netWorth)}</div><div style={{fontSize:FS.xxs,color:CL.dm}}>{fr?"Valeur nette":"Net worth"}</div></div>
@@ -960,7 +1018,7 @@ export default function BilanAnnuel() {
       </div>
 
       <div style={{textAlign:"center",padding:"14px",borderTop:`1px solid ${CL.bd}`,fontSize:FS.xs,color:CL.dm}}>
-        BuildFi Technologies inc. · <span onClick={()=>setShowInfo(true)} style={{cursor:"pointer",textDecoration:"underline"}}>{fr?"Avis légal":"Legal"}</span> · buildfi.ca
+        BuildFi Technologies inc. · <a href="/avis-legal" style={{color:CL.dm,textDecoration:"underline"}}>{fr?"Avis légal":"Legal"}</a> · <a href="/confidentialite" style={{color:CL.dm,textDecoration:"underline"}}>{fr?"Confidentialité":"Privacy"}</a> · buildfi.ca
       </div>
     </div>
   );
