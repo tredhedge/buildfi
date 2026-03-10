@@ -1,5 +1,5 @@
 "use client";
-// /app/expert/page.tsx — Expert Portal dashboard
+// /app/expert/page.tsx — Laboratoire Portal dashboard
 // Shows: credits, reports history, saved profiles, referral, quick actions
 // Auth: token from query param, same pattern as /simulateur
 

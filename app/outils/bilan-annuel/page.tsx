@@ -5,11 +5,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 // ═══════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ═══════════════════════════════════════════════════════
-const FS = { xxs: 10, xs: 11, sm: 12, base: 13, md: 14, lg: 18, xl: 24, xxl: 30 };
+const FS = { xxs: 11, xs: 12, sm: 13, base: 14, md: 15, lg: 20, xl: 26, xxl: 32 };
 const FW = { normal: 400, medium: 600, bold: 700 };
 const SP: Record<number, number> = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 };
-const RAD = { sm: 4, md: 8, lg: 16 };
-const CL = { bg: "#242018", cd: "#2c2820", s2: "#353028", bd: "#443e34", bd2: "#5a5348", tx: "#d4cec4", al: "#eee8dd", dm: "#b0a898", ac: "#c4944a", bl: "#5a94c4", gn: "#3d9a5e", rd: "#c45050", or: "#c48a40", go: "#b8a440", pr: "#7a60b0", tl: "#48a898" };
+const RAD = { sm: 8, md: 14, lg: 20 };
+const CL = { bg: "#faf8f4", cd: "#ffffff", s2: "#f0ece4", bd: "#e8e0d4", bd2: "#d4cec4", tx: "#333333", al: "#1a2744", dm: "#777777", ac: "#c49a1a", bl: "#2c6fb5", gn: "#1a7a4c", rd: "#b91c1c", or: "#b89830", go: "#b89830", pr: "#6b4fa0", tl: "#2a8a7a" };
 
 const f$ = (v: number | null | undefined) => { if (v == null || isNaN(v)) return "—"; return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v); };
 const f$k = (v: number | null | undefined) => { if (v == null || isNaN(v)) return "—"; const a = Math.abs(v); if (a >= 1e6) return (v < 0 ? "-" : "") + (a / 1e6).toFixed(1) + " M$"; if (a >= 1e3) return (v < 0 ? "-" : "") + Math.round(a / 1e3) + " K$"; return Math.round(v) + " $"; };
@@ -93,14 +93,14 @@ function KPI({ label, value, sub, color, trend, quality, tooltip }: any) {
   const qc: Record<string, string> = { good: CL.gn, watch: CL.or, bad: CL.rd };
   return (
     <div className="ba-kpi" onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}
-      style={{ textAlign: "center", padding: "12px 8px", background: CL.cd, borderRadius: RAD.md, border: `1px solid ${CL.bd}`, borderTop: `3px solid ${color || CL.ac}`, position: "relative", cursor: tooltip ? "help" : "default" }}>
+      style={{ textAlign: "center", padding: "12px 8px", background: CL.cd, borderRadius: RAD.md, border: `1px solid ${CL.bd}`, borderTop: `3px solid ${CL.ac}`, position: "relative", overflow: "visible", cursor: tooltip ? "help" : "default" }}>
       <div style={{ fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: FW.medium, marginBottom: 3 }}>{label}</div>
       <div style={{ fontSize: FS.xl, fontWeight: FW.bold, color: color || CL.al, fontFamily: "'JetBrains Mono', monospace" }}>{value}</div>
       {quality && <div style={{ fontSize: FS.xxs, color: qc[quality.level], fontWeight: FW.medium, marginTop: 2 }}>
         {quality.level === "good" ? "●" : quality.level === "watch" ? "◐" : "○"} {quality.text}</div>}
       {sub && <div style={{ fontSize: FS.xs, color: trend === "up" ? CL.gn : trend === "down" ? CL.rd : CL.dm, marginTop: 3, fontWeight: FW.medium }}>
         {trend === "up" ? "▲ " : trend === "down" ? "▼ " : ""}{sub}</div>}
-      {tooltip && showTip && <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", top: "100%", marginTop: 6, background: CL.s2, border: `1px solid ${CL.bd}`, borderRadius: RAD.md, padding: "8px 12px", fontSize: FS.xs, color: CL.tx, lineHeight: 1.6, width: 240, zIndex: 100, boxShadow: "0 4px 16px rgba(0,0,0,0.4)", textAlign: "left", pointerEvents: "none" }}>
+      {tooltip && showTip && <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: "100%", marginBottom: 6, background: CL.cd, border: `1px solid ${CL.bd}`, borderRadius: RAD.sm, padding: "8px 12px", fontSize: FS.xs, color: CL.tx, lineHeight: 1.6, width: 240, zIndex: 100, boxShadow: "0 4px 16px rgba(0,0,0,0.1)", textAlign: "left", pointerEvents: "none" }}>
         {tooltip}</div>}
     </div>
   );
@@ -144,7 +144,7 @@ function NumInput({ value, onChange, prefix, type, placeholder, ariaLabel }: any
 function Card({ children, title, icon, color, onRemove, defaultCollapsed, summary }: any) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed || false);
   return (
-    <div className="ba-fi" style={{ background: CL.cd, borderRadius: RAD.md, border: `1px solid ${CL.bd}`, borderLeft: `4px solid ${color || CL.ac}`, marginBottom: SP[3], overflow: "hidden" }}>
+    <div className="ba-fi" style={{ background: CL.cd, borderRadius: RAD.md, border: `1px solid ${CL.bd}`, borderLeft: `4px solid ${color || CL.ac}`, marginBottom: SP[3], overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       {title && (
         <div onClick={() => setCollapsed(!collapsed)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: CL.s2, borderBottom: collapsed ? "none" : `1px solid ${CL.bd}`, cursor: "pointer" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
@@ -175,7 +175,7 @@ function TabBar({ tabs, active, onChange }: any) {
       <style>{`.ba-tabs::-webkit-scrollbar{display:none}`}</style>
       {tabs.map((t: string, i: number) => (
         <button key={i} onClick={() => onChange(i)} style={{ padding: "7px 12px", borderRadius: RAD.lg, border: "none",
-          background: active === i ? CL.ac : "transparent", color: active === i ? CL.bg : CL.dm,
+          background: active === i ? CL.ac : "transparent", color: active === i ? "#fff" : CL.dm,
           fontSize: FS.sm, fontWeight: active === i ? FW.bold : FW.medium, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}>{t}</button>
       ))}
     </div>
@@ -229,7 +229,7 @@ function SaveModal({ show, onConfirm, onCancel, totals, fr }: any) {
           ))}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={onConfirm} style={{ flex: 1, padding: "10px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.md, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" }}>
+          <button onClick={onConfirm} style={{ flex: 1, padding: "10px", background: CL.ac, color: "#fff", border: "none", borderRadius: RAD.md, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" }}>
             {fr ? "Sauvegarder" : "Save"}
           </button>
           <button onClick={onCancel} style={{ padding: "10px 16px", background: "transparent", color: CL.dm, border: `1px solid ${CL.bd}`, borderRadius: RAD.md, fontSize: FS.sm, cursor: "pointer" }}>
@@ -437,7 +437,7 @@ export default function BilanAnnuel() {
       <style>{`.ba-fi{animation:bafi .3s ease both}@keyframes bafi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <div className="ba-fi" style={{ maxWidth:480, textAlign:"center" }}>
         <div style={{ width:56,height:56,borderRadius:14,background:`linear-gradient(135deg,${CL.ac},#d4a856)`,margin:"0 auto 16px",display:"flex",alignItems:"center",justifyContent:"center" }}>
-          <svg viewBox="0 0 24 24" width={28} height={28} fill="none" stroke="#1a1a2e" strokeWidth={2}><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <svg viewBox="0 0 24 24" width={28} height={28} fill="none" stroke="#fff" strokeWidth={2}><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
         </div>
         <h1 style={{ fontSize:28,fontWeight:FW.bold,color:CL.al,marginBottom:8 }}>{fr?"Bilan Annuel":"Balance Sheet"}</h1>
         <div style={{ fontSize:FS.sm,color:CL.ac,fontWeight:FW.medium,letterSpacing:1,textTransform:"uppercase",marginBottom:20 }}>buildfi.ca</div>
@@ -452,7 +452,7 @@ export default function BilanAnnuel() {
         </div>
         <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
           <button onClick={() => changeTab(-2)}
-            style={{ padding:"14px 28px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.md,fontSize:FS.md,fontWeight:FW.bold,cursor:"pointer" }}>
+            style={{ padding:"14px 28px",background:CL.ac,color:"#fff",border:"none",borderRadius:RAD.md,fontSize:FS.md,fontWeight:FW.bold,cursor:"pointer" }}>
             {fr ? "Mode express (60 secondes)" : "Express mode (60 seconds)"}
           </button>
           <button onClick={() => {
@@ -491,7 +491,7 @@ export default function BilanAnnuel() {
           <div className="ba-fi">
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${CL.ac},#d4a856)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="#1a1a2e" strokeWidth={2}><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+                <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="#fff" strokeWidth={2}><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
               </div>
               <div>
                 <div style={{ fontSize: FS.lg, fontWeight: FW.bold, color: CL.al }}>{fr ? "Mode express" : "Express mode"}</div>
@@ -533,7 +533,7 @@ export default function BilanAnnuel() {
             </div>
 
             <button onClick={() => setExpressDone(true)}
-              style={{ width: "100%", padding: "14px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.md, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer", marginTop: SP[4] }}>
+              style={{ width: "100%", padding: "14px", background: CL.ac, color: "#fff", border: "none", borderRadius: RAD.md, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer", marginTop: SP[4] }}>
               {fr ? "Voir mon portrait" : "See my portrait"}
             </button>
 
@@ -612,9 +612,9 @@ export default function BilanAnnuel() {
                 fresh.snapshots = [];
                 setData(fresh);
                 setExpressDone(false);
-                changeTab(0);
+                changeTab(1);
               }}
-                style={{ padding: "14px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.md, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer" }}>
+                style={{ padding: "14px", background: CL.ac, color: "#fff", border: "none", borderRadius: RAD.md, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer" }}>
                 {fr ? "Raffiner mon portrait (mode complet)" : "Refine my portrait (full mode)"}
               </button>
 
@@ -626,7 +626,7 @@ export default function BilanAnnuel() {
                   {fr ? "Elle ne teste pas les crashs, l'inflation, la fiscalité ni les revenus gouvernementaux. Le Bilan Pro teste votre situation dans 5,000 scénarios réalistes."
                     : "It doesn't test crashes, inflation, taxes, or government income. Bilan Pro tests 5,000 realistic scenarios."}
                 </div>
-                <button style={{ padding: "10px 24px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" }}>
+                <button style={{ padding: "10px 24px", background: CL.ac, color: "#fff", border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" }}>
                   {fr ? "Bilan Pro — 19,99 $" : "Bilan Pro — $19.99"}
                 </button>
               </div>
@@ -662,7 +662,7 @@ export default function BilanAnnuel() {
           style={{ width:"100%",background:CL.bg,border:`1px solid ${CL.bd}`,borderRadius:RAD.sm,color:CL.al,fontSize:FS.sm,padding:"8px 10px",outline:"none",marginBottom:12,boxSizing:"border-box" }}/>
         <div style={{ display:"flex",gap:8 }}>
           <button onClick={()=>{up("reminder",{email:reminderEmail,frequency:data.reminder?.frequency||"quarterly",enabled:true});setShowReminder(false);fetch("/api/ba-reminder/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:reminderEmail,frequency:data.reminder?.frequency||"quarterly",lang:fr?"fr":"en"})}).catch(()=>{});trackEvent("ba_reminder_subscribe",{frequency:data.reminder?.frequency||"quarterly"});}}
-            style={{ flex:1,padding:"10px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.md,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer" }}>{fr?"Activer":"Enable"}</button>
+            style={{ flex:1,padding:"10px",background:CL.ac,color:"#fff",border:"none",borderRadius:RAD.md,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer" }}>{fr?"Activer":"Enable"}</button>
           <button onClick={()=>setShowReminder(false)} style={{ padding:"10px 16px",background:"transparent",color:CL.dm,border:`1px solid ${CL.bd}`,borderRadius:RAD.md,fontSize:FS.sm,cursor:"pointer" }}>{fr?"Non merci":"Skip"}</button>
         </div>
       </div>
@@ -675,17 +675,17 @@ export default function BilanAnnuel() {
   function renderPortrait() {
     const ls = data.snapshots?.[data.snapshots.length-1]; const nd = ls ? totals.netWorth-ls.netWorth : null;
     return (<div>
-      <div className="ba-kpi-grid" style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5] }}>
+      <div className="ba-kpi-grid" style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5],overflow:"visible" }}>
         {[
-          { l:fr?"Valeur nette":"Net worth", v:f$(totals.netWorth), c:totals.netWorth>=0?CL.gn:CL.rd, sub:nd!=null?`${nd>=0?"+":""}${f$(nd)}`:undefined, trend:nd!=null?(nd>0?"up":nd<0?"down":undefined):undefined,
-            tip:fr?"Actifs totaux moins passifs totaux. C'est votre richesse réelle.":"Total assets minus total liabilities. Your real wealth." },
-          { l:fr?"Actifs":"Assets", v:f$(totals.totalAssets), c:CL.bl, tip:fr?"Somme de vos comptes, propriétés et autres actifs.":"Sum of accounts, properties, and other assets." },
-          { l:fr?"Passifs":"Liabilities", v:f$(totals.totalDebts), c:CL.rd, tip:fr?"Hypothèques + dettes. Total de vos obligations.":"Mortgages + debts. What you owe." },
-          { l:fr?"Endettement":"Debt ratio", v:pct(totals.debtRatio), c:totals.debtRatio>.5?CL.rd:totals.debtRatio>.3?CL.or:CL.gn,
+          { label:fr?"Valeur nette":"Net worth", value:f$(totals.netWorth), color:totals.netWorth>=0?CL.gn:CL.rd, sub:nd!=null?`${nd>=0?"+":""}${f$(nd)}`:undefined, trend:nd!=null?(nd>0?"up":nd<0?"down":undefined):undefined,
+            tooltip:fr?"Actifs totaux moins passifs totaux. C'est votre richesse réelle.":"Total assets minus total liabilities. Your real wealth." },
+          { label:fr?"Actifs":"Assets", value:f$(totals.totalAssets), color:CL.bl, tooltip:fr?"Somme de vos comptes, propriétés et autres actifs.":"Sum of accounts, properties, and other assets." },
+          { label:fr?"Passifs":"Liabilities", value:f$(totals.totalDebts), color:CL.rd, tooltip:fr?"Hypothèques + dettes. Total de vos obligations.":"Mortgages + debts. What you owe." },
+          { label:fr?"Endettement":"Debt ratio", value:pct(totals.debtRatio), color:totals.debtRatio>.5?CL.rd:totals.debtRatio>.3?CL.or:CL.gn,
             quality:totals.debtRatio<=.3?{level:"good",text:fr?"Sain (<30%)":"Healthy (<30%)"}:totals.debtRatio<=.5?{level:"watch",text:fr?"À surveiller":"Watch (30-50%)"}:{level:"bad",text:fr?"Élevé (>50%)":"High (>50%)"},
-            tip:fr?"Passifs ÷ actifs. Sous 30% = sain. Au-dessus de 50% = élevé.":"Liabilities ÷ assets. Below 30% = healthy. Above 50% = high." },
-          { l:fr?"Cotisations/an":"Savings/yr", v:f$(data.accounts.reduce((s: number,a: any)=>s+(a.contribution||0),0)), c:CL.ac, tip:fr?"Total annuel de vos cotisations planifiées.":"Total planned annual contributions." },
-        ].map((k,i) => <div key={i} style={{ animationDelay:`${i*60}ms` }}><KPI {...k} tooltip={k.tip} /></div>)}
+            tooltip:fr?"Passifs ÷ actifs. Sous 30% = sain. Au-dessus de 50% = élevé.":"Liabilities ÷ assets. Below 30% = healthy. Above 50% = high." },
+          { label:fr?"Cotisations/an":"Savings/yr", value:f$(data.accounts.reduce((s: number,a: any)=>s+(a.contribution||0),0)), color:CL.ac, tooltip:fr?"Total annuel de vos cotisations planifiées.":"Total planned annual contributions." },
+        ].map((k,i) => <div key={i} style={{ animationDelay:`${i*60}ms` }}><KPI {...k} /></div>)}
       </div>
 
       <Card title={fr?"Projection 5 ans":"5-Year Projection"} icon="📈" color={CL.ac}>
@@ -699,7 +699,7 @@ export default function BilanAnnuel() {
       <div style={{ display:"flex",gap:SP[2],alignItems:"center",marginTop:SP[3] }}>
         <input type="text" value={saveNote} onChange={(e: any)=>setSaveNote(e.target.value)} placeholder={fr?"Note (ex: après bonus...)":"Note (e.g. after bonus...)"} aria-label="Note"
           style={{ flex:1,background:CL.bg,border:`1px solid ${CL.bd}`,borderRadius:RAD.sm,color:CL.al,fontSize:FS.sm,padding:"10px 12px",outline:"none" }}/>
-        <button onClick={()=>setShowSaveConfirm(true)} style={{ padding:"10px 20px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.md,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer",whiteSpace:"nowrap" }}>
+        <button onClick={()=>setShowSaveConfirm(true)} style={{ padding:"10px 20px",background:CL.ac,color:"#fff",border:"none",borderRadius:RAD.md,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer",whiteSpace:"nowrap" }}>
           {fr?"Sauvegarder":"Save"}
         </button>
       </div>
@@ -778,7 +778,7 @@ export default function BilanAnnuel() {
 
   function renderPassifs() {
     return (<div>
-      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
+      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5],overflow:"visible"}}>
         <KPI label={fr?"Dettes":"Debt"} value={f$(totals.totalDebts)} color={CL.rd} tooltip={fr?"Hypothèques + dettes non-hypothécaires":"Mortgages + non-mortgage debts"}/>
         <KPI label={fr?"Paiements/mois":"Payments/mo"} value={f$(data.debts.reduce((s: number,d: any)=>s+(d.payment||0),0)+data.properties.reduce((s: number,p: any)=>s+(p.mortgage?.autoCalc!==false?calcPMT(p.mortgage?.balance,p.mortgage?.rate,p.mortgage?.amortYears):(p.mortgage?.payment||0)),0))} color={CL.or}/>
         <KPI label={fr?"Endettement":"Debt ratio"} value={pct(totals.debtRatio)} color={totals.debtRatio>.5?CL.rd:CL.or}
@@ -803,13 +803,18 @@ export default function BilanAnnuel() {
         </Card>);
       })}
       <AddButton label={fr?"Ajouter une dette":"Add debt"} onClick={()=>addItem("debts",{id:uid(),type:"loc",label:"",balance:0,rate:.06,termMonths:60,payment:0})}/>
+      <div style={{marginTop:SP[4],padding:"16px",background:"linear-gradient(135deg,rgba(196,154,26,0.06),rgba(196,154,26,0.02))",borderRadius:RAD.md,border:"1px solid rgba(196,154,26,0.15)",textAlign:"center"}}>
+        <div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.al,marginBottom:4}}>{fr?"Votre plan de remboursement optimal":"Your optimal repayment plan"}</div>
+        <div style={{fontSize:FS.sm,color:CL.dm,lineHeight:1.6,marginBottom:SP[3]}}>{fr?"Le Bilan Pro inclut un outil de stratégie dette (avalanche vs boule de neige) avec vos vrais soldes et taux.":"Bilan Pro includes a debt strategy tool (avalanche vs snowball) with your real balances and rates."}</div>
+        <button style={{padding:"10px 24px",background:"linear-gradient(135deg,#c49a1a,#d4af37)",color:"#fff",border:"none",borderRadius:RAD.sm,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer",boxShadow:"0 2px 8px rgba(196,154,26,0.2)"}}>{fr?"Bilan Pro — 19,99 $":"Bilan Pro — $19.99"}</button>
+      </div>
     </div>);
   }
 
   function renderRevenus() {
     const rt=data.properties.filter((p: any)=>p.isRental).reduce((s: number,p: any)=>s+(p.rentalIncome||0)*12,0);
     return (<div>
-      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
+      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:SP[2],marginBottom:SP[5],overflow:"visible"}}>
         <KPI label={fr?"Revenu total/an":"Total/yr"} value={f$((data.income?.salary||0)+rt+(data.income?.otherIncome||0))} color={CL.ac}/>
         <KPI label={fr?"Salaire":"Salary"} value={f$(data.income?.salary||0)} color={CL.bl}/>
         {rt>0&&<KPI label={fr?"Locatifs":"Rental"} value={f$(rt)} color={CL.gn}/>}
@@ -882,7 +887,7 @@ export default function BilanAnnuel() {
         <div style={{padding:"16px",background:"linear-gradient(135deg,rgba(192,138,78,0.08),rgba(192,138,78,0.02))",borderRadius:RAD.md+2,border:`1px solid rgba(192,138,78,0.2)`,textAlign:"center"}}>
           <div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.ac,marginBottom:4}}>{fr?"Au-delà de 5 ans?":"Beyond 5 years?"}</div>
           <div style={{fontSize:FS.xs,color:CL.dm,lineHeight:1.6,marginBottom:8}}>{fr?"Bilan Pro: 5,000 scénarios MC + fiscalité + CPP/OAS":"Bilan Pro: 5,000 MC sims + taxes + CPP/OAS"}</div>
-          <button style={{padding:"8px 20px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.sm,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer"}}>Bilan Pro — 19,99 $</button>
+          <button style={{padding:"8px 20px",background:CL.ac,color:"#fff",border:"none",borderRadius:RAD.sm,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer"}}>Bilan Pro — 19,99 $</button>
         </div>
         <div style={{padding:"16px",background:"linear-gradient(135deg,rgba(90,148,196,0.08),rgba(90,148,196,0.02))",borderRadius:RAD.md+2,border:`1px solid rgba(90,148,196,0.2)`,textAlign:"center"}}>
           <div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.bl,marginBottom:4}}>{fr?"Scénarios illimités?":"Unlimited scenarios?"}</div>
@@ -916,7 +921,7 @@ export default function BilanAnnuel() {
       <Card title={fr?"Exporter / Importer":"Export / Import"} icon="💾" color={CL.bl}>
         <div style={{display:"flex",gap:SP[3],flexWrap:"wrap"}}>
           <button onClick={()=>{const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`buildfi-bilan-${new Date().toISOString().split("T")[0]}.json`;a.click();}}
-            style={{flex:1,padding:"12px",background:CL.ac,color:CL.bg,border:"none",borderRadius:RAD.md,fontSize:FS.md,fontWeight:FW.bold,cursor:"pointer",minWidth:130}}>Export</button>
+            style={{flex:1,padding:"12px",background:CL.ac,color:"#fff",border:"none",borderRadius:RAD.md,fontSize:FS.md,fontWeight:FW.bold,cursor:"pointer",minWidth:130}}>Export</button>
           <label style={{flex:1,padding:"12px",background:CL.s2,color:CL.al,border:`1px solid ${CL.bd}`,borderRadius:RAD.md,fontSize:FS.md,fontWeight:FW.bold,cursor:"pointer",textAlign:"center",minWidth:130}}>
             Import<input type="file" accept=".json" style={{display:"none"}} onChange={(e: any) => {
               const file = e.target.files?.[0];
@@ -975,6 +980,8 @@ export default function BilanAnnuel() {
   // ═══════════════════════════════════════════════════
   return (
     <div style={{fontFamily:"'DM Sans',-apple-system,system-ui,sans-serif",background:CL.bg,color:CL.tx,minHeight:"100vh",WebkitFontSmoothing:"antialiased"}}>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@700&family=Newsreader:wght@400;600;700&display=swap" rel="stylesheet"/>
       <style>{`
         .ba-fi{animation:bafi .25s ease both}
         @keyframes bafi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -988,7 +995,7 @@ export default function BilanAnnuel() {
 
       {/* BA-SEC-01: Cookie consent banner */}
       {showConsent && (
-        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9998,background:"rgba(36,32,24,.97)",backdropFilter:"blur(8px)",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:16,flexWrap:"wrap",fontSize:14,color:"rgba(255,255,255,.85)",borderTop:`1px solid ${CL.bd}`}}>
+        <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9998,background:"rgba(26,39,68,.97)",backdropFilter:"blur(8px)",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:16,flexWrap:"wrap",fontSize:14,color:"rgba(255,255,255,.85)",borderTop:`1px solid ${CL.bd}`}}>
           <span>{fr?"Ce site utilise des témoins analytiques pour améliorer l'expérience.":"This site uses analytics cookies to improve the experience."}</span>
           <button onClick={acceptConsent} style={{padding:"8px 20px",border:"none",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:`linear-gradient(135deg,#c49a1a,#d4af37)`,color:"#fff"}}>{fr?"Accepter":"Accept"}</button>
           <button onClick={declineConsent} style={{padding:"8px 20px",border:"1px solid rgba(255,255,255,.25)",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:"transparent",color:"rgba(255,255,255,.7)"}}>{fr?"Refuser":"Decline"}</button>
@@ -998,12 +1005,12 @@ export default function BilanAnnuel() {
       {/* BA-SEC-06: Storage warning */}
       {storageError && <div style={{padding:"8px 16px",background:CL.rd,color:"#fff",fontSize:FS.xs,textAlign:"center"}}>{storageError}</div>}
 
-      <div style={{padding:"12px 16px",borderBottom:`1px solid ${CL.bd}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{padding:"12px 16px",borderBottom:`1px solid ${CL.bd}`,display:"flex",justifyContent:"space-between",alignItems:"center",background:CL.cd,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           {/* BA-FEAT-06: BuildFi logo (inline SVG matching logo.js) */}
           <svg xmlns="http://www.w3.org/2000/svg" width="110" height="24" viewBox="0 0 220 48">
-            <g><rect x="0" y="32" width="28" height="8" rx="2" fill={CL.al}/><rect x="4" y="22" width="26" height="8" rx="2" fill={CL.al} opacity={0.5}/><rect x="8" y="12" width="24" height="8" rx="2" fill={CL.ac}/></g>
-            <text x="40" y="38" fontFamily="'DM Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill={CL.al}>build</tspan><tspan fill={CL.ac}>fi</tspan></text>
+            <g><rect x="0" y="32" width="28" height="8" rx="2" fill="#1a2744"/><rect x="4" y="22" width="26" height="8" rx="2" fill="#1a2744" opacity="0.5"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c49a1a"/></g>
+            <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill="#1a2744">build</tspan><tspan fill="#c49a1a">fi</tspan></text>
           </svg>
           <div style={{borderLeft:`1px solid ${CL.bd}`,paddingLeft:10,marginLeft:2}}><div style={{fontSize:FS.sm,fontWeight:FW.bold,color:CL.al,letterSpacing:-.3}}>{fr?"Bilan Annuel":"Balance Sheet"}</div></div>
         </div>

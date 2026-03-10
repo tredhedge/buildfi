@@ -6796,28 +6796,58 @@ var reportHTML = useMemo(function() {
   if(!ess)h+='<rect x="'+(svgW-220)+'" y="3" width="6" height="6" fill="#4680c0" rx="1"/><text x="'+(svgW-210)+'" y="9" font-size="8" fill="#777">REER/RRSP</text><rect x="'+(svgW-165)+'" y="3" width="6" height="6" fill="#2a8c46" rx="1"/><text x="'+(svgW-155)+'" y="9" font-size="8" fill="#777">CELI/TFSA</text><rect x="'+(svgW-115)+'" y="3" width="6" height="6" fill="#b89830" rx="1"/><text x="'+(svgW-105)+'" y="9" font-size="8" fill="#777">NR/'+fr?'Autres':'Other'+'</text>';
   h+='</svg>';
 
-  // MC Fan Chart (Standard + Expert) â€” P5/P25/P50/P75/P95 lines
+  // MC Fan Chart (Standard + Expert) — P5/P25/P50/P75/P95 gradient bands
   if (!ess && mc.pD.length > 5) {
-    var _fW = 740, _fH = 120;
-    // Build percentile data from pD if available
-    var _fMax = 1;
-    mc.pD.forEach(function(d){ var v = d.rmp_total || d.mp_total || 0; if (v > _fMax) _fMax = v; });
+    var _fW = 740, _fH = 150;
     var _fPts = mc.pD.filter(function(d,i){return i%2===0;});
-    var _fScale = function(v){ return _fH - 18 - (_fH - 36) * Math.min(1, v / _fMax); };
-    var _fX = function(i){ return 62 + i * ((_fW - 72) / _fPts.length); };
-    // P50 line (solid gold)
-    var _p50 = _fPts.map(function(d,i){ return (i===0?'M':'L')+_fX(i)+','+_fScale(d.rmp_total||d.mp_total||0).toFixed(1); }).join('');
+    // Determine max from P95 to scale correctly
+    var _fMax = 1;
+    _fPts.forEach(function(d){ var v = Math.max(d.rp95||d.p95||0, d.rp50||d.p50||d.rmp_total||d.mp_total||0); if (v > _fMax) _fMax = v; });
+    var _fScale = function(v){ return _fH - 18 - (_fH - 36) * Math.min(1, Math.max(0, v) / _fMax); };
+    var _fX = function(i){ return 62 + i * ((_fW - 72) / Math.max(1, _fPts.length)); };
+    // Build forward+reverse path for each band (area between two percentile lines)
+    var _fBandPath = function(upperKey, lowerKey) {
+      var fwd = '', rev = '';
+      for (var _bi = 0; _bi < _fPts.length; _bi++) {
+        var d = _fPts[_bi];
+        var uV = d[upperKey] || 0, lV = d[lowerKey] || 0;
+        var x = _fX(_bi).toFixed(1);
+        fwd += (_bi === 0 ? 'M' : 'L') + x + ',' + _fScale(uV).toFixed(1);
+        rev = 'L' + x + ',' + _fScale(lV).toFixed(1) + rev;
+      }
+      // Close: last point of upper → reverse along lower → back to start
+      return fwd + rev + 'Z';
+    };
+    // Gradient bands: P5-P25 (risk/salmon), P25-P50 (amber), P50-P75 (light green), P75-P95 (green)
+    var _fBands = '';
+    _fBands += '<path d=”' + _fBandPath('rp95', 'rp75') + '” fill=”#2a8c46” opacity=”0.12”/>';
+    _fBands += '<path d=”' + _fBandPath('rp75', 'rp50') + '” fill=”#2a8c46” opacity=”0.20”/>';
+    _fBands += '<path d=”' + _fBandPath('rp50', 'rp25') + '” fill=”#c49a1a” opacity=”0.18”/>';
+    _fBands += '<path d=”' + _fBandPath('rp25', 'rp5') + '” fill=”#cc4444” opacity=”0.14”/>';
+    // P50 median line (solid gold)
+    var _p50 = _fPts.map(function(d,i){ return (i===0?'M':'L')+_fX(i).toFixed(1)+','+_fScale(d.rp50||d.p50||d.rmp_total||d.mp_total||0).toFixed(1); }).join('');
+    // P5 and P95 boundary lines (faint dashed)
+    var _p5Line = _fPts.map(function(d,i){ return (i===0?'M':'L')+_fX(i).toFixed(1)+','+_fScale(d.rp5||d.p5||0).toFixed(1); }).join('');
+    var _p95Line = _fPts.map(function(d,i){ return (i===0?'M':'L')+_fX(i).toFixed(1)+','+_fScale(d.rp95||d.p95||0).toFixed(1); }).join('');
     // Y axis
     var _fYL = '';
-    [0,.5,1].forEach(function(f3){ var yy = _fScale(_fMax*f3); _fYL += '<line x1="60" x2="'+_fW+'" y1="'+yy.toFixed(1)+'" y2="'+yy.toFixed(1)+'" stroke="#e8e0d4" stroke-width="0.5"/><text x="36" y="'+(yy+3).toFixed(1)+'" font-size="8" fill="#777" text-anchor="end" font-family="JetBrains Mono,monospace">'+fD(Math.round(_fMax*f3))+'</text>'; });
+    [0,.5,1].forEach(function(f3){ var yy = _fScale(_fMax*f3); _fYL += '<line x1=”60” x2=”'+_fW+'” y1=”'+yy.toFixed(1)+'” y2=”'+yy.toFixed(1)+'” stroke=”#e8e0d4” stroke-width=”0.5”/><text x=”36” y=”'+(yy+3).toFixed(1)+'” font-size=”8” fill=”#777” text-anchor=”end” font-family=”JetBrains Mono,monospace”>'+fD(Math.round(_fMax*f3))+'</text>'; });
     // X labels
     var _fXL = '';
-    _fPts.forEach(function(d,i){ if(d.age%10===0||d.age===retAge) _fXL+='<text x="'+_fX(i)+'" y="'+(_fH-2)+'" font-size="8" fill="#777" text-anchor="middle" font-family="JetBrains Mono,monospace">'+d.age+'</text>'; });
+    _fPts.forEach(function(d,i){ if(d.age%10===0||d.age===retAge) _fXL+='<text x=”'+_fX(i).toFixed(1)+'” y=”'+(_fH-2)+'” font-size=”8” fill=”#777” text-anchor=”middle” font-family=”JetBrains Mono,monospace”>'+d.age+'</text>'; });
     // Retirement line
     var _retI = _fPts.findIndex(function(d){return d.age>=retAge;});
-    var _fRetL = _retI >= 0 ? '<line x1="'+_fX(_retI)+'" x2="'+_fX(_retI)+'" y1="5" y2="'+(_fH-15)+'" stroke="#c49a1a" stroke-dasharray="3,2" stroke-width="1"/>' : '';
-    h += '<div style="margin-top:10px"><div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px">'+(fr?'Trajectoire m\u00e9diane du patrimoine (r\u00e9el)':'Median wealth trajectory (real)')+'</div>';
-    h += '<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 '+_fW+' '+_fH+'" style="border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9">'+_fYL+_fRetL+'<path d="'+_p50+'" fill="none" stroke="#c49a1a" stroke-width="2"/>'+_fXL+'</svg></div>';
+    var _fRetL = _retI >= 0 ? '<line x1=”'+_fX(_retI).toFixed(1)+'” x2=”'+_fX(_retI).toFixed(1)+'” y1=”5” y2=”'+(_fH-15)+'” stroke=”#c49a1a” stroke-dasharray=”3,2” stroke-width=”1”/>' : '';
+    // Legend
+    var _fLeg = '<g font-size=”7” font-family=”JetBrains Mono,monospace”>'
+      + '<rect x=”62” y=”2” width=”8” height=”6” rx=”1” fill=”#cc4444” opacity=”0.35”/><text x=”73” y=”7” fill=”#888”>P5-P25</text>'
+      + '<rect x=”110” y=”2” width=”8” height=”6” rx=”1” fill=”#c49a1a” opacity=”0.4”/><text x=”121” y=”7” fill=”#888”>P25-P50</text>'
+      + '<rect x=”162” y=”2” width=”8” height=”6” rx=”1” fill=”#2a8c46” opacity=”0.45”/><text x=”173” y=”7” fill=”#888”>P50-P75</text>'
+      + '<rect x=”218” y=”2” width=”8” height=”6” rx=”1” fill=”#2a8c46” opacity=”0.25”/><text x=”229” y=”7” fill=”#888”>P75-P95</text>'
+      + '<line x1=”276” x2=”290” y1=”5” y2=”5” stroke=”#c49a1a” stroke-width=”2”/><text x=”294” y=”7” fill=”#888”>'+(fr?'M\u00e9diane':'Median')+'</text>'
+      + '</g>';
+    h += '<div style=”margin-top:10px”><div style=”font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px”>'+(fr?'\u00c9ventail du patrimoine (r\u00e9el) \u2014 P5 \u00e0 P95':'Wealth fan chart (real) \u2014 P5 to P95')+'</div>';
+    h += '<svg xmlns=”http://www.w3.org/2000/svg” width=”100%” viewBox=”0 0 '+_fW+' '+_fH+'” style=”border:1px solid #e8e0d4;border-radius:6px;background:#fefcf9”>'+_fYL+_fBands+'<path d=”'+_p5Line+'” fill=”none” stroke=”#cc4444” stroke-width=”0.5” stroke-dasharray=”2,2” opacity=”0.5”/><path d=”'+_p95Line+'” fill=”none” stroke=”#2a8c46” stroke-width=”0.5” stroke-dasharray=”2,2” opacity=”0.5”/>'+_fRetL+'<path d=”'+_p50+'” fill=”none” stroke=”#c49a1a” stroke-width=”2”/>'+_fXL+_fLeg+'</svg></div>';
   }
 
   // Milestone table
@@ -8819,7 +8849,7 @@ React.createElement(Sec, { t: lang === "fr" ? "\u2699\ufe0f Mod\u00e8le & Simula
     return React.createElement("button", { key: kl[0], onClick: function() {
       setStWhen(kl[0]);
     }, style: { flex: 1, background: stWhen === kl[0] ? CL.ac : "transparent", color: stWhen === kl[0] ? CL.bg : CL.dm, border: "1px solid " + (stWhen === kl[0] ? CL.ac : CL.bd), borderRadius: RAD.sm, padding: "3px 4px", fontSize: FS.base, cursor: "pointer", fontWeight: stWhen === kl[0] ? 600 : 400 } }, kl[1]);
-  })), stWhen === "age" && React.createElement(Field, { l: lang === "fr" ? "\u00c2ge du choc" : "Shock age" }, React.createElement(Slider, { v: stAge, set: setStAge, mn: 30, mx: 85 })), stWhen === "before" && React.createElement(Field, { l: lang === "fr" ? "Ann\u00e9es avant retraite" : "Years before retirement" }, React.createElement(Slider, { v: stAge, set: setStAge, mn: 1, mx: 15 })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, stWhen === "ret" ? lang === "fr" ? "Le choc frappe \u00e0 " + retAge + " ans (SORR \u2014 pire moment pour les retraits)." : "Shock hits at age " + retAge + " (SORR \u2014 worst time for withdrawals)." : stWhen === "now" ? lang === "fr" ? "Le choc frappe imm\u00e9diatement \u00e0 " + age + " ans." : "Shock hits immediately at age " + age + "." : stWhen === "age" ? lang === "fr" ? "Le choc frappe \u00e0 " + stAge + " ans." : "Shock hits at age " + stAge + "." : lang === "fr" ? "Le choc frappe " + stAge + " ans avant la retraite (" + Math.max(age, retAge - stAge) + " ans)." : "Shock hits " + stAge + " years before retirement (age " + Math.max(age, retAge - stAge) + ")."), React.createElement("select", { value: strs, onChange: function(e) { setSTS(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "5px 8px", fontSize: FS.base, cursor: "pointer" } },
+  })), stWhen === "age" && React.createElement(Field, { l: lang === "fr" ? "\u00c2ge du choc" : "Shock age" }, React.createElement(Slider, { v: stAge, set: setStAge, mn: 30, mx: 85 })), stWhen === "before" && React.createElement(Field, { l: lang === "fr" ? "Ann\u00e9es avant retraite" : "Years before retirement" }, React.createElement(Slider, { v: stAge, set: setStAge, mn: 1, mx: 15 })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, stWhen === "ret" ? lang === "fr" ? "Le choc frappe \u00e0 " + retAge + " ans (SORR \u2014 pire moment pour les retraits)." : "Shock hits at age " + retAge + " (SORR \u2014 worst time for withdrawals)." : stWhen === "now" ? lang === "fr" ? "Le choc frappe imm\u00e9diatement \u00e0 " + age + " ans." : "Shock hits immediately at age " + age + "." : stWhen === "age" ? lang === "fr" ? "Le choc frappe \u00e0 " + stAge + " ans." : "Shock hits at age " + stAge + "." : lang === "fr" ? "Le choc frappe " + stAge + " ans avant la retraite (" + Math.max(age, retAge - stAge) + " ans)." : "Shock hits " + stAge + " years before retirement (age " + Math.max(age, retAge - stAge) + ")."), React.createElement("div", { style: { display: "flex", gap: 4, marginBottom: 6, flexWrap: "wrap" } }, [["crash08", lang === "fr" ? "Crise 2008" : "2008 Crisis", "#cc4444"], ["covid", "COVID 2020", "#c49a1a"], ["dotcom", lang === "fr" ? "Bulle 2000" : "Dot-com 2000", "#4680c0"]].map(function(sc) { var isAct = strs === sc[0]; return React.createElement("button", { key: sc[0], onClick: function() { setSTS(isAct ? "none" : sc[0]); }, style: { flex: 1, padding: "5px 6px", fontSize: FS.sm, fontWeight: FW.bold, background: isAct ? sc[2] : "transparent", color: isAct ? "#fff" : sc[2], border: "2px solid " + sc[2] + (isAct ? "" : "80"), borderRadius: RAD.md + 2, cursor: "pointer", transition: "all 0.15s", minWidth: 80, textAlign: "center", letterSpacing: 0.2, lineHeight: 1.2 } }, sc[1]); })), React.createElement("select", { value: strs, onChange: function(e) { setSTS(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "5px 8px", fontSize: FS.base, cursor: "pointer" } },
     Object.keys(STR).map(function(k) {
       return React.createElement("option", { key: k, value: k }, lang === "fr" ? STR[k].n : STR[k].ne);
     })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3, background: CL.cd, padding: 6, borderRadius: RAD.sm, border: "1px solid " + CL.bd } }, lang === "fr" ? STR[strs].d : STR[strs].de), strs !== "none" && React.createElement("div", { style: { marginBottom: 8, background: CL.s2, borderRadius: RAD.sm + 2, padding: 8, border: "1px solid " + CL.bd } }, React.createElement("div", { style: { fontSize: FS.base, fontWeight: FW.medium, color: CL.ac, marginBottom: 4 } }, lang === "fr" ? "Param\u00e8tres du sc\u00e9nario" : "Scenario Parameters", ": ", lang === "fr" ? (STR[strs] || {}).n : (STR[strs] || {}).ne), React.createElement("div", { style: { display: "grid", gridTemplateColumns: "40px 1fr 1fr 1fr", gap: 2, fontSize: FS.base, marginBottom: 4 } }, React.createElement("span", { style: { color: CL.dm } }, lang === "fr" ? "An" : "Yr"), React.createElement("span", { style: { color: CL.rd, textAlign: "center" } }, lang === "fr" ? "Actions" : "Equity"), React.createElement("span", { style: { color: CL.tx, textAlign: "center" } }, lang === "fr" ? "Oblig." : "Bonds"), React.createElement("span", { style: { color: CL.or, textAlign: "center" } }, lang === "fr" ? "Inflation" : "Inflation")), (strs === "custom" ? custStrs : (STR[strs] || { eq: [] }).eq || []).map(function(v, ci2) {
@@ -8860,7 +8890,7 @@ React.createElement(Sec, { t: lang === "fr" ? "\u2699\ufe0f Mod\u00e8le & Simula
     var bd2 = (STR[strs2] || {}).bd || [];
     var inf2 = (STR[strs2] || {}).inf || [];
     return React.createElement("div", { key: ci3, style: { display: "grid", gridTemplateColumns: "40px 1fr 1fr 1fr", gap: 2 } }, React.createElement("span", { style: { fontSize: FS.base, color: CL.dm } }, ci3 + 1), React.createElement("span", { style: { fontSize: FS.base, color: v < 0 ? CL.rd : CL.gn, textAlign: "center" } }, (v * 100).toFixed(0), "%"), React.createElement("span", { style: { fontSize: FS.base, color: (bd2[ci3] || 0) < 0 ? CL.rd : CL.bl, textAlign: "center" } }, ((bd2[ci3] || 0) * 100).toFixed(1), "%"), React.createElement("span", { style: { fontSize: FS.base, color: CL.or, textAlign: "center" } }, ((inf2[ci3] || 0) * 100).toFixed(1), "%"));
-  }))), mode === "expert" && React.createElement(React.Fragment, null, React.createElement("div", { style: { height: 4 } }), React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Risques et cr\u00e9dits (Expert)" : "Risks & credits (Expert)"), React.createElement(Field, { l: lang === "fr" ? "Dons bienfaisance/an" : "Charitable giving/yr" }, React.createElement(NumField, { v: donAnn, set: setDonAnn, step: 500 })), donAnn > 0 && React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Cr\u00e9dit ~" + Math.round(donAnn * 0.40) + "$/an" : "Credit ~$" + Math.round(donAnn * 0.40) + "/yr"), React.createElement(Field, { l: lang === "fr" ? "Volatilit\u00e9 salariale" : "Salary volatility" }, React.createElement(Slider, { v: salVol, set: setSalVol, mn: 0, mx: 0.40 })), salVol > 0 && React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Salaire \u00b1" + Math.round(salVol * 100) + "% al\u00e9atoire/an (avant retraite)" : "Salary \u00b1" + Math.round(salVol * 100) + "% random/yr (pre-retirement)"), React.createElement(Field, { l: lang === "fr" ? "Prob. invalidit\u00e9/an" : "Disability prob/yr" }, React.createElement(Slider, { v: disabProb, set: setDisabProb, mn: 0, mx: 0.10 })), disabProb > 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "Dur\u00e9e invalidit\u00e9 (mois)" : "Disability (months)" }, React.createElement(Slider, { v: disabMo, set: setDisabMo, mn: 1, mx: 12 })), React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Si invalide: perte " + Math.round(disabMo / 12 * 100) + "% du revenu cette ann\u00e9e" : "If disabled: lose " + Math.round(disabMo / 12 * 100) + "% of income that year"))), React.createElement(Field, { l: lang === "fr" ? "Simulations Monte Carlo" : "Monte Carlo Simulations", tip: TIP.monteCarloDesc }, React.createElement(Slider, { v: nSim, set: function(v){ sNS(Math.round(v)); }, mn: 1000, mx: 10000, step: 500 })), React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginTop: 2 } }, nSim >= 3000 ? (lang==="fr"?"\u26a0 " + nSim + " sims \u2014 calcul plus lent (~" + Math.round(nSim/1000) + "s). 1 000\u20142 000 pour usage courant.":"\u26a0 " + nSim + " sims \u2014 slower (~" + Math.round(nSim/1000) + "s). 1,000\u20142,000 for daily use.") : (lang==="fr"?"1 000\u20142 000 pour usage courant. 5 000+ pour analyse finale.":"1,000\u20142,000 for daily use. 5,000+ for final analysis."))),
+  }))), mode === "expert" && React.createElement(React.Fragment, null, React.createElement("div", { style: { height: 4 } }), React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Risques et cr\u00e9dits (Laboratoire)" : "Risks & credits (Lab)"), React.createElement(Field, { l: lang === "fr" ? "Dons bienfaisance/an" : "Charitable giving/yr" }, React.createElement(NumField, { v: donAnn, set: setDonAnn, step: 500 })), donAnn > 0 && React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Cr\u00e9dit ~" + Math.round(donAnn * 0.40) + "$/an" : "Credit ~$" + Math.round(donAnn * 0.40) + "/yr"), React.createElement(Field, { l: lang === "fr" ? "Volatilit\u00e9 salariale" : "Salary volatility" }, React.createElement(Slider, { v: salVol, set: setSalVol, mn: 0, mx: 0.40 })), salVol > 0 && React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Salaire \u00b1" + Math.round(salVol * 100) + "% al\u00e9atoire/an (avant retraite)" : "Salary \u00b1" + Math.round(salVol * 100) + "% random/yr (pre-retirement)"), React.createElement(Field, { l: lang === "fr" ? "Prob. invalidit\u00e9/an" : "Disability prob/yr" }, React.createElement(Slider, { v: disabProb, set: setDisabProb, mn: 0, mx: 0.10 })), disabProb > 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "Dur\u00e9e invalidit\u00e9 (mois)" : "Disability (months)" }, React.createElement(Slider, { v: disabMo, set: setDisabMo, mn: 1, mx: 12 })), React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang === "fr" ? "Si invalide: perte " + Math.round(disabMo / 12 * 100) + "% du revenu cette ann\u00e9e" : "If disabled: lose " + Math.round(disabMo / 12 * 100) + "% of income that year"))), React.createElement(Field, { l: lang === "fr" ? "Simulations Monte Carlo" : "Monte Carlo Simulations", tip: TIP.monteCarloDesc }, React.createElement(Slider, { v: nSim, set: function(v){ sNS(Math.round(v)); }, mn: 1000, mx: 10000, step: 500 })), React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginTop: 2 } }, nSim >= 3000 ? (lang==="fr"?"\u26a0 " + nSim + " sims \u2014 calcul plus lent (~" + Math.round(nSim/1000) + "s). 1 000\u20142 000 pour usage courant.":"\u26a0 " + nSim + " sims \u2014 slower (~" + Math.round(nSim/1000) + "s). 1,000\u20142,000 for daily use.") : (lang==="fr"?"1 000\u20142 000 pour usage courant. 5 000+ pour analyse finale.":"1,000\u20142,000 for daily use. 5,000+ for final analysis."))),
 React.createElement("div", { style: { background: CL.s2, borderRadius: RAD.sm + 2, padding: "8px 10px", marginTop: 10, border: "1px solid " + CL.bd, fontSize: FS.base, lineHeight: 1.8 } },
   React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: 4 } }, lang === "fr" ? "R\u00e9sum\u00e9" : "Summary"),
   React.createElement("div", { style: { color: CL.dm } },
@@ -9283,10 +9313,12 @@ React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, textTransfo
     var allElems = [];
     // Group labels
     var groups = [
-      { label: lang==="fr"?"Comprendre":"Understand", ids: ["metr","flux","proj"] },
-      { label: lang==="fr"?"D\u00e9tailler":"Detail", ids: ["patri","fisc","immo"] },
-      { label: lang==="fr"?"Optimiser":"Optimize", ids: ["sens","optim","strat","biz"] },
-      { label: lang==="fr"?"R\u00e9f\u00e9rence":"Reference", ids: ["guide","data"] }
+      { label: lang==="fr"?"Qui \u00eates-vous":"Who you are", ids: ["metr"] },
+      { label: lang==="fr"?"Combien gagnez-vous":"Your income", ids: ["flux"] },
+      { label: lang==="fr"?"Combien avez-vous":"What you have", ids: ["patri","fisc","immo"] },
+      { label: lang==="fr"?"Combien d\u00e9pensez-vous":"Your spending", ids: ["proj"] },
+      { label: lang==="fr"?"Que voulez-vous savoir":"What you want to know", ids: ["sens","optim","strat","biz"] },
+      { label: lang==="fr"?"Hypoth\u00e8ses et r\u00e9f\u00e9rence":"Assumptions & reference", ids: ["guide"] }
     ];
     groups.forEach(function(grp, gi) {
       var grpNavs = visNav.filter(function(n) { return grp.ids.indexOf(n.id) >= 0; });
@@ -15628,8 +15660,8 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
       E("div", null,
         E("div", { style: { fontSize: FS.md, color: CL.dm, lineHeight: 1.9 } },
           lang === "fr"
-            ? "\u2022 Les rendements historiques ne garantissent pas les rendements futurs\n\u2022 L'inflation est mod\u00e9lis\u00e9e uniform\u00e9ment (sauf multiplicateurs sant\u00e9/logement)\n\u2022 Le SRG est une approximation (sans les d\u00e9ductions sp\u00e9cifiques d\u00e9taill\u00e9es)\n\u2022 Dons: cr\u00e9dit estim\u00e9 (Expert), pas les r\u00e8gles de report 5 ans\n\u2022 Invalidit\u00e9: perte de revenu simplifi\u00e9e (Expert), pas les prestations RRQ/CNESST\n\u2022 Les frais de transaction et d'imp\u00f4t sur les dividendes \u00e9trangers ne sont pas mod\u00e9lis\u00e9s\n\u2022 Crypto, actifs internationaux, holdings multi-soci\u00e9t\u00e9s, fiducies: exclus par design\n\u2022 CCPC simple mod\u00e9lis\u00e9e; holdings et gel successoral requi\u00e8rent un fiscaliste\n\u2022 Voir l'onglet Port\u00e9e et limites pour la liste compl\u00e8te"
-            : "\u2022 Historical returns do not guarantee future returns\n\u2022 Inflation modeled uniformly (except health/housing multipliers)\n\u2022 GIS is an approximation (without specific detailed deductions)\n\u2022 Donations: estimated credit (Expert), not 5-year carryforward rules\n\u2022 Disability: simplified income loss (Expert), not CPP/WCB benefits\n\u2022 Transaction costs and foreign dividend withholding taxes not modeled\n\u2022 Crypto, international assets, multi-corp holdings, trusts: excluded by design\n\u2022 Simple CCPC modeled; holdings and estate freezes require a tax specialist\n\u2022 See Scope & limits tab for the complete list"
+            ? "\u2022 Les rendements historiques ne garantissent pas les rendements futurs\n\u2022 L'inflation est mod\u00e9lis\u00e9e uniform\u00e9ment (sauf multiplicateurs sant\u00e9/logement)\n\u2022 Le SRG est une approximation (sans les d\u00e9ductions sp\u00e9cifiques d\u00e9taill\u00e9es)\n\u2022 Dons: cr\u00e9dit estim\u00e9 (Laboratoire), pas les r\u00e8gles de report 5 ans\n\u2022 Invalidit\u00e9: perte de revenu simplifi\u00e9e (Laboratoire), pas les prestations RRQ/CNESST\n\u2022 Les frais de transaction et d'imp\u00f4t sur les dividendes \u00e9trangers ne sont pas mod\u00e9lis\u00e9s\n\u2022 Crypto, actifs internationaux, holdings multi-soci\u00e9t\u00e9s, fiducies: exclus par design\n\u2022 CCPC simple mod\u00e9lis\u00e9e; holdings et gel successoral requi\u00e8rent un fiscaliste\n\u2022 Voir l'onglet Port\u00e9e et limites pour la liste compl\u00e8te"
+            : "\u2022 Historical returns do not guarantee future returns\n\u2022 Inflation modeled uniformly (except health/housing multipliers)\n\u2022 GIS is an approximation (without specific detailed deductions)\n\u2022 Donations: estimated credit (Lab), not 5-year carryforward rules\n\u2022 Disability: simplified income loss (Lab), not CPP/WCB benefits\n\u2022 Transaction costs and foreign dividend withholding taxes not modeled\n\u2022 Crypto, international assets, multi-corp holdings, trusts: excluded by design\n\u2022 Simple CCPC modeled; holdings and estate freezes require a tax specialist\n\u2022 See Scope & limits tab for the complete list"
         )
       )
     ),
@@ -15674,9 +15706,9 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
         ]),
 
         _Cat(fr ? "Mod\u00e9lis\u00e9 de mani\u00e8re simplifi\u00e9e" : "Simplified modeling", [
-          fr ? "Dons de bienfaisance: cr\u00e9dit f\u00e9d\u00e9ral + provincial estim\u00e9 (Expert)" : "Charitable donations: estimated federal + provincial credit (Expert)",
-          fr ? "Volatilit\u00e9 salariale: multiplicateur al\u00e9atoire sur cotisations (Expert)" : "Salary volatility: random multiplier on contributions (Expert)",
-          fr ? "Invalidit\u00e9: probabilit\u00e9 annuelle de perte de revenu, sans prestations d\u00e9taill\u00e9es (Expert)" : "Disability: annual probability of income loss, no detailed benefits (Expert)",
+          fr ? "Dons de bienfaisance: cr\u00e9dit f\u00e9d\u00e9ral + provincial estim\u00e9 (Laboratoire)" : "Charitable donations: estimated federal + provincial credit (Lab)",
+          fr ? "Volatilit\u00e9 salariale: multiplicateur al\u00e9atoire sur cotisations (Laboratoire)" : "Salary volatility: random multiplier on contributions (Lab)",
+          fr ? "Invalidit\u00e9: probabilit\u00e9 annuelle de perte de revenu, sans prestations d\u00e9taill\u00e9es (Laboratoire)" : "Disability: annual probability of income loss, no detailed benefits (Lab)",
           fr ? "Retraite progressive: via les champs revenu partiel (ptM, ptYrs)" : "Phased retirement: via part-time income fields (ptM, ptYrs)",
           fr ? "Inflation: uniforme sauf multiplicateurs sant\u00e9/logement configurables" : "Inflation: uniform except configurable health/housing multipliers",
           fr ? "SRG: approximation (sans d\u00e9ductions sp\u00e9cifiques d\u00e9taill\u00e9es)" : "GIS: approximation (without specific detailed deductions)"

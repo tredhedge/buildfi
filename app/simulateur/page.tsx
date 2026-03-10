@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 
 // ═══════════════════════════════════════════════════════════════════
-// BuildFi — Simulateur Expert
+// BuildFi — Simulateur Laboratoire
 // Single-file React page — auth-gated, real-time MC simulation
 // ═══════════════════════════════════════════════════════════════════
 
