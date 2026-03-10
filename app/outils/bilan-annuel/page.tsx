@@ -321,6 +321,8 @@ export default function BilanAnnuel() {
   const [express, setExpress] = useState({ age: 42, province: "QC", salary: 70000, rrsp: 45000, tfsa: 22000, home: 400000, mortgage: 200000, debtsTotal: 15000, savingsMonthly: 1000 });
   const [expressDone, setExpressDone] = useState(false);
   const [tabKey, setTabKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => { if (typeof window === "undefined") return; const c = () => setIsMobile(window.innerWidth < 768); c(); window.addEventListener("resize", c); return () => window.removeEventListener("resize", c); }, []);
 
   const changeTab = useCallback((i: number) => { setTab(i); setTabKey(k => k+1); }, []);
 
@@ -673,7 +675,7 @@ export default function BilanAnnuel() {
   function renderPortrait() {
     const ls = data.snapshots?.[data.snapshots.length-1]; const nd = ls ? totals.netWorth-ls.netWorth : null;
     return (<div>
-      <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5] }}>
+      <div className="ba-kpi-grid" style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5] }}>
         {[
           { l:fr?"Valeur nette":"Net worth", v:f$(totals.netWorth), c:totals.netWorth>=0?CL.gn:CL.rd, sub:nd!=null?`${nd>=0?"+":""}${f$(nd)}`:undefined, trend:nd!=null?(nd>0?"up":nd<0?"down":undefined):undefined,
             tip:fr?"Actifs totaux moins passifs totaux. C'est votre richesse réelle.":"Total assets minus total liabilities. Your real wealth." },
@@ -721,7 +723,7 @@ export default function BilanAnnuel() {
       <div style={{ fontSize:FS.lg,fontWeight:FW.bold,color:CL.al,marginBottom:SP[3] }}>{fr?"Comptes":"Accounts"} <span style={{fontSize:FS.sm,color:CL.dm,fontWeight:FW.normal}}>({data.accounts.length})</span></div>
       {data.accounts.map((a: any) => {
         const t = ACC_TYPES.find(x=>x.key===a.type)||ACC_TYPES[0];
-        return (<Card key={a.id} title={a.label||t.label} icon={t.icon} color={t.color} onRemove={()=>rmItem("accounts",a.id)} summary={f$(a.balance)}>
+        return (<Card key={a.id} title={a.label||t.label} icon={t.icon} color={t.color} onRemove={()=>rmItem("accounts",a.id)} summary={f$(a.balance)} defaultCollapsed={isMobile}>
           <div style={{display:"flex",flexWrap:"wrap",gap:SP[3]}}>
             <Field label={fr?"Nom":"Name"} half><NumInput value={a.label} onChange={(v: any)=>upItem("accounts",a.id,"label",v)} type="text" ariaLabel="Account name"/></Field>
             <Field label={fr?"Solde":"Balance"} half><NumInput value={a.balance} onChange={(v: any)=>upItem("accounts",a.id,"balance",v)} prefix="$" ariaLabel="Balance"/></Field>
@@ -735,7 +737,7 @@ export default function BilanAnnuel() {
       <div style={{fontSize:FS.lg,fontWeight:FW.bold,color:CL.al,marginTop:SP[6],marginBottom:SP[3]}}>{fr?"Immobilier":"Real estate"}</div>
       {data.properties.map((p: any) => {
         const ap = calcPMT(p.mortgage.balance,p.mortgage.rate,p.mortgage.amortYears);
-        return (<Card key={p.id} title={p.label||(fr?"Propriété":"Property")} icon={p.isRental?"🏢":"🏠"} color={CL.gn} onRemove={()=>rmItem("properties",p.id)} summary={f$(p.value)}>
+        return (<Card key={p.id} title={p.label||(fr?"Propriété":"Property")} icon={p.isRental?"🏢":"🏠"} color={CL.gn} onRemove={()=>rmItem("properties",p.id)} summary={f$(p.value)} defaultCollapsed={isMobile}>
           <div style={{display:"flex",flexWrap:"wrap",gap:SP[3]}}>
             <Field label="Description" half><NumInput value={p.label} onChange={(v: any)=>upItem("properties",p.id,"label",v)} type="text"/></Field>
             <Field label={fr?"Valeur":"Value"} half><NumInput value={p.value} onChange={(v: any)=>upItem("properties",p.id,"value",v)} prefix="$"/></Field>
@@ -763,7 +765,7 @@ export default function BilanAnnuel() {
       <AddButton label={fr?"Ajouter une propriété":"Add property"} onClick={()=>addItem("properties",{id:uid(),label:"",value:0,appreciation:.03,rentalIncome:0,isRental:false,mortgage:{balance:0,rate:.055,termYears:5,amortYears:25,payment:0,autoCalc:true}})}/>
 
       <div style={{fontSize:FS.lg,fontWeight:FW.bold,color:CL.al,marginTop:SP[6],marginBottom:SP[3]}}>{fr?"Autres actifs":"Other assets"}</div>
-      {(data.otherAssets||[]).map((a: any)=>(<Card key={a.id} title={a.label||"Autre"} icon="📦" color={CL.pr} onRemove={()=>rmItem("otherAssets",a.id)} summary={f$(a.value)}>
+      {(data.otherAssets||[]).map((a: any)=>(<Card key={a.id} title={a.label||"Autre"} icon="📦" color={CL.pr} onRemove={()=>rmItem("otherAssets",a.id)} summary={f$(a.value)} defaultCollapsed={isMobile}>
         <div style={{display:"flex",flexWrap:"wrap",gap:SP[3]}}>
           <Field label="Description" half><NumInput value={a.label} onChange={(v: any)=>upItem("otherAssets",a.id,"label",v)} type="text"/></Field>
           <Field label={fr?"Valeur":"Value"} half><NumInput value={a.value} onChange={(v: any)=>upItem("otherAssets",a.id,"value",v)} prefix="$"/></Field>
@@ -776,7 +778,7 @@ export default function BilanAnnuel() {
 
   function renderPassifs() {
     return (<div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
+      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
         <KPI label={fr?"Dettes":"Debt"} value={f$(totals.totalDebts)} color={CL.rd} tooltip={fr?"Hypothèques + dettes non-hypothécaires":"Mortgages + non-mortgage debts"}/>
         <KPI label={fr?"Paiements/mois":"Payments/mo"} value={f$(data.debts.reduce((s: number,d: any)=>s+(d.payment||0),0)+data.properties.reduce((s: number,p: any)=>s+(p.mortgage?.autoCalc!==false?calcPMT(p.mortgage?.balance,p.mortgage?.rate,p.mortgage?.amortYears):(p.mortgage?.payment||0)),0))} color={CL.or}/>
         <KPI label={fr?"Endettement":"Debt ratio"} value={pct(totals.debtRatio)} color={totals.debtRatio>.5?CL.rd:CL.or}
@@ -786,7 +788,7 @@ export default function BilanAnnuel() {
       {data.debts.map((d: any)=>{
         const t=DEBT_TYPES.find(x=>x.key===d.type)||DEBT_TYPES[0];
         let po=Infinity; if(d.balance>0&&d.payment>0){const mr=d.rate/12; if(mr>0&&d.payment>d.balance*mr) po=Math.ceil(-Math.log(1-(d.balance*mr)/d.payment)/Math.log(1+mr)); else if(mr===0) po=Math.ceil(d.balance/d.payment);}
-        return(<Card key={d.id} title={d.label||t.label} icon={t.icon} color={d.rate>=.15?CL.rd:d.rate>=.08?CL.or:CL.gn} onRemove={()=>rmItem("debts",d.id)} summary={f$(d.balance)}>
+        return(<Card key={d.id} title={d.label||t.label} icon={t.icon} color={d.rate>=.15?CL.rd:d.rate>=.08?CL.or:CL.gn} onRemove={()=>rmItem("debts",d.id)} summary={f$(d.balance)} defaultCollapsed={isMobile}>
           {d.balance>0&&d.payment>0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:SP[2],marginBottom:SP[3]}}>
             <div style={{textAlign:"center",padding:6,background:CL.s2,borderRadius:RAD.sm}}><div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.al}}>{po<Infinity?`${Math.floor(po/12)}a ${po%12}m`:"∞"}</div><div style={{fontSize:FS.xs,color:CL.dm}}>{fr?"Remboursement":"Payoff"}</div></div>
             <div style={{textAlign:"center",padding:6,background:CL.s2,borderRadius:RAD.sm}}><div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.or}}>{po<Infinity?f$(Math.round(d.payment*po-d.balance)):"—"}</div><div style={{fontSize:FS.xs,color:CL.dm}}>{fr?"Intérêts":"Interest"}</div></div>
@@ -807,7 +809,7 @@ export default function BilanAnnuel() {
   function renderRevenus() {
     const rt=data.properties.filter((p: any)=>p.isRental).reduce((s: number,p: any)=>s+(p.rentalIncome||0)*12,0);
     return (<div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
+      <div className="ba-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:SP[2],marginBottom:SP[5]}}>
         <KPI label={fr?"Revenu total/an":"Total/yr"} value={f$((data.income?.salary||0)+rt+(data.income?.otherIncome||0))} color={CL.ac}/>
         <KPI label={fr?"Salaire":"Salary"} value={f$(data.income?.salary||0)} color={CL.bl}/>
         {rt>0&&<KPI label={fr?"Locatifs":"Rental"} value={f$(rt)} color={CL.gn}/>}
