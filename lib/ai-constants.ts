@@ -13,7 +13,6 @@ export const AI_SLOTS = [
   "obs_1",
   "obs_2",
   "obs_3",
-  "upgrade_hook",
   "succession_note",
 ] as const;
 
