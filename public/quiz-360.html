@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>buildfi.ca — Bilan 360</title>
+<meta name="description" content="Votre analyse retraite complète en 7 à 10 minutes. 18-22 sections, 5 000+ scénarios Monte Carlo, couple modélisé, narration IA. Paiement unique 19,99 $.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:#FEFCF9;color:#1A1A1A}
+:root{
+  --g:#c49a1a;--gl:#D4A85A;--gn:#2A8C46;--gnl:#3AA856;--am:#B89830;
+  --rd:#CC4444;--bl:#4680C0;--pr:#7C60B8;--tx:#1A1A1A;--ts:#555;--tm:#666;
+  --bg:#FEFCF9;--bgc:#fff;--bd:#E8E0D4;--bdl:#F0ECE4;
+  --gbg:rgba(196,154,26,.08);--gnbg:rgba(42,140,70,.06);--ambg:rgba(184,152,48,.06);
+  --rdbg:rgba(204,68,68,.06);--bga:rgba(124,96,184,.04);
+  --blbg:rgba(70,128,192,.06);
+  --quiz-max:480px;--report-max:760px;
+}
+.qs{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:var(--bd);border-radius:4px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--g);cursor:pointer;box-shadow:0 2px 6px rgba(196,154,26,.3)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--g);cursor:pointer;border:none;box-shadow:0 2px 6px rgba(196,154,26,.3)}
+input[type=range]::-moz-range-track{height:8px;background:var(--bd);border-radius:4px}
+.pbtn{display:block;width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .15s,box-shadow .15s;letter-spacing:.2px}
+.pbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(196,154,26,.25)}
+.pbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.pbtn-sec{display:block;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bgc);font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;color:var(--ts);transition:border-color .2s;font-family:'DM Sans',sans-serif}
+.pbtn-sec:hover{border-color:var(--g)}
+.card{background:var(--bgc);border:2px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.card:hover{border-color:var(--gl);background:#FDF8F0}
+.card:focus{outline:2px solid var(--g);outline-offset:2px}
+.card.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);box-shadow:0 3px 14px rgba(196,154,26,.25);transform:scale(1.02)}
+.chip{display:inline-block;padding:8px 16px;border-radius:20px;border:2px solid var(--bd);background:var(--bgc);font-size:14px;cursor:pointer;transition:all .2s;margin:3px}
+.chip:hover{border-color:var(--gl);background:#FDF8F0}
+.chip.sel{border-color:var(--g);background:linear-gradient(135deg,#FFF8ED,#FDF3E0);color:var(--g);font-weight:700;box-shadow:0 2px 8px rgba(196,154,26,.2)}
+.back-btn{padding:10px 20px;border-radius:8px;border:1px solid var(--bd);background:var(--bgc);font-size:13px;font-weight:600;cursor:pointer;color:var(--ts);font-family:'DM Sans',sans-serif}
+.fld-block{margin-bottom:20px}
+.fld-label{display:block;font-size:14px;font-weight:700;color:var(--ts);margin-bottom:6px}
+.fld-sub{font-size:12px;color:var(--tm);margin-top:4px;line-height:1.5}
+.inp{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--bd);font-size:16px;font-family:'DM Sans',sans-serif;background:var(--bgc);transition:border-color .2s}
+.inp:focus{border-color:var(--g);outline:none;box-shadow:0 0 0 3px rgba(196,154,26,.1)}
+.inp-sm{padding:12px 14px;font-size:15px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.section-head{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;padding:14px 0 8px;border-bottom:2px solid var(--gbg);margin:20px 0 14px}
+.phase-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:var(--gbg);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:20px}
+.info-box{background:var(--gbg);border:1px solid rgba(196,154,26,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin:0 3px;animation:bounce .6s infinite alternate}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{opacity:.3;transform:translateY(-6px)}}
+@keyframes microFade{0%{opacity:0;transform:scale(.97)}20%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(.97)}}
+.micro-copy{font-size:14px;color:#666;font-style:italic;text-align:center;animation:microFade 1.2s ease-in-out forwards}
+@media print{body{background:#fff}.no-print{display:none!important}}
+@media(min-width:768px){:root{--quiz-max:560px;--report-max:860px}body{font-size:16px}.fld-label{font-size:15px!important}.inp{font-size:17px!important;padding:15px 16px!important}.inp-sm{font-size:16px!important;padding:13px 14px!important}.pbtn{font-size:17px!important;padding:18px!important}.back-btn{font-size:14px!important;padding:12px 24px!important}.card{padding:18px!important}.chip{font-size:15px!important;padding:10px 20px!important}input[type=range]::-webkit-slider-thumb{width:32px;height:32px}}
+@media(min-width:1024px){:root{--quiz-max:640px;--report-max:940px}body{font-size:17px}.qs h2{font-size:26px!important}.fld-label{font-size:16px!important}.inp{font-size:18px!important;padding:16px 18px!important}.inp-sm{font-size:17px!important;padding:14px 16px!important}.pbtn{font-size:18px!important;padding:20px!important}.back-btn{font-size:14px!important}.card{padding:20px 18px!important}.card div[style*="font-weight:700"],.card div[style*="font-weight:600"]{font-size:16px!important}}
+@media(min-width:1440px){:root{--quiz-max:700px;--report-max:1000px}}
+@media(max-width:640px){.rpt-grid3{grid-template-columns:1fr!important}.rpt-grid2{grid-template-columns:1fr!important}.rpt-flex{flex-direction:column!important}}
+@media(max-width:400px){body{font-size:14px}h1{font-size:22px!important}h2{font-size:18px!important}.inp{padding:12px!important;font-size:15px!important}.inp-sm{padding:10px!important;font-size:14px!important}.card{padding:14px 12px!important}}
+@media(max-width:560px){#quiz-hero [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}</style>
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
+<script src="/logo.js"></script>
+</head>
+<body>
+<div style="background:#faf8f4;padding:0"><a href="/" id="heroBack" style="font-size:14px;font-weight:600;color:#888;text-decoration:none;padding:16px 24px;display:inline-block" onmouseover="this.style.color='#c49a1a'" onmouseout="this.style.color='#888'">&larr; Retour</a></div>
+<div id="quiz-hero" style="background:#faf8f4;padding:clamp(16px,3vw,32px) 20px 0;text-align:center">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#c49a1a;margin-bottom:12px">Bilan 360 — buildfi.ca</div>
+    <h1 id="heroTitle" style="font-size:clamp(22px,4vw,30px);font-weight:700;color:#1a2744;margin-bottom:14px;line-height:1.25;font-family:'DM Sans',sans-serif">Votre analyse retraite complète en 7 à 10 minutes.</h1>
+    <p id="heroSub" style="font-size:15px;color:#555;line-height:1.7;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto">18 à 22 sections personnalisées. 5 000+ scénarios. Couple modélisé. Narration IA Opus.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto 28px;text-align:left">
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroAskLabel">Ce qu'on vous demandera</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroAskList">✓ Profil + conjoint<br>✓ Revenus et épargne détaillée<br>✓ Propriétés et dettes<br>✓ Tolérance au risque et objectifs</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8e0d4;border-radius:10px;padding:18px 16px">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px" id="heroGetLabel">Ce que vous recevrez</div>
+        <div style="font-size:13px;color:#555;line-height:1.9" id="heroGetList">✓ Note retraite (A+ à F)<br>✓ Analyse de 18-22 sections<br>✓ Scénarios what-if + stratégies<br>✓ Narration IA personnalisée</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:12px;color:#888;margin-bottom:20px" id="heroTrust"><span>1 800+ tests automatisés</span><span>13 juridictions fiscales</span><span>Paiement unique — 19,99 $</span></div>
+    <div style="background:rgba(196,154,26,.06);border:1px solid rgba(196,154,26,.15);border-radius:8px;padding:14px 18px;max-width:480px;margin:0 auto 24px;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#a68016;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
+      <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Épargne par compte (REER, CELI, NR), revenus du ménage, détails hypothécaire et locatifs, relevés de pension (si applicable).</div>
+    </div>
+    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#c49a1a,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+    <div style="margin-bottom:24px"><a href="/" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a></div>
+  </div>
+</div>
+<div id="app"><div class="seo-shell" style="max-width:480px;margin:24px auto;padding:24px;text-align:center"><p style="color:#888;font-size:13px">Chargement du questionnaire... <br>Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#c49a1a">support@buildfi.ca</a></p></div></div>
+<noscript><div style="font-family:-apple-system,sans-serif;max-width:520px;margin:48px auto;padding:32px 24px;background:#fff;border:1px solid #e8e0d4;border-radius:14px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#c49a1a;margin-bottom:10px">Bilan 360 — buildfi.ca</div><h1 style="font-size:24px;font-weight:700;color:#1a2744;margin-bottom:12px;line-height:1.2">Votre analyse retraite complète.</h1><p style="color:#555;margin-bottom:16px;line-height:1.6">18-22 sections personnalisées, 5 000+ scénarios Monte Carlo. Paiement unique — 19,99 $.</p><p style="color:#555;margin-bottom:16px;line-height:1.6"><strong>Ce questionnaire nécessite JavaScript.</strong></p><p style="color:#555">Besoin d'aide? <a href="mailto:support@buildfi.ca" style="color:#c49a1a">support@buildfi.ca</a></p><p style="font-size:12px;color:#888;margin-top:16px;line-height:1.5">Cet outil est éducatif et ne constitue pas un conseil financier.</p></div></noscript>
+<script>
+// ============================================================
+// THIN CLIENT — No MC engine. All computation runs server-side.
+// Quiz answers sent to /api/checkout -> Stripe -> webhook -> MC -> report -> email
+// ============================================================
+
+var DEBT_RATES = {cc:0.199, student:0.055, car:0.065, loc:0.075, other:0.07};
+var COL_ADJ = {QC:1,ON:1.15,BC:1.35,AB:1.05,MB:0.92,SK:0.90,NS:0.95,NB:0.88,NL:0.93,PE:0.87,NT:1.25,YT:1.20,NU:1.40};
+
+function ph(event, props) {
+  try {
+    if (localStorage.getItem('buildfi_consent') === 'yes' && typeof posthog !== 'undefined') {
+      posthog.capture(event, Object.assign({tier:'bilan360'}, props||{}));
+    }
+  } catch(e) {}
+}
+
+function amortDebt(bal, rate, pay) {
+  if (bal <= 0) return {months:0, totalInt:0, feasible:true};
+  var mr = rate / 12, b = bal, ti = 0, mo = 0;
+  if (pay <= b * mr && mr > 0) return {months:999, totalInt:Math.round(bal*rate*50), feasible:false};
+  while (b > 0.01 && mo < 600) { var ii = b * mr; b -= Math.min(b, pay - ii); ti += ii; mo++; }
+  return {months:mo, totalInt:Math.round(ti), feasible:true};
+}
+
+function defMinPay(type, bal) {
+  if (type === 'cc') return Math.max(Math.round(bal * 0.02), 25);
+  if (type === 'student') return Math.max(Math.round(bal / 120), 50);
+  if (type === 'car') return Math.max(Math.round(bal / 60), 100);
+  return Math.max(Math.round(bal * 0.01), Math.round(bal * (DEBT_RATES[type] || 0.08) / 12));
+}
+
+// ============================================================
+// APPLICATION STATE
+// ============================================================
+var STATE = {
+  step: 0, lang: 'fr', phase: 'accum', isFire: false,
+  quiz: {
+    // Step 1 — Profile
+    age: 42, retAge: 63, sex: 'M', prov: 'QC', couple: 'no',
+    // Step 2a — Spouse profile
+    cAge: 40, cSex: 'F', cRetAge: 63, cIncome: 0,
+    // Step 2b — Spouse savings + pension + gov
+    cRrsp: 0, cTfsa: 0, cNr: 0, cLira: 0, cMonthlyContrib: 0,
+    cPenType: 'none', cPenM: 0, cPenIdx: 'no',
+    cQppAge: 65, cOasAge: 65, pensionSplitting: true,
+    // Step 3 — Income (accum/transition)
+    income: 80000, employer: 'large',
+    parttime: 'no', parttimeAmount: 0, parttimeYears: 0,
+    // Step 3 alt — Retirement status (decum)
+    retirementStatus: null,
+    // Step 4 — Savings (always explicit)
+    rrsp: 45000, tfsa: 22000, nr: 5000, lira: 0, monthlyContrib: 600,
+    // Step 5a — Property
+    homeowner: false, homeValue: 0, mortgage: 0, mortgageRate: 5.0, mortgageAmort: 20,
+    // Step 5b — Rentals
+    hasRental: false, rentals: [],
+    // Step 5c — Debt
+    hasDebts: false, debts: [],
+    // Accum/Transition steps
+    lifestyle: 'active', risk: 'balanced',
+    psychAnxiety: null, psychDiscipline: null, psychLiteracy: null,
+    worries: [], win: '', fix: '',
+    // Transition extra
+    qppAge: null, hasPension: false, penMonthly: 0, penIndexed: 'no', spendingFlex: 'moderate',
+    // Decum steps
+    retIncome: 0,
+    qppAlreadyClaiming: false, qppMonthly: 0, qppPlannedAge: 65,
+    oasAlreadyClaiming: false, oasMonthly: 0, oasPlannedAge: 65,
+    estatePref: 'balanced', meltdownPref: null
+  },
+  computed: false, reportData: null, showPaywall: false
+};
+
+// Province names
+var PROV_NAMES_FR = {'QC':'Québec','ON':'Ontario','BC':'Colombie-Britannique','AB':'Alberta','MB':'Manitoba','SK':'Saskatchewan','NS':'Nouvelle-Écosse','NB':'Nouveau-Brunswick','NL':'Terre-Neuve-et-Labrador','PE':'Île-du-Prince-Édouard','NT':'Territoires du Nord-Ouest','YT':'Yukon','NU':'Nunavut'};
+var PROV_NAMES_EN = {'QC':'Quebec','ON':'Ontario','BC':'British Columbia','AB':'Alberta','MB':'Manitoba','SK':'Saskatchewan','NS':'Nova Scotia','NB':'New Brunswick','NL':'Newfoundland and Labrador','PE':'Prince Edward Island','NT':'Northwest Territories','YT':'Yukon','NU':'Nunavut'};
+function provName(code) { return (STATE.lang === 'fr' ? PROV_NAMES_FR : PROV_NAMES_EN)[code] || code; }
+
+// localStorage persistence
+try {
+  var _saved = localStorage.getItem('buildfi_quiz_360');
+  if (_saved) {
+    var _p = JSON.parse(_saved);
+    if (_p && _p.quiz && _p.step != null) {
+      STATE.step = _p.step;
+      STATE.lang = _p.lang || 'fr';
+      STATE.quiz = Object.assign(STATE.quiz, _p.quiz);
+    }
+  }
+} catch(e) {}
+function saveState() {
+  try { localStorage.setItem('buildfi_quiz_360', JSON.stringify({step:STATE.step, lang:STATE.lang, quiz:STATE.quiz})); } catch(e) {}
+}
+
+function f$(n) {
+  if (n == null || isNaN(n)) return '—';
+  return (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' $';
+}
+
+// ============================================================
+// PHASE COMPUTATION
+// ============================================================
+function computePhase() {
+  var q = STATE.quiz;
+  if (q.retirementStatus === 'retired' || q.retAge <= q.age) {
+    STATE.phase = 'decum';
+  } else if ((q.retAge - q.age) <= 7 && q.age >= 52) {
+    STATE.phase = 'transition';
+  } else {
+    STATE.phase = 'accum';
+  }
+  STATE.isFire = q.retAge <= 50 && q.retAge > q.age;
+}
+
+function totalSteps() {
+  computePhase();
+  if (STATE.phase === 'transition') return 9;
+  return 8; // accum and decum both 8
+}
+
+function stepMap() {
+  // Returns array of step labels for progress display
+  var ph = STATE.phase;
+  var hasSpouse = STATE.quiz.couple === 'yes';
+  var base = hasSpouse ? [0,1,'2a','2b',3,4,'5'] : [0,1,3,4,'5'];
+  if (ph === 'accum') return base.concat([6,7,8,'confirm']);
+  if (ph === 'transition') return base.concat([6,7,8,9,'confirm']);
+  return base.concat([6,7,8,'confirm']); // decum
+}
+
+function countableSteps() {
+  // Steps that count toward progress (exclude 0 and confirm)
+  var m = stepMap();
+  return m.filter(function(s) { return s !== 0 && s !== 'confirm'; }).length;
+}
+
+function currentStepIndex(step) {
+  var m = stepMap();
+  for (var i = 0; i < m.length; i++) {
+    if (String(m[i]) === String(step)) return i;
+  }
+  return 0;
+}
+
+// ============================================================
+// HERO TRANSLATIONS
+// ============================================================
+var heroT = {
+  heroBack:{fr:"← Retour",en:"← Back"},
+  heroTitle:{fr:"Votre analyse retraite complète en 7 à 10 minutes.",en:"Your complete retirement analysis in 7 to 10 minutes."},
+  heroSub:{fr:"18 à 22 sections personnalisées. 5 000+ scénarios. Couple modélisé. Narration IA Opus.",en:"18 to 22 personalized sections. 5,000+ scenarios. Couple modeled. AI Opus narration."},
+  heroAskLabel:{fr:"Ce qu'on vous demandera",en:"What we'll ask you"},
+  heroGetLabel:{fr:"Ce que vous recevrez",en:"What you'll receive"},
+  heroAskList:{fr:"✓ Profil + conjoint<br>✓ Revenus et épargne détaillée<br>✓ Propriétés et dettes<br>✓ Tolérance au risque et objectifs",en:"✓ Profile + spouse<br>✓ Detailed income & savings<br>✓ Properties & debts<br>✓ Risk tolerance & goals"},
+  heroGetList:{fr:"✓ Note retraite (A+ à F)<br>✓ Analyse de 18-22 sections<br>✓ Scénarios what-if + stratégies<br>✓ Narration IA personnalisée",en:"✓ Retirement grade (A+ to F)<br>✓ 18-22 section analysis<br>✓ What-if scenarios + strategies<br>✓ Personalized AI narration"},
+  heroTrust:{fr:"<span>1 800+ tests automatisés</span><span>13 juridictions fiscales</span><span>Paiement unique — 19,99 $</span>",en:"<span>1,800+ automated tests</span><span>13 tax jurisdictions</span><span>One-time payment — $19.99</span>"},
+  heroPrepLabel:{fr:"Avant de commencer",en:"Before you start"},
+  heroPrepText:{fr:"Épargne par compte (REER, CELI, NR), revenus du ménage, détails hypothécaire et locatifs, relevés de pension (si applicable).",en:"Savings by account (RRSP, TFSA, non-reg), household income, mortgage & rental details, pension statements (if applicable)."},
+  heroCta:{fr:"Commencer le questionnaire",en:"Start the questionnaire"},
+  heroOther:{fr:"Pas le bon produit? Voir les autres options.",en:"Not the right product? See other options."}
+};
+// ============================================================
+// NAVIGATION
+// ============================================================
+var MICRO_COPY = {
+  1: ["Parfait\u00a0! Bonne base.", "Great! Solid start."],
+  "2a": ["Conjoint enregistr\u00e9.", "Partner noted."],
+  "2b": ["D\u00e9tail conjoint complet.", "Partner details complete."],
+  3: ["Revenus not\u00e9s.", "Income noted."],
+  4: ["\u00c9pargne enregistr\u00e9e.", "Savings recorded."],
+  "5": ["Patrimoine complet.", "Assets complete."],
+  6: ["Bon profil de risque.", "Good risk profile."],
+  7: ["Presque termin\u00e9.", "Almost done."],
+  8: ["Merci\u00a0! Derni\u00e8re ligne droite.", "Thanks! Final stretch."],
+  9: ["Pr\u00e9paration compl\u00e8te.", "Preparation complete."]
+};
+
+function nextStep(current) {
+  var q = STATE.quiz; computePhase(); var ph = STATE.phase;
+  if (current === 0) return 1;
+  if (current === 1) return q.couple === "yes" ? "2a" : 3;
+  if (current === "2a") return "2b";
+  if (current === "2b") return 3;
+  if (current === 3) return 4;
+  if (current === 4) return "5";
+  if (current === "5") return 6;
+  if (ph === "accum") { if (current === 6) return 7; if (current === 7) return 8; if (current === 8) return "confirm"; }
+  else if (ph === "transition") { if (current === 6) return 7; if (current === 7) return 8; if (current === 8) return 9; if (current === 9) return "confirm"; }
+  else { if (current === 6) return 7; if (current === 7) return 8; if (current === 8) return "confirm"; }
+  return "confirm";
+}
+
+function prevStep(current) {
+  var q = STATE.quiz; computePhase(); var ph = STATE.phase;
+  if (current === "confirm") return ph === "transition" ? 9 : 8;
+  if (current === 9) return 8; if (current === 8) return 7; if (current === 7) return 6;
+  if (current === 6) return "5"; if (current === "5") return 4; if (current === 4) return 3;
+  if (current === 3) return q.couple === "yes" ? "2b" : 1;
+  if (current === "2b") return "2a"; if (current === "2a") return 1;
+  return 0;
+}
+
+function stepMap() {
+  computePhase(); var q = STATE.quiz, ph = STATE.phase;
+  var base = [0, 1];
+  if (q.couple === "yes") { base.push("2a", "2b"); }
+  base.push(3, 4, "5");
+  if (ph === "accum") base.push(6,7,8,"confirm");
+  else if (ph === "transition") base.push(6,7,8,9,"confirm");
+  else base.push(6,7,8,"confirm");
+  return base;
+}
+
+function countableSteps() { return stepMap().filter(function(s){ return s !== 0 && s !== "confirm"; }).length; }
+
+function currentStepIndex(step) {
+  var m = stepMap();
+  for (var i = 0; i < m.length; i++) { if (String(m[i]) === String(step)) return i; }
+  return 0;
+}
+
+function progressNum(step) {
+  var m = stepMap(), count = 0;
+  for (var i = 0; i < m.length; i++) {
+    if (m[i] === 0 || m[i] === "confirm") continue;
+    count++;
+    if (String(m[i]) === String(step)) return count;
+  }
+  return count;
+}
+
+function go(step) {
+  var prev = STATE.step, q = STATE.quiz, fr = STATE.lang === "fr";
+  computePhase();
+  var prevIdx = currentStepIndex(prev), nextIdx = currentStepIndex(step);
+  if (nextIdx > prevIdx && prev !== 0) { if (!validateStep(prev, q, fr)) return; }
+  if (nextIdx > prevIdx && prev !== 0 && MICRO_COPY[prev]) {
+    var msg = MICRO_COPY[prev][fr ? 0 : 1];
+    document.getElementById("app").innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;padding:40px 24px"><p class="micro-copy">' + msg + '</p></div>';
+    var ts = step;
+    setTimeout(function() { STATE.step = ts; saveState(); window.scrollTo({top:0, behavior:"smooth"}); render(); }, 1200);
+    return;
+  }
+  STATE.step = step; saveState(); window.scrollTo({top:0, behavior:"smooth"}); render();
+}
+
+function uq(key, val) { STATE.quiz[key] = val; computePhase(); saveState(); render(); }
+var _dTimer = {};
+function uqd(key, rawVal) {
+  var n = parseFloat(rawVal);
+  STATE.quiz[key] = isNaN(n) ? (rawVal === "" || rawVal == null ? 0 : STATE.quiz[key]) : n;
+  computePhase(); clearTimeout(_dTimer[key]); _dTimer[key] = setTimeout(function(){ saveState(); }, 600);
+}
+
+function setDebtField(type, field, rawVal) {
+  var q = STATE.quiz, d = q.debts.find(function(x){return x.type===type;});
+  if (!d) { d = {type:type, amount:0, minPayment:0, rate:0}; q.debts.push(d); }
+  var n = parseFloat(rawVal); d[field] = isNaN(n) ? 0 : n;
+  q.debts = q.debts.filter(function(x){return x.amount > 0 || x.minPayment > 0 || x.rate > 0;});
+  clearTimeout(_dTimer["debt_"+type+"_"+field]); _dTimer["debt_"+type+"_"+field] = setTimeout(function(){saveState();},600);
+}
+
+function setRentalField(idx, field, rawVal) {
+  var q = STATE.quiz;
+  while (q.rentals.length <= idx) q.rentals.push({value:0, mortgage:0, mortgageRate:5.0, mortgageAmort:20, rentalIncome:0, expenses:0});
+  var n = parseFloat(rawVal); q.rentals[idx][field] = isNaN(n) ? 0 : n;
+  clearTimeout(_dTimer["rental_"+idx+"_"+field]); _dTimer["rental_"+idx+"_"+field] = setTimeout(function(){saveState();},600);
+}
+
+function toggleWorry(w) {
+  var q = STATE.quiz;
+  if (q.worries.indexOf(w) >= 0) q.worries = q.worries.filter(function(x){return x!==w;});
+  else if (q.worries.length < 3) q.worries.push(w);
+  render();
+}
+function addRental() { if (STATE.quiz.rentals.length < 2) { STATE.quiz.rentals.push({value:0, mortgage:0, mortgageRate:5.0, mortgageAmort:20, rentalIncome:0, expenses:0}); saveState(); render(); } }
+function removeRental(idx) { STATE.quiz.rentals.splice(idx, 1); saveState(); render(); }
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function validateStep(step, q, fr) {
+  if (step === 1) {
+    if (q.age < 18 || q.age > 80) { alert(fr ? "\u00c2ge doit \u00eatre entre 18 et 80." : "Age must be 18-80."); return false; }
+    if (STATE.phase !== "decum" && q.retAge <= q.age) { alert(fr ? "Retraite doit \u00eatre > \u00e2ge actuel." : "Retirement must be > current age."); return false; }
+  }
+  if (step === "2a") {
+    if (q.cAge < 18 || q.cAge > 95) { alert(fr ? "\u00c2ge du conjoint doit \u00eatre entre 18 et 95." : "Spouse age must be 18-95."); return false; }
+  }
+  if (step === 3) {
+    if (STATE.phase !== "decum" && q.income <= 0) { alert(fr ? "Revenu invalide." : "Invalid income."); return false; }
+  }
+  if (step === 6 && STATE.phase === "decum") {
+    if (!q.retIncome || q.retIncome <= 0) { alert(fr ? "Veuillez entrer un revenu de retraite d\u00e9sir\u00e9 sup\u00e9rieur \u00e0 0 $." : "Please enter a desired retirement income greater than $0."); return false; }
+  }
+  return true;
+}
+
+// ============================================================
+// MOCK PREVIEW
+// ============================================================
+function generateMockPreview360(q) {
+  var age = q.age || 42, retAge = q.retAge || 63, sex = q.sex || "M";
+  var prov = q.prov || "QC", sal = q.income || 80000;
+  var col = COL_ADJ[prov] || 1;
+  var rrsp = q.rrsp || 0, tfsa = q.tfsa || 0, nr = q.nr || 0, lira = q.lira || 0;
+  var tot = rrsp + tfsa + nr + lira;
+  var mc = q.monthlyContrib || 0;
+  // Spouse savings
+  if (q.couple === "yes") {
+    tot += (q.cRrsp||0) + (q.cTfsa||0) + (q.cNr||0) + (q.cLira||0);
+  }
+  var retSpM;
+  if (STATE.phase === "decum") {
+    retSpM = (q.retIncome > 0 ? q.retIncome : 48000) / 12;
+  } else {
+    if (q.lifestyle === "cozy") retSpM = Math.round(3000 * col);
+    else if (q.lifestyle === "premium") retSpM = Math.round(7500 * col);
+    else retSpM = Math.round(5000 * col);
+  }
+  // Pension
+  var penM = 0;
+  var emp = q.employer || "x";
+  if (STATE.phase !== "decum") {
+    if (emp === "gov") penM = Math.round(sal * 0.02 * Math.min(35, retAge - 25) / 12);
+  } else {
+    if (q.hasPension && q.penMonthly > 0) penM = q.penMonthly;
+  }
+  // Spouse pension
+  if (q.couple === "yes" && q.cPenType === "db" && q.cPenM > 0) penM += q.cPenM;
+  // Rental income
+  var rentalInc = 0;
+  (q.rentals || []).forEach(function(r) { rentalInc += Math.max(0, (r.rentalIncome||0) - (r.expenses||0)); });
+  // QPP/OAS
+  var isQC = prov === "QC";
+  var qppBase = isQC ? 1364 : 1306;
+  var qppM, oasM;
+  if (STATE.phase === "decum" && q.qppAlreadyClaiming) {
+    qppM = q.qppMonthly > 0 ? q.qppMonthly : qppBase;
+  } else {
+    var qppAge = q.qppAge || q.qppPlannedAge || 65;
+    var qppFactor = qppAge <= 60 ? 0.64 : qppAge >= 70 ? 1.42 : 1.0;
+    qppM = Math.round(qppBase * qppFactor * Math.min(1, sal / 74600) * Math.min(1, Math.max(0, age - 18) / 40));
+  }
+  if (STATE.phase === "decum" && q.oasAlreadyClaiming) {
+    oasM = q.oasMonthly > 0 ? q.oasMonthly : 727;
+  } else {
+    var oasAge = q.oasPlannedAge || 65;
+    oasM = oasAge >= 70 ? 1036 : 727;
+  }
+  var govM = qppM + oasM + penM;
+  var gapM = Math.max(0, retSpM - govM - Math.round(rentalInc / 12));
+  // Future value
+  var yrs = Math.max(0, retAge - age);
+  var fvSav = STATE.phase === "decum" ? tot : (tot + mc * 12 * yrs) * Math.pow(1.05, yrs) * 0.85;
+  var retBal = Math.round(fvSav);
+  // Success estimate
+  var wdRate = retBal > 0 ? (gapM * 12) / retBal : 99;
+  var roughSucc;
+  if (wdRate <= 0.03) roughSucc = 0.95;
+  else if (wdRate <= 0.04) roughSucc = 0.85;
+  else if (wdRate <= 0.05) roughSucc = 0.70;
+  else if (wdRate <= 0.06) roughSucc = 0.55;
+  else if (wdRate <= 0.08) roughSucc = 0.35;
+  else roughSucc = 0.15;
+  var succPct = Math.round(roughSucc * 100);
+  var grade;
+  if (succPct >= 95) grade = "A+";
+  else if (succPct >= 90) grade = "A";
+  else if (succPct >= 85) grade = "A\u2212";
+  else if (succPct >= 80) grade = "B+";
+  else if (succPct >= 75) grade = "B";
+  else if (succPct >= 70) grade = "B\u2212";
+  else if (succPct >= 60) grade = "C+";
+  else if (succPct >= 50) grade = "C";
+  else if (succPct >= 40) grade = "D";
+  else grade = "F";
+  var deathAge = sex === "F" ? 92 : 90;
+  return {
+    age:age, retAge:retAge, sex:sex, prov:prov, sal:sal, deathAge:deathAge,
+    totalSavings:Math.round(tot), rrsp:Math.round(rrsp), tfsa:Math.round(tfsa), nr:Math.round(nr),
+    retBal:retBal, qppMonthly:qppM, oasMonthly:oasM, dbPensionMonthly:penM,
+    govMonthly:govM, gapMonthly:gapM, retSpM:retSpM,
+    coveragePct:Math.min(100, Math.round(govM/Math.max(1,retSpM)*100)),
+    withdrawalRatePct: retBal > 0 ? Math.round(wdRate * 1000) / 10 : 99,
+    successPct:succPct, succ:roughSucc, grade:grade,
+    rMedF:Math.round(retBal * 0.4), rP25F:Math.round(retBal*0.15),
+    rP75F:Math.round(retBal*0.6), rP95F:Math.round(retBal*0.9),
+    rentalIncome:rentalInc,
+    _isMockPreview: true
+  };
+}
+
+// ============================================================
+// PAYWALL RENDERER
+// ============================================================
+function renderPaywall(D, lang) {
+  var fr = lang === "fr";
+  var t = function(f, e) { return fr ? f : e; };
+  var gradeColor = D.successPct >= 80 ? "#1a7a4c" : D.successPct >= 60 ? "#c49a1a" : "#b91c1c";
+  var gradeLabel = D.successPct >= 80 ? t("Votre plan est solide","Your plan is solid") : D.successPct >= 60 ? t("Votre plan a du potentiel","Your plan has potential") : t("Votre plan a besoin d\u2019ajustements","Your plan needs adjustments");
+  var h = '<div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:DM Sans,sans-serif">';
+  h += '<div style="text-align:center;margin-bottom:32px">';
+  h += '<div style="display:flex;justify-content:center">' + (typeof logoSVG !== "undefined" ? logoSVG("md","light") : '<div style="font-size:22px;font-weight:800;color:var(--g)">buildfi.ca</div>') + '</div>';
+  h += '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan 360","Bilan 360") + '</div>';
+  h += '</div>';
+  h += '<div style="background:linear-gradient(135deg,#1a2744,#2c3e6b);border-radius:20px;padding:36px;text-align:center;margin-bottom:24px">';
+  h += '<div style="font-size:12px;color:#c49a1a;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">' + t("VOTRE NOTE DE RETRAITE","YOUR RETIREMENT GRADE") + '</div>';
+  h += '<div style="font-size:80px;font-weight:800;color:#fff;line-height:1;margin-bottom:12px">' + D.grade + '</div>';
+  h += '<div style="font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + D.successPct + '% ' + t("de sc\u00e9narios r\u00e9ussis","of scenarios succeeded") + '</div>';
+  h += '<div style="display:inline-block;background:' + gradeColor + ';color:#fff;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600">' + gradeLabel + '</div>';
+  h += '</div>';
+  h += '<div style="background:#faf8f4;border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid #e8e4db">';
+  h += '<div style="font-size:15px;font-weight:700;color:#1a2744;margin-bottom:16px">' + t("Votre rapport complet inclut :","Your full report includes:") + '</div>';
+  var items = fr ? ["18 \u00e0 22 sections d\u2019analyse personnalis\u00e9es","Analyse de vos 5 000+ sc\u00e9narios simul\u00e9s","Projection des revenus (RRQ, PSV, pension, \u00e9pargne)","Mod\u00e9lisation du couple (deux conjoints)","Strat\u00e9gie de remboursement de dettes","Analyse des propri\u00e9t\u00e9s et revenus locatifs","Narration IA personnalis\u00e9e","Sc\u00e9narios what-if et strat\u00e9gies"] : ["18 to 22 personalized analysis sections","Analysis of your 5,000+ simulated scenarios","Income projection (QPP, OAS, pension, savings)","Couple modeling (both partners)","Debt repayment strategy","Property and rental income analysis","Personalized AI narration","What-if scenarios and strategies"];
+  items.forEach(function(item) { h += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px"><div style="color:#1a7a4c;font-size:14px;margin-top:2px;flex-shrink:0">\u2714</div><div style="font-size:14px;color:#444;line-height:1.5">' + item + '</div></div>'; });
+  h += '</div>';
+  h += '<div style="text-align:center;margin-bottom:20px">';
+  h += '<div style="font-size:13px;color:#888;margin-bottom:8px">' + t("Rapport personnalis\u00e9 \u2014 paiement unique","Personalized report \u2014 one-time payment") + '</div>';
+  h += '<div style="font-size:48px;font-weight:800;color:#1a2744;line-height:1;margin-bottom:4px">19,99 <span style="font-size:24px">$</span></div>';
+  h += '<div style="font-size:12px;color:#888;margin-bottom:20px">CAD</div>';
+  h += '<div id="email-gate" style="margin-bottom:16px">';
+  h += '<input id="buyer-email" type="email" placeholder="' + t("Votre adresse courriel","Your email address") + '" style="width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:15px;box-sizing:border-box;margin-bottom:12px;font-family:DM Sans,sans-serif">';
+  h += '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">';
+  h += '<input type="checkbox" id="terms-accept" style="margin-top:3px;cursor:pointer;flex-shrink:0">';
+  h += t('J\'accepte les <a href="/conditions.html" target="_blank" style="color:#c49a1a">conditions d\'utilisation</a> et l\'<a href="/avis-legal.html" target="_blank" style="color:#c49a1a">avis l\u00e9gal</a>.','I agree to the <a href="/conditions.html" target="_blank" style="color:#c49a1a">Terms of use</a> and <a href="/avis-legal.html" target="_blank" style="color:#c49a1a">Legal notice</a>.');
+  h += '</label>';
+  h += '<button onclick="startCheckout()" style="width:100%;padding:16px;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif">';
+  h += t("Obtenir mon Bilan 360 \u2192","Get my Bilan 360 \u2192");
+  h += '</button></div>';
+  h += '<div style="font-size:12px;color:#aaa">' + t("Paiement unique \u2014 livraison imm\u00e9diate par courriel","One-time payment \u2014 instant delivery by email") + '</div>';
+  h += '<div style="margin-top:20px;text-align:center"><button onclick="localStorage.removeItem(\'buildfi_quiz_360\');location.reload();" style="padding:10px 24px;background:transparent;border:1px solid #ccc;border-radius:8px;color:#888;font-size:13px;cursor:pointer;font-family:DM Sans,sans-serif">' + t("Recommencer le questionnaire","Restart questionnaire") + '</button></div>';
+  h += '</div></div>';
+  return h;
+}
+
+// ============================================================
+// STRIPE CHECKOUT
+// ============================================================
+function startCheckout() {
+  var fr = STATE.lang === "fr";
+  if (!document.getElementById("terms-accept").checked) {
+    alert(fr ? "Veuillez accepter les conditions pour continuer." : "Please accept the terms to continue.");
+    return;
+  }
+  var email = document.getElementById("buyer-email").value.trim();
+  if (!email || !email.includes("@")) {
+    alert(fr ? "Veuillez entrer une adresse courriel valide." : "Please enter a valid email address.");
+    return;
+  }
+  var btn = document.querySelector("#email-gate button");
+  btn.disabled = true;
+  btn.textContent = fr ? "Redirection..." : "Redirecting...";
+  ph("quiz_completed");
+  fetch("/api/checkout", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(Object.assign({
+      quizAnswers: STATE.quiz,
+      lang: STATE.lang,
+      email: email,
+      tier: "bilan360",
+      phase: STATE.phase,
+      termsAccepted: true
+    }, sessionStorage.getItem("bf_ref") ? {referralCode: sessionStorage.getItem("bf_ref")} : {}))
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.url) { window.location.href = data.url; }
+    else {
+      alert(fr ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
+      btn.disabled = false; btn.textContent = fr ? "Obtenir mon Bilan 360 \u2192" : "Get my Bilan 360 \u2192";
+    }
+  })
+  .catch(function() {
+    alert(fr ? "Erreur. Veuillez r\u00e9essayer." : "Error. Please try again.");
+    btn.disabled = false; btn.textContent = fr ? "Obtenir mon Bilan 360 \u2192" : "Get my Bilan 360 \u2192";
+  });
+}
+
+// ============================================================
+// RENDER ROUTER
+// ============================================================
+function render() {
+  var app = document.getElementById("app");
+  var s = STATE, q = s.quiz, fr = s.lang === "fr";
+  computePhase();
+  document.documentElement.lang = s.lang;
+  document.title = fr ? "buildfi.ca \u2014 Bilan 360" : "buildfi.ca \u2014 Bilan 360";
+  Object.keys(heroT).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && heroT[id][fr ? "fr" : "en"] !== undefined) el.innerHTML = heroT[id][fr ? "fr" : "en"];
+  });
+  saveState();
+  if (s.showPaywall && s.reportData) { app.innerHTML = renderPaywall(s.reportData, s.lang); return; }
+  if (s.step === "loading") {
+    app.innerHTML = renderLoading(fr);
+    if (!s.computed) {
+      s.computed = true;
+      STATE.reportData = generateMockPreview360(q);
+      STATE.showPaywall = true;
+      render();
+    }
+    return;
+  }
+  if (s.step === "confirm") { app.innerHTML = renderConfirm(q, s.lang); return; }
+  app.innerHTML = renderQuiz(s.step, q, s.lang);
+}
+
+function renderLoading(fr) {
+  return '<div style="max-width:520px;margin:80px auto;text-align:center;padding:24px">'
+    + '<div style="width:56px;height:56px;border-radius:50%;background:var(--gbg);border:2px solid var(--g);display:flex;align-items:center;justify-content:center;margin:0 auto 24px"></div>'
+    + '<h2 style="font-size:20px;font-weight:700;color:var(--g);margin-bottom:10px">' + (fr ? "Analyse en cours\u2026" : "Analyzing\u2026") + '</h2>'
+    + '<p style="color:var(--ts);font-size:14px;line-height:1.6;margin-bottom:6px">' + (fr ? "5\u00a0000+ sc\u00e9narios de retraite simul\u00e9s." : "Simulating 5,000+ retirement scenarios.") + '</p>'
+    + '<div><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div></div>';
+}
+
+// ============================================================
+// CONFIRM SCREEN
+// ============================================================
+function renderConfirm(q, lang) {
+  var fr = lang === "fr", t = function(f, e) { return fr ? f : e; };
+  var fmt = function(n) { if (!n || n === 0) return "\u2014"; return Math.abs(Math.round(n)).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, " ") + " $"; };
+  var ph = STATE.phase;
+  function row(label, value, flag) {
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bdl)"><span style="font-size:13px;color:var(--tm)">' + label + '</span><span style="font-size:13px;font-weight:600;color:' + (flag ? "#CC4444" : "var(--tx)") + '">' + value + '</span></div>';
+  }
+  function scard(title, content, editTarget) {
+    return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:var(--g)">' + title + '</div><button onclick="go(' + JSON.stringify(editTarget) + ')" style="font-size:12px;color:var(--g);background:transparent;border:1px solid var(--bd);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:DM Sans,sans-serif">' + t("Modifier","Edit") + '</button></div><div>' + content + '</div></div>';
+  }
+
+  var warnings = [];
+  if (ph !== "decum" && q.retAge <= q.age) warnings.push(t("L\u2019\u00e2ge de retraite doit \u00eatre sup\u00e9rieur \u00e0 l\u2019\u00e2ge actuel.","Retirement age must be greater than current age."));
+  if (ph !== "decum" && q.income <= 0) warnings.push(t("Revenu annuel non saisi.","Annual income not entered."));
+  if (ph === "decum" && (!q.retIncome || q.retIncome <= 0)) warnings.push(t("Revenu de retraite cible non saisi.","Target retirement income not entered."));
+
+  var html = '<div style="max-width:580px;margin:0 auto;padding:32px 20px 80px">';
+  html += '<div style="text-align:center;margin-bottom:24px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">' + t("V\u00e9rification","Review") + '</div>';
+  html += '<h2 style="font-size:22px;font-weight:800;margin-bottom:10px">' + t("Vos informations sont-elles exactes\u00a0?","Is your information correct?") + '</h2>';
+  html += '<p style="font-size:14px;color:var(--ts);line-height:1.6;max-width:440px;margin:0 auto">' + t("Prenez 30 secondes pour v\u00e9rifier.","Take 30 seconds to verify.") + '</p>';
+  html += '<div class="phase-badge" style="margin-top:12px">' + (ph === "accum" ? t("Phase : Accumulation","Phase: Accumulation") : ph === "transition" ? t("Phase : Transition","Phase: Transition") : t("Phase : D\u00e9caissement","Phase: Decumulation")) + '</div>';
+  html += '</div>';
+
+  if (warnings.length > 0) {
+    html += '<div style="background:#FFF8E6;border:1px solid #E6B800;border-radius:10px;padding:14px 16px;margin-bottom:18px">';
+    html += '<div style="font-size:13px;font-weight:700;color:#c49a1a;margin-bottom:8px">' + t("Points \u00e0 v\u00e9rifier","Points to verify") + '</div>';
+    warnings.forEach(function(w) { html += '<div style="font-size:12px;color:#7A5A00;padding:5px 0 5px 12px;border-left:3px solid #E6B800;margin-bottom:6px;line-height:1.5">' + w + '</div>'; });
+    html += '</div>';
+  }
+
+  // Profile card
+  var profileRows = row(t("\u00c2ge actuel","Current age"), q.age + " " + t("ans","yrs"))
+    + row(t("\u00c2ge de retraite","Retirement age"), q.retAge + " " + t("ans","yrs"), ph !== "decum" && q.retAge <= q.age)
+    + row(t("Sexe","Sex"), q.sex === "F" ? t("Femme","Female") : t("Homme","Male"))
+    + row("Province", provName(q.prov))
+    + row(t("Situation","Situation"), q.couple === "yes" ? t("En couple","With partner") : t("C\u00e9libataire","Single"));
+  if (ph === "decum" && q.retirementStatus) {
+    var rsLabel = q.retirementStatus === "retired" ? t("D\u00e9j\u00e0 \u00e0 la retraite","Already retired") : t("Retraite imminente","Retiring soon");
+    profileRows += row(t("Statut","Status"), rsLabel);
+  }
+  html += scard(t("Profil de base","Basic profile"), profileRows, 1);
+
+  // Spouse card
+  if (q.couple === "yes") {
+    html += scard(t("Conjoint\u00b7e","Spouse"),
+      row(t("\u00c2ge","Age"), q.cAge + " " + t("ans","yrs"))
+      + row(t("Retraite","Retirement"), q.cRetAge + " " + t("ans","yrs"))
+      + row("REER", fmt(q.cRrsp)) + row("C\u00c9LI", fmt(q.cTfsa))
+      + (q.cPenType !== "none" ? row(t("Pension","Pension"), fmt(q.cPenM) + t("/mois","/mo")) : "")
+    , "2a");
+  }
+
+  // Income/Savings card
+  if (ph !== "decum") {
+    html += scard(t("Revenus et \u00e9pargne","Income & savings"),
+      row(t("Revenu annuel brut","Gross annual income"), fmt(q.income), q.income <= 0)
+      + row("REER", fmt(q.rrsp)) + row("C\u00c9LI", fmt(q.tfsa))
+      + row(t("Non enregistr\u00e9","Non-reg"), fmt(q.nr))
+      + (q.lira > 0 ? row("CRI/REER immobilis\u00e9", fmt(q.lira)) : "")
+      + row(t("Cotisation mensuelle","Monthly contribution"), fmt(q.monthlyContrib))
+    , 3);
+  } else {
+    html += scard(t("\u00c9pargne","Savings"),
+      row("REER", fmt(q.rrsp)) + row("C\u00c9LI", fmt(q.tfsa))
+      + row(t("Non enregistr\u00e9","Non-reg"), fmt(q.nr))
+      + (q.lira > 0 ? row("CRI/REER immobilis\u00e9", fmt(q.lira)) : "")
+    , 4);
+    html += scard(t("Revenus de retraite","Retirement income"),
+      row(t("Revenu cible","Target income"), fmt(q.retIncome) + t("/an","/yr"), q.retIncome <= 0)
+      + row(q.prov === "QC" ? "RRQ" : "RPC", q.qppAlreadyClaiming ? fmt(q.qppMonthly) + t("/mois","/mo") : t("Pr\u00e9vu \u00e0 ","Planned at ") + q.qppPlannedAge + " " + t("ans","yrs"))
+      + row("PSV/OAS", q.oasAlreadyClaiming ? fmt(q.oasMonthly) + t("/mois","/mo") : t("Pr\u00e9vu \u00e0 ","Planned at ") + q.oasPlannedAge + " " + t("ans","yrs"))
+    , 6);
+  }
+
+  // Property card
+  var propRows = "";
+  if (q.homeowner) propRows += row(t("R\u00e9sidence","Home"), fmt(q.homeValue)) + (q.mortgage > 0 ? row(t("Hypoth\u00e8que","Mortgage"), fmt(q.mortgage)) : "");
+  if ((q.rentals||[]).length > 0) {
+    q.rentals.forEach(function(r, i) { propRows += row(t("Locatif","Rental") + " " + (i+1), fmt(r.value)); });
+  }
+  var totalDebt = (q.debts||[]).reduce(function(s,d){return s+(d.amount||0);},0);
+  if (totalDebt > 0) propRows += row(t("Dettes totales","Total debts"), fmt(totalDebt));
+  if (propRows) html += scard(t("Patrimoine","Assets"), propRows, "5");
+
+  html += '<div style="margin-top:24px">';
+  html += '<button class="pbtn" onclick="go(\'loading\')" style="font-size:16px">' + t("Tout est exact \u2014 voir mon rapport \u2192","All correct \u2014 see my report \u2192") + '</button>';
+  html += '<button class="pbtn-sec" onclick="go(' + JSON.stringify(prevStep("confirm")) + ')">' + t("Retour aux questions","Back to questions") + '</button>';
+  html += '</div></div>';
+  return html;
+}
+
+// ============================================================
+// QUIZ SCREENS
+// ============================================================
+function renderQuiz(step, q, lang) {
+  var fr = lang === "fr", t = function(f,e){return fr?f:e;};
+  var ph = STATE.phase;
+  var isQC = q.prov === "QC";
+  var qppLabel = isQC ? (fr ? "RRQ" : "QPP") : (fr ? "RPC" : "CPP");
+  var ts = countableSteps();
+
+  // Logo fallback
+  if (typeof logoSVG === "undefined") { window.logoSVG = function(size,ctx){var tf=ctx==="dark"?"#faf8f4":"#1a2744";var mo=ctx==="dark"?"0.40":"0.50";var s=size==="lg"?1.4:size==="md"?1.0:0.7;var w=Math.round(220*s);var h=Math.round(48*s);return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 220 48" style="display:block"><g><rect x="0" y="32" width="28" height="8" rx="2" fill="'+tf+'"/><rect x="4" y="22" width="26" height="8" rx="2" fill="'+tf+'" opacity="'+mo+'"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c49a1a"/></g><text x="40" y="38" font-family="Plus Jakarta Sans,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5"><tspan fill="'+tf+'">build</tspan><tspan fill="#c49a1a">fi</tspan></text></svg>';}; }
+
+  function progressBar(sn) {
+    var pn = progressNum(sn);
+    var pct = Math.round(pn / ts * 100);
+    return '<div style="margin-bottom:28px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px"><span style="font-weight:600">' + t("\u00c9tape","Step") + ' ' + pn + ' / ' + ts + '</span><span style="font-weight:700;color:var(--g)">' + pct + '%</span></div><div role="progressbar" aria-valuenow="' + pn + '" aria-valuemin="0" aria-valuemax="' + ts + '" aria-label="' + t("Progression","Progress") + '" style="height:4px;background:var(--bdl);border-radius:2px"><div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:' + pct + '%;transition:width .3s"></div></div></div>';
+  }
+  function wrap(inner, sn) {
+    return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 60px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>';
+  }
+  function backBtn(target) {
+    return '<button class="pbtn-sec" onclick="go(' + JSON.stringify(target) + ')">' + t("Retour","Back") + '</button>';
+  }
+  function contBtn(target, label) {
+    return '<button class="pbtn" onclick="go(' + JSON.stringify(target) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>';
+  }
+
+  // ========== STEP 0: INTRO ==========
+  if (step === 0) {
+    return '<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:var(--quiz-max);margin:0 auto;padding:40px 24px">'
+      + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
+      + '<button onclick="STATE.lang=\'fr\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">FR</button>'
+      + '<button onclick="STATE.lang=\'en\';saveState();render()" style="padding:6px 16px;border-radius:6px;border:' + (!fr?"2px solid var(--g)":"1px solid var(--bd)") + ';background:' + (!fr?"var(--gbg)":"var(--bgc)") + ';font-size:12px;font-weight:700;cursor:pointer;color:var(--g)">EN</button></div>'
+      + '<div style="text-align:center;margin-bottom:28px"><div style="display:flex;justify-content:center">' + logoSVG("lg","light") + '</div>'
+      + '<div style="font-size:11px;color:var(--tm);letter-spacing:1.2px;text-transform:uppercase;margin-top:8px">' + t("Bilan 360","Bilan 360") + '</div>'
+      + '<div style="font-size:13px;color:var(--ts);margin-top:6px;font-style:italic">' + t("Analyse adaptative selon votre phase de vie.","Adaptive analysis based on your life phase.") + '</div></div>'
+      + '<h1 style="font-size:28px;font-weight:800;line-height:1.25;text-align:center;margin:0 0 14px">'
+      + t("Votre analyse retraite<br>compl\u00e8te.","Your complete retirement<br>analysis.")
+      + '</h1>'
+      + '<p style="font-size:15px;color:var(--ts);line-height:1.7;text-align:center;max-width:440px;margin:0 auto 28px">'
+      + t("7 \u00e0 10 minutes. 18-22 sections. 5\u00a0000+ sc\u00e9narios.","7 to 10 minutes. 18-22 sections. 5,000+ scenarios.")
+      + '</p>'
+      + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:14px;padding:22px 24px;margin-bottom:24px">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:14px;text-transform:uppercase;letter-spacing:.8px">'
+      + t("Documents sugg\u00e9r\u00e9s","Suggested documents") + '</div>'
+      + '<div style="display:grid;gap:6px">'
+      + [
+        {f:"\u00c9pargne par compte (REER, C\u00c9LI, NR, CRI)",e:"Savings by account (RRSP, TFSA, non-reg, LIRA)"},
+        {f:"Revenus du m\u00e9nage et du conjoint",e:"Household and spouse income"},
+        {f:"D\u00e9tails hypoth\u00e9caire et locatifs",e:"Mortgage and rental details"},
+        {f:"Relev\u00e9s de pension (si applicable)",e:"Pension statements (if applicable)"}
+      ].map(function(item){return '<div style="display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--ts)"><div style="color:var(--gn);font-size:12px;margin-top:2px;flex-shrink:0">\u2714</div>' + t(item.f,item.e) + '</div>';}).join("")
+      + '</div>'
+      + '<div style="font-size:14px;color:var(--tm);margin-top:14px;padding-top:10px;border-top:1px solid var(--bdl)">'
+      + t("Des estimations raisonnables suffisent.","Reasonable estimates are fine.") + '</div></div>'
+      + contBtn(1, t("Commencer mon Bilan 360 \u2192","Start my Bilan 360 \u2192"))
+      + '</div>';
+  }
+
+  // ========== STEP 1: PROFILE ==========
+  if (step === 1) {
+    var sexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card'+(q.sex===o.v?" sel":"")+'" onclick="uq(\'sex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:14px"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
+    var provOpts = ["QC","ON","BC","AB","MB","SK","NS","NB","NL","PE","NT","YT","NU"].map(function(p){return '<option value="'+p+'"'+(q.prov===p?" selected":"")+'>'+provName(p)+'</option>';}).join("");
+    var coupleCards = [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.couple===o.v?" sel":"")+'" onclick="uq(\'couple\',\''+o.v+'\')" style="flex:1;text-align:center"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
+
+    // Show retirement status for potential decum detection
+    var retStatusSection = '';
+    if (q.age >= 50) {
+      var retStatCards = [{v:null,l:t("Non, je travaille toujours","No, I\'m still working")},{v:"retired",l:t("Oui, d\u00e9j\u00e0 \u00e0 la retraite","Yes, already retired")}].map(function(o){return '<div tabindex="0" class="card'+(q.retirementStatus===o.v?" sel":"")+'" onclick="uq(\'retirementStatus\',' + (o.v === null ? 'null' : '\''+o.v+'\'') + ')"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      retStatusSection = '<div class="fld-block" style="margin-top:8px"><label class="fld-label">' + t("\u00cates-vous d\u00e9j\u00e0 \u00e0 la retraite\u00a0?","Are you already retired?") + '</label>' + retStatCards + '</div>';
+    }
+
+    return wrap(
+      '<div class="phase-badge">' + t("\u00c9tape 1 \u2014 Votre profil","Step 1 \u2014 Your profile") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Parlons de vous","About you") + '</h2>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge actuel","Current age") + '</label><input class="inp" type="number" min="18" max="80" value="' + q.age + '" oninput="uqd(\'age\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge aimeriez-vous prendre votre retraite\u00a0?","At what age would you like to retire?") + '</label>'
+      + '<div style="display:flex;align-items:center;gap:14px"><input type="range" min="40" max="75" value="' + q.retAge + '" oninput="uq(\'retAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:24px;font-weight:800;color:var(--g);min-width:42px;text-align:center">' + q.retAge + '</span></div></div>'
+      + retStatusSection
+      + '<div class="fld-block"><label class="fld-label">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px">' + sexCards + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">Province</label><select class="inp" onchange="uq(\'prov\',this.value)">' + provOpts + '</select></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Vivez-vous en couple\u00a0?","Do you live with a partner?") + '</label><div style="display:flex;gap:8px">' + coupleCards + '</div></div>'
+      + contBtn(nextStep(1)) + backBtn(0)
+    , 1);
+  }
+
+  // ========== STEP 2a: SPOUSE PROFILE ==========
+  if (step === "2a") {
+    var cSexCards = [{v:"M",l:t("Homme","Male")},{v:"F",l:t("Femme","Female")}].map(function(o){return '<div tabindex="0" class="card'+(q.cSex===o.v?" sel":"")+'" onclick="uq(\'cSex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Conjoint\u00b7e \u2014 Profil","Spouse \u2014 Profile") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Profil de votre conjoint\u00b7e","Your spouse\'s profile") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Ces donn\u00e9es permettent une mod\u00e9lisation compl\u00e8te du m\u00e9nage.","This data enables complete household modeling.") + '</p>'
+      + '<div style="background:var(--blbg);border:1px solid rgba(70,128,192,.15);border-radius:12px;padding:20px">'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge du/de la conjoint\u00b7e","Spouse age") + '</label><input class="inp" type="number" min="18" max="95" value="' + (q.cAge||40) + '" oninput="uqd(\'cAge\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Sexe","Sex") + '</label><div style="display:flex;gap:8px">' + cSexCards + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge de retraite pr\u00e9vu","Planned retirement age") + '</label>'
+      + '<div style="display:flex;align-items:center;gap:14px"><input type="range" min="40" max="75" value="' + (q.cRetAge||63) + '" oninput="uq(\'cRetAge\',+this.value)" style="flex:1" /><span style="font-family:monospace;font-size:22px;font-weight:800;color:var(--bl);min-width:42px;text-align:center">' + (q.cRetAge||63) + '</span></div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Revenu annuel brut ($)","Annual gross income ($)") + '</label><input class="inp" type="number" min="0" step="1000" value="' + (q.cIncome||0) + '" oninput="uqd(\'cIncome\',this.value)" /></div>'
+      + '</div>'
+      + contBtn("2b") + backBtn(1)
+    , "2a");
+  }
+
+  // ========== STEP 2b: SPOUSE SAVINGS & PENSION ==========
+  if (step === "2b") {
+    var cPenTypeCards = [{v:"none",l:t("Aucune","None")},{v:"db",l:t("Prestations d\u00e9termin\u00e9es","Defined benefit")},{v:"dc",l:t("Cotisations d\u00e9termin\u00e9es","Defined contribution")}].map(function(o){return '<div tabindex="0" class="card'+(q.cPenType===o.v?" sel":"")+'" onclick="uq(\'cPenType\',\''+o.v+'\')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var cIdxCards = [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.cPenIdx===o.v?" sel":"")+'" onclick="uq(\'cPenIdx\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var splitCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.pensionSplitting===o.v?" sel":"")+'" onclick="uq(\'pensionSplitting\','+o.v+')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Conjoint\u00b7e \u2014 \u00c9pargne","Spouse \u2014 Savings") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("\u00c9pargne et pension du conjoint\u00b7e","Spouse savings & pension") + '</h2>'
+      + '<div style="background:var(--blbg);border:1px solid rgba(70,128,192,.15);border-radius:12px;padding:20px;margin-bottom:16px">'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+      + '<div class="fld-block"><label class="fld-label">REER ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cRrsp||0) + '" oninput="uqd(\'cRrsp\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">C\u00c9LI ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cTfsa||0) + '" oninput="uqd(\'cTfsa\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Non enregistr\u00e9","Non-reg") + ' ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cNr||0) + '" oninput="uqd(\'cNr\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">CRI/LIRA ($)</label><input class="inp inp-sm" type="number" min="0" step="1000" value="' + (q.cLira||0) + '" oninput="uqd(\'cLira\',this.value)" /></div>'
+      + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Cotisation mensuelle ($)","Monthly contribution ($)") + '</label><input class="inp" type="number" min="0" step="50" value="' + (q.cMonthlyContrib||0) + '" oninput="uqd(\'cMonthlyContrib\',this.value)" /></div>'
+      + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Pension d\u2019employeur du conjoint\u00b7e","Spouse employer pension") + '</label>' + cPenTypeCards + '</div>'
+      + (q.cPenType !== "none" ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)","Monthly amount ($)") + '</label><input class="inp" type="number" min="0" step="50" value="' + (q.cPenM||0) + '" oninput="uqd(\'cPenM\',this.value)" /></div><div class="fld-block"><label class="fld-label">' + t("Index\u00e9e\u00a0?","Indexed?") + '</label><div style="display:flex;gap:8px">' + cIdxCards + '</div></div>' : '')
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge RRQ/RPC conjoint","Spouse QPP/CPP age") + '</label><input class="inp inp-sm" type="number" min="60" max="70" value="' + (q.cQppAge||65) + '" oninput="uqd(\'cQppAge\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c2ge PSV/OAS conjoint","Spouse OAS age") + '</label><input class="inp inp-sm" type="number" min="65" max="70" value="' + (q.cOasAge||65) + '" oninput="uqd(\'cOasAge\',this.value)" /></div>'
+      + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Fractionnement de pension\u00a0?","Pension splitting?") + '</label><div style="display:flex;gap:8px">' + splitCards + '</div>'
+      + '<div class="fld-sub">' + t("Le fractionnement du revenu de pension entre conjoints peut r\u00e9duire l\u2019imp\u00f4t total du m\u00e9nage.","Pension income splitting between spouses can reduce total household tax.") + '</div></div>'
+      + contBtn(3) + backBtn("2a")
+    , "2b");
+  }
+
+  // ========== STEP 3: INCOME ==========
+  if (step === 3) {
+    if (ph === "decum") {
+      // Decum: retirement status instead of income
+      var retStatCards2 = [{v:"retired",l:t("D\u00e9j\u00e0 \u00e0 la retraite","Already retired")},{v:"within_1yr",l:t("Moins d\u20191 an","Within 1 year")},{v:"within_2yr",l:t("1 \u00e0 2 ans","1 to 2 years")}].map(function(o){return '<div tabindex="0" class="card'+(q.retirementStatus===o.v?" sel":"")+'" onclick="uq(\'retirementStatus\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      return wrap(
+        '<div class="phase-badge">' + t("Phase de d\u00e9caissement","Decumulation phase") + '</div>'
+        + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Votre statut de retraite","Your retirement status") + '</h2>'
+        + '<div class="fld-block">' + retStatCards2 + '</div>'
+        + contBtn(4) + backBtn(prevStep(3))
+      , 3);
+    }
+    // Accum/Transition: income + employer
+    var empCards = [{v:"gov",l:t("Gouvernement","Government"),d:t("Pension \u00e0 prestations d\u00e9termin\u00e9es","Defined benefit pension")},{v:"large",l:t("Grande entreprise","Large company"),d:t("R\u00e9gime de cotisations","Contribution matching")},{v:"tech",l:"Tech / Startup",d:t("Cotisations et options","Contributions and options")},{v:"small",l:t("PME / Travailleur autonome","Small business / Self-employed"),d:t("Pas de r\u00e9gime employeur","No employer plan")}].map(function(o){return '<div tabindex="0" class="card'+(q.employer===o.v?" sel":"")+'" onclick="uq(\'employer\',\''+o.v+'\')" ><div style="font-weight:700;font-size:14px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:2px">'+o.d+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Revenus","Income") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Emploi et revenus","Employment & income") + '</h2>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Revenu annuel brut ($)","Annual gross income ($)") + '</label><input class="inp" type="number" min="0" max="500000" step="1000" value="' + q.income + '" oninput="uqd(\'income\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Type d\u2019employeur","Employer type") + '</label>' + empCards + '</div>'
+      + contBtn(4) + backBtn(prevStep(3))
+    , 3);
+  }
+
+  // ========== STEP 4: SAVINGS ==========
+  if (step === 4) {
+    return wrap(
+      '<div class="phase-badge">' + t("\u00c9pargne","Savings") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("\u00c9pargne par compte","Savings by account") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("La r\u00e9partition entre les comptes influence la strat\u00e9gie fiscale et l\u2019ordre de retrait.","The split between accounts influences tax strategy and withdrawal order.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">REER / RRSP ($)</label><input class="inp" type="number" min="0" step="1000" value="' + (q.rrsp||0) + '" oninput="uqd(\'rrsp\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">C\u00c9LI / TFSA ($)</label><input class="inp" type="number" min="0" step="1000" value="' + (q.tfsa||0) + '" oninput="uqd(\'tfsa\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Non enregistr\u00e9","Non-registered") + ' ($)</label><input class="inp" type="number" min="0" step="1000" value="' + (q.nr||0) + '" oninput="uqd(\'nr\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">CRI / LIRA ($)</label><input class="inp" type="number" min="0" step="1000" value="' + (q.lira||0) + '" oninput="uqd(\'lira\',this.value)" /><div class="fld-sub">' + t("Optionnel. Laissez \u00e0 0 si non applicable.","Optional. Leave at 0 if not applicable.") + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Cotisation mensuelle totale ($)","Total monthly contribution ($)") + '</label><input class="inp" type="number" min="0" max="10000" step="50" value="' + (q.monthlyContrib||0) + '" oninput="uqd(\'monthlyContrib\',this.value)" /></div>'
+      + contBtn("5") + backBtn(3)
+    , 4);
+  }
+
+  // Continued in next part...
+  return renderQuizPart2(step, q, lang);
+}
+
+// ============================================================
+// QUIZ SCREENS PART 2 (Steps 5-9)
+// ============================================================
+function renderQuizPart2(step, q, lang) {
+  var fr = lang === "fr", t = function(f,e){return fr?f:e;};
+  var ph = STATE.phase;
+  var ts = countableSteps();
+
+  function progressBar(sn) {
+    var pn = progressNum(sn); var pct = Math.round(pn / ts * 100);
+    return '<div style="margin-bottom:28px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px"><span style="font-weight:600">' + t("\u00c9tape","Step") + ' ' + pn + ' / ' + ts + '</span><span style="font-weight:700;color:var(--g)">' + pct + '%</span></div><div role="progressbar" style="height:4px;background:var(--bdl);border-radius:2px"><div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:' + pct + '%;transition:width .3s"></div></div></div>';
+  }
+  function wrap(inner, sn) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 60px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>'; }
+  function backBtn(target) { return '<button class="pbtn-sec" onclick="go(' + JSON.stringify(target) + ')">' + t("Retour","Back") + '</button>'; }
+  function contBtn(target, label) { return '<button class="pbtn" onclick="go(' + JSON.stringify(target) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; }
+
+  // ========== STEP 5: PROPERTY + RENTALS + DEBTS ==========
+  if (step === "5") {
+    var homeCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.homeowner===o.v?" sel":"")+'" onclick="uq(\'homeowner\','+o.v+')" style="flex:1;text-align:center"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
+    var homeInputs = q.homeowner ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'
+      + '<div class="fld-block"><label class="fld-label">' + t("Valeur ($)","Value ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="10000" value="' + (q.homeValue||0) + '" oninput="uqd(\'homeValue\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Hypoth\u00e8que ($)","Mortgage ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="5000" value="' + (q.mortgage||0) + '" oninput="uqd(\'mortgage\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Taux (%)","Rate (%)") + '</label><input class="inp inp-sm" type="number" min="0" max="15" step="0.1" value="' + parseFloat(q.mortgageRate||5.0).toFixed(1) + '" oninput="uqd(\'mortgageRate\',this.value)" /></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Ann\u00e9es restantes","Years remaining") + '</label><input class="inp inp-sm" type="number" min="1" max="30" value="' + (q.mortgageAmort||20) + '" oninput="uqd(\'mortgageAmort\',this.value)" /></div>'
+      + '</div>' : '';
+
+    // Rental properties
+    var rentalCards = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.hasRental===o.v?" sel":"")+'" onclick="uq(\'hasRental\','+o.v+')" style="flex:1;text-align:center"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
+    var rentalInputs = '';
+    if (q.hasRental) {
+      if (q.rentals.length === 0) q.rentals.push({value:0, mortgage:0, mortgageRate:5.0, mortgageAmort:20, rentalIncome:0, expenses:0});
+      rentalInputs = q.rentals.map(function(r, i) {
+        return '<div style="background:var(--gnbg);border:1px solid rgba(42,140,70,.15);border-radius:10px;padding:16px;margin-top:10px;margin-bottom:8px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:12px;font-weight:700;color:var(--gn)">' + t("Locatif","Rental") + ' ' + (i+1) + '</span>' + (q.rentals.length > 1 ? '<button onclick="removeRental('+i+')" style="font-size:11px;color:var(--rd);background:transparent;border:1px solid var(--rd);border-radius:4px;padding:2px 8px;cursor:pointer">' + t("Retirer","Remove") + '</button>' : '') + '</div>'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+          + '<div class="fld-block"><label class="fld-label">' + t("Valeur ($)","Value ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="5000" value="' + (r.value||0) + '" oninput="setRentalField('+i+',\'value\',this.value)" /></div>'
+          + '<div class="fld-block"><label class="fld-label">' + t("Hypoth\u00e8que ($)","Mortgage ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="5000" value="' + (r.mortgage||0) + '" oninput="setRentalField('+i+',\'mortgage\',this.value)" /></div>'
+          + '<div class="fld-block"><label class="fld-label">' + t("Revenu locatif annuel ($)","Annual rental income ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="500" value="' + (r.rentalIncome||0) + '" oninput="setRentalField('+i+',\'rentalIncome\',this.value)" /></div>'
+          + '<div class="fld-block"><label class="fld-label">' + t("D\u00e9penses annuelles ($)","Annual expenses ($)") + '</label><input class="inp inp-sm" type="number" min="0" step="500" value="' + (r.expenses||0) + '" oninput="setRentalField('+i+',\'expenses\',this.value)" /></div>'
+          + '</div></div>';
+      }).join("");
+      if (q.rentals.length < 2) {
+        rentalInputs += '<button onclick="addRental()" style="font-size:13px;color:var(--g);background:transparent;border:1px dashed var(--g);border-radius:8px;padding:8px 16px;cursor:pointer;margin-top:6px;width:100%">' + t("+ Ajouter un 2e locatif","+ Add 2nd rental") + '</button>';
+      }
+    }
+
+    // Debts
+    var debtToggle = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.hasDebts===o.v?" sel":"")+'" onclick="uq(\'hasDebts\','+o.v+')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600">'+o.l+'</div></div>';}).join("");
+    var debtTypes = [{v:"cc",l:t("Carte de cr\u00e9dit","Credit card"),r:19.9},{v:"student",l:t("Pr\u00eat \u00e9tudiant","Student loan"),r:5.5},{v:"car",l:t("Pr\u00eat automobile","Car loan"),r:6.5},{v:"loc",l:t("Marge de cr\u00e9dit","Line of credit"),r:7.5},{v:"other",l:t("Autre dette","Other debt"),r:7.0}];
+    var debtInputs = q.hasDebts ? debtTypes.map(function(dt) {
+      var d = q.debts.find(function(x){return x.type===dt.v;}) || {type:dt.v, amount:0, minPayment:0, rate:dt.r};
+      var curRate = parseFloat(d.rate != null ? d.rate : dt.r).toFixed(1);
+      return '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:8px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:700;font-size:14px">' + dt.l + '</span><div style="display:flex;align-items:center;gap:4px"><input type="number" min="0" max="30" step="0.1" value="' + curRate + '" oninput="setDebtField(\''+dt.v+'\',\'rate\',this.value)" style="width:60px;padding:6px 8px;border-radius:6px;border:1px solid var(--bd);font-size:14px;font-family:DM Sans,sans-serif;text-align:right" /><span style="font-size:12px;color:var(--tm)">%</span></div></div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Solde ($)","Balance ($)") + '</label><input type="number" min="0" step="100" value="' + (d.amount||0) + '" oninput="setDebtField(\''+dt.v+'\',\'amount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
+        + '<div><label style="font-size:12px;color:var(--ts)">' + t("Paiement min. ($)","Min. payment ($)") + '</label><input type="number" min="0" step="10" value="' + (d.minPayment||0) + '" oninput="setDebtField(\''+dt.v+'\',\'minPayment\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:15px;margin-top:4px" /></div>'
+        + '</div></div>';
+    }).join("") : '';
+
+    return wrap(
+      '<div class="phase-badge">' + t("Patrimoine","Assets") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Propri\u00e9t\u00e9s et dettes","Properties & debts") + '</h2>'
+      + '<div class="section-head">' + t("R\u00e9sidence principale","Primary residence") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00cates-vous propri\u00e9taire\u00a0?","Are you a homeowner?") + '</label><div style="display:flex;gap:8px">' + homeCards + '</div></div>'
+      + homeInputs
+      + '<div class="section-head">' + t("Propri\u00e9t\u00e9s locatives","Rental properties") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Poss\u00e9dez-vous des immeubles locatifs\u00a0?","Do you own rental properties?") + '</label><div style="display:flex;gap:8px">' + rentalCards + '</div></div>'
+      + rentalInputs
+      + '<div class="section-head">' + t("Dettes","Debts") + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Avez-vous des dettes\u00a0?","Do you have debts?") + '</label><div style="display:flex;gap:8px">' + debtToggle + '</div></div>'
+      + debtInputs
+      + contBtn(6) + backBtn(4)
+    , "5");
+  }
+
+  // ========== STEP 6: PHASE-SPECIFIC ==========
+  if (step === 6) {
+    if (ph === "decum") {
+      // Decum step 6: Retirement income + pension + spending flexibility
+      var flexCards = [{v:"rigid",l:t("Rigide","Rigid"),d:t("Montant fixe chaque ann\u00e9e","Fixed amount every year")},{v:"moderate",l:t("Mod\u00e9r\u00e9e","Moderate"),d:t("R\u00e9duction de 20\u00a0% possible","Up to 20% reduction possible")},{v:"flexible",l:t("Flexible","Flexible"),d:t("Ajustement selon les march\u00e9s","Adjust based on markets")}].map(function(o){return '<div tabindex="0" class="card'+(q.spendingFlex===o.v?" sel":"")+'" onclick="uq(\'spendingFlex\',\''+o.v+'\')" ><div style="font-weight:700;font-size:13px">'+o.l+'</div><div style="font-size:12px;color:var(--ts);margin-top:3px">'+o.d+'</div></div>';}).join("");
+      var penYN = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.hasPension===o.v?" sel":"")+'" onclick="uq(\'hasPension\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("");
+      var penFields = q.hasPension ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)","Monthly amount ($)") + '</label><input class="inp" type="number" min="0" step="50" value="' + (q.penMonthly||0) + '" oninput="uqd(\'penMonthly\',this.value)" /></div><div class="fld-block"><label class="fld-label">' + t("Index\u00e9e\u00a0?","Indexed?") + '</label><div style="display:flex;gap:8px">' + [{v:"yes",l:t("Oui","Yes")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.penIndexed===o.v?" sel":"")+'" onclick="uq(\'penIndexed\',\''+o.v+'\')" style="flex:1;text-align:center;padding:10px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("") + '</div></div>' : '';
+      return wrap(
+        '<div class="phase-badge">' + t("D\u00e9caissement \u2014 Revenus","Decumulation \u2014 Income") + '</div>'
+        + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Revenus de retraite","Retirement income") + '</h2>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Revenu annuel cible ($)","Annual target income ($)") + '</label><input class="inp" type="number" min="0" step="1000" value="' + (q.retIncome||0) + '" oninput="uqd(\'retIncome\',this.value)" /><div class="fld-sub">' + t("Toutes d\u00e9penses confondues, avant imp\u00f4ts.","All expenses included, before taxes.") + '</div></div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Avez-vous une pension d\u2019employeur\u00a0?","Do you have an employer pension?") + '</label><div style="display:flex;gap:8px">' + penYN + '</div></div>'
+        + penFields
+        + '<div class="fld-block"><label class="fld-label">' + t("Flexibilit\u00e9 des d\u00e9penses","Spending flexibility") + '</label>' + flexCards + '</div>'
+        + contBtn(7) + backBtn("5")
+      , 6);
+    }
+    // Accum/Transition step 6: Lifestyle + risk + part-time
+    var lsCards = [{v:"cozy",l:t("Tranquille","Cozy"),d:t("~3 000 $/mois","~$3,000/mo")},{v:"active",l:t("Actif","Active"),d:t("~5 000 $/mois","~$5,000/mo")},{v:"premium",l:t("Premium","Premium"),d:t("~7 500 $/mois","~$7,500/mo")}].map(function(o){return '<div tabindex="0" class="card'+(q.lifestyle===o.v?" sel":"")+'" onclick="uq(\'lifestyle\',\''+o.v+'\')" ><div style="font-weight:700">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
+    var riskCards = [{v:"conservative",l:t("Prudent","Conservative"),d:"50% " + t("actions","equity")},{v:"balanced",l:t("\u00c9quilibr\u00e9","Balanced"),d:"70% " + t("actions","equity")},{v:"growth",l:t("Croissance","Growth"),d:"85% " + t("actions","equity")}].map(function(o){return '<div tabindex="0" class="card'+(q.risk===o.v?" sel":"")+'" onclick="uq(\'risk\',\''+o.v+'\')" ><div style="font-weight:700">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
+    var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-\u00eatre","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.parttime===o.v?" sel":"")+'" onclick="uq(\'parttime\',\''+o.v+'\')" style="flex:1;text-align:center"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
+    var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estim\u00e9 ($)","Estimated monthly income ($)") + '</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uqd(\'parttimeAmount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\u2019ann\u00e9es","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uqd(\'parttimeYears\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
+    return wrap(
+      '<div class="phase-badge">' + t("Style de vie","Lifestyle") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Style de retraite souhait\u00e9","Desired retirement lifestyle") + '</label>' + lsCards + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Tol\u00e9rance au risque","Risk tolerance") + '</label>' + riskCards + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Travail \u00e0 temps partiel en d\u00e9but de retraite\u00a0?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div></div>'
+      + ptFields
+      + contBtn(7) + backBtn("5")
+    , 6);
+  }
+
+  // ========== STEP 7 ==========
+  if (step === 7) {
+    if (ph === "decum") {
+      // Decum step 7: Government benefits
+      var isQC = q.prov === "QC";
+      var qppLabel = isQC ? (fr ? "RRQ" : "QPP") : (fr ? "RPC" : "CPP");
+      var qppYN = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.qppAlreadyClaiming===o.v?" sel":"")+'" onclick="uq(\'qppAlreadyClaiming\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("");
+      var qppContent = q.qppAlreadyClaiming
+        ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)","Monthly amount ($)") + '</label><input class="inp" type="number" min="0" step="10" value="' + (q.qppMonthly||0) + '" oninput="uqd(\'qppMonthly\',this.value)" /></div>'
+        : '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge\u00a0?","At what age?") + '</label><div style="display:flex;gap:8px">' + [{v:60,l:"60"},{v:65,l:"65"},{v:70,l:"70"}].map(function(o){return '<div tabindex="0" class="card'+(q.qppPlannedAge===o.v?" sel":"")+'" onclick="uq(\'qppPlannedAge\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+' '+t("ans","yrs")+'</div></div>';}).join("") + '</div></div>';
+      var oasYN = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.oasAlreadyClaiming===o.v?" sel":"")+'" onclick="uq(\'oasAlreadyClaiming\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("");
+      var oasContent = q.oasAlreadyClaiming
+        ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)","Monthly amount ($)") + '</label><input class="inp" type="number" min="0" step="10" value="' + (q.oasMonthly||0) + '" oninput="uqd(\'oasMonthly\',this.value)" /></div>'
+        : '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge\u00a0?","At what age?") + '</label><div style="display:flex;gap:8px">' + [{v:65,l:"65"},{v:70,l:"70"}].map(function(o){return '<div tabindex="0" class="card'+(q.oasPlannedAge===o.v?" sel":"")+'" onclick="uq(\'oasPlannedAge\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+' '+t("ans","yrs")+'</div></div>';}).join("") + '</div></div>';
+      return wrap(
+        '<div class="phase-badge">' + t("D\u00e9caissement \u2014 Gouvernement","Decumulation \u2014 Government") + '</div>'
+        + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Pensions gouvernementales","Government pensions") + '</h2>'
+        + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+        + '<div class="section-head">' + qppLabel + '</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Recevez-vous d\u00e9j\u00e0 la " + qppLabel + "\u00a0?","Already receiving " + qppLabel + "?") + '</label><div style="display:flex;gap:8px">' + qppYN + '</div></div>'
+        + qppContent + '</div>'
+        + '<div style="background:var(--bgc);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px">'
+        + '<div class="section-head">PSV / OAS</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Recevez-vous d\u00e9j\u00e0 la PSV\u00a0?","Already receiving OAS?") + '</label><div style="display:flex;gap:8px">' + oasYN + '</div></div>'
+        + oasContent + '</div>'
+        + contBtn(8) + backBtn(6)
+      , 7);
+    }
+    // Accum/Transition step 7: Psychology
+    var anxCards = [{v:"calm",l:t("Confiant\u00b7e","Confident")},{v:"mild",l:t("Un peu incertain\u00b7e","A bit uncertain")},{v:"high",l:t("Pr\u00e9occup\u00e9\u00b7e","Worried")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychAnxiety===o.v?" sel":"")+'" onclick="uq(\'psychAnxiety\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var discCards = [{v:"strong",l:t("J\u2019\u00e9pargne chaque mois","I save every month")},{v:"moderate",l:t("J\u2019\u00e9pargne quand je peux","I save when I can")},{v:"low",l:t("J\u2019ai du mal \u00e0 \u00e9pargner","I struggle to save")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychDiscipline===o.v?" sel":"")+'" onclick="uq(\'psychDiscipline\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var litCards = [{v:"high",l:t("Je comprends REER, CELI, imp\u00f4ts","I understand RRSPs, TFSAs, taxes")},{v:"medium",l:t("Je connais les bases","I know the basics")},{v:"low",l:t("Je d\u00e9bute","I\'m starting out")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychLiteracy===o.v?" sel":"")+'" onclick="uq(\'psychLiteracy\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Personnalisation","Personalization") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Pour personnaliser votre rapport","To personalize your report") + '</h2>'
+      + '<p style="font-size:13px;color:var(--tm);margin-bottom:20px">' + t("Ces questions adaptent le ton et les explications.","These questions adapt the tone and explanations.") + '</p>'
+      + '<label class="fld-label">' + t("Quand vous pensez \u00e0 la retraite\u2026","When you think about retirement\u2026") + '</label>' + anxCards
+      + '<label class="fld-label" style="margin-top:16px">' + t("Habitudes d\u2019\u00e9pargne","Savings habits") + '</label>' + discCards
+      + '<label class="fld-label" style="margin-top:16px">' + t("Familiarit\u00e9 financi\u00e8re","Financial familiarity") + '</label>' + litCards
+      + contBtn(8) + backBtn(6)
+    , 7);
+  }
+
+  // ========== STEP 8 ==========
+  if (step === 8) {
+    if (ph === "decum") {
+      // Decum step 8: Strategy + psychology + worries
+      var estCards = [{v:"maximize",l:t("Maximiser l\u2019h\u00e9ritage","Maximize inheritance")},{v:"balanced",l:t("\u00c9quilibr\u00e9","Balanced")},{v:"spenddown",l:t("Profiter pleinement","Spend it down")}].map(function(o){return '<div tabindex="0" class="card'+(q.estatePref===o.v?" sel":"")+'" onclick="uq(\'estatePref\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      var meltCards = [{v:true,l:t("Oui \u2014 d\u00e9buter les retraits","Yes \u2014 start withdrawals")},{v:false,l:t("Non \u2014 laisser croitre","No \u2014 let it grow")},{v:null,l:t("Analyser les deux","Analyze both")}].map(function(o){return '<div tabindex="0" class="card'+(q.meltdownPref===o.v?" sel":"")+'" onclick="uq(\'meltdownPref\',' + (o.v===null?"null":o.v) + ')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      var dAnxCards = [{v:"calm",l:t("Confiant\u00b7e","Confident")},{v:"mild",l:t("Un peu incertain\u00b7e","Uncertain")},{v:"high",l:t("Pr\u00e9occup\u00e9\u00b7e","Worried")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychAnxiety===o.v?" sel":"")+'" onclick="uq(\'psychAnxiety\',\''+o.v+'\')" style="padding:12px;flex:1;text-align:center"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      var dLitCards = [{v:"high",l:t("\u00c9lev\u00e9e","High")},{v:"medium",l:t("Moyenne","Medium")},{v:"low",l:t("D\u00e9butant","Beginner")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychLiteracy===o.v?" sel":"")+'" onclick="uq(\'psychLiteracy\',\''+o.v+'\')" style="padding:12px;flex:1;text-align:center"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      var worryOpts = [{v:"runout",l:t("Manquer d\u2019argent","Running out")},{v:"tax",l:t("Trop d\u2019imp\u00f4ts","Too much tax")},{v:"inflation",l:t("Inflation","Inflation")},{v:"health",l:t("Co\u00fbts de sant\u00e9","Health costs")},{v:"market",l:t("Krachs","Market crashes")},{v:"legacy",l:t("H\u00e9ritage","Legacy")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip'+(sel?" sel":"")+'" onclick="toggleWorry(\''+o.v+'\')">' + o.l + '</span>';}).join("");
+      return wrap(
+        '<div class="phase-badge">' + t("D\u00e9caissement \u2014 Strat\u00e9gie","Decumulation \u2014 Strategy") + '</div>'
+        + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Strat\u00e9gie et profil","Strategy & profile") + '</h2>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Priorit\u00e9 successorale","Estate priority") + '</label>' + estCards + '</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Retrait anticip\u00e9 du REER avant 71 ans\u00a0?","Early RRSP withdrawals before 71?") + '</label>' + meltCards + '</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Niveau d\u2019anxi\u00e9t\u00e9","Anxiety level") + '</label><div style="display:flex;gap:8px">' + dAnxCards + '</div></div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Familiarit\u00e9 financi\u00e8re","Financial literacy") + '</label><div style="display:flex;gap:8px">' + dLitCards + '</div></div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Vos 3 plus grandes pr\u00e9occupations","Your 3 biggest concerns") + '</label><div>' + worryOpts + '</div></div>'
+        + contBtn("confirm", t("V\u00e9rifier mes informations \u2192","Review my information \u2192")) + backBtn(7)
+      , 8);
+    }
+    // Accum/Transition step 8: Priorities (worries, win, fix)
+    var worryOpts2 = [{v:"runout",l:t("Manquer d\u2019argent","Running out of money")},{v:"tax",l:t("Trop d\u2019imp\u00f4ts","Too many taxes")},{v:"inflation",l:t("L\u2019inflation","Inflation")},{v:"health",l:t("Co\u00fbts de sant\u00e9","Health costs")},{v:"market",l:t("Krachs boursiers","Market crashes")},{v:"legacy",l:t("Laisser un h\u00e9ritage","Leaving an inheritance")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip'+(sel?" sel":"")+'" onclick="toggleWorry(\''+o.v+'\')">' + o.l + '</span>';}).join("");
+    var winCards = [{v:"home",l:t("Acheter une maison","Buying a home")},{v:"debtfree",l:t("Rembourser une dette","Paying off debt")},{v:"saving",l:t("\u00c9pargner r\u00e9guli\u00e8rement","Saving regularly")},{v:"investing",l:t("Commencer \u00e0 investir","Starting to invest")},{v:"business",l:t("Lancer un projet","Starting a business")},{v:"none",l:t("Rien de particulier","Nothing specific")}].map(function(o){return '<div tabindex="0" class="card'+(q.win===o.v?" sel":"")+'" onclick="uq(\'win\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var fixCards = [{v:"save_more",l:t("\u00c9pargner plus","Save more")},{v:"debt",l:t("Rembourser mes dettes","Pay off debt")},{v:"invest",l:t("Mieux investir","Invest better")},{v:"tax",l:t("Payer moins d\u2019imp\u00f4ts","Pay less tax")},{v:"retire_early",l:t("Retraite plus t\u00f4t","Retire earlier")},{v:"clarity",l:t("Y voir plus clair","Get clarity")}].map(function(o){return '<div tabindex="0" class="card'+(q.fix===o.v?" sel":"")+'" onclick="uq(\'fix\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    var nxt = ph === "transition" ? 9 : "confirm";
+    var btnLabel = ph === "transition" ? t("Continuer \u2192","Continue \u2192") : t("V\u00e9rifier mes informations \u2192","Review my information \u2192");
+    return wrap(
+      '<div class="phase-badge">' + t("Ce qui compte","What matters") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Vos priorit\u00e9s","Your priorities") + '</h2>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Vos 3 plus grandes pr\u00e9occupations","Your 3 biggest concerns") + '</label><div>' + worryOpts2 + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Votre plus grande victoire financi\u00e8re","Your biggest financial win") + '</label>' + winCards + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Si vous pouviez am\u00e9liorer une chose","If you could improve one thing") + '</label>' + fixCards + '</div>'
+      + contBtn(nxt, btnLabel) + backBtn(7)
+    , 8);
+  }
+
+  // ========== STEP 9: TRANSITION ONLY ==========
+  if (step === 9) {
+    var isQC9 = q.prov === "QC";
+    var qppLbl9 = isQC9 ? (fr ? "RRQ" : "QPP") : (fr ? "RPC" : "CPP");
+    var qppCards9 = [{v:60,l:"60 " + t("ans","yrs")},{v:65,l:"65 " + t("ans","yrs")},{v:70,l:"70 " + t("ans","yrs")}].map(function(o){return '<div tabindex="0" class="card' + (q.qppAge===o.v?" sel":"") + '" onclick="uq(\'qppAge\','+o.v+')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:700;font-size:14px">'+o.l+'</div></div>';}).join("");
+    var penYN9 = [{v:true,l:t("Oui","Yes")},{v:false,l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.hasPension===o.v?" sel":"")+'" onclick="uq(\'hasPension\','+o.v+')" style="flex:1;text-align:center;padding:11px"><div style="font-weight:600;font-size:14px">'+o.l+'</div></div>';}).join("");
+    var penF9 = q.hasPension ? '<div class="fld-block"><label class="fld-label">' + t("Montant mensuel ($)","Monthly amount ($)") + '</label><input class="inp" type="number" min="0" step="50" value="' + (q.penMonthly||0) + '" oninput="uqd(\'penMonthly\',this.value)" /></div>' : '';
+    var flexCards9 = [{v:"rigid",l:t("Rigide","Rigid")},{v:"moderate",l:t("Mod\u00e9r\u00e9e","Moderate")},{v:"flexible",l:t("Flexible","Flexible")}].map(function(o){return '<div tabindex="0" class="card'+(q.spendingFlex===o.v?" sel":"")+'" onclick="uq(\'spendingFlex\',\''+o.v+'\')" style="flex:1;text-align:center;padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+    return wrap(
+      '<div class="phase-badge">' + t("Transition \u2014 Pr\u00e9paration","Transition \u2014 Preparation") + '</div>'
+      + '<h2 style="font-size:20px;font-weight:700;margin-bottom:6px">' + t("Pr\u00e9paration \u00e0 la retraite","Retirement preparation") + '</h2>'
+      + '<p style="font-size:13px;color:var(--ts);margin-bottom:20px;line-height:1.6">' + t("Vous \u00eates \u00e0 moins de 7 ans de la retraite. Ces questions affinent les projections.","You are within 7 years of retirement. These questions refine projections.") + '</p>'
+      + '<div class="fld-block"><label class="fld-label">' + t("\u00c0 quel \u00e2ge pr\u00e9voyez-vous demander la " + qppLbl9 + "\u00a0?","When do you plan to claim " + qppLbl9 + "?") + '</label><div style="display:flex;gap:8px">' + qppCards9 + '</div></div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Avez-vous une pension d\u2019employeur\u00a0?","Do you have an employer pension?") + '</label><div style="display:flex;gap:8px">' + penYN9 + '</div></div>'
+      + penF9
+      + '<div class="fld-block"><label class="fld-label">' + t("Flexibilit\u00e9 des d\u00e9penses \u00e0 la retraite","Retirement spending flexibility") + '</label><div style="display:flex;gap:8px">' + flexCards9 + '</div></div>'
+      + contBtn("confirm", t("V\u00e9rifier mes informations \u2192","Review my information \u2192")) + backBtn(8)
+    , 9);
+  }
+
+  return '<div style="max-width:560px;margin:80px auto;text-align:center;padding:40px 24px"><p style="color:var(--tm)">Chargement&hellip;</p></div>';
+}
+
+// ============================================================
+// KEYBOARD ACCESSIBILITY
+// ============================================================
+document.addEventListener("keydown", function(e) {
+  if ((e.key === "Enter" || e.key === " ") && document.activeElement && document.activeElement.classList.contains("card")) {
+    e.preventDefault(); document.activeElement.click();
+  }
+  if (e.key === "Enter" && typeof STATE.step !== "undefined" && STATE.step !== 0 && STATE.step !== "confirm" && STATE.step !== "loading") {
+    var tag = document.activeElement ? document.activeElement.tagName : "";
+    if (tag === "TEXTAREA" || tag === "SELECT" || tag === "INPUT") return;
+    var btn = document.querySelector(".pbtn");
+    if (btn && !btn.disabled) btn.click();
+  }
+});
+
+// ============================================================
+// COOKIE CONSENT (Law 25)
+// ============================================================
+(function() {
+  if (localStorage.getItem("buildfi_consent")) return;
+  var fr = STATE.lang === "fr";
+  var cl = fr ? "Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience." : "This site uses analytics cookies to improve the experience.";
+  var bar = document.createElement("div");
+  bar.id = "consentBar";
+  bar.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)";
+  bar.innerHTML = "<span>" + cl + "</span>"
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff">' + (fr ? "Accepter" : "Accept") + "</button>"
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">' + (fr ? "Refuser" : "Decline") + "</button>";
+  document.body.appendChild(bar);
+  document.getElementById("consentAccept").addEventListener("click", function() { localStorage.setItem("buildfi_consent","yes"); bar.remove(); });
+  document.getElementById("consentDecline").addEventListener("click", function() { localStorage.setItem("buildfi_consent","no"); bar.remove(); });
+})();
+
+// ============================================================
+// BOOT
+// ============================================================
+computePhase();
+render();
+</script>
+
+<style>
+html:lang(en) .amf-fr{display:none!important}
+html:lang(en) .amf-en{display:inline!important}
+html:lang(fr) .amf-en{display:none!important}
+html:lang(fr) .amf-fr{display:inline!important}
+</style>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
+<span class="amf-fr">buildfi.ca fournit des projections \u00e0 titre informatif seulement. Ce service ne constitue pas du conseil financier, fiscal ou juridique. Consultez un professionnel qualifi\u00e9 avant de prendre des d\u00e9cisions financi\u00e8res. Qu\u00e9bec, Canada.</span>
+<span class="amf-en" style="display:none">buildfi.ca provides projections for informational purposes only. This service does not constitute financial, tax, or legal advice. Consult a qualified professional before making financial decisions. Quebec, Canada.</span>
+</div>
+</body>
+</html>
