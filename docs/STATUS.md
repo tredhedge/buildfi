@@ -1,20 +1,27 @@
 ﻿# STATUS.md
 > Etat actuel du projet BuildFi. Lire au debut de chaque session.
-> Mis a jour: 2026-03-12 - v22
+> Mis a jour: 2026-03-13 - v23
 
 ## PHASE ACTUELLE
 Execution produit active (post-realignment):
-1. Bilan (9.99)
-2. Bilan 360 (19.99, merge accumulation + decumulation)
+1. ~~Bilan (9.99)~~ **DONE** — v7 shipped 2026-03-13
+2. **Bilan 360 (19.99, merge accumulation + decumulation)** ← ACTIVE
 3. Laboratoire (49.99 + renewal annuel)
 
 ## PRIORITE IMMEDIATE
-Nous commencons par le Bilan normal.
+Bilan 360 quality uplift — porter les ameliorations du Bilan v7 aux rapports Inter et Decum.
+
+Bilan v7 livre (2026-03-13):
+- Opus 16-slot AI narration (voice matrix, narrative arcs, thread classification)
+- Smart what-if engine (stress-test vs improvement branching)
+- 11 visual/content/compliance fixes
+- AMF SAFE_DISCLAIMER_PATTERNS whitelist
+- Grade-aware fallbacks, snapshot table improvements
 
 Objectif de la phase en cours:
-- Produire un rapport Bilan solide, coherent, et competitif face au gratuit et au payant.
-- Renforcer la narration AI (qualite, precision, lisibilite, fallback).
-- Verrouiller la coherence visuelle et structurelle avec les autres rapports.
+- Porter les patterns Bilan v7 au Bilan 360 (Inter + Decum streams).
+- Implementer le routing questionnaire accumulation/decumulation.
+- Verrouiller la coherence visuelle et structurelle entre les 3 rapports.
 
 ## PRODUIT CANONIQUE (SOURCE OF TRUTH)
 | Produit | Prix | Description |

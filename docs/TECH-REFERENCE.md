@@ -1,6 +1,6 @@
 ﻿# TECH-REFERENCE.md
 > Technical standards, architecture constraints, QA rules, AMF-safe writing.
-> Mis a jour: 2026-03-12 - v20 (realigned)
+> Mis a jour: 2026-03-13 - v21 (Bilan v7 shipped, Bilan 360 next)
 
 ---
 
@@ -84,9 +84,19 @@ Before shipping any report change:
 - AMF forbidden wording check passes.
 - Visual consistency check passes against other report types.
 
-## 7. Current Focus
-Active focus is Bilan report quality first.
-Then Bilan 360 routing/questionnaire merge.
+## 7. Bilan v7 Reference (shipped 2026-03-13)
+The Bilan Essentiel report is now the quality benchmark. Key patterns to port to Bilan 360:
+- **Opus AI prompt**: 16 slots, voice matrix (3 anxiety × 3 literacy), 4 narrative arcs, thread classification, composite signals, per-slot hints with data references. See `buildAIPromptOpus()` in `lib/report-html.js`.
+- **Smart what-if**: `buildWhatIf()` branches on success rate — strong plans (≥85%) get stress-tests, weak plans get improvement scenarios + combined "all 3 levers" card.
+- **AMF compliance**: `SAFE_DISCLAIMER_PATTERNS` in `lib/ai-constants.ts` — all 5 tier sanitizers use it.
+- **Grade-aware fallbacks**: Static fallback text adapts to grade (F/D never see "solidité").
+- **Snapshot table**: Dynamic account types, shortfall tracking, no forced monotonic decrease.
+- **Decision card**: Single grade badge (top-left), risk/lever blocks, interpretation block with uniform styling.
+- **Bonus block**: Conditional on `debtBal > 0` (no generic filler for debt-free profiles).
+- **Webhook gating**: `ANTHROPIC_MODEL=opus` env var gates Opus vs Sonnet model selection.
+
+## 8. Current Focus
+Bilan v7 is shipped. Active focus is Bilan 360 quality uplift (port v7 patterns to Inter + Decum).
 Then Laboratoire upgrades.
 
 ## 8. Open Product Config Decisions
