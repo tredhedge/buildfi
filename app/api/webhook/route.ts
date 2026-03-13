@@ -17,6 +17,8 @@ import {
   calcMinViableReturn as calcMinViableReturnEss,
   extractReportData,
   buildAIPrompt,
+  buildAIPromptOpus,
+  buildWhatIf,
 } from "@/lib/report-html";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
@@ -25,7 +27,7 @@ import { extractReportDataDecum, renderReportDecum } from "@/lib/report-html-dec
 import { buildAIPromptDecum } from "@/lib/ai-prompt-decum";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum } from "@/lib/ai-constants";
+import { sanitizeAISlots, sanitizeAISlotsOpus, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum } from "@/lib/ai-constants";
 import type { AINarrationDecum } from "@/lib/ai-constants";
 import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
@@ -61,7 +63,8 @@ export const runtime = "nodejs";
 async function callAnthropic<T extends Record<string, string | undefined>>(
   sys: string,
   usr: string,
-  sanitizer: (raw: Record<string, unknown>) => T
+  sanitizer: (raw: Record<string, unknown>) => T,
+  modelOverride?: string
 ): Promise<T> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -70,8 +73,9 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
   }
   try {
     const client = new Anthropic({ apiKey });
+    const model = modelOverride || "claude-sonnet-4-20250514";
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model,
       max_tokens: 4000,
       system: sys,
       messages: [{ role: "user", content: usr }],
@@ -256,9 +260,19 @@ async function handleCheckoutCompleted(
       D = extractReportData(mc, params);
 
       const aiStart = Date.now();
-      const prompt = buildAIPrompt(D, params, fr, quizAnswers);
-      const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots);
-      console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+      const quiz = { ...(quizAnswers as Record<string, unknown>), ...(params._quiz || {}) };
+      const useOpus = process.env.ANTHROPIC_MODEL === "opus";
+      let ai: Record<string, string | undefined>;
+      if (useOpus) {
+        const whatIfResults = buildWhatIf(params, mc, D, fr);
+        const prompt = buildAIPromptOpus(D, params, fr, quiz, whatIfResults);
+        ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsOpus, "claude-opus-4-6");
+        console.log(`[webhook] Opus AI narration completed in ${Date.now() - aiStart}ms (${Object.keys(ai).length} slots)`);
+      } else {
+        const prompt = buildAIPrompt(D, params, fr, quiz);
+        ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots);
+        console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
+      }
 
       const costDelay = calcCostOfDelayEss(params);
       const minReturn = calcMinViableReturnEss(params);

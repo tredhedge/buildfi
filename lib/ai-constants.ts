@@ -24,6 +24,77 @@ export const AI_SLOT_MAX_LENGTH: Partial<Record<AISlotKey, number>> = {
   succession_note: 300,
 };
 
+// ─── Opus tier slots (Bilan with Opus model) ────────────────────────
+export const AI_SLOTS_OPUS = [
+  "thread",
+  "grade_diagnostic",
+  "biggest_risk",
+  "best_lever",
+  "snapshot_intro",
+  "projection_good",
+  "projection_watch",
+  "income_analysis",
+  "savings_analysis",
+  "debt_analysis",
+  "priority_rationale",
+  "whatif_interpretation",
+  "tax_fees_insight",
+  "succession_note",
+  "table_narrative",
+  "closing_observation",
+] as const;
+
+export type AISlotKeyOpus = (typeof AI_SLOTS_OPUS)[number];
+export type AINarrationOpus = Partial<Record<AISlotKeyOpus, string>>;
+
+export const AI_SLOT_MAX_LENGTH_OPUS: Partial<Record<AISlotKeyOpus, number>> = {
+  thread: 80,
+  grade_diagnostic: 600,
+  biggest_risk: 400,
+  best_lever: 400,
+  snapshot_intro: 600,
+  projection_good: 500,
+  projection_watch: 500,
+  income_analysis: 600,
+  savings_analysis: 600,
+  debt_analysis: 500,
+  priority_rationale: 400,
+  whatif_interpretation: 400,
+  tax_fees_insight: 500,
+  succession_note: 400,
+  table_narrative: 600,
+  closing_observation: 300,
+};
+
+/**
+ * Sanitize raw AI output for Opus tier.
+ * Same compliance logic but with Opus-specific slot whitelist.
+ * Thread field is validated for consistency but not compliance-checked (it's a keyword, not prose).
+ */
+export function sanitizeAISlotsOpus(raw: Record<string, any>): AINarrationOpus {
+  const result: AINarrationOpus = {};
+  for (const key of AI_SLOTS_OPUS) {
+    const val = raw[key];
+    if (val && typeof val === "string") {
+      const maxLen = AI_SLOT_MAX_LENGTH_OPUS[key] || 500;
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      // Thread is a keyword — skip compliance check for it
+      if (key === "thread") {
+        result[key] = clean;
+        continue;
+      }
+      // Strip safe disclaimer patterns before checking for forbidden terms
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
+        result[key] = clean;
+      } else {
+        console.warn(`[ai-constants] Compliance violation in Opus slot "${key}", dropping`);
+      }
+    }
+  }
+  return result;
+}
+
 // ─── Intermédiaire tier slots ─────────────────────────────────────────
 export const AI_SLOTS_INTER = [
   "snapshot_intro",
@@ -91,7 +162,8 @@ export function sanitizeAISlotsDecum(raw: Record<string, any>): AINarrationDecum
     if (val && typeof val === "string") {
       const maxLen = AI_SLOT_MAX_LENGTH_DECUM[key] || 500;
       const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
-      if (!FORBIDDEN_TERMS.test(clean)) {
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
         result[key] = clean;
       } else {
         console.warn(`[ai-constants] Compliance violation in slot "${key}" (decum), dropping`);
@@ -103,7 +175,12 @@ export function sanitizeAISlotsDecum(raw: Record<string, any>): AINarrationDecum
 
 // AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements
 export const FORBIDDEN_TERMS =
-  /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bdans ce contexte\b|\bpar ailleurs\b|\ben outre\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b|\bin this context\b|\bajouterait\b|\bconstituerait\b|\bpermetrait\b|\bpermettrait\b/i;
+  /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b/i;
+
+// Defensive disclaimer patterns that are safe even though they contain forbidden terms.
+// Strip these before running FORBIDDEN_TERMS check so "ne sont pas des recommandations" etc. pass.
+const SAFE_DISCLAIMER_PATTERNS =
+  /ne (sont|constitue(nt)?|s'agi(t|ssent)) pas (d'une?|des?) recommandation(s)?/gi;
 
 /**
  * Sanitize raw AI output into safe, compliant slot values.
@@ -120,8 +197,9 @@ export function sanitizeAISlots(raw: Record<string, any>): AINarration {
       // Strip HTML tags, limit length (per-slot override or default 500)
       const maxLen = AI_SLOT_MAX_LENGTH[key] || 500;
       const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
-      // Reject if contains forbidden prescriptive terms
-      if (!FORBIDDEN_TERMS.test(clean)) {
+      // Strip safe disclaimer patterns before checking for forbidden terms
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
         result[key] = clean;
       } else {
         console.warn(`[ai-constants] Compliance violation in slot "${key}", dropping`);
@@ -142,7 +220,8 @@ export function sanitizeAISlotsInter(raw: Record<string, any>): AINarrationInter
     if (val && typeof val === "string") {
       const maxLen = AI_SLOT_MAX_LENGTH_INTER[key] || 500;
       const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
-      if (!FORBIDDEN_TERMS.test(clean)) {
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
         result[key] = clean;
       } else {
         console.warn(`[ai-constants] Compliance violation in slot "${key}" (inter), dropping`);
@@ -246,7 +325,8 @@ export function sanitizeAISlotsExpert(
     if (val && typeof val === "string") {
       // Expert sections can be longer — 2000 char max
       const clean = val.replace(/<[^>]*>/g, "").slice(0, 2000);
-      if (!FORBIDDEN_TERMS.test(clean)) {
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
         result[key] = clean;
       } else {
         console.warn(`[ai-constants] Compliance violation in Expert section "${key}", dropping`);

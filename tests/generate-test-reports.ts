@@ -5,9 +5,9 @@
 
 // @ts-nocheck
 import { runMC } from '../lib/engine/index';
-import { extractReportData, renderReportHTML, calcCostOfDelay, calcMinViableReturn, buildAIPrompt } from '../lib/report-html';
+import { extractReportData, renderReportHTML, calcCostOfDelay, calcMinViableReturn, buildAIPrompt, buildAIPromptOpus, buildWhatIf } from '../lib/report-html';
 import { translateToMC } from '../lib/quiz-translator';
-import { sanitizeAISlots } from '../lib/ai-constants';
+import { sanitizeAISlots, sanitizeAISlotsOpus } from '../lib/ai-constants';
 import Anthropic from '@anthropic-ai/sdk';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -20,7 +20,7 @@ async function callAnthropic(sys: string, usr: string): Promise<Record<string, s
   try {
     const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-opus-4-6",
       max_tokens: 4000,
       system: sys,
       messages: [{ role: "user", content: usr }],
@@ -31,7 +31,7 @@ async function callAnthropic(sys: string, usr: string): Promise<Record<string, s
       .join("");
     const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
     const raw = JSON.parse(cleaned);
-    return sanitizeAISlots(raw);
+    return raw;
   } catch (err) {
     console.error(`  [AI ERROR] ${err instanceof Error ? err.message : err}`);
     return {};
@@ -185,10 +185,11 @@ const profiles = [
 
 // ── Generate reports ──────────────────────────────────────────
 async function main() {
-console.log(`Generating 10 test reports (AI: ${USE_REAL_AI ? 'Anthropic claude-sonnet-4' : 'MOCK — set ANTHROPIC_API_KEY for real narration'})...\n`);
+const maxProfiles = parseInt(process.env.MAX_PROFILES || '10', 10);
+console.log(`Generating ${maxProfiles} test reports (AI: ${USE_REAL_AI ? 'Anthropic claude-opus-4-6' : 'MOCK — set ANTHROPIC_API_KEY for real narration'})...\n`);
 const summary = [];
 
-for (const profile of profiles) {
+for (const profile of profiles.slice(0, maxProfiles)) {
   const t0 = Date.now();
   const quiz = profile.quiz;
 
@@ -236,16 +237,18 @@ for (const profile of profiles) {
   const minReturn = calcMinViableReturn(p);
   console.log(`  costOfDelay=${costDelay}, minViableReturn=${minReturn}%`);
 
-  // Step 4: AI narration — real API via buildAIPrompt() or empty fallback
-  const prompt = buildAIPrompt(D, p, true, quiz);
-  console.log("\nAI PROMPT (system):", prompt.sys.substring(0, 200) + "...");
-  console.log("AI PROMPT (user):", prompt.usr.substring(0, 300) + "...");
+  // Step 4: AI narration — Opus mega-prompt (15 slots) via buildAIPromptOpus()
+  const whatIfResults = buildWhatIf(p, mc, D, true);
+  const prompt = buildAIPromptOpus(D, p, true, quiz, whatIfResults);
+  console.log("\nAI PROMPT (Opus system):", prompt.sys.substring(0, 200) + "...");
+  console.log("AI PROMPT (Opus user):", prompt.usr.substring(0, 300) + "...");
 
   let ai: Record<string, string> = {};
   if (USE_REAL_AI) {
-    console.log("  Calling Anthropic API...");
+    console.log("  Calling Anthropic API (Opus 4.6)...");
     const aiT0 = Date.now();
-    ai = await callAnthropic(prompt.sys, prompt.usr);
+    const rawAi = await callAnthropic(prompt.sys, prompt.usr);
+    ai = sanitizeAISlotsOpus(rawAi) as Record<string, string>;
     console.log(`  AI: ${Object.keys(ai).length} slots filled (${Date.now() - aiT0}ms)`);
   } else {
     console.log("  [MOCK] No ANTHROPIC_API_KEY — report will use static fallbacks");
