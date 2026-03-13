@@ -3,35 +3,39 @@
 ## What is this project?
 BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS using Monte Carlo simulation and AI narration to generate actionable retirement reports.
 
-## Canonical Product Vision (2026-03-12)
+## Canonical Product Vision (2026-03-13)
 This is the current source of truth.
 
-| Product | Internal key(s) | Price | Purpose |
-|---|---|---|---|
-| Bilan | `essentiel` pipeline | 9.99 CAD one-time | Solid baseline report for simple profiles. |
-| Bilan 360 | `intermediaire` (accumulation) OR `decaissement` (decumulation) | 19.99 CAD one-time | Full report with stream routing based on retirement phase. |
-| Laboratoire | `expert` | 49.99 CAD one-time + annual renewal (19.99 or 24.99 TBD) | Advanced simulator + AI report credits (5 to 10, final quota TBD). |
+| Product | Internal key(s) | Price | Couple | Properties | Purpose |
+|---|---|---|---|---|---|
+| Bilan | `essentiel` | 9.99 CAD | No | Primary only | Quick report for simple single profiles (~33 fields). |
+| Bilan 360 | `bilan360` (routes to accum/transition/decum) | 19.99 CAD | Full modeling | Primary + 2 rentals | Adaptive report with 3 life phases, Opus AI, full couple. |
+| Laboratoire | `expert` | 49.99 CAD + 29.99/yr renewal | Full | Unlimited | Interactive simulator 190+ params + AI report credits. |
+
+**No Bilan Annuel.** The free product concept is dropped.
 
 ## Product Rules
-- No "free BA hub" strategy. Bilan normal is paid and must stand on its own quality.
-- No mandatory upsell ladder between reports. Each product solves a distinct need.
-- Bilan 360 merges former Bilan 360 + Horizon into one product with two streams.
-- AI narration is a core differentiator, not a cosmetic add-on.
+- Bilan $9.99 is the entry-level product for simple profiles. Stands on its own quality.
+- Bilan 360 $19.99 replaces Inter ($59) and Decum ($59) — price DROP, quality UP.
+- Bilan 360 uses ONE adaptive quiz with 3 life phases (accum/transition/decum).
+- Couple is FULLY modeled in Bilan 360 (explicit fields, no heuristics).
+- No mandatory upsell ladder. Each product solves a distinct need.
+- AI narration (Opus 4.6) is a core differentiator, not a cosmetic add-on.
+- Architecture details: `docs/ARCH-BILAN-360.md` (10 architecture decisions).
 
 ## Current Execution Priority
-1. Make Bilan (9.99) report quality excellent.
-2. Adjust questionnaire and routing for Bilan 360 (accumulation vs decumulation).
+1. ~~Make Bilan (9.99) report quality excellent.~~ DONE (v7 shipped 2026-03-13)
+2. **Build Bilan 360 adaptive report** (quiz + translator + renderer + AI prompts).
 3. Upgrade Laboratoire (simulator + AI report system).
 4. Website/copy adjustments after product quality is locked.
 
 ## Internal Naming Constraint
-Internal identifiers remain unchanged for backward compatibility:
-- `essentiel`
-- `intermediaire`
-- `decaissement`
-- `expert`
+Internal identifiers:
+- `essentiel` — Bilan $9.99 (unchanged)
+- `bilan360` — Bilan 360 $19.99 (NEW — replaces intermediaire + decaissement)
+- `expert` — Laboratoire $49.99 (unchanged)
 
-Only customer-facing names/prices change.
+Legacy `intermediaire` and `decaissement` keys remain in old code but are deprecated for new work.
 
 ## Pipelines
 
@@ -39,12 +43,13 @@ Only customer-facing names/prices change.
 `quiz-essentiel` -> `/api/checkout` (`type=essentiel`) -> Stripe -> `/api/webhook` -> translator -> MC(5000) -> renderer -> Blob -> Resend
 
 ### Bilan 360 (19.99)
-Routing question first:
-- Accumulation path -> intermediaire pipeline
-- Decumulation path -> decaissement pipeline
+Single adaptive quiz determines life phase:
+- `retAge - age <= 0` or already retired -> DECUMULATION
+- `retAge - age <= 7 AND age >= 52` -> TRANSITION
+- else -> ACCUMULATION
 
 Flow:
-`quiz-routing` -> selected quiz -> `/api/checkout` (`type=bilan360`, `path=accum|decum`) -> Stripe -> webhook route to correct translator/renderer -> Blob -> Resend
+`quiz-360` -> `/api/checkout` (`type=bilan360`, `phase=accum|transition|decum`) -> Stripe -> `/api/webhook` -> translator-360 -> MC(5000+extras) -> renderer-360 -> Blob -> Resend
 
 ### Laboratoire (49.99)
 `quiz-expert` -> `/api/checkout` (`type=expert`) -> Stripe -> webhook -> KV profile + magic link -> simulator -> AI report exports (quota)
@@ -62,12 +67,13 @@ Details and checklist: `docs/TECH-REFERENCE.md`.
 
 ## Documentation Guide
 Read in this order before making product decisions:
-1. `docs/PLAN-PIVOT.md` (execution plan aligned with current vision)
+1. `docs/ARCH-BILAN-360.md` (architecture decisions for Bilan 360 — 10 DAs)
 2. `docs/STATUS.md` (current phase + active priorities)
-3. `docs/ARCHITECTURE.md` (dependencies and routing)
-4. `docs/TECH-REFERENCE.md` (technical standards + report consistency)
-5. `docs/SERVICES.md` (Stripe/env/email/deployment constraints)
-6. `docs/STRATEGY.md` (positioning, pricing rationale, competition)
+3. `docs/TECH-REFERENCE.md` (technical standards + report consistency + v7 reference)
+4. `docs/PLAN-PIVOT.md` (execution plan — partially superseded by ARCH-BILAN-360)
+5. `docs/ARCHITECTURE.md` (dependencies and routing)
+6. `docs/SERVICES.md` (Stripe/env/email/deployment constraints)
+7. `docs/STRATEGY.md` (positioning, pricing rationale, competition)
 
 ## Critical Rules - Read Before Every Task
 
