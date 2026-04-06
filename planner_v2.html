@@ -119,14 +119,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* ═══ SIDEBAR RAIL + OVERLAY (DESKTOP) ═══ */
 .bf-rail {
-  position: fixed; left: 0; top: 0; bottom: 0; width: 64px;
+  position: fixed; left: 0; top: 0; bottom: 0; width: 88px;
   background: rgba(44,40,32,0.98); border-right: 1px solid rgba(192,138,78,0.15);
   z-index: 8500; display: flex; flex-direction: column; align-items: center;
   padding: 12px 0 8px; gap: 2px;
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
 .bf-rail-btn {
-  width: 56px; min-height: 44px; border-radius: 8px; border: none;
+  width: 76px; min-height: 48px; border-radius: 8px; border: none;
   background: transparent; color: rgba(200,196,191,0.5); font-size: 15px;
   cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
   transition: all .2s ease; position: relative; padding: 4px 2px 2px; gap: 1px;
@@ -134,8 +134,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bf-rail-btn:hover { background: rgba(192,138,78,0.1); color: rgba(192,138,78,0.9); }
 .bf-rail-btn.active { background: rgba(192,138,78,0.15); color: #c08a4e; box-shadow: inset 2px 0 0 #c08a4e; }
 .bf-rail-btn .bf-rail-label {
-  font-size: 8px; line-height: 1.1; text-align: center; opacity: 0.65;
-  max-width: 58px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10px; line-height: 1.2; text-align: center; opacity: 0.7;
+  max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   letter-spacing: 0.02em;
 }
 .bf-rail-btn.active .bf-rail-label { opacity: 1; }
@@ -143,7 +143,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* Overlay panel (desktop) */
 .bf-side-overlay {
-  position: fixed; left: 64px; top: 0; bottom: 0; width: 500px;
+  position: fixed; left: 88px; top: 0; bottom: 0; width: 500px;
   background: rgba(44,40,32,0.97); border-right: 1px solid rgba(192,138,78,0.2);
   z-index: 8600; overflow-y: auto; overflow-x: hidden; padding: 20px 22px;
   transform: translateX(-448px); opacity: 0;
@@ -231,7 +231,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 }
 /* Show rail on desktop; hide old sidebar + bottom nav */
 @media(min-width:769px) {
-  .bf-wrap { margin-left: 64px; }
+  .bf-wrap { margin-left: 88px; }
   .bf-side { display: none !important; }
   .bf-bottom-nav, .bf-mobile-sheet { display: none !important; }
 }
@@ -8924,10 +8924,7 @@ React.createElement("div", { style: { background: CL.s2, borderRadius: RAD.sm + 
   deathAge <= retAge ? React.createElement("div", { className: "warn-badge", style: { marginTop: 4 } }, "\u26a0\ufe0f ", lang === "fr" ? "\u00c2ge d\u00e9c\u00e8s \u2264 \u00e2ge retraite" : "Death age \u2264 retirement age") : null,
   merR > 0.025 ? React.createElement("div", { className: "warn-badge", style: { marginTop: 4 } }, "\u26a0\ufe0f MER > 2.5%") : null,
   retSpM * 12 > sal * 0.9 && sal > 0 ? React.createElement("div", { className: "warn-badge", style: { marginTop: 4 } }, "\u26a0\ufe0f ", lang === "fr" ? "D\u00e9penses retraite > 90% du salaire" : "Retirement spending > 90% of salary") : null,
-  mode === "essentiel" && React.createElement("div", { style: { margin: "10px 0 4px", padding: "10px", background: CL.cd, borderRadius: RAD.md, border: "1px solid rgba(80,144,200,0.2)" } },
-    React.createElement("div", { style: { fontSize: FS.base, fontWeight: FW.medium, color: CL.bl, marginBottom: 4 } }, lang === "fr" ? "Explorez le mode Standard" : "Explore Standard mode"),
-    React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, lang === "fr" ? "Couple int\u00e9gr\u00e9, What-If interactif, meltdown REER, 3 propri\u00e9t\u00e9s, d\u00e9caissement d\u00e9taill\u00e9, export..." : "Integrated couple, What-If, RRSP meltdown, 3 properties, decumulation, export..."),
-    React.createElement("button", { onClick: function() { _setMode("standard"); }, style: { marginTop: 6, width: "100%", padding: "6px", background: CL.bl, color: CL.al, border: "none", borderRadius: RAD.sm, fontSize: FS.base, fontWeight: FW.medium, cursor: "pointer" } }, lang === "fr" ? "Passer en Standard \u2192" : "Switch to Standard \u2192"))
+  null
 ));
 
 var _railSections = [
@@ -8962,7 +8959,6 @@ React.createElement("div", { className: "bf-rail" },
   React.createElement("div", { style: { flex: 1 } }),
   React.createElement("div", { className: "bf-rail-sep" }),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, dark ? "☀️" : "🌙"),
-  React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, "🧙"),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setLang(function(prev) { var n = prev === "fr" ? "en" : "fr"; document.documentElement.lang = n; return n; }); }, style: { fontSize: 11, fontWeight: 700 } }, lang === "fr" ? "EN" : "FR")
 ),
 // === DESKTOP OVERLAY BACKDROP ===
