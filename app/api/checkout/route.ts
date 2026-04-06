@@ -1,8 +1,8 @@
 // /app/api/checkout/route.ts
 // Creates a Stripe Checkout Session — supports 3 checkout types:
-//   type=report (default): Ess/Inter/Expert/Decaissement report purchase with quiz data
+//   type=report (default): Bilan 360 / Expert report purchase with quiz data
 //   type=addon: Expert AI export addon ($14.99)
-//   type=second: 2nd report at 50% off (SECOND50 coupon, applies to all tiers including decaissement)
+//   type=second: 2nd report at 50% off (SECOND50 coupon, Bilan 360)
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -37,6 +37,15 @@ function splitMetadata(json: string): Record<string, string> {
   }
   chunks.quiz_chunks = String(Math.ceil(json.length / MAX));
   return chunks;
+}
+
+function normalizeTier(rawTier?: string): string {
+  const tier = (rawTier || "").toLowerCase().trim();
+  if (!tier) return "bilan360";
+  if (tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") {
+    return "bilan360";
+  }
+  return tier;
 }
 
 export async function POST(req: NextRequest) {
@@ -128,12 +137,10 @@ export async function POST(req: NextRequest) {
       }
 
       const validTiers: Record<string, string | undefined> = {
-        essentiel: process.env.STRIPE_PRICE_ESSENTIEL,
-        intermediaire: process.env.STRIPE_PRICE_INTERMEDIAIRE,
-        decaissement: process.env.STRIPE_PRICE_DECAISSEMENT,
+        bilan360: process.env.STRIPE_PRICE_BILAN360 || process.env.STRIPE_PRICE_INTERMEDIAIRE,
       };
 
-      const tier = originalTier || "essentiel";
+      const tier = normalizeTier(originalTier);
       const priceId = validTiers[tier];
       if (!priceId) {
         return NextResponse.json(
@@ -177,13 +184,11 @@ export async function POST(req: NextRequest) {
     }
 
     const validTiers: Record<string, string | undefined> = {
-      essentiel: process.env.STRIPE_PRICE_ESSENTIEL,
-      intermediaire: process.env.STRIPE_PRICE_INTERMEDIAIRE,
+      bilan360: process.env.STRIPE_PRICE_BILAN360 || process.env.STRIPE_PRICE_INTERMEDIAIRE,
       expert: process.env.STRIPE_PRICE_EXPERT,
-      decaissement: process.env.STRIPE_PRICE_DECAISSEMENT,
     };
 
-    const selectedTier = tier || "essentiel";
+    const selectedTier = normalizeTier(tier);
     const priceId = validTiers[selectedTier];
     if (!priceId) {
       return NextResponse.json(

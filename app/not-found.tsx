@@ -45,7 +45,7 @@ export default function NotFound() {
         }}>
           Retour à l&apos;accueil
         </a>
-        <a href="/quiz-essentiel.html" style={{
+        <a href="/quiz-360.html" style={{
           display: "inline-block", padding: "12px 28px",
           background: "transparent", color: "#c49a1a", fontSize: 14, fontWeight: 600,
           borderRadius: 8, textDecoration: "none",

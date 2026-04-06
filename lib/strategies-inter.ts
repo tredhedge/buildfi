@@ -69,11 +69,17 @@ interface StrategyDef {
 // ────────────────────────────────────────────────────────────────────
 
 export function run5Strategies(baseParams: MCParams): StrategyResult[] {
+  // low_mer strategy: target 0.22% (low-fee ETF). If user already below 0.5%, skip and add +5yr instead.
+  var userMer = baseParams.merR || 0.015;
+  var lowMerStrat: StrategyDef = userMer > 0.005
+    ? { key: "low_mer", fr: "Frais réduits", en: "Low-fee portfolio", p: { merR: 0.0022, merT: 0.0022, merN: 0.0022 } }
+    : { key: "work_longer", fr: "Retraite +2 ans", en: "Retire 2 years later", p: { retAge: (baseParams.retAge || 65) + 2 } };
+
   var strats: StrategyDef[] = [
     { key: "statu_quo",  fr: "Statu quo",               en: "Status quo",          p: {} },
     { key: "meltdown",   fr: "Décaissement REER",        en: "RRSP meltdown",       p: { melt: true, meltTgt: Math.round(58523 * Math.pow(1.021, Math.max(0, baseParams.retAge - baseParams.age))) } },
     { key: "qpp_70",     fr: "RRQ/RPC à 70 ans",        en: "QPP/CPP at age 70",   p: { qppAge: 70, oasAge: 70 } },
-    { key: "low_mer",    fr: "Frais réduits",            en: "Low-fee portfolio",   p: { merR: 0.0018, merT: 0.0018, merN: 0.0018 } },
+    lowMerStrat,
     { key: "save_more",  fr: "+300 $/mois d'épargne",   en: "+$300/month savings", p: { rrspC: (baseParams.rrspC || 0) + 150, tfsaC: (baseParams.tfsaC || 0) + 150 } },
   ];
 

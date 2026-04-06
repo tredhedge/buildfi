@@ -126,7 +126,12 @@ export function translateToMCInter(a: Record<string, any>) {
   else if (a.risk === "custom" && a.allocCustom > 0) eq = Math.min(1, Math.max(0, a.allocCustom / 100));
   else eq = 0.70;
 
-  const mer = eq > 0.85 ? 0.020 : eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012;
+  // MER from investment vehicle type (quiz investStyle field)
+  const MER_BY_STYLE: Record<string, number> = {
+    diy_stocks: 0.0005, low_fee_etf: 0.0022, high_fee_etf: 0.008,
+    mutual_funds: 0.020, unsure: 0.015,
+  };
+  const mer = MER_BY_STYLE[a.investStyle] ?? (eq > 0.85 ? 0.020 : eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012);
 
   // QPP/OAS timing — explicit quiz ages when provided, else heuristic from retAge
   const qppAge = a.qppAge
@@ -299,6 +304,7 @@ export function translateToMCInter(a: Record<string, any>) {
     psych_anxiety: a.psychAnxiety || null,
     psych_discipline: a.psychDiscipline || null,
     psych_literacy: a.psychLiteracy || null,
+    investStyle: a.investStyle || "unsure",
   };
 
   // Report metadata (for report-html.js, not MC)

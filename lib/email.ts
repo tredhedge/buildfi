@@ -1,4 +1,4 @@
-// /lib/email.ts
+﻿// /lib/email.ts
 // Email delivery via Resend — table-based HTML for Outlook/Gmail compat
 
 import { Resend } from "resend";
@@ -29,8 +29,8 @@ export async function sendReportEmail(params: SendReportParams) {
   const fr = lang === "fr";
 
   const tierName = fr
-    ? { essentiel: "Bilan", intermediaire: "Bilan 360", expert: "Laboratoire", decaissement: "Horizon" }[tier] || tier
-    : { essentiel: "Snapshot", intermediaire: "Snapshot 360", expert: "Lab", decaissement: "Horizon" }[tier] || tier;
+    ? { essentiel: "Bilan", intermediaire: "Bilan 360", bilan360: "Bilan 360", expert: "Laboratoire", decaissement: "Horizon" }[tier] || tier
+    : { essentiel: "Snapshot", intermediaire: "Snapshot 360", bilan360: "Snapshot 360", expert: "Lab", decaissement: "Horizon" }[tier] || tier;
 
   const subject = fr
     ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
@@ -103,12 +103,12 @@ function buildEmailHTML(params: {
     // E-1: "stratégies optimisées" → "approches possibles"
     // E-2: "Votre note pourrait changer" → "Une analyse plus détaillée..."
     upsellBody: fr
-      ? (tier === "intermediaire"
+      ? (tier === "intermediaire" || tier === "bilan360"
         ? "Le Laboratoire int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
         : tier === "decaissement"
         ? "Le Laboratoire permet d\u2019explorer des sc\u00e9narios illimit\u00e9s\u00a0: ajuster le revenu, la r\u00e9partition, la date de demande des rentes gouvernementales, et g\u00e9n\u00e9rer des exports AI personnalis\u00e9s."
         : "Le rapport Bilan\u00a0360 analyse votre immobilier, votre couple, vos dettes en d\u00e9tail et explore 5\u00a0approches possibles. Une analyse plus d\u00e9taill\u00e9e pourrait r\u00e9v\u00e9ler un portrait diff\u00e9rent.")
-      : (tier === "intermediaire"
+      : (tier === "intermediaire" || tier === "bilan360"
         ? "The Lab includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers."
         : tier === "decaissement"
         ? "The Lab lets you explore unlimited scenarios: adjust income, allocation, government benefit timing, and generate personalized AI exports."
@@ -262,8 +262,8 @@ function buildEmailHTML(params: {
                         <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
                           ${tier === "decaissement"
                             ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-decaissement-strategies-retrait.pdf" : "guide-drawdown-withdrawal-strategies.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide de d\u00e9caissement \u2014 Strat\u00e9gies de retrait efficaces" : "Drawdown Guide \u2014 Effective Withdrawal Strategies"}</a> (PDF)<br>&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/decaissement-simulateur.html" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Simulateur de d\u00e9caissement" : "Drawdown simulator"}</a> \u2014 ${fr ? "interactif, inclus" : "interactive, included"}`
-                            : `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)${tier === "intermediaire" || tier === "expert" ? "<br>" : ""}
-                          ${tier === "intermediaire" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}` : ""}
+                            : `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)${tier === "intermediaire" || tier === "bilan360" || tier === "expert" ? "<br>" : ""}
+                          ${tier === "intermediaire" || tier === "bilan360" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}` : ""}
                           ${tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}` : ""}`}
                         </td>
                       </tr>
@@ -304,7 +304,7 @@ function buildEmailHTML(params: {
           </tr>` : ""}
 
           <!-- TOOLS BLOC — INTERMÉDIAIRE -->
-          ${tier === "intermediaire" ? `<tr>
+          ${tier === "intermediaire" || tier === "bilan360" ? `<tr>
             <td style="padding-bottom:28px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
                 <tr>
@@ -573,3 +573,4 @@ function buildEmailHTML(params: {
 </body>
 </html>`;
 }
+

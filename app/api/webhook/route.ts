@@ -10,6 +10,7 @@ import { translateToMC } from "@/lib/quiz-translator";
 import { translateToMCInter } from "@/lib/quiz-translator-inter";
 import { translateToMCExpert } from "@/lib/quiz-translator-expert";
 import { translateDecumToMC } from "@/lib/quiz-translator-decum";
+import { translateBilan360 } from "@/lib/quiz-translator-360";
 import { runMC } from "@/lib/engine";
 import {
   renderReportHTML,
@@ -24,10 +25,13 @@ import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/stra
 import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
 import { buildAIPromptInter } from "@/lib/ai-prompt-inter";
 import { extractReportDataDecum, renderReportDecum } from "@/lib/report-html-decum";
+import { determinePhase, extractReportData360, renderReportHTML360 } from "@/lib/report-html-360";
+import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
+import { buildBuildFiData } from "@/lib/report-data-360";
 import { buildAIPromptDecum } from "@/lib/ai-prompt-decum";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, sanitizeAISlotsOpus, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum } from "@/lib/ai-constants";
+import { sanitizeAISlots, sanitizeAISlotsOpus, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum, sanitizeAISlots360 } from "@/lib/ai-constants";
 import type { AINarrationDecum } from "@/lib/ai-constants";
 import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
@@ -64,7 +68,8 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
   sys: string,
   usr: string,
   sanitizer: (raw: Record<string, unknown>) => T,
-  modelOverride?: string
+  modelOverride?: string,
+  maxTokens?: number
 ): Promise<T> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -76,7 +81,7 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
     const model = modelOverride || "claude-sonnet-4-20250514";
     const response = await client.messages.create({
       model,
-      max_tokens: 4000,
+      max_tokens: maxTokens || 4000,
       system: sys,
       messages: [{ role: "user", content: usr }],
     });
@@ -113,6 +118,15 @@ function reassembleQuizAnswers(
   } catch {
     throw new Error(`Malformed quiz JSON after reassembly (${json.length} chars, ${chunks} chunks)`);
   }
+}
+
+function normalizeReportTier(rawTier?: string): string {
+  const tier = (rawTier || "").toLowerCase().trim();
+  if (!tier) return "bilan360";
+  if (tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") {
+    return "bilan360";
+  }
+  return tier;
 }
 
 // ── Main webhook handler ──────────────────────────────────
@@ -161,7 +175,7 @@ async function handleCheckoutCompleted(
   const session = event.data.object as Stripe.Checkout.Session;
   const metadata = session.metadata || {};
   const type = metadata.type || "report";
-  const tier = metadata.tier || "essentiel";
+  const tier = normalizeReportTier(metadata.tier);
   const email = metadata.email || session.customer_email || "";
 
   if (!email) {
@@ -192,8 +206,8 @@ async function handleCheckoutCompleted(
     return handleExpertPurchase(email, metadata, session.id);
   }
 
-  if (tier === "decaissement") {
-    return handleDecaissementPurchase(email, metadata, session.id);
+  if (tier === "bilan360") {
+    return handleBilan360Purchase(email, metadata, session.id);
   }
 
   // ── Essentiel / Intermediaire pipeline ──────────────────
@@ -210,7 +224,7 @@ async function handleCheckoutCompleted(
 
     // Generate feedback token for star ratings in report + email
     const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "expert", lang);
+    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "bilan360" | "expert", lang);
 
     if (tier === "intermediaire") {
       // ── Intermédiaire pipeline ──────────────────────────
@@ -327,6 +341,162 @@ async function handleCheckoutCompleted(
       { received: true, error: msg },
       { status: 500 }
     );
+  }
+}
+
+// ── Bilan 360 purchase handler ───────────────────────────
+
+async function handleBilan360Purchase(
+  email: string,
+  metadata: Record<string, string>,
+  sessionId: string
+): Promise<NextResponse> {
+  try {
+    const quizAnswers = reassembleQuizAnswers(metadata);
+    const lang = (metadata.lang || "fr") as "fr" | "en";
+    const fr = lang === "fr";
+    const quiz = quizAnswers as Record<string, any>;
+
+    // Determine life phase from quiz answers (DA-01)
+    const age = Number(quiz.age) || 30;
+    const retAge = Number(quiz.retAge) || 65;
+    const phase = determinePhase(age, retAge);
+
+    console.log(`[webhook] Processing Bilan 360 (${phase}) for ${maskEmail(email)} (${lang})`);
+
+    const params = translateBilan360(quiz, phase);
+    const mcStart = Date.now();
+
+    // ── Run 1: Baseline (5,000 sims) ─────────────────────
+    const mcBase = runMC(params, 5000);
+    if (!mcBase) throw new Error("Bilan 360 MC baseline returned null");
+
+    // ── Phase-conditional extra runs ─────────────────────
+    let stratData: any[] | null = null;
+    let mcMelt1: Record<string, any> | null = null;
+    let mcMelt2: Record<string, any> | null = null;
+    let mcC60: Record<string, any> | null = null;
+    let mcC65: Record<string, any> | null = null;
+    let mcC70: Record<string, any> | null = null;
+
+    // ACCUM + TRANSITION: run 5 strategies
+    if (phase === "ACCUM" || phase === "TRANSITION") {
+      stratData = run5Strategies(params as any);
+    }
+
+    // TRANSITION + DECUM: meltdown scenarios (2×1000)
+    if (phase === "TRANSITION" || phase === "DECUM") {
+      const meltTarget: number = (params._report as any)?.meltTarget ?? 58523;
+      const meltIsBase = !!((params._report as any)?.meltIsBase);
+      if (!meltIsBase) {
+        const melt2Target = Math.round(meltTarget * 0.75);
+        const paramsMelt1 = { ...params, retIncome: meltTarget, retSpM: Math.round(meltTarget / 12) };
+        const paramsMelt2 = { ...params, retIncome: melt2Target, retSpM: Math.round(melt2Target / 12) };
+        mcMelt1 = runMC(paramsMelt1, 1000) as Record<string, any> | null;
+        mcMelt2 = runMC(paramsMelt2, 1000) as Record<string, any> | null;
+      }
+    }
+
+    // TRANSITION + DECUM: CPP/QPP timing (3×1000) — only if not already claiming
+    if (phase === "TRANSITION" || phase === "DECUM") {
+      const alreadyClaiming = quiz.qppAlreadyClaiming === true || quiz.qppAlreadyClaiming === "true";
+      if (!alreadyClaiming) {
+        const pC60 = translateBilan360({ ...quiz, qppPlannedAge: 60, qppAlreadyClaiming: false }, phase);
+        const pC65 = translateBilan360({ ...quiz, qppPlannedAge: 65, qppAlreadyClaiming: false }, phase);
+        const pC70 = translateBilan360({ ...quiz, qppPlannedAge: 70, qppAlreadyClaiming: false }, phase);
+        mcC60 = runMC(pC60, 1000) as Record<string, any> | null;
+        mcC65 = runMC(pC65, 1000) as Record<string, any> | null;
+        mcC70 = runMC(pC70, 1000) as Record<string, any> | null;
+      }
+    }
+
+    // ── ALL PHASES: Stress test scenarios (3×1000) ──────────
+    let mcStressCrash08: Record<string, any> | null = null;
+    let mcStressStagflation: Record<string, any> | null = null;
+    let mcStressProlonged: Record<string, any> | null = null;
+    {
+      const stressBase = { ...params };
+      const pCrash = { ...stressBase, strs: "crash08", stWhen: phase === "ACCUM" ? "ret" : "now" };
+      const pStag = { ...stressBase, strs: "stagflation", stWhen: phase === "ACCUM" ? "ret" : "now" };
+      const pProl = { ...stressBase, strs: "prolonged", stWhen: phase === "ACCUM" ? "ret" : "now" };
+      mcStressCrash08 = runMC(pCrash, 1000) as Record<string, any> | null;
+      mcStressStagflation = runMC(pStag, 1000) as Record<string, any> | null;
+      mcStressProlonged = runMC(pProl, 1000) as Record<string, any> | null;
+    }
+
+    const extraRuns = { stratData, mcMelt1, mcMelt2, mcC60, mcC65, mcC70, mcStressCrash08, mcStressStagflation, mcStressProlonged };
+    console.log(`[webhook] Bilan 360 MC runs completed in ${Date.now() - mcStart}ms`);
+
+    const D = extractReportData360(mcBase as Record<string, any>, params, phase, extraRuns);
+
+    // ── Build interactive report data layer ────────────────
+    const buildfiData = buildBuildFiData(mcBase as Record<string, any>, params, phase, lang, extraRuns);
+
+    // ── AI narration (Opus) ─────────────────────────────────
+    const aiStart = Date.now();
+    const prompt = buildAIPrompt360(D, params, fr, quiz, phase, stratData || undefined);
+    let ai: Record<string, string | undefined>;
+    try {
+      const useOpus = process.env.ANTHROPIC_MODEL === "opus";
+      ai = await Promise.race([
+        callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots360, useOpus ? "claude-opus-4-6" : undefined, 8000),
+        new Promise<Record<string, string | undefined>>((_, reject) =>
+          setTimeout(() => reject(new Error("AI timeout 90s")), 90000)
+        ),
+      ]);
+    } catch (aiErr) {
+      console.warn("[webhook] Bilan 360 AI failed/timed out, using static fallbacks:", aiErr);
+      ai = {};
+    }
+    console.log(`[webhook] Bilan 360 AI in ${Date.now() - aiStart}ms (${Object.keys(ai).length} slots)`);
+
+    // ── Feedback token ────────────────────────────────────
+    const feedbackToken = randomUUID();
+    await createFeedbackRecord(feedbackToken, email, "bilan360", lang);
+
+    // ── Render report ─────────────────────────────────────
+    const reportHTML = renderReportHTML360(D, mcBase as Record<string, any>, params, lang, ai, phase, feedbackToken, extraRuns, buildfiData);
+
+    // ── Upload ────────────────────────────────────────────
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `rapport-bilan360-${timestamp}-${sessionId.slice(-8)}.html`;
+    const blob = await put(filename, reportHTML, {
+      access: "public",
+      contentType: "text/html; charset=utf-8",
+      addRandomSuffix: true,
+    });
+    console.log(`[webhook] Bilan 360 report uploaded: ${blob.url}`);
+
+    // ── Email ─────────────────────────────────────────────
+    await sendReportEmail({
+      to: email,
+      lang,
+      tier: "bilan360",
+      downloadUrl: blob.url,
+      grade: String(D.grade),
+      successPct: D.successPct as number,
+      feedbackToken,
+    });
+    console.log(`[webhook] Bilan 360 email sent to ${maskEmail(email)}`);
+
+    if (metadata.userRefCode) {
+      await createReferralRecord(metadata.userRefCode, email).catch((err) =>
+        console.error("[webhook] Referral record creation error (non-blocking):", err)
+      );
+    }
+
+    return NextResponse.json({ received: true, email, reportUrl: blob.url });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Bilan 360 processing failed";
+    console.error("[webhook] Bilan 360 error:", err);
+    await unmarkProcessed(sessionId).catch((e) =>
+      console.error("[webhook] Failed to unmark processed:", e)
+    );
+    await sendAdminAlert(
+      "Bilan 360 pipeline failed",
+      `Email: ${email}\nSession: ${sessionId}\nPhase: ${metadata.phase || "unknown"}\nError: ${msg}`
+    );
+    return NextResponse.json({ received: true, error: msg }, { status: 500 });
   }
 }
 

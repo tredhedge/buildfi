@@ -126,6 +126,85 @@ export const AI_SLOT_MAX_LENGTH_INTER: Partial<Record<AISlotKeyInter, number>> =
   ccpc_context: 600,
 };
 
+// ─── Bilan 360 tier slots ─────────────────────────────────────────────
+export const AI_SLOTS_360 = [
+  "biggest_risk",
+  "best_lever",
+  "snapshot_intro",
+  "mirror_block",
+  "revenue_analysis",
+  "savings_analysis",
+  "gov_explanation",
+  "cpp_timing",
+  "longevity_analysis",
+  "spending_flex",
+  "what_if_analysis",
+  "strategy_comparison",
+  "sequence_risk",
+  "meltdown_analysis",
+  "priority_actions",
+  "tax_analysis",
+  "fees_analysis",
+  "couple_analysis",
+  "property_analysis",
+  "strengths_risks",
+  "estate_analysis",
+  "obs_1",
+  "obs_1_title",
+  "obs_2",
+  "obs_2_title",
+  "obs_3",
+  "obs_3_title",
+  "obs_4",
+  "obs_4_title",
+  "obs_5",
+  "obs_5_title",
+  "next_horizon",
+  "model_blind_spots",
+  "efficiency_gap",
+] as const;
+
+export type AISlotKey360 = (typeof AI_SLOTS_360)[number];
+export type AINarration360 = Partial<Record<AISlotKey360, string>>;
+
+export const AI_SLOT_MAX_LENGTH_360: Partial<Record<AISlotKey360, number>> = {
+  mirror_block: 1000,
+  priority_actions: 900,
+  couple_analysis: 900,
+  property_analysis: 900,
+  strengths_risks: 800,
+  meltdown_analysis: 800,
+  efficiency_gap: 900,
+  next_horizon: 600,
+  model_blind_spots: 600,
+  obs_1_title: 60,
+  obs_2_title: 60,
+  obs_3_title: 60,
+  obs_4_title: 60,
+  obs_5_title: 60,
+};
+
+/**
+ * Sanitize raw AI output for Bilan 360 tier.
+ */
+export function sanitizeAISlots360(raw: Record<string, any>): AINarration360 {
+  const result: AINarration360 = {};
+  for (const key of AI_SLOTS_360) {
+    const val = raw[key];
+    if (val && typeof val === "string") {
+      const maxLen = AI_SLOT_MAX_LENGTH_360[key] || 800;
+      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
+      if (!FORBIDDEN_TERMS.test(forCheck)) {
+        result[key] = clean;
+      } else {
+        console.warn(`[ai-constants] Compliance violation in slot "${key}" (360), dropping`);
+      }
+    }
+  }
+  return result;
+}
+
 // ─── Décaissement tier slots ──────────────────────────────────────────
 export const AI_SLOTS_DECUM = [
   "snapshot_intro",

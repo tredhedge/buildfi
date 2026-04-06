@@ -235,8 +235,12 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
   const allocT = allocR;
   const allocN = Math.max(0.30, allocR - 0.20);
 
-  // MER estimate by allocation — same formula as Inter translator
-  const mer = allocR > 0.70 ? 0.017 : allocR > 0.50 ? 0.015 : 0.012;
+  // MER from investment vehicle type (quiz investStyle field)
+  const MER_BY_STYLE: Record<string, number> = {
+    diy_stocks: 0.0005, low_fee_etf: 0.0022, high_fee_etf: 0.008,
+    mutual_funds: 0.020, unsure: 0.015,
+  };
+  const mer = MER_BY_STYLE[a.investStyle] ?? (allocR > 0.70 ? 0.017 : allocR > 0.50 ? 0.015 : 0.012);
 
   // ── SECTION 9: TOLÉRANCE AU RISQUE — processed above with estatePref ────
 
@@ -421,6 +425,7 @@ export function translateDecumToMC(a: Record<string, any>): Record<string, any> 
     psych_discipline: a.psychDiscipline || a.psych_discipline || null,
     psych_literacy: a.psychLiteracy || a.psych_literacy || null,
     detailPreference: a.detailPreference || null,
+    investStyle: a.investStyle || "unsure",
   };
 
   // ── REPORT METADATA (for report-html-decum.js display) ───────────────────

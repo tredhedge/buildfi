@@ -65,7 +65,7 @@ input[type=number]{-moz-appearance:textfield}
 <script src="/logo.js"></script>
 </head>
 <body>
-<div style="background:#faf8f4;padding:0"><a href="/" id="heroBack" style="font-size:14px;font-weight:600;color:#888;text-decoration:none;padding:16px 24px;display:inline-block" onmouseover="this.style.color='#c49a1a'" onmouseout="this.style.color='#888'">&larr; Retour</a></div>
+<div style="background:#faf8f4;padding:0;display:flex;justify-content:space-between;align-items:center"><a href="/" id="heroBack" style="font-size:14px;font-weight:600;color:#888;text-decoration:none;padding:16px 24px;display:inline-block" onmouseover="this.style.color='#c49a1a'" onmouseout="this.style.color='#888'">&larr; Retour</a><div style="padding:8px 24px;display:flex;gap:4px"><button onclick="STATE.lang='fr';saveState();render()" style="padding:4px 12px;border-radius:4px;border:1px solid #e8e0d4;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#c49a1a">FR</button><button onclick="STATE.lang='en';saveState();render()" style="padding:4px 12px;border-radius:4px;border:1px solid #e8e0d4;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#c49a1a">EN</button></div></div>
 <div id="quiz-hero" style="background:#faf8f4;padding:clamp(16px,3vw,32px) 20px 0;text-align:center">
   <div style="max-width:680px;margin:0 auto">
     <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#c49a1a;margin-bottom:12px">Bilan 360 — buildfi.ca</div>
@@ -86,7 +86,7 @@ input[type=number]{-moz-appearance:textfield}
       <div style="font-size:12px;font-weight:700;color:#a68016;margin-bottom:6px" id="heroPrepLabel">Avant de commencer</div>
       <div style="font-size:13px;color:#666;line-height:1.7" id="heroPrepText">Épargne par compte (REER, CELI, NR), revenus du ménage, détails hypothécaire et locatifs, relevés de pension (si applicable).</div>
     </div>
-    <a href="#app" style="display:inline-block;background:linear-gradient(135deg,#c49a1a,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
+    <a href="javascript:void(0)" onclick="STATE.step=1;saveState();window.scrollTo({top:0,behavior:'smooth'});render();" style="display:inline-block;background:linear-gradient(135deg,#c49a1a,#D4A85A);color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:700;text-decoration:none;margin-bottom:16px;transition:transform .15s;letter-spacing:.2px" id="heroCta">Commencer le questionnaire</a>
     <div style="margin-bottom:24px"><a href="/" style="font-size:13px;color:#888;text-decoration:underline" id="heroOther">Pas le bon produit? Voir les autres options.</a></div>
   </div>
 </div>
@@ -152,7 +152,7 @@ var STATE = {
     // Step 5c — Debt
     hasDebts: false, debts: [],
     // Accum/Transition steps
-    lifestyle: 'active', risk: 'balanced',
+    lifestyle: 'active', risk: 'balanced', investStyle: null,
     psychAnxiety: null, psychDiscipline: null, psychLiteracy: null,
     worries: [], win: '', fix: '',
     // Transition extra
@@ -186,6 +186,10 @@ try {
 function saveState() {
   try { localStorage.setItem('buildfi_quiz_360', JSON.stringify({step:STATE.step, lang:STATE.lang, quiz:STATE.quiz})); } catch(e) {}
 }
+function resetQuiz() {
+  localStorage.removeItem('buildfi_quiz_360');
+  location.reload();
+}
 
 function f$(n) {
   if (n == null || isNaN(n)) return '—';
@@ -207,35 +211,7 @@ function computePhase() {
   STATE.isFire = q.retAge <= 50 && q.retAge > q.age;
 }
 
-function totalSteps() {
-  computePhase();
-  if (STATE.phase === 'transition') return 9;
-  return 8; // accum and decum both 8
-}
-
-function stepMap() {
-  // Returns array of step labels for progress display
-  var ph = STATE.phase;
-  var hasSpouse = STATE.quiz.couple === 'yes';
-  var base = hasSpouse ? [0,1,'2a','2b',3,4,'5'] : [0,1,3,4,'5'];
-  if (ph === 'accum') return base.concat([6,7,8,'confirm']);
-  if (ph === 'transition') return base.concat([6,7,8,9,'confirm']);
-  return base.concat([6,7,8,'confirm']); // decum
-}
-
-function countableSteps() {
-  // Steps that count toward progress (exclude 0 and confirm)
-  var m = stepMap();
-  return m.filter(function(s) { return s !== 0 && s !== 'confirm'; }).length;
-}
-
-function currentStepIndex(step) {
-  var m = stepMap();
-  for (var i = 0; i < m.length; i++) {
-    if (String(m[i]) === String(step)) return i;
-  }
-  return 0;
-}
+// stepMap, countableSteps, currentStepIndex, totalSteps defined below in NAVIGATION section
 
 // ============================================================
 // HERO TRANSLATIONS
@@ -327,12 +303,19 @@ function progressNum(step) {
 function go(step) {
   var prev = STATE.step, q = STATE.quiz, fr = STATE.lang === "fr";
   computePhase();
+  console.log("[go] prev=" + prev + " → step=" + step + " phase=" + STATE.phase + " income=" + q.income);
   var prevIdx = currentStepIndex(prev), nextIdx = currentStepIndex(step);
-  if (nextIdx > prevIdx && prev !== 0) { if (!validateStep(prev, q, fr)) return; }
+  console.log("[go] prevIdx=" + prevIdx + " nextIdx=" + nextIdx);
+  if (nextIdx > prevIdx && prev !== 0) {
+    var valid = validateStep(prev, q, fr);
+    console.log("[go] validateStep(" + prev + ") = " + valid);
+    if (!valid) return;
+  }
   if (nextIdx > prevIdx && prev !== 0 && MICRO_COPY[prev]) {
     var msg = MICRO_COPY[prev][fr ? 0 : 1];
     document.getElementById("app").innerHTML = '<div style="max-width:480px;margin:80px auto;text-align:center;padding:40px 24px"><p class="micro-copy">' + msg + '</p></div>';
     var ts = step;
+    console.log("[go] micro-copy for step " + prev + ", advancing to " + ts + " in 1.2s");
     setTimeout(function() { STATE.step = ts; saveState(); window.scrollTo({top:0, behavior:"smooth"}); render(); }, 1200);
     return;
   }
@@ -582,10 +565,19 @@ function render() {
   computePhase();
   document.documentElement.lang = s.lang;
   document.title = fr ? "buildfi.ca \u2014 Bilan 360" : "buildfi.ca \u2014 Bilan 360";
-  Object.keys(heroT).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el && heroT[id][fr ? "fr" : "en"] !== undefined) el.innerHTML = heroT[id][fr ? "fr" : "en"];
-  });
+  // Hide hero + back bar + AMF disclaimer once quiz has started
+  var heroEl = document.getElementById("quiz-hero");
+  var backEl = document.getElementById("heroBack");
+  var amfBar = document.getElementById("amf-bar");
+  if (heroEl) heroEl.style.display = (s.step === 0) ? "" : "none";
+  if (backEl) backEl.parentElement.style.display = (s.step === 0) ? "" : "none";
+  if (amfBar) amfBar.style.display = (s.step === 0) ? "" : "none";
+  if (s.step === 0) {
+    Object.keys(heroT).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && heroT[id][fr ? "fr" : "en"] !== undefined) el.innerHTML = heroT[id][fr ? "fr" : "en"];
+    });
+  }
   saveState();
   if (s.showPaywall && s.reportData) { app.innerHTML = renderPaywall(s.reportData, s.lang); return; }
   if (s.step === "loading") {
@@ -724,7 +716,7 @@ function renderQuiz(step, q, lang) {
     return '<div style="margin-bottom:28px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px"><span style="font-weight:600">' + t("\u00c9tape","Step") + ' ' + pn + ' / ' + ts + '</span><span style="font-weight:700;color:var(--g)">' + pct + '%</span></div><div role="progressbar" aria-valuenow="' + pn + '" aria-valuemin="0" aria-valuemax="' + ts + '" aria-label="' + t("Progression","Progress") + '" style="height:4px;background:var(--bdl);border-radius:2px"><div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:' + pct + '%;transition:width .3s"></div></div></div>';
   }
   function wrap(inner, sn) {
-    return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 60px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>';
+    return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 80px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>';
   }
   function backBtn(target) {
     return '<button class="pbtn-sec" onclick="go(' + JSON.stringify(target) + ')">' + t("Retour","Back") + '</button>';
@@ -734,6 +726,11 @@ function renderQuiz(step, q, lang) {
   }
 
   // ========== STEP 0: INTRO ==========
+  // When hero section is visible (initial page load), step 0 is redundant — hero CTA goes to step 1.
+  // Step 0 only renders when hero is absent (e.g., direct step navigation).
+  if (step === 0 && document.getElementById("quiz-hero")) {
+    return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 24px;text-align:center"></div>';
+  }
   if (step === 0) {
     return '<div style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:var(--quiz-max);margin:0 auto;padding:40px 24px">'
       + '<div style="display:flex;justify-content:center;gap:6px;margin-bottom:36px">'
@@ -893,7 +890,7 @@ function renderQuizPart2(step, q, lang) {
     var pn = progressNum(sn); var pct = Math.round(pn / ts * 100);
     return '<div style="margin-bottom:28px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--tm);margin-bottom:7px"><span style="font-weight:600">' + t("\u00c9tape","Step") + ' ' + pn + ' / ' + ts + '</span><span style="font-weight:700;color:var(--g)">' + pct + '%</span></div><div role="progressbar" style="height:4px;background:var(--bdl);border-radius:2px"><div style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:2px;width:' + pct + '%;transition:width .3s"></div></div></div>';
   }
-  function wrap(inner, sn) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 60px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>'; }
+  function wrap(inner, sn) { return '<div style="max-width:var(--quiz-max);margin:0 auto;padding:40px 20px 80px">' + (sn ? progressBar(sn) : '') + '<div class="qs" aria-live="polite">' + inner + '</div></div>'; }
   function backBtn(target) { return '<button class="pbtn-sec" onclick="go(' + JSON.stringify(target) + ')">' + t("Retour","Back") + '</button>'; }
   function contBtn(target, label) { return '<button class="pbtn" onclick="go(' + JSON.stringify(target) + ')">' + (label || t("Continuer \u2192","Continue \u2192")) + '</button>'; }
 
@@ -977,6 +974,7 @@ function renderQuizPart2(step, q, lang) {
     // Accum/Transition step 6: Lifestyle + risk + part-time
     var lsCards = [{v:"cozy",l:t("Tranquille","Cozy"),d:t("~3 000 $/mois","~$3,000/mo")},{v:"active",l:t("Actif","Active"),d:t("~5 000 $/mois","~$5,000/mo")},{v:"premium",l:t("Premium","Premium"),d:t("~7 500 $/mois","~$7,500/mo")}].map(function(o){return '<div tabindex="0" class="card'+(q.lifestyle===o.v?" sel":"")+'" onclick="uq(\'lifestyle\',\''+o.v+'\')" ><div style="font-weight:700">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
     var riskCards = [{v:"conservative",l:t("Prudent","Conservative"),d:"50% " + t("actions","equity")},{v:"balanced",l:t("\u00c9quilibr\u00e9","Balanced"),d:"70% " + t("actions","equity")},{v:"growth",l:t("Croissance","Growth"),d:"85% " + t("actions","equity")}].map(function(o){return '<div tabindex="0" class="card'+(q.risk===o.v?" sel":"")+'" onclick="uq(\'risk\',\''+o.v+'\')" ><div style="font-weight:700">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
+    var investCards = [{v:"diy_stocks",l:t("Actions directes","Direct stocks"),d:t("~0,05 % frais","~0.05% fees")},{v:"low_fee_etf",l:t("FNB indiciels","Index ETFs"),d:t("~0,22 % frais","~0.22% fees")},{v:"high_fee_etf",l:t("FNB/fonds actifs","Active ETFs/funds"),d:t("~0,80 % frais","~0.80% fees")},{v:"mutual_funds",l:t("Fonds communs","Mutual funds"),d:t("~2,0 % frais","~2.0% fees")},{v:"unsure",l:t("Je ne sais pas","I\u2019m not sure"),d:t("On estimera","We\u2019ll estimate")}].map(function(o){return '<div tabindex="0" class="card'+(q.investStyle===o.v?" sel":"")+'" onclick="uq(\'investStyle\',\''+o.v+'\')" ><div style="font-weight:700">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
     var ptCards = [{v:"yes",l:t("Oui","Yes")},{v:"maybe",l:t("Peut-\u00eatre","Maybe")},{v:"no",l:t("Non","No")}].map(function(o){return '<div tabindex="0" class="card'+(q.parttime===o.v?" sel":"")+'" onclick="uq(\'parttime\',\''+o.v+'\')" style="flex:1;text-align:center"><div style="font-weight:700">'+o.l+'</div></div>';}).join("");
     var ptFields = (q.parttime === "yes" || q.parttime === "maybe") ? '<div style="background:var(--gbg);border-radius:10px;padding:14px 16px;margin-top:10px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--ts)">' + t("Revenu mensuel estim\u00e9 ($)","Estimated monthly income ($)") + '</label><input type="number" min="0" max="10000" step="100" value="' + (q.parttimeAmount||0) + '" oninput="uqd(\'parttimeAmount\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div><div><label style="font-size:11px;color:var(--ts)">' + t("Nombre d\u2019ann\u00e9es","Number of years") + '</label><input type="number" min="1" max="15" value="' + (q.parttimeYears||3) + '" oninput="uqd(\'parttimeYears\',this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--bd);font-size:14px;margin-top:4px" /></div></div></div>' : '';
     return wrap(
@@ -984,6 +982,7 @@ function renderQuizPart2(step, q, lang) {
       + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Style de vie et risque","Lifestyle & risk") + '</h2>'
       + '<div class="fld-block"><label class="fld-label">' + t("Style de retraite souhait\u00e9","Desired retirement lifestyle") + '</label>' + lsCards + '</div>'
       + '<div class="fld-block"><label class="fld-label">' + t("Tol\u00e9rance au risque","Risk tolerance") + '</label>' + riskCards + '</div>'
+      + '<div class="fld-block"><label class="fld-label">' + t("Type de placements","Investment vehicle") + '</label>' + investCards + '</div>'
       + '<div class="fld-block"><label class="fld-label">' + t("Travail \u00e0 temps partiel en d\u00e9but de retraite\u00a0?","Part-time work in early retirement?") + '</label><div style="display:flex;gap:8px">' + ptCards + '</div></div>'
       + ptFields
       + contBtn(7) + backBtn("5")
@@ -1039,6 +1038,7 @@ function renderQuizPart2(step, q, lang) {
       // Decum step 8: Strategy + psychology + worries
       var estCards = [{v:"maximize",l:t("Maximiser l\u2019h\u00e9ritage","Maximize inheritance")},{v:"balanced",l:t("\u00c9quilibr\u00e9","Balanced")},{v:"spenddown",l:t("Profiter pleinement","Spend it down")}].map(function(o){return '<div tabindex="0" class="card'+(q.estatePref===o.v?" sel":"")+'" onclick="uq(\'estatePref\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
       var meltCards = [{v:true,l:t("Oui \u2014 d\u00e9buter les retraits","Yes \u2014 start withdrawals")},{v:false,l:t("Non \u2014 laisser croitre","No \u2014 let it grow")},{v:null,l:t("Analyser les deux","Analyze both")}].map(function(o){return '<div tabindex="0" class="card'+(q.meltdownPref===o.v?" sel":"")+'" onclick="uq(\'meltdownPref\',' + (o.v===null?"null":o.v) + ')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
+      var dInvestCards = [{v:"diy_stocks",l:t("Actions directes","Direct stocks"),d:t("~0,05 %","~0.05%")},{v:"low_fee_etf",l:t("FNB indiciels","Index ETFs"),d:t("~0,22 %","~0.22%")},{v:"high_fee_etf",l:t("FNB/fonds actifs","Active ETFs/funds"),d:t("~0,80 %","~0.80%")},{v:"mutual_funds",l:t("Fonds communs","Mutual funds"),d:t("~2,0 %","~2.0%")},{v:"unsure",l:t("Je ne sais pas","Not sure"),d:t("On estimera","We\u2019ll estimate")}].map(function(o){return '<div tabindex="0" class="card'+(q.investStyle===o.v?" sel":"")+'" onclick="uq(\'investStyle\',\''+o.v+'\')" style="padding:12px"><div style="font-weight:600;font-size:13px">'+o.l+'</div><div style="font-size:11px;color:var(--ts)">'+o.d+'</div></div>';}).join("");
       var dAnxCards = [{v:"calm",l:t("Confiant\u00b7e","Confident")},{v:"mild",l:t("Un peu incertain\u00b7e","Uncertain")},{v:"high",l:t("Pr\u00e9occup\u00e9\u00b7e","Worried")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychAnxiety===o.v?" sel":"")+'" onclick="uq(\'psychAnxiety\',\''+o.v+'\')" style="padding:12px;flex:1;text-align:center"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
       var dLitCards = [{v:"high",l:t("\u00c9lev\u00e9e","High")},{v:"medium",l:t("Moyenne","Medium")},{v:"low",l:t("D\u00e9butant","Beginner")}].map(function(o){return '<div tabindex="0" class="card'+(q.psychLiteracy===o.v?" sel":"")+'" onclick="uq(\'psychLiteracy\',\''+o.v+'\')" style="padding:12px;flex:1;text-align:center"><div style="font-weight:600;font-size:13px">'+o.l+'</div></div>';}).join("");
       var worryOpts = [{v:"runout",l:t("Manquer d\u2019argent","Running out")},{v:"tax",l:t("Trop d\u2019imp\u00f4ts","Too much tax")},{v:"inflation",l:t("Inflation","Inflation")},{v:"health",l:t("Co\u00fbts de sant\u00e9","Health costs")},{v:"market",l:t("Krachs","Market crashes")},{v:"legacy",l:t("H\u00e9ritage","Legacy")}].map(function(o){var sel=q.worries.indexOf(o.v)>=0;return '<span class="chip'+(sel?" sel":"")+'" onclick="toggleWorry(\''+o.v+'\')">' + o.l + '</span>';}).join("");
@@ -1047,6 +1047,7 @@ function renderQuizPart2(step, q, lang) {
         + '<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">' + t("Strat\u00e9gie et profil","Strategy & profile") + '</h2>'
         + '<div class="fld-block"><label class="fld-label">' + t("Priorit\u00e9 successorale","Estate priority") + '</label>' + estCards + '</div>'
         + '<div class="fld-block"><label class="fld-label">' + t("Retrait anticip\u00e9 du REER avant 71 ans\u00a0?","Early RRSP withdrawals before 71?") + '</label>' + meltCards + '</div>'
+        + '<div class="fld-block"><label class="fld-label">' + t("Type de placements","Investment vehicle") + '</label>' + dInvestCards + '</div>'
         + '<div class="fld-block"><label class="fld-label">' + t("Niveau d\u2019anxi\u00e9t\u00e9","Anxiety level") + '</label><div style="display:flex;gap:8px">' + dAnxCards + '</div></div>'
         + '<div class="fld-block"><label class="fld-label">' + t("Familiarit\u00e9 financi\u00e8re","Financial literacy") + '</label><div style="display:flex;gap:8px">' + dLitCards + '</div></div>'
         + '<div class="fld-block"><label class="fld-label">' + t("Vos 3 plus grandes pr\u00e9occupations","Your 3 biggest concerns") + '</label><div>' + worryOpts + '</div></div>'
@@ -1138,7 +1139,7 @@ html:lang(en) .amf-en{display:inline!important}
 html:lang(fr) .amf-en{display:none!important}
 html:lang(fr) .amf-fr{display:inline!important}
 </style>
-<div style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
+<div id="amf-bar" style="position:fixed;bottom:0;left:0;right:0;background:#faf8f4;border-top:1px solid #e8e4db;padding:12px 24px;font-size:11px;color:#999;text-align:center;line-height:1.5;z-index:999">
 <span class="amf-fr">buildfi.ca fournit des projections \u00e0 titre informatif seulement. Ce service ne constitue pas du conseil financier, fiscal ou juridique. Consultez un professionnel qualifi\u00e9 avant de prendre des d\u00e9cisions financi\u00e8res. Qu\u00e9bec, Canada.</span>
 <span class="amf-en" style="display:none">buildfi.ca provides projections for informational purposes only. This service does not constitute financial, tax, or legal advice. Consult a qualified professional before making financial decisions. Quebec, Canada.</span>
 </div>

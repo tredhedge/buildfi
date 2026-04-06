@@ -276,7 +276,7 @@ export function buildAIPromptInter(
       p25EstateNet: D.p25EstateNet || 0, p75EstateNet: D.p75EstateNet || 0,
     },
     tax: { curr: D.taxCurrentEffective, ret: D.taxRetirementEffective, marg: D.taxCurrentMarginal },
-    fees: { mer: D.merWeighted || 0, cost: D.feeCostLifetime || 0 },
+    fees: { mer: D.merWeighted || 0, cost: D.feeCostLifetime || 0, investStyle: q.investStyle || "unsure" },
     timeline: {
       yrsToRet: yrsToRet, retirementYears: retYears,
       avgDeath: D.avgDeath || D.deathAge || 87,

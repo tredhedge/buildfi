@@ -113,7 +113,13 @@ export function translateToMC(a: Record<string, any>) {
   if (a.risk === "conservative") eq = 0.5;
   else if (a.risk === "growth") eq = 0.85;
   else eq = 0.7;
-  const mer = eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012;
+
+  // MER from investment vehicle type (quiz investStyle field)
+  const MER_BY_STYLE: Record<string, number> = {
+    diy_stocks: 0.0005, low_fee_etf: 0.0022, high_fee_etf: 0.008,
+    mutual_funds: 0.020, unsure: 0.015,
+  };
+  const mer = MER_BY_STYLE[a.investStyle] ?? (eq > 0.7 ? 0.018 : eq > 0.5 ? 0.015 : 0.012);
 
   // QPP/OAS timing — respect quiz-provided ages if present, else heuristic from retAge
   const qppAge = a.qppAge
@@ -195,6 +201,7 @@ export function translateToMC(a: Record<string, any>) {
       psych_anxiety: a.psychAnxiety || null,
       psych_discipline: a.psychDiscipline || null,
       psych_literacy: a.psychLiteracy || null,
+      investStyle: a.investStyle || "unsure",
     },
     _report: {
       debts,
