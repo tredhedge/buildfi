@@ -146,7 +146,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   position: fixed; left: 88px; top: 0; bottom: 0; width: 500px;
   background: rgba(44,40,32,0.97); border-right: 1px solid rgba(192,138,78,0.2);
   z-index: 8600; overflow-y: auto; overflow-x: hidden; padding: 20px 22px;
-  transform: translateX(-448px); opacity: 0;
+  transform: translateX(-590px); opacity: 0; pointer-events: none;
   transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   box-shadow: 8px 0 32px rgba(0,0,0,0.4);
@@ -155,7 +155,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bf-side-overlay::-webkit-scrollbar{width:6px}
 .bf-side-overlay::-webkit-scrollbar-thumb{background:rgba(192,138,78,0.2);border-radius:3px}
 .bf-side-overlay::-webkit-scrollbar-track{background:transparent}
-.bf-side-overlay.open { transform: translateX(0); opacity: 1; }
+.bf-side-overlay.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
 
 /* Backdrop (desktop overlay) */
 .bf-overlay-backdrop {
@@ -8958,7 +8958,8 @@ React.createElement("div", { className: "bf-rail" },
   }),
   React.createElement("div", { style: { flex: 1 } }),
   React.createElement("div", { className: "bf-rail-sep" }),
-  React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, dark ? "☀️" : "🌙"),
+  React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, dark ? "☀️" : "🌙", React.createElement("span", { className: "bf-rail-label" }, dark ? "Light" : "Dark")),
+  React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, "🧙", React.createElement("span", { className: "bf-rail-label" }, "Guide")),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setLang(function(prev) { var n = prev === "fr" ? "en" : "fr"; document.documentElement.lang = n; return n; }); }, style: { fontSize: 11, fontWeight: 700 } }, lang === "fr" ? "EN" : "FR")
 ),
 // === DESKTOP OVERLAY BACKDROP ===
