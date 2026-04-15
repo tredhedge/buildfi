@@ -19,6 +19,10 @@ import type {
   ProvincialTax,
   ProvinceCode,
 } from "./fiscal-2026";
+import ENGINE_CONSTANTS_2026 from "./engine-constants-2026";
+import type { EngineConstants } from "./engine-constants-2026";
+import ENGINE_DEFAULTS from "./engine-defaults";
+import type { EngineDefaults } from "./engine-defaults";
 
 // ---------------------------------------------------------------------------
 // Registry — add new years here as they are created
@@ -26,6 +30,10 @@ import type {
 
 const CONSTANTS_BY_YEAR: Record<number, FiscalConstants> = {
   2026: FISCAL_2026,
+};
+
+const ENGINE_BY_YEAR: Record<number, EngineConstants> = {
+  2026: ENGINE_CONSTANTS_2026,
 };
 
 const LATEST_YEAR = 2026;
@@ -53,6 +61,30 @@ export function getCurrentConstants(year?: number): FiscalConstants {
 }
 
 /**
+ * Returns the engine constants for a given tax year.
+ * These are ALL government-sourced values (tax, benefits, mortality, etc.).
+ * Defaults to the latest available year.
+ */
+export function getEngineConstants(year?: number): EngineConstants {
+  const targetYear = year ?? LATEST_YEAR;
+  const constants = ENGINE_BY_YEAR[targetYear];
+  if (!constants) {
+    const available = Object.keys(ENGINE_BY_YEAR).join(", ");
+    throw new Error(
+      `Engine constants for year ${targetYear} not found. Available: ${available}`
+    );
+  }
+  return constants;
+}
+
+/**
+ * Returns the engine defaults (user-adjustable proposed values).
+ */
+export function getEngineDefaults(): EngineDefaults {
+  return ENGINE_DEFAULTS;
+}
+
+/**
  * Returns all available fiscal years in ascending order.
  */
 export function getAvailableYears(): number[] {
@@ -72,11 +104,13 @@ export function getLatestYear(): number {
 // Re-exports
 // ---------------------------------------------------------------------------
 
-export { FISCAL_2026 };
+export { FISCAL_2026, ENGINE_CONSTANTS_2026, ENGINE_DEFAULTS };
 export type {
   FiscalConstants,
   FiscalMetadata,
   FederalConstants,
   ProvincialTax,
   ProvinceCode,
+  EngineConstants,
+  EngineDefaults,
 };

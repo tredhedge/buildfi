@@ -84,6 +84,13 @@ export function validateBaseParams(
   ];
   if (!validProvs.includes(String(params.prov))) return `Invalid prov: ${params.prov}`;
   if (!["M", "F"].includes(String(params.sex))) return `Invalid sex: ${params.sex}`;
+  // Default deathAge if missing (engine also guards this, but catch early for API clarity)
+  if (params.deathAge == null) {
+    (params as Record<string, unknown>).deathAge = 90;
+  } else {
+    const da = Number(params.deathAge);
+    if (isNaN(da) || da <= age) return "deathAge must be greater than age";
+  }
   return null;
 }
 
@@ -107,9 +114,9 @@ export function formatMCResults(mc: Record<string, any>): Record<string, any> {
     liquidWealth: {
       median: mc.rLiqMedF ?? mc.rMedF,
       p5: mc.rLiqP5 ?? mc.rP5F,
-      p25: mc.liqP25 ? mc.liqP25 / discFinal : mc.rP25F,
-      p75: mc.liqP75 ? mc.liqP75 / discFinal : mc.rP75F,
-      p95: mc.liqP95 ? mc.liqP95 / discFinal : mc.rP95F,
+      p25: mc.liqP25 != null ? mc.liqP25 / discFinal : mc.rP25F,
+      p75: mc.liqP75 != null ? mc.liqP75 / discFinal : mc.rP75F,
+      p95: mc.liqP95 != null ? mc.liqP95 / discFinal : mc.rP95F,
     },
     estate: {
       medianTax: mc.medEstateTax,

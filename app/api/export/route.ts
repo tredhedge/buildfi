@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
 
     const start = Date.now();
 
-    // ── Step 1: Run MC (5000 sims) ──────────────────────────────
-    const mc = runMC(params, 5000) as Record<string, any> | null;
+    // ── Step 1: Run MC (5000 sims) — clone params to avoid mutation ──
+    const mc = runMC({ ...params }, 5000) as Record<string, any> | null;
     if (!mc) {
       return NextResponse.json(
         { success: false, error: "MC engine returned null" },

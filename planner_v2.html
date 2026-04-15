@@ -372,7 +372,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </style>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="./vendor/exceljs.min.js"></script>
+<script src="./vendor/xlsx.full.min.js"></script>
+<script src="./templates/report-template-b64.js"></script>
+<script src="./templates/buildfi-logo-b64.js"></script>
+<script src="report/report-formatters.js"></script>
+<script src="report/report-data.js"></script>
+<script src="report/report-charts.js"></script>
+<script src="report/report-pdf.js"></script>
+<script src="report/report-excel.js"></script>
+<script src="report/report-export-service.js"></script>
 </head><body><svg style="position:absolute;width:0;height:0">
   <defs>
     <pattern id="pat-diag" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -1470,20 +1479,688 @@ const T_EN = {
 };
 // === NAMED CONSTANTS (2025 PAG) ===
 /*__ENGINE_START__*/
-var TAX_BASE_YEAR = 2026; // All tax constants below are 2026 values; indexed by CPI in calcTax
-var FED_BRACKETS = [58523, 117045, 181440, 258482]; // 2026 federal brackets
-var FED_RATES = [0.14, 0.205, 0.26, 0.29, 0.33];
-var FED_PERSONAL = 16452; // 2026 basic personal amount
-var OAS_CLAWBACK_THR = 95323; // 2026 OAS recovery threshold
-var OAS_MAX_MONTHLY = 742.31;
-var GIS_MAX_SINGLE = 1105.43; // 2026 Q1
-var GIS_MAX_COUPLE = 665.41; // 2026 Q1 (spouse receives full OAS)
-var QPP_MAX_MONTHLY = 1507.65; // 2026 CPP/QPP max monthly at 65 (incl. enhancement)
-var QPP_MGA = 74600; // 2026 YMPE
-var QPP_YAMPE = 85000; // 2026 YAMPE
-var QPP2_MAX_MONTHLY = 81.00; // 2026 est. CPP2 max monthly enhancement
-var PENSION_CREDIT_MAX = 2000;
-var TFSA_LIMIT_2026 = 7000;
+/*__INJECTED_CONSTANTS_START__*/
+var C = {
+  eqRet: 0.07,
+  eqVol: 0.16,
+  bndRet: 0.035,
+  bndVol: 0.06,
+  canRet: 0.07,
+  canVol: 0.16,
+  usRet: 0.08,
+  usVol: 0.17,
+  intlRet: 0.07,
+  intlVol: 0.18,
+  emRet: 0.085,
+  emVol: 0.23,
+  peRet: 0.12,
+  peVol: 0.25,
+  pmRet: 0.03,
+  pmVol: 0.15,
+  dcRet: 0.05,
+  dcVol: 0.08,
+  fxVol: 0.08,
+  reVol: 0.1,
+  allocR: 0.6,
+  allocT: 0.8,
+  allocN: 0.5,
+  multiAsset: { can: 0.25, us: 0.35, intl: 0.2, em: 0.05, bnd: 0.15 },
+  merR: 0.01,
+  merT: 0.005,
+  merN: 0.005,
+  nrTaxDrag: 0.009,
+  penMER: 0.01,
+  peFee: 0.02,
+  inflation: 0.021,
+  goP: 1,
+  slP: 0.85,
+  noP: 0.75,
+  mcSlP: 0.82,
+  mcNoP: 0.92,
+  smileSlAge: 75,
+  smileNoAge: 85,
+  healthAge: 85,
+  healthMul: 0.02,
+  healthCostMax: 2,
+  spendingBase: 0.7,
+  spendingHousing: 0.15,
+  spendingHealth: 0.15,
+  smooth: {
+    melt: 0.4,
+    meltFloor: 5000,
+    spend: 0.3,
+    spendFloor: 10000,
+    back: 0.4,
+    backFloor: 15000,
+    nrOver: 1.5,
+    mcBlend: 0.7
+  },
+  gkCeil: 0.055,
+  gkFloor: 0.03,
+  gkCut: 0.1,
+  gkRaise: 0.1,
+  gkMaxCut: 0.25,
+  glideSpeed: 0.02,
+  glideFloor: 0.25,
+  glideEqFloor: 0.2,
+  mortgageRate: 0.05,
+  propAppreciation: 0.035,
+  helocRate: 0.065,
+  rentalInflation: 0.02,
+  reCostInflation: 0.03,
+  refiAmortYears: 25,
+  replacementRent: 1500,
+  dcWithdrawalRate: 0.04,
+  dcRrifConversionAge: 72,
+  partialIndexation: 0.5,
+  annuityRate: 0.04,
+  deathAge: 90,
+  spouseDeathAge: 90,
+  respGrowthRate: 0.05,
+  bizSalaryPct: 0.5,
+  corpPassiveAlloc: 0.4,
+  corpExtractYears: 10,
+  bizSaleACB: 100,
+  meltdownTarget: 58523,
+  salaryVolFloor: 0.2,
+  disabilityMonths: 6,
+  peLockYears: 3,
+  peLockHaircut: 0.3,
+  gisIncomeThreshold: 22000,
+  fallbackMargRate: 0.42,
+  detMargRate: 0.4,
+  ruinThreshold: 100,
+  dustThreshold: 100,
+  wdSampleSims: 30,
+  shortfallInterval: 3,
+  sensSims: 50,
+  histogramBins: { min: 8, max: 20 },
+  deathRuinMaxAge: 105,
+  deathRuinBucket: 5,
+  TAX_BASE_YEAR: 2026,
+  FED_BRACKETS: [58523, 117045, 181440, 258482],
+  FED_RATES: [0.14, 0.205, 0.26, 0.29, 0.33],
+  FED_PERSONAL: 16452,
+  PENSION_CREDIT_MAX: 2000,
+  FED_AGE_AMT: 8790,
+  FED_AGE_THRESH: 44325,
+  FED_CREDIT_RATE: 0.15,
+  FED_AGE_CLAWBACK_RATE: 0.15,
+  ELIG_GROSSUP: 1.38,
+  NON_ELIG_GROSSUP: 1.15,
+  FED_ELIG_DTC: 0.150198,
+  FED_NON_ELIG_DTC: 0.090301,
+  PROV_TAX: {
+    QC: {
+      b: [54345, 108730, 132245],
+      r: [0.14, 0.19, 0.24, 0.2575],
+      pd: 18952,
+      abate: 0.835,
+      eligDivCr: 0.1118,
+      nonEligDivCr: 0.039362,
+      ageAmt: 3903,
+      ageThresh: 0,
+      penAmt: 2918
+    },
+    ON: {
+      b: [53891, 107785, 150000, 220000],
+      r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316],
+      pd: 12091,
+      abate: 1,
+      eligDivCr: 0.1,
+      nonEligDivCr: 0.029863,
+      ageAmt: 5286,
+      ageThresh: 42335,
+      penAmt: 1580
+    },
+    BC: {
+      b: [49159, 98320, 112883, 137073, 185854, 259197],
+      r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205],
+      pd: 12901,
+      abate: 1,
+      eligDivCr: 0.12,
+      nonEligDivCr: 0.0196,
+      ageAmt: 5766,
+      ageThresh: 42660,
+      penAmt: 1000
+    },
+    AB: {
+      b: [154259, 185203, 246938, 370220],
+      r: [0.1, 0.12, 0.13, 0.14, 0.15],
+      pd: 22769,
+      abate: 1,
+      eligDivCr: 0.0812,
+      nonEligDivCr: 0.0218,
+      ageAmt: 5553,
+      ageThresh: 43906,
+      penAmt: 1491
+    },
+    SK: {
+      b: [54532, 155805],
+      r: [0.105, 0.125, 0.145],
+      pd: 20381,
+      abate: 1,
+      eligDivCr: 0.11,
+      nonEligDivCr: 0.02105,
+      ageAmt: 5518,
+      ageThresh: 0,
+      penAmt: 1000
+    },
+    MB: {
+      b: [47000, 100000],
+      r: [0.108, 0.1275, 0.174],
+      pd: 15780,
+      abate: 1,
+      eligDivCr: 0.08,
+      nonEligDivCr: 0.007835,
+      ageAmt: 3728,
+      ageThresh: 0,
+      penAmt: 1000
+    },
+    NB: {
+      b: [51306, 102614, 190081],
+      r: [0.094, 0.14, 0.16, 0.195],
+      pd: 13396,
+      abate: 1,
+      eligDivCr: 0.14,
+      nonEligDivCr: 0.027518,
+      ageAmt: 5849,
+      ageThresh: 42553,
+      penAmt: 1000
+    },
+    NS: {
+      b: [30182, 60364, 94860, 153000],
+      r: [0.0879, 0.1495, 0.1667, 0.175, 0.21],
+      pd: 8651,
+      abate: 1,
+      eligDivCr: 0.0885,
+      nonEligDivCr: 0.015,
+      ageAmt: 4897,
+      ageThresh: 0,
+      penAmt: 1000
+    },
+    PE: {
+      b: [33538, 67079],
+      r: [0.098, 0.138, 0.167],
+      pd: 13865,
+      abate: 1,
+      eligDivCr: 0.105,
+      nonEligDivCr: 0.013,
+      ageAmt: 4862,
+      ageThresh: 0,
+      penAmt: 1000
+    },
+    NL: {
+      b: [44062, 88123, 157329, 220262, 281387, 562714],
+      r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213],
+      pd: 11034,
+      abate: 1,
+      eligDivCr: 0.063,
+      nonEligDivCr: 0.032,
+      ageAmt: 7742,
+      ageThresh: 39880,
+      penAmt: 1000
+    },
+    NT: {
+      b: [51963, 103931, 169067],
+      r: [0.059, 0.086, 0.122, 0.1405],
+      pd: 17041,
+      abate: 1,
+      eligDivCr: 0.115,
+      nonEligDivCr: 0.06,
+      ageAmt: 8200,
+      ageThresh: 0,
+      penAmt: 1000
+    },
+    YT: {
+      b: [58523, 117045, 181440, 258482, 500000],
+      r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16],
+      pd: 16452,
+      abate: 1,
+      eligDivCr: 0.1202,
+      nonEligDivCr: 0.0067,
+      ageAmt: 8790,
+      ageThresh: 44325,
+      penAmt: 2000
+    },
+    NU: {
+      b: [54333, 108668, 177231],
+      r: [0.04, 0.07, 0.09, 0.115],
+      pd: 18284,
+      abate: 1,
+      eligDivCr: 0.0551,
+      nonEligDivCr: 0.025904,
+      ageAmt: 14865,
+      ageThresh: 0,
+      penAmt: 2000
+    }
+  },
+  ON_SURTAX_THR1: 4991,
+  ON_SURTAX_RATE1: 0.2,
+  ON_SURTAX_THR2: 6387,
+  ON_SURTAX_RATE2: 0.36,
+  CORP_RATES: {
+    QC: { small: 0.122, general: 0.265, passive: 0.5017 },
+    ON: { small: 0.122, general: 0.265, passive: 0.5017 },
+    BC: { small: 0.11, general: 0.27, passive: 0.5067 },
+    AB: { small: 0.11, general: 0.23, passive: 0.4667 },
+    SK: { small: 0.11, general: 0.27, passive: 0.5067 },
+    MB: { small: 0.11, general: 0.27, passive: 0.5067 },
+    NB: { small: 0.115, general: 0.29, passive: 0.5267 },
+    NS: { small: 0.115, general: 0.29, passive: 0.5267 },
+    PE: { small: 0.1, general: 0.31, passive: 0.5467 },
+    NL: { small: 0.12, general: 0.3, passive: 0.5367 },
+    NT: { small: 0.11, general: 0.265, passive: 0.5017 },
+    YT: { small: 0.11, general: 0.27, passive: 0.5067 },
+    NU: { small: 0.12, general: 0.27, passive: 0.5067 }
+  },
+  SBD_LIMIT: 500000,
+  PASSIVE_GRIND_THRESHOLD: 50000,
+  PASSIVE_GRIND_FACTOR: 5,
+  RDTOH_RATE: 0.3067,
+  RDTOH_REFUND_RATE: 0.3833,
+  LCGE: 1250000,
+  OAS_CLAWBACK_THRESHOLD: 95323,
+  OAS_MAX_MONTHLY: 742.31,
+  OAS_DEFERRAL_BONUS_PER_MONTH: 0.006,
+  OAS_MAX_DEFERRAL_FACTOR: 1.36,
+  OAS_75_PLUS_BONUS: 1.1,
+  OAS_CLAWBACK_RATE: 0.15,
+  QPP_MAX_MONTHLY: 1507.65,
+  QPP_MGA: 74600,
+  QPP_YAMPE: 85000,
+  QPP2_MAX_MONTHLY: 81,
+  QPP_MAX_CONTRIB_YEARS: 40,
+  QPP_EARLY_REDUCTION_PER_MONTH: 0.006,
+  QPP_LATE_BONUS_PER_MONTH: 0.007,
+  QPP_ADJ_FLOOR: 0.64,
+  QPP_ADJ_CAP: 1.42,
+  QPP_SURVIVOR_CAP_MONTHLY: 784,
+  QPP_SURVIVOR_FRACTION: 0.6,
+  GIS_MAX_SINGLE: 1105.43,
+  GIS_MAX_COUPLE: 665.41,
+  GIS_EMPLOYMENT_FULL_EXEMPT: 5000,
+  GIS_EMPLOYMENT_PARTIAL_CEILING: 15000,
+  GIS_PARTIAL_EXEMPT_RATE: 0.5,
+  GIS_REDUCTION_RATE: 0.5,
+  GST_CREDIT_SINGLE: 519,
+  GST_CREDIT_SPOUSE_SUPPLEMENT: 171,
+  GST_PHASEOUT_THRESHOLD: 44324,
+  GST_PHASEOUT_RATE: 0.05,
+  TFSA_ANNUAL_LIMIT: 7000,
+  TFSA_HISTORICAL_LIMITS: [
+    {
+      years: [2009, 2010, 2011, 2012],
+      limit: 5000
+    },
+    {
+      years: [2013, 2014],
+      limit: 5500
+    },
+    {
+      years: [2015],
+      limit: 10000
+    },
+    {
+      years: [2016, 2017, 2018],
+      limit: 5500
+    },
+    {
+      years: [2019, 2020, 2021, 2022],
+      limit: 6000
+    },
+    {
+      years: [2023],
+      limit: 6500
+    },
+    {
+      years: [2024, 2025, 2026],
+      limit: 7000
+    }
+  ],
+  TFSA_INDEX_ROUNDING: 500,
+  FHSA_LIFETIME_MAX: 40000,
+  FHSA_ANNUAL_LIMIT: 8000,
+  FHSA_MAX_YEARS: 15,
+  FHSA_MANDATORY_CLOSE_AGE: 71,
+  CESG_MAX_ELIGIBLE_ANNUAL: 2500,
+  CESG_MATCH_RATE: 0.2,
+  CG_THRESHOLD: 250000,
+  CG_INCLUSION_LOW: 0.5,
+  CG_INCLUSION_HIGH: 0.6667,
+  PENSION_SPLIT_MAX: 0.5,
+  QPP_SHARING_TAX_FACTOR: 0.15,
+  FTQ_CSN_MAX_CONTRIB: 5000,
+  FTQ_CSN_CREDIT_RATE: 0.3,
+  DONATION_CREDIT_RATE_LOW: 0.15,
+  DONATION_CREDIT_RATE_HIGH: 0.29,
+  DONATION_FIRST_TIER: 200,
+  FRV_MAX_DIVISOR_QC: 90,
+  FRV_UNLOCK_MIN_AGE: 55,
+  RSU_TAX_RATE: 0.45,
+  QPP_BASIC_EXEMPTION: 3500,
+  QPP_RATE_QC: 0.064,
+  CPP_RATE_ROC: 0.0595,
+  QPP2_CPP2_RATE: 0.04,
+  EI_MAX_INSURABLE: 65700,
+  EI_RATE_QC: 0.0127,
+  EI_RATE_ROC: 0.0158,
+  RQAP_MAX_INSURABLE: 94000,
+  RQAP_RATE: 0.00494,
+  RRIF_MIN: {
+    "71": 0.0528,
+    "72": 0.054,
+    "73": 0.0553,
+    "74": 0.0567,
+    "75": 0.0582,
+    "76": 0.0598,
+    "77": 0.0617,
+    "78": 0.0636,
+    "79": 0.0658,
+    "80": 0.0682,
+    "81": 0.0708,
+    "82": 0.0738,
+    "83": 0.0771,
+    "84": 0.0808,
+    "85": 0.0851,
+    "86": 0.0899,
+    "87": 0.0955,
+    "88": 0.1021,
+    "89": 0.1099,
+    "90": 0.1192,
+    "91": 0.1306,
+    "92": 0.1449,
+    "93": 0.1634,
+    "94": 0.1879,
+    "95": 0.2
+  },
+  RRIF_MIN_95_PLUS: 0.2,
+  PROBATE: {
+    ON: { exempt: 50000, rate: 0.015 },
+    BC: { exempt: 50000, rate: 0.014 },
+    NS: { rate: 0.015 },
+    NB: { rate: 0.015 },
+    PE: { rate: 0.015 },
+    NL: { rate: 0.006 },
+    SK: { rate: 0.007, cap: 7000 },
+    MB: { rate: 0.007, cap: 7000 },
+    AB: { flat: 525 },
+    QC: { flat: 1200 },
+    NT: { rate: 0.004 },
+    YT: { rate: 0.004 },
+    NU: { rate: 0.004 },
+    DEFAULT: { rate: 0.004 }
+  },
+  HELOC_MAX_LTV: 0.65,
+  REFI_MAX_LTV: 0.8,
+  CCA_RATE: 0.04,
+  LAND_PORTION: 0.3,
+  PROPERTY_SALE_COST: 0.05,
+  ETF_TURNOVER: 0.1,
+  CAN_DIVIDEND_YIELD: 0.03,
+  US_DIVIDEND_YIELD: 0.015,
+  INTL_EM_DIVIDEND_YIELD: 0.02,
+  ELIG_DIVIDEND_TAX_DISCOUNT: 0.7,
+  WHT_RATE_FOREIGN: 0.15,
+  CPM_MALE: {
+    "30": 0.00034,
+    "35": 0.00038,
+    "40": 0.00052,
+    "45": 0.00076,
+    "50": 0.0013,
+    "51": 0.00144,
+    "52": 0.0016,
+    "53": 0.00178,
+    "54": 0.00199,
+    "55": 0.00222,
+    "56": 0.00257,
+    "57": 0.00297,
+    "58": 0.00342,
+    "59": 0.00392,
+    "60": 0.00394,
+    "61": 0.00448,
+    "62": 0.00507,
+    "63": 0.00575,
+    "64": 0.00649,
+    "65": 0.00631,
+    "66": 0.00713,
+    "67": 0.00807,
+    "68": 0.00916,
+    "69": 0.01044,
+    "70": 0.01187,
+    "71": 0.0135,
+    "72": 0.0154,
+    "73": 0.01763,
+    "74": 0.02022,
+    "75": 0.0232,
+    "76": 0.02666,
+    "77": 0.03065,
+    "78": 0.03527,
+    "79": 0.04064,
+    "80": 0.04687,
+    "81": 0.05413,
+    "82": 0.06254,
+    "83": 0.07258,
+    "84": 0.08346,
+    "85": 0.09701,
+    "86": 0.112,
+    "87": 0.1302,
+    "88": 0.1506,
+    "89": 0.1736,
+    "90": 0.2001,
+    "91": 0.2312,
+    "92": 0.2652,
+    "93": 0.3031,
+    "94": 0.3446,
+    "95": 0.39,
+    "96": 0.4375,
+    "97": 0.4849,
+    "98": 0.5325,
+    "99": 0.58,
+    "100": 0.6783
+  },
+  CPM_FEMALE: {
+    "30": 0.00018,
+    "35": 0.00021,
+    "40": 0.0003,
+    "45": 0.00044,
+    "50": 0.0007,
+    "51": 0.00077,
+    "52": 0.00085,
+    "53": 0.00094,
+    "54": 0.00104,
+    "55": 0.00116,
+    "56": 0.00132,
+    "57": 0.00151,
+    "58": 0.00174,
+    "59": 0.00201,
+    "60": 0.00198,
+    "61": 0.0023,
+    "62": 0.00268,
+    "63": 0.0031,
+    "64": 0.00359,
+    "65": 0.00331,
+    "66": 0.00382,
+    "67": 0.00441,
+    "68": 0.0051,
+    "69": 0.0059,
+    "70": 0.00686,
+    "71": 0.00799,
+    "72": 0.00937,
+    "73": 0.01092,
+    "74": 0.01283,
+    "75": 0.01504,
+    "76": 0.01767,
+    "77": 0.02076,
+    "78": 0.02446,
+    "79": 0.02882,
+    "80": 0.03401,
+    "81": 0.04016,
+    "82": 0.04744,
+    "83": 0.05609,
+    "84": 0.06623,
+    "85": 0.0788,
+    "86": 0.09306,
+    "87": 0.1098,
+    "88": 0.1295,
+    "89": 0.1527,
+    "90": 0.1796,
+    "91": 0.2106,
+    "92": 0.2459,
+    "93": 0.2852,
+    "94": 0.3281,
+    "95": 0.373,
+    "96": 0.4147,
+    "97": 0.4565,
+    "98": 0.4982,
+    "99": 0.54,
+    "100": 0.5967
+  },
+  CPM_BASE_YEAR: 2023,
+  CPM_IMPROVEMENT_RATE: 0.99,
+  CPM_MAX_AGE: 105,
+  CPM_FALLBACK_QX: 0.001,
+  CRM: [
+    [1, 0.2, -0.2, 0.65, 0.05],
+    [0.2, 1, -0.4, 0.1, 0.15],
+    [-0.2, -0.4, 1, -0.1, 0.25],
+    [0.65, 0.1, -0.1, 1, 0.1],
+    [0.05, 0.15, 0.25, 0.1, 1]
+  ],
+  CRM_CRISIS: [
+    [1, -0.3, 0.1, 0.85, 0.15],
+    [-0.3, 1, -0.1, -0.2, 0.1],
+    [0.1, -0.1, 1, 0.05, 0.3],
+    [0.85, -0.2, 0.05, 1, 0.2],
+    [0.15, 0.1, 0.3, 0.2, 1]
+  ],
+  CRM8: [
+    [1, 0.75, 0.7, 0.6, -0.1, -0.2, 0.65, 0.05],
+    [0.75, 1, 0.8, 0.65, -0.15, -0.15, 0.7, 0.05],
+    [0.7, 0.8, 1, 0.75, -0.1, -0.1, 0.55, 0.1],
+    [0.6, 0.65, 0.75, 1, -0.05, -0.05, 0.5, 0.15],
+    [-0.1, -0.15, -0.1, -0.05, 1, -0.4, 0.1, 0.15],
+    [-0.2, -0.15, -0.1, -0.05, -0.4, 1, -0.1, 0.25],
+    [0.65, 0.7, 0.55, 0.5, 0.1, -0.1, 1, 0.1],
+    [0.05, 0.05, 0.1, 0.15, 0.15, 0.25, 0.1, 1]
+  ],
+  CRM8_CRISIS: [
+    [1, 0.9, 0.85, 0.8, -0.25, -0.1, 0.85, 0.15],
+    [0.9, 1, 0.92, 0.85, -0.3, -0.1, 0.88, 0.1],
+    [0.85, 0.92, 1, 0.9, -0.25, -0.05, 0.75, 0.15],
+    [0.8, 0.85, 0.9, 1, -0.2, -0.05, 0.7, 0.2],
+    [-0.25, -0.3, -0.25, -0.2, 1, -0.4, 0.05, 0.2],
+    [-0.1, -0.1, -0.05, -0.05, -0.4, 1, -0.1, 0.3],
+    [0.85, 0.88, 0.75, 0.7, 0.05, -0.1, 1, 0.15],
+    [0.15, 0.1, 0.15, 0.2, 0.2, 0.3, 0.15, 1]
+  ],
+  STRESS_SCENARIOS: {
+    crash08: {
+      eq: [-0.37, -0.22, 0.15, 0.02],
+      bd: [0.05, 0.08, 0.02, -0.01],
+      inf: [0.038, 0.002, 0.018, 0.012]
+    },
+    dotcom: {
+      eq: [-0.1, -0.13, -0.23, 0.26, 0.09],
+      bd: [0.06, 0.04, 0.05, 0.02, 0.03],
+      inf: [0.034, 0.028, 0.016, 0.023, 0.027]
+    },
+    inflation70: {
+      eq: [-0.08, -0.15, -0.26, 0.12, -0.07, 0.02, 0.06, -0.05, 0.12, 0.04],
+      bd: [-0.05, -0.08, -0.12, -0.03, -0.06, 0.01, 0.02, -0.04, 0.03, 0.05],
+      inf: [0.061, 0.074, 0.091, 0.112, 0.135, 0.113, 0.103, 0.089, 0.059, 0.038]
+    },
+    stagflation: {
+      eq: [-0.14, -0.08, -0.12, 0.02, -0.05],
+      bd: [-0.02, -0.05, -0.03, 0.01, -0.01],
+      inf: [0.055, 0.065, 0.072, 0.058, 0.045]
+    },
+    japan: {
+      eq: [0.01, -0.02, 0.01, -0.03, 0.02, -0.01, 0, -0.02, 0.01, -0.01],
+      bd: [0.02, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
+      inf: [0.003, 0.001, 0, -0.002, 0.001, 0, -0.001, 0.002, 0.001, 0]
+    },
+    covid: {
+      eq: [-0.34, 0.18, 0.27, 0.01],
+      bd: [0.07, 0.01, -0.02, 0.02],
+      inf: [0.012, 0.047, 0.065, 0.034]
+    },
+    longevity: {
+      eq: [],
+      bd: [],
+      inf: [],
+      extra: { deathAge: 5 }
+    },
+    ratehike: {
+      eq: [-0.12, -0.08, -0.05, 0.03, 0.06],
+      bd: [-0.1, -0.08, -0.04, 0.01, 0.03],
+      inf: [0.04, 0.045, 0.038, 0.032, 0.025]
+    },
+    prolonged: {
+      eq: [-0.15, -0.1, -0.08, -0.05, -0.03, 0.02, 0.05, 0.08],
+      bd: [0.03, 0.04, 0.03, 0.02, 0.02, 0.01, 0.01, 0.01],
+      inf: [0.015, 0.01, 0.005, 0.005, 0.008, 0.012, 0.015, 0.02]
+    }
+  },
+  CRISIS_THRESHOLD: -0.15,
+  FAT_TAIL_DF: 5,
+  NORMAL_DF: 999,
+  INTL_STRESS_BETA: 0.9,
+  EM_STRESS_BETA: 0.8,
+  PE_STRESS_BETA: 0.8,
+  PM_STRESS_BETA: 0.8,
+  DC_STRESS_BETA: 0.5,
+  STOCH_INF_VOL: 0.015,
+  INF_FLOOR: 0.005,
+  INF_CAP: 0.08,
+  RE_EQUITY_RHO: 0.35,
+  RE_CRISIS_RHO: 0.6,
+  RE_DECLINE_FLOOR: -0.2,
+  INSURANCE_PREMIUM_FEMALE: { under35: 0.5, age35_44: 0.7, age45_54: 1.2, age55_64: 2.5, age65plus: 5 },
+  INSURANCE_PREMIUM_MALE: { under35: 0.65, age35_44: 0.9, age45_54: 1.6, age55_64: 3.5, age65plus: 7 },
+  SURVIVOR_INCOME_FACTOR: 0.7,
+  CHILD_COVERAGE: 250000,
+  FINAL_EXPENSES: 15000,
+  SENSITIVITY: {
+    SPENDING: { delta: 0.2 },
+    ALLOC_RRSP: { delta: 0.2 },
+    ALLOC_TFSA: { delta: 0.2 },
+    INFLATION: { delta: 0.01 },
+    RET_AGE: { delta: 3, floor: 55 },
+    EQ_RETURN: { delta: 0.03 },
+    EQ_VOL: { delta: 0.05 },
+    QPP_AGE: { delta: 3, floor: 60, cap: 72 },
+    OAS_AGE: { delta: 2, floor: 65, cap: 72 },
+    DB_PENSION: { delta: 0.2 }
+  },
+  CLAMPS: {
+    MER: { min: 0, max: 0.05 },
+    NR_TAX_DRAG: { min: 0, max: 0.03 },
+    INFLATION: { min: 0, max: 0.1 },
+    EQ_RET: { min: -0.05, max: 0.2 },
+    EQ_VOL: { min: 0.01, max: 0.5 },
+    BND_RET: { min: -0.02, max: 0.12 },
+    BND_VOL: { min: 0.01, max: 0.25 },
+    SPENDING_PHASE: { min: 0, max: 1.5 },
+    HEALTH_MUL: { min: 0, max: 0.1 }
+  }
+};
+/*__INJECTED_CONSTANTS_END__*/
+
+var TAX_BASE_YEAR = C.TAX_BASE_YEAR; // All tax constants below are 2026 values; indexed by CPI in calcTax
+var FED_BRACKETS = C.FED_BRACKETS; // 2026 federal brackets
+var FED_RATES = C.FED_RATES;
+var FED_PERSONAL = C.FED_PERSONAL; // 2026 basic personal amount
+var OAS_CLAWBACK_THR = C.OAS_CLAWBACK_THRESHOLD; // 2026 OAS recovery threshold
+var OAS_MAX_MONTHLY = C.OAS_MAX_MONTHLY;
+var GIS_MAX_SINGLE = C.GIS_MAX_SINGLE; // 2026 Q1
+var GIS_MAX_COUPLE = C.GIS_MAX_COUPLE; // 2026 Q1 (spouse receives full OAS)
+var QPP_MAX_MONTHLY = C.QPP_MAX_MONTHLY; // 2026 CPP/QPP max monthly at 65 (incl. enhancement)
+var QPP_MGA = C.QPP_MGA; // 2026 YMPE
+var QPP_YAMPE = C.QPP_YAMPE; // 2026 YAMPE
+var QPP2_MAX_MONTHLY = C.QPP2_MAX_MONTHLY; // 2026 est. CPP2 max monthly enhancement
+var PENSION_CREDIT_MAX = C.PENSION_CREDIT_MAX;
+var TFSA_LIMIT_2026 = C.TFSA_ANNUAL_LIMIT;
 // Withdrawal smoothing configuration (behaviorally realistic optimizer)
 var CFG_SMOOTH = {
   MELT: 0.40,       // max year-to-year meltdown change (fraction)
@@ -1505,23 +2182,7 @@ var CFG_SMOOTH = {
 // Last verified: February 2026
 // To update: replace bracket thresholds, rates, personal amounts
 // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var PROV_TAX = {
-  // eligDivCr / nonEligDivCr: provincial dividend tax credit rates (% of grossed-up amount)
-  // Ref: PASSATION_CCPC_MODULE.md Ãƒâ€šÃ‚Â§2.4 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â RCGT / EY 2025-2026 tables
-  QC: { b: [54345, 108730, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362 , ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
-  ON: { b: [53891, 107785, 15e4, 22e4], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863 , ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
-  BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196 , ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
-  AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218 , ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
-  SK: { b: [54532, 155805], r: [0.105, 0.125, 0.145], pd: 20381, abate: 1, eligDivCr: 0.11, nonEligDivCr: 0.02105 , ageAmt: 5518, ageThresh: 0, penAmt: 1000 },
-  MB: { b: [47e3, 1e5], r: [0.108, 0.1275, 0.174], pd: 15780, abate: 1, eligDivCr: 0.08, nonEligDivCr: 0.007835 , ageAmt: 3728, ageThresh: 0, penAmt: 1000 },
-  NB: { b: [51306, 102614, 190081], r: [0.094, 0.14, 0.16, 0.195], pd: 13396, abate: 1, eligDivCr: 0.14, nonEligDivCr: 0.027518 , ageAmt: 5849, ageThresh: 42553, penAmt: 1000 },
-  NS: { b: [30182, 60364, 94860, 153e3], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 8651, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.021568 , ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
-  PE: { b: [33538, 67079], r: [0.098, 0.138, 0.167], pd: 13865, abate: 1, eligDivCr: 0.105, nonEligDivCr: 0.027 , ageAmt: 4862, ageThresh: 0, penAmt: 1000 },
-  NL: { b: [44062, 88123, 157329, 220262, 281387, 562714], r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], pd: 11034, abate: 1, eligDivCr: 0.063, nonEligDivCr: 0.021739 , ageAmt: 7742, ageThresh: 39880, penAmt: 1000 },
-  NT: { b: [51963, 103931, 169067], r: [0.059, 0.086, 0.122, 0.1405], pd: 17041, abate: 1, eligDivCr: 0.115, nonEligDivCr: 0.02302 , ageAmt: 8200, ageThresh: 0, penAmt: 1000 },
-  YT: { b: [58523, 117045, 181440, 258482, 5e5], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.12689, nonEligDivCr: 0.0135 , ageAmt: 8790, ageThresh: 44325, penAmt: 2000 },
-  NU: { b: [54333, 108668, 177231], r: [0.04, 0.07, 0.09, 0.115], pd: 18284, abate: 1, eligDivCr: 0.0551, nonEligDivCr: 0.025904 , ageAmt: 14865, ageThresh: 0, penAmt: 2000 }
-};
+var PROV_TAX = C.PROV_TAX;
 function calcTax(inc, yr, prov, infR, retired, divInfo) {
   // Ref: PASSATION_CCPC_MODULE.md Ãƒâ€šÃ‚Â§4.1-4.2
   // divInfo = { eligDiv: cash_eligible_dividend, nonEligDiv: cash_non_eligible_dividend } || null
@@ -1532,8 +2193,8 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
   // Dividend gross-up: compute taxable amounts from cash dividends
   var eligTaxable = 0, nonEligTaxable = 0, divCredFed = 0, divCredProv = 0;
   if (divInfo && (divInfo.eligDiv > 0 || divInfo.nonEligDiv > 0)) {
-    eligTaxable = (divInfo.eligDiv || 0) * 1.38;     // 38% gross-up for eligible
-    nonEligTaxable = (divInfo.nonEligDiv || 0) * 1.15; // 15% gross-up for non-eligible
+    eligTaxable = (divInfo.eligDiv || 0) * C.ELIG_GROSSUP;     // 38% gross-up for eligible
+    nonEligTaxable = (divInfo.nonEligDiv || 0) * C.NON_ELIG_GROSSUP; // 15% gross-up for non-eligible
   }
   var totalTaxableInc = inc + eligTaxable + nonEligTaxable;
   if (totalTaxableInc <= 0) return { total: 0, fed: 0, prov: 0, eff: 0, marg: 0.14, fedEff: 0, provEff: 0, divCredFed: 0, divCredProv: 0 };
@@ -1544,10 +2205,10 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
   var fpd = FED_PERSONAL * idx;
   var penCredit = 0;
   // Pension income credit: 15% ÃƒÆ’Ã¢â‚¬â€ min($2,000, eligible pension income) at 65+
-  var _penCreditMax = 2000 * idx;
+  var _penCreditMax = PENSION_CREDIT_MAX * idx;
   // Age credit: 15% ÃƒÆ’Ã¢â‚¬â€ max(0, $8,790 - 15% ÃƒÆ’Ã¢â‚¬â€ max(0, income - $44,325)) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â indexed
-  var _ageAmt = 8790 * idx;
-  var _ageThresh = 44325 * idx;
+  var _ageAmt = C.FED_AGE_AMT * idx;
+  var _ageThresh = C.FED_AGE_THRESH * idx;
   // Age credit income test uses total taxable income (incl. grossed-up dividends) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.5
   var _ageCreditAmt = Math.max(0, _ageAmt - 0.15 * Math.max(0, totalTaxableInc - _ageThresh));
   var fed = 0, prev = 0;
@@ -1561,14 +2222,14 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
     prev = fb[i];
     if (i === fb.length - 1) fed += (totalTaxableInc - fb[i]) * fr[i + 1];
   }
-  fed = Math.max(0, fed - fpd * fr[0] - (retired ? _penCreditMax * 0.15 : 0) - (retired ? _ageCreditAmt * 0.15 : 0));
+  fed = Math.max(0, fed - fpd * fr[0] - (retired ? _penCreditMax * C.FED_CREDIT_RATE : 0) - (retired ? _ageCreditAmt * C.FED_CREDIT_RATE : 0));
   var pt = PROV_TAX[prov] || PROV_TAX.QC;
   // QC abatement applied BEFORE federal dividend credit ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§4.6
   fed *= pt.abate;
   // Federal dividend tax credits ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.3
   if (eligTaxable > 0 || nonEligTaxable > 0) {
-    var fedEligCr = eligTaxable * 0.150198;
-    var fedNonEligCr = nonEligTaxable * 0.090301;
+    var fedEligCr = eligTaxable * C.FED_ELIG_DTC;
+    var fedNonEligCr = nonEligTaxable * C.FED_NON_ELIG_DTC;
     divCredFed = fedEligCr + fedNonEligCr;
     fed = Math.max(0, fed - divCredFed); // Credits cannot make tax negative ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§4.6
   }
@@ -1595,25 +2256,26 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
     var _provAgeAmt = (pt.ageAmt || 0) * idx;
     if (_provAgeAmt > 0) {
       var _provAgeThresh = (pt.ageThresh || 0) * idx;
-      var _provAgeCreditAmt = _provAgeThresh > 0 ? Math.max(0, _provAgeAmt - 0.15 * Math.max(0, totalTaxableInc - _provAgeThresh)) : _provAgeAmt;
+      var _provAgeCreditAmt = _provAgeThresh > 0 ? Math.max(0, _provAgeAmt - C.FED_AGE_CLAWBACK_RATE * Math.max(0, totalTaxableInc - _provAgeThresh)) : _provAgeAmt;
       ptax = Math.max(0, ptax - _provAgeCreditAmt * pr2[0]);
     }
     var _provPenAmt = (pt.penAmt || 0) * idx;
     if (_provPenAmt > 0) ptax = Math.max(0, ptax - _provPenAmt * pr2[0]);
   }
   // QC Health contribution abolished in 2019 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â removed
-  if (prov === "ON") {
-    var onSur = 0;
-    if (ptax > 4991 * idx) onSur += (ptax - 4991 * idx) * 0.2;
-    if (ptax > 6387 * idx) onSur += (ptax - 6387 * idx) * 0.36;
-    ptax += onSur;
-  }
-  // Provincial dividend tax credits ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.4
+  // Provincial dividend tax credits (BEFORE Ontario surtax per ON428) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.4
   if (eligTaxable > 0 || nonEligTaxable > 0) {
     var provEligCr = eligTaxable * (pt.eligDivCr || 0);
     var provNonEligCr = nonEligTaxable * (pt.nonEligDivCr || 0);
     divCredProv = provEligCr + provNonEligCr;
-    ptax = Math.max(0, ptax - divCredProv); // Non-refundable credits floor at 0 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§4.6
+    ptax = Math.max(0, ptax - divCredProv); // Non-refundable credits floor at 0 — §4.6
+  }
+  // Ontario surtax — computed AFTER all non-refundable credits (ON428 form)
+  if (prov === "ON") {
+    var onSur = 0;
+    if (ptax > C.ON_SURTAX_THR1 * idx) onSur += (ptax - C.ON_SURTAX_THR1 * idx) * C.ON_SURTAX_RATE1;
+    if (ptax > C.ON_SURTAX_THR2 * idx) onSur += (ptax - C.ON_SURTAX_THR2 * idx) * C.ON_SURTAX_RATE2;
+    ptax += onSur;
   }
   var total = Math.max(0, fed) + Math.max(0, ptax);
   var _fedMarg = fr[0];
@@ -1637,26 +2299,12 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
 // ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
 function calcCorpTax(activeIncome, passiveIncome, prov, yr, infR) {
   var idx = Math.pow(1 + (infR || 0.02), yr || 0);
-  var sbd = 500000 * idx; // Business limit (indexed)
+  var sbd = C.SBD_LIMIT * idx; // Business limit (indexed)
   // Passive income grind: SBD reduced $5 per $1 of passive income above $50K ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.2
-  var passiveGrind = Math.max(0, passiveIncome - 50000 * idx);
+  var passiveGrind = Math.max(0, passiveIncome - C.PASSIVE_GRIND_THRESHOLD * idx);
   var adjustedSBD = Math.max(0, sbd - 5 * passiveGrind);
   // Combined federal+provincial corporate rates by province ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.1
-  var CORP_RATES = {
-    QC: { small: 0.122, general: 0.265, passive: 0.5017 },
-    ON: { small: 0.122, general: 0.265, passive: 0.5017 },
-    BC: { small: 0.11,  general: 0.27,  passive: 0.5067 },
-    AB: { small: 0.11,  general: 0.23,  passive: 0.4667 },
-    SK: { small: 0.11,  general: 0.27,  passive: 0.5067 },
-    MB: { small: 0.11,  general: 0.27,  passive: 0.5067 },
-    NB: { small: 0.115, general: 0.29,  passive: 0.5267 },
-    NS: { small: 0.115, general: 0.29,  passive: 0.5267 },
-    PE: { small: 0.10,  general: 0.31,  passive: 0.5467 },
-    NL: { small: 0.12,  general: 0.30,  passive: 0.5367 },
-    NT: { small: 0.11,  general: 0.265, passive: 0.5017 },
-    YT: { small: 0.11,  general: 0.27,  passive: 0.5067 },
-    NU: { small: 0.12,  general: 0.27,  passive: 0.5067 }
-  };
+  var CORP_RATES = C.CORP_RATES;
   var cr = CORP_RATES[prov] || CORP_RATES.QC;
   // Active income: SBD portion at small rate, remainder at general rate
   var smallBizInc = Math.min(Math.max(0, activeIncome), adjustedSBD);
@@ -1680,26 +2328,26 @@ function calcCorpTax(activeIncome, passiveIncome, prov, yr, infR) {
 }
 function calcQPP(startAge, avgEarn, yrsContrib) {
   var maxM = QPP_MAX_MONTHLY, mga = QPP_MGA;
-  var ratio = Math.min(1, avgEarn / mga) * Math.min(1, yrsContrib / 40);
+  var ratio = Math.min(1, avgEarn / mga) * Math.min(1, yrsContrib / C.QPP_MAX_CONTRIB_YEARS);
   var adj = 1;
-  if (startAge < 65) adj = 1 - 6e-3 * (65 - startAge) * 12;
-  else if (startAge > 65) adj = 1 + 7e-3 * (startAge - 65) * 12;
-  adj = Math.max(0.64, Math.min(1.42, adj));
+  if (startAge < 65) adj = 1 - C.QPP_EARLY_REDUCTION_PER_MONTH * (65 - startAge) * 12;
+  else if (startAge > 65) adj = 1 + C.QPP_LATE_BONUS_PER_MONTH * (startAge - 65) * 12;
+  adj = Math.max(C.QPP_ADJ_FLOOR, Math.min(C.QPP_ADJ_CAP, adj));
   var base = maxM * ratio * adj;
   // QPP2/CPP2: enhancement on earnings between YMPE and YAMPE
-  var rrq2 = avgEarn > mga ? QPP2_MAX_MONTHLY * Math.min(1, (Math.min(avgEarn, QPP_YAMPE) - mga) / (QPP_YAMPE - mga)) * Math.min(1, yrsContrib / 40) * adj : 0;
+  var rrq2 = avgEarn > mga ? QPP2_MAX_MONTHLY * Math.min(1, (Math.min(avgEarn, QPP_YAMPE) - mga) / (QPP_YAMPE - mga)) * Math.min(1, yrsContrib / C.QPP_MAX_CONTRIB_YEARS) * adj : 0;
   return base + rrq2;
 }
 function calcOAS(startAge, income, yr, infR, currentAge) {
   var idxO = Math.pow(1 + (infR || 0.02), yr || 0);
   var maxM = OAS_MAX_MONTHLY * idxO, adj = 1;
-  if (startAge > 65) adj = 1 + 6e-3 * (startAge - 65) * 12;
-  adj = Math.min(1.36, adj);
+  if (startAge > 65) adj = 1 + C.OAS_DEFERRAL_BONUS_PER_MONTH * (startAge - 65) * 12;
+  adj = Math.min(C.OAS_MAX_DEFERRAL_FACTOR, adj);
   var oas = maxM * adj;
   // OAS 75+ enhancement: 10% bonus (since July 2022)
-  if ((currentAge || startAge) >= 75) oas *= 1.10;
+  if ((currentAge || startAge) >= 75) oas *= C.OAS_75_PLUS_BONUS;
   var oasThr = OAS_CLAWBACK_THR * idxO;
-  if (income > oasThr) oas = Math.max(0, oas - (income - oasThr) * 0.15 / 12);
+  if (income > oasThr) oas = Math.max(0, oas - (income - oasThr) * C.OAS_CLAWBACK_RATE / 12);
   return oas;
 }
 function calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc) {
@@ -1710,10 +2358,10 @@ function calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc) {
   // GIS employment income exemption (2025+): first $5,000 fully exempt, next $10,000 at 50%
   var empInc = Math.max(0, employmentInc || 0);
   var empCountable = 0;
-  if (empInc > 15000) {
+  if (empInc > C.GIS_EMPLOYMENT_PARTIAL_CEILING) {
     // Above $15K: $0 for first 5K + $5K for next 10K (50%) + full amount above 15K
-    empCountable = 5000 + (empInc - 15000);
-  } else if (empInc > 5000) {
+    empCountable = 5000 + (empInc - C.GIS_EMPLOYMENT_PARTIAL_CEILING);
+  } else if (empInc > C.GIS_EMPLOYMENT_FULL_EXEMPT) {
     // $5K-$15K: $0 for first 5K + 50% of remainder
     empCountable = (empInc - 5000) * 0.5;
   }
@@ -1725,7 +2373,7 @@ function calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc) {
   var gis = Math.max(0, maxGIS - reduction);
   return gis;
 }
-var RRIF = { 71: 0.0528, 72: 0.054, 73: 0.0553, 74: 0.0567, 75: 0.0582, 76: 0.0598, 77: 0.0617, 78: 0.0636, 79: 0.0658, 80: 0.0682, 81: 0.0708, 82: 0.0738, 83: 0.0771, 84: 0.0808, 85: 0.0851, 86: 0.0899, 87: 0.0955, 88: 0.1021, 89: 0.1099, 90: 0.1192, 91: 0.1306, 92: 0.1449, 93: 0.1634, 94: 0.1879, 95: 0.2 };
+var RRIF = C.RRIF_MIN;
 function getRRIFMin(age, bal) {
   return age >= 95 ? bal * 0.2 : RRIF[age] ? bal * RRIF[age] : age >= 71 ? bal * 0.2 : 0;
 }
@@ -2819,7 +3467,7 @@ function runTestSuite() {
 
   // ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â ADDITIONAL CCPC INTEGRITY TESTS ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
   // Constants alignment
-  T("MC-CCPC","LCGE=1250000",html.indexOf("1250000")>-1?1:0,1,0);
+  T("MC-CCPC","LCGE=C.LCGE",html.indexOf("C.LCGE")>-1?1:0,1,0);
   T("MC-CCPC","Optimizer uses QPP_MGA",html.indexOf("Math.min(salAmt, QPP_MGA)")>-1?1:0,1,0);
   T("MC-CCPC","Optimizer uses qppYrs",html.indexOf("Math.min(qppYrs, 39)")>-1?1:0,1,0);
   // medRevData corp fields
@@ -3788,7 +4436,7 @@ function optimizeDecum(p) {
   var _tfsaNetContrib = Math.min(tf, _tfsaCumLim);
   var tfsaRoom = Math.max(0, _tfsaCumLim - _tfsaNetContrib);
   var _tfsaLastYrWith = 0; // withdrawals from previous year restore room
-  var fhsa = p.fhsaBal || 0, fhsaMax = 40000, fhsaContrib = 0;
+  var fhsa = p.fhsaBal || 0, fhsaMax = C.FHSA_LIFETIME_MAX, fhsaContrib = 0;
   var nrACB = p.costBase || nr;
   var crr = p.cOn ? (p.cRRSP || 0) : 0, ctf = p.cOn ? (p.cTFSA || 0) : 0, cnr = p.cOn ? (p.cNR || 0) : 0;
   var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0, cFhsaContrib = 0;
@@ -3802,7 +4450,7 @@ function optimizeDecum(p) {
     var _dAllocRR = resolveAlloc(p, 'rrsp');
     var _dAllocTF = resolveAlloc(p, 'tfsa');
     _detAllocNR = resolveAlloc(p, 'nr');
-    var _dRets = { can: p.canRet || 0.070, us: p.usRet || 0.080, intl: p.intlRet || 0.070, em: p.emRet || 0.085, bnd: bndRet };
+    var _dRets = { can: p.canRet || C.canRet, us: p.usRet || C.usRet, intl: p.intlRet || C.intlRet, em: p.emRet || C.emRet, bnd: bndRet };
     retRR = blendMulti(_dRets, _dAllocRR) - (p.merR || 0) - calcWHT(_dAllocRR, 'rrsp');
     retTF = blendMulti(_dRets, _dAllocTF) - (p.merT || 0) - calcWHT(_dAllocTF, 'tfsa');
     retNR = blendMulti(_dRets, _detAllocNR) - (p.merN || 0);
@@ -3853,11 +4501,11 @@ function optimizeDecum(p) {
     if (retired) {
       var _slA = p.smileSlAge || Math.max(p.retAge + 10, 75);
       var _noA = p.smileNoAge || Math.max(_slA + 10, 85);
-      var _hA = p.healthAge || 85;
+      var _hA = p.healthAge || C.healthAge;
       if (age < _slA) smileMul = p.goP || 1;
-      else if (age < _noA) smileMul = p.slP || 0.85;
-      else smileMul = p.noP || 0.75;
-      if (age >= _hA) smileMul *= Math.pow(1 + (p.healthMul || 0.02), age - _hA + 1);
+      else if (age < _noA) smileMul = p.slP || C.slP;
+      else smileMul = p.noP || C.noP;
+      if (age >= _hA) smileMul *= Math.pow(1 + (p.healthMul || C.healthMul), age - _hA + 1);
     }
     var spending = retired ? (p.retSpM || 0) * 12 * infM * smileMul : 0;
     // Couple: add spouse spending when alive
@@ -4144,7 +4792,7 @@ function optimizeDecum(p) {
       var _cRetired = _cAge2 >= (p.cRetAge || p.retAge);
       cTaxInc += cRrifMin;
       if (_cRetired && _cAge2 >= (p.cQppAge || 65)) cTaxInc += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
-      if (p.cPenType === "db" && _cRetired) cTaxInc += (p.cPenM || 0) * 12 * (p.penIdx ? infM : 1);
+      if (p.cPenType === "db" && _cRetired) cTaxInc += (p.cPenM || 0) * 12 * (p.cPenIdx ? infM : 1);
       if (!_cRetired) cTaxInc += (p.cSal || 0) * infM;
       if (_cRetired && _cAge2 >= (p.cOasAge || 65)) cTaxInc += calcOAS(p.cOasAge || 65, cTaxInc, y, inf, _cAge2) * 12;
     }
@@ -4257,7 +4905,7 @@ var STR = {
     de: "Prolonged 5+ yr recession with slow recovery (moderate Great Depression). US equities: -35% cumulative. Gov bonds safe haven (+2-4%/yr). Low inflation/deflation. Policy rate: near 0%. Market stagnant 8 yrs." },
   custom: { n: "Personnalis\u00e9", ne: "Custom", eq: [], bd: [], inf: [], d: "Vos propres chocs.", de: "Your own shocks." }
 };
-var CRM = [[1, 0.2, -0.2, 0.65, 0.05], [0.2, 1, -0.4, 0.1, 0.15], [-0.2, -0.4, 1, -0.1, 0.25], [0.65, 0.1, -0.1, 1, 0.1], [0.05, 0.15, 0.25, 0.1, 1]]; // [eq, bond, inf, PE, PM] ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â DMS 2024
+var CRM = C.CRM; // [eq, bond, inf, PE, PM] ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â DMS 2024
 function chol(m) {
   var n = m.length, L = m.map(function(r) {
     return r.map(function() {
@@ -4272,32 +4920,14 @@ function chol(m) {
   return L;
 }
 var CHL = chol(CRM);
-var CRM_CRISIS = [[1, -0.3, 0.1, 0.85, 0.15], [-0.3, 1, -0.1, -0.2, 0.1], [0.1, -0.1, 1, 0.05, 0.3], [0.85, -0.2, 0.05, 1, 0.2], [0.15, 0.1, 0.3, 0.2, 1]]; // crisis: eq-bond negative (flight to quality)
+var CRM_CRISIS = C.CRM_CRISIS; // crisis: eq-bond negative (flight to quality)
 var CHL_CRISIS = chol(CRM_CRISIS);
 // === MULTI-ASSET: 8-class correlation matrices ===
 // [canEq, usEq, intlEq, emEq, bndCan, inf, PE, PM] ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â DMS/MSCI 2024
-var CRM8 = [
-  [ 1.00, 0.75, 0.70, 0.60,-0.10,-0.20, 0.65, 0.05],
-  [ 0.75, 1.00, 0.80, 0.65,-0.15,-0.15, 0.70, 0.05],
-  [ 0.70, 0.80, 1.00, 0.75,-0.10,-0.10, 0.55, 0.10],
-  [ 0.60, 0.65, 0.75, 1.00,-0.05,-0.05, 0.50, 0.15],
-  [-0.10,-0.15,-0.10,-0.05, 1.00,-0.40, 0.10, 0.15],
-  [-0.20,-0.15,-0.10,-0.05,-0.40, 1.00,-0.10, 0.25],
-  [ 0.65, 0.70, 0.55, 0.50, 0.10,-0.10, 1.00, 0.10],
-  [ 0.05, 0.05, 0.10, 0.15, 0.15, 0.25, 0.10, 1.00]
-];
+var CRM8 = C.CRM8;
 var CHL8 = chol(CRM8);
 // Crisis variant: higher equity correlations, deeper negative eq-bond
-var CRM8_CRISIS = [
-  [ 1.00, 0.90, 0.85, 0.80,-0.25,-0.10, 0.85, 0.15],
-  [ 0.90, 1.00, 0.92, 0.85,-0.30,-0.10, 0.88, 0.10],
-  [ 0.85, 0.92, 1.00, 0.90,-0.25,-0.05, 0.75, 0.15],
-  [ 0.80, 0.85, 0.90, 1.00,-0.20,-0.05, 0.70, 0.20],
-  [-0.25,-0.30,-0.25,-0.20, 1.00,-0.40, 0.05, 0.20],
-  [-0.10,-0.10,-0.05,-0.05,-0.40, 1.00,-0.10, 0.30],
-  [ 0.85, 0.88, 0.75, 0.70, 0.05,-0.10, 1.00, 0.15],
-  [ 0.15, 0.10, 0.15, 0.20, 0.20, 0.30, 0.15, 1.00]
-];
+var CRM8_CRISIS = C.CRM8_CRISIS;
 var CHL8_CRISIS = chol(CRM8_CRISIS);
 function tRn(df) {
   var u = Math.random(), v = Math.random();
@@ -4509,7 +5139,7 @@ function calcPayroll(sal, prov, yr, infR) {
   var qpp2Pensionable = Math.max(0, Math.min(sal, qpp2Max) - qppMax);
   var qpp2 = qpp2Pensionable * 0.04;
   // EI: QC=1.27%, other=1.58%, MIE $65,700 (indexed)
-  var eiMIE = 65700 * inf;
+  var eiMIE = C.EI_MAX_INSURABLE * inf;
   var eiRate = isQC ? 0.0127 : 0.0158;
   var ei = Math.min(sal, eiMIE) * eiRate;
   // RQAP (QC only): 0.494% up to $94,000 (indexed)
@@ -4557,14 +5187,14 @@ function runMC(p, N, _progressCb) {
       });
     }
     // Clamp multi-asset return/vol params
-    p.canRet = Math.max(-0.05, Math.min(p.canRet || 0.070, 0.20));
-    p.canVol = Math.max(0.01, Math.min(p.canVol || 0.16, 0.50));
-    p.usRet = Math.max(-0.05, Math.min(p.usRet || 0.080, 0.20));
-    p.usVol = Math.max(0.01, Math.min(p.usVol || 0.17, 0.50));
-    p.intlRet = Math.max(-0.05, Math.min(p.intlRet || 0.070, 0.20));
-    p.intlVol = Math.max(0.01, Math.min(p.intlVol || 0.18, 0.50));
-    p.emRet = Math.max(-0.05, Math.min(p.emRet || 0.085, 0.25));
-    p.emVol = Math.max(0.01, Math.min(p.emVol || 0.23, 0.55));
+    p.canRet = Math.max(-0.05, Math.min(p.canRet || C.canRet, 0.20));
+    p.canVol = Math.max(0.01, Math.min(p.canVol || C.canVol, 0.50));
+    p.usRet = Math.max(-0.05, Math.min(p.usRet || C.usRet, 0.20));
+    p.usVol = Math.max(0.01, Math.min(p.usVol || C.usVol, 0.50));
+    p.intlRet = Math.max(-0.05, Math.min(p.intlRet || C.intlRet, 0.20));
+    p.intlVol = Math.max(0.01, Math.min(p.intlVol || C.intlVol, 0.50));
+    p.emRet = Math.max(-0.05, Math.min(p.emRet || C.emRet, 0.25));
+    p.emVol = Math.max(0.01, Math.min(p.emVol || C.emVol, 0.55));
   }
   // Dollar amounts: no negatives
   p.rrsp = Math.max(0, p.rrsp || 0);
@@ -4574,8 +5204,8 @@ function runMC(p, N, _progressCb) {
   p.retSpM = Math.max(0, p.retSpM || 0);
   // Spending phases: 0-150%
   p.goP = Math.max(0, Math.min(p.goP || 1, 1.5));
-  p.slP = Math.max(0, Math.min(p.slP || 0.85, 1.5));
-  p.noP = Math.max(0, Math.min(p.noP || 0.75, 1.5));
+  p.slP = Math.max(0, Math.min(p.slP || C.slP, 1.5));
+  p.noP = Math.max(0, Math.min(p.noP || C.noP, 1.5));
   // Health multiplier: 0-10%
   p.healthMul = Math.max(0, Math.min(p.healthMul || 0, 0.10));
   // === END SANITIZATION ===
@@ -4632,7 +5262,7 @@ function runMC(p, N, _progressCb) {
     var _mcTfsaRoom = Math.max(0, _mcTfsaCum - Math.min(tf, _mcTfsaCum));
     var _mcTfsaLastW = 0;
     var crr = p.cRRSP || 0, ctf = p.cTFSA || 0, cnr = p.cNR || 0;
-    var fhsa = p.fhsaBal || 0, fhsaMax = 40000, fhsaContrib = 0;
+    var fhsa = p.fhsaBal || 0, fhsaMax = C.FHSA_LIFETIME_MAX, fhsaContrib = 0;
     var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0, cFhsaContrib = 0;
     var reVals = (p.props || []).map(function(pr) {
       var rate = pr.mr || 0.05;
@@ -4687,7 +5317,7 @@ function runMC(p, N, _progressCb) {
       } else if (sInfOvr !== null && st2Idx >= 0 && st2Idx < (stDef2.inf || []).length) {
         sInfOvr = Math.max(sInfOvr, stDef2.inf[st2Idx]);
       }
-      var inCrisis = sEq < -0.15;
+      var inCrisis = sEq < C.CRISIS_THRESHOLD;
       var rw, zz, eqR, bndR, _maRets;
       if (_maOn) {
         rw = [];
@@ -4696,10 +5326,10 @@ function runMC(p, N, _progressCb) {
         zz = useL8.map(function(row2) {
           return row2.reduce(function(s, v, i) { return s + v * rw[i]; }, 0);
         });
-        var canR = (p.canRet || 0.070) + (p.canVol || 0.16) * zz[0] + sEq;
-        var usR = (p.usRet || 0.080) + (p.usVol || 0.17) * zz[1] + sEq;
-        var intlR = (p.intlRet || 0.070) + (p.intlVol || 0.18) * zz[2] + sEq * 0.9;
-        var emR = (p.emRet || 0.085) + (p.emVol || 0.23) * zz[3] + sEq * 0.8;
+        var canR = (p.canRet || C.canRet) + (p.canVol || C.canVol) * zz[0] + sEq;
+        var usR = (p.usRet || C.usRet) + (p.usVol || C.usVol) * zz[1] + sEq;
+        var intlR = (p.intlRet || C.intlRet) + (p.intlVol || C.intlVol) * zz[2] + sEq * 0.9;
+        var emR = (p.emRet || C.emRet) + (p.emVol || C.emVol) * zz[3] + sEq * 0.8;
         bndR = bndRet2 + bndVol2 * zz[4] + sBd;
         _maRets = { can: canR, us: usR, intl: intlR, em: emR, bnd: bndR };
         // Compute equivalent eqR for PE/PM correlation (use weighted equity avg)
@@ -4715,14 +5345,14 @@ function runMC(p, N, _progressCb) {
         eqR = eqRet2 + eqVol2 * zz[0] + sEq;
         bndR = bndRet2 + bndVol2 * zz[1] + sBd;
       }
-      var infShock = sInfOvr !== null ? sInfOvr : p.stochInf ? p.inf + 0.015 * zz[_maOn ? 5 : 2] : p.inf;
+      var infShock = sInfOvr !== null ? sInfOvr : p.stochInf ? p.inf + C.STOCH_INF_VOL * zz[_maOn ? 5 : 2] : p.inf;
       infShock = Math.max(5e-3, Math.min(0.08, infShock));
       cumInf *= 1 + infShock;
       var infM = cumInf;
       var _infEff = y > 0 ? Math.pow(cumInf, 1 / y) - 1 : infShock;
       // Stochastic RE: correlated with equity (rho=0.35), lower vol (~10% residential)
       var _reVol = p.reVol || 0.10;
-      var _reRho = 0.35; // equity-RE correlation (moderate positive)
+      var _reRho = C.RE_EQUITY_RHO; // equity-RE correlation (moderate positive)
       var _reNoise = _reRho * zz[0] + Math.sqrt(1 - _reRho * _reRho) * tRn(p.fatT ? 5 : 999);
       var _reShock = _reVol * _reNoise; // stochastic RE return deviation
       // In crisis: higher correlation, deeper drawdown
@@ -4762,9 +5392,9 @@ function runMC(p, N, _progressCb) {
       var retPE = (p.yPE || 0.12) + (p.vPE || 0.25) * zz[_maOn ? 6 : 3] + sEq * 0.8 + fxNoise;
       var retPM = (p.yPM || 0.03) + (p.vPM || 0.15) * zz[_maOn ? 7 : 4] + sEq * 0.8 + fxNoise;
       var retDC = (p.dcY || 0.05) + 0.08 * tRn(999) + sEq * 0.5;
-      var smM = retired ? sMul(age, p.retAge, p.goP || 1, p.slP || 0.82, p.noP || 0.92, p.smileSlAge, p.smileNoAge) : 0;
-      var _hAge = p.healthAge || 85;
-      var healthCost = age >= _hAge ? Math.min(2.0, Math.pow(1 + (p.healthMul || 0.02), age - _hAge + 1)) : 1;
+      var smM = retired ? sMul(age, p.retAge, p.goP || 1, p.slP || C.mcSlP, p.noP || C.mcNoP, p.smileSlAge, p.smileNoAge) : 0;
+      var _hAge = p.healthAge || C.healthAge;
+      var healthCost = age >= _hAge ? Math.min(2.0, Math.pow(1 + (p.healthMul || C.healthMul), age - _hAge + 1)) : 1;
       var infHouse = Math.pow(1 + infShock + (p.infHousing || 0), y);
       var infHlth = Math.pow(1 + infShock + (p.infHealth || 0), y);
       var baseSpend = p.retSpM * 12 * 0.70 * infM + p.retSpM * 12 * 0.15 * infHouse + p.retSpM * 12 * 0.15 * infHlth;
@@ -5005,7 +5635,7 @@ function runMC(p, N, _progressCb) {
       var gstCredit = 0;
       if (retired) {
         // GST/HST credit 2025: $519/yr single (+ $171/spouse), phaseout 5% above ~$44,324
-        var gstBase = 519 + (p.cOn && cAlive ? 171 : 0);
+        var gstBase = C.GST_CREDIT_SINGLE + (p.cOn && cAlive ? 171 : 0);
         var gstInc = (qpp + oas + (penMonth || 0) * 12 + (ptInc || 0)) / Math.max(1, infM);
         var gstThresh = 44324;
         gstCredit = Math.max(0, gstBase - 0.05 * Math.max(0, gstInc - gstThresh)) * infM;
@@ -5022,13 +5652,13 @@ function runMC(p, N, _progressCb) {
       }
       if (p.cOn && !cAlive && cAge2 > cSimDeath) {
           if (cLifeIns > 0) { nr += cLifeIns; cLifeIns = 0; }
-        cInc += Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 0.6, 784) * 12 * infM;
+        cInc += Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * C.QPP_SURVIVOR_FRACTION, C.QPP_SURVIVOR_CAP_MONTHLY) * 12 * infM;
       }
       var splitB = 0;
       if (p.split && age >= 65 && (penMonth > 0 || rrifMin > 0) && p.cOn && cAlive) {
         // Real pension splitting: eligible income split to spouse
         var eligiblePenInc = penMonth * 12 + (age >= 65 ? rrifMin : 0);
-        var splitAmt = eligiblePenInc * (p.splitP || 0.5);
+        var splitAmt = eligiblePenInc * (p.splitP || C.PENSION_SPLIT_MAX);
         // Compute actual benefit: tax on full income vs tax after splitting
         var myInc = qpp + oas + penMonth * 12 + (estRrifMin || 0) + ptInc;
         var spInc = cInc || 0;
@@ -5054,15 +5684,15 @@ function runMC(p, N, _progressCb) {
           var _gkGov = qpp + oas + gis + (penMonth || 0) * 12 + ptInc + cInc;
           var _gkWithdrawal = Math.max(0, spending - _gkGov);
           var _gkRate = _gkWithdrawal / _gkBal;
-          var _gkFloorFactor = 1 - (p.gkMaxCut || 0.25);
-          if (_gkRate > (p.gkCeil || 0.055) && gkSpendFactor > _gkFloorFactor) {
+          var _gkFloorFactor = 1 - (p.gkMaxCut || C.gkMaxCut);
+          if (_gkRate > (p.gkCeil || C.gkCeil) && gkSpendFactor > _gkFloorFactor) {
             var _gkOldFactor = gkSpendFactor;
-            gkSpendFactor = Math.max(_gkFloorFactor, gkSpendFactor * (1 - (p.gkCut || 0.10)));
+            gkSpendFactor = Math.max(_gkFloorFactor, gkSpendFactor * (1 - (p.gkCut || C.gkCut)));
             spending = spending * (gkSpendFactor / _gkOldFactor);
             _gkTriggered = 1;
-          } else if (_gkRate < (p.gkFloor || 0.03) && gkSpendFactor < 1.0) {
+          } else if (_gkRate < (p.gkFloor || C.gkFloor) && gkSpendFactor < 1.0) {
             var _gkOldF2 = gkSpendFactor;
-            gkSpendFactor = Math.min(1.0, gkSpendFactor * (1 + (p.gkRaise || 0.10)));
+            gkSpendFactor = Math.min(1.0, gkSpendFactor * (1 + (p.gkRaise || C.gkRaise)));
             spending = spending * (gkSpendFactor / _gkOldF2);
             _gkTriggered = 2;
           }
@@ -5461,7 +6091,7 @@ function runMC(p, N, _progressCb) {
             _bizCorpTaxThisYr += _corpPassiveTx.totalTax;
             // CDA: 50% of capital gains on passive investments (simplified: assume equity portion is gains)
             var _corpCGportion = Math.max(0, _corpReturn * _corpEqR * 0.5);
-            corpCDA += _corpCGportion * (1 - (p.cgIncLo || 0.5));
+            corpCDA += _corpCGportion * (1 - (p.cgIncLo || C.CG_INCLUSION_LOW));
           }
         } else if (retired && alive && corpBal > 0) {
           // Post-retirement: passive income + extraction ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§5.5
@@ -5488,7 +6118,7 @@ function runMC(p, N, _progressCb) {
             corpCDA -= _cdaExtract;
             var _taxableExtract = _extractAmt - _cdaExtract;
             // RDTOH refund
-            var _rdtohRefund = Math.min(corpRDTOH, _extractAmt * 0.3833);
+            var _rdtohRefund = Math.min(corpRDTOH, _extractAmt * C.RDTOH_REFUND_RATE);
             corpRDTOH = Math.max(0, corpRDTOH - _rdtohRefund);
             corpBal = Math.max(0, corpBal - _extractAmt);
             _bizExtractThisYr = _extractAmt;
@@ -5505,14 +6135,14 @@ function runMC(p, N, _progressCb) {
         // Business sale ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§5.5
         if (p.bizSaleAge > 0 && age === p.bizSaleAge) {
           var _saleGain = Math.max(0, (p.bizSalePrice || 0) * infM - (p.bizSaleACB || 100));
-          var _lcgeAvail = p.bizLCGE ? 1250000 : 0;
+          var _lcgeAvail = p.bizLCGE ? C.LCGE : 0;
           var _taxableGainBiz = Math.max(0, _saleGain - _lcgeAvail);
           var _exemptGain = Math.min(_saleGain, _lcgeAvail);
-          corpCDA += _exemptGain * 0.5 + _taxableGainBiz * (1 - (p.cgIncLo || 0.5));
+          corpCDA += _exemptGain * 0.5 + _taxableGainBiz * (1 - (p.cgIncLo || C.CG_INCLUSION_LOW));
           // Taxable capital gain added to personal income for this year
-          var _bizSaleCGtaxable = _taxableGainBiz > (p.cgThresh || 25e4) * infM ?
-            (p.cgThresh || 25e4) * infM * (p.cgIncLo || 0.5) + (_taxableGainBiz - (p.cgThresh || 25e4) * infM) * (p.cgIncHi || 0.6667) :
-            _taxableGainBiz * (p.cgIncLo || 0.5);
+          var _bizSaleCGtaxable = _taxableGainBiz > (p.cgThresh || C.CG_THRESHOLD) * infM ?
+            (p.cgThresh || C.CG_THRESHOLD) * infM * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_taxableGainBiz - (p.cgThresh || C.CG_THRESHOLD) * infM) * (p.cgIncHi || C.CG_INCLUSION_HIGH) :
+            _taxableGainBiz * (p.cgIncLo || C.CG_INCLUSION_LOW);
           // Add sale proceeds to corp balance
           corpBal += (p.bizSalePrice || 0) * infM;
         }
@@ -5534,8 +6164,8 @@ function runMC(p, N, _progressCb) {
           var _pepmGain = (_peExit || 0) + (_pmExit || 0);
           var _pepmTaxable = 0;
           if (_pepmGain > 0) {
-            var _cgThr = (p.cgThresh || 25e4) * infM;
-            _pepmTaxable = _pepmGain > _cgThr ? _cgThr * (p.cgIncLo || 0.5) + (_pepmGain - _cgThr) * (p.cgIncHi || 0.6667) : _pepmGain * (p.cgIncLo || 0.5);
+            var _cgThr = (p.cgThresh || C.CG_THRESHOLD) * infM;
+            _pepmTaxable = _pepmGain > _cgThr ? _cgThr * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_pepmGain - _cgThr) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : _pepmGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
           }
           _tiOther = (ptInc || 0) + (liraWith || 0) + (_ippWith || 0) + _pepmTaxable;
           if (p.cOn && cAlive) {
@@ -5557,8 +6187,8 @@ function runMC(p, N, _progressCb) {
           // NR capital gains: only the gain portion is taxable at inclusion rate
           var _nrGainPct = (nr + _wFromNR) > 0 && nrACB < (nr + _wFromNR) ? 1 - nrACB / (nr + _wFromNR) : 0;
           var _nrTaxableGain = _wFromNR * _nrGainPct;
-          var _cgThr3 = (p.cgThresh || 25e4) * infM;
-          var _nrIncl = _nrTaxableGain > _cgThr3 ? _cgThr3 * (p.cgIncLo || 0.5) + (_nrTaxableGain - _cgThr3) * (p.cgIncHi || 0.6667) : _nrTaxableGain * (p.cgIncLo || 0.5);
+          var _cgThr3 = (p.cgThresh || C.CG_THRESHOLD) * infM;
+          var _nrIncl = _nrTaxableGain > _cgThr3 ? _cgThr3 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_nrTaxableGain - _cgThr3) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : _nrTaxableGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
           taxableInc = _tiQpp + _tiOas + _tiPen + _tiRrif + _tiMelt + _tiDraw + _tiRe + _tiOther + _nrIncl;
         } else {
           taxableInc = p.sal * infM;
@@ -5642,8 +6272,8 @@ function runMC(p, N, _progressCb) {
         if (retired && _wFromNR > 0 && (nr + _wFromNR) > 0 && nrACB < (nr + _wFromNR)) {
           var _simNrGainPct = 1 - nrACB / (nr + _wFromNR);
           var _simNrGain = _wFromNR * _simNrGainPct;
-          var _simCgThr = (p.cgThresh || 25e4) * infM;
-          _simTaxInc1 += _simNrGain > _simCgThr ? _simCgThr * (p.cgIncLo || 0.5) + (_simNrGain - _simCgThr) * (p.cgIncHi || 0.6667) : _simNrGain * (p.cgIncLo || 0.5);
+          var _simCgThr = (p.cgThresh || C.CG_THRESHOLD) * infM;
+          _simTaxInc1 += _simNrGain > _simCgThr ? _simCgThr * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_simNrGain - _simCgThr) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : _simNrGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
         }
         var _simTaxInc2 = 0;
         if (p.cOn && cAlive) {
@@ -5678,8 +6308,8 @@ function runMC(p, N, _progressCb) {
     // ACB: initial + all NR contributions over time (approximation: use NR at death vs growth)
     var acb = nrACB;
     var capGain = Math.max(0, nrAtDeath - acb);
-    var cgThresh2 = (p.cgThresh || 25e4) * Math.pow(1 + p.inf, maxYrs);
-    var cgLo2 = p.cgIncLo || 0.5, cgHi2 = p.cgIncHi || 0.6667;
+    var cgThresh2 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
+    var cgLo2 = p.cgIncLo || C.CG_INCLUSION_LOW, cgHi2 = p.cgIncHi || C.CG_INCLUSION_HIGH;
     var taxableGain = capGain > cgThresh2 ? cgThresh2 * cgLo2 + (capGain - cgThresh2) * cgHi2 : capGain * cgLo2;
     var finalYrPension = fP.rr > 0 ? getRRIFMin(simDeath, fP.rr) : 0;
     var pRrsp = p.cOn ? (fP.rr + (fP.lira || 0) + (fP.dc || 0) + (fP.dc2 || 0)) : rrspAtDeath + (fP.dc || 0) + (fP.dc2 || 0);
@@ -5691,8 +6321,8 @@ function runMC(p, N, _progressCb) {
         if (rp.on && !rp.pri && rp.origV > 0) {
           var propVal = (rp.v || 0) > 0 ? rp.v : rp.origV * Math.pow(1 + (rp.ri || 0.03), maxYrs);
           var propCG = Math.max(0, propVal - rp.origV);
-          var cgThr4 = (p.cgThresh || 25e4) * Math.pow(1 + p.inf, maxYrs);
-          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || 0.5) + (propCG - cgThr4) * (p.cgIncHi || 0.6667) : propCG * (p.cgIncLo || 0.5);
+          var cgThr4 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
+          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (propCG - cgThr4) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : propCG * (p.cgIncLo || C.CG_INCLUSION_LOW);
         }
       });
     }
@@ -5704,7 +6334,7 @@ function runMC(p, N, _progressCb) {
       var _corpCDAatDeath = corpCDA || 0;
       var _corpCDAextract = Math.min(_corpCDAatDeath, _corpAtDeath);
       var _corpTaxableEst = _corpAtDeath - _corpCDAextract;
-      var _corpRdtohRefund = Math.min(corpRDTOH || 0, _corpTaxableEst * 0.3833);
+      var _corpRdtohRefund = Math.min(corpRDTOH || 0, _corpTaxableEst * C.RDTOH_REFUND_RATE);
       _corpEstDiv = _corpTaxableEst;
       if (_corpEstDiv > 0) {
         var _corpEligEst = corpGRIP > 0 ? Math.min(_corpEstDiv, corpGRIP) : 0;
@@ -5724,8 +6354,8 @@ function runMC(p, N, _progressCb) {
     else if (p.prov === "NL") probate = Math.max(0, _estGross * 0.006);
     else if (p.prov === "SK") probate = Math.min(7e3, Math.max(0, _estGross * 7e-3));
     else if (p.prov === "MB") probate = Math.min(7e3, Math.max(0, _estGross * 7e-3));
-    else if (p.prov === "AB") probate = 525;
-    else if (p.prov === "QC") probate = 1200;
+    else if (p.prov === "AB") probate = C.PROBATE.AB.flat;
+    else if (p.prov === "QC") probate = C.PROBATE.QC.flat;
     else probate = Math.max(0, _estGross * 0.004);
     var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0);
     // GK per-sim stats
@@ -6088,7 +6718,7 @@ function runMC(p, N, _progressCb) {
         n2 = n2 * (1 + blendRet(qeR, qbR, qaN) - (pp.merN || 0)) + (rt2 ? 0 : pp.nrC || 0);
         if (rt2) {
           var im = Math.pow(1 + pp.inf, y4);
-          var sm = sMul(a2, pp.retAge, pp.goP || 1, pp.slP || 0.82, pp.noP || 0.92, pp.smileSlAge, pp.smileNoAge);
+          var sm = sMul(a2, pp.retAge, pp.goP || 1, pp.slP || C.mcSlP, pp.noP || C.mcNoP, pp.smileSlAge, pp.smileNoAge);
           var sp = pp.retSpM * 12 * im * sm;
           var _gE3 = (pp.goals && pp.goals.length > 1) ? calcGoalSpending(pp.goals, a2, im) : 0;
           if (_gE3 > 0) sp += _gE3;
@@ -6514,7 +7144,7 @@ function calcInsuranceNeed(p) {
       }
     });
   }
-  var finalExpenses = 15000;
+  var finalExpenses = C.FINAL_EXPENSES;
   var totalNeed = survivorIncome + dependentChildren + debtPayoff + mortgage + finalExpenses;
 
   // Available resources
@@ -8201,7 +8831,59 @@ function App() {
 // rptLang: "fr" | "en"
 // ai: aiReport object or null
 
+// Expose data bridge for BExport (Excel, PDF, print)
+var _collectExportData = function() {
+  return {
+    mc: mc, detRun: window._detResult || null,
+    mcComputing: !mc || mc._placeholder,
+    params: {
+      age: age, sex: sex, retAge: retAge, deathAge: deathAge, prov: prov,
+      sal: sal, retSpM: retSpM,
+      rrsp: rrsp, tfsa: tfsa, nr: nr, rrspC: rrspC, tfsaC: tfsaC, nrC: nrC,
+      liraBal: liraBal, fhsaBal: fhsaBal, dcBal: dcBal, peBal: peBal, pmBal: pmBal,
+      merR: merR, merT: merT, merN: merN,
+      allocR: allocR, allocT: allocT, allocN: allocN,
+      qppAge: qppAge, avgE: avgE, qppYrs: qppYrs, oasAge: oasAge,
+      penType: penType, penM: penM, penIdx: penIdx,
+      pen2Type: pen2Type, pen2M: pen2M, pen2Idx: pen2Idx, dc2Bal: dc2Bal,
+      wStrat: wStrat, melt: melt, meltTgt: meltTgt, split: split, splitP: splitP,
+      inf: inf, glide: glide, glideSpd: glideSpd,
+      goP: goP, slP: slP, noP: noP,
+      stochMort: stochMort, stochInf: stochInf, fatT: fatT, nSim: nSim,
+      cOn: cOn, cAge: cAge, cRetAge: cRetAge,
+      cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
+      cSal: cSal, cRetSpM: cRetSpM,
+      cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge,
+      cLifeInsBenefit: cLifeInsBenefit, cSpouseName: cSpouseName,
+      cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
+      bizOn: bizOn,
+      props: props, debts: debts, strs: stressResults,
+      goals: goals, family: family, rsuGrants: rsuGrants,
+      samResults: samResults,
+      mode: rptMode || mode || "standard",
+      lang: rptLang || lang
+    },
+    client: {
+      name: cName, firstName: firstName, lastName: lastName,
+      dob: cDOB, address: cAddr, phone: cPhone, email: cEmail,
+      spouseName: cSpouseName, advisor: cAdvisor, firm: cFirm, notes: cNotes
+    },
+    aiReport: aiReport,
+    rptMode: rptMode || mode || "standard",
+    rptLang: rptLang || lang
+  };
+};
+window._collectExportData = _collectExportData;
+
 var reportHTML = useMemo(function() {
+  // Modular report generator (report-pdf.js)
+  if (typeof window.buildReport === "function" && typeof window.BFmt === "object") {
+    try {
+      var _modularHTML = window.buildReport(_collectExportData());
+      if (_modularHTML && _modularHTML.length > 50) return _modularHTML;
+    } catch (_e) { console.warn("[BExport] buildReport failed, falling back to inline:", _e); }
+  }
+  // Fallback: inline report generator
   var _fr = (rptLang || lang) === "fr";
   if (!mc || !mc.pD || mc.pD.length === 0) {
     // Phase 6: Show deterministic-only report if available
@@ -9131,7 +9813,7 @@ var reportHTML = useMemo(function() {
     h += KPI('<span class="mono">' + fmtR(_bizSalRpt || 0) + '</span>', fr ? 'Salaire vers\u00e9' : 'Salary paid', '#4680c0');
     h += KPI('<span class="mono">' + fmtR(_bizDivRpt || 0) + '</span>', fr ? 'Dividendes' : 'Dividends', '#2a8c46');
     h += '</div>';
-    h += Card('<table>' + R(fr ? 'Revenus corporatifs' : 'Corp. revenue', fmtR(_bizRevRpt || 0)) + R(fr ? 'Taux d\'imposition' : 'Tax rate', fmtP(_bizTaxRateRpt || 0.125, 1)) + R('LCGE', fmtR(1250000)) + R(fr ? 'Strat\u00e9gie de sortie' : 'Exit strategy', (bizSaleAge || 0) > 0 ? (fr ? 'Vente \u00e0 ' : 'Sale at ') + bizSaleAge + (fr ? ' ans' : ' yrs') : (fr ? 'Liquidation progressive' : 'Gradual extraction')) + '</table>');
+    h += Card('<table>' + R(fr ? 'Revenus corporatifs' : 'Corp. revenue', fmtR(_bizRevRpt || 0)) + R(fr ? 'Taux d\'imposition' : 'Tax rate', fmtP(_bizTaxRateRpt || 0.125, 1)) + R('LCGE', fmtR(C.LCGE)) + R(fr ? 'Strat\u00e9gie de sortie' : 'Exit strategy', (bizSaleAge || 0) > 0 ? (fr ? 'Vente \u00e0 ' : 'Sale at ') + bizSaleAge + (fr ? ' ans' : ' yrs') : (fr ? 'Liquidation progressive' : 'Gradual extraction')) + '</table>');
     if (exp) {
       h += Ins(fr ? 'Le taux d\'imposition int\u00e9gr\u00e9 (corporatif + personnel) est observ\u00e9 \u00e0 environ ' + Math.round((_bizTaxRateRpt || 0.125) * 100 + 20) + '%. L\'exon\u00e9ration LCGE de 1 250 000$ est disponible lors de la vente d\'actions admissibles.' : 'The integrated tax rate (corporate + personal) is observed at approximately ' + Math.round((_bizTaxRateRpt || 0.125) * 100 + 20) + '%. The $1,250,000 LCGE exemption is available when selling qualifying shares.');
     }
@@ -9684,7 +10366,7 @@ var reportHTML = useMemo(function() {
       pmBal: 150000, pmY: 0.04, pmV: 0.12, pmExit: 65, pmExitStrat: "gradual", pmExitYrs: 3,
       props: [
         { on: true, name: "Maison Brossard", val: 780000, ri: 0.035, mb: 320000, mr: 0.048, ma: 20, rm: 0, ox: 0, pt: 5200, ins: 2200, pa: 35, sa: 0, pri: true, cg: 0.5, dsAge: 68, dsVal: 1100000, heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: true, refiAge: 0, refiAmt: 0, dpaOn: false, dpaRate: 0.04, landPct: 0.35 },
-        { on: true, name: "6-plex Hochelaga", val: 1250000, ri: 0.04, mb: 850000, mr: 0.052, ma: 25, rm: 7800, ox: 15000, pt: 12000, ins: 3800, pa: 38, sa: 0, pri: false, cg: 0.5, dsAge: 0, dsVal: 0, heloc: 120000, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dpaOn: true, dpaRate: 0.04, landPct: 0.20 }
+        { on: true, name: "6-plex Hochelaga", val: C.LCGE, ri: 0.04, mb: 850000, mr: 0.052, ma: 25, rm: 7800, ox: 15000, pt: 12000, ins: 3800, pa: 38, sa: 0, pri: false, cg: 0.5, dsAge: 0, dsVal: 0, heloc: 120000, helocRate: 0.065, helocMax: 0.65, smithOn: false, refiAge: 0, refiAmt: 0, dpaOn: true, dpaRate: 0.04, landPct: 0.20 }
       ],
       debts: [{ name: "Marge priv\u00e9e", bal: 45000, rate: 0.075, pay: 800 }],
       lifeInsBenefit: 500000, lifeInsPremium: 250 },
@@ -14641,7 +15323,7 @@ StratBadge(true),
     // Simulate liquidation
     var cdaExtract = Math.min(cdaAtDeath, corpAtDeath);
     var taxableDiv = corpAtDeath - cdaExtract;
-    var rdtohRefund = Math.min(rdtohAtDeath, taxableDiv * 0.3833);
+    var rdtohRefund = Math.min(rdtohAtDeath, taxableDiv * C.RDTOH_REFUND_RATE);
     var divTax = taxableDiv > 0 ? calcTax(taxableDiv, 0, prov, inf, true, { eligDiv: 0, nonEligDiv: taxableDiv }).total : 0;
     var netToHeirs = corpAtDeath - divTax + rdtohRefund;
     var sS = { padding: "4px 8px", fontSize: FS.sm, color: CL.dm };
@@ -14776,7 +15458,17 @@ StratBadge(true),
       a.download = "Rapport-" + (cName || "Client").replace(/[^a-zA-Z0-9]/g, "_") + "-" + (new Date()).toISOString().slice(0,10) + ".html";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    }, style: { padding: "4px 14px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" } }, lang === "fr" ? "\ud83d\udcbe Exporter rapport" : "\ud83d\udcbe Export report")
+    }, style: { padding: "4px 14px", background: CL.ac, color: CL.bg, border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" } }, lang === "fr" ? "\ud83d\udcbe Exporter rapport" : "\ud83d\udcbe Export report"),
+    // Excel export (BExport)
+    typeof window.BExport === "object" ? React.createElement("button", { onClick: function() {
+      if (!mc || !mc.pD || mc.pD.length === 0) { alert(lang === "fr" ? "Lancez une simulation d'abord." : "Run a simulation first."); return; }
+      try { window.BExport.exportExcel(_collectExportData()); } catch(e) { alert("Excel: " + e.message); console.error(e); }
+    }, style: { padding: "4px 14px", background: "#1a6b3c", color: "#fff", border: "none", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" } }, "\ud83d\udcc8 Excel") : null,
+    // Print (BExport)
+    typeof window.BExport === "object" ? React.createElement("button", { onClick: function() {
+      if (!mc || !mc.pD || mc.pD.length === 0) { alert(lang === "fr" ? "Lancez une simulation d'abord." : "Run a simulation first."); return; }
+      try { window.BExport.printReport(_collectExportData()); } catch(e) { alert("Print: " + e.message); console.error(e); }
+    }, style: { padding: "4px 14px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" } }, "\ud83d\udda8\ufe0f") : null
   ),
   // Client info fields (collapsible)
   showReport && React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 } },

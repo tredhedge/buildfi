@@ -65,11 +65,11 @@ export const PROVINCIAL: Record<string, ProvincialTax> = {
   SK: { brackets: [54532, 155805], rates: [0.105, 0.125, 0.145], personalAmount: 20381, ageCreditAmount: 5518, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.11, nonEligDivCredit: 0.02105 },
   MB: { brackets: [47000, 100000], rates: [0.108, 0.1275, 0.174], personalAmount: 15780, ageCreditAmount: 3728, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.08, nonEligDivCredit: 0.007835 },
   NB: { brackets: [51306, 102614, 190081], rates: [0.094, 0.14, 0.16, 0.195], personalAmount: 13396, ageCreditAmount: 5849, ageCreditThreshold: 42553, pensionCreditAmount: 1000, eligDivCredit: 0.14, nonEligDivCredit: 0.0275 },
-  NS: { brackets: [30182, 60364, 94860, 153000], rates: [0.0879, 0.1495, 0.1667, 0.175, 0.21], personalAmount: 8651, ageCreditAmount: 4897, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.0885, nonEligDivCredit: 0.0299 },
-  PE: { brackets: [33538, 67079], rates: [0.098, 0.138, 0.167], personalAmount: 13865, ageCreditAmount: 4862, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.105, nonEligDivCredit: 0.0163 },
+  NS: { brackets: [30182, 60364, 94860, 153000], rates: [0.0879, 0.1495, 0.1667, 0.175, 0.21], personalAmount: 8651, ageCreditAmount: 4897, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.0885, nonEligDivCredit: 0.015 },
+  PE: { brackets: [33538, 67079], rates: [0.098, 0.138, 0.167], personalAmount: 13865, ageCreditAmount: 4862, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.105, nonEligDivCredit: 0.013 },
   NL: { brackets: [44062, 88123, 157329, 220262, 281387, 562714], rates: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], personalAmount: 11034, ageCreditAmount: 7742, ageCreditThreshold: 39880, pensionCreditAmount: 1000, eligDivCredit: 0.063, nonEligDivCredit: 0.032 },
   NT: { brackets: [51963, 103931, 169067], rates: [0.059, 0.086, 0.122, 0.1405], personalAmount: 17041, ageCreditAmount: 8200, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.115, nonEligDivCredit: 0.06 },
-  YT: { brackets: [58523, 117045, 181440, 258482, 500000], rates: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], personalAmount: 16452, ageCreditAmount: 8790, ageCreditThreshold: 44325, pensionCreditAmount: 2000, eligDivCredit: 0.12, nonEligDivCredit: 0.0067 },
+  YT: { brackets: [58523, 117045, 181440, 258482, 500000], rates: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], personalAmount: 16452, ageCreditAmount: 8790, ageCreditThreshold: 44325, pensionCreditAmount: 2000, eligDivCredit: 0.1202, nonEligDivCredit: 0.0067 },
   NU: { brackets: [54333, 108668, 177231], rates: [0.04, 0.07, 0.09, 0.115], personalAmount: 18284, ageCreditAmount: 14865, ageCreditThreshold: 0, pensionCreditAmount: 2000, eligDivCredit: 0.115, nonEligDivCredit: 0.0261 },
 };
 

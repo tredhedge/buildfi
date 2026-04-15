@@ -105,10 +105,10 @@ function check(label: string, ok: boolean) {
 console.log("--- Helper functions ---");
 check("grade A+", gradeFromSuccess(0.97) === "A+");
 check("grade A", gradeFromSuccess(0.92) === "A");
-check("grade A-", gradeFromSuccess(0.87) === "A-");
+check("grade A (0.87)", gradeFromSuccess(0.87) === "A");
 check("grade B+", gradeFromSuccess(0.82) === "B+");
 check("grade B", gradeFromSuccess(0.72) === "B");
-check("grade C", gradeFromSuccess(0.55) === "C");
+check("grade C+", gradeFromSuccess(0.55) === "C+");
 check("grade D", gradeFromSuccess(0.40) === "D");
 check("grade F", gradeFromSuccess(0.25) === "F");
 

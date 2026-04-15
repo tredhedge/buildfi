@@ -1,7 +1,7 @@
 {
-  "name": "FIRE Planner Pro+ — Planificateur Retraite",
-  "short_name": "FIRE Planner",
-  "description": "Planificateur de retraite FIRE canadien. Simulation Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.",
+  "name": "BuildFi — Simulateur de retraite",
+  "short_name": "BuildFi",
+  "description": "Simulateur de retraite canadien. Simulation Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.",
   "start_url": "./planner.html",
   "display": "standalone",
   "orientation": "any",

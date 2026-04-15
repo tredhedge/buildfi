@@ -384,10 +384,9 @@ export function buildAIPrompt360(
     },
     results: {
       pct: successPct, grade: D.grade,
-      med: D.rMedF || D.medWealth, p5: D.rP5F || D.p5Wealth,
-      p25: D.rP25F || D.p25Wealth, p75: D.rP75F || D.p75Wealth,
-      p95: D.rP95F || D.p90Wealth,
-      medRuin: D.medRuin || 0,
+      med: D.rMedF || D.medWealth, p5Floor: D.rP5F || D.p5Wealth,
+      p25Cautious: D.rP25F || D.p25Wealth, p75Favorable: D.rP75F || D.p75Wealth,
+      savingsDurability: D.medRuin || 0,
       medEstate: D.medEstate || D.medEstateNet || 0,
     },
     tax: { curr: D.taxCurrentEffective, ret: D.taxRetirementEffective, marg: D.taxCurrentMarginal },
@@ -521,7 +520,7 @@ export function buildAIPrompt360(
     ? "Return empty string — " + gP + " already in payment."
     : "Compare three claiming ages: 60 (" + (D.mc60Succ ?? "?") + "%), 65 (" + (D.mc65Succ ?? "?") + "%), 70 (" + (D.mc70Succ ?? "?") + "%). The reader can toggle between these scenarios using interactive pills. Observational only. DO NOT prescribe which age.";
 
-  const longevityHint = "Fan chart spread: P25=" + fmt(D.rP25F || D.p25Wealth || 0) + "$ to P75=" + fmt(D.rP75F || D.p75Wealth || 0) + "$. This range represents uncertainty between cautious and optimistic scenarios. The reader can hover over the interactive fan chart to see all percentiles at any age, and toggle between nominal and real dollars.";
+  const longevityHint = "Fan chart spread: P25 (cautious)=" + fmt(D.rP25F || D.p25Wealth || 0) + "$ to P75 (favorable)=" + fmt(D.rP75F || D.p75Wealth || 0) + "$. This is the likely range — half of all scenarios fall within it. Frame P25 as 'cautious', never 'worst case'. The reader can hover over the interactive fan chart to see percentiles at any age.";
 
   const spendFlexHint = gkActive
     ? "Spending flexibility active. Max cumulative reduction: " + Math.round((params.gkMaxCut ?? 0.20) * 100) + "%. " + (D.gkCutFreq !== null ? "Cuts triggered in " + Math.round((D.gkCutFreq ?? 0) * 100) + "% of years." : "") + " Translate into monthly dollar impact. Do NOT name 'Guyton-Klinger'. The spending smile chart shows Go-Go/Slow-Go/No-Go phases — the reader can hover to see estimated spending at each age."
@@ -533,7 +532,7 @@ export function buildAIPrompt360(
     ? "Best strategy from DATA.strategies. Reference specific success rate improvement and median wealth difference vs statu_quo."
     : "General strategy context based on profile.";
 
-  const sequenceHint = "Portfolio spread: P10 " + fmt(D.rP5F || D.p10Wealth || 0) + "$ to P90 " + fmt(D.rP95F || D.p90Wealth || 0) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly. The tornado chart ranks which parameters have the most impact — reference it.";
+  const sequenceHint = "Portfolio spread: P25 (cautious) " + fmt(D.rP25F || D.p25Wealth || 0) + "$ to P75 (favorable) " + fmt(D.rP75F || D.p75Wealth || 0) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly depending on early returns. The tornado chart ranks which parameters have the most impact — reference it. Never mention P95.";
 
   const meltdownHint = D.meltIsBase
     ? "Income already at or below meltdown target (" + fmt(D.meltTarget || 0) + "$/yr). Zero margin for reduction."
@@ -716,7 +715,7 @@ export function buildAIPrompt360(
     + "MC outputs = precise. AI math = approximate. Always.\n"
     + "\n=== INTERACTIVE VISUALS ===\n"
     + "This report includes interactive charts that the reader can explore. Your narration should REFERENCE these visuals where relevant:\n"
-    + "- Fan chart (projection section): hover shows P5-P95 at any age. Toggle between nominal and real dollars.\n"
+    + "- Fan chart (projection section): hover shows percentiles at any age. The P25-P75 band is the primary 'likely range'. Toggle between nominal and real dollars.\n"
     + "- Tornado chart (sensitivity section): ranks which parameters impact success rate most.\n"
     + "- Fee impact chart (fees section): 5 MER scenarios side by side with hover comparison.\n"
     + "- Scenario toggle (CPP timing): pills to compare claiming at 60/65/70.\n"

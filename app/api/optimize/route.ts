@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       rAges.push(ra);
     }
 
-    const strats = ["optimal", "optimized", "tfsaFirst"];
+    const strats = ["optimal", "tfsaFirst"];
 
     const mOpts: { on: boolean; tgt: number }[] = [
       { on: false, tgt: 0 },
@@ -178,8 +178,8 @@ export async function POST(req: NextRequest) {
       combos.length = MAX_COMBOS;
     }
 
-    // Adaptive sims: if too many combos, use fewer sims per pass
-    const simsP1 = combos.length > 3000 ? 1000 : 1000;
+    // Adaptive sims: fewer sims per pass when grid is large
+    const simsP1 = combos.length > 3000 ? 500 : 1000;
 
     // ── Pass 1: sweep ────────────────────────────────────────
     const pass1: Pass1Result[] = [];

@@ -46,9 +46,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Run MC simulation
+    // Run MC simulation (shallow clone — runMC mutates params during sanitization)
     const start = Date.now();
-    const mc = runMC(params, sims);
+    const mc = runMC({ ...params }, sims);
     const durationMs = Date.now() - start;
 
     if (!mc) {
