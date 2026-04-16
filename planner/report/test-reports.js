@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-// ═══════════════════════════════════════════════════════════════════
-// report/test-reports.js — BuildFi Report Test Harness
-// Generates 10 profiles × 2 languages = 20 HTML reports
-// AI narration written inline following ai-prompt-360 rules
+// ???????????????????????????????????????????????????????????????????
+// report/test-reports.js - BuildFi Report Test Harness
+// Generates 10 profiles FR+EN = 20 HTML reports
+// AI narration flow: buildPrompt -> local substitution provider -> parseResponse
+// Uses the same slot contract as API generation while avoiding API cost in tests
 // Run: node report/test-reports.js
-// ═══════════════════════════════════════════════════════════════════
+// ???????????????????????????????????????????????????????????????????
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
-// ═══ 1. NODE ENVIRONMENT SETUP ═══
+// ??? 1. NODE ENVIRONMENT SETUP ???
 global.window = {};
 global.document = { getElementById: () => null, querySelectorAll: () => [], activeElement: null };
 Object.defineProperty(global, 'navigator', {
@@ -29,12 +30,11 @@ const BData = window.BData;
 const BAiPrompt = window.BAiPrompt;
 if (!buildReport) { console.error('buildReport not found on window'); process.exit(1); }
 if (!BAiPrompt) { console.error('BAiPrompt not found on window'); process.exit(1); }
-console.log('✓ Report modules loaded — BFmt v' + BFmt.VERSION + ', BAiPrompt ' + (BAiPrompt.SLOTS.length) + ' slots');
+console.log('? Report modules loaded - BFmt v' + BFmt.VERSION + ', BAiPrompt ' + (BAiPrompt.SLOTS.length) + ' slots');
 
-// ═══ 2. DATA GENERATORS ═══
+// ??? 2. DATA GENERATORS ???
 function genPD(c) {
   var rows = [], rr = c.rrsp || 0, tf = c.tfsa || 0, nr = c.nr || 0;
-  // Include couple assets in the portfolio trajectory
   var crr = c.cRRSP || 0, ctf = c.cTFSA || 0, cnr = c.cNR || 0;
   var da = c.deathAge || 90, retR = c.eqRet || 0.06;
   for (var a = c.age; a <= da; a++) {
@@ -77,44 +77,170 @@ function genPD(c) {
   return rows;
 }
 
+// genRevData — produces a row schema that matches the planner_v2.html engine output:
+//   aRR/aTF/aNR/aCRR/aCTF/aCNR = end-of-year BALANCES
+//   wFromRR/wFromTF/wFromNR/wMelt/wRrifMin = annual WITHDRAWALS
+//   sal/cSal/payroll/cPayroll = working-year salary fields
+//   rrq/psv/srg/pen = government income; spend = actual spending; tax/taxInc = tax
+// Inflation-indexed; spending follows Go-Go/Slow-Go/No-Go curve; tax uses real bracket calc.
 function genRevData(c) {
-  var rows = [], rr = c.rrsp || 0, tf = c.tfsa || 0, nr = c.nr || 0;
-  var da = c.deathAge || 90, retR = c.eqRet || 0.06;
+  var rows = [];
+  var rr = c.rrsp || 0, tf = c.tfsa || 0, nr = c.nr || 0;
+  var crr = c.cRRSP || 0, ctf = c.cTFSA || 0, cnr = c.cNR || 0;
+  var lira = c.lira || 0;
+  var corpBal = c.bizOn ? (c.bizRetainedEarnings || 0) : 0;
+  var corpRev = c.bizOn ? (c.bizRevenue || 0) : 0;
+  var da = c.deathAge || 90;
+  var retR = c.eqRet || 0.06;
+  var inf = c.inf || 0.021;
+  var prov = c.prov || 'QC';
+  var goP = c.goP || 1.0, slP = c.slP || 0.85, noP = c.noP || 0.7;
+  var calcTax = (window.BData && window.BData.calcTax) ? window.BData.calcTax : null;
+
   for (var a = c.age; a <= da; a++) {
     var preRet = a < c.retAge;
-    var qpp = a >= (c.qppAge || 65) ? (c.qppM || 700) * 12 : 0;
-    var oas = a >= (c.oasAge || 65) ? (c.oasM || 650) * 12 : 0;
-    var pen = a >= c.retAge ? (c.penM || 0) * 12 : 0;
-    var gis = (c.gis && a >= 65 && (qpp + oas) < 25000) ? Math.max(0, (6000 - (qpp + oas) * 0.5)) : 0;
-    var spY = preRet ? (c.sal || 50000) : (c.retSpM || 3000) * 12;
+    var yIdx = a - c.age;
+    var infM = Math.pow(1 + inf, yIdx);
+
+    // Inflation-indexed gov/pension. 75+ OAS bonus per CRA rule.
+    var qppBase = a >= (c.qppAge || 65) ? (c.qppM || 700) * 12 : 0;
+    var oasBase = a >= (c.oasAge || 65) ? (c.oasM || 650) * 12 : 0;
+    if (oasBase > 0 && a >= 75) oasBase *= 1.10;
+    var penBase = a >= c.retAge ? (c.penM || 0) * 12 : 0;
+    if (penBase > 0 && c.penIdx) penBase *= 1; // already nominal-fixed when penIdx is false
+    var qpp = qppBase * infM;
+    var oas = oasBase * infM;
+    var pen = c.penIdx === false ? penBase : penBase * infM;
+
+    var sal = preRet ? (c.sal || 0) * infM : 0;
+    var cSal = preRet ? (c.cSal || 0) * infM : 0;
+
+    // Spending curve: Go-Go (until 75), Slow-Go (75-84), No-Go (85+).
+    var spendMult = a < 75 ? goP : (a < 85 ? slP : noP);
+    var spY;
+    if (preRet) {
+      // Pre-retirement "consumption" = salary minus contributions minus rough tax
+      // (gives a realistic living-standard line for the cash-flow table).
+      var contrib = (c.rrspC || 0) + (c.tfsaC || 0) + (c.nrC || 0);
+      spY = Math.max(0, sal + cSal - contrib);
+    } else {
+      spY = (c.retSpM || 3000) * 12 * infM * spendMult;
+    }
+
+    var gisRaw = 0;
+    if (c.gis && a >= 65) {
+      var preGisInc = qpp + pen;
+      var gisCap = (12000) * infM;
+      gisRaw = Math.max(0, gisCap - preGisInc * 0.5);
+    }
+    var gis = gisRaw;
+
     var gov = qpp + oas + pen + gis;
     var gap = preRet ? 0 : Math.max(0, spY - gov);
-    var total = rr + tf + nr;
-    var aRR = 0, aTF = 0, aNR = 0;
-    if (!preRet && total > 0 && gap > 0) {
-      var rat = Math.min(0.95, gap / total);
-      aRR = r(rr * rat); aTF = r(tf * rat); aNR = r(nr * rat);
+
+    // Withdrawals — in retirement, draw from balances proportionally to fill gap.
+    // Order: NR → RRSP → TFSA (mirrors engine's NR-first heuristic at a high level).
+    var wFromRR = 0, wFromTF = 0, wFromNR = 0, wRrifMin = 0;
+    if (!preRet && gap > 0) {
+      var remain = gap;
+      var drawNR = Math.min(nr, remain); nr -= drawNR; remain -= drawNR; wFromNR = drawNR;
+      // RRIF minimum at 72+
+      if (a >= 72 && rr > 0) {
+        var rrifPct = a >= 95 ? 0.20 : [0.054,0.0553,0.0567,0.0582,0.0598,0.0617,0.0636,0.0658,0.0682,0.0708,0.0738,0.0771,0.0808,0.0851,0.0899,0.0955,0.1021,0.1099,0.1192,0.1306,0.1449,0.1634,0.1879,0.20][Math.min(a - 72, 23)] || 0.20;
+        wRrifMin = rr * rrifPct;
+      }
+      var drawRR = Math.min(rr, Math.max(remain, wRrifMin));
+      rr -= drawRR; remain = Math.max(0, remain - drawRR); wFromRR = drawRR;
+      var drawTF = Math.min(tf, remain); tf -= drawTF; remain -= drawTF; wFromTF = drawTF;
     }
-    var taxInc = qpp + oas + pen + aRR + (preRet ? (c.sal || 50000) : 0);
-    var tax = preRet ? r(taxInc * 0.28) : r(taxInc * (c.avgTR || 0.22));
+    var wTotal = wFromRR + wFromTF + wFromNR;
+
+    // Taxable income — engine-aligned: salary + RRSP draw + RRIF + QPP + OAS + pension.
+    // TFSA + NR principal not taxable (NR cap gains ignored at this fidelity).
+    var taxInc = sal + cSal + qpp + oas + pen + wFromRR;
+    // OAS clawback proxy: 15% above indexed threshold.
+    var oasThr = 95323 * infM;
+    var clawback = oas > 0 && taxInc > oasThr ? Math.min(oas, (taxInc - oasThr) * 0.15) : 0;
+    var oasNet = Math.max(0, oas - clawback);
+
+    var tax;
+    if (calcTax) {
+      var tx = calcTax(Math.max(0, taxInc), yIdx, prov, inf, !preRet);
+      tax = tx.total;
+    } else {
+      tax = preRet ? taxInc * 0.28 : taxInc * (c.avgTR || 0.22);
+    }
+    // Spousal split for couples in retirement reduces effective tax (~10%).
+    if (!preRet && c.cOn) tax *= 0.92;
+
+    // Grow remaining balances.
     if (preRet) {
       rr = rr * (1 + retR) + (c.rrspC || 0);
       tf = tf * (1 + retR) + (c.tfsaC || 0);
-      nr = nr * (1 + retR * 0.8) + (c.nrC || 0);
+      nr = nr * (1 + retR * 0.85) + (c.nrC || 0);
+      crr = crr * (1 + retR);
+      ctf = ctf * (1 + retR);
+      cnr = cnr * (1 + retR * 0.85);
+      lira = lira * (1 + retR);
     } else {
-      rr = Math.max(0, (rr - aRR) * (1 + retR * 0.65));
-      tf = Math.max(0, (tf - aTF) * (1 + retR * 0.65));
-      nr = Math.max(0, (nr - aNR) * (1 + retR * 0.65));
+      rr = Math.max(0, rr * (1 + retR * 0.60));
+      tf = Math.max(0, tf * (1 + retR * 0.60));
+      nr = Math.max(0, nr * (1 + retR * 0.55));
+      crr = Math.max(0, crr * (1 + retR * 0.60));
+      ctf = Math.max(0, ctf * (1 + retR * 0.60));
+      cnr = Math.max(0, cnr * (1 + retR * 0.55));
+      lira = Math.max(0, lira * (1 + retR * 0.55));
     }
+
+    // Corporation projection — accumulates retained earnings, extracts post-sale.
+    var corpTax = 0, corpDiv = 0, corpSal = 0, corpExtract = 0;
+    if (c.bizOn) {
+      var saleAge = c.bizSaleAge || c.retAge;
+      if (a < saleAge) {
+        // Pre-sale: corp earns, taxes at SBD ~12.2% (QC combined), reinvests rest.
+        var corpProfit = corpRev * 0.20; // 20% margin proxy
+        corpTax = corpProfit * 0.122;
+        corpBal = corpBal * (1 + retR * 0.7) + (corpProfit - corpTax);
+      } else if (a === saleAge) {
+        // Sale year: 50% extracted as eligible dividend with 39.34% effective combined rate
+        corpExtract = corpBal * 0.5;
+        corpDiv = corpExtract;
+        corpTax = corpExtract * 0.3934;
+        corpBal -= corpExtract;
+      } else {
+        // Post-sale: residual extraction over time
+        var ext = Math.min(corpBal, 30000 * infM);
+        corpExtract = ext;
+        corpDiv = ext;
+        corpTax = ext * 0.3934;
+        corpBal = Math.max(0, corpBal * (1 + retR * 0.5) - ext);
+      }
+    }
+
     rows.push({
-      age: a, rrq: r(qpp), psv: r(oas), pen: r(pen), ret: aRR + aTF + aNR,
-      srg: r(gis), sp: r(spY), spending: r(spY), tax: tax, taxInc: r(taxInc),
-      balRR: r(rr), balTF: r(tf), balNR: r(nr), balTot: r(rr + tf + nr),
-      balCRR: c.cRRSP ? r(c.cRRSP * Math.pow(1.04, a - c.age)) : 0,
-      balCTF: c.cTFSA ? r(c.cTFSA * Math.pow(1.04, a - c.age)) : 0,
-      balCNR: c.cNR ? r(c.cNR * Math.pow(1.04, a - c.age)) : 0,
-      balLIRA: c.lira ? r(c.lira * Math.pow(1.04, a - c.age)) : 0,
-      aRR: aRR, aTF: aTF, aNR: aNR
+      age: a,
+      // Income & spending (engine names)
+      rrq: r(qpp), psv: r(oasNet), srg: r(gis), pen: r(pen),
+      sal: r(sal), cSal: r(cSal),
+      ret: r(wTotal),
+      spend: r(spY), sp: r(spY), spending: r(spY),
+      tax: r(tax), taxInc: r(Math.max(0, taxInc)),
+      // Balances (engine = a* prefix)
+      aRR: r(rr), aTF: r(tf), aNR: r(nr),
+      aCRR: r(crr), aCTF: r(ctf), aCNR: r(cnr),
+      aLIRA: r(lira),
+      // Withdrawals (engine = w* prefix)
+      wFromRR: r(wFromRR), wFromTF: r(wFromTF), wFromNR: r(wFromNR),
+      wMelt: 0, wRrifMin: r(wRrifMin),
+      // Corporation
+      corpBal: r(corpBal), corpTax: r(corpTax), corpDiv: r(corpDiv),
+      corpSal: r(corpSal), corpExtract: r(corpExtract),
+      corpCDA: 0, corpRDTOH: 0, corpPassive: r(corpBal * 0.04),
+      // Legacy aliases kept for code paths that haven't migrated
+      balRR: r(rr), balTF: r(tf), balNR: r(nr),
+      balCRR: r(crr), balCTF: r(ctf), balCNR: r(cnr), balLIRA: r(lira),
+      balTot: r(rr + tf + nr + crr + ctf + cnr + lira),
+      gis: r(gis)
     });
   }
   return rows;
@@ -139,18 +265,21 @@ function buildMC(cfg, succ) {
   };
 }
 
-// ═══ 3. PROFILE DEFINITIONS ═══
+// ??? 3. PROFILE DEFINITIONS ???
+// Each profile includes finLiteracy, stressLevel, detailPref
 var P = [
-  // 1. Young Accumulator — Marc, 30, single, QC
-  { id: 'young_accum', succ: 0.91,
+  // 1. Young Accumulator - Marc, 30, single, QC
+  // beginner + moderate stress + concise ? simple language, reassuring, brief
+  { id: 'young_accum', succ: 0.91, finLiteracy: 'beginner', stressLevel: 'moderate', detailPref: 'concise',
     params: { age: 30, retAge: 65, deathAge: 90, sex: 'M', prov: 'QC', sal: 65000, rrsp: 40000, tfsa: 15000, nr: 5000,
       retSpM: 3500, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, eqRetS: 0.07, bndRetS: 0.035, inf: 0.02,
       merR: 0.02, merT: 0.008, merN: 0.012, allocR: 0.7, allocT: 0.9, allocN: 0.6, goP: 1, slP: 0.85, noP: 0.7, wStrat: 'standard' },
     client: { name: 'Marc Tremblay', firstName: 'Marc', email: 'marc@example.com' },
     mc: { rrsp: 40000, tfsa: 15000, nr: 5000, age: 30, retAge: 65, deathAge: 90, retSpM: 3500, qppAge: 65, oasAge: 65, qppM: 850, oasM: 700, sal: 65000, rrspC: 6000, tfsaC: 3000, nrC: 1000, eqRet: 0.065 }
   },
-  // 2. Couple Transition — Jean & Marie, 58/55, QC
-  { id: 'couple_transition', succ: 0.84,
+  // 2. Couple Transition - Jean & Marie, 58/55, QC
+  // intermediate + high stress + balanced ? clear but thorough, calming tone
+  { id: 'couple_transition', succ: 0.84, finLiteracy: 'intermediate', stressLevel: 'high', detailPref: 'balanced',
     params: { age: 58, retAge: 63, deathAge: 90, sex: 'M', prov: 'QC', sal: 95000, rrsp: 380000, tfsa: 120000, nr: 80000,
       cOn: true, cAge: 55, cRetAge: 65, cSal: 52000, cRRSP: 95000, cTFSA: 45000, cNR: 20000,
       retSpM: 5500, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
@@ -159,8 +288,9 @@ var P = [
     client: { name: 'Jean Lavoie', firstName: 'Jean', spouseFirstName: 'Marie', email: 'jean@example.com' },
     mc: { rrsp: 380000, tfsa: 120000, nr: 80000, age: 58, retAge: 63, deathAge: 90, retSpM: 5500, qppAge: 65, oasAge: 65, qppM: 950, oasM: 700, cRRSP: 95000, cTFSA: 45000, cNR: 20000, sal: 95000, rrspC: 8000, tfsaC: 3500, nrC: 2000, eqRet: 0.055 }
   },
-  // 3. Retiree Decum — Monique, 70, single, QC
-  { id: 'retiree_decum', succ: 0.78,
+  // 3. Retiree Decum - Monique, 70, single, QC
+  // beginner + high stress + balanced ? very simple, reassuring, no jargon
+  { id: 'retiree_decum', succ: 0.78, finLiteracy: 'beginner', stressLevel: 'high', detailPref: 'balanced',
     params: { age: 70, retAge: 65, deathAge: 92, sex: 'F', prov: 'QC', sal: 0, rrsp: 220000, tfsa: 85000, nr: 50000,
       retSpM: 3200, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.022, merT: 0.005, merN: 0.01, allocR: 0.4, allocT: 0.6, allocN: 0.35,
@@ -168,8 +298,9 @@ var P = [
     client: { name: 'Monique Gagnon', firstName: 'Monique', email: 'monique@example.com' },
     mc: { rrsp: 220000, tfsa: 85000, nr: 50000, age: 70, retAge: 65, deathAge: 92, retSpM: 3200, qppAge: 65, oasAge: 65, qppM: 780, oasM: 730, sal: 0, eqRet: 0.05, avgTR: 0.18 }
   },
-  // 4. FIRE Seeker — Alex, 35, single, ON
-  { id: 'fire_seeker', succ: 0.72,
+  // 4. FIRE Seeker - Alex, 35, single, ON
+  // advanced + low stress + detailed ? technical, analytical, comprehensive
+  { id: 'fire_seeker', succ: 0.72, finLiteracy: 'advanced', stressLevel: 'low', detailPref: 'detailed',
     params: { age: 35, retAge: 45, deathAge: 95, sex: 'M', prov: 'ON', sal: 135000, rrsp: 210000, tfsa: 90000, nr: 180000,
       retSpM: 4500, qppAge: 60, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.005, merT: 0.003, merN: 0.004, allocR: 0.85, allocT: 0.95, allocN: 0.75,
@@ -177,8 +308,9 @@ var P = [
     client: { name: 'Alex Chen', firstName: 'Alex', email: 'alex@example.com' },
     mc: { rrsp: 210000, tfsa: 90000, nr: 180000, age: 35, retAge: 45, deathAge: 95, retSpM: 4500, qppAge: 60, oasAge: 65, qppM: 550, oasM: 700, sal: 135000, rrspC: 15000, tfsaC: 7000, nrC: 20000, eqRet: 0.07 }
   },
-  // 5. Low Income GIS — Robert, 62, single, QC
-  { id: 'low_income_gis', succ: 0.95,
+  // 5. Low Income GIS - Robert, 62, single, QC
+  // beginner + moderate stress + concise ? plain language, focus on what matters
+  { id: 'low_income_gis', succ: 0.95, finLiteracy: 'beginner', stressLevel: 'moderate', detailPref: 'concise',
     params: { age: 62, retAge: 65, deathAge: 88, sex: 'M', prov: 'QC', sal: 32000, rrsp: 18000, tfsa: 8000, nr: 2000,
       retSpM: 2000, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.02, merT: 0.005, merN: 0.01, allocR: 0.4, allocT: 0.5, allocN: 0.3,
@@ -186,8 +318,9 @@ var P = [
     client: { name: 'Robert Bouchard', firstName: 'Robert', email: 'robert@example.com' },
     mc: { rrsp: 18000, tfsa: 8000, nr: 2000, age: 62, retAge: 65, deathAge: 88, retSpM: 2000, qppAge: 65, oasAge: 65, qppM: 550, oasM: 700, sal: 32000, rrspC: 1000, tfsaC: 500, nrC: 0, eqRet: 0.045, gis: true, avgTR: 0.12 }
   },
-  // 6. CCPC Owner — Sophie, 50, single, QC
-  { id: 'ccpc_owner', succ: 0.87,
+  // 6. CCPC Owner - Sophie, 50, single, QC
+  // advanced + moderate stress + detailed ? technical corporate analysis
+  { id: 'ccpc_owner', succ: 0.87, finLiteracy: 'advanced', stressLevel: 'moderate', detailPref: 'detailed',
     params: { age: 50, retAge: 60, deathAge: 90, sex: 'F', prov: 'QC', sal: 120000, rrsp: 180000, tfsa: 95000, nr: 70000,
       retSpM: 5000, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.015, merT: 0.005, merN: 0.008, allocR: 0.6, allocT: 0.8, allocN: 0.5,
@@ -196,8 +329,9 @@ var P = [
     client: { name: 'Sophie Moreau', firstName: 'Sophie', email: 'sophie@example.com' },
     mc: { rrsp: 180000, tfsa: 95000, nr: 70000, age: 50, retAge: 60, deathAge: 90, retSpM: 5000, qppAge: 65, oasAge: 65, qppM: 850, oasM: 700, sal: 120000, rrspC: 10000, tfsaC: 7000, nrC: 3000, eqRet: 0.06 }
   },
-  // 7. Real Estate Heavy — David, 45, single, ON
-  { id: 'real_estate', succ: 0.76,
+  // 7. Real Estate Heavy - David, 45, single, ON
+  // intermediate + moderate stress + balanced ? accessible but with some detail
+  { id: 'real_estate', succ: 0.76, finLiteracy: 'intermediate', stressLevel: 'moderate', detailPref: 'balanced',
     params: { age: 45, retAge: 65, deathAge: 90, sex: 'M', prov: 'ON', sal: 88000, rrsp: 65000, tfsa: 40000, nr: 25000,
       retSpM: 4000, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.022, merT: 0.005, merN: 0.012, allocR: 0.6, allocT: 0.8, allocN: 0.5,
@@ -209,8 +343,9 @@ var P = [
     client: { name: 'David Park', firstName: 'David', email: 'david@example.com' },
     mc: { rrsp: 65000, tfsa: 40000, nr: 25000, age: 45, retAge: 65, deathAge: 90, retSpM: 4000, qppAge: 65, oasAge: 65, qppM: 780, oasM: 700, sal: 88000, rrspC: 5000, tfsaC: 3000, nrC: 1000, eqRet: 0.06 }
   },
-  // 8. High Net Worth Couple — François & Isabelle, 55/52, QC, EXPERT
-  { id: 'hnw_couple', succ: 0.97, mode: 'expert',
+  // 8. High Net Worth Couple - Francois & Isabelle, 55/52, QC, EXPERT
+  // advanced + low stress + detailed ? full technical analysis, expert mode
+  { id: 'hnw_couple', succ: 0.97, mode: 'expert', finLiteracy: 'advanced', stressLevel: 'low', detailPref: 'detailed',
     params: { age: 55, retAge: 60, deathAge: 92, sex: 'M', prov: 'QC', sal: 180000, rrsp: 820000, tfsa: 240000, nr: 450000, liraBal: 150000,
       cOn: true, cAge: 52, cRetAge: 62, cSal: 95000, cRRSP: 180000, cTFSA: 65000, cNR: 40000,
       retSpM: 8000, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
@@ -218,24 +353,26 @@ var P = [
       goP: 1, slP: 0.85, noP: 0.7, wStrat: 'optimized',
       melt: true, meltTgt: 55000, split: true, splitP: 0.5,
       penType: 'db', penM: 2500, penIdx: true },
-    client: { name: 'François Dubois', firstName: 'François', spouseFirstName: 'Isabelle', email: 'francois@example.com', advisor: 'Pl. Fin. Nathalie Roy', firm: 'FinPlan Québec' },
+    client: { name: 'Francois Dubois', firstName: 'Francois', spouseFirstName: 'Isabelle', email: 'francois@example.com', advisor: 'Pl. Fin. Nathalie Roy', firm: 'FinPlan Quebec' },
     mc: { rrsp: 820000, tfsa: 240000, nr: 450000, lira: 150000, age: 55, retAge: 60, deathAge: 92, retSpM: 8000, qppAge: 65, oasAge: 65, qppM: 1000, oasM: 730, cRRSP: 180000, cTFSA: 65000, cNR: 40000, sal: 180000, rrspC: 15000, tfsaC: 7000, nrC: 8000, eqRet: 0.06, penM: 2500 }
   },
-  // 9. Debt-Laden Young — Karim, 28, single, ON
-  { id: 'debt_young', succ: 0.68,
+  // 9. Debt-Laden Young - Karim, 28, single, ON
+  // beginner + high stress + concise ? very simple, calming, brief
+  { id: 'debt_young', succ: 0.68, finLiteracy: 'beginner', stressLevel: 'high', detailPref: 'concise',
     params: { age: 28, retAge: 67, deathAge: 90, sex: 'M', prov: 'ON', sal: 55000, rrsp: 8000, tfsa: 5000, nr: 2000,
       retSpM: 2800, qppAge: 65, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.022, merT: 0.005, merN: 0.012, allocR: 0.8, allocT: 0.9, allocN: 0.6,
       goP: 1, slP: 0.85, noP: 0.7, wStrat: 'standard',
       debts: [
-        { name: 'Student Loan', balance: 45000, rate: 0.045, payment: 450 },
-        { name: 'Credit Card', balance: 8200, rate: 0.199, payment: 250 }
+        { name: 'Pret etudiant', balance: 45000, rate: 0.045, payment: 450 },
+        { name: 'Carte de credit', balance: 8200, rate: 0.199, payment: 250 }
       ] },
     client: { name: 'Karim Hassan', firstName: 'Karim', email: 'karim@example.com' },
     mc: { rrsp: 8000, tfsa: 5000, nr: 2000, age: 28, retAge: 67, deathAge: 90, retSpM: 2800, qppAge: 65, oasAge: 65, qppM: 700, oasM: 700, sal: 55000, rrspC: 3000, tfsaC: 2000, nrC: 500, eqRet: 0.065 }
   },
-  // 10. RSU Tech Worker — Li Wei, 40, single, BC
-  { id: 'rsu_tech', succ: 0.85,
+  // 10. RSU Tech Worker - Li Wei, 40, single, BC
+  // intermediate + low stress + balanced ? standard explanations, confident tone
+  { id: 'rsu_tech', succ: 0.85, finLiteracy: 'intermediate', stressLevel: 'low', detailPref: 'balanced',
     params: { age: 40, retAge: 55, deathAge: 92, sex: 'M', prov: 'BC', sal: 145000, rrsp: 120000, tfsa: 75000, nr: 95000,
       retSpM: 5000, qppAge: 60, oasAge: 65, nSim: 5000, fatT: true, stochInf: true, inf: 0.02,
       merR: 0.004, merT: 0.003, merN: 0.004, allocR: 0.8, allocT: 0.9, allocN: 0.7,
@@ -249,290 +386,435 @@ var P = [
   }
 ];
 
-// ═══ 4. AI NARRATION ═══
-// Following ai-prompt-360 rules: conditional tense, observational, 2-3 sentences, ANCHOR→IMPLICATION→NUANCE
-function aiText(idx, fr) {
-  var a = {};
-  switch(idx) {
-    case 0: // Marc, 30, young accum
-      if (fr) {
-        a.overall_assessment = "Marc, votre plan obtient la note A (91 %) avec un patrimoine m\u00e9dian de 1,1 M$ \u00e0 la retraite. Les prestations gouvernementales pourraient couvrir 44 % de vos d\u00e9penses, et votre taux de retrait initial de 2,1 % est bien en dessous du seuil de 4 %. La structure \u00e0 dominante REER (67 %) pourrait cr\u00e9er une concentration fiscale apr\u00e8s 72 ans \u2014 diversifier vers le C\u00c9LI au fil du temps pourrait r\u00e9duire cet effet.";
-        a.verdict = "Le moteur de simulation attribue la note A (91 %) au plan de Marc, ce qui indique que le patrimoine demeure positif à l'horizon dans 91 % des 5 000 scénarios testés. Avec 35 années de cotisation devant lui et un patrimoine actuel de 60 000 $, la trajectoire médiane pourrait atteindre environ 1,1 M$ en dollars réels à 65 ans. Ce résultat repose sur des hypothèses de rendement et d'inflation qui pourraient évoluer.";
-        a.profile_summary = "Le portefeuille de Marc totalise 60 000 $, réparti à 67 % en REER, 25 % en CÉLI et 8 % en non-enregistré. Les revenus gouvernementaux (Régime de rentes du Québec + Pension de la Sécurité de la vieillesse) pourraient couvrir environ 44 % des dépenses de retraite prévues de 42 000 $ par année, laissant un écart mensuel d'environ 1 950 $ à combler par les retraits d'épargne.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine passant de 60 000 $ aujourd'hui à environ 1,1 M$ à la retraite, puis déclinant vers 380 000 $ à 90 ans. La fourchette P25–P75 en fin d'horizon se situe entre 180 000 $ et 620 000 $, ce qui reflète 60 ans d'incertitude de marché cumulée.";
-        a.income_insight = "Les revenus gouvernementaux combinés pourraient totaliser environ 18 600 $ par année à partir de 65 ans. Les 23 400 $ restants pour atteindre le niveau de dépenses visé de 42 000 $ proviendraient des retraits d'épargne, ce qui représente un taux de retrait initial d'environ 2,1 % du patrimoine projeté à la retraite.";
-        a.taxInsight = "Le taux effectif moyen en retraite se situe autour de 18 %, principalement alimenté par les retraits REER imposables. La structure actuelle à dominante REER (67 % du portefeuille) pourrait générer des retraits FERR obligatoires plus élevés après 72 ans, augmentant le revenu imposable dans les tranches supérieures.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 265 000 $, après un impôt au décès d'environ 95 000 $ sur la disposition réputée du REER/FERR. Dans un scénario prudent (P25), l'héritage net pourrait se situer autour de 110 000 $.";
-      } else {
-        a.overall_assessment = "Marc, your plan receives an A grade (91%) with median wealth of $1.1M at retirement. Government benefits could cover 44% of spending, and your initial withdrawal rate of 2.1% sits well below the 4% threshold. The RRSP-heavy structure (67%) could create tax concentration after age 72 \u2014 diversifying toward TFSA over time could reduce this effect.";
-        a.verdict = "The simulation engine assigns Marc's plan an A grade (91%), indicating wealth remains positive at the horizon in 91% of 5,000 tested scenarios. With 35 years of contributions ahead and current savings of $60,000, the median trajectory could reach approximately $1.1M in real dollars at age 65. This projection rests on return and inflation assumptions that could evolve.";
-        a.profile_summary = "Marc's portfolio totals $60,000, allocated 67% to RRSP, 25% to TFSA, and 8% to non-registered. Government income (Quebec Pension Plan + Old Age Security) could cover approximately 44% of planned retirement spending of $42,000 per year, leaving a monthly gap of about $1,950 to be funded from savings withdrawals.";
-        a.trajectory_insight = "The median simulation projects wealth growing from $60,000 today to approximately $1.1M at retirement, then declining to $380,000 at age 90. The P25–P75 range at end of horizon falls between $180,000 and $620,000, reflecting 60 years of cumulative market uncertainty.";
-        a.income_insight = "Combined government income could total approximately $18,600 per year starting at age 65. The remaining $23,400 to reach the targeted spending level of $42,000 would come from savings withdrawals, representing an initial withdrawal rate of approximately 2.1% of projected retirement wealth.";
-        a.taxInsight = "The average effective tax rate in retirement sits around 18%, primarily driven by taxable RRSP withdrawals. The current RRSP-heavy structure (67% of portfolio) could generate higher mandatory RRIF withdrawals after age 72, pushing taxable income into higher brackets.";
-        a.estateInsight = "The median net estate value is estimated at approximately $265,000, after tax at death of about $95,000 on deemed RRSP/RRIF disposition. In a cautious scenario (P25), the net estate could be around $110,000.";
-      }
-      break;
+// ??? 4. AI NARRATION - FR + EN ???
+// Tone adapts to finLiteracy + stressLevel + detailPref per profile
+// ANCHOR?IMPLICATION?NUANCE | Conditional tense | AMF-compliant
+function aiTextFR(idx, prof, mc) {
+  var p = (prof && prof.params) || {};
+  var name = ((prof && prof.client && (prof.client.firstName || prof.client.name)) || 'Client').split(' ')[0];
+  var succ = (prof && typeof prof.succ === 'number') ? prof.succ : (mc && mc.succ) || 0;
+  var succPct = Math.round(succ * 100);
 
-    case 1: // Jean & Marie, couple transition
-      if (fr) {
-        a.overall_assessment = "Le m\u00e9nage Lavoie obtient la note B+ (84 %) avec un patrimoine combin\u00e9 de 740 000 $. Les revenus gouvernementaux des deux conjoints pourraient couvrir 54 % des d\u00e9penses de 66 000 $, mais la p\u00e9riode de pont de 2 ans sans prestations cr\u00e9e une pression initiale sur les retraits. Le fractionnement de revenus de pension \u00e0 50 % pourrait att\u00e9nuer la charge fiscale du m\u00e9nage.";
-        a.verdict = "Le plan du ménage Lavoie reçoit la note B+ (84 %), ce qui indique une trajectoire viable mais avec des zones de vulnérabilité dans les scénarios défavorables. Le patrimoine combiné de 740 000 $ (incluant les comptes du conjoint) constitue le socle de la projection, mais les 2 années de pont entre 63 et 65 ans sans revenus gouvernementaux pourraient exercer une pression sur les premiers retraits.";
-        a.profile_summary = "Jean et Marie disposent d'un patrimoine combiné de 740 000 $, avec deux sources de revenus totalisant 147 000 $ par année. Les revenus gouvernementaux combinés (deux Régimes de rentes du Québec + deux Pensions de la Sécurité de la vieillesse) pourraient couvrir 54 % des dépenses prévues de 66 000 $ par année. Le fractionnement de revenus de pension à 50 % pourrait réduire la charge fiscale du ménage.";
-        a.trajectory_insight = "La simulation médiane montre le patrimoine atteignant environ 780 000 $ à la retraite de Jean (63 ans), puis déclinant progressivement vers 210 000 $ à 90 ans. La fourchette P25–P75 en fin d'horizon varie entre 85 000 $ et 380 000 $, une dispersion qui reflète la sensibilité au séquencement des rendements dans les premières années de retraite.";
-        a.income_insight = "Entre 63 et 65 ans, le ménage devrait puiser intégralement dans l'épargne pour couvrir les 66 000 $ de dépenses annuelles. À partir de 65 ans, les revenus gouvernementaux combinés pourraient atteindre environ 35 400 $ par année, réduisant l'écart à combler à 30 600 $ — soit 2 550 $ par mois de retraits.";
-        a.taxInsight = "Le taux effectif moyen en retraite se situe autour de 21 %. Le fractionnement des revenus de pension à 50 % entre Jean et Marie pourrait réduire l'impôt combiné en équilibrant les paliers d'imposition des deux conjoints.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 147 000 $. Le roulement au conjoint survivant pourrait différer la disposition réputée des comptes enregistrés au deuxième décès.";
-      } else {
-        a.overall_assessment = "The Lavoie household receives a B+ grade (84%) with combined wealth of $740,000. Government income from both spouses could cover 54% of $66,000 in spending, but the 2-year bridge without benefits creates initial withdrawal pressure. Pension income splitting at 50% could mitigate the household tax burden.";
-        a.verdict = "The Lavoie household plan receives a B+ grade (84%), indicating a viable trajectory with some vulnerability in adverse scenarios. The combined wealth of $740,000 (including spouse accounts) forms the projection's foundation, but the 2-year bridge between age 63 and 65 without government income could pressure early withdrawals.";
-        a.profile_summary = "Jean and Marie hold combined wealth of $740,000, with two income sources totaling $147,000 per year. Combined government income (two Quebec Pension Plans + two Old Age Security) could cover 54% of planned spending of $66,000 per year. Pension income splitting at 50% could reduce the household tax burden.";
-        a.trajectory_insight = "The median simulation shows wealth reaching approximately $780,000 at Jean's retirement (age 63), then gradually declining to $210,000 at age 90. The P25–P75 range at end of horizon varies between $85,000 and $380,000, reflecting sensitivity to return sequencing in the early retirement years.";
-        a.income_insight = "Between ages 63 and 65, the household would draw entirely from savings to cover the $66,000 in annual spending. Starting at 65, combined government income could reach approximately $35,400 per year, reducing the gap to $30,600 — or $2,550 per month in withdrawals.";
-        a.taxInsight = "The average effective tax rate in retirement sits around 21%. Pension income splitting at 50% between Jean and Marie could reduce combined tax by balancing both spouses' tax brackets.";
-        a.estateInsight = "The median net estate value is estimated at approximately $147,000. Spousal rollover could defer deemed disposition of registered accounts to the second death.";
-      }
-      break;
+  var p50 = Math.round((mc && (mc.rMedF || mc.medF || 0)) || 0);
+  var p25 = Math.round((mc && (mc.rP25F || mc.p25F || 0)) || 0);
+  var estateNet = Math.round((mc && (mc.medEstateNet || 0)) || 0);
+  var estateTax = Math.round((mc && (mc.medEstateTax || 0)) || 0);
 
-    case 2: // Monique, 70, retiree decum
-      if (fr) {
-        a.overall_assessment = "Monique obtient la note B (78 %) avec un patrimoine de 355 000 $ en d\u00e9caissement depuis 5 ans. Les revenus gouvernementaux couvrent 46 % des d\u00e9penses de 3 200 $ par mois, et le taux de retrait actuel de 5,7 % d\u00e9passe le seuil de 4 % souvent cit\u00e9 dans la litt\u00e9rature. La conversion FERR obligatoire est d\u00e9j\u00e0 en cours \u2014 les retraits minimums augmenteront progressivement.";
-        a.verdict = "Le moteur de simulation attribue la note B (78 %) au plan de Monique, ce qui indique que l'épargne pourrait durer jusqu'à l'horizon dans environ 4 scénarios sur 5. Le patrimoine actuel de 355 000 $ est en phase de décaissement depuis 5 ans, et la trajectoire médiane montre un solde d'environ 120 000 $ à 92 ans. Dans un scénario prudent (P25), l'épargne pourrait s'épuiser vers 87 ans — les revenus gouvernementaux continueraient toutefois d'être versés.";
-        a.profile_summary = "Monique est à la retraite depuis 5 ans, avec un portefeuille de 355 000 $ composé de 62 % en REER, 24 % en CÉLI et 14 % en non-enregistré. Les revenus gouvernementaux (Régime de rentes du Québec à 780 $ par mois + Pension de la Sécurité de la vieillesse à 730 $ par mois) couvrent 46 % des dépenses mensuelles de 3 200 $. L'écart de 1 720 $ par mois provient des retraits d'épargne.";
-        a.trajectory_insight = "Le patrimoine est passé d'un point haut estimé à environ 420 000 $ à 65 ans au niveau actuel de 355 000 $ à 70 ans. La simulation médiane projette un solde d'environ 120 000 $ à 92 ans, mais la fourchette P25–P75 s'étend de 0 $ à 280 000 $, reflétant la sensibilité accrue aux rendements en phase de décaissement.";
-        a.income_insight = "Les revenus gouvernementaux totalisent environ 18 120 $ par année. Les dépenses annuelles de 38 400 $ nécessitent des retraits d'épargne de 20 280 $ par année, ce qui représente un taux de retrait de 5,7 % du portefeuille actuel — au-dessus du seuil de 4 % souvent cité dans la littérature financière.";
-        a.taxInsight = "Le taux effectif moyen se situe autour de 18 %. La conversion FERR obligatoire est déjà en cours et les retraits minimums augmenteront progressivement, ce qui pourrait pousser le revenu imposable au-delà du seuil de récupération de la Pension de la Sécurité de la vieillesse dans certaines années.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 84 000 $. L'impôt au décès sur la disposition réputée du REER/FERR pourrait représenter environ 30 % de la valeur brute des comptes enregistrés.";
-      } else {
-        a.overall_assessment = "Monique receives a B grade (78%) with $355,000 in savings, in drawdown for 5 years. Government income covers 46% of $3,200/mo in spending, and the current withdrawal rate of 5.7% exceeds the commonly cited 4% threshold. Mandatory RRIF conversion is already underway \u2014 minimum withdrawals will increase progressively.";
-        a.verdict = "The simulation engine assigns Monique's plan a B grade (78%), indicating savings could last through the horizon in roughly 4 out of 5 scenarios. Current wealth of $355,000 has been in drawdown for 5 years, and the median trajectory shows a balance of approximately $120,000 at age 92. In a cautious scenario (P25), savings could be depleted around age 87 — government income would continue regardless.";
-        a.profile_summary = "Monique has been retired for 5 years, with a portfolio of $355,000 composed of 62% RRSP, 24% TFSA, and 14% non-registered. Government income (Quebec Pension Plan at $780/mo + Old Age Security at $730/mo) covers 46% of monthly spending of $3,200. The $1,720/mo gap is funded from savings withdrawals.";
-        a.trajectory_insight = "Wealth declined from an estimated peak of approximately $420,000 at age 65 to the current $355,000 at age 70. The median simulation projects a balance of approximately $120,000 at age 92, but the P25–P75 range spans from $0 to $280,000, reflecting heightened sensitivity to returns during drawdown.";
-        a.income_insight = "Government income totals approximately $18,120 per year. Annual spending of $38,400 requires savings withdrawals of $20,280 per year, representing a withdrawal rate of 5.7% of current portfolio — above the 4% threshold often cited in financial literature.";
-        a.taxInsight = "The average effective rate sits around 18%. Mandatory RRIF conversion is already underway and minimum withdrawals will increase progressively, which could push taxable income above the Old Age Security recovery threshold in some years.";
-        a.estateInsight = "The median net estate value is estimated at approximately $84,000. Tax at death on deemed RRSP/RRIF disposition could represent about 30% of registered account gross value.";
-      }
-      break;
+  var govAnnual = Math.round((((p.qppM || 0) + (p.oasM || 0) + (p.penM || 0)) * 12) + (p.gis ? 4800 : 0));
+  var spendAnnual = Math.round((p.retSpM || 0) * 12);
+  var gapAnnual = Math.max(0, spendAnnual - govAnnual);
 
-    case 3: // Alex, 35, FIRE
-      if (fr) {
-        a.overall_assessment = "Alex obtient la note B (72 %) avec un patrimoine de 480 000 $ et un objectif FIRE \u00e0 45 ans. La retraite anticip\u00e9e cr\u00e9e un pont de 20 ans avant la Pension de la S\u00e9curit\u00e9 de la vieillesse, pendant lequel le portefeuille devrait couvrir la totalit\u00e9 des 54 000 $ de d\u00e9penses. Les frais bas (0,4 %) et l\u2019allocation agressive (85 % actions) soutiennent la croissance, mais 28 % des sc\u00e9narios montrent un \u00e9puisement avant l\u2019horizon.";
-        a.verdict = "Le plan d'Alex reçoit la note B (72 %), ce qui signifie que l'épargne pourrait ne pas durer jusqu'à 95 ans dans environ 28 % des scénarios simulés. La retraite à 45 ans crée un pont de 15 ans avant le Régime de pensions du Canada (60 ans) et de 20 ans avant la Pension de la Sécurité de la vieillesse (65 ans), pendant lesquels la totalité des 54 000 $ de dépenses annuelles reposerait sur le portefeuille de 480 000 $.";
-        a.profile_summary = "Alex dispose de 480 000 $ répartis entre REER (44 %), CÉLI (19 %) et non-enregistré (37 %). La structure à faibles frais (frais de gestion moyens de 0,4 %) et l'allocation agressive (85 % actions en REER) reflètent un profil orienté vers la croissance. Les cotisations annuelles de 42 000 $ au cours des 10 prochaines années pourraient porter le patrimoine à environ 800 000 $ à 45 ans.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine d'environ 800 000 $ à la retraite (45 ans), suivi de 15 années de décaissement intégral avant que les revenus gouvernementaux n'entrent en jeu. Le patrimoine pourrait atteindre son point le plus bas vers 65 ans, autour de 280 000 $ en médiane, avant de se stabiliser avec l'ajout du Régime de pensions du Canada et de la Pension de la Sécurité de la vieillesse.";
-        a.income_insight = "Entre 45 et 60 ans, aucun revenu gouvernemental n'est disponible — les retraits annuels de 54 000 $ proviendraient entièrement du portefeuille. À partir de 60 ans, le Régime de pensions du Canada pourrait ajouter 6 600 $ par année, puis la Pension de la Sécurité de la vieillesse ajouterait 8 400 $ supplémentaires à 65 ans, réduisant le déficit à combler à 39 000 $.";
-        a.taxInsight = "Avec un salaire actuel de 135 000 $ et un taux marginal ontarien élevé, les cotisations REER génèrent un avantage fiscal important. En retraite anticipée, les premiers retraits pourraient se faire à un taux effectif bas (15-18 %) avant que les prestations gouvernementales ne s'ajoutent au revenu imposable.";
-        a.estateInsight = "La valeur successorale dépend fortement du moment du décès par rapport à l'épuisement potentiel du portefeuille. La médiane indique un héritage net d'environ 190 000 $, mais dans un scénario P25, la valeur pourrait être proche de zéro.";
-      } else {
-        a.overall_assessment = "Alex receives a B grade (72%) with $480,000 in savings and a FIRE target of age 45. Early retirement creates a 20-year bridge before OAS, during which the portfolio must cover the full $54,000 in spending. Low fees (0.4%) and aggressive allocation (85% equities) support growth, but 28% of scenarios show depletion before the horizon.";
-        a.verdict = "Alex's plan receives a B grade (72%), meaning savings may not last to age 95 in approximately 28% of simulated scenarios. Retiring at 45 creates a 15-year bridge before the Canada Pension Plan (age 60) and a 20-year bridge before Old Age Security (age 65), during which the full $54,000 in annual spending would rest on the $480,000 portfolio.";
-        a.profile_summary = "Alex holds $480,000 split across RRSP (44%), TFSA (19%), and non-registered (37%). The low-fee structure (average MER of 0.4%) and aggressive allocation (85% equities in RRSP) reflect a growth-oriented profile. Annual contributions of $42,000 over the next 10 years could bring wealth to approximately $800,000 at age 45.";
-        a.trajectory_insight = "The median simulation projects wealth of approximately $800,000 at retirement (age 45), followed by 15 years of full drawdown before government income kicks in. Wealth could reach its lowest point around age 65, at approximately $280,000 median, before stabilizing with the addition of CPP and OAS.";
-        a.income_insight = "Between ages 45 and 60, no government income is available — annual withdrawals of $54,000 would come entirely from the portfolio. Starting at age 60, CPP could add $6,600 per year, then OAS would add another $8,400 at age 65, reducing the gap to $39,000.";
-        a.taxInsight = "With a current salary of $135,000 and a high Ontario marginal rate, RRSP contributions generate significant tax benefit. In early retirement, initial withdrawals could be made at a low effective rate (15-18%) before government benefits add to taxable income.";
-        a.estateInsight = "Estate value depends heavily on timing of death relative to potential portfolio depletion. The median indicates a net estate of approximately $190,000, but in a P25 scenario, the value could be near zero.";
-      }
-      break;
+  var totalDebt = ((p.debts || []).reduce(function(s, d) { return s + (d.balance || d.bal || 0); }, 0));
+  var rsuValue = ((p.rsuGrants || []).reduce(function(s, g) { return s + ((g.totalShares || 0) * (g.sharePrice || 0)); }, 0));
+  var reEquity = ((p.props || []).filter(function(pr){ return pr && pr.on; }).reduce(function(s, pr){ return s + ((pr.val || 0) - (pr.mb || 0)); }, 0));
 
-    case 4: // Robert, 62, low income GIS
-      if (fr) {
-        a.overall_assessment = "Robert obtient la note A (95 %) avec un patrimoine modeste de 28 000 $, mais une forte couverture gouvernementale. Les prestations combin\u00e9es (RRQ + PSV + SRG) pourraient couvrir 83 % des d\u00e9penses de 24 000 $ par ann\u00e9e. Le Suppl\u00e9ment de revenu garanti est un atout cl\u00e9 \u2014 les retraits REER/FERR d\u00e9clenchent toutefois la r\u00e9cup\u00e9ration \u00e0 50 \u00a2 par dollar.";
-        a.verdict = "Le plan de Robert reçoit la note A (95 %), ce qui indique une trajectoire stable grâce à la combinaison de revenus gouvernementaux élevés par rapport à des besoins de dépenses contenus. Le patrimoine de 28 000 $ joue un rôle de coussin plutôt que de source principale — les revenus du Régime de rentes du Québec, de la Pension de la Sécurité de la vieillesse et du Supplément de revenu garanti pourraient couvrir 83 % des dépenses prévues de 24 000 $ par année.";
-        a.profile_summary = "Le portefeuille de Robert totalise 28 000 $, avec 64 % en REER et 29 % en CÉLI. Le niveau de dépenses visé de 2 000 $ par mois est couvert en grande partie par les revenus gouvernementaux — un profil où la stabilité des prestations prime sur la performance du portefeuille.";
-        a.trajectory_insight = "La simulation médiane montre le patrimoine croissant légèrement jusqu'à 65 ans (environ 34 000 $), puis déclinant lentement à mesure que le faible écart mensuel est comblé par de petits retraits. Le patrimoine pourrait se maintenir au-dessus de 10 000 $ jusqu'à 88 ans dans le scénario médian.";
-        a.income_insight = "Les revenus gouvernementaux combinés (Régime de rentes du Québec 550 $/mois + Pension de la Sécurité de la vieillesse 700 $/mois + Supplément de revenu garanti estimé à environ 400 $/mois) pourraient totaliser 19 800 $ par année. L'écart de 4 200 $ par année serait comblé par de modestes retraits d'épargne de 350 $ par mois.";
-        a.taxInsight = "Le taux effectif moyen en retraite pourrait être inférieur à 12 %, grâce au faible revenu imposable et aux crédits d'impôt pour revenu de pension et en raison de l'âge. Le Supplément de revenu garanti n'est pas imposable mais est récupéré à 50 ¢ par dollar de revenu au-delà du seuil.";
-        a.gis_insight = "Le Supplément de revenu garanti représente une part importante du revenu de retraite. Les retraits REER/FERR augmentent le revenu qui déclenche la récupération — le CÉLI, dont les retraits ne sont pas imposables, pourrait être privilégié pendant les années d'admissibilité au Supplément de revenu garanti.";
-        a.estateInsight = "La valeur successorale est modeste, avec un héritage net médian d'environ 15 000 $. L'impôt au décès serait limité en raison du faible solde REER résiduel.";
-      } else {
-        a.overall_assessment = "Robert receives an A grade (95%) with modest savings of $28,000 but strong government coverage. Combined benefits (QPP + OAS + GIS) could cover 83% of $24,000 in annual spending. The Guaranteed Income Supplement is a key asset \u2014 though RRSP/RRIF withdrawals trigger the 50\u00a2-per-dollar clawback.";
-        a.verdict = "Robert's plan receives an A grade (95%), indicating a stable trajectory thanks to the combination of high government income relative to contained spending needs. The $28,000 portfolio serves as a cushion rather than a primary source — Quebec Pension Plan, Old Age Security, and Guaranteed Income Supplement income could cover 83% of planned spending of $24,000 per year.";
-        a.profile_summary = "Robert's portfolio totals $28,000, with 64% in RRSP and 29% in TFSA. The targeted spending level of $2,000 per month is largely covered by government income — a profile where benefit stability outweighs portfolio performance.";
-        a.trajectory_insight = "The median simulation shows wealth growing slightly to age 65 (approximately $34,000), then declining slowly as the small monthly gap is filled by modest withdrawals. Wealth could remain above $10,000 through age 88 in the median scenario.";
-        a.income_insight = "Combined government income (QPP $550/mo + OAS $700/mo + estimated GIS of approximately $400/mo) could total $19,800 per year. The $4,200 annual gap would be filled by modest savings withdrawals of $350 per month.";
-        a.taxInsight = "The average effective rate in retirement could be below 12%, thanks to low taxable income and pension income/age tax credits. GIS is not taxable but is clawed back at 50¢ per dollar above the threshold.";
-        a.gis_insight = "The Guaranteed Income Supplement represents a significant portion of retirement income. RRSP/RRIF withdrawals increase income that triggers the clawback — TFSA, whose withdrawals are not taxable, could be prioritized during GIS-eligible years.";
-        a.estateInsight = "Estate value is modest, with a median net estate of approximately $15,000. Tax at death would be limited due to the low residual RRSP balance.";
-      }
-      break;
-
-    case 5: // Sophie, 50, CCPC
-      if (fr) {
-        a.overall_assessment = "Sophie obtient la note A- (87 %) avec un patrimoine personnel de 345 000 $ et 300 000 $ en b\u00e9n\u00e9fices non r\u00e9partis dans sa soci\u00e9t\u00e9 par actions. La retraite \u00e0 60 ans cr\u00e9e un pont de 5 ans que la corporation pourrait couvrir. L\u2019exon\u00e9ration cumulative de gains en capital de 1 250 000 $ est un levier majeur pour la vente d\u2019actions admissibles.";
-        a.verdict = "Le plan de Sophie reçoit la note A- (87 %), ce qui indique une trajectoire solide soutenue par un patrimoine personnel de 345 000 $ et un solde corporatif de 300 000 $ en bénéfices non répartis. La retraite à 60 ans crée un pont de 5 ans avant les revenus gouvernementaux, mais la corporation offre une flexibilité d'extraction pour couvrir cette période.";
-        a.profile_summary = "Sophie dispose d'un patrimoine personnel de 345 000 $ (REER 52 %, CÉLI 28 %, non-enregistré 20 %) complété par 300 000 $ de bénéfices non répartis dans sa société par actions. Le taux de cotisation actuel et les revenus d'entreprise pourraient porter le patrimoine total (personnel + corporatif) à environ 900 000 $ à la retraite.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine personnel d'environ 520 000 $ à 60 ans, sans compter le solde corporatif. La fourchette P25–P75 en fin d'horizon se situe entre 180 000 $ et 520 000 $, ce qui reflète la sensibilité aux rendements sur un horizon de 40 ans.";
-        a.income_insight = "Entre 60 et 65 ans, les retraits d'épargne et l'extraction corporative couvriraient la totalité des 60 000 $ de dépenses annuelles. À partir de 65 ans, le Régime de rentes du Québec (850 $/mois) et la Pension de la Sécurité de la vieillesse (700 $/mois) pourraient fournir 18 600 $ par année, réduisant l'écart à 41 400 $.";
-        a.taxInsight = "Le taux intégré (corporatif + personnel) se situe autour de 48 % pour les revenus d'entreprise actifs au Québec. La stratégie d'extraction combinant salaire et dividendes pourrait être coordonnée avec les retraits personnels pour maintenir le revenu imposable dans les tranches inférieures.";
-        a.corp_insight = "La société par actions détient 300 000 $ en bénéfices non répartis. L'exonération cumulative des gains en capital de 1 250 000 $ est disponible lors de la vente d'actions admissibles d'une société privée sous contrôle canadien active. La vente prévue à 65 ans pourrait libérer des liquidités importantes avec un traitement fiscal avantageux.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 220 000 $, incluant le solde corporatif résiduel. La planification successorale corporative (gel successoral, fiducie familiale) pourrait influencer la charge fiscale au décès.";
-      } else {
-        a.overall_assessment = "Sophie receives an A- grade (87%) with personal wealth of $345,000 and $300,000 in corporate retained earnings. Retiring at 60 creates a 5-year bridge that the corporation could cover. The $1,250,000 lifetime capital gains exemption is a major lever for qualifying share sales.";
-        a.verdict = "Sophie's plan receives an A- grade (87%), indicating a solid trajectory supported by personal wealth of $345,000 and a corporate balance of $300,000 in retained earnings. Retiring at 60 creates a 5-year bridge before government income, but the corporation offers extraction flexibility to cover this period.";
-        a.profile_summary = "Sophie holds personal wealth of $345,000 (RRSP 52%, TFSA 28%, non-registered 20%) complemented by $300,000 in retained earnings in her corporation. Current contribution rates and business income could bring total wealth (personal + corporate) to approximately $900,000 at retirement.";
-        a.trajectory_insight = "The median simulation projects personal wealth of approximately $520,000 at age 60, excluding the corporate balance. The P25–P75 range at end of horizon sits between $180,000 and $520,000, reflecting return sensitivity over a 40-year horizon.";
-        a.income_insight = "Between ages 60 and 65, savings withdrawals and corporate extraction would cover the full $60,000 in annual spending. Starting at 65, QPP ($850/mo) and OAS ($700/mo) could provide $18,600 per year, reducing the gap to $41,400.";
-        a.taxInsight = "The integrated rate (corporate + personal) sits around 48% for active business income in Quebec. The extraction strategy combining salary and dividends could be coordinated with personal withdrawals to keep taxable income in lower brackets.";
-        a.corp_insight = "The corporation holds $300,000 in retained earnings. The $1,250,000 lifetime capital gains exemption is available when selling qualifying shares of an active Canadian-controlled private corporation. The planned sale at age 65 could release significant liquidity with favorable tax treatment.";
-        a.estateInsight = "The median net estate value is estimated at approximately $220,000, including the residual corporate balance. Corporate estate planning (estate freeze, family trust) could influence the tax burden at death.";
-      }
-      break;
-
-    case 6: // David, 45, real estate
-      if (fr) {
-        a.overall_assessment = "David obtient la note B (76 %) avec 130 000 $ en \u00e9pargne financi\u00e8re et 260 000 $ d\u2019\u00e9quit\u00e9 immobili\u00e8re dans 2 propri\u00e9t\u00e9s locatives. La concentration immobili\u00e8re (67 % de la valeur nette) cr\u00e9e une vuln\u00e9rabilit\u00e9 de liquidit\u00e9. La vente pr\u00e9vue du 88 King Ave \u00e0 70 ans pourrait lib\u00e9rer environ 260 000 $ et prolonger la dur\u00e9e de vie du portefeuille.";
-        a.verdict = "Le plan de David reçoit la note B (76 %), ce qui indique une trajectoire viable mais avec une vulnérabilité liée à la concentration immobilière. Le patrimoine financier de 130 000 $ est complété par une équité immobilière de 260 000 $ dans deux propriétés locatives, mais 67 % de la valeur nette totale est illiquide.";
-        a.profile_summary = "David dispose de 130 000 $ en épargne financière (REER 50 %, CÉLI 31 %, non-enregistré 19 %) et de deux propriétés locatives avec une équité combinée de 260 000 $. La valeur nette totale est d'environ 390 000 $, dont 67 % est immobilisée dans l'immobilier.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine financier d'environ 340 000 $ à 65 ans, sans compter l'équité immobilière qui pourrait atteindre 520 000 $. La vente du 88 King Ave à 70 ans libérerait des liquidités qui prolongeraient la durée de vie du portefeuille.";
-        a.income_insight = "Les revenus locatifs nets combinés des deux propriétés sont d'environ 800 $ par mois après les paiements hypothécaires, les taxes et l'entretien. À la retraite, les revenus gouvernementaux (Régime de pensions du Canada + Pension de la Sécurité de la vieillesse) pourraient ajouter 17 760 $ par année.";
-        a.taxInsight = "Les revenus locatifs sont imposables au taux marginal, et les gains en capital lors de la vente des propriétés locatives seraient assujettis au taux d'inclusion. L'amortissement récupéré lors de la vente pourrait créer une charge fiscale ponctuelle importante.";
-        a.real_estate_insight = "Les deux propriétés génèrent un flux de trésorerie net combiné d'environ 800 $ par mois. L'hypothèque du 123 Queen St (320 000 $ à 5,5 %) coûte plus cher en intérêts que le rendement locatif net, ce qui crée un flux de trésorerie négatif sur cette propriété prise isolément. La vente prévue du 88 King Ave à 70 ans pourrait libérer environ 260 000 $ d'équité nette.";
-        a.estateInsight = "La valeur successorale totale inclut l'équité immobilière résiduelle et le portefeuille financier. L'impôt sur les gains en capital des propriétés locatives et la disposition réputée du REER pourraient réduire la valeur nette transférable.";
-      } else {
-        a.overall_assessment = "David receives a B grade (76%) with $130,000 in financial savings and $260,000 in real estate equity across 2 rental properties. Real estate concentration (67% of net worth) creates liquidity vulnerability. The planned sale of 88 King Ave at age 70 could free approximately $260,000 and extend portfolio longevity.";
-        a.verdict = "David's plan receives a B grade (76%), indicating a viable trajectory but with vulnerability tied to real estate concentration. Financial wealth of $130,000 is complemented by $260,000 in real estate equity across two rental properties, but 67% of total net worth is illiquid.";
-        a.profile_summary = "David holds $130,000 in financial savings (RRSP 50%, TFSA 31%, non-registered 19%) and two rental properties with combined equity of $260,000. Total net worth is approximately $390,000, of which 67% is locked in real estate.";
-        a.trajectory_insight = "The median simulation projects financial wealth of approximately $340,000 at age 65, excluding real estate equity which could reach $520,000. The sale of 88 King Ave at age 70 would free liquidity to extend portfolio longevity.";
-        a.income_insight = "Combined net rental income from both properties is approximately $800 per month after mortgage payments, taxes, and maintenance. At retirement, government income (CPP + OAS) could add $17,760 per year.";
-        a.taxInsight = "Rental income is taxable at the marginal rate, and capital gains on rental property sales would be subject to the inclusion rate. Recaptured depreciation at sale could create a significant one-time tax charge.";
-        a.real_estate_insight = "Both properties generate combined net cash flow of approximately $800 per month. The 123 Queen St mortgage ($320,000 at 5.5%) costs more in interest than the net rental yield, creating negative cash flow on that property alone. The planned sale of 88 King Ave at age 70 could free approximately $260,000 in net equity.";
-        a.estateInsight = "Total estate value includes residual real estate equity and the financial portfolio. Capital gains tax on rental properties and deemed RRSP disposition could reduce the net transferable value.";
-      }
-      break;
-
-    case 7: // François & Isabelle, HNW couple, expert
-      if (fr) {
-        a.overall_assessment = "Le m\u00e9nage Dubois obtient la note A+ (97 %) avec un patrimoine combin\u00e9 de 1,94 M$ et une pension \u00e0 prestations d\u00e9termin\u00e9es de 2 500 $/mois. Les revenus gouvernementaux et la pension pourraient couvrir 96 % des 96 000 $ de d\u00e9penses. La strat\u00e9gie de meltdown REER \u00e0 55 000 $/an vise un alpha fiscal de 180 000 $. Les frais de gestion REER de 1,2 % repr\u00e9sentent le co\u00fbt le plus \u00e9lev\u00e9.";
-        a.verdict = "Le plan Dubois reçoit la note A+ (97 %), ce qui signifie que le patrimoine demeure positif dans la quasi-totalité des 5 000 scénarios testés. Ce résultat reflète la capacité de survie du plan dans l'éventail de conditions simulées — il ne constitue pas une garantie. Avec un patrimoine combiné de 1,94 M$ (incluant le CRI et les comptes du conjoint), la question pertinente n'est pas si l'argent durera, mais plutôt comment chaque dollar pourrait travailler plus efficacement.";
-        a.page_zero_verdict = "François et Isabelle disposent d'un patrimoine combiné de 1,94 M$, soutenu par une pension à prestations déterminées de 2 500 $ par mois. Le taux de succès de 97 % indique une marge confortable. La stratégie de meltdown REER à 55 000 $ par année vise à réduire la masse imposable avant la conversion FERR obligatoire à 72 ans. Le fractionnement de revenus de pension à 50 % entre les conjoints pourrait réduire l'impôt combiné.";
-        a.profile_summary = "Le ménage Dubois détient un portefeuille diversifié : REER 820 000 $, CÉLI 240 000 $, non-enregistré 450 000 $, CRI 150 000 $, plus les comptes d'Isabelle totalisant 285 000 $. La pension à prestations déterminées de 2 500 $ par mois et les frais de gestion bas (1,2 % REER, 0,4 % CÉLI) contribuent à la robustesse du plan.";
-        a.trajectory_insight = "La simulation médiane montre le patrimoine passant de 1,94 M$ à environ 2,1 M$ à la retraite (60 ans), puis déclinant vers 820 000 $ à 92 ans. La fourchette P25–P75 en fin d'horizon se situe entre 450 000 $ et 1,3 M$, une dispersion qui reflète 37 ans de projection.";
-        a.income_insight = "La pension à prestations déterminées (30 000 $ par année) combinée aux revenus gouvernementaux des deux conjoints (environ 62 400 $ par année à partir de 65 ans) pourrait couvrir 96 % des dépenses de 96 000 $. L'écart résiduel de 3 600 $ par année est négligeable par rapport au patrimoine.";
-        a.taxInsight = "L'alpha fiscal généré par la stratégie de décaissement pourrait totaliser environ 180 000 $ sur l'horizon de projection. Le meltdown REER à 55 000 $ par année entre 60 et 72 ans vise à réduire le solde REER avant la conversion FERR, diminuant les retraits minimums obligatoires et la récupération potentielle de la Pension de la Sécurité de la vieillesse.";
-        a.meltdown_insight = "Le meltdown REER vise à extraire les fonds à un taux marginal inférieur pendant les années 60-72, plutôt que de subir des retraits FERR obligatoires à un taux potentiellement plus élevé après 72 ans. Avec un REER initial de 820 000 $ et une cible de 55 000 $ par année pendant 12 ans, le solde REER pourrait être réduit d'environ 60 % avant la conversion.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 575 000 $, après un impôt au décès d'environ 205 000 $. Le roulement au conjoint survivant pourrait différer la totalité de cet impôt au deuxième décès.";
-        a.best_move_explainer = "Les frais de gestion du REER (1,2 %) représentent le coût le plus élevé du portefeuille — une réduction vers 0,5 % pourrait libérer environ 85 000 $ supplémentaires sur l'horizon de projection. La coordination entre le meltdown REER et le fractionnement de pension vise à maintenir les deux conjoints dans des tranches d'imposition similaires, ce qui pourrait réduire l'impôt combiné de 3 000 $ à 5 000 $ par année pendant les premières années de retraite.";
-        a.strengths = ["Pension DB indexée couvrant 31 % des dépenses sans risque de marché", "Diversification entre 6 comptes réduisant le risque de concentration fiscale", "Marge de sécurité : patrimoine 20× supérieur à l'écart annuel à combler"];
-        a.vulnerabilities = ["Concentration REER (42 %) exposant aux retraits FERR obligatoires croissants", "Écart de 3 ans entre les retraites des conjoints créant une période de transition asymétrique", "Frais de gestion REER de 1,2 % érodant environ 9 800 $ par année sur le solde actuel"];
-        a.riskInsight = "La fourchette P25\u2013P75 en fin d\u2019horizon se situe entre 450 000 $ et 1,3 M$, soit une dispersion de 850 000 $ qui refl\u00e8te l\u2019incertitude sur 37 ans. Le facteur le plus sensible est le rendement des march\u00e9s, suivi des d\u00e9penses. La durabilit\u00e9 de l\u2019\u00e9pargne n\u2019est jamais menac\u00e9e, m\u00eame dans le P5.";
-        a.couple_insight = "L\u2019\u00e9cart de 3 ans entre les retraites cr\u00e9e une p\u00e9riode de transition asym\u00e9trique o\u00f9 Fran\u00e7ois est retrait\u00e9 mais Isabelle contribue encore. Le fractionnement de pension \u00e0 50 % vise \u00e0 \u00e9galiser les revenus imposables des deux conjoints.";
-      } else {
-        a.overall_assessment = "The Dubois household receives an A+ grade (97%) with combined wealth of $1.94M and a defined benefit pension of $2,500/mo. Government income plus the pension could cover 96% of $96,000 in spending. The RRSP meltdown strategy at $55,000/yr targets a tax alpha of $180,000. RRSP management fees of 1.2% represent the highest cost.";
-        a.verdict = "The Dubois plan receives an A+ grade (97%), meaning wealth remains positive in virtually all 5,000 tested scenarios. This result reflects the plan's survival capacity across the simulated range of conditions — it is not a guarantee. With combined wealth of $1.94M (including LIRA and spouse accounts), the relevant question is not whether the money will last, but rather how each dollar could work more efficiently.";
-        a.page_zero_verdict = "François and Isabelle hold combined wealth of $1.94M, supported by a defined benefit pension of $2,500 per month. The 97% success rate indicates a comfortable margin. The RRSP meltdown strategy at $55,000 per year aims to reduce the taxable mass before mandatory RRIF conversion at age 72. Pension income splitting at 50% between spouses could reduce combined tax.";
-        a.profile_summary = "The Dubois household holds a diversified portfolio: RRSP $820,000, TFSA $240,000, non-registered $450,000, LIRA $150,000, plus Isabelle's accounts totaling $285,000. The defined benefit pension of $2,500/mo and low fees (1.2% RRSP, 0.4% TFSA) contribute to plan robustness.";
-        a.trajectory_insight = "The median simulation shows wealth growing from $1.94M to approximately $2.1M at retirement (age 60), then declining toward $820,000 at age 92. The P25–P75 range at end of horizon sits between $450,000 and $1.3M, a spread reflecting 37 years of projection.";
-        a.income_insight = "The defined benefit pension ($30,000/yr) combined with both spouses' government income (approximately $62,400/yr starting at 65) could cover 96% of $96,000 in spending. The residual gap of $3,600 per year is negligible relative to the wealth base.";
-        a.taxInsight = "The tax alpha generated by the withdrawal strategy could total approximately $180,000 over the projection horizon. The RRSP meltdown at $55,000/yr between ages 60 and 72 aims to reduce the RRSP balance before RRIF conversion, lowering mandatory minimum withdrawals and potential OAS recovery tax.";
-        a.meltdown_insight = "The RRSP meltdown aims to extract funds at a lower marginal rate during ages 60-72, rather than facing mandatory RRIF withdrawals at a potentially higher rate after 72. With an initial RRSP of $820,000 and a target of $55,000/yr over 12 years, the RRSP balance could be reduced by approximately 60% before conversion.";
-        a.estateInsight = "The median net estate value is estimated at approximately $575,000, after tax at death of about $205,000. Spousal rollover could defer the entirety of this tax to the second death.";
-        a.best_move_explainer = "RRSP management fees (1.2%) represent the portfolio's highest cost — a reduction toward 0.5% could free approximately $85,000 over the projection horizon. Coordinating the RRSP meltdown with pension splitting aims to keep both spouses in similar tax brackets, which could reduce combined tax by $3,000 to $5,000 per year during the early retirement years.";
-        a.strengths = ["Indexed DB pension covering 31% of spending without market risk", "Diversification across 6 accounts reducing fiscal concentration risk", "Safety margin: wealth 20× greater than the annual gap to fill"];
-        a.vulnerabilities = ["RRSP concentration (42%) exposing to rising mandatory RRIF withdrawals", "3-year gap between spouse retirements creating an asymmetric transition period", "RRSP management fees of 1.2% eroding approximately $9,800 per year on current balance"];
-        a.riskInsight = "The P25\u2013P75 range at end of horizon sits between $450,000 and $1.3M, a spread of $850,000 reflecting uncertainty over 37 years. The most sensitive factor is market returns, followed by spending. Savings durability is never threatened, even at the P5 level.";
-        a.couple_insight = "The 3-year gap between retirements creates an asymmetric transition period where Fran\u00e7ois is retired but Isabelle is still contributing. Pension splitting at 50% aims to equalize taxable income between both spouses.";
-      }
-      break;
-
-    case 8: // Karim, 28, debt
-      if (fr) {
-        a.overall_assessment = "Karim obtient la note C (68 %) avec un patrimoine de 15 000 $ et des dettes de 53 200 $, soit un ratio dette/\u00e9pargne de 355 %. La carte de cr\u00e9dit \u00e0 19,9 % co\u00fbte 1 631 $ par ann\u00e9e en int\u00e9r\u00eats \u2014 un rendement n\u00e9gatif qui d\u00e9passe le rendement attendu du portefeuille. Avec 39 ans avant la retraite, le temps est le levier principal.";
-        a.verdict = "Le plan de Karim reçoit la note C (68 %), ce qui indique que l'épargne pourrait ne pas durer jusqu'à l'horizon dans environ un tiers des scénarios simulés. Le patrimoine de 15 000 $ est nettement inférieur aux dettes actives de 53 200 $, créant un ratio dette/épargne de 355 %. Avec 39 ans avant la retraite, le temps constitue un levier important.";
-        a.profile_summary = "Karim dispose de 15 000 $ en épargne (REER 53 %, CÉLI 33 %, non-enregistré 14 %) et porte 53 200 $ de dettes (prêt étudiant 45 000 $ à 4,5 % et carte de crédit 8 200 $ à 19,9 %). Les paiements de dette de 700 $ par mois représentent 15 % du salaire brut de 55 000 $.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine d'environ 680 000 $ à 67 ans, en supposant le maintien des cotisations actuelles de 5 500 $ par année. La fourchette P25–P75 en fin d'horizon se situe entre 320 000 $ et 1,1 M$, une dispersion importante qui reflète 62 ans de projection.";
-        a.income_insight = "Les revenus gouvernementaux combinés (Régime de pensions du Canada + Pension de la Sécurité de la vieillesse) pourraient totaliser environ 16 800 $ par année à partir de 65 ans. Les dépenses prévues de 33 600 $ nécessiteraient des retraits d'épargne de 16 800 $ par année, soit un taux de retrait initial d'environ 2,5 %.";
-        a.taxInsight = "Le taux effectif moyen en retraite se situerait autour de 16 %. Le solde REER projeté relativement élevé (65 % du portefeuille en fin de période) pourrait générer des retraits FERR obligatoires croissants après 72 ans.";
-        a.debt_insight = "La carte de crédit à 19,9 % coûte 1 631 $ en intérêts par année sur le solde de 8 200 $, ce qui équivaut à un rendement négatif qui dépasse de loin le rendement attendu du portefeuille. Le prêt étudiant à 4,5 % génère un coût d'intérêt de 2 025 $ par année. Les deux dettes combinées coûtent 3 656 $ en intérêts annuels — soit plus que les cotisations d'épargne actuelles de 5 500 $.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 475 000 $, reflétant les 39 années de croissance composée. L'impôt au décès sur le REER résiduel pourrait représenter environ 25 % de la valeur des comptes enregistrés.";
-      } else {
-        a.overall_assessment = "Karim receives a C grade (68%) with $15,000 in savings and $53,200 in debt, a debt-to-savings ratio of 355%. The 19.9% credit card costs $1,631 in annual interest \u2014 a negative return exceeding the portfolio's expected return. With 39 years until retirement, time is the primary lever.";
-        a.verdict = "Karim's plan receives a C grade (68%), indicating savings may not last to the horizon in approximately one-third of simulated scenarios. Current wealth of $15,000 is far below active debts of $53,200, creating a debt-to-savings ratio of 355%. With 39 years until retirement, time is a significant lever.";
-        a.profile_summary = "Karim holds $15,000 in savings (RRSP 53%, TFSA 33%, non-registered 14%) and carries $53,200 in debt (student loan $45,000 at 4.5% and credit card $8,200 at 19.9%). Debt payments of $700/mo represent 15% of the $55,000 gross salary.";
-        a.trajectory_insight = "The median simulation projects wealth of approximately $680,000 at age 67, assuming current contributions of $5,500 per year are maintained. The P25–P75 range at end of horizon sits between $320,000 and $1.1M, a wide spread reflecting 62 years of projection.";
-        a.income_insight = "Combined government income (CPP + OAS) could total approximately $16,800 per year starting at age 65. Planned spending of $33,600 would require savings withdrawals of $16,800 per year, or an initial withdrawal rate of approximately 2.5%.";
-        a.taxInsight = "The average effective rate in retirement would sit around 16%. The projected relatively high RRSP balance (65% of portfolio at end of period) could generate increasing mandatory RRIF withdrawals after age 72.";
-        a.debt_insight = "The credit card at 19.9% costs $1,631 in annual interest on the $8,200 balance, equivalent to a negative return that far exceeds the portfolio's expected return. The student loan at 4.5% generates $2,025 in annual interest cost. Both debts combined cost $3,656 in annual interest — more than the current savings contributions of $5,500.";
-        a.estateInsight = "The median net estate value is estimated at approximately $475,000, reflecting 39 years of compound growth. Tax at death on the residual RRSP could represent approximately 25% of registered account value.";
-      }
-      break;
-
-    case 9: // Li Wei, 40, RSU tech
-      if (fr) {
-        a.overall_assessment = "Li Wei obtient la note A- (85 %) avec un patrimoine de 290 000 $ et des octrois RSU d\u2019une valeur brute de 195 750 $. La retraite \u00e0 55 ans cr\u00e9e un pont de 10 ans avant la PSV. L\u2019imp\u00f4t \u00e0 l\u2019acquisition des RSU (taux d\u2019inclusion de 50 %) est d\u2019environ 47 000 $ \u2014 l\u2019\u00e9talement de l\u2019exercice sur 4 ans pourrait r\u00e9duire le taux marginal effectif.";
-        a.verdict = "Le plan de Li Wei reçoit la note A- (85 %), ce qui indique une trajectoire solide soutenue par un patrimoine de 290 000 $ et des octrois RSU d'une valeur de 195 750 $. La retraite à 55 ans crée un pont de 5 ans avant le Régime de pensions du Canada et de 10 ans avant la Pension de la Sécurité de la vieillesse, une période pendant laquelle le portefeuille devrait couvrir la totalité des 60 000 $ de dépenses annuelles.";
-        a.profile_summary = "Li Wei dispose de 290 000 $ en épargne financière (REER 41 %, CÉLI 26 %, non-enregistré 33 %) complétés par deux octrois RSU totalisant 195 750 $ en valeur brute. Les frais de gestion très bas (0,4 % en moyenne) et l'allocation orientée croissance (80 % actions en REER) reflètent un profil de technologie.";
-        a.trajectory_insight = "La simulation médiane projette un patrimoine d'environ 850 000 $ à 55 ans (incluant la valeur nette des RSU après impôt). La fourchette P25–P75 en fin d'horizon se situe entre 280 000 $ et 750 000 $, une dispersion qui reflète 52 ans de projection et la volatilité inhérente aux actions.";
-        a.income_insight = "Entre 55 et 60 ans, aucun revenu gouvernemental n'est disponible — les retraits annuels de 60 000 $ proviendraient du portefeuille. Le Régime de pensions du Canada à 60 ans pourrait ajouter 6 960 $ par année, puis la Pension de la Sécurité de la vieillesse ajouterait 8 400 $ à 65 ans.";
-        a.taxInsight = "Le taux effectif en retraite pourrait se situer autour de 20 %. La réalisation des RSU crée un avantage imposable au taux marginal de 48 %, partiellement compensé par la déduction pour options d'achat de 50 % sur les actions de sociétés publiques admissibles.";
-        a.rsu_insight = "Les deux octrois RSU totalisent 850 unités d'une valeur brute de 195 750 $. L'impôt estimé à l'acquisition (taux d'inclusion de 50 %) est d'environ 47 000 $, laissant une valeur nette après impôt d'environ 149 000 $. L'étalement de l'exercice sur 4 ans pourrait réduire le taux marginal effectif en évitant l'accumulation dans une seule année fiscale.";
-        a.estateInsight = "La valeur successorale nette médiane est estimée à environ 310 000 $. L'impôt au décès dépendrait du ratio REER/CÉLI/non-enregistré à ce moment — le CÉLI étant exonéré de disposition réputée.";
-      } else {
-        a.overall_assessment = "Li Wei receives an A- grade (85%) with $290,000 in savings and RSU grants worth $195,750 gross. Retiring at 55 creates a 10-year bridge before OAS. RSU vesting tax (50% inclusion rate) is approximately $47,000 \u2014 spreading the exercise over 4 years could reduce the effective marginal rate.";
-        a.verdict = "Li Wei's plan receives an A- grade (85%), indicating a solid trajectory supported by $290,000 in savings and RSU grants worth $195,750. Retiring at 55 creates a 5-year bridge before CPP and a 10-year bridge before OAS, a period during which the portfolio would need to cover the full $60,000 in annual spending.";
-        a.profile_summary = "Li Wei holds $290,000 in financial savings (RRSP 41%, TFSA 26%, non-registered 33%) complemented by two RSU grants totaling $195,750 in gross value. Very low management fees (0.4% average) and a growth-oriented allocation (80% equities in RRSP) reflect a tech-sector profile.";
-        a.trajectory_insight = "The median simulation projects wealth of approximately $850,000 at age 55 (including net RSU value after tax). The P25–P75 range at end of horizon sits between $280,000 and $750,000, reflecting 52 years of projection and inherent equity volatility.";
-        a.income_insight = "Between ages 55 and 60, no government income is available — annual withdrawals of $60,000 would come from the portfolio. CPP at age 60 could add $6,960 per year, then OAS would add $8,400 at age 65.";
-        a.taxInsight = "The effective rate in retirement could sit around 20%. RSU vesting creates an employment benefit taxable at the 48% marginal rate, partially offset by the 50% stock option deduction for qualifying public company shares.";
-        a.rsu_insight = "The two RSU grants total 850 units with a gross value of $195,750. Estimated tax at vesting (50% inclusion rate) is approximately $47,000, leaving an after-tax value of about $149,000. Spreading the exercise over 4 years could reduce the effective marginal rate by avoiding accumulation in a single tax year.";
-        a.estateInsight = "The median net estate value is estimated at approximately $310,000. Tax at death would depend on the RRSP/TFSA/non-registered ratio at that time — TFSA being exempt from deemed disposition.";
-      }
-      break;
+  function fm(v) {
+    if (window.BFmt && typeof window.BFmt.fmtMoney === 'function') return window.BFmt.fmtMoney(v, true);
+    return String(Math.round(v || 0)) + ' $';
   }
+
+  var a = {};
+  a.overall_assessment = name + ', votre plan affiche un taux de succes de <strong>' + succPct + ' %</strong> sur 5 000 simulations. Le patrimoine median projete est de <strong>' + fm(p50) + '</strong>. Cette projection reste conditionnelle aux hypotheses de marche, d inflation et de longevite.';
+  a.verdict = 'Le scenario median reste positif, avec un resultat prudent (P25) de <strong>' + fm(p25) + '</strong>. La trajectoire suggere un plan globalement viable si les parametres actuels sont maintenus.';
+  a.page_zero_verdict = 'Point cle: garder la discipline sur les contributions, les depenses et les frais peut ameliorer la robustesse du plan dans les scenarios defavorables.';
+  a.profile_summary = 'Le plan combine les comptes enregistres et non enregistres avec un horizon de long terme. Le suivi periodique des hypotheses et des objectifs reste essentiel pour conserver la coherence du plan.';
+  a.trajectory_insight = 'La projection mediane se termine a <strong>' + fm(p50) + '</strong>, et le scenario prudent a <strong>' + fm(p25) + '</strong>. L ecart entre ces trajectoires represente le risque de sequence de rendements.';
+  a.income_insight = 'Les revenus gouvernementaux representeraient environ <strong>' + fm(govAnnual) + '</strong> par an. Pour une depense cible de <strong>' + fm(spendAnnual) + '</strong>, le besoin de retrait d epargne serait d environ <strong>' + fm(gapAnnual) + '</strong> par an.';
+  a.taxInsight = 'La fiscalite dependra surtout de la structure des retraits entre REER/FERR, CELI et non enregistre. Un pilotage annuel peut limiter la pression fiscale et la recuperation des prestations.';
+  a.estateInsight = 'L heritage net median projete est de <strong>' + fm(estateNet) + '</strong>, apres un impot au deces estime a <strong>' + fm(estateTax) + '</strong>. Cette estimation peut varier selon les rendements et le moment du deces.';
+
+  if (p.gis) a.gis_insight = 'Le SRG pourrait jouer un role important dans le revenu de retraite. Le niveau de retraits imposables influence directement l admissibilite et le montant recu.';
+  if (p.melt) a.meltdown_insight = 'La strategie de meltdown vise a sortir une partie du REER plus tot pour reduire la pression fiscale future au moment des retraits minimums FERR.';
+  if (p.props && p.props.length) a.real_estate_insight = 'Le portefeuille immobilier ajoute une equite estimee a <strong>' + fm(reEquity) + '</strong>. Les flux locatifs, frais d exploitation et decisions de vente restent des variables critiques.';
+  if (p.rsuGrants && p.rsuGrants.length) a.rsu_insight = 'La valeur brute des RSU est estimee a <strong>' + fm(rsuValue) + '</strong>. Le calendrier d acquisition et le traitement fiscal peuvent modifier significativement la valeur nette.';
+  if (p.bizOn) a.corp_insight = 'La composante societaire ajoute un levier de planification sur le timing d extraction et la repartition revenu/salaire/dividende.';
+  if (p.debts && p.debts.length) a.debt_insight = 'Le total des dettes en cours est d environ <strong>' + fm(totalDebt) + '</strong>. La reduction des dettes a taux eleve pourrait ameliorer la resilience globale du plan.';
+  if (prof && prof.mode === 'expert') {
+    a.riskInsight = 'Le risque principal reste la sequence de rendements au debut du decaissement. Les sensibilites de depenses, inflation et rendement doivent etre suivies ensemble.';
+    a.risk_plain_language = 'En clair: si les premieres annees de marche sont faibles, il faudra possiblement ajuster le rythme de retraits pour proteger le plan.';
+  }
+
   return a;
 }
 
-// ═══ 5. GENERATE 20 REPORTS ═══
+function aiTextEN(idx, prof, mc) {
+  var p = (prof && prof.params) || {};
+  var name = ((prof && prof.client && (prof.client.firstName || prof.client.name)) || 'Client').split(' ')[0];
+  var succ = (prof && typeof prof.succ === 'number') ? prof.succ : (mc && mc.succ) || 0;
+  var succPct = Math.round(succ * 100);
+
+  var p50 = Math.round((mc && (mc.rMedF || mc.medF || 0)) || 0);
+  var p25 = Math.round((mc && (mc.rP25F || mc.p25F || 0)) || 0);
+  var estateNet = Math.round((mc && (mc.medEstateNet || 0)) || 0);
+  var estateTax = Math.round((mc && (mc.medEstateTax || 0)) || 0);
+
+  var govAnnual = Math.round((((p.qppM || 0) + (p.oasM || 0) + (p.penM || 0)) * 12) + (p.gis ? 4800 : 0));
+  var spendAnnual = Math.round((p.retSpM || 0) * 12);
+  var gapAnnual = Math.max(0, spendAnnual - govAnnual);
+
+  var totalDebt = ((p.debts || []).reduce(function(s, d) { return s + (d.balance || d.bal || 0); }, 0));
+  var rsuValue = ((p.rsuGrants || []).reduce(function(s, g) { return s + ((g.totalShares || 0) * (g.sharePrice || 0)); }, 0));
+  var reEquity = ((p.props || []).filter(function(pr){ return pr && pr.on; }).reduce(function(s, pr){ return s + ((pr.val || 0) - (pr.mb || 0)); }, 0));
+
+  function fm(v) {
+    if (window.BFmt && typeof window.BFmt.fmtMoney === 'function') return window.BFmt.fmtMoney(v, true);
+    return String(Math.round(v || 0)) + ' $';
+  }
+
+  var a = {};
+  a.overall_assessment = name + ', your plan shows a success rate of <strong>' + succPct + '%</strong> across 5,000 simulations. Median projected wealth is <strong>' + fm(p50) + '</strong>. Results remain conditional on market, inflation, and longevity assumptions.';
+  a.verdict = 'The median path remains positive, with a prudent (P25) outcome of <strong>' + fm(p25) + '</strong>. The trajectory suggests the plan is viable if current assumptions are maintained.';
+  a.page_zero_verdict = 'Key point: keeping contribution discipline, spending control, and fee efficiency can materially improve resilience in weaker scenarios.';
+  a.profile_summary = 'The plan combines registered and non-registered accounts over a long horizon. Periodic review of assumptions and goals remains essential to keep the plan aligned.';
+  a.trajectory_insight = 'The median projection ends at <strong>' + fm(p50) + '</strong>, and the prudent scenario at <strong>' + fm(p25) + '</strong>. The spread reflects sequence-of-returns risk.';
+  a.income_insight = 'Government income is estimated around <strong>' + fm(govAnnual) + '</strong> per year. For a target spending level of <strong>' + fm(spendAnnual) + '</strong>, required annual portfolio withdrawals would be about <strong>' + fm(gapAnnual) + '</strong>.';
+  a.taxInsight = 'Tax outcomes depend mainly on withdrawal mix across RRSP/RRIF, TFSA, and non-registered accounts. Annual optimization can reduce tax drag and benefit clawback risk.';
+  a.estateInsight = 'Median projected net estate is <strong>' + fm(estateNet) + '</strong>, after estimated tax at death of <strong>' + fm(estateTax) + '</strong>. This estimate can vary with returns and time of death.';
+
+  if (p.gis) a.gis_insight = 'GIS may play a meaningful role in retirement income. Taxable withdrawal levels directly affect eligibility and payment amounts.';
+  if (p.melt) a.meltdown_insight = 'A meltdown strategy can bring RRSP withdrawals forward to reduce later-life tax pressure from mandatory RRIF withdrawals.';
+  if (p.props && p.props.length) a.real_estate_insight = 'The real-estate sleeve adds estimated equity of <strong>' + fm(reEquity) + '</strong>. Rental cash flow, expense control, and sale timing remain key drivers.';
+  if (p.rsuGrants && p.rsuGrants.length) a.rsu_insight = 'Gross RSU value is estimated at <strong>' + fm(rsuValue) + '</strong>. Vesting schedule and tax treatment can materially change net value.';
+  if (p.bizOn) a.corp_insight = 'The corporate component adds planning leverage on extraction timing and salary/dividend mix.';
+  if (p.debts && p.debts.length) a.debt_insight = 'Total outstanding debt is about <strong>' + fm(totalDebt) + '</strong>. Prioritizing high-rate debt reduction can improve overall plan resilience.';
+  if (prof && prof.mode === 'expert') {
+    a.riskInsight = 'Primary risk remains return sequence early in decumulation. Spending, inflation, and return sensitivities should be monitored together.';
+    a.risk_plain_language = 'Plain language: weak early market years may require temporary withdrawal adjustments to protect long-term sustainability.';
+  }
+
+  return a;
+}
+
+function aiText(idx, prof, mc, lang) {
+  return lang === 'en' ? aiTextEN(idx, prof, mc) : aiTextFR(idx, prof, mc);
+}
+
+function clampPref(v, allowed, fallback) {
+  return allowed.indexOf(v) >= 0 ? v : fallback;
+}
+
+function detailSentenceLimit(detailPref) {
+  if (detailPref === 'concise') return 2;
+  if (detailPref === 'detailed') return 4;
+  return 3;
+}
+
+function joinSentences(parts, detailPref) {
+  var lim = detailSentenceLimit(detailPref);
+  return (parts || []).filter(Boolean).slice(0, lim).join(' ');
+}
+
+function b(v) {
+  return '**' + String(v == null ? '' : v) + '**';
+}
+
+function localNoData(lang) {
+  return lang === 'fr' ? 'Donnees insuffisantes pour analyse.' : 'Data insufficient for analysis.';
+}
+
+function buildLocalPromptSubstitute(promptObj, payload) {
+  var data = BAiPrompt.extractData(payload);
+  var lang = data.lang === 'en' ? 'en' : 'fr';
+  var prefs = data.narrativePreferences || {};
+  var finLiteracy = clampPref(prefs.finLiteracy, ['beginner', 'intermediate', 'advanced'], 'intermediate');
+  var stressLevel = clampPref(prefs.stressLevel, ['low', 'moderate', 'high'], 'moderate');
+  var detailPref = clampPref(prefs.detailPreference, ['concise', 'balanced', 'detailed'], 'balanced');
+  var lead = lang === 'fr'
+    ? (stressLevel === 'high' ? 'Le plan semble sensible, mais les chiffres donnent un cadre concret.' : stressLevel === 'low' ? 'Lecture directe des chiffres:' : 'Les chiffres donnent une lecture equilibree du plan.')
+    : (stressLevel === 'high' ? 'The plan appears sensitive, but the numbers provide a clear frame.' : stressLevel === 'low' ? 'Straight reading of the numbers:' : 'The numbers provide a balanced read of the plan.');
+  var literacyLine = lang === 'fr'
+    ? (finLiteracy === 'beginner' ? 'Interpretation en langage simple, sans jargon inutile.' : finLiteracy === 'advanced' ? 'Lecture technique: sequence risk, efficience fiscale et sensibilites.' : 'Interpretation avec niveau technique intermediaire.')
+    : (finLiteracy === 'beginner' ? 'Plain-language interpretation with limited jargon.' : finLiteracy === 'advanced' ? 'Technical read: sequence risk, tax efficiency, and sensitivities.' : 'Moderate technical depth for interpretation.');
+  var out = {};
+
+  function slotText(key) {
+    if (key === 'overall_assessment') {
+      return joinSentences([
+        lead,
+        (lang === 'fr'
+          ? 'Le taux de succes projete est de ' + b(data.successRate) + ' avec un patrimoine median final de ' + b(data.p50Wealth) + '.'
+          : 'Projected success rate is ' + b(data.successRate) + ' with median final wealth at ' + b(data.p50Wealth) + '.'),
+        (lang === 'fr'
+          ? 'Le scenario prudent (P25) ressort a ' + b(data.p25Wealth) + ', ce qui illustre l ampleur du risque de sequence.'
+          : 'The prudent outcome (P25) is ' + b(data.p25Wealth) + ', which reflects sequence-of-returns risk.'),
+        literacyLine
+      ], detailPref);
+    }
+    if (key === 'verdict') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le diagnostic global indique une note ' + b(data.grade) + ' (' + data.gradeLabel + ').'
+          : 'Overall diagnostic indicates grade ' + b(data.grade) + ' (' + data.gradeLabel + ').'),
+        (lang === 'fr'
+          ? 'Le plan pourrait rester robuste si l execution conserve la discipline d epargne et de depenses.'
+          : 'The plan could remain resilient if savings and spending discipline is maintained.'),
+        (lang === 'fr'
+          ? 'Le point de vigilance principal reste l ecart entre median et prudent.'
+          : 'Main watchpoint remains the spread between median and prudent paths.')
+      ], detailPref);
+    }
+    if (key === 'page_zero_verdict') {
+      return lang === 'fr'
+        ? 'Le plan semble aligner vos objectifs et votre horizon, sous reserve des hypotheses de marche.'
+        : 'The plan appears aligned with your goals and time horizon, conditional on market assumptions.';
+    }
+    if (key === 'profile_summary') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le capital total estime est de ' + b(data.totalSavings) + ', reparti entre REER ' + b(data.rrsp) + ', CELI ' + b(data.tfsa) + ' et non enregistre ' + b(data.nr) + '.'
+          : 'Estimated total savings are ' + b(data.totalSavings) + ', split across RRSP ' + b(data.rrsp) + ', TFSA ' + b(data.tfsa) + ', and non-registered ' + b(data.nr) + '.'),
+        (lang === 'fr'
+          ? 'Cette diversification pourrait limiter la concentration de risque fiscal et de liquidite.'
+          : 'This diversification could reduce concentration risk across tax and liquidity buckets.'),
+        literacyLine
+      ], detailPref);
+    }
+    if (key === 'trajectory_insight') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La trajectoire mediane pointe vers ' + b(data.p50Wealth) + ' contre ' + b(data.p25Wealth) + ' en scenario prudent.'
+          : 'The median trajectory points to ' + b(data.p50Wealth) + ' versus ' + b(data.p25Wealth) + ' in the prudent case.'),
+        (lang === 'fr'
+          ? 'Le spread P25-P75 montre la sensibilite aux rendements et a l inflation.'
+          : 'The P25-P75 spread shows sensitivity to returns and inflation.'),
+        (lang === 'fr'
+          ? 'La durabilite de l epargne est estimee: ' + b(data.savingsDurability) + '.'
+          : 'Estimated savings durability is ' + b(data.savingsDurability) + '.')
+      ], detailPref);
+    }
+    if (key === 'income_insight') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La couverture par revenus gouvernementaux est d environ ' + b(data.govCoverageRatio) + ' avec un ecart mensuel de ' + b(data.monthlyGap) + '.'
+          : 'Government-income coverage is about ' + b(data.govCoverageRatio) + ', with a monthly gap of ' + b(data.monthlyGap) + '.'),
+        (lang === 'fr'
+          ? 'Depense cible: ' + b(data.monthlySpending) + ' par mois; revenus publics: ' + b(data.totalGovMonthly) + '.'
+          : 'Target spending is ' + b(data.monthlySpending) + ' per month; public income is ' + b(data.totalGovMonthly) + '.'),
+        (lang === 'fr'
+          ? 'Le besoin de retrait du portefeuille pourrait donc varier selon les marches.'
+          : 'Portfolio withdrawal needs could therefore vary with market paths.')
+      ], detailPref);
+    }
+    if (key === 'taxInsight') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le taux effectif moyen ressort a ' + b(data.avgEffectiveRate) + ' pour un impot vie estime a ' + b(data.lifetimeTax) + '.'
+          : 'Average effective tax rate is ' + b(data.avgEffectiveRate) + ' with lifetime tax around ' + b(data.lifetimeTax) + '.'),
+        (data.taxAlpha
+          ? (lang === 'fr'
+              ? 'Le tax alpha estime est de ' + b(data.taxAlpha) + ', ce qui suggere un gain potentiel via l ordre de retraits.'
+              : 'Estimated tax alpha is ' + b(data.taxAlpha) + ', suggesting potential gain from withdrawal ordering.')
+          : (lang === 'fr'
+              ? 'Aucun tax alpha materialise n apparait dans cette projection.'
+              : 'No material tax alpha appears in this projection.')),
+        (lang === 'fr'
+          ? 'Annees de recuperation PSV estimees: ' + b(data.oasClawbackYears) + '.'
+          : 'Estimated OAS clawback years: ' + b(data.oasClawbackYears) + '.')
+      ], detailPref);
+    }
+    if (key === 'estateInsight') {
+      return joinSentences([
+        (lang === 'fr'
+          ? 'L heritage net median projete est de ' + b(data.netEstate) + ' avec un impot final estime a ' + b(data.taxAtDeath) + '.'
+          : 'Median projected net estate is ' + b(data.netEstate) + ' with estimated final tax of ' + b(data.taxAtDeath) + '.'),
+        (lang === 'fr'
+          ? 'Le scenario prudent d heritage est de ' + b(data.cautionEstate) + '.'
+          : 'Prudent estate outcome is ' + b(data.cautionEstate) + '.'),
+        (lang === 'fr'
+          ? 'Cette lecture resterait sensible au timing de deces et aux rendements reels.'
+          : 'This read remains sensitive to timing of death and realized returns.')
+      ], detailPref);
+    }
+    if (key === 'gis_insight') {
+      if (!data.gis) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le SRG pourrait etre verse pendant ' + b(data.gis.eligibleYears) + ' ans, pour un total estime a ' + b(data.gis.lifetimeGIS) + '.'
+          : 'GIS could be received for ' + b(data.gis.eligibleYears) + ' years, with lifetime value around ' + b(data.gis.lifetimeGIS) + '.'),
+        (lang === 'fr'
+          ? 'Moyenne annuelle estimee: ' + b(data.gis.avgPerYear) + '.'
+          : 'Estimated annual average is ' + b(data.gis.avgPerYear) + '.'),
+        (lang === 'fr'
+          ? 'Le niveau de retraits imposables pourrait influencer fortement cette admissibilite.'
+          : 'Taxable withdrawal levels could strongly influence this eligibility.')
+      ], detailPref);
+    }
+    if (key === 'meltdown_insight') {
+      if (!data.meltdown) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La logique de meltdown viserait un retrait cible de ' + b(data.meltdown.target) + ' sur la periode ' + b(data.meltdown.period) + '.'
+          : 'Meltdown logic would target withdrawals around ' + b(data.meltdown.target) + ' over ' + b(data.meltdown.period) + '.'),
+        (lang === 'fr'
+          ? 'REER courant: ' + b(data.meltdown.currentRRSP) + '; REER a 72 ans estime: ' + b(data.meltdown.rrspAt72) + '.'
+          : 'Current RRSP: ' + b(data.meltdown.currentRRSP) + '; estimated RRSP at 72: ' + b(data.meltdown.rrspAt72) + '.'),
+        (lang === 'fr'
+          ? 'Reduction potentielle observee: ' + b(data.meltdown.reductionPct) + '.'
+          : 'Observed potential reduction: ' + b(data.meltdown.reductionPct) + '.')
+      ], detailPref);
+    }
+    if (key === 'real_estate_insight') {
+      if (!data.realEstate) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le bloc immobilier couvre ' + b(data.realEstate.count) + ' propriete(s), valeur totale ' + b(data.realEstate.totalValue) + '.'
+          : 'Real-estate sleeve includes ' + b(data.realEstate.count) + ' property(ies), total value ' + b(data.realEstate.totalValue) + '.'),
+        (lang === 'fr'
+          ? 'L equite estimee est de ' + b(data.realEstate.totalEquity) + '.'
+          : 'Estimated equity is ' + b(data.realEstate.totalEquity) + '.'),
+        (lang === 'fr'
+          ? 'Ventes planifiees: ' + b(data.realEstate.salesPlanned) + '.'
+          : 'Planned sales: ' + b(data.realEstate.salesPlanned) + '.')
+      ], detailPref);
+    }
+    if (key === 'rsu_insight') {
+      if (!data.rsu) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'Le portefeuille RSU compte ' + b(data.rsu.grantCount) + ' attribution(s) pour une valeur brute estimee a ' + b(data.rsu.totalValue) + '.'
+          : 'RSU portfolio includes ' + b(data.rsu.grantCount) + ' grant(s) with estimated gross value of ' + b(data.rsu.totalValue) + '.'),
+        (lang === 'fr'
+          ? 'Le calendrier de vesting pourrait modifier la valeur nette effectivement capturee.'
+          : 'Vesting timing could materially change the net value ultimately captured.')
+      ], detailPref);
+    }
+    if (key === 'corp_insight') {
+      if (!data.corp) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La societe detient des benefices non repartis estimes a ' + b(data.corp.retainedEarnings) + ' pour un revenu annuel de ' + b(data.corp.revenue) + '.'
+          : 'The corporation holds retained earnings around ' + b(data.corp.retainedEarnings) + ' with annual revenue of ' + b(data.corp.revenue) + '.'),
+        (data.corp.saleAge
+          ? (lang === 'fr' ? 'Age de sortie cible: ' + b(data.corp.saleAge) + '.' : 'Target business exit age: ' + b(data.corp.saleAge) + '.')
+          : ''),
+        (lang === 'fr'
+          ? 'Le timing d extraction pourrait fortement influencer la facture fiscale personnelle.'
+          : 'Extraction timing could materially influence personal tax outcomes.')
+      ], detailPref);
+    }
+    if (key === 'debt_insight') {
+      if (!data.debts) return localNoData(lang);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La dette totale est estimee a ' + b(data.debts.totalDebt) + ', repartie sur ' + b(data.debts.count) + ' poste(s).'
+          : 'Total debt is estimated at ' + b(data.debts.totalDebt) + ' across ' + b(data.debts.count) + ' item(s).'),
+        (lang === 'fr'
+          ? 'La part de dettes a taux eleve est de ' + b(data.debts.highRateCount) + ' poste(s), ratio dette/epargne ' + b(data.debts.debtToSavingsRatio) + '.'
+          : 'High-rate debt count is ' + b(data.debts.highRateCount) + ', with debt-to-savings ratio at ' + b(data.debts.debtToSavingsRatio) + '.'),
+        (lang === 'fr'
+          ? 'Cette structure pourrait accroitre la volatilite du budget en phase de transition.'
+          : 'This structure could increase budget volatility during transition phases.')
+      ], detailPref);
+    }
+    if (key === 'best_move_explainer') {
+      if (!data.strategies || !data.strategies.length) return localNoData(lang);
+      var top = data.strategies.slice(0, 3).map(function(s) { return (s.name || 'N/A') + ' (' + (s.impact || 'N/A') + ')'; }).join(', ');
+      return lang === 'fr'
+        ? 'Les strategies dominantes selon le modele sont: ' + b(top) + '. Le cumul des impacts pourrait principalement venir de ces leviers.'
+        : 'Top model-ranked strategies are ' + b(top) + '. Most modeled impact could come from these levers.';
+    }
+    if (key === 'riskInsight') {
+      if (!data.sensitivity || !data.sensitivity.length) return localNoData(lang);
+      var first = data.sensitivity[0];
+      var spread = b(data.p25Wealth) + ' -> ' + b(data.p75Wealth);
+      return joinSentences([
+        (lang === 'fr'
+          ? 'La zone de risque P25-P75 est ' + spread + '.'
+          : 'Risk band from P25 to P75 is ' + spread + '.'),
+        (lang === 'fr'
+          ? 'Premier facteur de sensibilite observe: ' + b(first.factor) + ' (bas: ' + b(first.downside) + ', haut: ' + b(first.upside) + ').'
+          : 'First observed sensitivity factor is ' + b(first.factor) + ' (downside: ' + b(first.downside) + ', upside: ' + b(first.upside) + ').'),
+        (lang === 'fr'
+          ? 'Le maintien d une marge de depense pourrait reduire le risque de sequence.'
+          : 'Maintaining spending margin could reduce sequence risk.')
+      ], detailPref);
+    }
+    if (key === 'family_insight') {
+      if (!data.family || !data.family.length) return localNoData(lang);
+      return lang === 'fr'
+        ? 'Le contexte familial inclut ' + b(data.family.length) + ' personne(s) dependante(s), ce qui pourrait influencer les priorites de liquidite et de protection.'
+        : 'Family context includes ' + b(data.family.length) + ' dependent(s), which could influence liquidity and protection priorities.';
+    }
+    if (key === 'goals_insight') {
+      if (!data.goals || !data.goals.length) return localNoData(lang);
+      return lang === 'fr'
+        ? 'Le plan suit ' + b(data.goals.length) + ' objectif(s) financier(s); leur faisabilite dependra de l ecart entre trajectoire mediane et prudente.'
+        : 'The plan tracks ' + b(data.goals.length) + ' financial goal(s); feasibility depends on the gap between median and prudent paths.';
+    }
+    return localNoData(lang);
+  }
+
+  (promptObj.slotKeys || []).forEach(function(key) {
+    out[key] = slotText(key);
+  });
+  return {
+    ai: BAiPrompt.parseResponse(JSON.stringify(out), promptObj.slotKeys || []),
+    promptChars: (promptObj.system || '').length + (promptObj.user || '').length,
+    slotCount: (promptObj.slotKeys || []).length
+  };
+}
+
+function buildAiViaPromptSubstitution(data) {
+  var payload = BData.buildReportPayload(data);
+  if (!payload || payload.empty) return { ai: {}, promptChars: 0, slotCount: 0 };
+  var promptObj = BAiPrompt.buildPrompt(payload);
+  return buildLocalPromptSubstitute(promptObj, payload);
+}
+
 var outDir = path.join(dir, 'test-output');
 try { fs.mkdirSync(outDir, { recursive: true }); } catch(e) {}
 
+var LANGS = ['fr', 'en'];
 var results = [];
 P.forEach(function(prof, i) {
   var mc = buildMC(prof.mc, prof.succ);
-  // Add naive MC comparison for expert profiles
   if (prof.mode === 'expert') {
     mc._naiveMC = { medRevData: mc.medRevData.map(function(r) { return Object.assign({}, r, { tax: Math.round(r.tax * 1.15) }); }) };
   }
 
-  ['fr', 'en'].forEach(function(lang) {
-    var fr = lang === 'fr';
+  LANGS.forEach(function(lang) {
     var data = {
       params: prof.params,
       mc: mc,
       client: prof.client,
-      ai: aiText(i, fr),
       rptLang: lang,
-      rptMode: prof.mode || 'standard'
+      rptMode: prof.mode || 'standard',
+      finLiteracy: prof.finLiteracy,
+      stressLevel: prof.stressLevel,
+      detailPref: prof.detailPref
     };
+    var aiBuilt = buildAiViaPromptSubstitution(data);
+    data.ai = aiBuilt.ai || {};
 
     try {
       var html = buildReport(data);
       var fname = prof.id + '_' + lang + '.html';
       fs.writeFileSync(path.join(outDir, fname), html || '', 'utf8');
       var size = (html || '').length;
-      results.push({ id: prof.id, lang: lang, ok: size > 1000, size: size, error: null });
-      console.log('  ✓ ' + fname + ' (' + Math.round(size / 1024) + ' KB)');
+      results.push({
+        id: prof.id, lang: lang, file: fname, ok: size > 1000, size: size, error: null,
+        aiSlots: aiBuilt.slotCount || 0, aiPromptChars: aiBuilt.promptChars || 0
+      });
+      console.log('  \u2713 ' + fname + ' (' + Math.round(size / 1024) + ' KB) [' + prof.finLiteracy + '/' + prof.stressLevel + '/' + prof.detailPref + '] {slots=' + (aiBuilt.slotCount || 0) + ', promptChars=' + (aiBuilt.promptChars || 0) + '}');
     } catch(e) {
-      results.push({ id: prof.id, lang: lang, ok: false, size: 0, error: e.message });
-      console.log('  ✗ ' + prof.id + '_' + lang + ': ' + e.message);
+      results.push({ id: prof.id, lang: lang, file: prof.id + '_' + lang + '.html', ok: false, size: 0, error: e.message });
+      console.log('  \u2717 ' + prof.id + '_' + lang + ': ' + e.message);
     }
   });
 });
 
-// ═══ 6. VALIDATION ═══
-console.log('\n═══ VALIDATION ═══');
+console.log('\n\u2550\u2550\u2550 VALIDATION \u2550\u2550\u2550');
 var issues = [];
 
 results.forEach(function(res) {
-  if (!res.ok) { issues.push('[FAIL] ' + res.id + '_' + res.lang + ': ' + (res.error || 'empty output')); return; }
-  var html = fs.readFileSync(path.join(outDir, res.id + '_' + res.lang + '.html'), 'utf8');
+  if (!res.ok) { issues.push('[FAIL] ' + res.file + ': ' + (res.error || 'empty output')); return; }
+  var html = fs.readFileSync(path.join(outDir, res.file), 'utf8');
 
-  // Check required sections
   var requiredSections = ['sec-assessment', 'sec-diagnostic', 'sec-profile', 'sec-projection', 'sec-revenue', 'sec-tax', 'sec-methodology'];
   requiredSections.forEach(function(sec) {
-    if (html.indexOf('id="' + sec + '"') === -1) issues.push('[MISSING SECTION] ' + res.id + '_' + res.lang + ': ' + sec);
+    if (html.indexOf('id="' + sec + '"') === -1) issues.push('[MISSING SECTION] ' + res.file + ': ' + sec);
   });
 
-  // Check tables have rows
   var tables = html.match(/id="rpt-t-[^"]+"/g) || [];
   tables.forEach(function(tbl) {
     var tblId = tbl.replace(/id="|"/g, '');
@@ -540,39 +822,66 @@ results.forEach(function(res) {
     if (tblMatch > -1) {
       var afterTbl = html.substring(tblMatch, tblMatch + 5000);
       var rowCount = (afterTbl.match(/<tr/g) || []).length;
-      if (rowCount < 3) issues.push('[SPARSE TABLE] ' + res.id + '_' + res.lang + ': ' + tblId + ' has only ' + rowCount + ' rows');
+      if (rowCount < 3) issues.push('[SPARSE TABLE] ' + res.file + ': ' + tblId + ' has only ' + rowCount + ' rows');
     }
   });
 
-  // Check AI text appears
   var aiBlockCount = (html.match(/callout-ai/g) || []).length;
-  if (aiBlockCount < 3) issues.push('[LOW AI] ' + res.id + '_' + res.lang + ': only ' + aiBlockCount + ' AI blocks');
+  if (aiBlockCount < 3) issues.push('[LOW AI] ' + res.file + ': only ' + aiBlockCount + ' AI blocks');
 
-  // Check cover page
-  if (html.indexOf('cover-title') === -1) issues.push('[NO COVER] ' + res.id + '_' + res.lang);
-  if (html.indexOf('cover-grade-circle') === -1) issues.push('[NO GRADE] ' + res.id + '_' + res.lang);
+  if (html.indexOf('cover-title') === -1) issues.push('[NO COVER] ' + res.file);
+  if (html.indexOf('cover-grade-circle') === -1) issues.push('[NO GRADE] ' + res.file);
 
-  // Check for "undefined" or "NaN" in output
-  if (html.indexOf('undefined') > -1) issues.push('[UNDEFINED] ' + res.id + '_' + res.lang + ': contains "undefined"');
-  if (html.indexOf('NaN') > -1) issues.push('[NaN] ' + res.id + '_' + res.lang + ': contains "NaN"');
+  if (html.indexOf('undefined') > -1) issues.push('[UNDEFINED] ' + res.file + ': contains "undefined"');
+  if (html.indexOf('NaN') > -1) issues.push('[NaN] ' + res.file + ': contains "NaN"');
 
-  // Check conditional sections for specific profiles
   var prof = P.find(function(p) { return p.id === res.id; });
   if (prof) {
-    if (prof.params.cOn && html.toLowerCase().indexOf('conjoint') === -1 && html.indexOf('Spouse') === -1 && html.indexOf('class="g2"') === -1) issues.push('[COUPLE MISSING] ' + res.id + '_' + res.lang);
-    if (prof.params.bizOn && html.indexOf('sec-corp') === -1) issues.push('[CORP MISSING] ' + res.id + '_' + res.lang);
-    if (prof.params.debts && prof.params.debts.length > 0 && html.indexOf('sec-debt') === -1) issues.push('[DEBT MISSING] ' + res.id + '_' + res.lang);
-    if (prof.params.rsuGrants && prof.params.rsuGrants.length > 0 && html.indexOf('sec-rsu') === -1) issues.push('[RSU MISSING] ' + res.id + '_' + res.lang);
-    if (prof.params.props && prof.params.props.length > 0 && html.indexOf('sec-realestate') === -1) issues.push('[RE MISSING] ' + res.id + '_' + res.lang);
-    if (prof.params.melt && html.indexOf('sec-meltdown') === -1) issues.push('[MELTDOWN MISSING] ' + res.id + '_' + res.lang);
+    if (prof.params.cOn && html.indexOf('class="g2"') === -1) issues.push('[COUPLE MISSING] ' + res.file);
+    if (prof.params.bizOn && html.indexOf('sec-corp') === -1) issues.push('[CORP MISSING] ' + res.file);
+    if (prof.params.debts && prof.params.debts.length > 0 && html.indexOf('sec-debt') === -1) issues.push('[DEBT MISSING] ' + res.file);
+    if (prof.params.rsuGrants && prof.params.rsuGrants.length > 0 && html.indexOf('sec-rsu') === -1) issues.push('[RSU MISSING] ' + res.file);
+    if (prof.params.props && prof.params.props.length > 0 && html.indexOf('sec-realestate') === -1) issues.push('[RE MISSING] ' + res.file);
+    if (prof.params.melt && html.indexOf('sec-meltdown') === -1) issues.push('[MELTDOWN MISSING] ' + res.file);
   }
 
-  // Check file size
-  if (res.size < 20000) issues.push('[SMALL] ' + res.id + '_' + res.lang + ': only ' + Math.round(res.size / 1024) + ' KB');
+  if (res.size < 20000) issues.push('[SMALL] ' + res.file + ': only ' + Math.round(res.size / 1024) + ' KB');
+
+  // ── Value-level checks: catch flat / 0-income regressions ──
+  // Pull the cash-flow table and assert that pre-retirement income > 0 and that
+  // there are at least 3 unique values across income / spending / tax columns
+  // (a flat profile across many years means the row data is broken).
+  var cfMatch = html.match(/id="rpt-t-cf"[\s\S]*?<\/table>/);
+  if (cfMatch) {
+    var rows = cfMatch[0].split('<tr').slice(2); // skip table-open + header
+    var incVals = [], spendVals = [], taxVals = [];
+    rows.forEach(function(rowHtml) {
+      var tds = [];
+      var re = /<td[^>]*>([^<]*)</g, m;
+      while ((m = re.exec(rowHtml)) !== null) tds.push(m[1].trim());
+      if (tds.length >= 5) {
+        // tds[0]=age, tds[1]=income, tds[2]=spending, tds[3]=tax, tds[4]=balance
+        incVals.push(tds[1]);
+        spendVals.push(tds[2]);
+        taxVals.push(tds[3]);
+      }
+    });
+    if (incVals.length > 5) {
+      var uniqueInc = new Set(incVals).size;
+      var uniqueSpend = new Set(spendVals).size;
+      var uniqueTax = new Set(taxVals).size;
+      if (uniqueInc < 3) issues.push('[FLAT INCOME] ' + res.file + ': only ' + uniqueInc + ' unique income values across ' + incVals.length + ' rows');
+      if (uniqueSpend < 3) issues.push('[FLAT SPENDING] ' + res.file + ': only ' + uniqueSpend + ' unique spending values across ' + spendVals.length + ' rows');
+      // Tax variation check: skip if most rows are legitimately $0 (low-income profile under personal exemption).
+      var zeroTax = taxVals.filter(function(v) { return v === '0$' || v === '0 $'; }).length;
+      if (uniqueTax < 3 && zeroTax < taxVals.length / 2) issues.push('[FLAT TAX] ' + res.file + ': only ' + uniqueTax + ' unique tax values across ' + taxVals.length + ' rows');
+      var zeroInc = incVals.filter(function(v) { return v === '0$' || v === '0 $'; }).length;
+      if (zeroInc > incVals.length / 2) issues.push('[ZERO INCOME] ' + res.file + ': ' + zeroInc + '/' + incVals.length + ' rows show $0 income');
+    }
+  }
 });
 
-// ═══ 7. REPORT CARD ═══
-console.log('\n═══ REPORT CARD ═══');
+console.log('\n\u2550\u2550\u2550 REPORT CARD \u2550\u2550\u2550');
 var passed = results.filter(function(r) { return r.ok; }).length;
 console.log('Reports generated: ' + passed + '/' + results.length);
 console.log('Total issues: ' + issues.length);
@@ -580,17 +889,27 @@ if (issues.length > 0) {
   console.log('\nIssues:');
   issues.forEach(function(iss) { console.log('  ' + iss); });
 } else {
-  console.log('\n✓ All 20 reports passed validation');
+  console.log('\n\u2713 All ' + results.length + ' reports passed validation');
 }
 
-// Summary table
-console.log('\n═══ SIZE SUMMARY ═══');
-console.log('Profile'.padEnd(22) + 'FR'.padStart(8) + 'EN'.padStart(8));
-console.log('─'.repeat(38));
+console.log('\n\u2550\u2550\u2550 SIZE SUMMARY \u2550\u2550\u2550');
+console.log('Profile'.padEnd(22) + 'FR'.padStart(7) + ' EN'.padStart(7) + '  Literacy    Stress     Detail');
+console.log('\u2500'.repeat(80));
 P.forEach(function(prof) {
-  var frR = results.find(function(r) { return r.id === prof.id && r.lang === 'fr'; });
-  var enR = results.find(function(r) { return r.id === prof.id && r.lang === 'en'; });
-  var frSz = frR && frR.ok ? Math.round(frR.size / 1024) + 'K' : 'FAIL';
-  var enSz = enR && enR.ok ? Math.round(enR.size / 1024) + 'K' : 'FAIL';
-  console.log(prof.id.padEnd(22) + frSz.padStart(8) + enSz.padStart(8));
+  var fr = results.find(function(r) { return r.id === prof.id && r.lang === 'fr'; });
+  var en = results.find(function(r) { return r.id === prof.id && r.lang === 'en'; });
+  var frSz = fr && fr.ok ? Math.round(fr.size / 1024) + 'K' : 'FAIL';
+  var enSz = en && en.ok ? Math.round(en.size / 1024) + 'K' : 'FAIL';
+  console.log(prof.id.padEnd(22) + frSz.padStart(7) + enSz.padStart(7) + '  ' + prof.finLiteracy.padEnd(13) + prof.stressLevel.padEnd(11) + prof.detailPref);
 });
+
+console.log('\n\u2550\u2550\u2550 AI SUBSTITUTION METRICS \u2550\u2550\u2550');
+var okWithAi = results.filter(function(r) { return r.ok; });
+var totalSlots = okWithAi.reduce(function(s, r) { return s + (r.aiSlots || 0); }, 0);
+var totalPromptChars = okWithAi.reduce(function(s, r) { return s + (r.aiPromptChars || 0); }, 0);
+var avgSlots = okWithAi.length ? (totalSlots / okWithAi.length).toFixed(1) : '0.0';
+var avgPromptChars = okWithAi.length ? Math.round(totalPromptChars / okWithAi.length) : 0;
+console.log('Mode: prompt-substitution (buildPrompt -> local provider -> parseResponse)');
+console.log('Reports with AI: ' + okWithAi.length + '/' + results.length);
+console.log('Average slots/report: ' + avgSlots);
+console.log('Average prompt chars/report: ' + avgPromptChars);

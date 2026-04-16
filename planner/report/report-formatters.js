@@ -34,10 +34,16 @@
       : (amount < 0 ? "\u2212$" : "$") + formatted;
   }
 
-  // Full currency via Intl (fr-CA only)
-  function fmtCurrency(v) {
+  // Full currency via Intl. Accepts boolean `fr` (legacy callers) or string lang
+  // ('fr'/'en'). When omitted, falls back to window.__bfLang. Previously hardcoded
+  // fr-CA, which produced "600 000 $" inside English reports.
+  function fmtCurrency(v, langOrFr) {
     if (v === void 0 || v === null || isNaN(v)) return "\u2014";
-    return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v);
+    var isFr;
+    if (typeof langOrFr === "boolean") isFr = langOrFr;
+    else if (typeof langOrFr === "string") isFr = (langOrFr === "fr");
+    else isFr = (window.__bfLang || "fr") === "fr";
+    return new Intl.NumberFormat(isFr ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v);
   }
 
   // Integer with locale separators
@@ -167,10 +173,19 @@
   function Warning(t) { return '<div class="callout callout-warning">' + t + '</div>'; }
   function Alert(t)   { return '<div class="callout callout-alert">' + t + '</div>'; }
 
-  // AI narration block — preserves paragraph breaks from AI text
+  // AI narration block — escapes all HTML, then promotes markdown bold/italic only.
+  // AI output contract: markdown only (**bold**, *italic*). No raw HTML ever reaches the DOM.
+  function _renderAiInlineMarkup(safe) {
+    return safe
+      .replace(/\*\*([^*\n][^*\n]*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n][^*\n]*?)\*(?!\*)/g, '$1<em>$2</em>');
+  }
+
   function AiBlock(t, fr) {
     if (!t) return "";
-    var safe = esc(t).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br/>');
+    var safe = _renderAiInlineMarkup(
+      esc(String(t).replace(/\r\n?/g, '\n'))
+    ).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br/>');
     return '<div class="callout callout-ai"><span class="ai-badge">' +
       (fr ? "Analyse assist\u00e9e par IA" : "AI-assisted analysis") +
       '</span><p>' + safe + '</p></div>';
@@ -318,7 +333,11 @@
   // EXPORT
   // ══════════════════════════════════════════════════════════════
 
-  window.BFmt = {
+  // Frozen export — prevents downstream code from reassigning formatter functions
+  // (accidentally or maliciously) after initial load. Report generation runs in a
+  // shared window namespace; freezing catches drift at the source instead of
+  // letting a broken call site silently swap grade() or fmtMoney().
+  window.BFmt = Object.freeze({
     // Number formatters
     fmtCompact: fmtCompact,
     fmtMoney: fmtMoney,
@@ -356,6 +375,6 @@
     LABELS: LABELS,
     L: L,
     qppLabel: qppLabel
-  };
+  });
 
 })();

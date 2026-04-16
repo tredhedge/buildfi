@@ -65,16 +65,19 @@
   function _fmtK(v, loc) { return Math.round(toNum(v) / 1000).toLocaleString(loc) + " K$"; }
   function _fmtP(v, d, fr) { var n = (toNum(v) * 100).toFixed(d == null ? 1 : d); return (fr ? n.replace(".", ",") : n) + " %"; }
 
+  // Letter → ARGB color for Excel. Thresholds come from BFmt.grade (single source of truth
+  // shared with PDF renderer). A plan's letter grade is identical in HTML and Excel.
+  var _EXCEL_GRADE_COLOR = {
+    "A+": CL.gradeA, "A": CL.gradeA, "A-": CL.gradeA,
+    "B+": CL.gradeB, "B": CL.gradeB, "B-": CL.gradeB,
+    "C+": CL.gradeC, "C": CL.gradeC, "C-": CL.gradeC,
+    "D": CL.gradeD, "F": CL.gradeD
+  };
   function gradeFor(succ) {
     var s = toNum(succ);
-    if (s >= 0.95) return { g: "A+", c: CL.gradeA };
-    if (s >= 0.85) return { g: "A",  c: CL.gradeA };
-    if (s >= 0.75) return { g: "B+", c: CL.gradeB };
-    if (s >= 0.65) return { g: "B",  c: CL.gradeB };
-    if (s >= 0.55) return { g: "C+", c: CL.gradeC };
-    if (s >= 0.45) return { g: "C",  c: CL.gradeC };
-    if (s >= 0.35) return { g: "D",  c: CL.gradeD };
-    return { g: "F", c: CL.gradeD };
+    var g = (window.BFmt && window.BFmt.grade) ? window.BFmt.grade(s, false) : null;
+    var letter = g ? g.letter : "F";
+    return { g: letter, c: _EXCEL_GRADE_COLOR[letter] || CL.gradeD };
   }
 
   // ── ExcelJS cell helpers ──
@@ -180,7 +183,7 @@
   }
 
   // ── Sommaire dark banner (rows 1-5) ──
-  function addSommaireBanner(ws, name, date, ncols) {
+  function addSommaireBanner(ws, name, date, ncols, fr) {
     ncols = ncols || 14;
     // Fill rows 1-5 with dark background
     for (var br = 1; br <= 5; br++) {
@@ -194,13 +197,13 @@
     ws.getRow(1).height = 34;
     // Row 2: subtitle in gold sz13
     ws.mergeCells(2, 2, 2, ncols);
-    ws.getCell(2, 2).value = "Donn\u00e9es financi\u00e8res d\u00e9taill\u00e9es";
+    ws.getCell(2, 2).value = fr ? "Donn\u00e9es financi\u00e8res d\u00e9taill\u00e9es" : "Detailed financial data";
     ws.getCell(2, 2).font = { name: "Calibri", size: 13, color: { argb: CL.gold } };
     ws.getCell(2, 2).alignment = { horizontal: "left", vertical: "middle" };
     ws.getRow(2).height = 20;
     // Row 3: "Préparé pour {name} — {date}" in white sz16 bold
     ws.mergeCells(3, 2, 3, ncols);
-    ws.getCell(3, 2).value = "Pr\u00e9par\u00e9 pour " + name + " \u2014 " + date;
+    ws.getCell(3, 2).value = (fr ? "Pr\u00e9par\u00e9 pour " : "Prepared for ") + name + " \u2014 " + date;
     ws.getCell(3, 2).font = { name: "Calibri", size: 16, bold: true, color: { argb: CL.white } };
     ws.getCell(3, 2).alignment = { horizontal: "left", vertical: "middle" };
     ws.getRow(3).height = 24;
@@ -291,6 +294,7 @@
     var lifeInsBenefit = p.lifeInsBenefit || 0;
 
     var calcQPP = D.calcQPP, calcOAS = D.calcOAS, calcTax = D.calcTax;
+    var OAS_CLAWBACK_THR = D.OAS_CLAWBACK_THR;
 
     // ── Derived metrics ──
     var revD = mc.medRevData || [];
@@ -300,13 +304,28 @@
     var filename = "buildfi-donnees-detaillees-" + (baseName || "plan") + "-" + new Date().toISOString().slice(0, 10) + ".xlsx";
 
     var gr = gradeFor(mc.succ);
+    // Static snapshots — used by P&L tables ("Projected government income") and as fallback.
+    // Spouse income passed individually to calcOAS so each clawback uses individual taxable income.
     var qppM2 = calcQPP(qppAge, avgE, qppYrs);
-    var oasM2 = calcOAS(oasAge, (retSpM + (cOn ? cRetSpM : 0)) * 12);
+    var oasM2 = calcOAS(oasAge, retSpM * 12);
     var cQppM2 = cOn ? calcQPP(cQppAge, cAvgE, cQppYrs) : 0;
     var cOasM2 = cOn ? calcOAS(cOasAge, cRetSpM * 12) : 0;
-    var govM = qppM2 + oasM2 + cQppM2 + cOasM2;
     var totalSpM = retSpM + (cOn ? cRetSpM : 0);
-    var covRatio = totalSpM > 0 ? govM / totalSpM : 0;
+
+    // Path-derived steady state — same logic as report-data.js so KPIs match HTML report.
+    var _retPathRowsX = revD.filter(function(r) { return toNum(r.age) >= retAge; });
+    var _bothOnRowsX = _retPathRowsX.filter(function(r) { return toNum(r.rrq) > 0 && toNum(r.psv) > 0; });
+    var _useRowsX = _bothOnRowsX.length > 0 ? _bothOnRowsX : _retPathRowsX;
+    var govM, covRatio;
+    if (_useRowsX.length > 0) {
+      var _avgGovY = _useRowsX.reduce(function(s, r) { return s + toNum(r.rrq) + toNum(r.psv) + toNum(r.pen); }, 0) / _useRowsX.length;
+      var _avgSpY = _useRowsX.reduce(function(s, r) { return s + toNum(r.sp || r.spending || r.spend); }, 0) / _useRowsX.length;
+      govM = _avgGovY / 12;
+      covRatio = _avgSpY > 0 ? _avgGovY / _avgSpY : 0;
+    } else {
+      govM = qppM2 + oasM2 + cQppM2 + cOasM2;
+      covRatio = totalSpM > 0 ? govM / totalSpM : 0;
+    }
     var optTax = revD.reduce(function(s, r) { return s + toNum(r.tax); }, 0);
     var hasNaive = wStrat === "optimized" && mc._naiveMC && mc._naiveMC.medRevData;
     var naiveRev = hasNaive ? (mc._naiveMC.medRevData || []) : [];
@@ -315,8 +334,12 @@
     var naiveSucc = hasNaive ? toNum(mc._naiveMC.succ) : null;
     var succDelta = hasNaive ? (toNum(mc.succ) - naiveSucc) * 100 : null;
     var medDelta = hasNaive ? (toNum(mc.rMedF || mc.medF) - toNum(mc._naiveMC.rMedF || mc._naiveMC.medF)) : null;
-    var oasYears = revD.filter(function(r) { return toNum(r.taxInc) > 95323; }).length;
-    var oasYearsN = hasNaive ? naiveRev.filter(function(r) { return toNum(r.taxInc) > 95323; }).length : null;
+    function _oasThrFor(rowAge) {
+      var yr = Math.max(0, toNum(rowAge) - age);
+      return OAS_CLAWBACK_THR * Math.pow(1 + inf, yr);
+    }
+    var oasYears = revD.filter(function(r) { return toNum(r.taxInc) > _oasThrFor(r.age); }).length;
+    var oasYearsN = hasNaive ? naiveRev.filter(function(r) { return toNum(r.taxInc) > _oasThrFor(r.age); }).length : null;
     var avgEffOpt = optTax > 0 ? optTax / Math.max(1, revD.reduce(function(s, r) { return s + toNum(r.taxInc); }, 0)) : 0;
     var avgEffN = hasNaive && naiveTax > 0 ? naiveTax / Math.max(1, naiveRev.reduce(function(s, r) { return s + toNum(r.taxInc); }, 0)) : null;
     var pDret = (mc.pD || []).find(function(r) { return r.age === retAge; }) || {};
@@ -357,7 +380,7 @@
     printSetup(wsS);
 
     // Dark banner rows 1-5
-    addSommaireBanner(wsS, cName, todayLong, 14);
+    addSommaireBanner(wsS, cName, todayLong, 14, fr);
 
     // ── KPI Cards (rows 7-10) ──
     addTitle(wsS, 7, 2, fr ? "INDICATEURS CL\u00c9S" : "KEY INDICATORS", "", 13);
@@ -763,13 +786,40 @@
       fr ? "Analyse de sensibilit\u00e9 & sc\u00e9narios de stress" : "Sensitivity analysis & stress scenarios", "", 14);
 
     addTitle(wsSS, 5, 2, fr ? "TORNADO \u2014 CE QUI INFLUENCE LE PLUS VOTRE PLAN" : "TORNADO \u2014 WHAT INFLUENCES YOUR PLAN MOST",
-      fr ? "Variation de \u00b11 \u00e9cart-type" : "\u00b11 std deviation variation", 13);
-    setRow(wsSS, 7, 2, [fr ? "Facteur" : "Factor", fr ? "Impact -1\u03c3" : "Impact -1\u03c3", fr ? "Impact +1\u03c3" : "Impact +1\u03c3", fr ? "Amplitude" : "Amplitude", fr ? "Interpr\u00e9tation" : "Interpretation"]);
-    var sensN = Math.min((mc.sens || []).length, 8);
-    (mc.sens || []).slice(0, 8).forEach(function(s, i) {
-      setRow(wsSS, 8 + i, 2, [s.name || "", (s.lo >= 0 ? "+" : "") + s.lo.toFixed(1) + "%", (s.hi >= 0 ? "+" : "") + s.hi.toFixed(1) + "%", Math.abs((s.hi || 0) - (s.lo || 0)).toFixed(1) + "%", ""]);
+      fr ? "Impact estim\u00e9 sur le patrimoine final" : "Estimated impact on final wealth", 13);
+    setRow(wsSS, 7, 2, [fr ? "Facteur" : "Factor", fr ? "Impact n\u00e9gatif" : "Downside", fr ? "Impact positif" : "Upside", fr ? "Amplitude" : "Amplitude", fr ? "Interpr\u00e9tation" : "Interpretation"]);
+    // Accept either mc.sens (array of {name,lo,hi}) or named _sens* fields written by the test harness.
+    var sensRows = [];
+    if (mc.sens && mc.sens.length) {
+      sensRows = mc.sens.slice(0, 8).map(function(s) {
+        return { label: s.name || s.label || "", lo: toNum(s.lo), hi: toNum(s.hi), unit: "$" };
+      });
+    } else {
+      var _sensSrc = [
+        { key: "_sensReturn", label: fr ? "Rendements" : "Returns" },
+        { key: "_sensInflation", label: "Inflation" },
+        { key: "_sensSpending", label: fr ? "D\u00e9penses" : "Spending" },
+        { key: "_sensMortality", label: fr ? "Long\u00e9vit\u00e9" : "Longevity" }
+      ];
+      _sensSrc.forEach(function(s) {
+        if (mc[s.key]) sensRows.push({ label: s.label, lo: toNum(mc[s.key].lo), hi: toNum(mc[s.key].hi), unit: "$" });
+      });
+    }
+    sensRows.forEach(function(s, i) {
+      var rr = 8 + i;
+      set(wsSS, wsSS.getCell(rr, 2), s.label);
+      wsSS.getCell(rr, 3).value = s.lo; wsSS.getCell(rr, 3).numFmt = FMT_MONEY;
+      if (s.lo < 0) wsSS.getCell(rr, 3).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+      wsSS.getCell(rr, 4).value = s.hi; wsSS.getCell(rr, 4).numFmt = FMT_MONEY;
+      if (s.hi > 0) wsSS.getCell(rr, 4).font = { name: "Calibri", size: 11, color: { argb: CL.green } };
+      wsSS.getCell(rr, 5).value = Math.abs(s.hi - s.lo); wsSS.getCell(rr, 5).numFmt = FMT_MONEY;
     });
-    styleTable(wsSS, { hr: 7, fr: 8, to: Math.max(8, 7 + sensN), fc: 2, lc: 6 });
+    if (sensRows.length === 0) {
+      wsSS.mergeCells(8, 2, 8, 6);
+      set(wsSS, wsSS.getCell(8, 2), fr ? "Aucune donn\u00e9e de sensibilit\u00e9 disponible." : "No sensitivity data available.");
+      wsSS.getCell(8, 2).font = SUB_FONT;
+    }
+    styleTable(wsSS, { hr: 7, fr: 8, to: Math.max(8, 7 + sensRows.length), fc: 2, lc: 6 });
 
     // Stress
     addTitle(wsSS, 17, 2, fr ? "SC\u00c9NARIOS DE STRESS" : "STRESS SCENARIOS",
@@ -814,19 +864,40 @@
     });
     styleTable(wsE, { hr: 7, fr: 8, to: 12, fc: 2, lc: 6 });
 
-    // Tax cascade
+    // Tax cascade — derived from MC P50 path balance at death.
+    // RRIF disposition uses end-of-life RRSP balance × marginal rate at that level.
+    // NR cap gains use 50% inclusion of accumulated NR gains (proxy: NR balance × inclusion).
+    // Probate is province-specific (QC ~0, ON ~1.5%, BC ~1.4%, others typical).
     addTitle(wsE, 14, 2, fr ? "CASCADE FISCALE AU D\u00c9C\u00c8S (M\u00c9DIANE)" : "TAX CASCADE AT DEATH (MEDIAN)", "", 13);
     var medGross = toNum(mc.medEstateNet) + toNum(mc.medEstateTax);
+    var pdLast = (mc.pD || []).length > 0 ? mc.pD[mc.pD.length - 1] : {};
+    var rrAtDeath = toNum(pdLast.rrM || pdLast.aRR || pdLast.balRR || 0);
+    var nrAtDeath = toNum(pdLast.nrM || pdLast.aNR || pdLast.balNR || 0);
+    // Marginal rate at terminal RRIF disposition (uses BData.calcTax for accuracy).
+    var rrifTax = 0;
+    if (rrAtDeath > 0 && D.calcTax) {
+      var _yrsToDeath = (deathAge || 90) - age;
+      var _termTx = D.calcTax(rrAtDeath, _yrsToDeath, prov, inf, true);
+      rrifTax = Math.round(_termTx.total || 0);
+    }
+    // NR cap gains: half of accumulated gain (proxy = 50% × current NR balance × ~30% rate).
+    var nrCapGainTax = Math.round(nrAtDeath * 0.5 * 0.30);
+    // Probate by province.
+    var probateRate = prov === "QC" ? 0 : prov === "ON" ? 0.015 : prov === "BC" ? 0.014 : 0.005;
+    var probate = Math.round(medGross * probateRate);
+    var adminFees = 5000 + Math.round(medGross * 0.005); // notary + accounting; scales mildly.
+    var derivedTotalTax = rrifTax + nrCapGainTax;
+    var derivedNet = medGross - derivedTotalTax - probate - adminFees + lifeInsBenefit;
     setRow(wsE, 16, 2, [fr ? "Composante" : "Component", fr ? "Montant" : "Amount", fr ? "Taux / base" : "Rate", "Notes"]);
     var cascade = [
-      [fr ? "Actifs financiers bruts" : "Gross financial assets", medGross, "\u2014"],
-      [fr ? "(\u2212) Disposition FERR" : "(\u2212) RRIF disposition", -(toNum(mc.medEstateTax) * 0.7), fr ? "Taux marginal" : "Marginal rate"],
-      [fr ? "(\u2212) Gains capital NR" : "(\u2212) NR capital gains", -(toNum(mc.medEstateTax) * 0.2), "50% inclusion"],
-      [fr ? "(\u2212) R\u00e9sidence principale" : "(\u2212) Primary residence", 0, fr ? "Exempt" : "Exempt"],
-      [fr ? "(\u2212) Frais probate" : "(\u2212) Probate", -10000, prov === "QC" ? "~0% (QC)" : "~1.5%"],
-      [fr ? "(\u2212) Frais admin." : "(\u2212) Admin fees", -15000, fr ? "Estim\u00e9" : "Estimated"],
+      [fr ? "Actifs financiers bruts (P50)" : "Gross financial assets (P50)", medGross, fr ? "M\u00e9diane MC" : "MC median"],
+      [fr ? "(\u2212) Disposition FERR" : "(\u2212) RRIF disposition", -rrifTax, fr ? "Solde REER \u00d7 taux marginal " + prov : "RRSP balance \u00d7 " + prov + " marginal rate"],
+      [fr ? "(\u2212) Gains capital NR" : "(\u2212) NR capital gains", -nrCapGainTax, fr ? "50% inclusion sur 30% taux" : "50% inclusion at 30% rate"],
+      [fr ? "(\u2212) R\u00e9sidence principale" : "(\u2212) Primary residence", 0, fr ? "Exempt\u00e9" : "Exempt"],
+      [fr ? "(\u2212) Frais probate" : "(\u2212) Probate", -probate, prov === "QC" ? "0% (QC)" : (probateRate * 100).toFixed(2) + "%"],
+      [fr ? "(\u2212) Frais admin." : "(\u2212) Admin fees", -adminFees, fr ? "Notaire + comptable" : "Notary + accounting"],
       [fr ? "(+) Assurance-vie" : "(+) Life insurance", lifeInsBenefit, fr ? "Non imposable" : "Tax-free"],
-      [fr ? "H\u00c9RITAGE NET ESTIM\u00c9" : "NET ESTATE", medGross - toNum(mc.medEstateTax) - 25000 + lifeInsBenefit, ""]
+      [fr ? "H\u00c9RITAGE NET ESTIM\u00c9" : "ESTIMATED NET ESTATE", derivedNet, fr ? "MC P50: " + _fmtM(toNum(mc.medEstateNet), locale) : "MC P50: " + _fmtM(toNum(mc.medEstateNet), locale)]
     ];
     cascade.forEach(function(c, i) {
       var r = 17 + i;

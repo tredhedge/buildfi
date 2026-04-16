@@ -8,6 +8,14 @@
   var C = window.BFmt.COLORS;
   var f$ = window.BFmt.fmtCompact;
 
+  function _chartTitle(title) {
+    return title ? '<div class="chart-title">' + title + '</div>' : '';
+  }
+
+  function _wrapChart(inner, title) {
+    return '<div class="chart-block">' + _chartTitle(title) + inner + '</div>';
+  }
+
   // ══════════════════════════════════════════════════════════════
   // svgArea — Stacked or multi-line area/line chart
   // ══════════════════════════════════════════════════════════════
@@ -46,11 +54,16 @@
       svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(gv).toFixed(1) + '" y2="' + y(gv).toFixed(1) + '" stroke="#e8e0d4" stroke-width="0.5" stroke-dasharray="3,3"/>';
       svg += '<text x="' + (ml - 6) + '" y="' + (y(gv) + 3).toFixed(1) + '" fill="#999" font-size="9" text-anchor="end" font-family="JetBrains Mono">' + (opts.yFmt ? opts.yFmt(gv) : f$(gv)) + '</text>';
     }
+    svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + (H - mb) + '" y2="' + (H - mb) + '" stroke="#d7cec1" stroke-width="0.8"/>';
+    svg += '<line x1="' + ml + '" x2="' + ml + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#d7cec1" stroke-width="0.8"/>';
 
     // X axis labels
     var xStep = Math.max(1, Math.floor(data.length / 8));
     for (var xi = 0; xi < data.length; xi += xStep) {
       svg += '<text x="' + x(xi).toFixed(1) + '" y="' + (H - 6) + '" fill="#999" font-size="9" text-anchor="middle" font-family="JetBrains Mono">' + (data[xi].age || xi) + '</text>';
+    }
+    if (data.length > 1 && (data.length - 1) % xStep !== 0) {
+      svg += '<text x="' + x(data.length - 1).toFixed(1) + '" y="' + (H - 6) + '" fill="#999" font-size="9" text-anchor="middle" font-family="JetBrains Mono">' + (data[data.length - 1].age || (data.length - 1)) + '</text>';
     }
 
     // Draw areas or lines
@@ -96,14 +109,14 @@
 
     // Legend
     if (opts.showLegend !== false && labels) {
-      svg += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 8px;padding-left:' + ml + 'px">';
+      svg += '<div class="chart-legend" style="padding-left:' + ml + 'px">';
       labels.forEach(function(l, li) {
-        svg += '<span style="font-size:9px;color:#888;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:' + colors[li] + ';display:inline-block"></span>' + l + '</span>';
+        svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="background:' + colors[li] + '"></span>' + l + '</span>';
       });
       svg += '</div>';
     }
 
-    return (opts.title ? '<div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin:12px 0 4px">' + opts.title + '</div>' : '') + svg;
+    return _wrapChart(svg, opts.title);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -138,11 +151,16 @@
       svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(gv).toFixed(1) + '" y2="' + y(gv).toFixed(1) + '" stroke="#e8e0d4" stroke-width="0.5" stroke-dasharray="3,3"/>';
       svg += '<text x="' + (ml - 6) + '" y="' + (y(gv) + 3).toFixed(1) + '" fill="#999" font-size="9" text-anchor="end" font-family="JetBrains Mono">' + f$(gv) + '</text>';
     }
+    svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + (H - mb) + '" y2="' + (H - mb) + '" stroke="#d7cec1" stroke-width="0.8"/>';
+    svg += '<line x1="' + ml + '" x2="' + ml + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#d7cec1" stroke-width="0.8"/>';
 
     // X axis
     var xStep = Math.max(1, Math.floor(pD.length / 8));
     for (var xi = 0; xi < pD.length; xi += xStep) {
       svg += '<text x="' + x(xi).toFixed(1) + '" y="' + (H - 6) + '" fill="#999" font-size="9" text-anchor="middle" font-family="JetBrains Mono">' + (pD[xi].age || xi) + '</text>';
+    }
+    if (pD.length > 1 && (pD.length - 1) % xStep !== 0) {
+      svg += '<text x="' + x(pD.length - 1).toFixed(1) + '" y="' + (H - 6) + '" fill="#999" font-size="9" text-anchor="middle" font-family="JetBrains Mono">' + (pD[pD.length - 1].age || (pD.length - 1)) + '</text>';
     }
 
     // P5-P95 band
@@ -194,16 +212,16 @@
     svg += '</svg>';
 
     // Legend
-    svg += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 8px;padding-left:' + ml + 'px;font-size:9px;color:#888">';
+    svg += '<div class="chart-legend" style="padding-left:' + ml + 'px">';
     if (hasBands) {
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:8px;background:' + C.gold + ';opacity:0.2;display:inline-block;border-radius:1px"></span>P25\u2013P75</span>';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:8px;background:' + C.gold + ';opacity:0.08;display:inline-block;border-radius:1px"></span>P5\u2013P95</span>';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:2px;background:' + C.gold + ';display:inline-block"></span>P50</span>';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:0;border-top:1.5px dashed #333;display:inline-block"></span>D\u00e9terministe</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="width:14px;height:8px;background:' + C.gold + ';opacity:0.2"></span>P25\u2013P75</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="width:14px;height:8px;background:' + C.gold + ';opacity:0.08"></span>P5\u2013P95</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="width:14px;height:2px;background:' + C.gold + ';border-radius:0"></span>P50</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="width:14px;height:0;border-top:1.5px dashed #333;border-radius:0;background:transparent"></span>' + (opts.fr ? 'D\u00e9terministe' : 'Deterministic') + '</span>';
     }
     svg += '</div>';
 
-    return (opts.title ? '<div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin:12px 0 4px">' + opts.title + '</div>' : '') + svg;
+    return _wrapChart(svg, opts.title);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -219,9 +237,8 @@
     var _tScale = function(v) { return 250 + (v / _tMax) * 200; };
 
     var html = '';
-    if (opts.title) html += '<div style="font-size:11px;font-weight:700;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">' + opts.title + '</div>';
 
-    html += '<svg role="img" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + _tH + '" style="border:1px solid ' + C.border + ';border-radius:6px;background:' + C.bg + '">';
+    html += '<svg role="img" aria-label="' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + _tH + '" style="display:block;margin:6px 0"><title>' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '</title>';
     html += '<line x1="250" x2="250" y1="15" y2="' + (_tH - 10) + '" stroke="' + C.gold + '" stroke-width="1" stroke-dasharray="2,2"/>';
 
     factors.forEach(function(s, i) {
@@ -239,7 +256,7 @@
     html += '<text x="60" y="' + (_tH - 2) + '" font-size="7" fill="' + C.red + '" text-anchor="middle">\u2212 Impact ($)</text>';
     html += '<text x="440" y="' + (_tH - 2) + '" font-size="7" fill="' + C.green + '" text-anchor="middle">+ Impact ($)</text>';
     html += '</svg>';
-    return html;
+    return _wrapChart(html, opts.title);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -263,6 +280,8 @@
       var gy = mt + h2 - h2 * gi / 4;
       svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + gy.toFixed(1) + '" y2="' + gy.toFixed(1) + '" stroke="#e8e0d4" stroke-width="0.5" stroke-dasharray="3,3"/>';
     }
+    svg += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + (mt + h2) + '" y2="' + (mt + h2) + '" stroke="#d7cec1" stroke-width="0.8"/>';
+    svg += '<line x1="' + ml + '" x2="' + ml + '" y1="' + mt + '" y2="' + (mt + h2) + '" stroke="#d7cec1" stroke-width="0.8"/>';
 
     // Bars — color based on percentile position relative to P25/P75
     bins.forEach(function(b, i) {
@@ -312,22 +331,22 @@
       if (di >= 0) {
         var dx = ml + di * (w / n) + barW / 2;
         svg += '<line x1="' + dx.toFixed(1) + '" x2="' + dx.toFixed(1) + '" y1="' + mt + '" y2="' + (mt + h2) + '" stroke="#333" stroke-width="2"/>';
-        svg += '<text x="' + dx.toFixed(1) + '" y="' + (mt + h2 + 26) + '" fill="#333" font-size="8" text-anchor="middle" font-weight="700">D\u00e9t.</text>';
+        svg += '<text x="' + dx.toFixed(1) + '" y="' + (mt + h2 + 26) + '" fill="#333" font-size="8" text-anchor="middle" font-weight="700">' + (opts.fr ? 'D\u00e9t.' : 'Det.') + '</text>';
       }
     }
 
     svg += '</svg>';
 
-    // Color legend
-    if (opts.p25 != null) {
-      svg += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px;padding-left:' + ml + 'px;font-size:9px;color:#888">';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:' + C.amber + ';opacity:0.65;display:inline-block"></span>&lt; P25</span>';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:' + C.gold + ';opacity:0.65;display:inline-block"></span>P25\u2013P75</span>';
-      svg += '<span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:' + C.green + ';opacity:0.65;display:inline-block"></span>&gt; P75</span>';
+    // Color legend — labels reflect the actual percentile cutoffs plotted above.
+    if (opts.p25 != null && opts.p75 != null) {
+      svg += '<div class="chart-legend" style="padding-left:' + ml + 'px">';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="background:' + C.amber + ';opacity:0.65"></span>&lt; P25</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="background:' + C.gold + ';opacity:0.65"></span>P25\u2013P75</span>';
+      svg += '<span class="chart-legend-item"><span class="chart-legend-swatch" style="background:' + C.green + ';opacity:0.65"></span>&gt; P75</span>';
       svg += '</div>';
     }
 
-    return (opts.title ? '<div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin:12px 0 4px">' + opts.title + '</div>' : '') + svg;
+    return _wrapChart(svg, opts.title);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -339,7 +358,6 @@
     opts = opts || {};
     var maxVal = Math.max.apply(null, items.map(function(i2) { return i2.value; }).concat([opts.total || 0])) || 1;
     var html = '';
-    if (opts.title) html += '<div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin:12px 0 6px">' + opts.title + '</div>';
     html += '<div style="border:1px solid ' + C.border + ';border-radius:6px;padding:10px;background:' + C.bg + '">';
     items.forEach(function(item) {
       var pct = item.value / maxVal * 100;
@@ -357,7 +375,7 @@
       html += '</div>';
     }
     html += '</div>';
-    return html;
+    return _wrapChart(html, opts.title);
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -402,7 +420,7 @@
   // EXPORT
   // ══════════════════════════════════════════════════════════════
 
-  window.BCharts = {
+  window.BCharts = Object.freeze({
     svgArea: svgArea,
     svgFanChart: svgFanChart,
     svgTornado: svgTornado,
@@ -410,6 +428,6 @@
     svgWaterfall: svgWaterfall,
     svgTimeline: svgTimeline,
     svgDonut: svgDonut
-  };
+  });
 
 })();

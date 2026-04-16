@@ -372,8 +372,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </style>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="./vendor/exceljs.min.js"></script>
-<script src="./vendor/xlsx.full.min.js"></script>
+<!--
+  Excel vendors (~1.8MB combined) load lazily on first export click.
+  See report-export-service.js:_loadExcelVendors().
+-->
+
 <script src="./templates/report-template-b64.js"></script>
 <script src="./templates/buildfi-logo-b64.js"></script>
 <script src="report/report-formatters.js"></script>
@@ -1778,7 +1781,7 @@ var C = {
   QPP_SURVIVOR_CAP_MONTHLY: 784,
   QPP_SURVIVOR_FRACTION: 0.6,
   GIS_MAX_SINGLE: 1105.43,
-  GIS_MAX_COUPLE: 665.41,
+  GIS_MAX_COUPLE: 667.41,
   GIS_EMPLOYMENT_FULL_EXEMPT: 5000,
   GIS_EMPLOYMENT_PARTIAL_CEILING: 15000,
   GIS_PARTIAL_EXEMPT_RATE: 0.5,
@@ -2152,6 +2155,13 @@ var FED_BRACKETS = C.FED_BRACKETS; // 2026 federal brackets
 var FED_RATES = C.FED_RATES;
 var FED_PERSONAL = C.FED_PERSONAL; // 2026 basic personal amount
 var OAS_CLAWBACK_THR = C.OAS_CLAWBACK_THRESHOLD; // 2026 OAS recovery threshold
+// Indexed OAS clawback threshold for a given simulation age. taxInc on revData rows is
+// nominal year-Y dollars; comparing it to the unindexed 2026 threshold overstates
+// clawback years. Always use this helper for filter/count/amount calculations.
+function oasClbThrFor(age, baseAge, inf) {
+  var yrs = Math.max(0, (age || 0) - (baseAge || 0));
+  return OAS_CLAWBACK_THR * Math.pow(1 + (inf || 0), yrs);
+}
 var OAS_MAX_MONTHLY = C.OAS_MAX_MONTHLY;
 var GIS_MAX_SINGLE = C.GIS_MAX_SINGLE; // 2026 Q1
 var GIS_MAX_COUPLE = C.GIS_MAX_COUPLE; // 2026 Q1 (spouse receives full OAS)
@@ -2374,6 +2384,10 @@ function calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc) {
   return gis;
 }
 var RRIF = C.RRIF_MIN;
+// RRIF minimum withdrawal factors (CRA Schedule): table covers ages 71–95, then flat 20%
+// for 95+. This intentionally extends past the CPM longevity cap (CPM_MAX_AGE=105): the
+// stochastic mortality model stops at 105, but the RRIF regulatory rule continues to
+// apply at 20% — there is no asymmetry bug when a deterministic scenario runs to 105.
 function getRRIFMin(age, bal) {
   return age >= 95 ? bal * 0.2 : RRIF[age] ? bal * RRIF[age] : age >= 71 ? bal * 0.2 : 0;
 }
@@ -4547,8 +4561,8 @@ function optimizeDecum(p) {
       var _tfsaActualC = Math.min(p.tfsaC || 7000, tfsaRoom);
       tf = tf * (1 + retTF) + _tfsaActualC;
       tfsaRoom -= _tfsaActualC;
-      if (_detMA) { var _dNrTax = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet); nr = nr + nr * retNR - _dNrTax + (p.nrC || 0); } else { nr = nr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.nrC || 0); }
-      if (p.cOn && cAlive) { crr = crr * (1 + retRR) + (p.cRRSPC || 0); ctf = ctf * (1 + retTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet) + (p.cNRC || 0)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
+      if (_detMA) { var _dNrTax = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTax + (p.nrC || 0); } else { nr = nr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.nrC || 0); }
+      if (p.cOn && cAlive) { crr = crr * (1 + retRR) + (p.cRRSPC || 0); ctf = ctf * (1 + retTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov) + (p.cNRC || 0)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
       // RSU vesting income (deterministic)
       if (p.rsuGrants && p.rsuGrants.length > 0) {
         var _dRsuInc = 0;
@@ -4597,8 +4611,8 @@ function optimizeDecum(p) {
 
     // === RETIREMENT: OPTIMIZE WITHDRAWAL SOURCE ===
     rr *= (1 + retRR); tf *= (1 + retTF);
-    if (_detMA) { var _dNrTaxR = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet); nr = nr + nr * retNR - _dNrTaxR; } else { nr *= (1 + retNR - (p.nrTaxDrag || 0.009)); }
-    if (p.cOn && cAlive) { crr *= (1 + retRR); ctf *= (1 + retTF); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009))); }
+    if (_detMA) { var _dNrTaxR = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTaxR; } else { nr *= (1 + retNR - (p.nrTaxDrag || 0.009)); }
+    if (p.cOn && cAlive) { crr *= (1 + retRR); ctf *= (1 + retTF); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009))); }
     // TFSA room continues accumulating in retirement
     tfsaRoom += Math.round(7000 * Math.pow(1 + p.inf, y) / 500) * 500 + _tfsaLastYrWith;
     _tfsaLastYrWith = 0;
@@ -5090,7 +5104,20 @@ function resolveAlloc(p, acctKey) {
   if (p.allocOverride && p.allocOverride[acctKey]) return p.allocOverride[acctKey];
   return p.assetAlloc || { can: 0.25, us: 0.35, intl: 0.20, em: 0.05, bnd: 0.15 };
 }
-function calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR) {
+// Province-adjusted eligible-dividend tax multiplier. Returns the effective tax
+// rate on eligible Canadian dividends as a fraction of the marginal rate, after
+// federal gross-up (38%) and combined federal + provincial DTC. Values derived
+// from 2026 top-bracket effective eligible-dividend rates divided by top marginal
+// rates (per EY 2026 personal tax rate tables). Using top-bracket factors slightly
+// understates the tax benefit at lower incomes, where DTC has a larger effect.
+var _DIV_ELIG_FACTOR = {
+  QC: 0.75, ON: 0.73, BC: 0.68, AB: 0.71, SK: 0.68, MB: 0.76, NB: 0.70,
+  NS: 0.79, PE: 0.75, NL: 0.80, YT: 0.54, NT: 0.58, NU: 0.62
+};
+function divEligibleFactor(prov) {
+  return (_DIV_ELIG_FACTOR[prov] != null) ? _DIV_ELIG_FACTOR[prov] : 0.70;
+}
+function calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR, prov) {
   if (nrBal <= 0) return 0;
   var turnover = 0.10; // passive ETF turnover
   // Income by type
@@ -5101,16 +5128,26 @@ function calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR) {
   var totalReturn = nrBal * retNR_gross;
   var distributed = divCAN + divUS + divINTL + interest;
   var capGain = Math.max(0, totalReturn - distributed);
-  // Tax by type
-  var taxDivCAN = divCAN * margRate * 0.70; // eligible dividend discount
+  // Tax by type. Eligible-dividend factor varies by province; previously this
+  // used a flat 0.70 which overstated tax in low-DTC provinces and understated
+  // it in high-DTC provinces by ~15%.
+  var taxDivCAN = divCAN * margRate * divEligibleFactor(prov);
   var whtUS = divUS * 0.15; // WHT paid
   var whtINTL = divINTL * 0.15;
   var taxDivForeign = Math.max(0, (divUS + divINTL) * margRate - whtUS - whtINTL); // net of FTC
   var taxInterest = interest * margRate;
-  // Capital gains: only realized portion (turnover-based)
+  // Capital gains: only realized portion (turnover-based).
+  // Inclusion splits at the $250k annual threshold per CRA rules:
+  // first $250k at 50%, excess at 66.67%. Applying a hard cliff here creates a
+  // discontinuity where small turnover changes flip the whole realized gain into
+  // 66.67% territory (matches engine behavior elsewhere, e.g. principal-residence
+  // sale and NR deemed disposition at death).
   var capGainRealized = capGain * turnover;
-  var inclusionRate = capGainRealized > 250000 ? 0.6667 : 0.50;
-  var taxCapGain = capGainRealized * inclusionRate * margRate;
+  var CG_THR = 250000;
+  var taxableCG = capGainRealized > CG_THR
+    ? CG_THR * 0.50 + (capGainRealized - CG_THR) * 0.6667
+    : capGainRealized * 0.50;
+  var taxCapGain = taxableCG * margRate;
   return Math.max(0, taxDivCAN + taxDivForeign + taxInterest + taxCapGain);
 }
 function calcWHT(alloc, acctType) {
@@ -5731,7 +5768,7 @@ function runMC(p, N, _progressCb) {
         _mcTfsaRoom -= _mcActualC;
         var nrDrag;
         if (_maOn) {
-          var _nrTax = calcNRItemizedTax(nr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR);
+          var _nrTax = calcNRItemizedTax(nr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
           nr = nr + nr * retNR - _nrTax + (p.nrC || 0) * _adjGr;
         } else {
           nrDrag = p.nrTaxDrag || 9e-3;
@@ -5794,7 +5831,7 @@ function runMC(p, N, _progressCb) {
           crr = crr * (1 + retRR) + (p.cRRSPC || 0) * _cAdjGr;
           ctf = ctf * (1 + retTF) + cTfsaLim;
           if (_maOn) {
-            var _cnrTax = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR);
+            var _cnrTax = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
             cnr = cnr + cnr * retNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
           } else {
             cnr = cnr * (1 + retNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
@@ -5805,7 +5842,7 @@ function runMC(p, N, _progressCb) {
         rr *= 1 + retRR;
         tf *= 1 + retTF;
         if (_maOn) {
-          var _nrTaxRet = calcNRItemizedTax(nr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR);
+          var _nrTaxRet = calcNRItemizedTax(nr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
           nr = nr + nr * retNR - _nrTaxRet;
         } else {
           nr *= 1 + retNR - (p.nrTaxDrag || 9e-3);
@@ -5850,7 +5887,7 @@ function runMC(p, N, _progressCb) {
           crr *= 1 + retRR;
           ctf *= 1 + retTF;
           if (_maOn) {
-            var _cnrTaxRet = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR);
+            var _cnrTaxRet = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
             cnr = cnr + cnr * retNR - _cnrTaxRet;
           } else {
             cnr *= 1 + retNR - (p.nrTaxDrag || 9e-3);
@@ -5951,6 +5988,11 @@ function runMC(p, N, _progressCb) {
           revData[y].ret = Math.min(Math.max(0, spending - govInc), Math.max(0, _rvBal));
           revData[y].wFromRR = _wFromRR; revData[y].wFromTF = _wFromTF; revData[y].wFromNR = _wFromNR;
           revData[y].wRrifMin = rrifMin; revData[y].wMelt = meltAmt;
+          // Track unfunded spending after the withdrawal sequence (before forced property
+          // liquidation). Success/ruin is determined by finAssets below; this field lets
+          // reports and audits see partial shortfalls that eventually get covered by
+          // liquidation, separating "covered by sale" from "fully funded by portfolio".
+          revData[y].shortfall = Math.max(0, need);
         }
         // 2b: Track withdrawal fields across first 30 sims for median computation
         if (si < 30) {
@@ -7827,11 +7869,11 @@ function App() {
       var _gisTotal = _rd.reduce(function(s,r){return s + (r.srg||r.gis||0);}, 0);
       if (_gisTotal > 2000) _insights.push(fr ? "Le SRG ajoute ~" + f$(Math.round(_gisTotal / Math.max(1, _rd.filter(function(r){return (r.srg||r.gis||0)>0;}).length))) + "/an. Les retraits C\u00c9LI pr\u00e9servent cette prestation." : "GIS adds ~" + f$(Math.round(_gisTotal / Math.max(1, _rd.filter(function(r){return (r.srg||r.gis||0)>0;}).length))) + "/yr. TFSA withdrawals preserve this benefit.");
     }
-    // OAS clawback warning
-    var _oasClbk = _rd.some(function(r) { return (r.taxInc || 0) > OAS_CLAWBACK_THR; });
+    // OAS clawback warning — threshold indexed to each year's income (nominal vs nominal).
+    var _oasClbk = _rd.some(function(r) { return (r.taxInc || 0) > oasClbThrFor(r.age, age, inf); });
     if (_oasClbk) {
-      var _clbkYrs = _rd.filter(function(r){return (r.taxInc||0) > OAS_CLAWBACK_THR;}).length;
-      _insights.push(fr ? "R\u00e9cup\u00e9ration PSV d\u00e9tect\u00e9e sur " + _clbkYrs + " ann\u00e9e(s) (revenu > " + fD(OAS_CLAWBACK_THR) + ")." : "OAS clawback detected for " + _clbkYrs + " year(s) (income > " + fD(OAS_CLAWBACK_THR) + ").");
+      var _clbkYrs = _rd.filter(function(r){return (r.taxInc||0) > oasClbThrFor(r.age, age, inf);}).length;
+      _insights.push(fr ? "R\u00e9cup\u00e9ration PSV d\u00e9tect\u00e9e sur " + _clbkYrs + " ann\u00e9e(s) (seuil " + fD(OAS_CLAWBACK_THR) + "$ 2026, index\u00e9)." : "OAS clawback detected for " + _clbkYrs + " year(s) (threshold $" + fD(OAS_CLAWBACK_THR) + " 2026, indexed).");
     }
     // Pension splitting benefit (only show if actual tax savings detected)
     if (split && cOn && sal > 0) {
@@ -8967,7 +9009,7 @@ var reportHTML = useMemo(function() {
   if (_hasNaive) _naiveTax = (mc._naiveMC.medRevData || []).reduce(function(s,r){ return s + (r.tax||0); }, 0);
   var _taxAlpha = _hasNaive ? _naiveTax - _optTax : null;
   var avgEffRate = _optTax > 0 ? _optTax / Math.max(1, revData.reduce(function(s,r){return s+(r.taxInc||0);},0)) : 0;
-  var oasClbkYrs = revData.filter(function(r){return (r.taxInc||0) > 95323;}).length;
+  var oasClbkYrs = revData.filter(function(r){return (r.taxInc||0) > oasClbThrFor(r.age, age, inf);}).length;
 
   // Fee impact
   var horizon = Math.max(10, (deathAge||90) - age);
@@ -10095,7 +10137,7 @@ var reportHTML = useMemo(function() {
     if (_hN) _nT = (mc._naiveMC.medRevData||[]).reduce(function(s,r){return s+(r.tax||0);},0);
     var tA = _hN ? _nT - oT : Math.round(oT*0.18);
     base.strategy = { withdrawalOrder: wStrat, meltdown: melt, splitting: split, splitPct: splitP };
-    base.tax = { lifetimeTax: Math.round(oT), taxAlpha: Math.round(tA), oasClawbackYears: rd.filter(function(r){return(r.taxInc||0)>95323;}).length, retirementYears: rd.filter(function(r){return r.age>=retAge;}).length, avgEffectiveRate: oT > 0 ? Math.round(oT / Math.max(1, rd.reduce(function(s,r){return s+(r.taxInc||0);},0)) * 100) : 0 };
+    base.tax = { lifetimeTax: Math.round(oT), taxAlpha: Math.round(tA), oasClawbackYears: rd.filter(function(r){return(r.taxInc||0)>oasClbThrFor(r.age, age, inf);}).length, retirementYears: rd.filter(function(r){return r.age>=retAge;}).length, avgEffectiveRate: oT > 0 ? Math.round(oT / Math.max(1, rd.reduce(function(s,r){return s+(r.taxInc||0);},0)) * 100) : 0 };
     base.estate = { medianNetEstate: Math.round(mc.medEstateNet||0), estateTax: Math.round(mc.medEstateTax||0) };
     // CCPC corporate data for AI
     if (bizOn) {
@@ -16300,7 +16342,7 @@ tab === 16 && React.createElement("div", { style: { padding: 10, color: CL.tx } 
     if (retData.length === 0) return null;
     var totalTax = retData.reduce(function(s, r) { return s + (r.tax || 0); }, 0);
     var totalGIS = retData.reduce(function(s, r) { return s + (r.gis || 0); }, 0);
-    var oasClbYrs = retData.filter(function(r) { return (r.taxInc || 0) > OAS_CLAWBACK_THR; }).length;
+    var oasClbYrs = retData.filter(function(r) { return (r.taxInc || 0) > oasClbThrFor(r.age, age, inf); }).length;
     var totalTaxInc = retData.reduce(function(s, r) { return s + (r.taxInc || 0); }, 0);
     var avgEffRate = totalTaxInc > 0 ? totalTax / totalTaxInc : 0;
     return React.createElement(React.Fragment, null,
@@ -16462,7 +16504,7 @@ showDetRef ? React.createElement("th", { style: refHeaderStyle(), title: uiText(
           ),
           React.createElement("tbody", null,
             retData.map(function(r, i) {
-              var isOAS = (r.taxInc || 0) > OAS_CLAWBACK_THR;
+              var isOAS = (r.taxInc || 0) > oasClbThrFor(r.age, age, inf);
               var isGIS = (r.gis || 0) > 0;
               var rowBg = isOAS ? "rgba(208,72,72,0.08)" : isGIS ? "rgba(42,140,70,0.08)" : i % 2 === 0 ? "transparent" : CL.s2;
               var bal = (r.aRR || 0) + (r.aTF || 0) + (r.aNR || 0) + (r.aCRR || 0) + (r.aCTF || 0) + (r.aCNR || 0) + (r.aPE || 0) + (r.aPM || 0) + (r.aDC || 0) + (bizOn ? (r.corpBal || 0) : 0);
@@ -17355,10 +17397,10 @@ tab === 19 && (function() {
     );
   }
 
-  // \u2500\u2500 OAS/GIS clawback analysis \u2500\u2500
+  // \u2500\u2500 OAS/GIS clawback analysis (threshold indexed per year) \u2500\u2500
   var oasClawOpt = 0, oasClawNaive = 0;
-  medRev.forEach(function(r) { if (r.age >= (oasAge || 65)) { var inc = r.taxInc || 0; if (inc > OAS_CLAWBACK_THR) oasClawOpt += Math.min(OAS_MAX_MONTHLY * 12, (inc - OAS_CLAWBACK_THR) * 0.15); } });
-  naiveRev.forEach(function(r) { if (r.age >= (oasAge || 65)) { var inc = r.taxInc || 0; if (inc > OAS_CLAWBACK_THR) oasClawNaive += Math.min(OAS_MAX_MONTHLY * 12, (inc - OAS_CLAWBACK_THR) * 0.15); } });
+  medRev.forEach(function(r) { if (r.age >= (oasAge || 65)) { var inc = r.taxInc || 0; var _thr = oasClbThrFor(r.age, age, inf); if (inc > _thr) oasClawOpt += Math.min(OAS_MAX_MONTHLY * 12, (inc - _thr) * 0.15); } });
+  naiveRev.forEach(function(r) { if (r.age >= (oasAge || 65)) { var inc = r.taxInc || 0; var _thr = oasClbThrFor(r.age, age, inf); if (inc > _thr) oasClawNaive += Math.min(OAS_MAX_MONTHLY * 12, (inc - _thr) * 0.15); } });
   var oasSaved = oasClawNaive - oasClawOpt;
 
   // \u2500\u2500 Effective tax rate comparison \u2500\u2500
@@ -18248,7 +18290,7 @@ tab === 31 && bizOn && mc && (function() {
   // Note: approximation ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â les crÃƒÆ’Ã‚Â©dits de dividendes rendent le prorata inexact
   var personalTaxOnCorpInc = rd.reduce(function(s, r) { var corpTotal = (r.corpSal||0)+(r.corpDiv||0)+(r.corpExtract||0); var ratio = corpTotal > 0 ? Math.min(1, corpTotal / Math.max(1, (r.taxInc||1))) : 0; return s + (r.tax||0) * ratio; }, 0);
   // OAS clawback detection
-  var oasClawYrs = postRetRd.filter(function(r) { return r.age >= (oasAge || 65) && (r.corpExtract || 0) > 0 && ((r.corpExtract || 0) * 1.38 + (r.rrq || 0) + (r.psv || 0)) > OAS_CLAWBACK_THR; }).length;
+  var oasClawYrs = postRetRd.filter(function(r) { return r.age >= (oasAge || 65) && (r.corpExtract || 0) > 0 && ((r.corpExtract || 0) * 1.38 + (r.rrq || 0) + (r.psv || 0)) > oasClbThrFor(r.age, age, inf); }).length;
   // Total wealth for corp %
   var totalWealth = rd.length > 0 ? (rd[rd.length-1].aRR||0)+(rd[rd.length-1].aTF||0)+(rd[rd.length-1].aNR||0)+(rd[rd.length-1].corpBal||0) : 0;
   var corpPct = totalWealth > 0 ? Math.round((lastCorpBal / totalWealth) * 100) : 0;

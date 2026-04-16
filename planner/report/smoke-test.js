@@ -127,16 +127,22 @@
   assert(Ai.SLOTS.length >= 15, "15+ slots defined (" + Ai.SLOTS.length + ")");
   assert(Ai.SLOTS[0].key === "overall_assessment", "first slot is overall_assessment");
 
-  // parseResponse with valid JSON
+  // parseResponse with valid JSON (leaves markdown intact; AiBlock promotes it safely)
   var _testJson = '{"verdict": "Test **bold** text", "extra": "ignored"}';
   var _parsed = Ai.parseResponse(_testJson, ["verdict"]);
-  assert(_parsed.verdict === "Test <strong>bold</strong> text", "parseResponse converts **bold** to <strong>");
+  assert(_parsed.verdict === "Test **bold** text", "parseResponse preserves markdown (no HTML conversion)");
   assert(!_parsed.extra, "parseResponse filters to requested slots only");
 
   // parseResponse with code fences
   var _fenced = '```json\n{"verdict": "OK"}\n```';
   var _parsedFence = Ai.parseResponse(_fenced, ["verdict"]);
   assert(_parsedFence.verdict === "OK", "parseResponse strips code fences");
+
+  // AiBlock: HTML in AI output stays escaped; only markdown is promoted
+  var _hostile = F.AiBlock("hello <img src=x onerror=alert(1)> **safe**", true);
+  assert(_hostile.indexOf("<img") < 0, "AiBlock escapes raw HTML from AI");
+  assert(_hostile.indexOf("&lt;img") >= 0, "AiBlock renders HTML as escaped entities");
+  assert(_hostile.indexOf("<strong>safe</strong>") >= 0, "AiBlock promotes **bold** to <strong>");
 
   // ── 5. BExport contract ───────────────────────────────────────────
   console.log("\n=== BExport contract ===");

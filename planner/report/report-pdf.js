@@ -33,7 +33,7 @@
     // Headers
     'h1{font-size:26px;color:'+C.gold+';font-weight:800;letter-spacing:-.5px;line-height:1.2}',
     'h2{font-size:14px;color:#666;font-weight:400;margin-top:2px}',
-    '.sec{font-size:13px;color:'+C.gold+';border-bottom:2px solid '+C.gold+';padding-bottom:4px;margin:20px 0 10px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px;page-break-after:avoid}',
+    '.sec{font-size:14px;color:'+C.gold+';border-bottom:2px solid '+C.gold+';padding-bottom:4px;margin:22px 0 10px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px;page-break-after:avoid}',
     '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:11px;font-weight:800;flex-shrink:0}',
     '.sec-q{font-size:11px;color:#888;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto}',
     // Cards & containers
@@ -48,7 +48,7 @@
     '.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}',
     '.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}',
     // KPI
-    '.kpi{text-align:center;padding:10px 6px;border:1px solid #e0d3bf;border-radius:8px;background:#fffdf9;break-inside:avoid}',
+    '.kpi{text-align:center;padding:10px 6px;border:1px solid #e0d3bf;border-radius:8px;background:#fffdf9;break-inside:avoid;box-shadow:0 1px 0 rgba(0,0,0,0.03)}',
     '.kpi-v{font-size:20px;font-weight:700;font-family:"JetBrains Mono",monospace;color:#3b2f1f}',
     '.kpi-l{font-size:10px;color:#6a6155;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}',
     '.grade-ring{display:inline-flex;align-items:center;justify-content:center;width:90px;height:90px;border-radius:50%;font-size:30px;font-weight:900;font-family:"JetBrains Mono",monospace}',
@@ -67,11 +67,18 @@
     '.callout-ai p{margin-top:4px;line-height:1.7}',
     // Tables
     '.tbl{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0}',
-    '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:'+C.gold+';background:#f9f7f2;border-bottom:2px solid '+C.border+'}',
+    '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:'+C.gold+';background:#f9f7f2;border-bottom:2px solid '+C.border+';letter-spacing:.35px}',
     '.tbl th:first-child{text-align:left}',
     '.tbl td{padding:4px 6px;text-align:right;border-bottom:1px solid #f0ece4;font-family:"JetBrains Mono",monospace;font-size:10px}',
     '.tbl td:first-child{text-align:left;font-family:"DM Sans",sans-serif}',
     '.tbl tr.ret{font-weight:700;background:#faf8f3}',
+    '.tbl tbody tr:nth-child(even):not(.ret) td{background:#fdfbf7}',
+    // Charts
+    '.chart-block{border:1px solid '+C.border+';border-radius:8px;background:#fff;padding:8px 10px;margin:10px 0 12px;break-inside:avoid;page-break-inside:avoid}',
+    '.chart-title{font-size:11px;font-weight:700;color:'+C.gold+';margin:2px 0 6px}',
+    '.chart-legend{display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 2px;font-size:9px;color:#888}',
+    '.chart-legend-item{display:flex;align-items:center;gap:4px}',
+    '.chart-legend-swatch{width:8px;height:8px;border-radius:2px;display:inline-block}',
     // Reco cards
     '.reco-card{padding:14px 16px;margin:8px 0;border-radius:8px;background:'+C.bgAlt+';border:1px solid '+C.border+';break-inside:avoid;position:relative}',
     '.reco-priority{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;margin-bottom:8px}',
@@ -126,18 +133,20 @@
     '.ai-placeholder-lbl{font-size:10px;color:'+C.purple+';font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}',
     '.ai-placeholder-body{font-size:11px;color:#a099b8;line-height:1.6}',
     // Section page wrapper
-    '.sec-page{page-break-before:always;padding-top:8px}',
+    '.sec-page{page-break-before:always;padding-top:8px;margin-top:2px}',
     '.sec-page:first-of-type{page-break-before:avoid}',
+    '.sec + .narr{margin-top:8px}',
     // Print
     '@media print{@page{margin:1.5cm;size:letter}',
     'h3.sec{page-break-after:avoid}',
-    '.cd,.kpi,table,.callout,.reco-card{break-inside:avoid}',
-    'body{padding:0;font-size:11px}',
+    '.cd,.kpi,table,.callout,.reco-card,.chart-block{break-inside:avoid;page-break-inside:avoid}',
+    'body{padding:0;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
     '.narr{font-size:11px;line-height:1.7}',
     '.sec-page{page-break-before:always}',
     '.sec-page:first-of-type{page-break-before:avoid}',
     'table{page-break-inside:auto}tr{page-break-inside:avoid}thead{display:table-header-group}',
     'svg{max-width:700px !important;max-height:400px !important}',
+    '.chart-legend{font-size:8px}',
     '.copy-btn,.no-print,[onclick]{display:none !important}',
     '.print-only{display:block !important}',
     '.page-footer{display:block !important;position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px}',
@@ -598,6 +607,7 @@
       // Fan chart
       h += Ch.svgFanChart(mc.pD, {
         title: fr ? 'Projection Monte Carlo' : 'Monte Carlo Projection',
+        fr: fr,
         yLabel: fr ? 'Patrimoine ($)' : 'Wealth ($)',
         annotations: [
           { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' }
@@ -624,6 +634,7 @@
           }
           h += Ch.svgHistogram(_hBins, {
             title: fr ? 'Distribution du patrimoine final (approximation)' : 'Final Wealth Distribution (approximate)',
+            fr: fr,
             p25: _hP25, p50: _hP50, p75: _hP75,
             detValue: _hEnd.mp_total || _hEnd.rmp_total || 0
           });
@@ -732,13 +743,27 @@
       h += '</tr></thead><tbody>';
       cfRows.forEach(function(r) {
         var isKey = r.age === p.retAge || r.age === 72;
-        var inc = (r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0) + (r.srg || 0);
+        // Income: salary in working years, government + withdrawals in retirement.
+        // Engine populates r.sal/r.cSal; test harness must too.
+        var preRet = r.age < p.retAge;
+        var workInc = (r.sal || 0) + (r.cSal || 0);
+        var retInc = (r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0) + (r.srg || 0);
+        var inc = preRet ? workInc : retInc;
+        // Spending: engine writes r.spend; test harness writes r.sp/r.spending. Accept all.
+        var spend = r.spend != null ? r.spend : (r.sp != null ? r.sp : (r.spending || 0));
+        // Balance: engine writes a*-prefixed balances, harness writes bal*-prefixed. Accept both.
+        var bal = r.balTot;
+        if (bal == null) {
+          bal = (r.aRR || r.balRR || 0) + (r.aTF || r.balTF || 0) + (r.aNR || r.balNR || 0)
+              + (r.aCRR || r.balCRR || 0) + (r.aCTF || r.balCTF || 0) + (r.aCNR || r.balCNR || 0)
+              + (r.aPE || 0) + (r.aPM || 0) + (r.aDC || 0) + (r.balLIRA || 0);
+        }
         h += '<tr' + (isKey ? ' class="ret"' : '') + '>';
         h += '<td>' + r.age + '</td>';
         h += '<td>' + f$(Math.round(inc)) + '</td>';
-        h += '<td>' + f$(Math.round(r.sp || r.spending || 0)) + '</td>';
+        h += '<td>' + f$(Math.round(spend)) + '</td>';
         h += '<td style="color:' + C.red + '">' + f$(Math.round(r.tax || 0)) + '</td>';
-        h += '<td>' + f$(Math.round(r.balTot || ((r.balRR || 0) + (r.balTF || 0) + (r.balNR || 0) + (r.balCRR || 0) + (r.balCTF || 0) + (r.balCNR || 0) + (r.balLIRA || 0)))) + '</td>';
+        h += '<td>' + f$(Math.round(bal)) + '</td>';
         h += '</tr>';
       });
       h += '</tbody></table>';
@@ -819,9 +844,14 @@
           var effR = r.taxInc > 0 ? Math.round((r.tax || 0) / r.taxInc * 100) : 0;
           h += '<tr' + (isKey ? ' class="ret"' : '') + '>';
           h += '<td>' + r.age + '</td>';
-          h += '<td>' + (r.aRR > 0 ? fR(r.aRR) : '\u2014') + '</td>';
-          h += '<td>' + (r.aTF > 0 ? fR(r.aTF) : '\u2014') + '</td>';
-          h += '<td>' + (r.aNR > 0 ? fR(r.aNR) : '\u2014') + '</td>';
+          // Withdrawal columns — engine writes wFromRR/wFromTF/wFromNR (annual draws).
+          // aRR/aTF/aNR are end-of-year balances in the engine schema, NOT withdrawals.
+          var wRR = r.wFromRR != null ? r.wFromRR : 0;
+          var wTF = r.wFromTF != null ? r.wFromTF : 0;
+          var wNR = r.wFromNR != null ? r.wFromNR : 0;
+          h += '<td>' + (wRR > 0 ? fR(wRR) : '\u2014') + '</td>';
+          h += '<td>' + (wTF > 0 ? fR(wTF) : '\u2014') + '</td>';
+          h += '<td>' + (wNR > 0 ? fR(wNR) : '\u2014') + '</td>';
           h += '<td>' + ((r.rrq || 0) > 0 ? fR(r.rrq) : '\u2014') + '</td>';
           h += '<td>' + ((r.psv || 0) > 0 ? fR(r.psv) : '\u2014') + '</td>';
           h += '<td>' + ((r.srg || 0) > 0 ? fR(r.srg) : '\u2014') + '</td>';
@@ -1439,6 +1469,11 @@
   window.buildReport = function(data) {
     _exportMode = !!(data && data.exportMode);
     var d = D.buildReportPayload(data);
+
+    // Set the rendering-scope language so shared formatters (fmtCurrency, pc)
+    // produce locale-correct output for EN reports. fmtCurrency previously
+    // hardcoded fr-CA, which broke EN report currency formatting.
+    if (d && typeof d.fr === "boolean") window.__bfLang = d.fr ? "fr" : "en";
 
     // Empty / loading states
     if (d.empty) {

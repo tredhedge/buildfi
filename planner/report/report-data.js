@@ -15,7 +15,7 @@
   var OAS_CLAWBACK_THR = 95323;
   var OAS_MAX_MONTHLY = 742.31;
   var GIS_MAX_SINGLE = 1105.43;
-  var GIS_MAX_COUPLE = 665.41;
+  var GIS_MAX_COUPLE = 667.41;
   var QPP_MAX_MONTHLY = 1507.65;
   var QPP_MGA = 74600;
   var QPP_YAMPE = 85000;
@@ -286,17 +286,34 @@
     var revData = mc.medRevData || mc.revData || [];
     var totalBal = (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0) + (p.liraBal || 0) + (p.fhsaBal || 0) + (p.cOn ? (p.cRRSP || 0) + (p.cTFSA || 0) + (p.cNR || 0) : 0);
 
-    // Government benefits
-    var qppM = calcQPP(p.qppAge || 65, p.avgE || 0, p.qppYrs || 0);
-    var oasM = calcOAS(p.oasAge || 65, (p.retSpM || 0) * 12);
+    // Government benefits — static snapshot used as fallback only.
+    // Real numbers come from revData (path-derived) so KPIs stay consistent with charts.
+    var _qppSnap = calcQPP(p.qppAge || 65, p.avgE || 0, p.qppYrs || 0);
+    var _oasSnap = calcOAS(p.oasAge || 65, (p.retSpM || 0) * 12);
     var cQppM = p.cOn ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) : 0;
     var cOasM = p.cOn ? calcOAS(p.cOasAge || 65, (p.cRetSpM || 0) * 12) : 0;
-    var govM = qppM + oasM + (p.cOn ? cQppM + cOasM : 0);
-    var govY = govM * 12;
     var totalSpM = (p.retSpM || 0) + (p.cOn ? (p.cRetSpM || 0) : 0);
-    var spendY = totalSpM * 12;
+
+    // Path-derived steady state: average across retirement years where both QPP and OAS are flowing.
+    // This keeps the KPI band, snapshot text, and revenue chart numerically aligned.
+    var _retPathRows = revData.filter(function(r) { return (r.age || 0) >= (retAge || 65); });
+    var _bothOnRows = _retPathRows.filter(function(r) { return (r.rrq || 0) > 0 && (r.psv || 0) > 0; });
+    var _useRows = _bothOnRows.length > 0 ? _bothOnRows : _retPathRows;
+    var govY, spendY, qppM, oasM;
+    if (_useRows.length > 0) {
+      govY = _useRows.reduce(function(s, r) { return s + (r.rrq || 0) + (r.psv || 0) + (r.pen || 0); }, 0) / _useRows.length;
+      spendY = _useRows.reduce(function(s, r) { return s + (r.sp || r.spending || r.spend || 0); }, 0) / _useRows.length;
+      qppM = _useRows.reduce(function(s, r) { return s + (r.rrq || 0); }, 0) / _useRows.length / 12;
+      oasM = _useRows.reduce(function(s, r) { return s + (r.psv || 0); }, 0) / _useRows.length / 12;
+    } else {
+      govY = (_qppSnap + _oasSnap + (p.cOn ? cQppM + cOasM : 0)) * 12;
+      spendY = totalSpM * 12;
+      qppM = _qppSnap;
+      oasM = _oasSnap;
+    }
+    var govM = govY / 12;
     var covRatio = spendY > 0 ? govY / spendY : 0;
-    var gapM = Math.max(0, totalSpM - govM);
+    var gapM = Math.max(0, (spendY / 12) - govM);
 
     // MER weighted
     var merWt = totalBal > 0 ? ((p.merR || 0) * (p.rrsp || 0) + (p.merT || 0) * (p.tfsa || 0) + (p.merN || 0) * (p.nr || 0)) / Math.max(1, (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0)) : 0;
@@ -354,6 +371,9 @@
       p: p,
       client: client,
       ai: ai,
+      finLiteracy: data.finLiteracy || p.finLiteracy || "intermediate",
+      stressLevel: data.stressLevel || p.stressLevel || "moderate",
+      detailPref: data.detailPref || p.detailPref || "balanced",
       fn: _fn,
       sfn: _sfn,
       rm: rm,
@@ -397,7 +417,7 @@
   // EXPORT
   // ══════════════════════════════════════════════════════════════
 
-  window.BData = {
+  window.BData = Object.freeze({
     // Constants
     TAX_BASE_YEAR: TAX_BASE_YEAR,
     FED_BRACKETS: FED_BRACKETS,
@@ -419,6 +439,6 @@
     calcPayroll: calcPayroll,
     // Data builder
     buildReportPayload: buildReportPayload
-  };
+  });
 
 })();

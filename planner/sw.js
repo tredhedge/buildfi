@@ -1,14 +1,21 @@
-// FIRE Planner Pro+ — Service Worker (Offline-first)
-var CACHE_NAME = 'fire-planner-v11129';
+// BuildFi Planner — Service Worker (Offline-first, v12)
+//
+// Cache name is bumped whenever the shipped planner code changes so that
+// previously cached assets are evicted on activate. Bump VERSION below when
+// shipping a new build.
+var VERSION = 'v12.0.0-2026-04-16';
+var CACHE_NAME = 'buildfi-planner-' + VERSION;
+
+// Core assets to pre-cache. The main planner file is planner_v2.html — keep this
+// list in sync with real filenames or install will fail silently for missing ones.
 var ASSETS = [
   './',
-  './planner.html',
+  './planner_v2.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
 ];
 
-// Install: cache core assets
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -19,7 +26,6 @@ self.addEventListener('install', function(e) {
   );
 });
 
-// Activate: clean old caches
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
@@ -29,14 +35,25 @@ self.addEventListener('activate', function(e) {
       );
     }).then(function() {
       return self.clients.claim();
+    }).then(function() {
+      // Signal all open clients that a new version is active so the page can
+      // surface a "reload for latest version" prompt instead of silently
+      // serving a mix of old and new assets across navigations.
+      return self.clients.matchAll({ includeUncontrolled: true }).then(function(cs) {
+        cs.forEach(function(c) { c.postMessage({ type: 'sw-activated', version: VERSION }); });
+      });
     })
   );
 });
 
-// Fetch: cache-first for app assets, network-first for CDN
+// Allow clients to force-activate a waiting SW (for explicit user-triggered updates).
+self.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'skip-waiting') self.skipWaiting();
+});
+
 self.addEventListener('fetch', function(e) {
   var url = new URL(e.request.url);
-  
+
   // CDN resources (React, fonts, xlsx): network-first with cache fallback
   if (url.hostname !== location.hostname) {
     e.respondWith(
@@ -54,7 +71,7 @@ self.addEventListener('fetch', function(e) {
     );
     return;
   }
-  
+
   // App assets: cache-first
   e.respondWith(
     caches.match(e.request).then(function(cached) {

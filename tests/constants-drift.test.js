@@ -19,6 +19,12 @@ import {
   CAPITAL_GAINS,
 } from "../lib/constants-registry.ts";
 
+// CAPITAL_GAINS field naming sanity — prevents silent undefined comparisons if the
+// registry renames `inclusionRateLow`/`inclusionRateHigh` without updating tests.
+if (CAPITAL_GAINS && typeof CAPITAL_GAINS.inclusionRateLow !== "number") {
+  throw new Error("CAPITAL_GAINS.inclusionRateLow missing from registry — update test if field renamed.");
+}
+
 import {
   FED_BRACKETS,
   FED_RATES,
@@ -92,6 +98,47 @@ function extractTFSACap(filePath) {
   // Match patterns like: Math.min(ac, 7000) or annualTFSA = 7000
   const match = content.match(/Math\.min\(ac,\s*(\d+)\)/);
   return match ? parseInt(match[1], 10) : null;
+}
+
+// Extract a subset of the mirrored `var X = ...;` constants from report-data.js.
+// report-data.js duplicates ~15 tax/pension constants from the planner engine to
+// support headless report generation. Silent drift here means FR reports show
+// different numbers than the interactive planner for the same inputs.
+function extractReportDataConstants() {
+  const src = readFileSync(resolve(root, "planner/report/report-data.js"), "utf-8");
+  function numMatch(name) {
+    const re = new RegExp("var\\s+" + name + "\\s*=\\s*(-?\\d+(?:\\.\\d+)?)\\s*;");
+    const m = src.match(re);
+    return m ? parseFloat(m[1]) : null;
+  }
+  return {
+    TAX_BASE_YEAR: numMatch("TAX_BASE_YEAR"),
+    FED_PERSONAL: numMatch("FED_PERSONAL"),
+    OAS_CLAWBACK_THR: numMatch("OAS_CLAWBACK_THR"),
+    OAS_MAX_MONTHLY: numMatch("OAS_MAX_MONTHLY"),
+    GIS_MAX_SINGLE: numMatch("GIS_MAX_SINGLE"),
+    GIS_MAX_COUPLE: numMatch("GIS_MAX_COUPLE"),
+    QPP_MAX_MONTHLY: numMatch("QPP_MAX_MONTHLY"),
+    QPP_MGA: numMatch("QPP_MGA"),
+    QPP_YAMPE: numMatch("QPP_YAMPE"),
+    TFSA_LIMIT_2026: numMatch("TFSA_LIMIT_2026")
+  };
+}
+
+// Extract the injected `C = {...}` block from planner_v2.html and eval it.
+// planner_v2.html is the engine source of truth for the interactive planner; this
+// guards against the three-way drift between:
+//   lib/constants-registry.ts (shared)
+//   lib/engine/index.js       (Bilan/Bilan360 server engine)
+//   planner/planner_v2.html   (Laboratoire / interactive planner)
+function extractPlannerConstants() {
+  const html = readFileSync(resolve(root, "planner/planner_v2.html"), "utf-8");
+  const m = html.match(/\/\*__INJECTED_CONSTANTS_START__\*\/([\s\S]*?)\/\*__INJECTED_CONSTANTS_END__\*\//);
+  if (!m) throw new Error("Could not find __INJECTED_CONSTANTS__ block in planner_v2.html");
+  // The block is `var C = { ... };` — eval in an isolated scope and return C.
+  const src = m[1].trim();
+  const fn = new Function(src + "\nreturn C;");
+  return fn();
 }
 
 // Extract inline EI/QPIP constants from engine
@@ -171,21 +218,17 @@ assertEqual(GIS_MAX_COUPLE, GIS.maxCouple, "GIS max couple match");
 console.log("── TFSA ──");
 assertEqual(TFSA_LIMIT_2026, TFSA.annualLimit, "TFSA annual limit match (engine export)");
 
-const tfsaEss = extractTFSACap("lib/quiz-translator.ts");
-const tfsaInt = extractTFSACap("lib/quiz-translator-inter.ts");
+const tfsa360 = extractTFSACap("lib/quiz-translator-360.ts");
 const tfsaExp = extractTFSACap("lib/quiz-translator-expert.ts");
-assertEqual(tfsaEss, TFSA.annualLimit, "TFSA cap in quiz-translator.ts");
-assertEqual(tfsaInt, TFSA.annualLimit, "TFSA cap in quiz-translator-inter.ts");
+assertEqual(tfsa360, TFSA.annualLimit, "TFSA cap in quiz-translator-360.ts");
 assertEqual(tfsaExp, TFSA.annualLimit, "TFSA cap in quiz-translator-expert.ts");
 
 // ── 7. RRSP ──────────────────────────────────────────────────
 
 console.log("── RRSP ──");
-const rrspEss = extractRRSPCap("lib/quiz-translator.ts");
-const rrspInt = extractRRSPCap("lib/quiz-translator-inter.ts");
+const rrsp360 = extractRRSPCap("lib/quiz-translator-360.ts");
 const rrspExp = extractRRSPCap("lib/quiz-translator-expert.ts");
-assertEqual(rrspEss, RRSP.dollarCap, "RRSP cap in quiz-translator.ts");
-assertEqual(rrspInt, RRSP.dollarCap, "RRSP cap in quiz-translator-inter.ts");
+assertEqual(rrsp360, RRSP.dollarCap, "RRSP cap in quiz-translator-360.ts");
 assertEqual(rrspExp, RRSP.dollarCap, "RRSP cap in quiz-translator-expert.ts");
 
 // ── 8. Inline engine constants (EI, QPIP, CESG, SBD, LCGE) ─
@@ -208,12 +251,64 @@ assertEqual(inline.lcge, CORPORATE.lcge, "LCGE");
 
 console.log("── RRSP Contribution Rate ──");
 // All translators should use 0.18
-const transEss = readFileSync(resolve(root, "lib/quiz-translator.ts"), "utf-8");
-const transInt = readFileSync(resolve(root, "lib/quiz-translator-inter.ts"), "utf-8");
+const trans360 = readFileSync(resolve(root, "lib/quiz-translator-360.ts"), "utf-8");
 const transExp = readFileSync(resolve(root, "lib/quiz-translator-expert.ts"), "utf-8");
-assertEqual(transEss.includes("sal * 0.18"), true, "Essentiel uses 18% RRSP rate");
-assertEqual(transInt.includes("sal * 0.18"), true, "Inter uses 18% RRSP rate");
+assertEqual(trans360.includes("sal * 0.18"), true, "360 translator uses 18% RRSP rate");
 assertEqual(transExp.includes("sal * 0.18"), true, "Expert uses 18% RRSP rate");
+
+// ── 10. Planner (planner_v2.html) injected C object ─────────
+// Guards against the planner drifting from the shared registry. Covers the subset
+// of constants where a wrong number would ship to users and materially affect
+// projections or tax math.
+
+console.log("── Planner planner_v2.html (injected C) ──");
+try {
+  const P = extractPlannerConstants();
+  assertEqual(P.TAX_BASE_YEAR, TAX_YEAR, "Planner TAX_BASE_YEAR matches registry");
+  assertArrayEqual(P.FED_BRACKETS, [...FEDERAL.brackets], "Planner FED_BRACKETS match");
+  assertArrayEqual(P.FED_RATES, [...FEDERAL.rates], "Planner FED_RATES match");
+  assertEqual(P.FED_PERSONAL, FEDERAL.personalAmount, "Planner FED_PERSONAL matches");
+  assertEqual(P.OAS_CLAWBACK_THRESHOLD, OAS.clawbackThreshold, "Planner OAS_CLAWBACK_THRESHOLD matches");
+  assertEqual(P.OAS_MAX_MONTHLY, OAS.maxMonthly, "Planner OAS_MAX_MONTHLY matches");
+  assertEqual(P.QPP_MAX_MONTHLY, CPP_QPP.maxMonthly65, "Planner QPP_MAX_MONTHLY matches");
+  assertEqual(P.QPP_MGA, CPP_QPP.ympe, "Planner QPP_MGA (YMPE) matches");
+  assertEqual(P.QPP_YAMPE, CPP_QPP.yampe, "Planner QPP_YAMPE matches");
+  assertEqual(P.GIS_MAX_SINGLE, GIS.maxSingle, "Planner GIS_MAX_SINGLE matches");
+  assertEqual(P.GIS_MAX_COUPLE, GIS.maxCouple, "Planner GIS_MAX_COUPLE matches");
+  assertEqual(P.TFSA_ANNUAL_LIMIT, TFSA.annualLimit, "Planner TFSA_ANNUAL_LIMIT matches");
+  assertEqual(P.LCGE, CORPORATE.lcge, "Planner LCGE matches");
+  assertEqual(P.CG_THRESHOLD, CAPITAL_GAINS.threshold, "Planner CG_THRESHOLD matches");
+  assertEqual(P.CG_INCLUSION_LOW, CAPITAL_GAINS.inclusionRateLow, "Planner CG_INCLUSION_LOW matches");
+  assertEqual(P.CG_INCLUSION_HIGH, CAPITAL_GAINS.inclusionRateHigh, "Planner CG_INCLUSION_HIGH matches");
+} catch (e) {
+  failed++;
+  errors.push({ name: "Planner constants extraction", detail: e.message });
+  console.error("  FAIL: Planner constants extraction — " + e.message);
+}
+
+// ── 11. Report-data.js mirror (report generation engine) ────
+// Third arm of the drift chain: the standalone JS report engine used by the
+// test harness duplicates these constants. Historical bug: GIS_MAX_COUPLE sat
+// at 665.41 while registry was 667.41 (Service Canada Q1 2026).
+
+console.log("── Report-data.js (report-data.js) ──");
+try {
+  const RD = extractReportDataConstants();
+  assertEqual(RD.TAX_BASE_YEAR, TAX_YEAR, "report-data TAX_BASE_YEAR matches");
+  assertEqual(RD.FED_PERSONAL, FEDERAL.personalAmount, "report-data FED_PERSONAL matches");
+  assertEqual(RD.OAS_CLAWBACK_THR, OAS.clawbackThreshold, "report-data OAS_CLAWBACK_THR matches");
+  assertEqual(RD.OAS_MAX_MONTHLY, OAS.maxMonthly, "report-data OAS_MAX_MONTHLY matches");
+  assertEqual(RD.GIS_MAX_SINGLE, GIS.maxSingle, "report-data GIS_MAX_SINGLE matches");
+  assertEqual(RD.GIS_MAX_COUPLE, GIS.maxCouple, "report-data GIS_MAX_COUPLE matches");
+  assertEqual(RD.QPP_MAX_MONTHLY, CPP_QPP.maxMonthly65, "report-data QPP_MAX_MONTHLY matches");
+  assertEqual(RD.QPP_MGA, CPP_QPP.ympe, "report-data QPP_MGA matches");
+  assertEqual(RD.QPP_YAMPE, CPP_QPP.yampe, "report-data QPP_YAMPE matches");
+  assertEqual(RD.TFSA_LIMIT_2026, TFSA.annualLimit, "report-data TFSA_LIMIT_2026 matches");
+} catch (e) {
+  failed++;
+  errors.push({ name: "report-data extraction", detail: e.message });
+  console.error("  FAIL: report-data extraction — " + e.message);
+}
 
 // ══════════════════════════════════════════════════════════════════
 // SUMMARY

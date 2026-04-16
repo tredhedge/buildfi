@@ -26,17 +26,46 @@
     return window.buildReport(data);
   }
 
-  // Export to Excel
+  // Lazy-load the Excel vendor bundles on first export. Together these are
+  // ~1.8MB; pre-loading them on every planner open forces that cost on every
+  // user even though most never export. We inject <script> tags at click time
+  // and cache the promise so repeat clicks don't re-download.
+  var _vendorPromise = null;
+  function _loadScript(src) {
+    return new Promise(function(resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      s.onload = function() { resolve(); };
+      s.onerror = function() { reject(new Error("Failed to load " + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function _loadExcelVendors() {
+    if (window.XLSX && window.ExcelJS) return Promise.resolve();
+    if (_vendorPromise) return _vendorPromise;
+    _vendorPromise = Promise.all([
+      window.XLSX ? Promise.resolve() : _loadScript("./vendor/xlsx.full.min.js"),
+      window.ExcelJS ? Promise.resolve() : _loadScript("./vendor/exceljs.min.js")
+    ]).catch(function(e) {
+      _vendorPromise = null; // allow retry after a transient failure
+      throw e;
+    });
+    return _vendorPromise;
+  }
+
+  // Export to Excel — loads vendor libraries on demand.
   function exportExcel(data) {
-    if (!window.XLSX) {
-      alert("SheetJS (XLSX) not loaded. Cannot export to Excel.");
-      return;
-    }
-    if (typeof window.buildExcel !== "function") {
-      alert("report-excel.js not loaded.");
-      return;
-    }
-    window.buildExcel(data);
+    return _loadExcelVendors()
+      .then(function() {
+        if (!window.XLSX) { alert("SheetJS (XLSX) not loaded. Cannot export to Excel."); return; }
+        if (typeof window.buildExcel !== "function") { alert("report-excel.js not loaded."); return; }
+        window.buildExcel(data);
+      })
+      .catch(function(e) {
+        console.error("[BExport] Excel vendor load failed:", e);
+        alert("Excel export unavailable: " + (e && e.message || "could not load vendor libraries."));
+      });
   }
 
   // Print report (opens in new window)
@@ -88,7 +117,7 @@
     return window.BAiPrompt.parseResponse(text, slotKeys);
   }
 
-  window.BExport = {
+  window.BExport = Object.freeze({
     generateReport: generateReport,
     exportExcel: exportExcel,
     printReport: printReport,
@@ -96,6 +125,6 @@
     checkDeps: _checkDeps,
     buildAiPrompt: buildAiPrompt,
     parseAiResponse: parseAiResponse
-  };
+  });
 
 })();

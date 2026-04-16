@@ -80,10 +80,28 @@
   // DATA EXTRACTION — pulls all numbers the AI needs from the payload
   // ══════════════════════════════════════════════════════════════
 
+  // Numeric integrity helpers — guard against NaN/Infinity/null reaching the AI.
+  // f$ and fM render "—" on invalid input; "—" in the DATA block invites hallucination.
+  function _fin(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
+  function _finStr(fn, v, fallback) {
+    var n = _fin(v);
+    return n === null ? (fallback == null ? null : fallback) : fn(n);
+  }
+
   function extractData(d) {
     var p = d.p, mc = d.mc, fr = d.fr;
     var f$ = window.BFmt.fmtCompact;
     var fM = function(v) { return window.BFmt.fmtMoney(v, fr); };
+
+    // Validate core numerics up front. If any are invalid, downstream slots are unreliable.
+    var _coreFields = {
+      succVal: _fin(d.succVal),
+      medF: _fin(mc && (mc.rMedF != null ? mc.rMedF : mc.medF)),
+      covRatio: _fin(d.covRatio),
+      avgEffRate: _fin(d.avgEffRate)
+    };
+    var _missingCore = Object.keys(_coreFields).filter(function(k) { return _coreFields[k] === null; });
+    var _coreInvalid = _missingCore.length > 0;
 
     var data = {
       lang: fr ? 'fr' : 'en',
@@ -97,6 +115,11 @@
       province: p.prov || 'QC',
       yearsToRetirement: Math.max(0, p.retAge - p.age),
       horizon: (p.deathAge || 90) - p.age,
+      narrativePreferences: {
+        finLiteracy: d.finLiteracy || p.finLiteracy || 'intermediate',
+        stressLevel: d.stressLevel || p.stressLevel || 'moderate',
+        detailPreference: d.detailPref || p.detailPref || 'balanced'
+      },
 
       // Savings
       totalSavings: f$(d.totalBal),
@@ -105,40 +128,53 @@
       nr: f$(p.nr || 0),
 
       // MC results
-      successRate: d.succVal != null ? Math.round(d.succVal * 100) + '%' : 'pending',
-      grade: window.BFmt.grade(d.succVal, fr).letter,
-      gradeLabel: window.BFmt.grade(d.succVal, fr).label,
-      p50Wealth: f$(mc.rMedF || mc.medF),
-      p25Wealth: f$(mc.rP25F || mc.p25F || mc.rVar5 || mc.var5),
-      p75Wealth: f$(mc.rP75F || mc.p75F || 0),
-      savingsDurability: (mc.p5Ruin || 999) >= 200 ? 'never depleted' : 'depleted at age ' + mc.p5Ruin,
+      successRate: _coreFields.succVal == null ? 'pending' : Math.round(_coreFields.succVal * 100) + '%',
+      grade: window.BFmt.grade(_coreFields.succVal, fr).letter,
+      gradeLabel: window.BFmt.grade(_coreFields.succVal, fr).label,
+      p50Wealth: _finStr(f$, _coreFields.medF),
+      p25Wealth: _finStr(f$, (mc.rP25F != null ? mc.rP25F : (mc.p25F != null ? mc.p25F : (mc.rVar5 != null ? mc.rVar5 : mc.var5)))),
+      p75Wealth: _finStr(f$, (mc.rP75F != null ? mc.rP75F : mc.p75F)),
+      savingsDurability: (function() {
+        var r = _fin(mc && mc.p5Ruin);
+        if (r == null) return null;
+        return r >= 200 ? 'never depleted' : 'depleted at age ' + r;
+      })(),
       nSim: p.nSim || 5000,
 
       // Income
-      govCoverageRatio: Math.round(d.covRatio * 100) + '%',
-      monthlyGap: fM(Math.round(d.gapM)),
-      qppMonthly: fM(Math.round(d.qppM)),
-      oasMonthly: fM(Math.round(d.oasM)),
-      totalGovMonthly: fM(Math.round(d.govM)),
-      monthlySpending: fM(Math.round(d.totalSpM)),
+      govCoverageRatio: _coreFields.covRatio == null ? null : Math.round(_coreFields.covRatio * 100) + '%',
+      monthlyGap: _finStr(fM, d.gapM),
+      qppMonthly: _finStr(fM, d.qppM),
+      oasMonthly: _finStr(fM, d.oasM),
+      totalGovMonthly: _finStr(fM, d.govM),
+      monthlySpending: _finStr(fM, d.totalSpM),
 
       // Withdrawal rate
-      initWR: d._wdPct ? d._wdPct + '%' : 'N/A',
+      initWR: d._wdPct ? d._wdPct + '%' : null,
 
       // Tax
-      avgEffectiveRate: (d.avgEffRate * 100).toFixed(1) + '%',
-      lifetimeTax: f$(Math.round(d._optTax)),
-      taxAlpha: d._taxAlpha != null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : null,
-      oasClawbackYears: d.oasClbkYrs,
+      avgEffectiveRate: _coreFields.avgEffRate == null ? null : (_coreFields.avgEffRate * 100).toFixed(1) + '%',
+      lifetimeTax: _finStr(f$, d._optTax),
+      taxAlpha: (function() {
+        var a = _fin(d._taxAlpha);
+        return (a != null && a > 0) ? f$(Math.round(a)) : null;
+      })(),
+      oasClawbackYears: _fin(d.oasClbkYrs),
 
       // Fees
-      weightedMER: (d.merWt * 100).toFixed(2) + '%',
-      lifetimeFeeCost: f$(Math.round(d.feeCost)),
+      weightedMER: _fin(d.merWt) == null ? null : (d.merWt * 100).toFixed(2) + '%',
+      lifetimeFeeCost: _finStr(f$, d.feeCost),
 
       // Estate
-      netEstate: f$(Math.round(mc.medEstateNet || 0)),
-      taxAtDeath: f$(Math.round(mc.medEstateTax || 0)),
-      cautionEstate: f$(Math.round(mc.p25EstateNet || mc.p5EstateNet || 0))
+      netEstate: _finStr(f$, mc && mc.medEstateNet),
+      taxAtDeath: _finStr(f$, mc && mc.medEstateTax),
+      cautionEstate: _finStr(f$, mc && (mc.p25EstateNet != null ? mc.p25EstateNet : mc.p5EstateNet))
+    };
+
+    // Integrity flag — callers should skip AI or show fallbacks when core data is invalid.
+    data._integrity = {
+      coreInvalid: _coreInvalid,
+      missingCoreFields: _missingCore
     };
 
     // Couple data
@@ -244,6 +280,7 @@
 
   function buildPrompt(d) {
     var data = extractData(d);
+    var prefs = data.narrativePreferences || {};
 
     // Determine which slots to request
     var requestedSlots = SLOTS.filter(function(s) {
@@ -263,6 +300,15 @@
 
     // Build user prompt
     var userPrompt = '## DATA\n```json\n' + JSON.stringify(data, null, 2) + '\n```\n\n';
+    if (data._integrity && data._integrity.coreInvalid) {
+      userPrompt += '## DATA INTEGRITY WARNING\n';
+      userPrompt += 'Core metrics are missing or invalid (' + data._integrity.missingCoreFields.join(', ') + '). ';
+      userPrompt += 'Respond with "Data insufficient for analysis." for every slot. Do not infer or estimate.\n\n';
+    }
+    userPrompt += '## NARRATIVE CALIBRATION\n';
+    userPrompt += '- stress_level: ' + (prefs.stressLevel || 'moderate') + '\n';
+    userPrompt += '- financial_literacy: ' + (prefs.finLiteracy || 'intermediate') + '\n';
+    userPrompt += '- detail_preference: ' + (prefs.detailPreference || 'balanced') + '\n\n';
     userPrompt += '## REQUESTED SLOTS\n';
     requestedSlots.forEach(function(s) {
       userPrompt += '### ' + s.key + ' (' + s.label + ')\n' + s.hint + '\n\n';
@@ -273,7 +319,8 @@
     return {
       system: SYSTEM_PROMPT,
       user: userPrompt,
-      slotKeys: requestedSlots.map(function(s) { return s.key; })
+      slotKeys: requestedSlots.map(function(s) { return s.key; }),
+      integrity: data._integrity
     };
   }
 
@@ -298,12 +345,13 @@
 
     if (!json || typeof json !== 'object') return {};
 
-    // Filter to only requested slots and ensure string values
+    // Filter to only requested slots and ensure string values.
+    // Leave markdown intact — AiBlock escapes HTML first, then promotes **bold**.
+    // This guarantees no raw HTML from the AI reaches the DOM.
     var result = {};
     slotKeys.forEach(function(key) {
       if (json[key] && typeof json[key] === 'string') {
-        // Convert **bold** to <strong> for HTML rendering
-        result[key] = json[key].replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        result[key] = json[key];
       }
     });
 
@@ -314,11 +362,11 @@
   // EXPORT
   // ══════════════════════════════════════════════════════════════
 
-  window.BAiPrompt = {
+  window.BAiPrompt = Object.freeze({
     SLOTS: SLOTS,
     buildPrompt: buildPrompt,
     parseResponse: parseResponse,
     extractData: extractData
-  };
+  });
 
 })();
