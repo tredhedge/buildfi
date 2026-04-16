@@ -6619,6 +6619,14 @@ function runMC(p, N, _progressCb) {
       row["rcrr_" + pn] = _kAvg.crr * alv / infY;
       row["rctf_" + pn] = _kAvg.ctf * alv / infY;
     }
+    // WARNING: two different "median wealth by account" accessor families on mc.pD:
+    //   *M      (rrM, tfM, nrM, ...) = 50th-percentile snapshot by TOTAL wealth for THIS year.
+    //                                  Re-picks a different path each year → stacked-chart
+    //                                  artifacts (account mix jumps year-over-year).
+    //   mp_*    (mp_rr, mp_tf, mp_nr, ...) = ONE path (medPath, picked by closest-to-median
+    //                                        final total). Self-consistent across ages.
+    // Stacked wealth-composition charts must use mp_*. The *M fields remain for tables/
+    // KPIs that want per-year percentile snapshots regardless of path identity.
     var med = snapshots[Math.floor(N * 0.5)].s;
     row.rrM = med.rr;
     row.tfM = med.tf;
@@ -15387,7 +15395,10 @@ var pName = isP2 ? (fr ? "Conjoint" : "Spouse") : (cName || (fr ? "Principal" : 
 (function() { var E = React.createElement; return mc.pD && mc.pD.length > 5 ? E("div", { style: { marginBottom: 16, background: CL.cd, borderRadius: RAD.md + 2, padding: "12px 14px", border: "1px solid " + CL.bd } },
   E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.al, marginBottom: 6 } }, fr ? "Composition du patrimoine (m\u00e9diane)" : "Wealth Composition (median)"),
   E(MiniArea, {
-    data: mc.pD.map(function(d) { var _o = { age: d.age, REER: Math.max(0, d.rrM || 0), CELI: Math.max(0, d.tfM || 0), NR: Math.max(0, d.nrM || 0), Immo: Math.max(0, d.reM || 0), Corp: bizOn ? Math.max(0, d.mp_corp || 0) : 0, _retAge: d.age === retAge, _qppAge: d.age === qppAge, _oasAge: d.age === oasAge }; if (showDetRef && window._detWealth) _o._detTotal = window._detWealth[d.age] || 0; return _o; }),
+    // mp_* = single median-final path (stable across ages). *M = per-year 50th-percentile
+    // snapshot which re-picks a different path each year and causes year-to-year stacking
+    // artifacts. Prefer mp_* everywhere; *M fallback preserves behavior on stale payloads.
+    data: mc.pD.map(function(d) { var _o = { age: d.age, REER: Math.max(0, d.mp_rr != null ? d.mp_rr : (d.rrM || 0)), CELI: Math.max(0, d.mp_tf != null ? d.mp_tf : (d.tfM || 0)), NR: Math.max(0, d.mp_nr != null ? d.mp_nr : (d.nrM || 0)), Immo: Math.max(0, d.mp_re != null ? d.mp_re : (d.reM || 0)), Corp: bizOn ? Math.max(0, d.mp_corp || 0) : 0, _retAge: d.age === retAge, _qppAge: d.age === qppAge, _oasAge: d.age === oasAge }; if (showDetRef && window._detWealth) _o._detTotal = window._detWealth[d.age] || 0; return _o; }),
     height: Math.min(220, window.innerHeight * 0.25), xKey: "age", yFmt: f$, stacked: true,
     keys: bizOn ? ["REER", "CELI", "NR", "Immo", "Corp"] : ["REER", "CELI", "NR", "Immo"],
     colors: bizOn ? [CL.bl, CL.gn, CL.or, CL.pr, CL.cp] : [CL.bl, CL.gn, CL.or, CL.pr],
@@ -15417,7 +15428,7 @@ React.createElement("div", { style: { display: "flex", gap: 16, padding: "4px 8p
         var pen = d.penM || 0;
         var spend = d.spendM || 0;
         // R6: Cap withdrawals at available balance
-        var bal = (d.rrM||0) + (d.tfM||0) + (d.nrM||0) + (d.peM||0) + (d.pmM||0);
+        var bal = (d.mp_rr != null ? d.mp_rr : (d.rrM||0)) + (d.mp_tf != null ? d.mp_tf : (d.tfM||0)) + (d.mp_nr != null ? d.mp_nr : (d.nrM||0)) + (d.mp_pe != null ? d.mp_pe : (d.peM||0)) + (d.mp_pm != null ? d.mp_pm : (d.pmM||0));
         var wd = Math.min(Math.max(0, spend - gov - pen), Math.max(0, bal));
         var _o = { age: d.age, Retraits: wd, RRQ: d.qppM || 0, PSV: d.oasM || 0, Pension: pen };
         if (showDetRef && window._detSchedule) {
@@ -15865,7 +15876,7 @@ tab === 1 && (function() {
     }()),
     E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2] } }, fr ? "\u00c9volution du patrimoine (m\u00e9diane)" : "Wealth Evolution (median)"),
       mc.pD && mc.pD.length > 5 ? E(MiniArea, {
-        data: mc.pD.map(function(d) { var _o = { age: d.age, REER: (d.rrM || 0) + (cOn ? (d.crrM || 0) : 0), CELI: (d.tfM || 0) + (cOn ? (d.ctfM || 0) : 0), NR: (d.nrM || 0) + (cOn ? (d.cnrM || 0) : 0), Immo: d.reM || 0 }; if (bizOn) _o.Corp = d.mp_corp || 0; if (showDetRef && window._detWealth) _o._detTotal = window._detWealth[d.age] || 0; return _o; }),
+        data: mc.pD.map(function(d) { var _o = { age: d.age, REER: (d.mp_rr != null ? d.mp_rr : (d.rrM || 0)) + (cOn ? (d.mp_crr != null ? d.mp_crr : (d.crrM || 0)) : 0), CELI: (d.mp_tf != null ? d.mp_tf : (d.tfM || 0)) + (cOn ? (d.mp_ctf != null ? d.mp_ctf : (d.ctfM || 0)) : 0), NR: (d.mp_nr != null ? d.mp_nr : (d.nrM || 0)) + (cOn ? (d.mp_cnr != null ? d.mp_cnr : (d.cnrM || 0)) : 0), Immo: d.mp_re != null ? d.mp_re : (d.reM || 0) }; if (bizOn) _o.Corp = d.mp_corp || 0; if (showDetRef && window._detWealth) _o._detTotal = window._detWealth[d.age] || 0; return _o; }),
         height: Math.min(220, window.innerHeight * 0.25), xKey: "age", yFmt: f$, stacked: true,
         keys: bizOn ? ["REER", "CELI", "NR", "Immo", "Corp"] : ["REER", "CELI", "NR", "Immo"],
         colors: bizOn ? [CL.bl, CL.gn, CL.or, CL.pr, CL.cp] : [CL.bl, CL.gn, CL.or, CL.pr],
