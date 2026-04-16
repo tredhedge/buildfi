@@ -10442,6 +10442,13 @@ var reportHTML = useMemo(function() {
     setRespOn(false); setFTQ(false);
     sBr(false); sBA(0); sBE(0);
     sPTM(0); sPTY(0);
+    // New field resets
+    sStress("moderate"); sLit("intermediate"); sDetail("balanced");
+    sFN(""); sLN(""); sCSN("");
+    setGoals([{ id: "ret", type: "retirement", name: "Retraite", nameEn: "Retirement", amount: 0, startAge: 0, endAge: 0, inflation: true, icon: "\ud83c\udfd6", locked: true }]);
+    setFamily([{ id: "self", role: "self", name: "", age: 35, sex: "M" }]);
+    setBM("skip"); sBLog(0); sBTr(0); sBAlim(0); sBFam(0); sBTel(0); sBLoi(0); sBAssur(0); sBAutre(0);
+    sInc1N(""); sInc2N(""); sInc3N("");
     // Model param resets
     sCG2(0); sEqR(0.07); sEqV(0.16); sBndR(0.035); sBndV(0.06);
     sGP(p.goP||1); sSLP(p.slP||0.85); sNP(p.noP||0.75); setHM(p.healthMul||0.02);
