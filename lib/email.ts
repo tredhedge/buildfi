@@ -21,7 +21,7 @@ interface SendReportParams {
   grade: string;
   successPct: number;
   feedbackToken?: string;
-  allocationUrl?: string; // also used as simulatorUrl for decaissement
+  allocationUrl?: string;
 }
 
 export async function sendReportEmail(params: SendReportParams) {
@@ -29,8 +29,8 @@ export async function sendReportEmail(params: SendReportParams) {
   const fr = lang === "fr";
 
   const tierName = fr
-    ? { essentiel: "Bilan", intermediaire: "Bilan 360", bilan360: "Bilan 360", expert: "Laboratoire", decaissement: "Horizon" }[tier] || tier
-    : { essentiel: "Snapshot", intermediaire: "Snapshot 360", bilan360: "Snapshot 360", expert: "Lab", decaissement: "Horizon" }[tier] || tier;
+    ? { bilan360: "Bilan 360", expert: "Laboratoire" }[tier] || tier
+    : { bilan360: "Snapshot 360", expert: "Lab" }[tier] || tier;
 
   const subject = fr
     ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
@@ -103,16 +103,8 @@ function buildEmailHTML(params: {
     // E-1: "stratégies optimisées" → "approches possibles"
     // E-2: "Votre note pourrait changer" → "Une analyse plus détaillée..."
     upsellBody: fr
-      ? (tier === "intermediaire" || tier === "bilan360"
-        ? "Le Laboratoire int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
-        : tier === "decaissement"
-        ? "Le Laboratoire permet d\u2019explorer des sc\u00e9narios illimit\u00e9s\u00a0: ajuster le revenu, la r\u00e9partition, la date de demande des rentes gouvernementales, et g\u00e9n\u00e9rer des exports AI personnalis\u00e9s."
-        : "Le rapport Bilan\u00a0360 analyse votre immobilier, votre couple, vos dettes en d\u00e9tail et explore 5\u00a0approches possibles. Une analyse plus d\u00e9taill\u00e9e pourrait r\u00e9v\u00e9ler un portrait diff\u00e9rent.")
-      : (tier === "intermediaire" || tier === "bilan360"
-        ? "The Lab includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers."
-        : tier === "decaissement"
-        ? "The Lab lets you explore unlimited scenarios: adjust income, allocation, government benefit timing, and generate personalized AI exports."
-        : "The Snapshot\u00a0360 report analyzes your real estate, couple dynamics, and debts in detail, exploring 5\u00a0possible approaches. A more detailed analysis could reveal a different picture."),
+      ? "Le Laboratoire int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
+      : "The Lab includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers.",
     upsellCta: fr ? "En savoir plus\u00a0\u2192" : "Learn more\u00a0\u2192",
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
@@ -122,13 +114,10 @@ function buildEmailHTML(params: {
     contactLabel: fr ? "Une question\u00a0?" : "Questions?",
     toolsInterTitle: fr ? "Vos deux outils inclus" : "Your two included tools",
     toolsInterDesc: fr ? "Utilisez celui qui correspond \u00e0 votre situation en ce moment \u2014 ou les deux." : "Use the one that fits your situation right now \u2014 or both.",
-    toolsEssTitle: fr ? "Votre outil interactif \u2014 choisissez celui qui vous correspond" : "Your interactive tool \u2014 choose the one that fits",
     toolAllocName: fr ? "Outil d\u2019allocation REER/C\u00c9LI" : "RRSP/TFSA Allocation Tool",
     toolAllocDescInter: fr ? "Vos donn\u00e9es de rapport sont pr\u00e9-remplies \u2014 explorez diff\u00e9rents sc\u00e9narios." : "Your report data is pre-filled \u2014 explore different scenarios.",
-    toolAllocDescEss: fr ? "Si vous \u00e9pargnez activement \u2014 d\u00e9couvrez o\u00f9 placer votre prochain dollar pour maximiser votre apr\u00e8s-imp\u00f4t." : "If you\u2019re actively saving \u2014 discover where to put your next dollar to maximize your after-tax outcome.",
     toolDebtName: fr ? "Outil de gestion de dettes" : "Debt Management Tool",
     toolDebtDescInter: fr ? "Analysez vos dettes et identifiez la strat\u00e9gie de remboursement la plus avantageuse." : "Analyze your debts and identify the most advantageous repayment strategy.",
-    toolDebtDescEss: fr ? "Si vous remboursez activement des dettes \u2014 analysez vos options et acc\u00e9l\u00e9rez votre remboursement." : "If you\u2019re actively paying down debt \u2014 analyze your options and accelerate your repayment.",
     toolOpenBtn: fr ? "Ouvrir l\u2019outil \u2192" : "Open tool \u2192",
   };
 
@@ -260,11 +249,9 @@ function buildEmailHTML(params: {
                       </tr>
                       <tr>
                         <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
-                          ${tier === "decaissement"
-                            ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-decaissement-strategies-retrait.pdf" : "guide-drawdown-withdrawal-strategies.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide de d\u00e9caissement \u2014 Strat\u00e9gies de retrait efficaces" : "Drawdown Guide \u2014 Effective Withdrawal Strategies"}</a> (PDF)<br>&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/decaissement-simulateur.html" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Simulateur de d\u00e9caissement" : "Drawdown simulator"}</a> \u2014 ${fr ? "interactif, inclus" : "interactive, included"}`
-                            : `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)${tier === "intermediaire" || tier === "bilan360" || tier === "expert" ? "<br>" : ""}
-                          ${tier === "intermediaire" || tier === "bilan360" || tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}` : ""}
-                          ${tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}` : ""}`}
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)<br>
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}
+                          ${tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}` : ""}
                         </td>
                       </tr>
                     </table>
@@ -274,37 +261,8 @@ function buildEmailHTML(params: {
             </td>
           </tr>
 
-          <!-- TOOLS BLOC — DÉCAISSEMENT -->
-          ${tier === "decaissement" && allocationUrl ? `<tr>
-            <td style="padding-bottom:28px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
-                <tr>
-                  <td style="padding:18px 24px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:6px;">
-                          ${fr ? "Votre simulateur interactif inclus" : "Your included interactive simulator"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.6;padding-bottom:14px;">
-                          ${fr ? "Vos données sont pré-remplies. Testez différents scénarios de revenus, d\u2019allocation et de timing." : "Your data is pre-filled. Test different income, allocation, and timing scenarios."}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <a href="${allocationUrl}" style="display:inline-block;padding:10px 20px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${fr ? "Ouvrir le simulateur \u2192" : "Open simulator \u2192"}</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>` : ""}
-
-          <!-- TOOLS BLOC — INTERMÉDIAIRE -->
-          ${tier === "intermediaire" || tier === "bilan360" ? `<tr>
+          <!-- TOOLS BLOC — BILAN 360 -->
+          ${tier === "bilan360" ? `<tr>
             <td style="padding-bottom:28px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
                 <tr>
@@ -381,78 +339,6 @@ function buildEmailHTML(params: {
             </td>
           </tr>` : ""}
 
-          <!-- TOOLS BLOC — ESSENTIEL -->
-          ${tier === "essentiel" ? `<tr>
-            <td style="padding-bottom:28px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${CARD_BG};border-radius:10px;border:1px solid ${BORDER};">
-                <tr>
-                  <td style="padding:18px 24px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:14px;">
-                          ${s.toolsEssTitle}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom:10px;">
-                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
-                            <tr>
-                              <td style="padding:14px 16px;">
-                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                                  <tr>
-                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
-                                      ${s.toolDebtName}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
-                                      ${s.toolDebtDescEss}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <a href="https://www.buildfi.ca/outils/dettes" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
-                                    </td>
-                                  </tr>
-                                </table>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:8px;border:1px solid ${BORDER};">
-                            <tr>
-                              <td style="padding:14px 16px;">
-                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                                  <tr>
-                                    <td style="font-family:${FONT};font-size:13px;font-weight:700;color:${DARK};padding-bottom:4px;">
-                                      ${s.toolAllocName}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:1.5;padding-bottom:10px;">
-                                      ${s.toolAllocDescEss}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      <a href="https://www.buildfi.ca/outils/allocation-epargne.html" style="display:inline-block;padding:8px 18px;background-color:${GOLD};color:#ffffff;text-decoration:none;font-family:${FONT};font-size:12px;font-weight:700;border-radius:6px;">${s.toolOpenBtn}</a>
-                                    </td>
-                                  </tr>
-                                </table>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>` : ""}
 
           <!-- FEEDBACK LINK -->
           ${feedbackToken ? `<tr>

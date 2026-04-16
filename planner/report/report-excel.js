@@ -1,0 +1,1152 @@
+// report-excel.js — BuildFi Professional 14-Tab XLSX Export (ExcelJS)
+// Depends on: report-formatters.js (window.BFmt), report-data.js (window.BData)
+// Optional: ExcelJS (window.ExcelJS), SheetJS (window.XLSX)
+// Exports: window.buildExcel(data)
+(function() {
+  "use strict";
+
+  // ══════════════════════════════════════════════════════════════
+  // BRAND PALETTE (ARGB for ExcelJS) — Gold / Cream Pro export
+  // ══════════════════════════════════════════════════════════════
+  var CL = {
+    gold:      "FFC4944A",
+    white:     "FFFFFFFF",
+    dark:      "FF2C2418",
+    text:      "FF333333",
+    muted:     "FF888888",
+    link:      "FF1D4ED8",
+    green:     "FF2A6B3C",
+    greenBg:   "FFE8F5E9",
+    red:       "FFB83838",
+    redBg:     "FFFCE4E4",
+    gradeA:    "FF2A8C46",
+    gradeB:    "FF4680C0",
+    gradeC:    "FFE0882A",
+    gradeD:    "FFCC4444",
+    rowAlt:    "FFF9F7F2",
+    border:    "FFD6D0C4",
+    borderMed: "FF94A3B8",
+    bg:        "FFFAF6EF",
+    cardBg:    "FFFAF6EF",
+    phaseBg:   "FFF5EDE0",
+    phaseText: "FFA07830",
+    mcBlue:    "FFE3EEF8",
+    cccccc:    "FFCCCCCC"
+  };
+
+  // ── Reusable style objects ──
+  var THIN = function(c) { return { style: "thin", color: { argb: c || CL.border } }; };
+  var BORDER_ALL = { top: THIN(), left: THIN(), bottom: THIN(), right: THIN() };
+  var HDR_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.gold } };
+  var HDR_FONT = { name: "Calibri", size: 11, bold: true, color: { argb: CL.white } };
+  var ALT_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.rowAlt } };
+  var BODY_FONT = { name: "Calibri", size: 11, color: { argb: CL.text } };
+  var TITLE_FONT = function(sz) { return { name: "Calibri", size: sz || 13, bold: true, color: { argb: CL.gold } }; };
+  var SUB_FONT = { name: "Calibri", size: 10, color: { argb: CL.muted }, italic: true };
+  var LEGAL_FONT = { name: "Calibri", size: 9, color: { argb: CL.borderMed }, italic: true };
+  var DARK_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.dark } };
+  var CARD_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.cardBg } };
+  var PHASE_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.phaseBg } };
+  var MC_BLUE_FILL = { type: "pattern", pattern: "solid", fgColor: { argb: CL.mcBlue } };
+
+  // ── Number formats ──
+  var FMT_MONEY = '#,##0" $"';
+  var FMT_MONEY_RED = '#,##0" $";[Red](#,##0" $");"-"';
+  var FMT_PCT = '0.0"%"';
+  var FMT_PCT_INT = '0"%"';
+  var FMT_DELTA = '+#,##0;-#,##0;0';
+
+  // ══════════════════════════════════════════════════════════════
+  // HELPERS
+  // ══════════════════════════════════════════════════════════════
+  function toNum(v) { var n = Number(v); return Number.isFinite(n) ? n : 0; }
+  function _fmtInt(v, loc) { return Math.round(toNum(v)).toLocaleString(loc); }
+  function _fmtM(v, loc) { return _fmtInt(v, loc) + " $"; }
+  function _fmtK(v, loc) { return Math.round(toNum(v) / 1000).toLocaleString(loc) + " K$"; }
+  function _fmtP(v, d, fr) { var n = (toNum(v) * 100).toFixed(d == null ? 1 : d); return (fr ? n.replace(".", ",") : n) + " %"; }
+
+  function gradeFor(succ) {
+    var s = toNum(succ);
+    if (s >= 0.95) return { g: "A+", c: CL.gradeA };
+    if (s >= 0.85) return { g: "A",  c: CL.gradeA };
+    if (s >= 0.75) return { g: "B+", c: CL.gradeB };
+    if (s >= 0.65) return { g: "B",  c: CL.gradeB };
+    if (s >= 0.55) return { g: "C+", c: CL.gradeC };
+    if (s >= 0.45) return { g: "C",  c: CL.gradeC };
+    if (s >= 0.35) return { g: "D",  c: CL.gradeD };
+    return { g: "F", c: CL.gradeD };
+  }
+
+  // ── ExcelJS cell helpers ──
+  function _cell(ws, addr) { return (addr && typeof addr === "object" && addr.value !== undefined) ? addr : ws.getCell(addr); }
+  function set(ws, addr, val) { if (!ws) return; _cell(ws, addr).value = (val == null ? "" : val); }
+  function setNum(ws, addr, val, fmt) {
+    if (!ws) return;
+    var c = _cell(ws, addr);
+    c.value = toNum(val);
+    if (fmt) c.numFmt = fmt;
+  }
+  function setRow(ws, row, startCol, arr) {
+    if (!ws) return;
+    for (var i = 0; i < arr.length; i++) ws.getCell(row, startCol + i).value = (arr[i] == null ? "" : arr[i]);
+  }
+  function setColWidths(ws, widths) {
+    if (!ws || !widths) return;
+    for (var i = 0; i < widths.length; i++) ws.getColumn(i + 1).width = widths[i];
+  }
+
+  // ── Tab banner: row 1 = spacer (h=8), row 2 = title merged B:N, row 3 = subtitle merged B:N ──
+  function addTabBanner(ws, title, subtitle, ncols) {
+    ncols = ncols || 14;
+    ws.getRow(1).height = 8;
+    ws.mergeCells(2, 2, 2, ncols);
+    var tc = ws.getCell(2, 2);
+    tc.value = title;
+    tc.font = { name: "Calibri", size: 15, bold: true, color: { argb: CL.text } };
+    tc.alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(2).height = 28;
+    if (subtitle) {
+      ws.mergeCells(3, 2, 3, ncols);
+      var sc = ws.getCell(3, 2);
+      sc.value = subtitle;
+      sc.font = { name: "Calibri", size: 11, italic: true, color: { argb: CL.muted } };
+      sc.alignment = { horizontal: "left", vertical: "middle" };
+      ws.getRow(3).height = 16;
+    }
+  }
+
+  // ── Section title within a sheet (gold text, height=24) ──
+  function addTitle(ws, row, col, text, sub, span) {
+    if (!ws) return;
+    span = span || 13;
+    ws.mergeCells(row, col, row, col + span - 1);
+    var c = ws.getCell(row, col);
+    c.value = text; c.font = TITLE_FONT(13);
+    c.alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(row).height = 24;
+    if (sub) {
+      ws.mergeCells(row + 1, col, row + 1, col + span - 1);
+      var s = ws.getCell(row + 1, col);
+      s.value = sub; s.font = SUB_FONT;
+      s.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
+      ws.getRow(row + 1).height = 16;
+    }
+  }
+
+  // ── Style a table: gold header fill, alternating warm cream rows, borders, h=19 ──
+  function styleTable(ws, cfg) {
+    if (!ws || !cfg) return;
+    var hr = cfg.hr, fr = cfg.fr || (hr + 1), to = cfg.to || fr;
+    var fc = cfg.fc || 1, lc = cfg.lc || fc;
+    ws.getRow(hr).height = 30;
+    for (var c = fc; c <= lc; c++) {
+      var hc = ws.getCell(hr, c);
+      hc.font = HDR_FONT;
+      hc.fill = HDR_FILL;
+      hc.alignment = { vertical: "middle", horizontal: c === fc ? "left" : "right", wrapText: true };
+      hc.border = { top: THIN(CL.borderMed), left: THIN(CL.borderMed), bottom: THIN(CL.borderMed), right: THIN(CL.borderMed) };
+    }
+    for (var r = fr; r <= to; r++) {
+      ws.getRow(r).height = 19;
+      for (var cc = fc; cc <= lc; cc++) {
+        var cell = ws.getCell(r, cc);
+        if (r % 2 === 0) cell.fill = ALT_FILL;
+        cell.border = BORDER_ALL;
+        cell.alignment = { vertical: "middle", horizontal: cc === fc ? "left" : "right" };
+        if (!cell.font || !cell.font.name) cell.font = BODY_FONT;
+      }
+    }
+    ws.views = [{ state: "frozen", ySplit: hr }];
+    ws.autoFilter = { from: { row: hr, column: fc }, to: { row: hr, column: lc } };
+  }
+
+  function printSetup(ws) {
+    if (!ws) return;
+    ws.pageSetup = { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 };
+    ws.headerFooter = { oddFooter: "&L&8BuildFi Technologies inc.&C&8Page &P / &N&R&8&D" };
+  }
+
+  function footer(ws, row) {
+    if (!ws) return;
+    var y = new Date().getFullYear();
+    ws.mergeCells(row, 2, row, 14);
+    ws.getCell(row, 2).value = "BuildFi Technologies inc. \u2014 buildfi.ca  \u2022  Outil informatif. Ne constitue pas un conseil financier. \u00A9 " + y;
+    ws.getCell(row, 2).font = LEGAL_FONT;
+  }
+
+  function clearRows(ws, from, to, cols) {
+    if (!ws) return;
+    for (var r = from; r <= to; r++) for (var c = 1; c <= cols; c++) ws.getCell(r, c).value = "";
+  }
+
+  // ── Sommaire dark banner (rows 1-5) ──
+  function addSommaireBanner(ws, name, date, ncols) {
+    ncols = ncols || 14;
+    // Fill rows 1-5 with dark background
+    for (var br = 1; br <= 5; br++) {
+      for (var bc = 1; bc <= ncols; bc++) ws.getCell(br, bc).fill = DARK_FILL;
+    }
+    // Row 1: title in gold sz22 bold
+    ws.mergeCells(1, 2, 1, ncols);
+    ws.getCell(1, 2).value = fr ? "RAPPORT D\u00c9TAILL\u00c9" : "DETAILED REPORT";
+    ws.getCell(1, 2).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+    ws.getCell(1, 2).alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(1).height = 34;
+    // Row 2: subtitle in gold sz13
+    ws.mergeCells(2, 2, 2, ncols);
+    ws.getCell(2, 2).value = "Donn\u00e9es financi\u00e8res d\u00e9taill\u00e9es";
+    ws.getCell(2, 2).font = { name: "Calibri", size: 13, color: { argb: CL.gold } };
+    ws.getCell(2, 2).alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(2).height = 20;
+    // Row 3: "Préparé pour {name} — {date}" in white sz16 bold
+    ws.mergeCells(3, 2, 3, ncols);
+    ws.getCell(3, 2).value = "Pr\u00e9par\u00e9 pour " + name + " \u2014 " + date;
+    ws.getCell(3, 2).font = { name: "Calibri", size: 16, bold: true, color: { argb: CL.white } };
+    ws.getCell(3, 2).alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(3).height = 24;
+    // Row 4: "BuildFi Technologies inc. • buildfi.ca" in #CCCCCC
+    ws.mergeCells(4, 2, 4, ncols);
+    ws.getCell(4, 2).value = "BuildFi Technologies inc. \u2022 buildfi.ca";
+    ws.getCell(4, 2).font = { name: "Calibri", size: 10, color: { argb: CL.cccccc } };
+    ws.getCell(4, 2).alignment = { horizontal: "left", vertical: "middle" };
+    ws.getRow(4).height = 18;
+    // Row 5: spacer h=12, still dark bg
+    ws.getRow(5).height = 12;
+  }
+
+  // ── Delta cell: green for positive, red for negative ──
+  function setDelta(ws, addr, val, fmt) {
+    if (!ws) return;
+    var c = _cell(ws, addr);
+    var n = toNum(val);
+    c.value = n;
+    if (fmt) c.numFmt = fmt;
+    if (n > 0) {
+      c.font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.green } };
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: CL.greenBg } };
+    } else if (n < 0) {
+      c.font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.red } };
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: CL.redBg } };
+    }
+  }
+
+  // ── Negative-aware number: red font for negative values ──
+  function setNumSigned(ws, addr, val, fmt) {
+    if (!ws) return;
+    var c = _cell(ws, addr);
+    var n = toNum(val);
+    c.value = n;
+    if (fmt) c.numFmt = fmt;
+    if (n < 0) c.font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+  }
+
+  // ── Phase header row: gold tint bg, dark gold text ──
+  function addPhaseHeader(ws, row, col, text, span) {
+    span = span || 9;
+    ws.mergeCells(row, col, row, col + span - 1);
+    var c = ws.getCell(row, col);
+    c.value = text;
+    c.font = { name: "Calibri", size: 12, bold: true, color: { argb: CL.phaseText } };
+    c.alignment = { horizontal: "left", vertical: "middle" };
+    for (var cc = col; cc <= col + span - 1; cc++) {
+      ws.getCell(row, cc).fill = PHASE_FILL;
+    }
+    ws.getRow(row).height = 24;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PRO ExcelJS PATH
+  // ══════════════════════════════════════════════════════════════
+  async function buildExcelPro(data) {
+    var D = window.BData;
+    if (!D) throw new Error("report-data.js not loaded");
+    var mc = data.mc || {};
+    var p = data.params || {};
+    var client = data.client || {};
+    var fr = (data.rptLang || p.lang || "fr") === "fr";
+    var locale = fr ? "fr-CA" : "en-CA";
+    var mode = data.rptMode || p.mode || "standard";
+    var cName = client.name || (fr ? "Client" : "Client");
+
+    // ── Extract params ──
+    var age = p.age || 0, retAge = p.retAge || 65, deathAge = p.deathAge || 95;
+    var sal = p.sal || 0, retSpM = p.retSpM || 0;
+    var rrsp = p.rrsp || 0, tfsa = p.tfsa || 0, nr = p.nr || 0;
+    var rrspC = p.rrspC || 0, tfsaC = p.tfsaC || 0, nrC = p.nrC || 0;
+    var fhsaBal = p.fhsaBal || 0, fhsaC = p.fhsaC || 0;
+    var allocR = p.allocR || 0.6, allocT = p.allocT || 0.6, allocN = p.allocN || 0.6;
+    var merR = p.merR || 0, merT = p.merT || 0, merN = p.merN || 0;
+    var qppAge = p.qppAge || 65, avgE = p.avgE || 0, qppYrs = p.qppYrs || 0;
+    var oasAge = p.oasAge || 65;
+    var prov = p.prov || "QC", inf = p.inf || 0.021, nSim = p.nSim || 5000;
+    var wStrat = p.wStrat || "optimized";
+    var goP = p.goP || 0, slP = p.slP || 0, noP = p.noP || 0;
+    var fatT = p.fatT, stochInf = p.stochInf, stochMort = p.stochMort;
+    var cOn = p.cOn, cRetSpM = p.cRetSpM || 0;
+    var cQppAge = p.cQppAge || 65, cAvgE = p.cAvgE || 0, cQppYrs = p.cQppYrs || 0, cOasAge = p.cOasAge || 65;
+    var props = p.props || [];
+    var bizOn = p.bizOn;
+    var samResults = p.samResults || [];
+    var stressResults = p.stressResults || window._autoStress || [];
+    var lifeInsBenefit = p.lifeInsBenefit || 0;
+
+    var calcQPP = D.calcQPP, calcOAS = D.calcOAS, calcTax = D.calcTax;
+
+    // ── Derived metrics ──
+    var revD = mc.medRevData || [];
+    var y0 = new Date().getFullYear();
+    var todayLong = new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA", { year: "numeric", month: "long", day: "numeric" });
+    var baseName = (cName || "plan").toString().replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-|\-$/g, "");
+    var filename = "buildfi-donnees-detaillees-" + (baseName || "plan") + "-" + new Date().toISOString().slice(0, 10) + ".xlsx";
+
+    var gr = gradeFor(mc.succ);
+    var qppM2 = calcQPP(qppAge, avgE, qppYrs);
+    var oasM2 = calcOAS(oasAge, (retSpM + (cOn ? cRetSpM : 0)) * 12);
+    var cQppM2 = cOn ? calcQPP(cQppAge, cAvgE, cQppYrs) : 0;
+    var cOasM2 = cOn ? calcOAS(cOasAge, cRetSpM * 12) : 0;
+    var govM = qppM2 + oasM2 + cQppM2 + cOasM2;
+    var totalSpM = retSpM + (cOn ? cRetSpM : 0);
+    var covRatio = totalSpM > 0 ? govM / totalSpM : 0;
+    var optTax = revD.reduce(function(s, r) { return s + toNum(r.tax); }, 0);
+    var hasNaive = wStrat === "optimized" && mc._naiveMC && mc._naiveMC.medRevData;
+    var naiveRev = hasNaive ? (mc._naiveMC.medRevData || []) : [];
+    var naiveTax = hasNaive ? naiveRev.reduce(function(s, r) { return s + toNum(r.tax); }, 0) : 0;
+    var taxAlpha = hasNaive ? (naiveTax - optTax) : 0;
+    var naiveSucc = hasNaive ? toNum(mc._naiveMC.succ) : null;
+    var succDelta = hasNaive ? (toNum(mc.succ) - naiveSucc) * 100 : null;
+    var medDelta = hasNaive ? (toNum(mc.rMedF || mc.medF) - toNum(mc._naiveMC.rMedF || mc._naiveMC.medF)) : null;
+    var oasYears = revD.filter(function(r) { return toNum(r.taxInc) > 95323; }).length;
+    var oasYearsN = hasNaive ? naiveRev.filter(function(r) { return toNum(r.taxInc) > 95323; }).length : null;
+    var avgEffOpt = optTax > 0 ? optTax / Math.max(1, revD.reduce(function(s, r) { return s + toNum(r.taxInc); }, 0)) : 0;
+    var avgEffN = hasNaive && naiveTax > 0 ? naiveTax / Math.max(1, naiveRev.reduce(function(s, r) { return s + toNum(r.taxInc); }, 0)) : null;
+    var pDret = (mc.pD || []).find(function(r) { return r.age === retAge; }) || {};
+    var pDend = (mc.pD || []).length > 0 ? mc.pD[mc.pD.length - 1] : {};
+
+    // ── Workbook ──
+    var wb = new ExcelJS.Workbook();
+    wb.creator = "BuildFi Technologies inc.";
+    wb.created = new Date();
+    wb.calcProperties = { fullCalcOnLoad: true };
+
+    var coverName = fr ? "00 - Couverture" : "00 - Cover";
+    var readmeName = "01 - README";
+
+    // Try load logo
+    var logoId = null;
+    try {
+      if (window.BF_LOGO_PNG_B64) {
+        logoId = wb.addImage({ base64: "data:image/png;base64," + window.BF_LOGO_PNG_B64, extension: "png" });
+      }
+    } catch (_) {}
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 0: COVER (created first so it appears as first tab)
+    // ────────────────────────────────────────────────────────────
+    var wsCover = wb.addWorksheet(coverName);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 0B: README (created second)
+    // ────────────────────────────────────────────────────────────
+    var wsReadme = wb.addWorksheet(readmeName);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 1: SOMMAIRE — dark banner + KPI cards
+    // ────────────────────────────────────────────────────────────
+    var wsS = wb.addWorksheet(fr ? "Sommaire" : "Summary");
+    setColWidths(wsS, [3, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsS);
+
+    // Dark banner rows 1-5
+    addSommaireBanner(wsS, cName, todayLong, 14);
+
+    // ── KPI Cards (rows 7-10) ──
+    addTitle(wsS, 7, 2, fr ? "INDICATEURS CL\u00c9S" : "KEY INDICATORS", "", 13);
+
+    // KPI values in row 8 (height=48): sz22 bold gold on cream bg
+    var kpiCardBorder = { top: THIN(CL.border), left: THIN(CL.border), bottom: THIN(CL.border), right: THIN(CL.border) };
+    var kpiMerges = [[2,3],[4,5],[6,7],[8,9],[10,11],[12,13]];
+    var kpiLabels = [
+      fr ? "Note du plan" : "Plan grade",
+      fr ? "Succ\u00e8s MC" : "MC Success",
+      fr ? "Patrimoine ret." : "Ret. wealth",
+      fr ? "Rev. garantis" : "Guaranteed inc.",
+      fr ? "Couverture" : "Coverage",
+      fr ? "Alpha fiscal" : "Tax alpha"
+    ];
+    // Row 8: KPI values (h=48)
+    wsS.getRow(8).height = 48;
+    kpiMerges.forEach(function(m) { wsS.mergeCells(8, m[0], 8, m[1]); });
+    // Row 9: KPI labels (h=18)
+    wsS.getRow(9).height = 18;
+    kpiMerges.forEach(function(m, i) {
+      wsS.mergeCells(9, m[0], 9, m[1]);
+      wsS.getCell(9, m[0]).value = kpiLabels[i];
+      wsS.getCell(9, m[0]).font = { name: "Calibri", size: 10, color: { argb: CL.muted } };
+      wsS.getCell(9, m[0]).alignment = { horizontal: "center", vertical: "middle" };
+      wsS.getCell(9, m[0]).fill = CARD_FILL;
+      wsS.getCell(9, m[0]).border = kpiCardBorder;
+    });
+
+    // KPI value cells styling — cream bg, border, centered
+    kpiMerges.forEach(function(m) {
+      var c = wsS.getCell(8, m[0]);
+      c.fill = CARD_FILL;
+      c.border = kpiCardBorder;
+      c.alignment = { horizontal: "center", vertical: "middle" };
+    });
+
+    // Grade
+    wsS.getCell(8, 2).value = gr.g;
+    wsS.getCell(8, 2).font = { name: "Calibri", size: 22, bold: true, color: { argb: gr.c } };
+    // MC success
+    wsS.getCell(8, 4).value = toNum(mc.succ);
+    wsS.getCell(8, 4).numFmt = "0%";
+    wsS.getCell(8, 4).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+    // Retirement wealth (K$)
+    var retWealth = toNum(mc.rMedF || mc.medF || 0);
+    wsS.getCell(8, 6).value = Math.round(retWealth / 1000);
+    wsS.getCell(8, 6).numFmt = '#,##0" K$"';
+    wsS.getCell(8, 6).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+    // Guaranteed income
+    wsS.getCell(8, 8).value = Math.round(govM);
+    wsS.getCell(8, 8).numFmt = '#,##0" $/m"';
+    wsS.getCell(8, 8).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+    // Coverage
+    wsS.getCell(8, 10).value = covRatio;
+    wsS.getCell(8, 10).numFmt = "0%";
+    wsS.getCell(8, 10).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+    // Tax alpha
+    wsS.getCell(8, 12).value = Math.max(0, Math.round(taxAlpha / 1000));
+    wsS.getCell(8, 12).numFmt = '#,##0" K$"';
+    wsS.getCell(8, 12).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
+
+    // Confidence row
+    var conf = [];
+    if (covRatio >= 1) conf.push(fr ? "Forte couverture" : "Strong coverage");
+    else if (covRatio >= 0.7) conf.push(fr ? "Couverture mod\u00e9r\u00e9e" : "Moderate coverage");
+    else conf.push(fr ? "Couverture faible" : "Weak coverage");
+    if (mc.p5Ruin >= 999) conf.push(fr ? "Aucun risque d'\u00e9puisement P5" : "No P5 depletion risk");
+    else conf.push(fr ? "\u00c9puisement P5 \u00e0 " + mc.p5Ruin + " ans" : "P5 depletion at age " + mc.p5Ruin);
+    wsS.mergeCells(11, 2, 11, 14);
+    set(wsS, wsS.getCell(11, 2), conf.join("  \u2022  "));
+    wsS.getCell(11, 2).font = SUB_FONT;
+
+    // ── Comparison table ──
+    addTitle(wsS, 13, 2, fr ? "COMPARAISON: OPTIMIS\u00c9 vs PAR D\u00c9FAUT" : "COMPARISON: OPTIMIZED vs DEFAULT",
+      fr ? "Impact net des strat\u00e9gies fiscales actives" : "Net impact of active tax strategies", 13);
+    setRow(wsS, 16, 2, [fr ? "M\u00e9trique" : "Metric", fr ? "Votre plan" : "Your plan", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]);
+    styleTable(wsS, { hr: 16, fr: 17, to: 23, fc: 2, lc: 6 });
+
+    setRow(wsS, 17, 2, [fr ? "Succ\u00e8s MC" : "MC Success"]);
+    setNum(wsS, wsS.getCell(17, 3), mc.succ || 0, "0%");
+    if (naiveSucc != null) setNum(wsS, wsS.getCell(17, 4), naiveSucc, "0%");
+    if (succDelta != null) setDelta(wsS, wsS.getCell(17, 5), succDelta, '+0;-0;0" pts"');
+    set(wsS, wsS.getCell(17, 6), nSim + " sims");
+
+    setRow(wsS, 18, 2, [fr ? "Imp\u00f4t total nominal" : "Total nominal tax"]);
+    setNum(wsS, wsS.getCell(18, 3), optTax, FMT_MONEY);
+    if (hasNaive) setNum(wsS, wsS.getCell(18, 4), naiveTax, FMT_MONEY);
+    if (hasNaive) setDelta(wsS, wsS.getCell(18, 5), -Math.max(0, taxAlpha), FMT_MONEY);
+
+    setRow(wsS, 19, 2, [fr ? "Imp\u00f4t total r\u00e9el" : "Total real tax"]);
+    setNum(wsS, wsS.getCell(19, 3), Math.round(optTax / Math.pow(1 + inf, 12)), FMT_MONEY);
+    if (hasNaive) setNum(wsS, wsS.getCell(19, 4), Math.round(naiveTax / Math.pow(1 + inf, 12)), FMT_MONEY);
+    set(wsS, wsS.getCell(19, 6), fr ? "Actualis\u00e9" : "Discounted");
+
+    setRow(wsS, 20, 2, [fr ? "Patrimoine m\u00e9dian" : "Median wealth"]);
+    setNum(wsS, wsS.getCell(20, 3), mc.rMedF || mc.medF || 0, FMT_MONEY);
+    if (hasNaive) setNum(wsS, wsS.getCell(20, 4), mc._naiveMC.rMedF || mc._naiveMC.medF || 0, FMT_MONEY);
+    if (medDelta != null) setDelta(wsS, wsS.getCell(20, 5), medDelta, FMT_DELTA);
+
+    setRow(wsS, 21, 2, [fr ? "H\u00e9ritage net" : "Net estate"]);
+    setNum(wsS, wsS.getCell(21, 3), mc.medEstateNet || 0, FMT_MONEY);
+    if (hasNaive) setNum(wsS, wsS.getCell(21, 4), mc._naiveMC.medEstateNet || 0, FMT_MONEY);
+
+    setRow(wsS, 22, 2, [fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs"]);
+    set(wsS, wsS.getCell(22, 3), oasYears); if (oasYearsN != null) set(wsS, wsS.getCell(22, 4), oasYearsN);
+
+    setRow(wsS, 23, 2, [fr ? "Taux effectif moyen" : "Avg effective rate"]);
+    setNum(wsS, wsS.getCell(23, 3), avgEffOpt, FMT_PCT);
+    if (avgEffN != null) setNum(wsS, wsS.getCell(23, 4), avgEffN, FMT_PCT);
+
+    // Single Action
+    if (samResults.length > 0) {
+      addTitle(wsS, 25, 2, fr ? "SI VOUS NE FAITES QU'UNE CHOSE" : "IF YOU DO ONLY ONE THING", "", 13);
+      wsS.mergeCells(27, 2, 27, 14);
+      set(wsS, wsS.getCell(27, 2), "\u25B6  " + (samResults[0].name || ""));
+      wsS.getCell(27, 2).font = { name: "Calibri", size: 12, bold: true, color: { argb: CL.gold } };
+      wsS.mergeCells(28, 2, 28, 14);
+      set(wsS, wsS.getCell(28, 2), samResults[0].explain || "");
+      wsS.getCell(28, 2).font = BODY_FONT;
+    }
+    wsS.views = [{ state: "frozen", ySplit: 5 }];
+    footer(wsS, 31);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 2: PROFIL
+    // ────────────────────────────────────────────────────────────
+    var wsP = wb.addWorksheet("Profil");
+    setColWidths(wsP, [3, 24, 18, 18, 16, 16, 16, 16, 16, 14, 14, 14, 14, 14]);
+    printSetup(wsP);
+    addTabBanner(wsP,
+      fr ? "Profil du client" : "Client Profile",
+      cName + "  \u2022  " + todayLong, 14);
+
+    addTitle(wsP, 5, 2, fr ? "INFORMATIONS PERSONNELLES" : "PERSONAL INFORMATION", "", 13);
+    var pLabels = [fr ? "\u00c2ge" : "Age", fr ? "Retraite planifi\u00e9e" : "Planned retirement", "Horizon", "Province", fr ? "Salaire brut" : "Gross salary", fr ? "D\u00e9penses retraite" : "Retirement spending"];
+    pLabels.forEach(function(l, i) {
+      set(wsP, "B" + (7 + i), l);
+      wsP.getCell("B" + (7 + i)).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.text } };
+      wsP.getRow(7 + i).height = 19;
+    });
+    setRow(wsP, 7, 3, [age + (fr ? " ans" : " yrs"), "", (fr ? "N\u00e9(e) en " : "Born ") + (y0 - age)]);
+    setRow(wsP, 8, 3, [retAge + (fr ? " ans" : " yrs"), "", (fr ? "Dans " : "In ") + Math.max(0, retAge - age) + (fr ? " ans" : " yrs")]);
+    setRow(wsP, 9, 3, [deathAge + (fr ? " ans" : " yrs"), "", (deathAge - retAge) + (fr ? " ans de retraite" : " retirement yrs")]);
+    set(wsP, "C10", prov);
+    setNum(wsP, "C11", sal, FMT_MONEY);
+    setNum(wsP, "C12", totalSpM, '#,##0" $/m"');
+
+    // Savings table
+    addTitle(wsP, 14, 2, fr ? "\u00c9PARGNE ET COTISATIONS" : "SAVINGS AND CONTRIBUTIONS",
+      fr ? "Soldes actuels, cotisations annuelles et projections" : "Current balances, contributions and projections", 13);
+    setRow(wsP, 16, 2, [fr ? "Compte" : "Account", fr ? "Solde actuel" : "Current bal.", fr ? "Cotis./an" : "Contrib./yr", fr ? "Alloc. actions" : "Equity %", "MER", fr ? "Solde retraite" : "Ret. bal.", fr ? "Solde d\u00e9c\u00e8s" : "Death bal."]);
+    styleTable(wsP, { hr: 16, fr: 17, to: 21, fc: 2, lc: 8 });
+    var accts = [
+      ["REER", rrsp, rrspC, allocR, merR, pDret.rrM, pDend.rrM],
+      ["CELI", tfsa, tfsaC, allocT, merT, pDret.tfM, pDend.tfM],
+      ["NR", nr, nrC, allocN, merN, pDret.nrM, pDend.nrM],
+      ["CELIAPP", fhsaBal, fhsaC, allocT, merT, pDret.fhM, pDend.fhM],
+      ["Total", rrsp + tfsa + nr + fhsaBal, rrspC + tfsaC + nrC + fhsaC, 0, 0,
+        toNum(pDret.rrM) + toNum(pDret.tfM) + toNum(pDret.nrM) + toNum(pDret.fhM),
+        toNum(pDend.rrM) + toNum(pDend.tfM) + toNum(pDend.nrM) + toNum(pDend.fhM)]
+    ];
+    accts.forEach(function(a, i) {
+      var r = 17 + i;
+      set(wsP, wsP.getCell(r, 2), a[0]);
+      wsP.getCell(r, 3).value = toNum(a[1]); wsP.getCell(r, 3).numFmt = FMT_MONEY;
+      wsP.getCell(r, 4).value = toNum(a[2]); wsP.getCell(r, 4).numFmt = FMT_MONEY;
+      if (i < 4) { wsP.getCell(r, 5).value = toNum(a[3]); wsP.getCell(r, 5).numFmt = "0%"; }
+      if (i < 4) { wsP.getCell(r, 6).value = toNum(a[4]); wsP.getCell(r, 6).numFmt = "0.00%"; }
+      wsP.getCell(r, 7).value = toNum(a[5]); wsP.getCell(r, 7).numFmt = FMT_MONEY;
+      wsP.getCell(r, 8).value = toNum(a[6]); wsP.getCell(r, 8).numFmt = FMT_MONEY;
+    });
+    wsP.getCell(21, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+
+    // Government income
+    addTitle(wsP, 23, 2, fr ? "REVENUS GOUVERNEMENTAUX PROJET\u00c9S" : "PROJECTED GOVERNMENT INCOME", "", 13);
+    setRow(wsP, 25, 2, ["Source", fr ? "D\u00e9but" : "Start", fr ? "Mensuel" : "Monthly", fr ? "Annuel" : "Annual", fr ? "Indexation" : "Index", "Notes"]);
+    styleTable(wsP, { hr: 25, fr: 26, to: 30, fc: 2, lc: 7 });
+    setRow(wsP, 26, 2, ["RRQ/QPP", qppAge + (fr ? " ans" : "")]);
+    wsP.getCell(26, 4).value = toNum(qppM2); wsP.getCell(26, 4).numFmt = FMT_MONEY;
+    wsP.getCell(26, 5).value = toNum(qppM2 * 12); wsP.getCell(26, 5).numFmt = FMT_MONEY;
+    set(wsP, wsP.getCell(26, 6), "IPC");
+    setRow(wsP, 27, 2, ["PSV/OAS", oasAge + (fr ? " ans" : "")]);
+    wsP.getCell(27, 4).value = toNum(oasM2); wsP.getCell(27, 4).numFmt = FMT_MONEY;
+    wsP.getCell(27, 5).value = toNum(oasM2 * 12); wsP.getCell(27, 5).numFmt = FMT_MONEY;
+    set(wsP, wsP.getCell(27, 6), "IPC");
+    if (cOn) {
+      setRow(wsP, 28, 2, [fr ? "RRQ conjoint" : "Spouse QPP", cQppAge + (fr ? " ans" : "")]);
+      wsP.getCell(28, 4).value = toNum(cQppM2); wsP.getCell(28, 4).numFmt = FMT_MONEY;
+      wsP.getCell(28, 5).value = toNum(cQppM2 * 12); wsP.getCell(28, 5).numFmt = FMT_MONEY;
+      setRow(wsP, 29, 2, [fr ? "PSV conjoint" : "Spouse OAS", cOasAge + (fr ? " ans" : "")]);
+      wsP.getCell(29, 4).value = toNum(cOasM2); wsP.getCell(29, 4).numFmt = FMT_MONEY;
+      wsP.getCell(29, 5).value = toNum(cOasM2 * 12); wsP.getCell(29, 5).numFmt = FMT_MONEY;
+    }
+    setRow(wsP, 30, 2, ["Total", "\u2014"]);
+    wsP.getCell(30, 4).value = toNum(govM); wsP.getCell(30, 4).numFmt = FMT_MONEY;
+    wsP.getCell(30, 5).value = toNum(govM * 12); wsP.getCell(30, 5).numFmt = FMT_MONEY;
+    wsP.getCell(30, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    set(wsP, wsP.getCell(30, 7), (fr ? "Couverture: " : "Coverage: ") + Math.round(covRatio * 100) + "%");
+    footer(wsP, 34);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 3: PROJECTION DÉTERMINISTE
+    // ────────────────────────────────────────────────────────────
+    var wsProj = wb.addWorksheet(fr ? "Projection d\u00e9terministe" : "Deterministic Projection");
+    setColWidths(wsProj, [3, 10, 8, 16, 16, 16, 16, 16, 16, 16, 16, 16, 14]);
+    printSetup(wsProj);
+    addTabBanner(wsProj,
+      fr ? "Projection d\u00e9terministe \u2014 chemin unique" : "Deterministic projection \u2014 single path",
+      fr ? "Rendements esp\u00e9r\u00e9s constants, aucune volatilit\u00e9  \u2022  Valeurs nominales" : "Constant expected returns, no volatility  \u2022  Nominal values", 14);
+    setRow(wsProj, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", "REER", "CELI", "NR", "FHSA", fr ? "Immobilier" : "Real Estate", fr ? "Hypoth\u00e8que" : "Mortgage", fr ? "Avoir immo." : "RE Equity", fr ? "Total financier" : "Total financial", fr ? "Total net" : "Total net", "Phase"]);
+    var projN = Math.min((mc.pD || []).length, 51);
+    (mc.pD || []).slice(0, 51).forEach(function(r, i) {
+      var reV = toNum(r.reM), mtg = toNum(r.mtM), eq = reV - mtg;
+      var fin = toNum(r.rrM) + toNum(r.tfM) + toNum(r.nrM) + toNum(r.peM) + toNum(r.fhM);
+      var curAge = r.age || (age + i);
+      var phase = curAge < retAge ? (fr ? "Accumulation" : "Accumulation") : (fr ? "D\u00e9caissement" : "Decumulation");
+      var rr = 6 + i;
+      ws_setNumRow(wsProj, rr, 2, [y0 + i, curAge, toNum(r.rrM), toNum(r.tfM), toNum(r.nrM), toNum(r.fhM), reV, mtg, eq, fin, fin + eq]);
+      set(wsProj, wsProj.getCell(rr, 13), phase);
+      wsProj.getCell(rr, 13).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+      for (var c = 4; c <= 12; c++) wsProj.getCell(rr, c).numFmt = FMT_MONEY;
+    });
+    styleTable(wsProj, { hr: 5, fr: 6, to: Math.max(6, 5 + projN), fc: 2, lc: 13 });
+    footer(wsProj, 5 + projN + 3);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 4: FLUX DE TRÉSORERIE
+    // ────────────────────────────────────────────────────────────
+    var wsCF = wb.addWorksheet(fr ? "Flux de tr\u00e9sorerie" : "Cash Flow");
+    setColWidths(wsCF, [3, 10, 8, 14, 12, 12, 12, 12, 14, 14, 12, 10, 14]);
+    printSetup(wsCF);
+    addTabBanner(wsCF,
+      fr ? "Flux de tr\u00e9sorerie annuel" : "Annual cash flow",
+      fr ? "Revenus, d\u00e9penses, retraits et imp\u00f4t" : "Income, spending, withdrawals and tax", 14);
+    setRow(wsCF, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Salaire" : "Salary", "RRQ/QPP", "PSV/OAS", "SRG", fr ? "Pension" : "Pension", fr ? "Retraits \u00e9p." : "Withdrawals", fr ? "D\u00e9penses" : "Spending", fr ? "Imp\u00f4t" : "Tax", fr ? "Taux eff." : "Eff. rate", fr ? "Rev. imposable" : "Taxable inc."]);
+    var cfN = Math.min(revD.length, 51);
+    revD.slice(0, 51).forEach(function(r, i) {
+      var eff = toNum(r.taxInc) > 0 ? toNum(r.tax) / toNum(r.taxInc) : 0;
+      var rr = 6 + i;
+      ws_setNumRow(wsCF, rr, 2, [y0 + i, r.age || 0, toNum(r.sal), toNum(r.rrq), toNum(r.psv), toNum(r.gis || r.srg), toNum(r.pen), toNum(r.ret), toNum(r.spend), toNum(r.tax)]);
+      wsCF.getCell(rr, 12).value = eff; wsCF.getCell(rr, 12).numFmt = FMT_PCT;
+      wsCF.getCell(rr, 13).value = toNum(r.taxInc); wsCF.getCell(rr, 13).numFmt = FMT_MONEY;
+      for (var c = 4; c <= 11; c++) wsCF.getCell(rr, c).numFmt = FMT_MONEY;
+    });
+    styleTable(wsCF, { hr: 5, fr: 6, to: Math.max(6, 5 + cfN), fc: 2, lc: 13 });
+    footer(wsCF, 5 + cfN + 3);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 5: MC — PATRIMOINE
+    // ────────────────────────────────────────────────────────────
+    var wsMC = wb.addWorksheet(fr ? "MC \u2014 Patrimoine" : "MC \u2014 Wealth");
+    setColWidths(wsMC, [3, 10, 8, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsMC);
+    addTabBanner(wsMC,
+      fr ? "Monte Carlo \u2014 Distribution du patrimoine financier" : "Monte Carlo \u2014 Financial Wealth Distribution",
+      nSim + (fr ? " simulations  \u2022  Percentiles P5/P25/P50/P75/P95" : " simulations  \u2022  Percentiles P5/P25/P50/P75/P95"), 14);
+    setRow(wsMC, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "D\u00e9terministe" : "Det.", fr ? "P5 (pire 5%)" : "P5 (worst 5%)", "P25", fr ? "P50 (m\u00e9diane)" : "P50 (median)", "P75", fr ? "P95 (meil. 5%)" : "P95 (best 5%)", fr ? "\u00c9cart P50-Det." : "P50-Det.", fr ? "Fourch. P5-P95" : "Range P5-P95"]);
+    var mcN = Math.min((mc.pD || []).length, 51);
+    (mc.pD || []).slice(0, 51).forEach(function(r, i) {
+      var det = toNum(r.det || r.p50);
+      var rr = 6 + i;
+      setRow(wsMC, rr, 2, [y0 + i, r.age || (age + i)]);
+      wsMC.getCell(rr, 4).value = det; wsMC.getCell(rr, 4).numFmt = FMT_MONEY;
+      wsMC.getCell(rr, 5).value = toNum(r.p5); wsMC.getCell(rr, 5).numFmt = FMT_MONEY;
+      wsMC.getCell(rr, 6).value = toNum(r.p25); wsMC.getCell(rr, 6).numFmt = FMT_MONEY;
+      wsMC.getCell(rr, 7).value = toNum(r.p50); wsMC.getCell(rr, 7).numFmt = FMT_MONEY;
+      wsMC.getCell(rr, 8).value = toNum(r.p75); wsMC.getCell(rr, 8).numFmt = FMT_MONEY;
+      wsMC.getCell(rr, 9).value = toNum(r.p95); wsMC.getCell(rr, 9).numFmt = FMT_MONEY;
+      // P50-Det delta — red if negative
+      var p50det = toNum(r.p50) - det;
+      wsMC.getCell(rr, 10).value = p50det;
+      wsMC.getCell(rr, 10).numFmt = FMT_DELTA;
+      if (p50det < 0) wsMC.getCell(rr, 10).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+      // Range P5-P95
+      var range = toNum(r.p95) - toNum(r.p5);
+      wsMC.getCell(rr, 11).value = range;
+      wsMC.getCell(rr, 11).numFmt = FMT_MONEY;
+      if (range < 0) wsMC.getCell(rr, 11).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+      // First data row gets blue tint
+      if (i === 0) {
+        for (var bc = 2; bc <= 11; bc++) wsMC.getCell(rr, bc).fill = MC_BLUE_FILL;
+      }
+    });
+    styleTable(wsMC, { hr: 5, fr: 6, to: Math.max(6, 5 + mcN), fc: 2, lc: 11 });
+    footer(wsMC, 5 + mcN + 3);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 6: RETRAITS DÉTAILLÉS (phase-structured)
+    // ────────────────────────────────────────────────────────────
+    var wsWD = wb.addWorksheet(fr ? "Retraits d\u00e9taill\u00e9s" : "Detailed Withdrawals");
+    setColWidths(wsWD, [3, 16, 8, 14, 14, 14, 14, 14, 16, 22, 14, 14, 14, 14]);
+    printSetup(wsWD);
+    addTabBanner(wsWD,
+      fr ? "D\u00e9tail des retraits par source et par phase" : "Withdrawal detail by source and phase",
+      fr ? "Strat\u00e9gie " + wStrat + ": NR \u2192 Meltdown \u2192 REER \u2192 CELI" : "Strategy " + wStrat + ": NR \u2192 Meltdown \u2192 RRSP \u2192 TFSA", 14);
+
+    var retRows = revD.filter(function(r) { return r.age >= retAge; });
+    var phases = [];
+    if (retAge < qppAge) phases.push({ name: fr ? "PR\u00c9-RRQ  (" + retAge + "\u2013" + (qppAge - 1) + " ans)" : "PRE-QPP  (" + retAge + "\u2013" + (qppAge - 1) + ")", from: retAge, to: qppAge - 1, note: fr ? "Meltdown actif pour vider le REER dans les paliers bas" : "Active meltdown to empty RRSP in low brackets" });
+    if (qppAge < oasAge) phases.push({ name: fr ? "PR\u00c9-PSV  (" + qppAge + "\u2013" + (oasAge - 1) + " ans)" : "PRE-OAS  (" + qppAge + "\u2013" + (oasAge - 1) + ")", from: qppAge, to: oasAge - 1, note: fr ? "RRQ commence. Meltdown continue." : "QPP starts. Meltdown continues." });
+    phases.push({ name: fr ? "POST-PSV  (" + oasAge + "\u201371 ans)" : "POST-OAS  (" + oasAge + "\u201371)", from: oasAge, to: 71 });
+    phases.push({ name: fr ? "FERR  (72+ ans)" : "RRIF  (72+)", from: 72, to: 999, note: fr ? "Retraits FERR minimum obligatoires" : "Mandatory RRIF minimum withdrawals" });
+
+    var wdr = 5;
+    phases.forEach(function(ph, pi) {
+      var pr = retRows.filter(function(r) { return r.age >= ph.from && r.age <= ph.to; });
+      if (pr.length === 0) return;
+      // Phase header row with gold tint
+      addPhaseHeader(wsWD, wdr, 2, (fr ? "PHASE " : "PHASE ") + (pi + 1) + " \u2014 " + ph.name, 9);
+      wdr++;
+      if (ph.note) {
+        wsWD.mergeCells(wdr, 2, wdr, 10);
+        set(wsWD, wsWD.getCell(wdr, 2), ph.note);
+        wsWD.getCell(wdr, 2).font = SUB_FONT;
+        wsWD.getRow(wdr).height = 16;
+        wdr++;
+      }
+      setRow(wsWD, wdr, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "FERR min." : "RRIF min.", "Meltdown", fr ? "REER vol." : "RRSP vol.", "CELI", "NR", fr ? "Total retraits" : "Total wdl.", "Notes"]);
+      var hdrR = wdr; wdr++;
+      var phTotal = 0;
+      pr.forEach(function(r) {
+        var ferr = toNum(r.wRrifMin), melt = toNum(r.wMelt), rrV = toNum(r.wFromRR), tfV = toNum(r.wFromTF), nrV = toNum(r.wFromNR);
+        var tot = ferr + melt + rrV + tfV + nrV;
+        phTotal += tot;
+        var note = r.age === retAge ? (fr ? "D\u00e9but retraite" : "Retirement start") : r.age === qppAge ? (fr ? "RRQ commence" : "QPP starts") : r.age === oasAge ? (fr ? "PSV commence" : "OAS starts") : r.age === 72 ? "RRIF" : "";
+        setRow(wsWD, wdr, 2, [y0 + (r.age - age), r.age]);
+        wsWD.getCell(wdr, 4).value = ferr; wsWD.getCell(wdr, 4).numFmt = FMT_MONEY_RED;
+        wsWD.getCell(wdr, 5).value = melt; wsWD.getCell(wdr, 5).numFmt = FMT_MONEY_RED;
+        wsWD.getCell(wdr, 6).value = rrV; wsWD.getCell(wdr, 6).numFmt = FMT_MONEY_RED;
+        wsWD.getCell(wdr, 7).value = tfV; wsWD.getCell(wdr, 7).numFmt = FMT_MONEY_RED;
+        wsWD.getCell(wdr, 8).value = nrV; wsWD.getCell(wdr, 8).numFmt = FMT_MONEY_RED;
+        wsWD.getCell(wdr, 9).value = tot; wsWD.getCell(wdr, 9).numFmt = FMT_MONEY_RED;
+        set(wsWD, wsWD.getCell(wdr, 10), note);
+        wdr++;
+      });
+      // Phase average row
+      var avg = pr.length;
+      set(wsWD, wsWD.getCell(wdr, 2), fr ? "Moyenne/an (" + avg + " ans)" : "Average/yr (" + avg + " yrs)");
+      wsWD.getCell(wdr, 2).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.gold } };
+      wsWD.getCell(wdr, 9).value = Math.round(phTotal / avg); wsWD.getCell(wdr, 9).numFmt = FMT_MONEY;
+      set(wsWD, wsWD.getCell(wdr, 10), "Total: " + _fmtM(phTotal, locale));
+      styleTable(wsWD, { hr: hdrR, fr: hdrR + 1, to: wdr, fc: 2, lc: 10 });
+      wdr += 2;
+    });
+    footer(wsWD, wdr + 1);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 7: FISCALITÉ
+    // ────────────────────────────────────────────────────────────
+    var wsTax = wb.addWorksheet(fr ? "Fiscalit\u00e9" : "Tax");
+    setColWidths(wsTax, [3, 24, 18, 18, 18, 18, 18, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsTax);
+    addTabBanner(wsTax,
+      fr ? "Analyse fiscale \u2014 " + prov : "Tax analysis \u2014 " + prov,
+      fr ? "Paliers " + y0 + "  \u2022  Comparaison optimis\u00e9 vs par d\u00e9faut" : "Brackets " + y0 + "  \u2022  Optimized vs default comparison", 14);
+
+    addTitle(wsTax, 5, 2, fr ? "GRILLE D'IMPOSITION " + y0 : "TAX BRACKETS " + y0,
+      fr ? "F\u00e9d\u00e9ral + " + prov + " \u2014 taux combin\u00e9s" : "Federal + " + prov + " \u2014 combined rates", 13);
+    setRow(wsTax, 7, 2, [fr ? "Revenu imposable" : "Taxable income", fr ? "F\u00e9d\u00e9ral" : "Federal", "Prov.", "Total", fr ? "Taux eff." : "Eff. rate", fr ? "Taux marg." : "Marg. rate"]);
+    var brackets = [0, 20000, 40000, 60000, 80000, 100000, 120000, 150000, 200000, 250000, 300000];
+    brackets.forEach(function(inc, i) {
+      var tx = calcTax(inc, 0, prov);
+      var eff = inc > 0 ? tx.total / inc : 0;
+      var r = 8 + i;
+      wsTax.getCell(r, 2).value = inc; wsTax.getCell(r, 2).numFmt = FMT_MONEY;
+      wsTax.getCell(r, 3).value = Math.round(tx.fed || tx.basic || 0); wsTax.getCell(r, 3).numFmt = FMT_MONEY;
+      wsTax.getCell(r, 4).value = Math.round(tx.prov || 0); wsTax.getCell(r, 4).numFmt = FMT_MONEY;
+      wsTax.getCell(r, 5).value = Math.round(tx.total); wsTax.getCell(r, 5).numFmt = FMT_MONEY;
+      wsTax.getCell(r, 6).value = eff; wsTax.getCell(r, 6).numFmt = FMT_PCT;
+      wsTax.getCell(r, 7).value = toNum(tx.marg); wsTax.getCell(r, 7).numFmt = FMT_PCT;
+    });
+    styleTable(wsTax, { hr: 7, fr: 8, to: 18, fc: 2, lc: 7 });
+
+    // Tax comparison
+    addTitle(wsTax, 20, 2, fr ? "COMPARAISON FISCALE VIE ENTI\u00c8RE" : "LIFETIME TAX COMPARISON", "", 13);
+    setRow(wsTax, 22, 2, [fr ? "M\u00e9trique" : "Metric", fr ? "Optimis\u00e9" : "Optimized", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]);
+    styleTable(wsTax, { hr: 22, fr: 23, to: 28, fc: 2, lc: 6 });
+
+    setRow(wsTax, 23, 2, [fr ? "Imp\u00f4t total nominal" : "Total nominal tax"]);
+    wsTax.getCell(23, 3).value = toNum(optTax); wsTax.getCell(23, 3).numFmt = FMT_MONEY;
+    if (hasNaive) { wsTax.getCell(23, 4).value = toNum(naiveTax); wsTax.getCell(23, 4).numFmt = FMT_MONEY; setDelta(wsTax, wsTax.getCell(23, 5), -Math.max(0, taxAlpha), FMT_MONEY); }
+
+    setRow(wsTax, 24, 2, [fr ? "Taux effectif moyen" : "Avg effective rate"]);
+    wsTax.getCell(24, 3).value = avgEffOpt; wsTax.getCell(24, 3).numFmt = FMT_PCT;
+    if (avgEffN != null) { wsTax.getCell(24, 4).value = avgEffN; wsTax.getCell(24, 4).numFmt = FMT_PCT; }
+
+    setRow(wsTax, 25, 2, [fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs"]);
+    set(wsTax, wsTax.getCell(25, 3), oasYears); if (oasYearsN != null) set(wsTax, wsTax.getCell(25, 4), oasYearsN);
+
+    setRow(wsTax, 27, 2, [fr ? "Alpha fiscal total" : "Total tax alpha"]);
+    setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
+    wsTax.getCell(27, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    footer(wsTax, 31);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 8: SENSIBILITÉ & STRESS
+    // ────────────────────────────────────────────────────────────
+    var wsSS = wb.addWorksheet(fr ? "Sensibilit\u00e9 & Stress" : "Sensitivity & Stress");
+    setColWidths(wsSS, [3, 24, 14, 14, 14, 30, 14, 12, 12, 12, 30, 14, 14, 14]);
+    printSetup(wsSS);
+    addTabBanner(wsSS,
+      fr ? "Analyse de sensibilit\u00e9 & sc\u00e9narios de stress" : "Sensitivity analysis & stress scenarios", "", 14);
+
+    addTitle(wsSS, 5, 2, fr ? "TORNADO \u2014 CE QUI INFLUENCE LE PLUS VOTRE PLAN" : "TORNADO \u2014 WHAT INFLUENCES YOUR PLAN MOST",
+      fr ? "Variation de \u00b11 \u00e9cart-type" : "\u00b11 std deviation variation", 13);
+    setRow(wsSS, 7, 2, [fr ? "Facteur" : "Factor", fr ? "Impact -1\u03c3" : "Impact -1\u03c3", fr ? "Impact +1\u03c3" : "Impact +1\u03c3", fr ? "Amplitude" : "Amplitude", fr ? "Interpr\u00e9tation" : "Interpretation"]);
+    var sensN = Math.min((mc.sens || []).length, 8);
+    (mc.sens || []).slice(0, 8).forEach(function(s, i) {
+      setRow(wsSS, 8 + i, 2, [s.name || "", (s.lo >= 0 ? "+" : "") + s.lo.toFixed(1) + "%", (s.hi >= 0 ? "+" : "") + s.hi.toFixed(1) + "%", Math.abs((s.hi || 0) - (s.lo || 0)).toFixed(1) + "%", ""]);
+    });
+    styleTable(wsSS, { hr: 7, fr: 8, to: Math.max(8, 7 + sensN), fc: 2, lc: 6 });
+
+    // Stress
+    addTitle(wsSS, 17, 2, fr ? "SC\u00c9NARIOS DE STRESS" : "STRESS SCENARIOS",
+      fr ? "Conditions historiques appliqu\u00e9es" : "Historical conditions applied", 13);
+    setRow(wsSS, 19, 2, [fr ? "Sc\u00e9nario" : "Scenario", fr ? "P\u00e9riode" : "Period", fr ? "Succ\u00e8s" : "Success", "Delta", fr ? "Patrimoine P50" : "Wealth P50", "VaR 5%", fr ? "Ruine P5" : "Ruin P5", fr ? "R\u00e9silience" : "Resilience", "Description"]);
+    setRow(wsSS, 20, 2, [fr ? "R\u00e9f\u00e9rence" : "Reference", "\u2014", Math.round(toNum(mc.succ) * 100) + "%", "\u2014", _fmtK(mc.rMedF || mc.medF || 0, locale), _fmtK(mc.rVar5 || mc.var5 || 0, locale), mc.p5Ruin >= 999 ? (fr ? "Jamais" : "Never") : String(mc.p5Ruin), "\u2014", fr ? "Plan tel que configur\u00e9" : "Plan as configured"]);
+    var st = stressResults.slice(0, 5);
+    st.forEach(function(s, i) {
+      var delta = Math.round((toNum(s.succ) - toNum(mc.succ)) * 100);
+      var res = toNum(s.succ) >= 0.8 ? (fr ? "Robuste" : "Robust") : toNum(s.succ) >= 0.65 ? (fr ? "Mod\u00e9r\u00e9" : "Moderate") : (fr ? "Fragile" : "Fragile");
+      setRow(wsSS, 21 + i, 2, [s.name || s.key || "", s.period || "\u2014", Math.round(toNum(s.succ) * 100) + "%", (delta >= 0 ? "+" : "") + delta + " pts", _fmtK(s.medF || 0, locale), _fmtK(s.var5 || 0, locale), s.medRuin >= 999 ? (fr ? "Jamais" : "Never") : String(s.medRuin), res, s.desc || ""]);
+    });
+    styleTable(wsSS, { hr: 19, fr: 20, to: Math.max(20, 20 + st.length), fc: 2, lc: 10 });
+    footer(wsSS, 28);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 9: SUCCESSION
+    // ────────────────────────────────────────────────────────────
+    var wsE = wb.addWorksheet(fr ? "Succession" : "Estate");
+    setColWidths(wsE, [3, 28, 18, 18, 18, 32, 14, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsE);
+    addTabBanner(wsE,
+      fr ? "Analyse successorale" : "Estate Analysis",
+      fr ? "Distribution MC de l'h\u00e9ritage net  \u2022  Cascade fiscale au d\u00e9c\u00e8s" : "MC estate distribution  \u2022  Tax cascade at death", 14);
+
+    addTitle(wsE, 5, 2, fr ? "DISTRIBUTION DE L'H\u00c9RITAGE NET (" + nSim + " SIMULATIONS)" : "NET ESTATE DISTRIBUTION (" + nSim + " SIMULATIONS)", "", 13);
+    setRow(wsE, 7, 2, ["Percentile", fr ? "H\u00e9ritage net" : "Net estate", fr ? "Imp\u00f4t success." : "Estate tax", fr ? "Patrimoine brut" : "Gross estate", fr ? "Interpr\u00e9tation" : "Interpretation"]);
+    var eData = [
+      ["P5", mc.p5EstateNet, mc.p5EstateTax, fr ? "March\u00e9s tr\u00e8s d\u00e9favorables" : "Very unfavorable"],
+      ["P25", mc.p25EstateNet, mc.p25EstateTax, fr ? "Quart inf\u00e9rieur" : "Lower quartile"],
+      ["P50", mc.medEstateNet, mc.medEstateTax, fr ? "R\u00e9sultat le plus probable" : "Most likely"],
+      ["P75", mc.p75EstateNet, mc.p75EstateTax, fr ? "March\u00e9s favorables" : "Favorable"],
+      ["P95", mc.p95EstateNet, mc.p95EstateTax, fr ? "March\u00e9s tr\u00e8s haussiers" : "Very bullish"]
+    ];
+    eData.forEach(function(ed, i) {
+      var r = 8 + i;
+      set(wsE, wsE.getCell(r, 2), ed[0]);
+      wsE.getCell(r, 3).value = toNum(ed[1]); wsE.getCell(r, 3).numFmt = FMT_MONEY;
+      wsE.getCell(r, 4).value = toNum(ed[2]); wsE.getCell(r, 4).numFmt = FMT_MONEY;
+      wsE.getCell(r, 5).value = toNum(ed[1]) + toNum(ed[2]); wsE.getCell(r, 5).numFmt = FMT_MONEY;
+      set(wsE, wsE.getCell(r, 6), ed[3]);
+    });
+    styleTable(wsE, { hr: 7, fr: 8, to: 12, fc: 2, lc: 6 });
+
+    // Tax cascade
+    addTitle(wsE, 14, 2, fr ? "CASCADE FISCALE AU D\u00c9C\u00c8S (M\u00c9DIANE)" : "TAX CASCADE AT DEATH (MEDIAN)", "", 13);
+    var medGross = toNum(mc.medEstateNet) + toNum(mc.medEstateTax);
+    setRow(wsE, 16, 2, [fr ? "Composante" : "Component", fr ? "Montant" : "Amount", fr ? "Taux / base" : "Rate", "Notes"]);
+    var cascade = [
+      [fr ? "Actifs financiers bruts" : "Gross financial assets", medGross, "\u2014"],
+      [fr ? "(\u2212) Disposition FERR" : "(\u2212) RRIF disposition", -(toNum(mc.medEstateTax) * 0.7), fr ? "Taux marginal" : "Marginal rate"],
+      [fr ? "(\u2212) Gains capital NR" : "(\u2212) NR capital gains", -(toNum(mc.medEstateTax) * 0.2), "50% inclusion"],
+      [fr ? "(\u2212) R\u00e9sidence principale" : "(\u2212) Primary residence", 0, fr ? "Exempt" : "Exempt"],
+      [fr ? "(\u2212) Frais probate" : "(\u2212) Probate", -10000, prov === "QC" ? "~0% (QC)" : "~1.5%"],
+      [fr ? "(\u2212) Frais admin." : "(\u2212) Admin fees", -15000, fr ? "Estim\u00e9" : "Estimated"],
+      [fr ? "(+) Assurance-vie" : "(+) Life insurance", lifeInsBenefit, fr ? "Non imposable" : "Tax-free"],
+      [fr ? "H\u00c9RITAGE NET ESTIM\u00c9" : "NET ESTATE", medGross - toNum(mc.medEstateTax) - 25000 + lifeInsBenefit, ""]
+    ];
+    cascade.forEach(function(c, i) {
+      var r = 17 + i;
+      set(wsE, wsE.getCell(r, 2), c[0]);
+      wsE.getCell(r, 3).value = toNum(c[1]); wsE.getCell(r, 3).numFmt = FMT_MONEY;
+      set(wsE, wsE.getCell(r, 4), c[2]);
+    });
+    // Bold the final NET ESTATE row
+    wsE.getCell(24, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    wsE.getCell(24, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    styleTable(wsE, { hr: 16, fr: 17, to: 24, fc: 2, lc: 5 });
+    footer(wsE, 27);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 10: IMMOBILIER
+    // ────────────────────────────────────────────────────────────
+    var wsRE = wb.addWorksheet(fr ? "Immobilier" : "Real Estate");
+    setColWidths(wsRE, [3, 24, 16, 16, 16, 12, 14, 12, 16, 14, 14, 14, 14, 14]);
+    printSetup(wsRE);
+    addTabBanner(wsRE,
+      fr ? "Analyse immobili\u00e8re" : "Real Estate Analysis",
+      fr ? "Propri\u00e9t\u00e9s, hypoth\u00e8ques, trajectoire de l'avoir net" : "Properties, mortgages, equity trajectory", 14);
+
+    setRow(wsRE, 5, 2, [fr ? "Propri\u00e9t\u00e9" : "Property", fr ? "Valeur actuelle" : "Current value", fr ? "Hypoth\u00e8que" : "Mortgage", fr ? "Avoir net" : "Net equity", fr ? "Taux hyp." : "Mtg rate", fr ? "Amort." : "Amort.", fr ? "Appr\u00e9c." : "Apprec.", fr ? "Rev. locatif" : "Rental inc.", "Type"]);
+    var activeProps = props.filter(function(pp) { return pp.on; }).slice(0, 3);
+    activeProps.forEach(function(pp, i) {
+      var r = 6 + i;
+      set(wsRE, wsRE.getCell(r, 2), pp.name || ((fr ? "Propri\u00e9t\u00e9 " : "Property ") + (i + 1)));
+      wsRE.getCell(r, 3).value = toNum(pp.val); wsRE.getCell(r, 3).numFmt = FMT_MONEY;
+      wsRE.getCell(r, 4).value = toNum(pp.mb); wsRE.getCell(r, 4).numFmt = FMT_MONEY;
+      wsRE.getCell(r, 5).value = toNum(pp.val) - toNum(pp.mb); wsRE.getCell(r, 5).numFmt = FMT_MONEY;
+      wsRE.getCell(r, 6).value = toNum(pp.mr); wsRE.getCell(r, 6).numFmt = FMT_PCT;
+      set(wsRE, wsRE.getCell(r, 7), (pp.ma || 0) + (fr ? " ans" : " yrs"));
+      wsRE.getCell(r, 8).value = toNum(pp.ri); wsRE.getCell(r, 8).numFmt = FMT_PCT;
+      wsRE.getCell(r, 9).value = toNum(pp.rm); wsRE.getCell(r, 9).numFmt = FMT_MONEY;
+      set(wsRE, wsRE.getCell(r, 10), pp.pri ? (fr ? "R\u00e9sidence" : "Primary") : (fr ? "Locatif" : "Rental"));
+    });
+    styleTable(wsRE, { hr: 5, fr: 6, to: Math.max(6, 5 + activeProps.length), fc: 2, lc: 10 });
+    footer(wsRE, 5 + activeProps.length + 4);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 11: ENTREPRISE (CCPC)
+    // ────────────────────────────────────────────────────────────
+    var wsB = wb.addWorksheet(fr ? "Entreprise (CCPC)" : "Business (CCPC)");
+    setColWidths(wsB, [3, 10, 8, 16, 14, 14, 14, 14, 12, 12, 14, 12, 14]);
+    printSetup(wsB);
+    if (bizOn) {
+      addTabBanner(wsB,
+        fr ? "Actifs corporatifs (CCPC)" : "Corporate Assets (CCPC)",
+        fr ? "Projection du solde, plan d'extraction, alertes DPE" : "Balance projection, extraction plan, SBD alerts", 14);
+      setRow(wsB, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Solde corp." : "Corp. bal.", fr ? "Imp\u00f4t corp." : "Corp. tax", fr ? "Dividende" : "Dividend", fr ? "Salaire corp." : "Corp. salary", fr ? "Extraction" : "Extraction", "CDA", "RDTOH", fr ? "Rev. passif" : "Passive inc.", fr ? "Alerte DPE" : "SBD alert", "Phase"]);
+      var biz = 6;
+      revD.forEach(function(r) {
+        if (biz > 42) return;
+        if (toNum(r.corpBal) <= 0 && toNum(r.corpTax) <= 0 && toNum(r.corpDiv) <= 0) return;
+        var phase = r.age < retAge ? (fr ? "Accumulation" : "Accumulation") : (fr ? "Extraction" : "Extraction");
+        setRow(wsB, biz, 2, [y0 + (r.age - age), r.age || 0]);
+        for (var bc = 4; bc <= 11; bc++) {
+          var vals = [r.corpBal, r.corpTax, r.corpDiv, r.corpSal, r.corpExtract, r.corpCDA, r.corpRDTOH, r.corpPassive];
+          wsB.getCell(biz, bc).value = toNum(vals[bc - 4]); wsB.getCell(biz, bc).numFmt = FMT_MONEY;
+        }
+        set(wsB, wsB.getCell(biz, 12), toNum(r.corpPassive) > 50000 ? (fr ? "\u26a0 OUI" : "\u26a0 YES") : "");
+        set(wsB, wsB.getCell(biz, 13), phase);
+        wsB.getCell(biz, 13).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+        biz++;
+      });
+      styleTable(wsB, { hr: 5, fr: 6, to: Math.max(6, biz - 1), fc: 2, lc: 13 });
+    } else {
+      addTabBanner(wsB,
+        fr ? "Entreprise (CCPC)" : "Business (CCPC)",
+        fr ? "Aucune corporation configur\u00e9e" : "No corporation configured", 14);
+    }
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 12: MÉTHODOLOGIE
+    // ────────────────────────────────────────────────────────────
+    var wsM = wb.addWorksheet(fr ? "M\u00e9thodologie" : "Methodology");
+    setColWidths(wsM, [3, 26, 32, 42, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsM);
+    addTabBanner(wsM,
+      fr ? "M\u00e9thodologie & avis l\u00e9gal" : "Methodology & Legal Notice",
+      fr ? "Fonctionnement du moteur  \u2022  Param\u00e8tres de lissage  \u2022  Avis r\u00e9glementaire" : "Engine overview  \u2022  Smoothing parameters  \u2022  Regulatory notice", 14);
+
+    addTitle(wsM, 5, 2, fr ? "COMPOSANTES DU MOTEUR" : "ENGINE COMPONENTS", "", 13);
+    setRow(wsM, 7, 2, [fr ? "Composante" : "Component", "Description", fr ? "D\u00e9tails" : "Details"]);
+    var meth = [
+      [fr ? "1. Projection d\u00e9terministe" : "1. Deterministic", fr ? "Chemin unique, rendements esp\u00e9r\u00e9s" : "Single path, expected returns", "optimizeDecum()"],
+      [fr ? "2. Monte Carlo" : "2. Monte Carlo", nSim + " sims", "t-Student (df=5)"],
+      [fr ? "3. Corr\u00e9lation" : "3. Correlation", fr ? "5 classes d'actifs" : "5 asset classes", "Cholesky 5\u00d75"],
+      [fr ? "4. Fiscalit\u00e9" : "4. Tax", fr ? "Paliers progressifs" : "Progressive brackets", fr ? "Cr\u00e9dits \u00e2ge/pension, r\u00e9cup. PSV" : "Age/pension credits, OAS clawback"],
+      [fr ? "5. Mortalit\u00e9" : "5. Mortality", stochMort ? "CPM 2023" : (fr ? "D\u00e9terministe" : "Deterministic"), ""],
+      [fr ? "6. Retraits" : "6. Withdrawals", fr ? "Ordre dynamique" : "Dynamic order", "NR \u2192 Meltdown \u2192 REER \u2192 CELI"],
+      [fr ? "7. Lissage" : "7. Smoothing", fr ? "\u00c9vite les variations brusques" : "Avoids abrupt changes", "MC blend 70/30"],
+      [fr ? "8. Comportemental" : "8. Behavioral", fr ? "Ajustement selon l'\u00e2ge" : "Age-based", "Go " + Math.round(goP * 100) + "% / Slow " + Math.round(slP * 100) + "% / No " + Math.round(noP * 100) + "%"]
+    ];
+    meth.forEach(function(m, i) { setRow(wsM, 8 + i, 2, m); });
+    styleTable(wsM, { hr: 7, fr: 8, to: 15, fc: 2, lc: 4 });
+
+    // Smoothing
+    addTitle(wsM, 17, 2, fr ? "CONSTANTES DE LISSAGE" : "SMOOTHING CONSTANTS", "", 13);
+    setRow(wsM, 19, 2, [fr ? "Constante" : "Constant", fr ? "Valeur" : "Value", fr ? "R\u00f4le" : "Role"]);
+    [["MELT", "\u00b140%/an"], ["MELT_FLOOR", "5 000 $"], ["SPEND", "\u00b130%/an"], ["SPEND_FLOOR", "10 000 $"], ["BACK", "\u00b140%"], ["BACK_FLOOR", "15 000 $"], ["NR_OVER", "1.50\u00d7"], ["MC_BLEND", "70/30"]].forEach(function(s, i) { setRow(wsM, 20 + i, 2, s); });
+    styleTable(wsM, { hr: 19, fr: 20, to: 27, fc: 2, lc: 4 });
+
+    // Report ID
+    addTitle(wsM, 29, 2, fr ? "IDENTIFICATION DU RAPPORT" : "REPORT IDENTIFICATION", "", 13);
+    setRow(wsM, 31, 2, ["Version", "v11.12.9"]); setRow(wsM, 32, 2, ["Date", todayLong]);
+    setRow(wsM, 33, 2, ["Client", cName]); setRow(wsM, 34, 2, ["Province", prov]);
+    setRow(wsM, 35, 2, ["Simulations", String(nSim)]); setRow(wsM, 36, 2, [fr ? "Mortalit\u00e9" : "Mortality", stochMort ? "CPM 2023" : (fr ? "D\u00e9terministe" : "Deterministic")]);
+
+    // Legal
+    addTitle(wsM, 38, 2, fr ? "AVIS R\u00c9GLEMENTAIRE" : "REGULATORY NOTICE", "", 13);
+    wsM.mergeCells(40, 2, 40, 14);
+    set(wsM, wsM.getCell(40, 2), fr ? "Les projections sont fournies \u00e0 titre informatif uniquement et ne constituent pas un conseil financier." : "Projections are for informational purposes only and do not constitute financial advice.");
+    wsM.getCell(40, 2).font = SUB_FONT;
+    wsM.mergeCells(41, 2, 41, 14);
+    set(wsM, wsM.getCell(41, 2), fr ? "BuildFi Technologies inc. n'est pas un conseiller financier." : "BuildFi Technologies inc. is not a financial advisor.");
+    wsM.getCell(41, 2).font = SUB_FONT;
+    footer(wsM, 44);
+
+    // ────────────────────────────────────────────────────────────
+    // POPULATE COVER (already created as first tab)
+    // ────────────────────────────────────────────────────────────
+    setColWidths(wsCover, [3, 18, 18, 18, 18, 18, 18, 18, 18, 14, 14, 14, 14, 14]);
+    wsCover.views = [{ state: "frozen", ySplit: 1 }];
+
+    // Dark banner rows 1-5
+    for (var cbr = 1; cbr <= 5; cbr++) {
+      for (var cbc = 1; cbc <= 14; cbc++) wsCover.getCell(cbr, cbc).fill = DARK_FILL;
+    }
+    wsCover.mergeCells(1, 2, 1, 14);
+    wsCover.getCell(1, 2).value = fr ? "RAPPORT D\u00c9TAILL\u00c9" : "DETAILED REPORT";
+    wsCover.getCell(1, 2).font = { name: "Calibri", size: 28, bold: true, color: { argb: CL.gold } };
+    wsCover.getCell(1, 2).alignment = { horizontal: "left", vertical: "middle" };
+    wsCover.getRow(1).height = 42;
+
+    wsCover.mergeCells(2, 2, 2, 14);
+    wsCover.getCell(2, 2).value = fr ? "Rapport financier d\u00e9taill\u00e9" : "Detailed Financial Report";
+    wsCover.getCell(2, 2).font = { name: "Calibri", size: 13, color: { argb: CL.gold } };
+    wsCover.getCell(2, 2).alignment = { horizontal: "left", vertical: "middle" };
+    wsCover.getRow(2).height = 20;
+
+    wsCover.mergeCells(3, 2, 3, 14);
+    wsCover.getCell(3, 2).value = cName;
+    wsCover.getCell(3, 2).font = { name: "Calibri", size: 18, bold: true, color: { argb: CL.white } };
+    wsCover.getCell(3, 2).alignment = { horizontal: "left", vertical: "middle" };
+    wsCover.getRow(3).height = 28;
+
+    wsCover.mergeCells(4, 2, 4, 14);
+    wsCover.getCell(4, 2).value = todayLong + "  \u2022  " + nSim + " simulations Monte Carlo";
+    wsCover.getCell(4, 2).font = { name: "Calibri", size: 10, color: { argb: CL.cccccc } };
+    wsCover.getCell(4, 2).alignment = { horizontal: "left", vertical: "middle" };
+    wsCover.getRow(4).height = 18;
+
+    wsCover.getRow(5).height = 12;
+
+    if (logoId != null) { try { wsCover.addImage(logoId, { tl: { col: 11.1, row: 0.5 }, ext: { width: 170, height: 80 } }); } catch (_) {} }
+
+    // KPI cards on cover (rows 7-10)
+    var cvKpiMerges = [[2,4],[5,7],[8,10],[11,13]];
+    var cvKpiLabels = [
+      fr ? "Taux de succ\u00e8s" : "Success rate",
+      fr ? "Patrimoine m\u00e9dian" : "Median wealth",
+      fr ? "Note du plan" : "Plan grade",
+      fr ? "Alpha fiscal" : "Tax alpha"
+    ];
+    // Row 7: labels
+    wsCover.getRow(7).height = 18;
+    cvKpiMerges.forEach(function(m, i) {
+      wsCover.mergeCells(7, m[0], 7, m[1]);
+      wsCover.getCell(7, m[0]).value = cvKpiLabels[i];
+      wsCover.getCell(7, m[0]).font = { name: "Calibri", size: 10, color: { argb: CL.muted } };
+      wsCover.getCell(7, m[0]).alignment = { horizontal: "center", vertical: "middle" };
+      wsCover.getCell(7, m[0]).fill = CARD_FILL;
+      wsCover.getCell(7, m[0]).border = { top: THIN(CL.border), left: THIN(CL.border), bottom: THIN(CL.border), right: THIN(CL.border) };
+    });
+    // Row 8-9: values (merged tall)
+    wsCover.getRow(8).height = 48;
+    wsCover.getRow(9).height = 8;
+    cvKpiMerges.forEach(function(m) {
+      wsCover.mergeCells(8, m[0], 9, m[1]);
+      var c = wsCover.getCell(8, m[0]);
+      c.fill = CARD_FILL;
+      c.border = { top: THIN(CL.border), left: THIN(CL.border), bottom: THIN(CL.border), right: THIN(CL.border) };
+      c.alignment = { horizontal: "center", vertical: "middle" };
+    });
+    // Success rate
+    wsCover.getCell(8, 2).value = toNum(mc.succ);
+    wsCover.getCell(8, 2).numFmt = "0%";
+    wsCover.getCell(8, 2).font = { name: "Calibri", size: 30, bold: true, color: { argb: CL.gold } };
+    // Median wealth
+    wsCover.getCell(8, 5).value = toNum(mc.rMedF || mc.medF);
+    wsCover.getCell(8, 5).numFmt = FMT_MONEY;
+    wsCover.getCell(8, 5).font = { name: "Calibri", size: 24, bold: true, color: { argb: CL.gold } };
+    // Grade
+    wsCover.getCell(8, 8).value = gr.g;
+    wsCover.getCell(8, 8).font = { name: "Calibri", size: 30, bold: true, color: { argb: gr.c } };
+    // Tax alpha
+    wsCover.getCell(8, 11).value = toNum(Math.max(0, taxAlpha));
+    wsCover.getCell(8, 11).numFmt = FMT_MONEY;
+    wsCover.getCell(8, 11).font = { name: "Calibri", size: 24, bold: true, color: { argb: CL.gold } };
+
+    wsCover.mergeCells(11, 2, 12, 14);
+    set(wsCover, wsCover.getCell(11, 2), fr ? "Document g\u00e9n\u00e9r\u00e9 automatiquement par BuildFi. Les projections sont informatives et ne constituent pas un conseil financier." : "Automatically generated by BuildFi. Projections are informational and do not constitute financial advice.");
+    wsCover.getCell(11, 2).font = { name: "Calibri", size: 11, color: { argb: CL.muted }, italic: true };
+    wsCover.getCell(11, 2).alignment = { wrapText: true, horizontal: "left", vertical: "top" };
+
+    // ────────────────────────────────────────────────────────────
+    // POPULATE README (already created as second tab)
+    // ────────────────────────────────────────────────────────────
+    setColWidths(wsReadme, [3, 26, 86, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    wsReadme.views = [{ state: "frozen", ySplit: 4 }];
+
+    // Dark banner for README too
+    for (var rbr = 1; rbr <= 3; rbr++) {
+      for (var rbc = 1; rbc <= 14; rbc++) wsReadme.getCell(rbr, rbc).fill = DARK_FILL;
+    }
+    wsReadme.getRow(1).height = 8;
+    wsReadme.mergeCells(2, 2, 2, 14);
+    wsReadme.getCell(2, 2).value = fr ? "README \u2014 Guide du fichier Excel" : "README \u2014 Excel Guide";
+    wsReadme.getCell(2, 2).font = { name: "Calibri", size: 18, bold: true, color: { argb: CL.gold } };
+    wsReadme.getCell(2, 2).alignment = { horizontal: "left", vertical: "middle" };
+    wsReadme.getRow(2).height = 34;
+    wsReadme.mergeCells(3, 2, 3, 14);
+    wsReadme.getCell(3, 2).value = "BuildFi Technologies inc. \u2022 buildfi.ca";
+    wsReadme.getCell(3, 2).font = { name: "Calibri", size: 10, color: { argb: CL.cccccc } };
+    wsReadme.getRow(3).height = 18;
+
+    if (logoId != null) { try { wsReadme.addImage(logoId, { tl: { col: 1.05, row: 0.8 }, ext: { width: 130, height: 62 } }); } catch (_) {} }
+
+    set(wsReadme, wsReadme.getCell(5, 2), fr ? "Comment lire ce fichier" : "How to read this file");
+    wsReadme.getCell(5, 2).font = { name: "Calibri", size: 13, bold: true, color: { argb: CL.gold } };
+    var rl = [
+      fr ? "1) Commencez par l'onglet Sommaire pour la vue ex\u00e9cutive." : "1) Start with Summary for the executive view.",
+      fr ? "2) Utilisez Flux de tr\u00e9sorerie et Retraits d\u00e9taill\u00e9s pour le pas-\u00e0-pas annuel." : "2) Use Cash Flow and Withdrawals for year-by-year detail.",
+      fr ? "3) Les montants sont en dollars nominaux sauf indication contraire." : "3) Amounts are nominal dollars unless noted.",
+      fr ? "4) Les feuilles Sensibilit\u00e9 et Fiscalit\u00e9 montrent les \u00e9carts entre strat\u00e9gies." : "4) Sensitivity and Tax show strategy deltas.",
+      fr ? "5) Les r\u00e9sultats ne constituent pas un conseil financier." : "5) Results do not constitute financial advice."
+    ];
+    rl.forEach(function(t, i) {
+      var r = 6 + i;
+      wsReadme.mergeCells(r, 2, r, 14);
+      set(wsReadme, wsReadme.getCell(r, 2), t);
+      wsReadme.getCell(r, 2).font = BODY_FONT;
+      wsReadme.getRow(r).height = 19;
+    });
+
+    set(wsReadme, wsReadme.getCell(13, 2), fr ? "Navigation rapide" : "Quick navigation");
+    wsReadme.getCell(13, 2).font = { name: "Calibri", size: 13, bold: true, color: { argb: CL.gold } };
+    var mapRow = 14;
+    wb.worksheets.forEach(function(wsx) {
+      if (!wsx || wsx.name === readmeName || wsx.name === coverName) return;
+      wsReadme.getCell(mapRow, 2).value = { text: wsx.name, hyperlink: "#'" + wsx.name + "'!A1" };
+      wsReadme.getCell(mapRow, 2).font = { name: "Calibri", size: 11, color: { argb: CL.link }, underline: true };
+      wsReadme.getCell(mapRow, 2).border = { bottom: THIN() };
+      wsReadme.getRow(mapRow).height = 19;
+      mapRow++;
+    });
+
+    // ── Download ──
+    var buf = await wb.xlsx.writeBuffer();
+    var blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Helper for numeric rows — writes values starting at startCol
+  function ws_setNumRow(ws, row, startCol, vals) {
+    for (var i = 0; i < vals.length; i++) ws.getCell(row, startCol + i).value = toNum(vals[i]);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // BASIC SheetJS FALLBACK
+  // ══════════════════════════════════════════════════════════════
+  function buildExcelBasic(data) {
+    var XLSX = window.XLSX;
+    if (!XLSX || !XLSX.utils) { alert("SheetJS not loaded"); return; }
+    var F = window.BFmt, D = window.BData;
+    if (!F || !D) { alert("Dependencies missing"); return; }
+    var d = D.buildReportPayload(data);
+    if (d.empty) { alert(d.fr ? "Lancez une simulation d'abord." : "Run a simulation first."); return; }
+    var mc = d.mc, p = d.p, client = d.client, fr = d.fr;
+    var revData = d.revData;
+    var wb = XLSX.utils.book_new();
+    function addSheet(name, rows) {
+      var ws = XLSX.utils.aoa_to_sheet(rows || [[]]);
+      var maxC = 0;
+      (rows || []).forEach(function(r) { maxC = Math.max(maxC, (r || []).length); });
+      if (maxC > 0) ws["!cols"] = Array.from({ length: maxC }, function(_, ci) {
+        var w = 10; (rows || []).forEach(function(r) { var v = (r && r[ci] != null) ? String(r[ci]) : ""; if (v.length > w) w = v.length; }); return { wch: Math.min(52, Math.max(8, w + 2)) };
+      });
+      XLSX.utils.book_append_sheet(wb, ws, (name || "Sheet").slice(0, 31));
+    }
+    function fM(v) { return F.fmtMoney(v || 0, fr); }
+    function fP(v, dec) { return F.fmtPct(v, dec == null ? 1 : dec, fr); }
+    addSheet(fr ? "Sommaire" : "Summary", [[fr ? "Sommaire" : "Summary"], [fr ? "Client" : "Client", client.name || ""], ["Date", F.fmtDateShort()], [fr ? "Succ\u00e8s" : "Success", d.succVal != null ? fP(d.succVal, 1) : ""], [fr ? "Patrimoine m\u00e9dian" : "Median wealth", fM(mc.rMedF || mc.medF)], ["P5", fM(mc.rVar5 || mc.var5)], [fr ? "Alpha fiscal" : "Tax alpha", d._taxAlpha != null ? fM(d._taxAlpha) : ""]]);
+    var detR = [[fr ? "Projection" : "Projection"], [fr ? "\u00c2ge" : "Age", fr ? "Patrimoine" : "Wealth", "REER", "CELI", "NR", fr ? "Imp\u00f4t" : "Tax"]];
+    (revData || []).forEach(function(r) { detR.push([r.age, fM(r.mp_total || r.totalBal || r.balTot || 0), fM(r.aRR || r.balRR), fM(r.aTF || r.balTF), fM(r.aNR || r.balNR), fM(r.tax)]); });
+    addSheet(fr ? "Projection" : "Projection", detR);
+    var baseName = (client.name || "client").replace(/[^a-zA-Z0-9]/g, "_");
+    XLSX.writeFile(wb, "buildfi-" + baseName + ".xlsx");
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PUBLIC API
+  // ══════════════════════════════════════════════════════════════
+  window.buildExcel = function(data) {
+    if (typeof ExcelJS !== "undefined" && ExcelJS.Workbook) {
+      buildExcelPro(data).catch(function(err) {
+        console.error("Excel Pro export error:", err);
+        if (typeof XLSX !== "undefined" && XLSX.utils) buildExcelBasic(data);
+        else alert("Excel export error: " + (err.message || err));
+      });
+      return;
+    }
+    if (typeof XLSX !== "undefined" && XLSX.utils) { buildExcelBasic(data); return; }
+    alert("No Excel library available.");
+  };
+})();

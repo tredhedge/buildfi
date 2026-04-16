@@ -1,0 +1,301 @@
+{
+  "kpi": {
+    "row": 1,
+    "cols": [
+      "grade",
+      "succ",
+      "medWealth",
+      "govM",
+      "covRatio",
+      "taxAlpha",
+      "succDelta",
+      "medDelta",
+      "naiveSucc",
+      "naiveTax",
+      "optTax",
+      "p5Ruin",
+      "medRuin",
+      "oasYears",
+      "oasYearsNaive",
+      "avgEffOpt",
+      "avgEffNaive",
+      "confText",
+      "actionName",
+      "actionWealth",
+      "actionTax",
+      "actionExplain"
+    ]
+  },
+  "profile": {
+    "row": 5,
+    "cols": [
+      "name",
+      "age",
+      "retAge",
+      "deathAge",
+      "prov",
+      "salary",
+      "retSpendM",
+      "rrsp",
+      "rrspC",
+      "allocR",
+      "merR",
+      "tfsa",
+      "tfsaC",
+      "allocT",
+      "merT",
+      "nr",
+      "nrC",
+      "allocN",
+      "merN",
+      "fhsa",
+      "fhsaC",
+      "qppAge",
+      "qppM",
+      "oasAge",
+      "oasM",
+      "cQppM",
+      "cOasM",
+      "rrspRet",
+      "tfsaRet",
+      "nrRet",
+      "fhsaRet",
+      "rrspEnd",
+      "tfsaEnd",
+      "nrEnd",
+      "fhsaEnd",
+      "nSim",
+      "date",
+      "version",
+      "wStrat",
+      "inf",
+      "stochMort",
+      "stochInf",
+      "goP",
+      "slP",
+      "noP",
+      "lifeIns",
+      "cOn",
+      "mode",
+      "bizOn",
+      "totalSpM"
+    ]
+  },
+  "projection": {
+    "row": 10,
+    "headerRow": 10,
+    "cols": [
+      "year",
+      "age",
+      "rrsp",
+      "tfsa",
+      "nr",
+      "fhsa",
+      "reValue",
+      "mortgage",
+      "reEquity",
+      "totalFin",
+      "totalNet",
+      "phase"
+    ],
+    "dataRows": 51
+  },
+  "cashflow": {
+    "row": 65,
+    "headerRow": 65,
+    "cols": [
+      "year",
+      "age",
+      "salary",
+      "rrq",
+      "psv",
+      "gis",
+      "pension",
+      "withdrawals",
+      "spending",
+      "tax",
+      "effRate",
+      "taxableInc"
+    ],
+    "dataRows": 51
+  },
+  "mc": {
+    "row": 120,
+    "headerRow": 120,
+    "cols": [
+      "year",
+      "age",
+      "det",
+      "p5",
+      "p25",
+      "p50",
+      "p75",
+      "p95",
+      "gapP50Det",
+      "rangeP5P95"
+    ],
+    "dataRows": 51
+  },
+  "withdrawals": {
+    "row": 175,
+    "headerRow": 175,
+    "cols": [
+      "year",
+      "age",
+      "rrifMin",
+      "meltdown",
+      "rrspVol",
+      "tfsa",
+      "nr",
+      "totalW",
+      "phase",
+      "notes"
+    ],
+    "dataRows": 51
+  },
+  "taxBrackets": {
+    "row": 230,
+    "headerRow": 230,
+    "cols": [
+      "income",
+      "federal",
+      "provincial",
+      "total",
+      "effRate",
+      "margRate"
+    ],
+    "dataRows": 11
+  },
+  "taxComp": {
+    "row": 245,
+    "headerRow": 245,
+    "cols": [
+      "metric",
+      "optimized",
+      "default",
+      "delta",
+      "notes"
+    ],
+    "dataRows": 6
+  },
+  "sensitivity": {
+    "row": 255,
+    "headerRow": 255,
+    "cols": [
+      "factor",
+      "impactLo",
+      "impactHi",
+      "amplitude",
+      "interp"
+    ],
+    "dataRows": 8
+  },
+  "stress": {
+    "row": 267,
+    "headerRow": 267,
+    "cols": [
+      "scenario",
+      "period",
+      "success",
+      "delta",
+      "wealthP50",
+      "var5",
+      "ruinP5",
+      "resilience",
+      "desc"
+    ],
+    "dataRows": 6
+  },
+  "estate": {
+    "row": 277,
+    "headerRow": 277,
+    "cols": [
+      "percentile",
+      "netEstate",
+      "estateTax",
+      "grossEstate",
+      "interp"
+    ],
+    "dataRows": 7
+  },
+  "estateCascade": {
+    "row": 288,
+    "headerRow": 288,
+    "cols": [
+      "component",
+      "amount",
+      "rateBasis",
+      "notes"
+    ],
+    "dataRows": 8
+  },
+  "rePortfolio": {
+    "row": 300,
+    "headerRow": 300,
+    "cols": [
+      "name",
+      "value",
+      "mortgage",
+      "equity",
+      "mtgRate",
+      "amortRemain",
+      "appreciation",
+      "rentalInc",
+      "type"
+    ],
+    "dataRows": 4
+  },
+  "reTrajectory": {
+    "row": 308,
+    "headerRow": 308,
+    "cols": [
+      "year",
+      "age",
+      "totalValue",
+      "mortgage",
+      "equity",
+      "pctWealth",
+      "event"
+    ],
+    "dataRows": 15
+  },
+  "corporate": {
+    "row": 327,
+    "headerRow": 327,
+    "cols": [
+      "year",
+      "age",
+      "corpBal",
+      "corpTax",
+      "dividend",
+      "corpSalary",
+      "extraction",
+      "cda",
+      "rdtoh",
+      "passiveInc",
+      "sbdAlert",
+      "phase"
+    ],
+    "dataRows": 37
+  },
+  "methodology": {
+    "row": 368,
+    "headerRow": 368,
+    "cols": [
+      "component",
+      "description",
+      "details"
+    ],
+    "dataRows": 8
+  },
+  "smoothing": {
+    "row": 380,
+    "headerRow": 380,
+    "cols": [
+      "constant",
+      "value",
+      "role"
+    ],
+    "dataRows": 8
+  }
+}

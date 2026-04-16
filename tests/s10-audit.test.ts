@@ -4,10 +4,9 @@
 //         auth checks, legal pages, health route, data export/delete
 
 import { runMC, calcTax } from "../lib/engine";
-import { translateToMC } from "../lib/quiz-translator";
-import { translateToMCInter } from "../lib/quiz-translator-inter";
 import { translateToMCExpert } from "../lib/quiz-translator-expert";
-import { extractReportDataInter } from "../lib/report-html-inter";
+import { translateBilan360 } from "../lib/quiz-translator-360";
+import { determinePhase, extractReportData360 } from "../lib/report-html-360";
 import { extractReportDataExpert } from "../lib/report-html-expert";
 import {
   gradeFromSuccess,
@@ -34,10 +33,12 @@ function check(label: string, ok: boolean) {
 
 console.log("=== 1. Engine smoke test ===");
 {
-  const params = translateToMC({ age: 40, retAge: 65, sex: "M", prov: "QC", income: 80000,
+  const quiz = { age: 40, retAge: 65, sex: "M", prov: "QC", income: 80000,
     couple: "no", source: "employed", employer: "small",
     rrsp: 50000, tfsa: 30000, nr: 5000, monthlyContrib: 600,
-    lifestyle: "active", risk: "balanced", worries: ["runout"] });
+    lifestyle: "active", risk: "balanced", worries: ["runout"] };
+  const phase = determinePhase(40, 65);
+  const params = translateBilan360(quiz, phase);
   const mc = runMC(params, 100) as Record<string, any> | null;
   check("engine returns result", !!mc);
   check("succ is 0-1", !!mc && mc.succ >= 0 && mc.succ <= 1);
@@ -138,33 +139,31 @@ console.log("\n=== 3. MC regression (3 profiles × 2000 sims) ===");
 
 console.log("\n=== 4. Report generation (3 tiers) ===");
 
-// 4a. Essentiel
+// 4a. Bilan 360
 {
-  const essQuiz = { age: 40, retAge: 65, sex: "M", prov: "QC", income: 75000,
+  const b360Quiz = { age: 40, retAge: 65, sex: "M", prov: "QC", income: 75000,
     couple: "no", source: "employed", employer: "small",
     rrsp: 35000, tfsa: 25000, nr: 5000, monthlyContrib: 500,
     lifestyle: "active", risk: "balanced", worries: ["runout"] };
   try {
-    const params = translateToMC(essQuiz);
+    const phase = determinePhase(40, 65);
+    const params = translateBilan360(b360Quiz, phase);
     const mc = runMC(params, 1000) as Record<string, any>;
-    check("[Essentiel] MC ok", !!mc);
-    // extractReportData is not exported directly, test via formatMCResults
-    const formatted = formatMCResults(mc);
-    check("[Essentiel] formatted has successRate", typeof formatted.successRate === "number");
-    check("[Essentiel] formatted has percentiles", !!formatted.percentiles);
-    check("[Essentiel] formatted has estate", !!formatted.estate);
-    check("[Essentiel] formatted has yearByYear", Array.isArray(formatted.yearByYear));
-    console.log(`  OK   [Essentiel] succ=${(mc.succ * 100).toFixed(1)}%`);
+    check("[Bilan360] MC ok", !!mc);
+    const D = extractReportData360(mc, params, phase, {});
+    check("[Bilan360] D has successPct", typeof D.successPct === "number");
+    check("[Bilan360] D has grade", typeof D.grade === "string" && D.grade.length > 0);
+    console.log(`  OK   [Bilan360] succ=${D.successPct}% grade=${D.grade}`);
   } catch (err) {
-    console.error("  CRASH [Essentiel]", err);
+    console.error("  CRASH [Bilan360]", err);
     fail++;
   }
 }
 
-// 4b. Intermediaire
+// 4b. Bilan 360 Couple (transition phase)
 {
-  const interQuiz = { age: 45, retAge: 63, sex: "F", prov: "ON", income: 90000,
-    couple: "yes", cAge: 43, cSex: "M", cIncome: 55000,
+  const coupleQuiz = { age: 55, retAge: 63, sex: "F", prov: "ON", income: 90000,
+    couple: "yes", cAge: 53, cSex: "M", cIncome: 55000,
     cRetAge: 63, cPenType: "none", cQppAge: 65, cOasAge: 65,
     sources: ["employed"], employer: "large",
     rrsp: 80000, tfsa: 50000, nr: 15000, monthlyContrib: 1000,
@@ -175,16 +174,16 @@ console.log("\n=== 4. Report generation (3 tiers) ===");
     homeowner: true, homeValue: 600000, mortgage: 250000, mortgageAmort: 18,
     hasRental: false, debts: [] };
   try {
-    const params = translateToMCInter(interQuiz);
+    const phase = determinePhase(55, 63);
+    const params = translateBilan360(coupleQuiz, phase);
     const mc = runMC(params, 1000) as Record<string, any>;
-    check("[Inter] MC ok", !!mc);
-    const D = extractReportDataInter(mc, params);
-    check("[Inter] D has successPct", typeof D.successPct === "number");
-    check("[Inter] D has grade", typeof D.grade === "string" && D.grade.length > 0);
-    check("[Inter] D has retBal", typeof D.retBal === "number");
-    console.log(`  OK   [Inter] succ=${D.successPct}% grade=${D.grade}`);
+    check("[360 Couple] MC ok", !!mc);
+    const D = extractReportData360(mc, params, phase, {});
+    check("[360 Couple] D has successPct", typeof D.successPct === "number");
+    check("[360 Couple] D has grade", typeof D.grade === "string" && D.grade.length > 0);
+    console.log(`  OK   [360 Couple] succ=${D.successPct}% grade=${D.grade}`);
   } catch (err) {
-    console.error("  CRASH [Inter]", err);
+    console.error("  CRASH [360 Couple]", err);
     fail++;
   }
 }
@@ -244,14 +243,11 @@ console.log("\n=== 6. Translator coverage ===");
     rrsp: 30000, tfsa: 20000, nr: 5000, monthlyContrib: 500,
     lifestyle: "active", risk: "balanced" };
 
-  const essParams = translateToMC(q);
-  check("[Ess translator] has age", essParams.age === 40);
-  check("[Ess translator] has retAge", essParams.retAge === 65);
-  check("[Ess translator] has retSpM", typeof essParams.retSpM === "number" && essParams.retSpM > 0);
-
-  const interParams = translateToMCInter(q);
-  check("[Inter translator] has age", interParams.age === 40);
-  check("[Inter translator] has retSpM", typeof interParams.retSpM === "number" && interParams.retSpM > 0);
+  const phase = determinePhase(40, 65);
+  const b360Params = translateBilan360(q, phase);
+  check("[360 translator] has age", b360Params.age === 40);
+  check("[360 translator] has retAge", b360Params.retAge === 65);
+  check("[360 translator] has retSpM", typeof b360Params.retSpM === "number" && b360Params.retSpM > 0);
 
   const { mcParams } = translateToMCExpert(q);
   check("[Expert translator] has age", mcParams.age === 40);
@@ -292,7 +288,7 @@ const requiredFiles = [
   "public/conditions.html",
   "public/confidentialite.html",
   "public/avis-legal.html",
-  "public/quiz-essentiel.html",
+  "public/quiz-360.html",
   "public/quiz-expert.html",
   "app/api/health/route.ts",
   "app/api/simulate/route.ts",
@@ -311,11 +307,9 @@ const requiredFiles = [
   "lib/kv.ts",
   "lib/tracking.ts",
   "lib/email-expert.ts",
-  "lib/report-html.js",
-  "lib/report-html-inter.js",
+  "lib/report-html-360.js",
   "lib/report-html-expert.ts",
-  "lib/quiz-translator.ts",
-  "lib/quiz-translator-inter.ts",
+  "lib/quiz-translator-360.ts",
   "lib/quiz-translator-expert.ts",
 ];
 

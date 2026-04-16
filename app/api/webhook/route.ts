@@ -6,33 +6,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import Anthropic from "@anthropic-ai/sdk";
-import { translateToMC } from "@/lib/quiz-translator";
-import { translateToMCInter } from "@/lib/quiz-translator-inter";
 import { translateToMCExpert } from "@/lib/quiz-translator-expert";
-import { translateDecumToMC } from "@/lib/quiz-translator-decum";
 import { translateBilan360 } from "@/lib/quiz-translator-360";
 import { runMC } from "@/lib/engine";
-import {
-  renderReportHTML,
-  calcCostOfDelay as calcCostOfDelayEss,
-  calcMinViableReturn as calcMinViableReturnEss,
-  extractReportData,
-  buildAIPrompt,
-  buildAIPromptOpus,
-  buildWhatIf,
-} from "@/lib/report-html";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
-import { extractReportDataInter, renderReportHTMLInter } from "@/lib/report-html-inter";
-import { buildAIPromptInter } from "@/lib/ai-prompt-inter";
-import { extractReportDataDecum, renderReportDecum } from "@/lib/report-html-decum";
 import { determinePhase, extractReportData360, renderReportHTML360 } from "@/lib/report-html-360";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
-import { buildAIPromptDecum } from "@/lib/ai-prompt-decum";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlots, sanitizeAISlotsOpus, sanitizeAISlotsInter, sanitizeAISlotsExpert, sanitizeAISlotsDecum, sanitizeAISlots360 } from "@/lib/ai-constants";
-import type { AINarrationDecum } from "@/lib/ai-constants";
+import { sanitizeAISlotsExpert, sanitizeAISlots360 } from "@/lib/ai-constants";
 import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
 import type { ExpertAINarration } from "@/lib/ai-constants";
@@ -123,6 +106,7 @@ function reassembleQuizAnswers(
 function normalizeReportTier(rawTier?: string): string {
   const tier = (rawTier || "").toLowerCase().trim();
   if (!tier) return "bilan360";
+  // Legacy tiers all route to bilan360
   if (tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") {
     return "bilan360";
   }
@@ -210,138 +194,9 @@ async function handleCheckoutCompleted(
     return handleBilan360Purchase(email, metadata, session.id);
   }
 
-  // ── Essentiel / Intermediaire pipeline ──────────────────
-  try {
-    const quizAnswers = reassembleQuizAnswers(metadata);
-    const lang = (metadata.lang || "fr") as "fr" | "en";
-
-    console.log(`[webhook] Processing ${tier} report for ${maskEmail(email)} (${lang})`);
-
-    const fr = lang === "fr";
-    let reportHTML: string;
-    let D: Record<string, unknown>;
-    let allocationUrl: string | undefined;
-
-    // Generate feedback token for star ratings in report + email
-    const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, tier as "essentiel" | "intermediaire" | "bilan360" | "expert", lang);
-
-    if (tier === "intermediaire") {
-      // ── Intermédiaire pipeline ──────────────────────────
-      const params = translateToMCInter(quizAnswers);
-
-      // Build allocation tool baseline URL (params baseline for pre-fill)
-      try {
-        const annualContrib = (params.rrspC || 0) + (params.tfsaC || 0) + (params.nrC || 0);
-        const blendedReturn = Math.round((params.allocR * 7 + (1 - params.allocR) * 4) * 10) / 10;
-        const urlParts: string[] = [];
-        if (params.sal) urlParts.push(`income=${Math.round(params.sal)}`);
-        if (annualContrib > 0) urlParts.push(`alloc=${Math.round(annualContrib)}`);
-        if (blendedReturn > 0) urlParts.push(`return=${blendedReturn}`);
-        if (params.retAge) urlParts.push(`retAge=${params.retAge}`);
-        if (params.age) urlParts.push(`age=${params.age}`);
-        if (params.prov) urlParts.push(`province=${params.prov}`);
-        urlParts.push(`married=${!!params.cOn}`);
-        urlParts.push(`mortgage=${(params._report?.mortBal || 0) > 0}`);
-        allocationUrl = `https://www.buildfi.ca/outils/allocation-epargne.html${urlParts.length ? `?${urlParts.join("&")}` : ""}`;
-      } catch { /* non-fatal — email sends without baseline URL */ }
-      const mcStart = Date.now();
-      const mc = runMC(params, 5000);
-      if (!mc) throw new Error("MC engine returned null — check params (age, retAge, lifespan)");
-      const stratData = run5Strategies(params as any);
-      const costDelayVal = calcCostOfDelay(params as any);
-      const minReturn = calcMinViableReturn(params as any);
-      console.log(`[webhook] MC + strategies completed in ${Date.now() - mcStart}ms`);
-
-      D = extractReportDataInter(mc, params);
-
-      const aiStart = Date.now();
-      const quiz = params._quiz || {};
-      const prompt = buildAIPromptInter(D, params, fr, quiz, stratData);
-      const ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsInter);
-      console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
-
-      reportHTML = renderReportHTMLInter(
-        D, mc, stratData, params, lang, ai, costDelayVal, minReturn, feedbackToken, prompt.obsLabels
-      );
-    } else {
-      // ── Essentiel pipeline (default) ────────────────────
-      const params = translateToMC(quizAnswers);
-      const mcStart = Date.now();
-      const mc = runMC(params, 5000);
-      console.log(`[webhook] MC completed in ${Date.now() - mcStart}ms`);
-
-      D = extractReportData(mc, params);
-
-      const aiStart = Date.now();
-      const quiz = { ...(quizAnswers as Record<string, unknown>), ...(params._quiz || {}) };
-      const useOpus = process.env.ANTHROPIC_MODEL === "opus";
-      let ai: Record<string, string | undefined>;
-      if (useOpus) {
-        const whatIfResults = buildWhatIf(params, mc, D, fr);
-        const prompt = buildAIPromptOpus(D, params, fr, quiz, whatIfResults);
-        ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsOpus, "claude-opus-4-6");
-        console.log(`[webhook] Opus AI narration completed in ${Date.now() - aiStart}ms (${Object.keys(ai).length} slots)`);
-      } else {
-        const prompt = buildAIPrompt(D, params, fr, quiz);
-        ai = await callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots);
-        console.log(`[webhook] AI narration completed in ${Date.now() - aiStart}ms`);
-      }
-
-      const costDelay = calcCostOfDelayEss(params);
-      const minReturn = calcMinViableReturnEss(params);
-      reportHTML = renderReportHTML(D, mc, quizAnswers, lang, ai, costDelay, minReturn, feedbackToken);
-    }
-
-    // ── Upload + email (shared) ───────────────────────────
-    const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `rapport-${tier}-${timestamp}-${session.id.slice(-8)}.html`;
-
-    const blob = await put(filename, reportHTML, {
-      access: "public",
-      contentType: "text/html; charset=utf-8",
-      addRandomSuffix: true,
-    });
-
-    console.log(`[webhook] Report uploaded: ${blob.url}`);
-
-    await sendReportEmail({
-      to: email,
-      lang: (metadata.lang || "fr") as "fr" | "en",
-      tier,
-      downloadUrl: blob.url,
-      grade: (D as Record<string, string>).grade,
-      successPct: (D as Record<string, number>).successPct,
-      feedbackToken,
-      allocationUrl,
-    });
-
-    console.log(`[webhook] Email sent to ${maskEmail(email)}`);
-
-    // Create referral record so this user's ref link works
-    if (metadata.userRefCode) {
-      await createReferralRecord(metadata.userRefCode, email).catch((err) =>
-        console.error("[webhook] Referral record creation error (non-blocking):", err)
-      );
-    }
-
-    return NextResponse.json({ received: true, email, reportUrl: blob.url });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Processing failed";
-    console.error("[webhook] Processing error:", err);
-    // Clear idempotency flag so Stripe retries can re-process on transient failure
-    await unmarkProcessed(session.id).catch((e) =>
-      console.error("[webhook] Failed to unmark processed:", e)
-    );
-    await sendAdminAlert(
-      `${tier} pipeline failed`,
-      `Email: ${email}\nSession: ${session.id}\nTier: ${tier}\nError: ${msg}`
-    );
-    return NextResponse.json(
-      { received: true, error: msg },
-      { status: 500 }
-    );
-  }
+  // Unknown tier — log and return error
+  console.error(`[webhook] Unknown tier: ${tier}`);
+  return NextResponse.json({ error: `Unknown tier: ${tier}` }, { status: 400 });
 }
 
 // ── Bilan 360 purchase handler ───────────────────────────
@@ -495,139 +350,6 @@ async function handleBilan360Purchase(
     await sendAdminAlert(
       "Bilan 360 pipeline failed",
       `Email: ${email}\nSession: ${sessionId}\nPhase: ${metadata.phase || "unknown"}\nError: ${msg}`
-    );
-    return NextResponse.json({ received: true, error: msg }, { status: 500 });
-  }
-}
-
-// ── Décaissement purchase handler ────────────────────────
-
-async function handleDecaissementPurchase(
-  email: string,
-  metadata: Record<string, string>,
-  sessionId: string
-): Promise<NextResponse> {
-  try {
-    const quizAnswers = reassembleQuizAnswers(metadata);
-    const lang = (metadata.lang || "fr") as "fr" | "en";
-    const fr = lang === "fr";
-    const quiz = quizAnswers as Record<string, any>;
-
-    console.log(`[webhook] Processing Décaissement report for ${maskEmail(email)} (${lang})`);
-
-    const params = translateDecumToMC(quizAnswers);
-    const mcStart = Date.now();
-
-    // ── Run 1: Baseline (5,000 sims) ─────────────────────
-    const mcBase = runMC(params, 5000);
-    if (!mcBase) throw new Error("Décaissement MC baseline returned null");
-
-    // ── Runs 2–3: Meltdown scenarios (1,000 sims each) ───
-    const meltTarget: number = (params._report as any)?.meltTarget ?? 58523;
-    const meltIsBase = !!((params._report as any)?.meltIsBase);
-    let mcMelt1: Record<string, any> | null = null;
-    let mcMelt2: Record<string, any> | null = null;
-    if (!meltIsBase) {
-      const melt2Target = Math.round(meltTarget * 0.75);
-      const paramsMelt1 = { ...params, retIncome: meltTarget, retSpM: Math.round(meltTarget / 12) };
-      const paramsMelt2 = { ...params, retIncome: melt2Target, retSpM: Math.round(melt2Target / 12) };
-      mcMelt1 = runMC(paramsMelt1, 1000) as Record<string, any> | null;
-      mcMelt2 = runMC(paramsMelt2, 1000) as Record<string, any> | null;
-    }
-
-    // ── Runs 4–6: CPP/QPP timing (1,000 sims each) ───────
-    const alreadyClaiming = quiz.qppAlreadyClaiming === true || quiz.qppAlreadyClaiming === "true";
-    let mcC60: Record<string, any> | null = null;
-    let mcC65: Record<string, any> | null = null;
-    let mcC70: Record<string, any> | null = null;
-    if (!alreadyClaiming) {
-      const pC60 = translateDecumToMC({ ...quiz, qppPlannedAge: 60, qppAlreadyClaiming: false });
-      const pC65 = translateDecumToMC({ ...quiz, qppPlannedAge: 65, qppAlreadyClaiming: false });
-      const pC70 = translateDecumToMC({ ...quiz, qppPlannedAge: 70, qppAlreadyClaiming: false });
-      mcC60 = runMC(pC60, 1000) as Record<string, any> | null;
-      mcC65 = runMC(pC65, 1000) as Record<string, any> | null;
-      mcC70 = runMC(pC70, 1000) as Record<string, any> | null;
-    }
-
-    const extraRuns = { mcMelt1, mcMelt2, mcC60, mcC65, mcC70 };
-    console.log(`[webhook] Décaissement 6 MC runs completed in ${Date.now() - mcStart}ms`);
-
-    const D = extractReportDataDecum(mcBase as Record<string, any>, params, extraRuns);
-
-    // ── AI narration ──────────────────────────────────────
-    const aiStart = Date.now();
-    const prompt = buildAIPromptDecum(D, params, fr, quiz);
-    let ai: AINarrationDecum;
-    try {
-      ai = await Promise.race([
-        callAnthropic(prompt.sys, prompt.usr, sanitizeAISlotsDecum),
-        new Promise<AINarrationDecum>((_, reject) =>
-          setTimeout(() => reject(new Error("AI timeout 60s")), 60000)
-        ),
-      ]);
-    } catch (aiErr) {
-      console.warn("[webhook] Décaissement AI failed/timed out, using static fallbacks:", aiErr);
-      ai = {} as AINarrationDecum;
-    }
-    console.log(`[webhook] Décaissement AI in ${Date.now() - aiStart}ms`);
-
-    // ── Feedback token ────────────────────────────────────
-    const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, "decaissement", lang);
-
-    // ── Simulator URL ─────────────────────────────────────
-    const simParts: string[] = [];
-    if (lang === "en") simParts.push(`lang=en`);
-    if (params.age) simParts.push(`age=${params.age}`);
-    if (params.retIncome) simParts.push(`income=${Math.round(params.retIncome as number)}`);
-    if (params.allocR) simParts.push(`allocR=${params.allocR}`);
-    if (params.prov) simParts.push(`province=${params.prov}`);
-    if (params.cOn) simParts.push(`couple=true`);
-    const simulatorUrl = `https://www.buildfi.ca/outils/decaissement-simulateur.html${simParts.length ? `?${simParts.join("&")}` : ""}`;
-
-    // ── Render report ─────────────────────────────────────
-    const reportHTML = renderReportDecum(D, mcBase as Record<string, any>, params, lang, ai, feedbackToken, extraRuns);
-
-    // ── Upload ────────────────────────────────────────────
-    const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `rapport-decaissement-${timestamp}-${sessionId.slice(-8)}.html`;
-    const blob = await put(filename, reportHTML, {
-      access: "public",
-      contentType: "text/html; charset=utf-8",
-      addRandomSuffix: true,
-    });
-    console.log(`[webhook] Décaissement report uploaded: ${blob.url}`);
-
-    // ── Email ─────────────────────────────────────────────
-    await sendReportEmail({
-      to: email,
-      lang,
-      tier: "decaissement",
-      downloadUrl: blob.url,
-      grade: String(D.grade),
-      successPct: D.successPct as number,
-      feedbackToken,
-      allocationUrl: simulatorUrl,
-    });
-    console.log(`[webhook] Décaissement email sent to ${maskEmail(email)}`);
-
-    if (metadata.userRefCode) {
-      await createReferralRecord(metadata.userRefCode, email).catch((err) =>
-        console.error("[webhook] Referral record creation error (non-blocking):", err)
-      );
-    }
-
-    return NextResponse.json({ received: true, email, reportUrl: blob.url });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Décaissement processing failed";
-    console.error("[webhook] Décaissement error:", err);
-    // Clear idempotency flag so Stripe retries can re-process
-    await unmarkProcessed(sessionId).catch((e) =>
-      console.error("[webhook] Failed to unmark processed:", e)
-    );
-    await sendAdminAlert(
-      "Décaissement pipeline failed",
-      `Email: ${email}\nSession: ${sessionId}\nError: ${msg}`
     );
     return NextResponse.json({ received: true, error: msg }, { status: 500 });
   }

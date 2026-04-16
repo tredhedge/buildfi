@@ -155,7 +155,7 @@ export const RRSP = {
   department: "CRA (announced by Finance Canada)",
   source: "CRA RRSP dollar limit 2026; = 18% of previous year's earned income, capped",
   sourceUrl: "canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/rrsp-mp-limit.html",
-  engineLines: "quiz-translator.ts:79, quiz-translator-inter.ts:72, quiz-translator-expert.ts:127",
+  engineLines: "quiz-translator-360.ts, quiz-translator-expert.ts:127",
 } as const;
 
 // ── FHSA ─────────────────────────────────────────────────────────
@@ -362,7 +362,7 @@ export const ANNUAL_UPDATE_CHECKLIST = [
   { category: "OAS max monthly + clawback threshold", department: "Service Canada / ESDC", files: ["engine/index.js:20-21", "planner.html:1171-1172"], source: "canada.ca/en/services/benefits/publicpensions/cpp/old-age-security/payments.html", note: "Quarterly — check Jan/Apr/Jul/Oct" },
   { category: "GIS max amounts", department: "Service Canada / ESDC", files: ["engine/index.js:22-23", "planner.html:1173-1174"], source: "canada.ca/en/services/benefits/publicpensions/cpp/old-age-security/guaranteed-income-supplement/benefit-amount.html", note: "Quarterly with OAS" },
   { category: "TFSA annual limit", department: "CRA / Finance Canada", files: ["engine/index.js:29", "planner.html:1180", "quiz-translator*.ts"], source: "canada.ca/en/revenue-agency/services/tax/individuals/topics/tax-free-savings-account/contributions.html" },
-  { category: "RRSP dollar cap", department: "CRA / Finance Canada", files: ["quiz-translator.ts:79", "quiz-translator-inter.ts:72", "quiz-translator-expert.ts:127"], source: "canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/rrsp-mp-limit.html" },
+  { category: "RRSP dollar cap", department: "CRA / Finance Canada", files: ["quiz-translator-360.ts", "quiz-translator-expert.ts:127"], source: "canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/rrsp-mp-limit.html" },
   { category: "EI premiums + max insurable", department: "CRA / CEIC", files: ["engine/index.js:843-844", "planner.html:3971-3972"], source: "canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/ei-premium-rates-maximums.html" },
   { category: "QPIP/RQAP premiums + max insurable", department: "RQAP / Conseil de gestion", files: ["engine/index.js:849-850", "planner.html:3977-3978"], source: "rqap.gouv.qc.ca/en/about-the-plan/general-information/premiums-and-maximum-insurable-earnings" },
   { category: "CESG rates + lifetime max", department: "ESDC", files: ["engine/index.js:1361", "planner.html:~4489"], source: "canada.ca/en/employment-social-development/services/student-financial-aid/education-savings/cesg.html" },
