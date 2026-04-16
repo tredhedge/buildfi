@@ -123,6 +123,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* &#9552;&#9552;&#9552; KPI CARDS RESPONSIVE &#9552;&#9552;&#9552; */
 .bf-kpi-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
 
+/* Clickable KPI affordance — subtle chevron + hover lift signals that the
+   card routes to a drill-in tab. Applied via inline className="bf-kpi-click". */
+.bf-kpi-click{position:relative;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
+.bf-kpi-click::after{content:"\203A";position:absolute;bottom:4px;right:8px;font-size:14px;line-height:1;color:var(--bf-ac,#c49a1a);opacity:.45;transition:opacity .12s ease,transform .12s ease}
+.bf-kpi-click:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+.bf-kpi-click:hover::after{opacity:.9;transform:translateX(2px)}
+.bf-kpi-click:focus-visible{outline:2px solid var(--bf-ac,#c49a1a);outline-offset:2px}
+
 /* ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â SIDEBAR RAIL + OVERLAY (DESKTOP) ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â */
 .bf-rail {
   position: fixed; left: 0; top: 0; bottom: 0; width: 84px;
@@ -8125,6 +8133,18 @@ function App() {
     return [{ id: "self", role: "self", name: "", age: 35, sex: "M" }];
   }), family = _family[0], setFamily = _family[1];
   var _syncLock = useRef(false);
+  // Tracks previous MC result to render delta badges (Δ success pp, Δ wealth)
+  // on the sticky bar and the 4 hero KPIs after each recompute. useEffect
+  // updates this AFTER render completes, so the current render still sees the
+  // prior values and can diff against them.
+  var _prevMcRef = useRef({ succ: null, medF: null, p5Ruin: null, govTotal: null });
+  // FIRE (Financial Independence, Retire Early) lens. When true, Diagnostic
+  // tab exposes a FIRE analysis block (Years-to-FI, FI number, savings rate,
+  // classification: Lean / Traditional / Fat / Coast / Barista). Persisted so
+  // a user opting into the FIRE framing keeps it across sessions.
+  var _fireL = useState((function() { try { return localStorage.getItem("bf_fire_lens") === "1"; } catch(_e) { return false; } })());
+  var fireLens = _fireL[0], setFireLens = _fireL[1];
+  useEffect(function() { try { localStorage.setItem("bf_fire_lens", fireLens ? "1" : "0"); } catch(_e) {} }, [fireLens]);
   var _eqR = useState(0.07), eqRetS = _eqR[0], sEqR = _eqR[1];
   var _eqV = useState(0.16), eqVolS = _eqV[0], sEqV = _eqV[1];
   var _bR = useState(0.035), bndRetS = _bR[0], sBndR = _bR[1];
@@ -8299,6 +8319,22 @@ function App() {
     var full = [firstName, lastName].filter(function(x) { return !!x && String(x).trim() !== ""; }).join(" ").trim();
     if (full && full !== cName) sCN(full);
   }, [firstName, lastName]);
+  // Capture previous MC snapshot AFTER render so next render can diff against it.
+  // Skip the placeholder phase — the engine emits a transient mc._placeholder
+  // result (often succ=0 or sentinel) before the real MC lands, and storing
+  // that would make the first real render show a delta-vs-zero (e.g., ▲+78pp
+  // when the first real success rate is 78%). Also skip when succ is obviously
+  // a placeholder-zero with no pD path.
+  useEffect(function() {
+    if (!mc || mc._placeholder) return;
+    if (typeof mc.succ !== "number" || !isFinite(mc.succ)) return;
+    if (!mc.pD || mc.pD.length === 0) return;
+    _prevMcRef.current = {
+      succ: mc.succ,
+      medF: mc.rMedF != null ? mc.rMedF : mc.medF,
+      p5Ruin: mc.p5Ruin
+    };
+  }, [mc && mc._placeholder, mc && mc.succ, mc && (mc.rMedF != null ? mc.rMedF : mc.medF), mc && mc.p5Ruin]);
   useEffect(function() {
     if ((firstName || lastName) || !cName) return;
     var parts = String(cName).trim().split(/\s+/);
@@ -8826,9 +8862,18 @@ function App() {
       _detSchedule = _detR.schedule;
       _detTotal = _detR;
       // Build age -> total wealth map for chart overlay
+      // Scope: registered + non-registered + couple accounts + RE equity.
+      // Previously excluded reEquity which made the dashed deterministic line
+      // visually under-track the MC stacked area (which can include real
+      // estate) and appear to "flat-line" against a still-growing MC path.
+      // FHSA / DC / pension / corp are not modeled in optimizeDecum so they
+      // remain out of the reference — note this in chart tooltip if exposing.
       window._detWealth = {};
       _detR.schedule.forEach(function(row) {
-        window._detWealth[row.age] = (row.balRR || 0) + (row.balTF || 0) + (row.balNR || 0) + (row.balCRR || 0) + (row.balCTF || 0) + (row.balCNR || 0);
+        window._detWealth[row.age] =
+          (row.balRR || 0) + (row.balTF || 0) + (row.balNR || 0) +
+          (row.balCRR || 0) + (row.balCTF || 0) + (row.balCNR || 0) +
+          (row.reEquity || 0);
       });
       window._detSchedule = _detR.schedule;
       window._detResult = _detR;
@@ -12562,6 +12607,46 @@ React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, textTransfo
     })
   );
 }()), React.createElement("div", { style: sty.content, className: "bf-content", id: "main-content", role: "main" },
+
+// ── STICKY PLAN HEALTH BAR ──────────────────────────────────────────
+// Decision-surface that stays pinned above every tab's content. Reuses the
+// same semantics as the tab-5 Plan Health Summary (grade + status) but in a
+// compact always-visible form. Clicking outside tab 5 jumps to Diagnostic.
+(function() {
+  if (!mc || !mc.pD || mc.pD.length === 0 || mc._placeholder) return null;
+  if (tab === 28) return null; // Guide/reference context
+  var _shInc = (retSpM <= 0 && age < retAge) || (sal <= 0 && age < retAge && (rrsp + tfsa + nr) <= 0);
+  if (_shInc || typeof mc.succ !== "number") return null;
+  var _s = mc.succ;
+  var _gr = _s >= 0.95 ? "A+" : _s >= 0.90 ? "A" : _s >= 0.85 ? "A-" : _s >= 0.80 ? "B+" : _s >= 0.70 ? "B" : _s >= 0.50 ? "C" : _s >= 0.30 ? "D" : "F";
+  var _c = _s >= 0.85 ? CL.gn : _s >= 0.70 ? CL.go : CL.rd;
+  var _status = lang === "fr"
+    ? (_s >= 0.90 ? "Plan solide" : _s >= 0.75 ? "Plan acceptable" : _s >= 0.50 ? "Plan fragile" : "Plan \u00e0 risque")
+    : (_s >= 0.90 ? "Solid plan" : _s >= 0.75 ? "Acceptable plan" : _s >= 0.50 ? "Fragile plan" : "At-risk plan");
+  var _onDiag = tab === 5;
+  var _prev = (typeof _prevMcRef !== "undefined" && _prevMcRef && _prevMcRef.current) ? _prevMcRef.current : null;
+  var _dS = (_prev && typeof _prev.succ === "number" && isFinite(_prev.succ)) ? Math.round((_s - _prev.succ) * 100) : 0;
+  return React.createElement("div", {
+    onClick: _onDiag ? null : function() { setTab(5); },
+    title: _onDiag ? null : (lang === "fr" ? "Voir le diagnostic complet" : "View full diagnostic"),
+    style: {
+      position: "sticky", top: 0, zIndex: 50,
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "6px 12px", marginBottom: 10,
+      background: _c + "18", border: "1px solid " + _c + "50",
+      borderRadius: RAD.md + 2, cursor: _onDiag ? "default" : "pointer",
+      backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)"
+    }
+  },
+    React.createElement("div", { style: { fontSize: 22, fontWeight: FW.bold, color: _c, lineHeight: 1, minWidth: 32, textAlign: "center" } }, _gr),
+    React.createElement("div", { style: { fontSize: FS.sm, color: _c, fontWeight: FW.bold, minWidth: 42 } }, Math.round(_s * 100) + "%"),
+    _dS !== 0 ? React.createElement("div", {
+      style: { fontSize: FS.xs, color: _dS > 0 ? CL.gn : CL.rd, fontWeight: FW.bold, padding: "1px 6px", background: (_dS > 0 ? CL.gn : CL.rd) + "1a", borderRadius: 8 }
+    }, (_dS > 0 ? "\u25b2 +" : "\u25bc ") + _dS + "pp") : null,
+    React.createElement("div", { style: { flex: 1, fontSize: FS.sm, color: CL.al, fontWeight: FW.medium } }, _status),
+    _onDiag ? null : React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm } }, lang === "fr" ? "\u2192 Diagnostic" : "\u2192 Diagnostic")
+  );
+}()),
 // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â PHASE 4: FIRST-VISIT CONTEXTUAL TIP ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
 (function() {
   if (mode === "expert") return null;
@@ -13792,7 +13877,13 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         E("div", { style: { flex: 1 } },
           E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, marginBottom: 2 } }, statusLbl),
           E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, interpLbl),
-          recos.length > 0 ? E("div", { style: { fontSize: FS.xs, color: CL.ac, marginTop: 4, fontWeight: FW.medium } }, recos.length + (fr ? " levier" + (recos.length > 1 ? "s" : "") + " identifi\u00e9" + (recos.length > 1 ? "s" : "") + " \u2193" : " lever" + (recos.length > 1 ? "s" : "") + " identified \u2193")) : null)
+          recos.length > 0 ? E("div", {
+            role: "button", tabIndex: 0,
+            onClick: function() { setTab(23); },
+            onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(23); } },
+            title: fr ? "Voir les leviers identifi\u00e9s (Analyse &amp; Risques)" : "View identified levers (Analysis &amp; Risks)",
+            style: { fontSize: FS.xs, color: CL.ac, marginTop: 4, fontWeight: FW.medium, cursor: "pointer", display: "inline-block" }
+          }, recos.length + (fr ? " levier" + (recos.length > 1 ? "s" : "") + " identifi\u00e9" + (recos.length > 1 ? "s" : "") + " \u2192" : " lever" + (recos.length > 1 ? "s" : "") + " identified \u2192")) : null)
       );
     }()) : null,
 
@@ -13804,36 +13895,146 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
     var _govPct = _spendMo > 0 ? Math.round(_govMo / _spendMo * 100) : 0;
     return E("div", { style: { marginTop: 16 } },
 
-      // -- Mesures cles --
-      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "Mesures cl\u00e9s" : "Key Metrics"),
+      // -- Mesures cles header with FIRE lens toggle --
+      E("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } },
+        E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "Mesures cl\u00e9s" : "Key Metrics"),
+        E("button", {
+          onClick: function() { setFireLens(!fireLens); },
+          "aria-pressed": fireLens ? "true" : "false",
+          title: fr ? "Afficher l'analyse FIRE (ind\u00e9pendance financi\u00e8re, retraite anticip\u00e9e)" : "Show FIRE analysis (Financial Independence, Retire Early)",
+          style: {
+            padding: "3px 10px", fontSize: FS.xs, fontWeight: FW.bold,
+            color: fireLens ? "#ff8c42" : CL.dm,
+            background: fireLens ? "rgba(255,140,66,0.12)" : "transparent",
+            border: "1px solid " + (fireLens ? "rgba(255,140,66,0.5)" : CL.bd),
+            borderRadius: RAD.lg, cursor: "pointer", letterSpacing: 0.5, textTransform: "uppercase",
+            transition: "all .12s ease"
+          }
+        }, (fireLens ? "\u25c9" : "\u25cb") + " \ud83d\udd25 FIRE")),
 
       // 4 hero KPIs (all modes) - large, semantic colors, rich tooltips
       E("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 10, marginBottom: 14 } },
 
-        // KPI 1: Succes / Solidite
-        E("div", { style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + (mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd) + "30", cursor: "help" }, title: false ? (fr ? "Solidit\u00e9 de votre plan: " + Math.round(mc.succ * 100) + "% des " + nSim + " sc\u00e9narios simul\u00e9s r\u00e9ussissent (votre argent ne s'\u00e9puise jamais). Cible: 90%+ (note A-)." : "Plan robustness: " + Math.round(mc.succ * 100) + "% of " + nSim + " simulated scenarios succeed (money never runs out). Target: 90%+ (grade A-).") : (fr ? "Taux de succ\u00e8s MC: " + Math.round(mc.succ * 100) + "% des " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (horizon fixe " + deathAge + " ans)") + ". Note " + _gr + "." : "MC success: " + Math.round(mc.succ * 100) + "% of " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (fixed horizon " + deathAge + ")") + ". Grade " + _gr + ".") },
+        // KPI 1: Succes / Solidite — click through to Stress tests (tab 6)
+        E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + (mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd) + "30", cursor: "pointer" }, onClick: function() { setTab(6); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(6); } }, title: (fr ? "Taux de succ\u00e8s MC: " + Math.round(mc.succ * 100) + "% des " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (horizon fixe " + deathAge + " ans)") + ". Note " + _gr + ". \u2192 Stress tests." : "MC success: " + Math.round(mc.succ * 100) + "% of " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (fixed horizon " + deathAge + ")") + ". Grade " + _gr + ". \u2192 Stress tests.") },
+          (function() {
+            var _prev = _prevMcRef.current; if (!_prev || typeof _prev.succ !== "number") return null;
+            var _d = Math.round((mc.succ - _prev.succ) * 100);
+            if (_d === 0) return null;
+            return E("div", { style: { position: "absolute", top: 4, right: 4, fontSize: FS.xxs, color: _d > 0 ? CL.gn : CL.rd, fontWeight: FW.bold, padding: "1px 5px", background: (_d > 0 ? CL.gn : CL.rd) + "1a", borderRadius: 8 } }, (_d > 0 ? "\u25b2+" : "\u25bc") + _d + "pp");
+          }()),
           E("div", { style: { fontSize: FS.xxl, fontWeight: FW.bold, color: _planIncomplete ? CL.dm : mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd, lineHeight: 1.2 } }, _planIncomplete ? "\u2014" : Math.round(mc.succ * 100) + "%"),
           // Delta badge: show only for actionable levers (not observations)
           !_planIncomplete && recos.length > 0 && recos.some(function(r){return r.action;}) ? (function() { var _lv = recos.find(function(r){return r.action;}); return _lv ? E("div", { style: { fontSize: FS.xs, color: CL.gn, fontWeight: FW.bold, marginTop: 3, padding: "1px 6px", background: CL.gn + "12", borderRadius: 10, display: "inline-block" } }, "\u2191 " + _lv.impact + (fr ? " possible" : " possible")) : null; }()) : null,
           !_planIncomplete && totalBal > 0 ? E("div", { style: { fontSize: FS.xs, color: (retSpM * 12 / totalBal) > 0.05 ? CL.rd : (retSpM * 12 / totalBal) > 0.04 ? CL.go : CL.gn, fontWeight: FW.medium, marginTop: 2, cursor: "help" }, title: fr ? "Ratio d\u00e9penses retraite / \u00e9pargne actuelle. Ce n'est PAS le taux de retrait soutenable \u2014 les revenus gouvernementaux couvrent une partie des d\u00e9penses, r\u00e9duisant les retraits r\u00e9els de l'\u00e9pargne." : "Retirement spending / current savings ratio. This is NOT the sustainable withdrawal rate \u2014 government income covers part of spending, reducing actual portfolio withdrawals." }, (fr ? "D\u00e9p./\u00e9pargne: " : "Spend/savings: ") + (retSpM * 12 / totalBal * 100).toFixed(1) + "%") : null,
           E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, false ? (fr ? "Solidit\u00e9 du plan" : "Plan robustness") : (fr ? "Succ\u00e8s MC (" + _gr + ")" : "MC Success (" + _gr + ")"))),
 
-        // KPI 2: Patrimoine median
-        E("div", { style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Patrimoine m\u00e9dian (P50) \u00e0 " + deathAge + " ans en $ r\u00e9els. Fourchette P25-P75: " + f$(mc.rP25F != null ? mc.rP25F : 0) + " \u00e0 " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + "." : "Median real wealth (P50) at " + deathAge + ". P25-P75: " + f$(mc.rP25F != null ? mc.rP25F : 0) + " to " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + "." },
+        // KPI 2: Patrimoine median — click through to Projection (tab 7)
+        E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "1px solid " + CL.bd, cursor: "pointer" }, onClick: function() { setTab(7); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(7); } }, title: (fr ? "Patrimoine m\u00e9dian (P50) \u00e0 " + deathAge + " ans en $ r\u00e9els. Fourchette P25-P75: " + f$(mc.rP25F != null ? mc.rP25F : 0) + " \u00e0 " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + ". \u2192 Projection." : "Median real wealth (P50) at " + deathAge + ". P25-P75: " + f$(mc.rP25F != null ? mc.rP25F : 0) + " to " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + ". \u2192 Projection.") },
+          (function() {
+            var _prev = _prevMcRef.current; if (!_prev || typeof _prev.medF !== "number") return null;
+            var _cur = mc.rMedF != null ? mc.rMedF : mc.medF;
+            if (typeof _cur !== "number" || !isFinite(_cur)) return null;
+            var _d = _cur - _prev.medF;
+            if (Math.abs(_d) < Math.max(1000, Math.abs(_prev.medF) * 0.005)) return null;
+            return E("div", { style: { position: "absolute", top: 4, right: 4, fontSize: FS.xxs, color: _d > 0 ? CL.gn : CL.rd, fontWeight: FW.bold, padding: "1px 5px", background: (_d > 0 ? CL.gn : CL.rd) + "1a", borderRadius: 8 } }, (_d > 0 ? "\u25b2" : "\u25bc") + f$(Math.abs(_d)));
+          }()),
           E("div", { style: { fontSize: FS.xxl, fontWeight: FW.bold, color: _planIncomplete ? CL.dm : CL.al, lineHeight: 1.2 } }, _planIncomplete ? "\u2014" : f$(mc.rMedF || mc.medF || 0)),
           E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, false ? (fr ? "Patrimoine \u00e0 " + deathAge + " ans" : "Wealth at " + deathAge) : (fr ? "Patrimoine P50 ($ r\u00e9els)" : "Median wealth (real $)"))),
 
-        // KPI 3: Age epuisement epargne (P5 = pire scenario realiste)
-        E("div", { style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + ((mc.p5Ruin||999) >= 999 ? CL.gn : (mc.p5Ruin||999) >= 85 ? CL.go : CL.rd) + "30", cursor: "help" }, title: fr ? "\u00c2ge o\u00f9 votre \u00e9pargne s'\u00e9puise dans les 5% pires sc\u00e9narios de march\u00e9. Si 'Jamais', m\u00eame les mauvais sc\u00e9narios ne vous ruinent pas." + (true ? " P50 (m\u00e9dian): " + ((mc.medRuin||999) >= 999 ? "jamais" : (mc.medRuin||999) + " ans") + "." : "") : "Age when savings run out in the worst 5% of market scenarios. If 'Never', even bad scenarios don't deplete your savings." + (true ? " P50 (median): " + ((mc.medRuin||999) >= 999 ? "never" : (mc.medRuin||999)) + "." : "") },
+        // KPI 3: Age epuisement epargne — click through to Decumulation (tab 16)
+        E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + ((mc.p5Ruin||999) >= 999 ? CL.gn : (mc.p5Ruin||999) >= 85 ? CL.go : CL.rd) + "30", cursor: "pointer" }, onClick: function() { setTab(16); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(16); } }, title: (fr ? "\u00c2ge o\u00f9 votre \u00e9pargne s'\u00e9puise dans les 5% pires sc\u00e9narios de march\u00e9. Si 'Jamais', m\u00eame les mauvais sc\u00e9narios ne vous ruinent pas. P50 (m\u00e9dian): " + ((mc.medRuin||999) >= 999 ? "jamais" : (mc.medRuin||999) + " ans") + ". \u2192 D\u00e9caissement." : "Age when savings run out in the worst 5% of market scenarios. If 'Never', even bad scenarios don't deplete your savings. P50 (median): " + ((mc.medRuin||999) >= 999 ? "never" : (mc.medRuin||999)) + ". \u2192 Decumulation.") },
+          (function() {
+            var _prev = _prevMcRef.current; if (!_prev || typeof _prev.p5Ruin !== "number") return null;
+            var _cur = mc.p5Ruin || 999;
+            var _prv = _prev.p5Ruin || 999;
+            if (_cur === _prv) return null;
+            // +years = plan lasts longer (good). -years = depletes earlier (bad).
+            var _d = _cur - _prv;
+            var _lbl = (_cur >= 999 && _prv < 999) ? (fr ? "\u2192 jamais" : "\u2192 never") : (_prv >= 999 && _cur < 999) ? (fr ? "jamais \u2192" : "never \u2192") : (_d > 0 ? "+" : "") + _d + (fr ? " ans" : "y");
+            return E("div", { style: { position: "absolute", top: 4, right: 4, fontSize: FS.xxs, color: _d > 0 || _cur >= 999 ? CL.gn : CL.rd, fontWeight: FW.bold, padding: "1px 5px", background: ((_d > 0 || _cur >= 999) ? CL.gn : CL.rd) + "1a", borderRadius: 8 } }, _lbl);
+          }()),
           E("div", { style: { fontSize: FS.xxl, fontWeight: FW.bold, color: _planIncomplete ? CL.dm : (mc.p5Ruin||999) >= 999 ? CL.gn : (mc.p5Ruin||999) >= 85 ? CL.go : CL.rd, lineHeight: 1.2 } }, _planIncomplete ? "\u2014" : (mc.p5Ruin||999) >= 999 ? (fr ? "Jamais" : "Never") : (mc.p5Ruin||999) + (fr ? " ans" : "")),
           E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "\u00c9puisement (pire 5%)" : "Depletion (worst 5%)")),
 
-        // KPI 4: Revenu garanti
-        E("div", { style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Revenus gouvernementaux \u00e0 vie: RRQ " + fD(_qppM) + "/m (\u00e0 " + qppAge + ") + PSV " + fD(_oasM) + "/m (\u00e0 " + oasAge + ")" + (penType === "db" ? " + pension " + fD(penM) + "/m" : "") + ". Index\u00e9s \u00e0 l'inflation." : "Lifetime gov income: QPP " + fD(_qppM) + "/mo (at " + qppAge + ") + OAS " + fD(_oasM) + "/mo (at " + oasAge + ")" + (penType === "db" ? " + pension " + fD(penM) + "/mo" : "") + ". Inflation-indexed." },
+        // KPI 4: Revenu garanti — click through to Income (tab 2)
+        E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "1px solid " + CL.bd, cursor: "pointer" }, onClick: function() { setTab(2); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(2); } }, title: (fr ? "Revenus gouvernementaux \u00e0 vie: RRQ " + fD(_qppM) + "/m (\u00e0 " + qppAge + ") + PSV " + fD(_oasM) + "/m (\u00e0 " + oasAge + ")" + (penType === "db" ? " + pension " + fD(penM) + "/m" : "") + ". Index\u00e9s \u00e0 l'inflation. \u2192 Revenus." : "Lifetime gov income: QPP " + fD(_qppM) + "/mo (at " + qppAge + ") + OAS " + fD(_oasM) + "/mo (at " + oasAge + ")" + (penType === "db" ? " + pension " + fD(penM) + "/mo" : "") + ". Inflation-indexed. \u2192 Income.") },
           E("div", { style: { fontSize: FS.xxl, fontWeight: FW.bold, color: _planIncomplete ? CL.dm : CL.al, lineHeight: 1.2 } }, _planIncomplete ? "\u2014" : f$(_govTotal) + (fr ? "/an" : "/yr")),
           !_planIncomplete && _totalSpendY > 0 ? E("div", { style: { fontSize: FS.xs, color: (_govTotal / _totalSpendY) >= 0.5 ? CL.gn : (_govTotal / _totalSpendY) >= 0.3 ? CL.go : CL.rd, fontWeight: FW.medium, marginTop: 2 } }, (fr ? "Couvre " : "Covers ") + Math.round(_govTotal / _totalSpendY * 100) + (fr ? "% des d\u00e9penses" : "% of spending")) : null,
           E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, false ? (fr ? "Revenu garanti \u00e0 vie" : "Lifetime income") : (fr ? "Rev. garanti (RRQ+PSV)" : "Guar. (QPP+OAS)")))
       ),
+
+      // === FIRE LENS (conditional) ============================================
+      // FIRE = Financial Independence, Retire Early. The Trinity-rule 4% SWR
+      // gives FI_number = annual_spending * 25. Years-to-FI uses the closed-form
+      // annuity formula with real (inflation-adjusted) return:
+      //   (1+r)^t = (F + C/r) / (S + C/r), t = ln(...) / ln(1+r)
+      // Classification tiers (Lean/Traditional/Fat) are FIRE-community conventions;
+      // Coast FIRE fires when existing savings alone compound to FI by retAge.
+      fireLens && !_planIncomplete ? (function() {
+        var _annSpend = (retSpM || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
+        var _fiNum = _annSpend * 25;
+        var _curBal = (rrsp || 0) + (tfsa || 0) + (nr || 0) + (fhsaBal || 0) + (cOn ? (cRRSP || 0) + (cTFSA || 0) + (cNR || 0) + (cFhsaBal || 0) : 0);
+        var _annContrib = (rrspC || 0) + (tfsaC || 0) + (nrC || 0) + (fhsaC || 0) + (cOn ? (cRRSPC || 0) + (cTFSAC || 0) + (cNRC || 0) + (cFhsaC || 0) : 0);
+        var _salTot = (sal || 0) + (cOn ? (cSal || 0) : 0);
+        var _savRate = _salTot > 0 ? _annContrib / _salTot : 0;
+        var _infR = inf || 0.021;
+        var _nomRet = (eqRet || 0.07) * (allocR || 0.6) + (bndRet || 0.035) * (1 - (allocR || 0.6));
+        var _r = Math.max(0.001, _nomRet - _infR); // real return, floored to avoid div/zero
+        // Years to FI
+        var _yrs;
+        if (_curBal >= _fiNum) _yrs = 0;
+        else if (_annContrib <= 0) {
+          _yrs = _curBal > 0 ? Math.log(_fiNum / _curBal) / Math.log(1 + _r) : Infinity;
+        } else {
+          _yrs = Math.log((_fiNum + _annContrib / _r) / (_curBal + _annContrib / _r)) / Math.log(1 + _r);
+        }
+        _yrs = isFinite(_yrs) ? Math.max(0, _yrs) : null;
+        // Coast FIRE: existing balance compounded over (retAge - age) years >= FI?
+        var _coastYrs = Math.max(0, (retAge || 65) - (age || 35));
+        var _coastFV = _curBal * Math.pow(1 + _r, _coastYrs);
+        var _isCoast = _coastFV >= _fiNum && _curBal > 0;
+        var _coastAge = null;
+        if (_curBal > 0 && _r > 0 && _fiNum > _curBal) {
+          _coastAge = Math.round((age || 35) + Math.log(_fiNum / _curBal) / Math.log(1 + _r));
+        }
+        // Classification
+        var _tier;
+        if (_fiNum < 625000) _tier = { key: "lean", fr: "Lean FIRE", en: "Lean FIRE", c: "#5fb3c4" };
+        else if (_fiNum < 2500000) _tier = { key: "trad", fr: "FIRE", en: "FIRE", c: "#ff8c42" };
+        else _tier = { key: "fat", fr: "Fat FIRE", en: "Fat FIRE", c: "#d4a017" };
+        // Barista hint: if part-time income is set and materially affects coverage
+        var _barista = (ptInc || 0) > 5000;
+        var _yrsStr = _yrs == null ? "\u2014" : (_yrs <= 0 ? (fr ? "atteint" : "reached") : _yrs > 60 ? (fr ? "60+" : "60+") : _yrs.toFixed(1));
+        var _orange = "#ff8c42";
+        return E("div", { style: { marginBottom: 14, padding: "12px 14px", background: "linear-gradient(135deg, rgba(255,140,66,0.06), rgba(255,140,66,0.02))", borderRadius: RAD.md + 2, border: "1px solid rgba(255,140,66,0.25)" } },
+          E("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 10 } },
+            E("span", { style: { fontSize: FS.md } }, "\ud83d\udd25"),
+            E("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: _orange, letterSpacing: 0.3 } }, fr ? "Analyse FIRE" : "FIRE Analysis"),
+            E("div", { style: { fontSize: FS.xxs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "R\u00e8gle du 4% (Trinity)" : "4% rule (Trinity)")),
+          E("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 8 } },
+            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + _tier.c + "40" } },
+              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _tier.c, lineHeight: 1.1 } }, fr ? _tier.fr : _tier.en),
+              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Cat\u00e9gorie" : "Category")),
+            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "D\u00e9penses annuelles (" + f$(_annSpend) + ") \u00d7 25. Retrait soutenable de 4%/an (r\u00e8gle de Trinity)." : "Annual spending (" + f$(_annSpend) + ") \u00d7 25. Sustainable 4%/year withdrawal (Trinity rule)." },
+              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, f$(_fiNum)),
+              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Nombre FI" : "FI number")),
+            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Cotisations annuelles (" + f$(_annContrib) + ") / revenu total (" + f$(_salTot) + "). Dans la culture FIRE, 50%+ = retraite anticip\u00e9e r\u00e9aliste, 25% = trajectoire conventionnelle." : "Annual contributions (" + f$(_annContrib) + ") / total income (" + f$(_salTot) + "). FIRE community: 50%+ = realistic early retirement, 25% = conventional track." },
+              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _savRate >= 0.5 ? CL.gn : _savRate >= 0.25 ? _orange : CL.rd, lineHeight: 1.1 } }, Math.round(_savRate * 100) + "%"),
+              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Taux d'\u00e9pargne" : "Savings rate")),
+            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Ann\u00e9es jusqu'au nombre FI avec cotisations actuelles, rendement r\u00e9el ~" + Math.round(_r * 1000) / 10 + "%." : "Years to FI number at current contributions, real return ~" + Math.round(_r * 1000) / 10 + "%." },
+              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, _yrsStr + (fr ? " ans" : "y")),
+              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Ann\u00e9es \u00e0 FI" : "Years to FI"))),
+          // Context badges: Coast / Barista / status
+          E("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, fontSize: FS.xs } },
+            _isCoast ? E("div", { style: { padding: "3px 8px", background: "rgba(42,140,70,0.12)", border: "1px solid rgba(42,140,70,0.35)", borderRadius: RAD.lg, color: CL.gn, fontWeight: FW.medium } }, fr ? "\u2713 Coast FIRE \u2014 l'\u00e9pargne actuelle atteint FI par composition seule" : "\u2713 Coast FIRE \u2014 current savings reach FI by compounding alone") :
+              _coastAge && _coastAge <= (deathAge || 90) ? E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.lg, color: CL.dm } }, fr ? "Coast FIRE projet\u00e9 \u00e0 " + _coastAge + " ans (sans nouvelles cotisations)" : "Coast FIRE at age " + _coastAge + " (without new contributions)") : null,
+            _barista ? E("div", { style: { padding: "3px 8px", background: "rgba(255,140,66,0.12)", border: "1px solid rgba(255,140,66,0.35)", borderRadius: RAD.lg, color: _orange, fontWeight: FW.medium } }, fr ? "\ud83c\udf7b Barista FIRE \u2014 revenu d'appoint mod\u00e9lis\u00e9" : "\ud83c\udf7b Barista FIRE \u2014 part-time income modeled") : null,
+            _yrs != null && _yrs > 0 && (retAge || 65) - (age || 35) < _yrs ? E("div", { style: { padding: "3px 8px", background: "rgba(204,68,68,0.10)", border: "1px solid rgba(204,68,68,0.30)", borderRadius: RAD.lg, color: CL.rd } }, fr ? "\u26a0 Retraite vis\u00e9e (" + retAge + " ans) avant FI" : "\u26a0 Target retirement (" + retAge + ") before FI") : null,
+            E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px dashed " + CL.bd, borderRadius: RAD.lg, color: CL.dm, fontStyle: "italic" } }, fr ? "R\u00e8gle 4% = estimation heuristique. Voir Monte Carlo pour la robustesse." : "4% rule = heuristic estimate. See Monte Carlo for robustness.")
+          )
+        );
+      }()) : null,
 
       // --- Standard/Expert: secondary metrics ---
       true && !_planIncomplete ? E("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 14 } },

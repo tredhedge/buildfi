@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T21:15:12.178Z",
+  "generatedAt": "2026-04-16T21:55:07.613Z",
   "baselineType": "fr-reports-sprint0",
   "generatorScript": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-reports.js",
   "outputDir": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output",
@@ -7,11 +7,11 @@
     {
       "file": "ccpc_owner_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\ccpc_owner_fr.html",
-      "sizeBytes": 68339,
-      "sha256": "8258ecb278568b82a504a5116f90d88d156da0c64e52bdbffadad513cf8047cb",
-      "modifiedAt": "2026-04-16T21:15:12.054Z",
+      "sizeBytes": 70851,
+      "sha256": "1a85c6b8f3cc8c0a6c7aaf52051529d04903cab112df5cbb02df0cdacdbde8b2",
+      "modifiedAt": "2026-04-16T21:55:07.488Z",
       "metrics": {
-        "sectionCount": 9,
+        "sectionCount": 10,
         "aiCallouts": 9,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -26,11 +26,11 @@
     {
       "file": "couple_transition_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\couple_transition_fr.html",
-      "sizeBytes": 65274,
-      "sha256": "3937f3a11b488f78d985d428079b8d6b818133328ed0648f0b403c2614eaae25",
-      "modifiedAt": "2026-04-16T21:15:12.005Z",
+      "sizeBytes": 69409,
+      "sha256": "56de964a9b44b52402f8e53d6db217c5867b83f5963102da86b06047bf17cb3a",
+      "modifiedAt": "2026-04-16T21:55:07.435Z",
       "metrics": {
-        "sectionCount": 8,
+        "sectionCount": 9,
         "aiCallouts": 8,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -45,11 +45,11 @@
     {
       "file": "debt_young_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\debt_young_fr.html",
-      "sizeBytes": 70414,
-      "sha256": "3366347e62166457f509967f1dd7c5f696f9c8de6d04c4c993d90bcca767df6a",
-      "modifiedAt": "2026-04-16T21:15:12.093Z",
+      "sizeBytes": 72540,
+      "sha256": "c88f070e20394a2cdd5d7bef7e997ce4a0c44b2243bad58e1d39991e39e0c365",
+      "modifiedAt": "2026-04-16T21:55:07.526Z",
       "metrics": {
-        "sectionCount": 9,
+        "sectionCount": 10,
         "aiCallouts": 9,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -64,11 +64,11 @@
     {
       "file": "fire_seeker_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\fire_seeker_fr.html",
-      "sizeBytes": 72029,
-      "sha256": "662c4c1b0bd5232367172ac6d1329dd86a7080c1113d6368e4f05c77a60ad415",
-      "modifiedAt": "2026-04-16T21:15:12.029Z",
+      "sizeBytes": 74575,
+      "sha256": "2e991be58d98c365386d494b8b07289d85362bd5722f0a776b62459e899410ed",
+      "modifiedAt": "2026-04-16T21:55:07.464Z",
       "metrics": {
-        "sectionCount": 8,
+        "sectionCount": 9,
         "aiCallouts": 8,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -83,11 +83,11 @@
     {
       "file": "hnw_couple_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\hnw_couple_fr.html",
-      "sizeBytes": 85886,
-      "sha256": "e61614e1f904b33e29ba837a302fc582d25490b6d43cc6e7993ef464bf620128",
-      "modifiedAt": "2026-04-16T21:15:12.083Z",
+      "sizeBytes": 87156,
+      "sha256": "55cd60cf6b4dfd1c2fb6a300cd80bbd360cdb541c95b85f94c23967a352fc958",
+      "modifiedAt": "2026-04-16T21:55:07.514Z",
       "metrics": {
-        "sectionCount": 10,
+        "sectionCount": 11,
         "aiCallouts": 10,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -102,11 +102,11 @@
     {
       "file": "low_income_gis_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\low_income_gis_fr.html",
-      "sizeBytes": 62790,
-      "sha256": "d207ba5548bc35f972da7b93b9247f36544a8770ee8030db3a127a20b1881638",
-      "modifiedAt": "2026-04-16T21:15:12.045Z",
+      "sizeBytes": 65149,
+      "sha256": "8f182d92b81ebfb170d0e208b43dd4fd0f3d0a004480304e084e287855e60adf",
+      "modifiedAt": "2026-04-16T21:55:07.476Z",
       "metrics": {
-        "sectionCount": 8,
+        "sectionCount": 9,
         "aiCallouts": 8,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -121,11 +121,11 @@
     {
       "file": "real_estate_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\real_estate_fr.html",
-      "sizeBytes": 69885,
-      "sha256": "6f9ed2111e573fec4858b033cd86c44be083072fcbaa765a3d0368faea01edf7",
-      "modifiedAt": "2026-04-16T21:15:12.066Z",
+      "sizeBytes": 70686,
+      "sha256": "8750dcc054ce852d56921e6280411a4c455c7f36adf4a13877f399414b12f18f",
+      "modifiedAt": "2026-04-16T21:55:07.501Z",
       "metrics": {
-        "sectionCount": 9,
+        "sectionCount": 10,
         "aiCallouts": 9,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -140,11 +140,11 @@
     {
       "file": "retiree_decum_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\retiree_decum_fr.html",
-      "sizeBytes": 59766,
-      "sha256": "123df1090805afe1594e1641711fb8dc641effbb01c08f99f4c30f2ee1fcdf7b",
-      "modifiedAt": "2026-04-16T21:15:12.016Z",
+      "sizeBytes": 62011,
+      "sha256": "815f66c4689bd5082b6c7ed77fee26a088f9b3f29e947f5bb7dcd86268f5fd33",
+      "modifiedAt": "2026-04-16T21:55:07.451Z",
       "metrics": {
-        "sectionCount": 8,
+        "sectionCount": 9,
         "aiCallouts": 8,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -159,11 +159,11 @@
     {
       "file": "rsu_tech_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\rsu_tech_fr.html",
-      "sizeBytes": 71521,
-      "sha256": "176161dc246e6ca037d3fbf8f496e7046e2a0d8d594dc4fb4639795b0c5ec7c2",
-      "modifiedAt": "2026-04-16T21:15:12.104Z",
+      "sizeBytes": 74128,
+      "sha256": "026bbaccb7d9c5b1f0a214759dd559b9ac295d57b298f35591a4f72687697508",
+      "modifiedAt": "2026-04-16T21:55:07.539Z",
       "metrics": {
-        "sectionCount": 9,
+        "sectionCount": 10,
         "aiCallouts": 9,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -178,11 +178,11 @@
     {
       "file": "young_accum_fr.html",
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\young_accum_fr.html",
-      "sizeBytes": 67645,
-      "sha256": "29eb1b1f657a5b2f8a72fff50b5fa65d6cec13c896d9a2be74eb3304dfb3b2aa",
-      "modifiedAt": "2026-04-16T21:15:11.993Z",
+      "sizeBytes": 69919,
+      "sha256": "d207981f834c857858a4a4b1f3ba527836a2bc5cf62ddd5fe51106e89547c0ee",
+      "modifiedAt": "2026-04-16T21:55:07.421Z",
       "metrics": {
-        "sectionCount": 8,
+        "sectionCount": 9,
         "aiCallouts": 8,
         "escapedStrongCount": 0,
         "mojibakeCount": 0,
@@ -196,9 +196,9 @@
     }
   ],
   "aggregate": {
-    "totalSizeBytes": 693549,
+    "totalSizeBytes": 716424,
     "totalAiCallouts": 86,
-    "totalSections": 86,
+    "totalSections": 96,
     "filesWithMojibake": 0,
     "filesWithEscapedStrong": 0,
     "filesWithUndefined": 0,
