@@ -1,0 +1,208 @@
+{
+  "generatedAt": "2026-04-16T21:00:23.733Z",
+  "baselineType": "fr-reports-sprint0",
+  "generatorScript": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-reports.js",
+  "outputDir": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output",
+  "files": [
+    {
+      "file": "ccpc_owner_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\ccpc_owner_fr.html",
+      "sizeBytes": 68339,
+      "sha256": "8258ecb278568b82a504a5116f90d88d156da0c64e52bdbffadad513cf8047cb",
+      "modifiedAt": "2026-04-16T21:00:23.605Z",
+      "metrics": {
+        "sectionCount": 9,
+        "aiCallouts": 9,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 31000,
+        "successionAiNet": 31000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "couple_transition_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\couple_transition_fr.html",
+      "sizeBytes": 65274,
+      "sha256": "3937f3a11b488f78d985d428079b8d6b818133328ed0648f0b403c2614eaae25",
+      "modifiedAt": "2026-04-16T21:00:23.555Z",
+      "metrics": {
+        "sectionCount": 8,
+        "aiCallouts": 8,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 277000,
+        "successionAiNet": 277000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "debt_young_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\debt_young_fr.html",
+      "sizeBytes": 70414,
+      "sha256": "3366347e62166457f509967f1dd7c5f696f9c8de6d04c4c993d90bcca767df6a",
+      "modifiedAt": "2026-04-16T21:00:23.650Z",
+      "metrics": {
+        "sectionCount": 9,
+        "aiCallouts": 9,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 1500000,
+        "successionAiNet": 1500000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "fire_seeker_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\fire_seeker_fr.html",
+      "sizeBytes": 72029,
+      "sha256": "662c4c1b0bd5232367172ac6d1329dd86a7080c1113d6368e4f05c77a60ad415",
+      "modifiedAt": "2026-04-16T21:00:23.580Z",
+      "metrics": {
+        "sectionCount": 8,
+        "aiCallouts": 8,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 3200000,
+        "successionAiNet": 3200000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "hnw_couple_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\hnw_couple_fr.html",
+      "sizeBytes": 85886,
+      "sha256": "e61614e1f904b33e29ba837a302fc582d25490b6d43cc6e7993ef464bf620128",
+      "modifiedAt": "2026-04-16T21:00:23.636Z",
+      "metrics": {
+        "sectionCount": 10,
+        "aiCallouts": 10,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 3800000,
+        "successionAiNet": 3800000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "low_income_gis_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\low_income_gis_fr.html",
+      "sizeBytes": 62790,
+      "sha256": "d207ba5548bc35f972da7b93b9247f36544a8770ee8030db3a127a20b1881638",
+      "modifiedAt": "2026-04-16T21:00:23.593Z",
+      "metrics": {
+        "sectionCount": 8,
+        "aiCallouts": 8,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": null,
+        "successionAiNet": null,
+        "successionMismatchRatio": null,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "real_estate_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\real_estate_fr.html",
+      "sizeBytes": 69885,
+      "sha256": "6f9ed2111e573fec4858b033cd86c44be083072fcbaa765a3d0368faea01edf7",
+      "modifiedAt": "2026-04-16T21:00:23.619Z",
+      "metrics": {
+        "sectionCount": 9,
+        "aiCallouts": 9,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 416000,
+        "successionAiNet": 416000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "retiree_decum_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\retiree_decum_fr.html",
+      "sizeBytes": 59766,
+      "sha256": "123df1090805afe1594e1641711fb8dc641effbb01c08f99f4c30f2ee1fcdf7b",
+      "modifiedAt": "2026-04-16T21:00:23.570Z",
+      "metrics": {
+        "sectionCount": 8,
+        "aiCallouts": 8,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 28000,
+        "successionAiNet": 28000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "rsu_tech_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\rsu_tech_fr.html",
+      "sizeBytes": 71521,
+      "sha256": "176161dc246e6ca037d3fbf8f496e7046e2a0d8d594dc4fb4639795b0c5ec7c2",
+      "modifiedAt": "2026-04-16T21:00:23.664Z",
+      "metrics": {
+        "sectionCount": 9,
+        "aiCallouts": 9,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 1400000,
+        "successionAiNet": 1400000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    },
+    {
+      "file": "young_accum_fr.html",
+      "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\young_accum_fr.html",
+      "sizeBytes": 67645,
+      "sha256": "29eb1b1f657a5b2f8a72fff50b5fa65d6cec13c896d9a2be74eb3304dfb3b2aa",
+      "modifiedAt": "2026-04-16T21:00:23.542Z",
+      "metrics": {
+        "sectionCount": 8,
+        "aiCallouts": 8,
+        "escapedStrongCount": 0,
+        "mojibakeCount": 0,
+        "hasUndefined": false,
+        "hasNaN": false,
+        "successionNarrativeNet": 2800000,
+        "successionAiNet": 2800000,
+        "successionMismatchRatio": 1,
+        "successionMismatch": false
+      }
+    }
+  ],
+  "aggregate": {
+    "totalSizeBytes": 693549,
+    "totalAiCallouts": 86,
+    "totalSections": 86,
+    "filesWithMojibake": 0,
+    "filesWithEscapedStrong": 0,
+    "filesWithUndefined": 0,
+    "filesWithNaN": 0,
+    "filesWithSuccessionMismatch": 0
+  }
+}

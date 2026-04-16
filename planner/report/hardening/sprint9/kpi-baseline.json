@@ -1,0 +1,242 @@
+{
+  "young_accum": {
+    "fr": {
+      "successRate": "91%",
+      "p50Wealth": "4.0M$",
+      "p25Wealth": "3.2M$",
+      "durability": "Jamais",
+      "initialWR": "2.7%",
+      "monthlyGap": "3 801 $/m",
+      "lifetimeTax": "926K$",
+      "oasClawbackYrs": "0/26",
+      "horizon": "60 ans"
+    },
+    "en": {
+      "successRate": "91%",
+      "p50Wealth": "4.0M$",
+      "p25Wealth": "3.2M$",
+      "durability": "Never",
+      "initialWR": "2.7%",
+      "monthlyGap": "$3,801/m",
+      "lifetimeTax": "926K$",
+      "oasClawbackYrs": "0/26",
+      "horizon": "60 yrs"
+    }
+  },
+  "couple_transition": {
+    "fr": {
+      "successRate": "84%",
+      "p50Wealth": "396K$",
+      "p25Wealth": "339K$",
+      "durability": "85 ans",
+      "initialWR": "7.4%",
+      "monthlyGap": "4 572 $/m",
+      "lifetimeTax": "282K$",
+      "oasClawbackYrs": "1/28",
+      "horizon": "32 ans"
+    },
+    "en": {
+      "successRate": "84%",
+      "p50Wealth": "396K$",
+      "p25Wealth": "339K$",
+      "durability": "85 yrs",
+      "initialWR": "7.4%",
+      "monthlyGap": "$4,572/m",
+      "lifetimeTax": "282K$",
+      "oasClawbackYrs": "1/28",
+      "horizon": "32 yrs"
+    }
+  },
+  "retiree_decum": {
+    "fr": {
+      "successRate": "78%",
+      "p50Wealth": "41K$",
+      "p25Wealth": "21K$",
+      "durability": "87 ans",
+      "initialWR": "—",
+      "monthlyGap": "1 323 $/m",
+      "lifetimeTax": "27K$",
+      "oasClawbackYrs": "0/23",
+      "horizon": "22 ans"
+    },
+    "en": {
+      "successRate": "78%",
+      "p50Wealth": "41K$",
+      "p25Wealth": "21K$",
+      "durability": "87 yrs",
+      "initialWR": "—",
+      "monthlyGap": "$1,323/m",
+      "lifetimeTax": "27K$",
+      "oasClawbackYrs": "0/23",
+      "horizon": "22 yrs"
+    }
+  },
+  "fire_seeker": {
+    "fr": {
+      "successRate": "72%",
+      "p50Wealth": "4.6M$",
+      "p25Wealth": "3.7M$",
+      "durability": "90 ans",
+      "initialWR": "4.5%",
+      "monthlyGap": "6 233 $/m",
+      "lifetimeTax": "620K$",
+      "oasClawbackYrs": "10/51",
+      "horizon": "60 ans"
+    },
+    "en": {
+      "successRate": "72%",
+      "p50Wealth": "4.6M$",
+      "p25Wealth": "3.7M$",
+      "durability": "90 yrs",
+      "initialWR": "4.5%",
+      "monthlyGap": "$6,233/m",
+      "lifetimeTax": "620K$",
+      "oasClawbackYrs": "10/51",
+      "horizon": "60 yrs"
+    }
+  },
+  "low_income_gis": {
+    "fr": {
+      "successRate": "95%",
+      "p50Wealth": "0$",
+      "p25Wealth": "—",
+      "durability": "Jamais",
+      "initialWR": "0.9%",
+      "monthlyGap": "616 $/m",
+      "lifetimeTax": "11K$",
+      "oasClawbackYrs": "0/24",
+      "horizon": "26 ans"
+    },
+    "en": {
+      "successRate": "95%",
+      "p50Wealth": "0$",
+      "p25Wealth": "—",
+      "durability": "Never",
+      "initialWR": "0.9%",
+      "monthlyGap": "$616/m",
+      "lifetimeTax": "11K$",
+      "oasClawbackYrs": "0/24",
+      "horizon": "26 yrs"
+    }
+  },
+  "ccpc_owner": {
+    "fr": {
+      "successRate": "87%",
+      "p50Wealth": "44K$",
+      "p25Wealth": "17K$",
+      "durability": "Jamais",
+      "initialWR": "9.0%",
+      "monthlyGap": "4 811 $/m",
+      "lifetimeTax": "472K$",
+      "oasClawbackYrs": "10/31",
+      "horizon": "40 ans"
+    },
+    "en": {
+      "successRate": "87%",
+      "p50Wealth": "44K$",
+      "p25Wealth": "17K$",
+      "durability": "Never",
+      "initialWR": "9.0%",
+      "monthlyGap": "$4,811/m",
+      "lifetimeTax": "472K$",
+      "oasClawbackYrs": "10/31",
+      "horizon": "40 yrs"
+    }
+  },
+  "real_estate": {
+    "fr": {
+      "successRate": "76%",
+      "p50Wealth": "594K$",
+      "p25Wealth": "492K$",
+      "durability": "85 ans",
+      "initialWR": "6.4%",
+      "monthlyGap": "3 774 $/m",
+      "lifetimeTax": "609K$",
+      "oasClawbackYrs": "0/26",
+      "horizon": "45 ans"
+    },
+    "en": {
+      "successRate": "76%",
+      "p50Wealth": "594K$",
+      "p25Wealth": "492K$",
+      "durability": "85 yrs",
+      "initialWR": "6.4%",
+      "monthlyGap": "$3,774/m",
+      "lifetimeTax": "609K$",
+      "oasClawbackYrs": "0/26",
+      "horizon": "45 yrs"
+    }
+  },
+  "hnw_couple": {
+    "fr": {
+      "successRate": "97%",
+      "p50Wealth": "5.4M$",
+      "p25Wealth": "4.6M$",
+      "durability": "Jamais",
+      "initialWR": "2.6%",
+      "monthlyGap": "4 227 $/m",
+      "lifetimeTax": null,
+      "oasClawbackYrs": "27/33",
+      "horizon": "37 ans"
+    },
+    "en": {
+      "successRate": "97%",
+      "p50Wealth": "5.4M$",
+      "p25Wealth": "4.6M$",
+      "durability": "Never",
+      "initialWR": "2.6%",
+      "monthlyGap": "$4,227/m",
+      "lifetimeTax": null,
+      "oasClawbackYrs": "27/33",
+      "horizon": "37 yrs"
+    }
+  },
+  "debt_young": {
+    "fr": {
+      "successRate": "68%",
+      "p50Wealth": "2.1M$",
+      "p25Wealth": "1.7M$",
+      "durability": "85 ans",
+      "initialWR": "3.6%",
+      "monthlyGap": "2 660 $/m",
+      "lifetimeTax": "637K$",
+      "oasClawbackYrs": "0/24",
+      "horizon": "62 ans"
+    },
+    "en": {
+      "successRate": "68%",
+      "p50Wealth": "2.1M$",
+      "p25Wealth": "1.7M$",
+      "durability": "85 yrs",
+      "initialWR": "3.6%",
+      "monthlyGap": "$2,660/m",
+      "lifetimeTax": "637K$",
+      "oasClawbackYrs": "0/24",
+      "horizon": "62 yrs"
+    }
+  },
+  "rsu_tech": {
+    "fr": {
+      "successRate": "85%",
+      "p50Wealth": "2.0M$",
+      "p25Wealth": "1.6M$",
+      "durability": "Jamais",
+      "initialWR": "6.0%",
+      "monthlyGap": "6 500 $/m",
+      "lifetimeTax": "950K$",
+      "oasClawbackYrs": "15/38",
+      "horizon": "52 ans"
+    },
+    "en": {
+      "successRate": "85%",
+      "p50Wealth": "2.0M$",
+      "p25Wealth": "1.6M$",
+      "durability": "Never",
+      "initialWR": "6.0%",
+      "monthlyGap": "$6,500/m",
+      "lifetimeTax": "950K$",
+      "oasClawbackYrs": "15/38",
+      "horizon": "52 yrs"
+    }
+  }
+}
