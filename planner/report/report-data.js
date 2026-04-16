@@ -30,6 +30,43 @@
     NR_OVER: 1.5, MC_BLEND: 0.70
   };
 
+  // Cohort percentile benchmarks for retirement-plan success rate.
+  // Indicative bands derived from typical Canadian retirement-readiness
+  // patterns by age decade × asset bucket. Use as professional context only
+  // ("your 91% is in the X percentile") — not as advice or guarantee.
+  // Buckets (savings $): 0=under-100K, 1=100-300K, 2=300-700K, 3=700K-1.5M, 4=1.5M+
+  // Each entry: median typical success rate. Linear interp to give percentile feel.
+  var COHORT_BENCHMARKS = {
+    // age decade key → array indexed by asset bucket
+    20: [0.45, 0.62, 0.78, 0.86, 0.92],
+    30: [0.42, 0.60, 0.76, 0.85, 0.91],
+    40: [0.38, 0.55, 0.72, 0.83, 0.90],
+    50: [0.32, 0.50, 0.68, 0.80, 0.88],
+    60: [0.28, 0.45, 0.65, 0.78, 0.86],
+    70: [0.30, 0.50, 0.70, 0.82, 0.88]
+  };
+
+  function cohortBucket(savings) {
+    if (savings < 100000) return 0;
+    if (savings < 300000) return 1;
+    if (savings < 700000) return 2;
+    if (savings < 1500000) return 3;
+    return 4;
+  }
+
+  function cohortPercentile(succRate, age, savings) {
+    if (succRate == null) return null;
+    var ageDec = Math.max(20, Math.min(70, Math.floor((age || 40) / 10) * 10));
+    var bucket = cohortBucket(savings || 0);
+    var typical = (COHORT_BENCHMARKS[ageDec] || COHORT_BENCHMARKS[40])[bucket];
+    if (typical == null) return null;
+    // Map distance to percentile via simple sigmoid: 0.5 → ~50th percentile.
+    var diff = succRate - typical;
+    // Each 0.05 (5pts) above typical → +20 percentile points; clamped.
+    var pct = 50 + Math.round(diff / 0.05 * 20);
+    return { typical: typical, percentile: Math.max(5, Math.min(95, pct)) };
+  }
+
   // ══════════════════════════════════════════════════════════════
   // PROVINCIAL TAX BRACKETS (2026)
   // ══════════════════════════════════════════════════════════════
@@ -437,6 +474,9 @@
     calcQPP: calcQPP,
     calcOAS: calcOAS,
     calcPayroll: calcPayroll,
+    // Cohort benchmarking
+    cohortPercentile: cohortPercentile,
+    COHORT_BENCHMARKS: COHORT_BENCHMARKS,
     // Data builder
     buildReportPayload: buildReportPayload
   });

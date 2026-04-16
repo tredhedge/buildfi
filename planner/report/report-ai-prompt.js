@@ -71,6 +71,11 @@
     '- 2-3 sentences per slot (max 4 for overall_assessment).\n' +
     '- Use bold (**text**) for key numbers.\n' +
     '- Bilingual: respond in the language specified in the DATA section.\n\n' +
+    '## CROSS-SECTION SYNTHESIS\n' +
+    '- An "adjacent_findings" object provides numbers from neighboring sections.\n' +
+    '- For each slot, weave in ONE relevant adjacent finding (not all of them).\n' +
+    '- Example: a tax slot can reference the income gap; an income slot can reference the lifetime tax.\n' +
+    '- The goal is one continuous analysis — not 8 isolated paragraphs.\n\n' +
     '## OUTPUT FORMAT\n' +
     'Return a JSON object with slot keys as properties. Each value is a string (plain text with **bold** for emphasis).\n' +
     'Only include slots listed in the REQUESTED SLOTS section.\n' +
@@ -175,6 +180,41 @@
     data._integrity = {
       coreInvalid: _coreInvalid,
       missingCoreFields: _missingCore
+    };
+
+    // Adjacent-section findings — let each slot synthesize across the report.
+    // The AI is encouraged to reference 1 adjacent finding per slot (not all of them)
+    // so the document feels like one analysis instead of 8 disconnected sections.
+    data.adjacent_findings = {
+      income: {
+        coverage: data.govCoverageRatio,
+        gap_monthly: data.monthlyGap,
+        dominant_source: (function() {
+          var q = _fin(d.qppM) || 0, o = _fin(d.oasM) || 0, pen = (p.penM || 0);
+          var top = Math.max(q, o, pen);
+          if (top === 0) return null;
+          return top === q ? (fr ? 'RRQ/RPC' : 'QPP/CPP') : (top === o ? 'PSV/OAS' : (fr ? 'pension' : 'pension'));
+        })()
+      },
+      tax: {
+        lifetime: data.lifetimeTax,
+        effective_rate: data.avgEffectiveRate,
+        clawback_years: data.oasClawbackYears,
+        alpha: data.taxAlpha
+      },
+      estate: {
+        net: data.netEstate,
+        tax_at_death: data.taxAtDeath
+      },
+      risk: {
+        p25: data.p25Wealth,
+        p75: data.p75Wealth,
+        durability: data.savingsDurability
+      },
+      corp: data.corp || null,
+      gis: data.gis || null,
+      debt: data.debts || null,
+      meltdown: data.meltdown || null
     };
 
     // Couple data

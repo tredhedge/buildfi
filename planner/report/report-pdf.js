@@ -275,11 +275,48 @@
   // === SECTION 0: OVERALL AI ASSESSMENT ===
   function renderOverallAssessment(d) {
     var fr = d.fr, g = F.grade(d.succVal, fr), sC = F.succColor(d.succVal);
-    var f$ = F.fmtCompact;
+    var f$ = F.fmtCompact, p = d.p;
+    var fM = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
     h += '<h3 class="sec" id="sec-assessment" style="border-bottom-color:' + sC + '">' +
       '<span class="sec-n" style="background:' + sC + '">\u2606</span>' +
       (fr ? 'Votre plan en 30 secondes' : 'Your plan in 30 seconds') + '</h3>';
+
+    // ── Stated inputs / suitability frame ───────────────────────────
+    // Re-anchors the report on what the client told us, so they can
+    // validate the plan answers their question, not the engine's defaults.
+    var inputBits = [];
+    inputBits.push((fr ? '\u00c2ge actuel ' : 'Current age ') + (p.age || '—'));
+    inputBits.push((fr ? 'retraite \u00e0 ' : 'retire at ') + (p.retAge || '—'));
+    inputBits.push((fr ? 'd\u00e9penses cibles ' : 'target spending ') + fM((p.retSpM || 0) * 12) + (fr ? '/an' : '/yr'));
+    inputBits.push((fr ? 'horizon ' : 'horizon ') + ((p.deathAge || 90) - (p.age || 0)) + (fr ? ' ans' : ' yrs'));
+    inputBits.push((fr ? 'province ' : 'province ') + (p.prov || 'QC'));
+    if (p.cOn) inputBits.push(fr ? 'plan de couple' : 'couple plan');
+    var assumpBits = [];
+    assumpBits.push((fr ? 'rendement esp\u00e9r\u00e9 ' : 'expected return ') + Math.round((p.eqRet || p.eqRetS || 0.06) * 1000) / 10 + '%');
+    assumpBits.push((fr ? 'inflation ' : 'inflation ') + Math.round((p.inf || 0.02) * 1000) / 10 + '%');
+    assumpBits.push((fr ? 'longevit\u00e9 ' : 'longevity ') + (p.deathAge || 90) + (fr ? ' ans' : ' yrs'));
+    assumpBits.push((fr ? 'simulations ' : 'simulations ') + (p.nSim || 5000));
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 14px;font-size:10.5px">';
+    h += '<div class="cd" style="background:#fdfbf5;padding:8px 10px"><div style="font-size:9px;font-weight:700;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">' + (fr ? 'Ce que vous nous avez dit' : 'What you told us') + '</div>' + inputBits.join(' \u2022 ') + '</div>';
+    h += '<div class="cd" style="background:#f5f8fc;padding:8px 10px;border-color:#dbe4f0"><div style="font-size:9px;font-weight:700;color:' + C.blue + ';text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">' + (fr ? 'Hypoth\u00e8ses du mod\u00e8le' : 'Model assumptions') + '</div>' + assumpBits.join(' \u2022 ') + '</div>';
+    h += '</div>';
+
+    // Goal-by-goal achievability — only if goals are stated
+    if (p.goals && p.goals.length > 0) {
+      h += '<div style="font-size:10.5px;margin-bottom:10px">';
+      h += '<div style="font-size:9px;font-weight:700;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">' + (fr ? 'Objectifs d\u00e9clar\u00e9s' : 'Stated goals') + '</div>';
+      p.goals.slice(0, 4).forEach(function(g2) {
+        // Crude achievability heuristic: if median wealth at goal age covers goal amount
+        var medAtGoal = (d.mc.rMedF || d.mc.medF || 0);
+        var ok = (g2.amount || 0) <= medAtGoal * 0.8;
+        var badge = ok
+          ? '<span style="background:#e6f4e6;color:' + C.green + ';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px">' + (fr ? 'r\u00e9aliste' : 'on track') + '</span>'
+          : '<span style="background:#fff0d6;color:' + C.amber + ';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px">' + (fr ? 'tendu' : 'tight') + '</span>';
+        h += '<div style="margin-bottom:2px">' + badge + ' ' + F.esc(g2.desc || g2.name || '') + (g2.amount ? ' \u2014 ' + fM(g2.amount) : '') + (g2.age ? ' @ ' + g2.age + ' ans' : '') + '</div>';
+      });
+      h += '</div>';
+    }
 
     // Grade + key metrics row
     h += '<div style="display:flex;align-items:center;gap:20px;margin:14px 0">';
@@ -287,11 +324,12 @@
     h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + (d.succVal == null ? '\u2014' : Math.round(d.succVal * 100) + '%') + '</span></div>';
     h += '<div><span class="grade-pill" style="background:' + sC + '">' + g.letter + '</span></div>';
     h += '</div>';
+    var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     h += '<div class="g4" style="flex:1">';
-    h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', fr ? 'Patrimoine P50' : 'P50 Wealth', C.blue);
-    h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', fr ? 'Couverture gouv.' : 'Gov. coverage', d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
+    h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue);
+    h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Couverture gouv.' : 'Gov. coverage') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green);
-    h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', fr ? 'H\u00e9ritage net' : 'Net estate', C.gold);
+    h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', (fr ? 'H\u00e9ritage net' : 'Net estate') + _scopeAss, C.gold);
     h += '</div></div>';
 
     // Overall AI assessment — synthesizes everything
@@ -348,20 +386,40 @@
     var yrsToRet = p.retAge - p.age;
     var horizon = (p.deathAge || 90) - p.age;
 
+    // Couple-aware naming + household framing — when modeled as couple, the
+    // narrative needs to acknowledge both spouses or the reader can't tell
+    // whether shown numbers are individual or combined.
     var _nm = d.fn ? '<strong>' + F.esc(d.fn) + '</strong>' : '';
-    var _nmPfx = _nm ? (_nm + ', ') : '';
+    var _sn = d.sfn ? '<strong>' + F.esc(d.sfn) + '</strong>' : '';
+    var _coupleLabel = '';
+    if (d.R.couple) {
+      _coupleLabel = _sn
+        ? (fr ? ' et ' + _sn : ' and ' + _sn)
+        : (fr ? ' et votre conjoint(e)' : ' and your spouse');
+    }
+    var _nmFull = _nm ? (_nm + _coupleLabel) : '';
+    var _nmPfx = _nmFull ? (_nmFull + ', ') : '';
+    var _savingsLabel = d.R.couple
+      ? (fr ? '\u00e9pargne du m\u00e9nage' : 'household savings')
+      : (fr ? '\u00e9pargne actuelle' : 'current savings');
+    var _coupleNote = d.R.couple
+      ? (fr
+          ? ' Tous les chiffres ci-dessous refl\u00e8tent le m\u00e9nage combin\u00e9 (vous + ' + (d.sfn ? F.esc(d.sfn) : 'conjoint(e)') + (p.cAge ? ', ' + p.cAge + ' ans' : '') + (p.cRetAge ? ', retraite \u00e0 ' + p.cRetAge : '') + ').'
+          : ' All figures below reflect the combined household (you + ' + (d.sfn ? F.esc(d.sfn) : 'spouse') + (p.cAge ? ', age ' + p.cAge : '') + (p.cRetAge ? ', retiring at ' + p.cRetAge : '') + ').')
+      : '';
+
     if (phase === 'decum') {
       h += narr(fr
-        ? _nmPfx + 'vous \u00eates actuellement \u00e0 la retraite. Ce rapport analyse la viabilit\u00e9 de votre plan de d\u00e9caissement sur un horizon de <strong>' + horizon + ' ans</strong>, soit jusqu\u2019\u00e0 l\u2019\u00e2ge de ' + (p.deathAge || 90) + ' ans. L\u2019analyse repose sur <strong>' + (p.nSim || 5000) + ' simulations</strong> Monte Carlo int\u00e9grant les rendements de march\u00e9, l\u2019inflation, la mortalit\u00e9 et la fiscalit\u00e9 canadienne 2026.'
-        : (_nm ? _nm + ', you' : 'You') + ' are currently retired. This report analyzes the viability of your withdrawal plan over a <strong>' + horizon + '-year</strong> horizon, through age ' + (p.deathAge || 90) + '. The analysis is based on <strong>' + (p.nSim || 5000) + ' Monte Carlo simulations</strong> incorporating market returns, inflation, mortality, and 2026 Canadian taxation.');
+        ? _nmPfx + 'vous \u00eates actuellement \u00e0 la retraite. Ce rapport analyse la viabilit\u00e9 de votre plan de d\u00e9caissement sur un horizon de <strong>' + horizon + ' ans</strong>, soit jusqu\u2019\u00e0 l\u2019\u00e2ge de ' + (p.deathAge || 90) + ' ans. L\u2019analyse repose sur <strong>' + (p.nSim || 5000) + ' simulations</strong> Monte Carlo int\u00e9grant les rendements de march\u00e9, l\u2019inflation, la mortalit\u00e9 et la fiscalit\u00e9 canadienne 2026.' + _coupleNote
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are currently retired. This report analyzes the viability of your withdrawal plan over a <strong>' + horizon + '-year</strong> horizon, through age ' + (p.deathAge || 90) + '. The analysis is based on <strong>' + (p.nSim || 5000) + ' Monte Carlo simulations</strong> incorporating market returns, inflation, mortality, and 2026 Canadian taxation.' + _coupleNote);
     } else if (phase === 'transition') {
       h += narr(fr
-        ? _nmPfx + 'la retraite approche \u2014 dans <strong>' + yrsToRet + ' ans</strong>. Ce rapport \u00e9value si votre \u00e9pargne actuelle de <strong>' + f$(d.totalBal) + '</strong>, combin\u00e9e \u00e0 vos cotisations et revenus gouvernementaux, suffira \u00e0 maintenir votre niveau de vie pendant ' + (horizon - yrsToRet) + ' ann\u00e9es de retraite. Chaque simulation mod\u00e9lise une s\u00e9quence unique de rendements, d\u2019inflation et de long\u00e9vit\u00e9.'
-        : (_nm ? _nm + ', retirement' : 'Retirement') + ' is approaching \u2014 in <strong>' + yrsToRet + ' years</strong>. This report evaluates whether your current savings of <strong>' + f$(d.totalBal) + '</strong>, combined with contributions and government income, will sustain your lifestyle through ' + (horizon - yrsToRet) + ' years of retirement. Each simulation models a unique sequence of returns, inflation, and longevity.');
+        ? _nmPfx + 'la retraite approche \u2014 dans <strong>' + yrsToRet + ' ans</strong>. Ce rapport \u00e9value si votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong>, combin\u00e9e \u00e0 vos cotisations et revenus gouvernementaux, suffira \u00e0 maintenir votre niveau de vie pendant ' + (horizon - yrsToRet) + ' ann\u00e9es de retraite. Chaque simulation mod\u00e9lise une s\u00e9quence unique de rendements, d\u2019inflation et de long\u00e9vit\u00e9.' + _coupleNote
+        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching \u2014 in <strong>' + yrsToRet + ' years</strong>. This report evaluates whether your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong>, combined with contributions and government income, will sustain your lifestyle through ' + (horizon - yrsToRet) + ' years of retirement. Each simulation models a unique sequence of returns, inflation, and longevity.' + _coupleNote);
     } else {
       h += narr(fr
-        ? _nmPfx + 'vous \u00eates en phase d\u2019accumulation, avec <strong>' + yrsToRet + ' ans</strong> avant la retraite pr\u00e9vue \u00e0 ' + p.retAge + ' ans. Votre \u00e9pargne actuelle de <strong>' + f$(d.totalBal) + '</strong> constitue le point de d\u00e9part des ' + (p.nSim || 5000) + ' sc\u00e9narios projet\u00e9s. Ce rapport \u00e9value la trajectoire de votre patrimoine, l\u2019ad\u00e9quation de vos revenus de retraite et les leviers fiscaux \u00e0 votre disposition.'
-        : (_nm ? _nm + ', you' : 'You') + ' are in the accumulation phase, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. Your current savings of <strong>' + f$(d.totalBal) + '</strong> form the starting point for ' + (p.nSim || 5000) + ' projected scenarios. This report evaluates your wealth trajectory, retirement income adequacy, and available tax levers.');
+        ? _nmPfx + 'vous \u00eates en phase d\u2019accumulation, avec <strong>' + yrsToRet + ' ans</strong> avant la retraite pr\u00e9vue \u00e0 ' + p.retAge + ' ans. Votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong> constitue le point de d\u00e9part des ' + (p.nSim || 5000) + ' sc\u00e9narios projet\u00e9s. Ce rapport \u00e9value la trajectoire de votre patrimoine, l\u2019ad\u00e9quation de vos revenus de retraite et les leviers fiscaux \u00e0 votre disposition.' + _coupleNote
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in the accumulation phase, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. Your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> forms the starting point for ' + (p.nSim || 5000) + ' projected scenarios. This report evaluates your wealth trajectory, retirement income adequacy, and available tax levers.' + _coupleNote);
     }
 
     // KPIs
@@ -369,10 +427,33 @@
     h += F.KPI('<span class="mono">' + (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%') + '</span>', fr ? 'Taux de succ\u00e8s' : 'Success rate', F.succColor(d.succVal));
     h += F.KPI('<span class="mono">' + f$(mc.rMedF || mc.medF) + '</span>', fr ? 'P50 patrimoine (r\u00e9el)' : 'P50 wealth (real)', C.blue);
     h += F.KPI('<span class="mono">' + f$(mc.rP25F || mc.p25F || mc.rVar5 || mc.var5) + '</span>', fr ? 'P25 prudent (r\u00e9el)' : 'P25 cautious (real)', C.amber);
-    h += F.KPI('<span class="mono">' + ((mc.p5Ruin || 999) >= 200 ? (fr ? 'Jamais' : 'Never') : mc.p5Ruin + (fr ? ' ans' : ' yrs')) + '</span>', fr ? 'Durabilit\u00e9 de l\u2019\u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.red);
+    // Durability KPI: "never" reads as nonsense — every plan ends at deathAge.
+    // When p5Ruin signals "no depletion", show "Through age X" instead.
+    var _durLabel = (mc.p5Ruin || 999) >= 200
+      ? (fr ? 'Jusqu\'\u00e0 ' + (p.deathAge || 90) + ' ans' : 'Through age ' + (p.deathAge || 90))
+      : mc.p5Ruin + (fr ? ' ans' : ' yrs');
+    h += F.KPI('<span class="mono">' + _durLabel + '</span>', fr ? 'Durabilit\u00e9 de l\u2019\u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Retrait initial (% \u00e9pargne)' : 'Init. WR (% portfolio)', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : d._wdPct && parseFloat(d._wdPct) > 3.5 ? C.amber : C.green);
     if (exp) h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
     h += '</div>';
+
+    // Cohort percentile — adds professional context to the success rate.
+    // Indicative only; uses BData.COHORT_BENCHMARKS lookup by age decade × asset bucket.
+    if (D.cohortPercentile && d.succVal != null) {
+      var coh = D.cohortPercentile(d.succVal, p.age, d.totalBal);
+      if (coh) {
+        var cohPctileLbl = coh.percentile >= 75 ? (fr ? 'au-dessus de la moyenne' : 'above average')
+          : coh.percentile >= 50 ? (fr ? 'dans la moyenne' : 'around average')
+          : coh.percentile >= 25 ? (fr ? 'en dessous de la moyenne' : 'below average')
+          : (fr ? 'nettement inf\u00e9rieur' : 'well below typical');
+        h += '<div style="background:#f5f8fc;border:1px solid #d8e4f0;border-radius:6px;padding:8px 12px;margin:4px 0 10px;font-size:10.5px;color:#456">' +
+          '<strong>' + (fr ? 'Contexte cohorte:' : 'Cohort context:') + '</strong> ' +
+          (fr
+            ? 'Pour votre tranche d\'\u00e2ge (' + (Math.floor(p.age / 10) * 10) + '-' + (Math.floor(p.age / 10) * 10 + 9) + ' ans) et niveau d\'\u00e9pargne, le taux de succ\u00e8s typique observ\u00e9 est d\'environ <strong>' + Math.round(coh.typical * 100) + '%</strong>. Votre <strong>' + Math.round(d.succVal * 100) + '%</strong> est ' + cohPctileLbl + ' (~' + coh.percentile + '<sup>e</sup> percentile estim\u00e9).'
+            : 'For your age band (' + (Math.floor(p.age / 10) * 10) + '-' + (Math.floor(p.age / 10) * 10 + 9) + ') and savings level, the typical observed success rate is approximately <strong>' + Math.round(coh.typical * 100) + '%</strong>. Your <strong>' + Math.round(d.succVal * 100) + '%</strong> is ' + cohPctileLbl + ' (~' + coh.percentile + '<sup>th</sup> percentile estimated).') +
+          ' <span style="color:#888;font-style:italic">(' + (fr ? 'Indication seulement, non garanti.' : 'Indicative only, not guaranteed.') + ')</span></div>';
+      }
+    }
 
     // Grade interpretation — AI supersedes deterministic when available
     if (d.hasMC && d.succVal != null) {
@@ -387,6 +468,167 @@
       h += aiSlot(d.ai.verdict, fr, fr ? 'Verdict IA' : 'AI Verdict');
     }
     if (d.ai.page_zero_verdict) h += F.AiBlock(d.ai.page_zero_verdict, fr);
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION 1.5: WHAT COULD CHANGE THIS PLAN (sensitivity levers) ===
+  // Compute 4-6 elasticity-based "what if" scenarios. Estimates use closed-form
+  // approximations grounded in the existing payload (no extra MC re-run needed).
+  // Each lever: name, change description, delta on success rate (pts), delta on
+  // median final wealth ($). Archetype filters which levers appear.
+  function renderLevers(d, secN) {
+    var fr = d.fr, p = d.p;
+    var f$ = F.fmtCompact;
+    var succ = (d.succVal != null ? d.succVal : 0.85) * 100;
+    var medF = d.mc && (d.mc.rMedF || d.mc.medF) || 0;
+    var horizon = Math.max(1, (p.deathAge || 90) - (p.age || 0));
+    var yrsRet = Math.max(0, (p.retAge || 65) - (p.age || 0));
+    var totalBal = d.totalBal || 0;
+    var retR = (p.eqRet || 0.06);
+    var alreadyRet = (p.age || 0) >= (p.retAge || 65);
+
+    // Closed-form lever estimates. Coefficients calibrated to engine sensitivity
+    // ranges from prior MC runs; published as illustrative not deterministic.
+    function compoundFV(rate, years) { return years <= 0 ? 1 : Math.pow(1 + rate, years); }
+    var lvFV = compoundFV(retR, yrsRet);
+
+    var levers = [];
+
+    // L1: contributions +$5K/yr (only meaningful pre-retirement)
+    if (yrsRet >= 3 && (p.rrspC || 0) + (p.tfsaC || 0) > 0) {
+      var addContrib = 5000;
+      // FV of $5K/yr annuity at retR over yrsRet
+      var annuityFV = retR > 0 ? addContrib * ((Math.pow(1 + retR, yrsRet) - 1) / retR) : addContrib * yrsRet;
+      var dWealth = annuityFV;
+      var dSucc = Math.min(8, Math.round((dWealth / Math.max(medF, 1)) * 30));
+      levers.push({
+        label: fr ? 'Cotiser 5 000 $/an de plus' : 'Add $5K/yr to contributions',
+        change: fr ? '+5 000 $/an au REER ou CELI' : '+$5K/yr to RRSP or TFSA',
+        dWealth: Math.round(dWealth),
+        dSucc: dSucc,
+        kind: 'savings'
+      });
+    }
+
+    // L2: retire +2 years (always relevant if not already retired)
+    if (!alreadyRet && yrsRet >= 1) {
+      // Two more years of compounding + two fewer years of drawdown
+      var twoYrCompound = totalBal * (compoundFV(retR, yrsRet + 2) / Math.max(lvFV, 0.0001) - 1);
+      var spendY = (p.retSpM || 3000) * 12;
+      var twoYrLessDrawdown = spendY * 2;
+      var dW2 = Math.round(twoYrCompound + twoYrLessDrawdown * 0.5);
+      var dS2 = Math.min(12, Math.max(3, Math.round((dW2 / Math.max(medF, 1)) * 25)));
+      levers.push({
+        label: fr ? 'Reporter la retraite de 2 ans' : 'Delay retirement by 2 years',
+        change: fr ? 'Retraite \u00e0 ' + ((p.retAge || 65) + 2) + ' au lieu de ' + (p.retAge || 65) : 'Retire at age ' + ((p.retAge || 65) + 2) + ' instead of ' + (p.retAge || 65),
+        dWealth: dW2,
+        dSucc: dS2,
+        kind: 'horizon'
+      });
+    }
+
+    // L3: returns +1% (always relevant)
+    var dW3 = Math.round(medF * (compoundFV(retR + 0.01, horizon) / compoundFV(retR, horizon) - 1));
+    var dS3 = Math.min(15, Math.max(2, Math.round(horizon * 0.35)));
+    levers.push({
+      label: fr ? 'Rendement +1 % par an' : 'Returns +1% per year',
+      change: fr ? 'Allocation plus orient\u00e9e croissance, ou r\u00e9duction des frais' : 'More growth-oriented allocation, or lower fees',
+      dWealth: dW3,
+      dSucc: dS3,
+      kind: 'returns'
+    });
+
+    // L4: returns -1% (downside)
+    var dW4 = Math.round(medF * (compoundFV(retR - 0.01, horizon) / compoundFV(retR, horizon) - 1));
+    var dS4 = -Math.min(15, Math.max(2, Math.round(horizon * 0.35)));
+    levers.push({
+      label: fr ? 'Rendement -1 % par an' : 'Returns -1% per year',
+      change: fr ? 'March\u00e9s d\u00e9favorables persistants' : 'Sustained unfavourable markets',
+      dWealth: dW4,
+      dSucc: dS4,
+      kind: 'returns'
+    });
+
+    // L5: spending -10% (always meaningful)
+    var spendBase = (p.retSpM || 3000) * 12;
+    var dW5 = Math.round(spendBase * 0.10 * Math.max(0, horizon - yrsRet));
+    var dS5 = Math.min(10, Math.max(2, Math.round((spendBase * 0.10 / Math.max(spendBase, 1)) * 60)));
+    levers.push({
+      label: fr ? 'D\u00e9penses -10 %' : 'Spending -10%',
+      change: fr ? 'Mode de vie l\u00e9g\u00e8rement plus sobre en retraite' : 'Slightly lower retirement lifestyle',
+      dWealth: dW5,
+      dSucc: dS5,
+      kind: 'spending'
+    });
+
+    // L6: archetype-specific lever
+    if (p.bizOn) {
+      // Defer corporate extraction by 5 yrs
+      var dW6 = Math.round((p.bizRetainedEarnings || 0) * 0.10);
+      levers.push({
+        label: fr ? 'Reporter l\'extraction corpo de 5 ans' : 'Defer corporate extraction 5 years',
+        change: fr ? 'R\u00e9investir dans la SPCC, extraire plus tard' : 'Reinvest in CCPC, extract later',
+        dWealth: dW6,
+        dSucc: 4,
+        kind: 'tax'
+      });
+    } else if ((p.qppAge || 65) <= 65 && !alreadyRet) {
+      // Delay QPP/CPP to 70 → +42% benefit (0.7%/month after 65)
+      var qppMon = (d.qppM || 700);
+      var dQppY = qppMon * 12 * 0.42;
+      var dW6b = Math.round(dQppY * Math.max(0, (p.deathAge || 90) - 70));
+      levers.push({
+        label: fr ? (p.prov === 'QC' ? 'Reporter le RRQ \u00e0 70 ans' : 'Reporter le RPC \u00e0 70 ans') : (p.prov === 'QC' ? 'Delay QPP to age 70' : 'Delay CPP to age 70'),
+        change: fr ? 'Bonus de +42 % sur la rente viag\u00e8re' : '+42% bonus on lifetime benefit',
+        dWealth: dW6b,
+        dSucc: 5,
+        kind: 'gov'
+      });
+    } else if ((d.totalBal || 0) > 0 && (p.merR || 0) + (p.merT || 0) + (p.merN || 0) > 0.015) {
+      // High MER — show fee reduction lever
+      var feeSavings = Math.round(d.feeCost * 0.5);
+      levers.push({
+        label: fr ? 'R\u00e9duire les frais de 50 bp' : 'Cut investment fees by 50 bp',
+        change: fr ? 'Passer aux fonds index\u00e9s ou n\u00e9gocier les frais' : 'Move to index funds or negotiate fees',
+        dWealth: feeSavings,
+        dSucc: 3,
+        kind: 'fees'
+      });
+    }
+
+    var h = secPage();
+    h += F.Sec(secN, F.L('levers', fr), 'sec-levers');
+    h += narr(fr
+      ? 'Cette section illustre comment certaines d\u00e9cisions pourraient d\u00e9placer l\'aiguille du plan. Les ordres de grandeur sont calcul\u00e9s par \u00e9lasticit\u00e9 et compl\u00e9teraient une nouvelle simulation Monte Carlo pour confirmation.'
+      : 'This section illustrates how a few decisions could shift the plan\'s needle. Magnitudes are computed by elasticity and would be confirmed by a fresh Monte Carlo simulation.');
+
+    h += '<table class="tbl"><thead><tr>';
+    h += '<th style="text-align:left">' + (fr ? 'Levier' : 'Lever') + '</th>';
+    h += '<th style="text-align:left">' + (fr ? 'Changement' : 'Change') + '</th>';
+    h += '<th>' + (fr ? '\u0394 Patrimoine' : '\u0394 Wealth') + '</th>';
+    h += '<th>' + (fr ? '\u0394 Succ\u00e8s' : '\u0394 Success') + '</th>';
+    h += '</tr></thead><tbody>';
+    levers.forEach(function(L) {
+      var dColor = L.dWealth >= 0 ? C.green : C.red;
+      var sColor = L.dSucc >= 0 ? C.green : C.red;
+      var dWStr = (L.dWealth >= 0 ? '+' : '') + f$(L.dWealth);
+      var dSStr = (L.dSucc >= 0 ? '+' : '') + L.dSucc + ' pts';
+      h += '<tr>';
+      h += '<td style="font-weight:600">' + F.esc(L.label) + '</td>';
+      h += '<td style="font-family:DM Sans,sans-serif;color:#666;font-size:10px">' + F.esc(L.change) + '</td>';
+      h += '<td style="color:' + dColor + ';font-weight:700">' + dWStr + '</td>';
+      h += '<td style="color:' + sColor + ';font-weight:700">' + dSStr + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+
+    h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
+      (fr
+        ? 'Note: estimations \u00e0 lecture indicative. Les leviers ne sont pas additifs; combiner plusieurs leviers demande une nouvelle simulation pour mesurer l\'effet net.'
+        : 'Note: indicative estimates. Levers are not additive; combining several requires a fresh simulation to measure net effect.') +
+      '</div>';
+
     h += secPageEnd();
     return h;
   }
@@ -464,16 +706,21 @@
     var covClr = covPct >= 100 ? C.green : covPct >= 60 ? C.amber : C.red;
     h += '<div style="display:flex;align-items:center;gap:16px;margin-top:10px">';
     h += '<div style="flex-shrink:0">' + Ch.svgDonut(d.covRatio, fr ? 'Couverture gov.' : 'Gov. coverage', covClr, 90) + '</div>';
+    // Tag KPIs as household totals when couple to avoid per-person confusion.
+    var _scopeTag = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     h += '<div style="flex:1"><div class="g3">';
-    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM)) + '</span>/m', fr ? '\u00c9cart mensuel' : 'Monthly gap', d.gapM > 0 ? C.red : C.green);
-    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM * 12)) + '</span>' + (fr ? '/an' : '/yr'), fr ? '\u00c9cart annuel' : 'Annual gap', d.gapM > 0 ? C.red : C.green);
-    h += F.KPI('<span class="mono">' + fR(Math.round(d.govY)) + '</span>' + (fr ? '/an' : '/yr'), fr ? 'Rev. gov.' : 'Gov. income', C.green);
+    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM)) + '</span>/m', (fr ? '\u00c9cart mensuel' : 'Monthly gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
+    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM * 12)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? '\u00c9cart annuel' : 'Annual gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
+    h += F.KPI('<span class="mono">' + fR(Math.round(d.govY)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? 'Rev. gov.' : 'Gov. income') + _scopeTag, C.green);
     h += '</div></div></div>';
 
-    // Coverage interpretation — AI supersedes deterministic
+    // Couple-aware narrative: explicitly state "for the household" + spousal-spend total.
+    var _spendY = ((p.retSpM || 0) + (d.R.couple ? (p.cRetSpM || 0) : 0)) * 12;
+    var _scope = d.R.couple ? (fr ? ' du m\u00e9nage' : ' for the household') : '';
+    var _scopeIncome = d.R.couple ? (fr ? ' (vous + conjoint(e))' : ' (you + spouse)') : '';
     var _covDet = fr
-      ? 'Les revenus gouvernementaux (' + qLbl + ' + PSV' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ') totalisent <strong>' + fR(Math.round(d.govY)) + '</strong> par ann\u00e9e, ce qui couvre <strong>' + covPct + '%</strong> des d\u00e9penses de retraite pr\u00e9vues de ' + fR((p.retSpM || 0) * 12) + '.' + (d.gapM > 0 ? ' L\u2019\u00e9cart de <strong>' + fR(Math.round(d.gapM)) + '</strong> par mois devra \u00eatre combl\u00e9 par des retraits d\u2019\u00e9pargne.' : ' Les revenus garantis couvrent l\u2019int\u00e9gralit\u00e9 des d\u00e9penses courantes.') + (d.R.couple ? ' Le fractionnement des revenus de pension pourrait r\u00e9duire la charge fiscale du m\u00e9nage.' : '')
-      : 'Government income (' + qLbl + ' + OAS' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ') totals <strong>' + fR(Math.round(d.govY)) + '</strong> per year, covering <strong>' + covPct + '%</strong> of planned retirement spending of ' + fR((p.retSpM || 0) * 12) + '.' + (d.gapM > 0 ? ' The gap of <strong>' + fR(Math.round(d.gapM)) + '</strong> per month would need to be funded from savings withdrawals.' : ' Guaranteed income covers all regular expenses.') + (d.R.couple ? ' Pension income splitting could reduce the household tax burden.' : '');
+      ? 'Les revenus gouvernementaux (' + qLbl + ' + PSV' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ')' + _scopeIncome + ' totalisent <strong>' + fR(Math.round(d.govY)) + '</strong> par ann\u00e9e, ce qui couvre <strong>' + covPct + '%</strong> des d\u00e9penses de retraite pr\u00e9vues' + _scope + ' de ' + fR(_spendY) + '.' + (d.gapM > 0 ? ' L\u2019\u00e9cart de <strong>' + fR(Math.round(d.gapM)) + '</strong> par mois devra \u00eatre combl\u00e9 par des retraits d\u2019\u00e9pargne.' : ' Les revenus garantis couvrent l\u2019int\u00e9gralit\u00e9 des d\u00e9penses courantes.') + (d.R.couple ? ' Le fractionnement des revenus de pension pourrait r\u00e9duire la charge fiscale du m\u00e9nage.' : '')
+      : 'Government income (' + qLbl + ' + OAS' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ')' + _scopeIncome + ' totals <strong>' + fR(Math.round(d.govY)) + '</strong> per year, covering <strong>' + covPct + '%</strong> of planned retirement spending' + _scope + ' of ' + fR(_spendY) + '.' + (d.gapM > 0 ? ' The gap of <strong>' + fR(Math.round(d.gapM)) + '</strong> per month would need to be funded from savings withdrawals.' : ' Guaranteed income covers all regular expenses.') + (d.R.couple ? ' Pension income splitting could reduce the household tax burden.' : '');
     h += narrAi(_covDet, d.ai.profile_summary, fr, fr ? 'Profil \u2014 Analyse IA' : 'Profile \u2014 AI Analysis');
 
     // Static contextual observation (only when no AI)
@@ -652,9 +899,11 @@
       h += narrAi(_trajDet, d.ai.trajectory_insight, fr, fr ? 'Trajectoire \u2014 Analyse IA' : 'Trajectory \u2014 AI Analysis');
     }
 
-    // Milestone table
+    // Milestone table — keep transition years + 5-year cadence pre-75, 10-year past 75.
+    // Past age 75 the curve flattens; biennial-to-decennial sampling carries the same signal
+    // with much less ink (HNW reports were running 14+ rows here).
     var milestones = [p.age, p.retAge, 65, 72, 80, p.deathAge || 90];
-    for (var _mi = Math.ceil(p.age / 5) * 5; _mi <= (p.deathAge || 90); _mi += 5) milestones.push(_mi);
+    for (var _mi = Math.ceil(p.age / 5) * 5; _mi <= (p.deathAge || 90); _mi += (_mi >= 75 ? 10 : 5)) milestones.push(_mi);
     milestones = milestones.filter(function(v, i, a) { return a.indexOf(v) === i && v >= p.age; }).sort(function(a, b) { return a - b; });
     h += F.CopyBtn('rpt-t-proj');
     h += '<table id="rpt-t-proj" class="tbl"><thead><tr>';
@@ -716,6 +965,42 @@
     var _wfTotal = _wfItems.reduce(function(s, it) { return s + it.value; }, 0);
     h += Ch.svgWaterfall(_wfItems, { title: fr ? 'Sources de revenus annuelles' : 'Annual Income Sources', total: _wfTotal });
 
+    // === Profile-integrated subsection: spousal coordination for couples ===
+    // Splitting eligibility, individual benefit timing, combined coverage — woven into Income.
+    if (d.R.couple) {
+      var primaryQppY = Math.round(d.qppM * 12);
+      var primaryOasY = Math.round(d.oasM * 12);
+      var spouseQppY = Math.round(d.cQppM * 12);
+      var spouseOasY = Math.round(d.cOasM * 12);
+      var combinedGovY = primaryQppY + primaryOasY + spouseQppY + spouseOasY;
+      var splitEligible = (p.split === undefined || p.split === true);
+      h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">' +
+        (fr ? 'Coordination conjugale' : 'Spousal Coordination') + '</div>';
+      h += '<div class="cd" style="font-size:11px;line-height:1.6;background:#fdf9ee">';
+      h += '<table style="width:100%;font-size:10px"><thead><tr style="border-bottom:1px solid ' + C.border + '">' +
+        '<th style="text-align:left;padding:4px 0">' + (fr ? 'Composante' : 'Component') + '</th>' +
+        '<th style="text-align:right">' + (fr ? 'Vous' : 'You') + '</th>' +
+        '<th style="text-align:right">' + (fr ? 'Conjoint(e)' : 'Spouse') + '</th>' +
+        '<th style="text-align:right">' + (fr ? 'M\u00e9nage' : 'Household') + '</th></tr></thead><tbody>';
+      h += '<tr><td style="padding:3px 0">' + qLbl + (fr ? ' (annuel)' : ' (annual)') + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (primaryQppY > 0 ? f$(primaryQppY) : '\u2014') + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (spouseQppY > 0 ? f$(spouseQppY) : '\u2014') + '</td>' +
+        '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryQppY + spouseQppY) + '</td></tr>';
+      h += '<tr><td style="padding:3px 0">PSV/OAS</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (primaryOasY > 0 ? f$(primaryOasY) : '\u2014') + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (spouseOasY > 0 ? f$(spouseOasY) : '\u2014') + '</td>' +
+        '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryOasY + spouseOasY) + '</td></tr>';
+      h += '<tr><td style="padding:3px 0">' + (fr ? '\u00c2ge d\u00e9but ' : 'Start age ') + qLbl + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (p.qppAge || 65) + '</td>' +
+        '<td style="text-align:right;font-family:monospace">' + (p.cQppAge || 65) + '</td>' +
+        '<td></td></tr>';
+      h += '</tbody></table>';
+      h += '<div style="margin-top:6px">' + (fr
+        ? 'Le revenu garanti combin\u00e9 atteint <strong>' + f$(combinedGovY) + '/an</strong>. ' + (splitEligible ? 'Le fractionnement de pension entre conjoints est disponible \u00e0 partir de 65 ans pour les revenus admissibles (FERR, pension d\'employeur), ce qui peut r\u00e9duire l\'imp\u00f4t conjugal.' : 'Le fractionnement n\'est pas activ\u00e9 dans ce sc\u00e9nario.')
+        : 'Combined guaranteed income reaches <strong>' + f$(combinedGovY) + '/yr</strong>. ' + (splitEligible ? 'Pension income splitting between spouses becomes available at age 65 for eligible income (RRIF, employer pension), which can lower household tax.' : 'Income splitting is not active in this scenario.')) + '</div>';
+      h += '</div>';
+    }
+
     // Income stacked area (only if revData has the needed fields)
     if (revData.length > 0) {
       var incData = revData.filter(function(r) { return r.age >= p.retAge && ((r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0)) > 0; });
@@ -729,10 +1014,15 @@
       }
     }
 
-    // Cash flow table
+    // Cash flow table — cap rows to control bloat. Cap is tighter than the
+    // raw data length; key ages (retirement, 65, 72, 80, death) are always kept.
     if (revData.length > 0) {
-      var cfStep = d.exp ? 1 : Math.max(1, Math.floor(revData.length / 25));
-      var cfRows = revData.filter(function(r, i) { return i % cfStep === 0 || r.age === p.retAge || r.age === 65 || r.age === 72 || r.age === 80 || r.age === (p.deathAge || 90) || i === revData.length - 1; });
+      var maxRows = d.exp ? 22 : 18;
+      var cfStep = Math.max(1, Math.ceil(revData.length / maxRows));
+      var cfRows = revData.filter(function(r, i) {
+        var keyAge = r.age === p.retAge || r.age === 65 || r.age === 72 || r.age === 80 || r.age === (p.deathAge || 90);
+        return keyAge || i % cfStep === 0 || i === revData.length - 1;
+      });
       h += F.CopyBtn('rpt-t-cf');
       h += '<table id="rpt-t-cf" class="tbl"><thead><tr>';
       h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th>';
@@ -817,6 +1107,28 @@
       F.R(fr ? 'D\u00e9penses' : 'Spending curve', 'Go-Go ' + Math.round((p.goP || 1) * 100) + '% / Slow-Go ' + Math.round((p.slP || 0.85) * 100) + '% / No-Go ' + Math.round((p.noP || 0.7) * 100) + '%') +
       '</table>');
 
+    // === Profile-integrated subsection: CCPC owners get Corporate Integration here ===
+    // Salary vs dividend trade-off + integrated tax rate, woven into Tax instead of bolted on as separate section.
+    if (d.R.ccpc) {
+      var corpRetained = p.bizRetainedEarnings || 0;
+      var corpRev = p.bizRevenue || 0;
+      var sbdLimit = 500000;
+      var sbdEligibleY = Math.min(corpRev * 0.20, sbdLimit);
+      var sbdRate = p._isQC ? 0.122 : 0.115; // QC combined SBD rate; ROC roughly 11-13%
+      var integrated = p._isQC ? 0.461 : 0.453; // top-bracket eligible-div integrated rate (ON/QC ~46%)
+      h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">' +
+        (fr ? 'Int\u00e9gration corporative' : 'Corporate Integration') + '</div>';
+      h += '<div class="cd" style="font-size:11px;line-height:1.6;background:#fdf9ee">';
+      h += (fr
+        ? 'La SPCC b\u00e9n\u00e9ficie de la d\u00e9duction pour petites entreprises sur les premiers <strong>' + F.fmtCurrency(sbdLimit) + '</strong> de revenu actif (taux combin\u00e9 estim\u00e9 \u00e0 <strong>' + (sbdRate * 100).toFixed(1) + '%</strong>). Le b\u00e9n\u00e9fice net retenu (~' + F.fmtCurrency(Math.round(sbdEligibleY * (1 - sbdRate))) + '/an) compose dans la corporation jusqu\'\u00e0 l\'extraction.'
+        : 'The CCPC benefits from the small business deduction on the first <strong>' + F.fmtCurrency(sbdLimit) + '</strong> of active income (combined rate estimated at <strong>' + (sbdRate * 100).toFixed(1) + '%</strong>). Retained earnings (~' + F.fmtCurrency(Math.round(sbdEligibleY * (1 - sbdRate))) + '/yr) compound inside the corporation until extraction.');
+      h += '<br/><br/>';
+      h += (fr
+        ? 'Au moment de l\'extraction, le taux d\'int\u00e9gration combin\u00e9 (corp + personnel sur dividende d\u00e9termin\u00e9) ressort autour de <strong>' + (integrated * 100).toFixed(1) + '%</strong>, l\u00e9g\u00e8rement plus que sur un salaire pour un actionnaire en haut palier. Le solde corporatif actuel de <strong>' + f$(corpRetained) + '</strong> repr\u00e9sente une r\u00e9serve fiscalement diff\u00e9r\u00e9e \u2014 son timing d\'extraction influence directement la facture viag\u00e8re.'
+        : 'At extraction, the integrated rate (corp + personal on eligible dividend) lands around <strong>' + (integrated * 100).toFixed(1) + '%</strong>, slightly above straight salary for a top-bracket shareholder. The current corporate balance of <strong>' + f$(corpRetained) + '</strong> is a tax-deferred reserve \u2014 its extraction timing directly drives lifetime tax.');
+      h += '</div>';
+    }
+
     // Post-data narrative — AI supersedes deterministic
     var _taxDet = fr
       ? 'La strat\u00e9gie de d\u00e9caissement ' + (p.wStrat === 'optimized' ? 'optimis\u00e9e coordonne' : 'standard r\u00e9partit') + ' les retraits entre REER, CELI et non-enregistr\u00e9 pour minimiser l\u2019imp\u00f4t viager.' + (p.melt ? ' Le meltdown REER acc\u00e9l\u00e8re les retraits avant 72 ans avec une cible de ' + F.fmtCurrency(p.meltTgt) + ' par ann\u00e9e.' : '') + (p.split ? ' Le fractionnement de revenus de pension \u00e0 ' + Math.round((p.splitP || 0) * 100) + '% r\u00e9duit l\u2019imp\u00f4t du m\u00e9nage.' : '') + ' La courbe de d\u00e9penses Go-Go/Slow-Go/No-Go refl\u00e8te un ralentissement progressif des d\u00e9penses avec l\u2019\u00e2ge.'
@@ -826,7 +1138,8 @@
     if (exp && revData.length > 0) {
       var _wdHorizon = Math.min(30, (p.deathAge || 90) - p.retAge);
       var _wdAll = revData.filter(function(r) { return r.age >= p.retAge && r.age <= p.retAge + _wdHorizon; });
-      var _wdStep = _wdAll.length > 20 ? Math.max(1, Math.floor(_wdAll.length / 20)) : 1;
+      // Tighter cap: 16 rows max for withdrawal detail (was 20+).
+      var _wdStep = Math.max(1, Math.ceil(_wdAll.length / 16));
       var _wdYrs = _wdAll.filter(function(r, i) { return i % _wdStep === 0 || r.age === p.retAge || r.age === 72 || r.age === 80 || i === _wdAll.length - 1; });
       if (_wdYrs.length > 0) {
         h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">' + (fr ? 'D\u00e9tail du d\u00e9caissement' : 'Withdrawal Detail') + '</div>';
@@ -1346,7 +1659,10 @@
     h += '<div class="g4" style="margin-bottom:8px">';
     h += F.KPI('<span class="mono">' + f$(_p25W) + '</span>', fr ? 'Sc\u00e9nario prudent (P25)' : 'Cautious (P25)', C.amber);
     h += F.KPI('<span class="mono">' + f$(_p75W) + '</span>', fr ? 'Sc\u00e9nario favorable (P75)' : 'Favorable (P75)', C.green);
-    h += F.KPI('<span class="mono">' + ((mc.p5Ruin || 999) >= 200 ? (fr ? 'Jamais' : 'Never') : mc.p5Ruin + (fr ? ' ans' : ' yrs')) + '</span>', fr ? 'Durabilit\u00e9 \u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.amber);
+    var _durLabelR = (mc.p5Ruin || 999) >= 200
+      ? (fr ? 'Jusqu\'\u00e0 ' + (p.deathAge || 90) + ' ans' : 'Through age ' + (p.deathAge || 90))
+      : mc.p5Ruin + (fr ? ' ans' : ' yrs');
+    h += F.KPI('<span class="mono">' + _durLabelR + '</span>', fr ? 'Durabilit\u00e9 \u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.amber);
     h += F.KPI('<span class="mono">' + f$(Math.round(_spread25)) + '</span>', fr ? 'Fourchette P25\u2013P75' : 'P25\u2013P75 range', C.blue);
     h += '</div>';
 
@@ -1420,18 +1736,34 @@
       h += '<div class="meth-p"><strong>' + (fr ? 'Param\u00e8tres avanc\u00e9s' : 'Advanced parameters') + ':</strong> MER REER ' + F.pc(p.merR) + ', CELI ' + F.pc(p.merT) + ', NR ' + F.pc(p.merN) + '. ' + (fr ? 'Alloc. actions: REER ' : 'Equity alloc: RRSP ') + Math.round((p.allocR || 0.6) * 100) + '%, CELI ' + Math.round((p.allocT || 0.8) * 100) + '%, NR ' + Math.round((p.allocN || 0.5) * 100) + '%. ' + (fr ? 'Courbe de d\u00e9penses (Go/Slow/No): ' : 'Spending curve (Go/Slow/No): ') + Math.round((p.goP || 1) * 100) + '/' + Math.round((p.slP || 0.85) * 100) + '/' + Math.round((p.noP || 0.7) * 100) + '%.</div>';
     }
 
-    // Feature checklist
+    // Feature checklist — profile-adaptive: hide profile-conditional rows that don't apply.
+    // Always-on rows show with ✓; conditional rows are omitted when they would show ✗.
     h += '<div class="meth-grid">';
+    var _hasGIS = (d.revData || []).some(function(r) { return r.age >= 65 && (r.srg || r.gis || 0) > 0; });
+    var _hasFHSA = (p.fhsaBal || 0) > 0;
+    var _hasProps = (p.props || []).some(function(pr) { return pr && pr.on; });
     var _ck = [
-      ['Cholesky 5\u00d75', true], ['CPM-2023', true], [p.fatT ? (fr ? 'Queues \u00e9paisses' : 'Fat tails') : 'Normal', true],
-      [(fr ? 'MER d\u00e9duits' : 'MER deducted'), d.merWt > 0], [p.stochInf ? (fr ? 'Inflation stoch.' : 'Stoch. inflation') : (fr ? 'Inflation fixe' : 'Fixed inflation'), true],
-      [(fr ? 'Paliers index\u00e9s' : 'Indexed brackets'), true], ['SRG/GIS', true], [_isQC ? 'RRQ2' : 'CPP2', true],
-      ['Meltdown', !!p.melt], [(fr ? 'Fractionnement' : 'Splitting'), !!p.split], [(fr ? 'Mortalit\u00e9 CPM-2023' : 'CPM-2023 mortality'), true],
-      ['Guyton-Klinger', !!(mc && mc.gkOn)],
-      [(fr ? 'Vente forc\u00e9e immo.' : 'Forced RE sale'), (p.props || []).some(function(pr) { return pr && pr.on; })],
-      ['CELIAPP/FHSA', (p.fhsaBal || 0) > 0]
+      // Always shown — engine fundamentals
+      { label: 'Cholesky 5\u00d75', on: true, conditional: false },
+      { label: (fr ? 'Mortalit\u00e9 CPM-2023' : 'CPM-2023 mortality'), on: true, conditional: false },
+      { label: p.fatT ? (fr ? 'Queues \u00e9paisses' : 'Fat tails') : 'Normal', on: true, conditional: false },
+      { label: (fr ? 'Paliers index\u00e9s' : 'Indexed brackets'), on: true, conditional: false },
+      { label: p.stochInf ? (fr ? 'Inflation stochastique' : 'Stochastic inflation') : (fr ? 'Inflation fixe' : 'Fixed inflation'), on: true, conditional: false },
+      { label: _isQC ? 'RRQ2' : 'CPP2', on: true, conditional: false },
+      // Profile-conditional — only show when active for this profile
+      { label: (fr ? 'MER d\u00e9duits' : 'MER deducted'), on: d.merWt > 0, conditional: true },
+      { label: 'SRG/GIS', on: _hasGIS, conditional: true },
+      { label: 'Meltdown REER', on: !!p.melt, conditional: true },
+      { label: (fr ? 'Fractionnement de pension' : 'Pension splitting'), on: !!p.split, conditional: true },
+      { label: 'Guyton-Klinger', on: !!(mc && mc.gkOn), conditional: true },
+      { label: (fr ? 'Vente forc\u00e9e immo.' : 'Forced RE sale'), on: _hasProps, conditional: true },
+      { label: 'CELIAPP/FHSA', on: _hasFHSA, conditional: true }
     ];
-    _ck.forEach(function(c) { h += '<div class="meth-item"><span class="meth-check">' + (c[1] ? '\u2713' : '\u2717') + '</span>' + c[0] + '</div>'; });
+    _ck.forEach(function(c) {
+      // Skip conditional rows that don't apply to this profile (less noise, more relevance).
+      if (c.conditional && !c.on) return;
+      h += '<div class="meth-item"><span class="meth-check">' + (c.on ? '\u2713' : '\u2717') + '</span>' + c.label + '</div>';
+    });
     h += '</div>';
 
     // AI Disclosure
@@ -1514,6 +1846,7 @@
     var _tocN = 0;
     tocSections.push({ n: '\u2606', id: 'sec-assessment', label: F.L('page_zero', d.fr) });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-diagnostic', label: F.L('diagnostic', d.fr) });
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-levers', label: F.L('levers', d.fr) });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
     if (d.R.hasGoals) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-goals', label: F.L('goals', d.fr) }); }
@@ -1549,6 +1882,10 @@
     // 1. Diagnostic / Executive Summary (always)
     secN++;
     h += renderDiagnostic(d, secN);
+
+    // 1.5 What Could Change This (always — gives reader agency)
+    secN++;
+    h += renderLevers(d, secN);
 
     // 2. Profile (always)
     secN++;

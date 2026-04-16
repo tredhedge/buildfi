@@ -294,6 +294,8 @@
     risk:            { fr: "Risque & sensibilit\u00e9", en: "Risk & Sensitivity" },
     strategies:      { fr: "Strat\u00e9gies observ\u00e9es", en: "Observed Strategies" },
     methodology:     { fr: "M\u00e9thodologie", en: "Methodology" },
+    levers:          { fr: "Ce qui pourrait changer le plan", en: "What Could Change This Plan" },
+    glance:          { fr: "Votre plan en bref", en: "Your Plan at a Glance" },
     // Common labels
     age:             { fr: "\u00c2ge", en: "Age" },
     retirement:      { fr: "Retraite", en: "Retirement" },

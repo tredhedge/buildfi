@@ -512,6 +512,188 @@ function localNoData(lang) {
   return lang === 'fr' ? 'Donnees insuffisantes pour analyse.' : 'Data insufficient for analysis.';
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Archetype engine — replaces flat templated narrative with profile-aware
+// phrasing trees so two profiles never sound alike.
+// Detection priority: business_owner > debt_burdened > low_income > fire_seeker
+//                   > decumulator > transitioner > accumulator
+// Modifiers (overlay): couple, high_savings, has_pension, has_real_estate
+// ─────────────────────────────────────────────────────────────────────────
+
+function detectArchetype(payload) {
+  var p = payload.p || {};
+  var data = BAiPrompt.extractData(payload);
+  var yrs = Math.max(0, (p.retAge || 65) - (p.age || 0));
+  var alreadyRet = (p.age || 0) >= (p.retAge || 65);
+  var totalSav = payload.totalBal || 0;
+  var totalDebt = ((p.debts || []).reduce(function(s, d) { return s + (d.balance || d.bal || 0); }, 0));
+  var debtRatio = totalSav > 0 ? totalDebt / totalSav : 0;
+
+  var primary;
+  if (p.bizOn) primary = 'business_owner';
+  else if (debtRatio > 1.0) primary = 'debt_burdened';
+  else if (data.gis && data.gis.eligibleYears > 5) primary = 'low_income';
+  else if ((p.retAge || 65) <= 50) primary = 'fire_seeker';
+  else if (alreadyRet || yrs <= 1) primary = 'decumulator';
+  else if (yrs <= 7 && (p.age || 0) >= 50) primary = 'transitioner';
+  else primary = 'accumulator';
+
+  var modifiers = [];
+  if (p.cOn) modifiers.push('couple');
+  if (totalSav > 1500000) modifiers.push('high_savings');
+  if (p.penType && p.penType !== 'none' && (p.penM || 0) > 0) modifiers.push('has_pension');
+  if (p.props && p.props.length > 0) modifiers.push('has_real_estate');
+  if (p.melt) modifiers.push('uses_meltdown');
+
+  return { primary: primary, modifiers: modifiers, yrs: yrs, alreadyRet: alreadyRet };
+}
+
+// Archetype-specific openers — vary the entry tone to break repetition.
+// Each function returns 1 sentence to lead a major slot.
+function archetypeOpener(arch, slot, data, lang) {
+  var fr = lang === 'fr';
+  var name = data.clientName || (fr ? 'le client' : 'the client');
+  var p = arch.primary;
+
+  if (slot === 'overall_assessment') {
+    if (p === 'fire_seeker') return fr
+      ? 'L\'horizon FIRE \u00e0 ' + b(data.retAge) + ' ans repose sur la durabilit\u00e9 du portefeuille pendant ' + b(data.horizon - (data.yearsToRetirement || 0)) + ' ans de d\u00e9caissement et la r\u00e9silience du pont avant les rentes publiques.'
+      : 'The FIRE horizon at age ' + b(data.retAge) + ' depends on portfolio durability across ' + b(data.horizon - (data.yearsToRetirement || 0)) + ' years of drawdown and bridge resilience before public benefits begin.';
+    if (p === 'business_owner') return fr
+      ? 'La structure incorpor\u00e9e ajoute un levier d\'extraction en plus de l\'\u00e9pargne personnelle, et son timing influence directement la facture fiscale combin\u00e9e.'
+      : 'The incorporated structure layers a corporate-extraction lever on top of personal savings, and its timing drives combined tax outcomes.';
+    if (p === 'debt_burdened') return fr
+      ? 'Le ratio dette/\u00e9pargne actuel place le plan dans une posture d\'arbitrage: chaque dollar de remboursement r\u00e9duit le risque mais retarde la composition.'
+      : 'The current debt-to-savings ratio frames the plan as an explicit trade-off: every prepayment dollar lowers risk but delays compounding.';
+    if (p === 'low_income') return fr
+      ? 'Le profil d\'admissibilit\u00e9 SRG modifie la lecture du plan: chaque retrait imposable interagit avec le 50% de r\u00e9cup\u00e9ration.'
+      : 'The GIS-eligibility profile reshapes the read: every taxable withdrawal interacts with the 50-cent clawback.';
+    if (p === 'decumulator') return fr
+      ? 'En phase de d\u00e9caissement active, l\'attention se d\u00e9place de l\'accumulation vers la s\u00e9quence de retraits et le risque de longue vie.'
+      : 'In active drawdown, the focus shifts from accumulation to withdrawal sequencing and longevity risk.';
+    if (p === 'transitioner') return fr
+      ? 'La fen\u00eatre des ' + b(arch.yrs + ' ans') + ' avant la retraite est celle o\u00f9 l\'allocation, le timing des rentes et le rodage du d\u00e9caissement comptent le plus.'
+      : 'The ' + b(arch.yrs + '-year') + ' window before retirement is when allocation, benefit timing, and drawdown rehearsal matter most.';
+    return fr
+      ? 'Avec ' + b(arch.yrs + ' ans') + ' jusqu\'\u00e0 la retraite, le plan b\u00e9n\u00e9ficie de l\'horizon long pour absorber la volatilit\u00e9 et compounder.'
+      : 'With ' + b(arch.yrs + ' years') + ' until retirement, the plan benefits from a long compounding horizon and volatility tolerance.';
+  }
+
+  if (slot === 'verdict') {
+    if (p === 'fire_seeker') return fr
+      ? 'Le verdict FIRE d\u00e9pend autant du taux de retrait initial que de la longueur du pont avant 65 ans.'
+      : 'The FIRE verdict hinges on initial withdrawal rate as much as on bridge length before age 65.';
+    if (p === 'decumulator') return fr
+      ? 'Le verdict actuel refl\u00e8te une combinaison de patrimoine d\u00e9j\u00e0 constitu\u00e9 et de discipline de retrait.'
+      : 'The current verdict reflects a combination of accumulated wealth and withdrawal discipline.';
+    if (p === 'business_owner') return fr
+      ? 'Le verdict tient compte du capital corporatif comme actif planifiable mais imposable \u00e0 l\'extraction.'
+      : 'The verdict treats corporate capital as a planable but extraction-taxed asset.';
+    if (p === 'debt_burdened') return fr
+      ? 'Le verdict s\'am\u00e9liorerait sensiblement si l\'on liminate la dette \u00e0 taux \u00e9lev\u00e9 dans les premi\u00e8res ann\u00e9es.'
+      : 'The verdict would improve materially if high-rate debt is cleared in the first years.';
+    return fr
+      ? 'Le verdict refl\u00e8te le solde entre patrimoine projet\u00e9 et besoins de d\u00e9pense.'
+      : 'The verdict reflects the balance between projected wealth and spending needs.';
+  }
+
+  if (slot === 'income_insight') {
+    if (p === 'fire_seeker') return fr
+      ? 'Avant 65 ans, le revenu vient enti\u00e8rement du portefeuille; apr\u00e8s, RRQ et PSV r\u00e9duisent la pression de retrait.'
+      : 'Before age 65, income comes entirely from the portfolio; after, QPP and OAS lighten the withdrawal load.';
+    if (p === 'low_income') return fr
+      ? 'La couverture publique (RRQ + PSV + SRG) couvre une part importante des d\u00e9penses, ce qui change la mati\u00e8re imposable.'
+      : 'Public coverage (QPP + OAS + GIS) absorbs a meaningful share of spending, which reshapes the taxable base.';
+    if (p === 'has_pension' || arch.modifiers.indexOf('has_pension') >= 0) return fr
+      ? 'La pension d\u00e9finie ajoute une couche de revenu garanti index\u00e9 (selon le r\u00e9gime), ce qui r\u00e9duit la d\u00e9pendance au portefeuille.'
+      : 'The defined-benefit pension layers indexed guaranteed income (per the plan), reducing portfolio dependence.';
+    return null;
+  }
+
+  if (slot === 'taxInsight') {
+    if (p === 'business_owner') return fr
+      ? 'Le mix salaire/dividende et le moment d\'extraction du capital corporatif sont les leviers fiscaux dominants ici.'
+      : 'Salary-vs-dividend mix and timing of corporate capital extraction are the dominant tax levers here.';
+    if (p === 'low_income') return fr
+      ? 'L\'imp\u00f4t reste minimal; l\'enjeu fiscal r\u00e9el est l\'interaction entre retraits REER et r\u00e9cup\u00e9ration SRG.'
+      : 'Personal tax remains minimal; the real fiscal lever is the RRSP-withdrawal vs GIS-clawback interaction.';
+    if (arch.modifiers.indexOf('uses_meltdown') >= 0) return fr
+      ? 'La strat\u00e9gie meltdown REER tire parti des paliers bas avant 72 ans pour att\u00e9nuer l\'imp\u00f4t FERR obligatoire.'
+      : 'The RRSP meltdown leverages lower-bracket years before 72 to soften forced RRIF tax later.';
+    return null;
+  }
+
+  if (slot === 'profile_summary') {
+    if (p === 'fire_seeker') return fr
+      ? 'Le profil concentre l\'\u00e9pargne dans des comptes \u00e0 acc\u00e8s flexible, ce qui sera utile pendant le pont avant les rentes publiques.'
+      : 'The profile concentrates savings in flexible-access accounts, which will matter during the bridge before public benefits start.';
+    if (p === 'business_owner') return fr
+      ? 'Le profil combine \u00e9pargne personnelle et capital corporatif d\u00e9tenu en SPCC, deux poches \u00e0 traiter diff\u00e9remment fiscalement.'
+      : 'The profile combines personal savings with CCPC-held corporate capital \u2014 two pools that demand distinct tax treatment.';
+    if (p === 'debt_burdened') return fr
+      ? 'Le profil pr\u00e9sente \u00e0 la fois un capital d\'\u00e9pargne et une dette significative; l\'arbitrage entre les deux dirige la trajectoire.'
+      : 'The profile shows both meaningful savings and significant debt; the balance between them drives the trajectory.';
+    if (p === 'low_income') return fr
+      ? 'Le profil de revenus modestes maximise la valeur des prestations publiques (RRQ + PSV + SRG) qui repr\u00e9sentent la majorit\u00e9 du revenu garanti.'
+      : 'The modest-income profile maximizes the value of public benefits (QPP + OAS + GIS), which form the bulk of guaranteed income.';
+    if (p === 'decumulator') return fr
+      ? 'Le profil refl\u00e8te une phase de d\u00e9caissement active: le capital accumul\u00e9 finance d\u00e9sormais des d\u00e9penses ind\u00e9x\u00e9es \u00e0 l\'inflation.'
+      : 'The profile reflects active drawdown: accumulated capital now funds inflation-indexed spending.';
+    if (p === 'transitioner') return fr
+      ? 'Le profil entre dans la fen\u00eatre de transition: l\'allocation et le timing des rentes peuvent encore \u00eatre ajust\u00e9s avant que la trajectoire soit fig\u00e9e.'
+      : 'The profile is entering the transition window: allocation and benefit-timing decisions are still actionable before the trajectory locks in.';
+    return null;
+  }
+
+  if (slot === 'trajectory_insight') {
+    if (p === 'fire_seeker') return fr
+      ? 'La trajectoire FIRE doit traverser un pont sans revenus publics; le risque de s\u00e9quence est concentr\u00e9 sur les premi\u00e8res ann\u00e9es de d\u00e9caissement.'
+      : 'The FIRE trajectory must cross a bridge with no public income; sequence risk is concentrated in the first drawdown years.';
+    if (p === 'decumulator') return fr
+      ? 'En d\u00e9caissement actif, la trajectoire est principalement d\u00e9termin\u00e9e par les rendements r\u00e9els et la s\u00e9quence des marches.'
+      : 'In active drawdown, the trajectory is driven mainly by real returns and market sequencing.';
+    if (arch.modifiers.indexOf('high_savings') >= 0) return fr
+      ? 'L\'\u00e9pargne \u00e9lev\u00e9e d\u00e9place le risque de "manquer d\'argent" vers le risque "d\'optimisation fiscale"; la trajectoire reste largement positive.'
+      : 'High savings shifts the risk profile from "running out of money" to "tax optimization"; the trajectory remains broadly positive.';
+    if (p === 'business_owner') return fr
+      ? 'La trajectoire personnelle d\u00e9pend autant de l\'extraction corporative que des cotisations directes \u00e0 vos comptes enregistr\u00e9s.'
+      : 'The personal trajectory depends as much on corporate extraction as on direct contributions to registered accounts.';
+    if (p === 'transitioner') return fr
+      ? 'La trajectoire entre maintenant dans sa fen\u00eatre de risque la plus sensible: les 5\u201310 ans entourant la retraite.'
+      : 'The trajectory now enters its most sensitive risk window: the 5\u201310 years around retirement.';
+    return null;
+  }
+
+  return null;
+}
+
+// Archetype-specific hedge — closing caveat that varies by profile.
+function archetypeHedge(arch, lang) {
+  var fr = lang === 'fr';
+  var p = arch.primary;
+  if (p === 'fire_seeker') return fr
+    ? 'Une mauvaise s\u00e9quence de rendements t\u00f4t dans le pont peut compromettre le plan; le suivi annuel est cl\u00e9.'
+    : 'A bad return sequence early in the bridge can compromise the plan; annual review matters most here.';
+  if (p === 'business_owner') return fr
+    ? 'Le timing de l\'extraction, la d\u00e9duction pour petites entreprises et le revenu passif corporatif demanderaient un suivi sp\u00e9cifique.'
+    : 'Extraction timing, the small-business deduction, and corporate passive income would each warrant specific follow-up.';
+  if (p === 'debt_burdened') return fr
+    ? 'Une am\u00e9lioration rapide du ratio dette/\u00e9pargne pourrait d\u00e9bloquer la trajectoire d\'\u00e9pargne.'
+    : 'A faster improvement in the debt-to-savings ratio could unlock the savings trajectory.';
+  if (p === 'low_income') return fr
+    ? 'L\'optimisation du SRG sur les ann\u00e9es 65-71 pourrait significativement modifier le revenu net.'
+    : 'GIS optimization across ages 65-71 could materially shift net retirement income.';
+  if (p === 'decumulator') return fr
+    ? 'La sensibilit\u00e9 aux rendements pr\u00e9coces et \u00e0 la longue vie demeure le point d\'attention principal.'
+    : 'Sensitivity to early returns and longevity remains the primary watchpoint.';
+  if (p === 'transitioner') return fr
+    ? 'Le rodage de l\'allocation et la d\u00e9cision sur le moment de RRQ/PSV peuvent encore d\u00e9placer le r\u00e9sultat.'
+    : 'Allocation rehearsal and the QPP/OAS start-date decision can still move the outcome.';
+  return fr
+    ? 'L\'horizon long permet plusieurs cycles d\'ajustement annuel sans compromettre la cible.'
+    : 'The long horizon allows several yearly adjustment cycles without compromising the target.';
+}
+
 function buildLocalPromptSubstitute(promptObj, payload) {
   var data = BAiPrompt.extractData(payload);
   var lang = data.lang === 'en' ? 'en' : 'fr';
@@ -519,9 +701,11 @@ function buildLocalPromptSubstitute(promptObj, payload) {
   var finLiteracy = clampPref(prefs.finLiteracy, ['beginner', 'intermediate', 'advanced'], 'intermediate');
   var stressLevel = clampPref(prefs.stressLevel, ['low', 'moderate', 'high'], 'moderate');
   var detailPref = clampPref(prefs.detailPreference, ['concise', 'balanced', 'detailed'], 'balanced');
-  var lead = lang === 'fr'
-    ? (stressLevel === 'high' ? 'Le plan semble sensible, mais les chiffres donnent un cadre concret.' : stressLevel === 'low' ? 'Lecture directe des chiffres:' : 'Les chiffres donnent une lecture equilibree du plan.')
-    : (stressLevel === 'high' ? 'The plan appears sensitive, but the numbers provide a clear frame.' : stressLevel === 'low' ? 'Straight reading of the numbers:' : 'The numbers provide a balanced read of the plan.');
+  var arch = detectArchetype(payload);
+  // Archetype-aware lead: replaces the previous flat tone-only opener.
+  var lead = archetypeOpener(arch, 'overall_assessment', data, lang)
+    || (lang === 'fr' ? 'Lecture des chiffres:' : 'Reading the numbers:');
+  var hedge = archetypeHedge(arch, lang);
   var literacyLine = lang === 'fr'
     ? (finLiteracy === 'beginner' ? 'Interpretation en langage simple, sans jargon inutile.' : finLiteracy === 'advanced' ? 'Lecture technique: sequence risk, efficience fiscale et sensibilites.' : 'Interpretation avec niveau technique intermediaire.')
     : (finLiteracy === 'beginner' ? 'Plain-language interpretation with limited jargon.' : finLiteracy === 'advanced' ? 'Technical read: sequence risk, tax efficiency, and sensitivities.' : 'Moderate technical depth for interpretation.');
@@ -541,78 +725,116 @@ function buildLocalPromptSubstitute(promptObj, payload) {
       ], detailPref);
     }
     if (key === 'verdict') {
+      var verdictOpener = archetypeOpener(arch, 'verdict', data, lang);
       return joinSentences([
         (lang === 'fr'
           ? 'Le diagnostic global indique une note ' + b(data.grade) + ' (' + data.gradeLabel + ').'
           : 'Overall diagnostic indicates grade ' + b(data.grade) + ' (' + data.gradeLabel + ').'),
-        (lang === 'fr'
-          ? 'Le plan pourrait rester robuste si l execution conserve la discipline d epargne et de depenses.'
-          : 'The plan could remain resilient if savings and spending discipline is maintained.'),
-        (lang === 'fr'
-          ? 'Le point de vigilance principal reste l ecart entre median et prudent.'
-          : 'Main watchpoint remains the spread between median and prudent paths.')
+        verdictOpener,
+        hedge
       ], detailPref);
     }
     if (key === 'page_zero_verdict') {
+      // Mirror block — what does this client seem to care about most? Per archetype.
+      var p2 = arch.primary;
+      if (p2 === 'fire_seeker') return lang === 'fr'
+        ? 'Vous cherchez la libert\u00e9 financi\u00e8re t\u00f4t \u2014 ce plan tient si la s\u00e9quence des rendements coop\u00e8re pendant les premi\u00e8res ann\u00e9es du pont.'
+        : 'You\'re aiming for early financial freedom \u2014 this plan holds if the return sequence cooperates in the first bridge years.';
+      if (p2 === 'business_owner') return lang === 'fr'
+        ? 'Votre soci\u00e9t\u00e9 est un pilier du plan; le timing d\'extraction est ce qui d\u00e9place le plus l\'aiguille fiscale.'
+        : 'Your corporation is a pillar of the plan; extraction timing is what moves the tax needle most.';
+      if (p2 === 'debt_burdened') return lang === 'fr'
+        ? 'Vous voulez \u00e9pargner et rembourser \u00e0 la fois \u2014 le plan refl\u00e8te ce double objectif et son ar\u00eate principale est la dette \u00e0 taux \u00e9lev\u00e9.'
+        : 'You want to save and repay at the same time \u2014 the plan reflects that dual goal, and its main edge is the high-rate debt.';
+      if (p2 === 'low_income') return lang === 'fr'
+        ? 'Votre s\u00e9curit\u00e9 \u00e0 la retraite repose surtout sur les prestations publiques; chaque retrait imposable compte double via le SRG.'
+        : 'Your retirement security rests largely on public benefits; every taxable withdrawal counts double through GIS clawback.';
+      if (p2 === 'decumulator') return lang === 'fr'
+        ? 'Vous \u00eates dans la phase o\u00f9 la pr\u00e9servation prime; le plan met l\'accent sur la s\u00e9quence de retraits et la long\u00e9vit\u00e9.'
+        : 'You\'re in the phase where preservation matters most; the plan focuses on withdrawal sequencing and longevity.';
+      if (p2 === 'transitioner') return lang === 'fr'
+        ? 'Vous \u00eates dans la fen\u00eatre de d\u00e9cisions cl\u00e9s avant la retraite \u2014 ce que vous changez maintenant aura plus d\'impact qu\'apr\u00e8s.'
+        : 'You\'re in the key-decision window before retirement \u2014 what you change now will have more impact than later.';
       return lang === 'fr'
-        ? 'Le plan semble aligner vos objectifs et votre horizon, sous reserve des hypotheses de marche.'
-        : 'The plan appears aligned with your goals and time horizon, conditional on market assumptions.';
+        ? 'Vous construisez sur un horizon long; ce plan vous donne une lecture du chemin et des leviers principaux.'
+        : 'You\'re building on a long horizon; this plan gives you a read of the path and the main levers.';
     }
     if (key === 'profile_summary') {
+      var profOpener = archetypeOpener(arch, 'profile_summary', data, lang);
+      // Cross-ref: tie profile composition to government coverage (income side).
+      var profCross = data.govCoverageRatio
+        ? (lang === 'fr'
+            ? 'Cette composition s\'articule avec une couverture publique de ' + b(data.govCoverageRatio) + ', d\u00e9terminant la part de l\'\u00e9pargne r\u00e9ellement appel\u00e9e \u00e0 financer les d\u00e9penses.'
+            : 'This composition pairs with public coverage of ' + b(data.govCoverageRatio) + ', determining how much of the savings actually funds spending.')
+        : null;
       return joinSentences([
+        profOpener,
         (lang === 'fr'
           ? 'Le capital total estime est de ' + b(data.totalSavings) + ', reparti entre REER ' + b(data.rrsp) + ', CELI ' + b(data.tfsa) + ' et non enregistre ' + b(data.nr) + '.'
           : 'Estimated total savings are ' + b(data.totalSavings) + ', split across RRSP ' + b(data.rrsp) + ', TFSA ' + b(data.tfsa) + ', and non-registered ' + b(data.nr) + '.'),
-        (lang === 'fr'
-          ? 'Cette diversification pourrait limiter la concentration de risque fiscal et de liquidite.'
-          : 'This diversification could reduce concentration risk across tax and liquidity buckets.'),
-        literacyLine
+        profCross
       ], detailPref);
     }
     if (key === 'trajectory_insight') {
+      var trajOpener = archetypeOpener(arch, 'trajectory_insight', data, lang);
+      // Cross-ref: tie trajectory durability to lifetime tax (the slow leak that shapes the path).
+      var trajCross = data.lifetimeTax && data.savingsDurability
+        ? (lang === 'fr'
+            ? 'Sur la m\u00eame trajectoire, l\'imp\u00f4t viager cumul\u00e9 atteint ' + b(data.lifetimeTax) + ', soit ce qui est sorti du patrimoine au profit du fisc avant la fin de l\'horizon.'
+            : 'On the same path, lifetime tax compounds to ' + b(data.lifetimeTax) + ' \u2014 the slice that flows out of the portfolio to taxes before the horizon ends.')
+        : null;
       return joinSentences([
+        trajOpener,
         (lang === 'fr'
           ? 'La trajectoire mediane pointe vers ' + b(data.p50Wealth) + ' contre ' + b(data.p25Wealth) + ' en scenario prudent.'
           : 'The median trajectory points to ' + b(data.p50Wealth) + ' versus ' + b(data.p25Wealth) + ' in the prudent case.'),
-        (lang === 'fr'
-          ? 'Le spread P25-P75 montre la sensibilite aux rendements et a l inflation.'
-          : 'The P25-P75 spread shows sensitivity to returns and inflation.'),
-        (lang === 'fr'
-          ? 'La durabilite de l epargne est estimee: ' + b(data.savingsDurability) + '.'
-          : 'Estimated savings durability is ' + b(data.savingsDurability) + '.')
+        trajCross
       ], detailPref);
     }
     if (key === 'income_insight') {
+      var incOpener = archetypeOpener(arch, 'income_insight', data, lang);
+      // Cross-ref: tie income gap to lifetime tax (what those withdrawals cost).
+      var incCross = data.lifetimeTax
+        ? (lang === 'fr'
+            ? 'Une partie de ces retraits ressort en imp\u00f4t \u2014 environ ' + b(data.lifetimeTax) + ' sur la dur\u00e9e du plan, principalement issus du REER/FERR.'
+            : 'A portion of those withdrawals resurfaces as tax \u2014 roughly ' + b(data.lifetimeTax) + ' over the plan\'s lifetime, mostly from RRSP/RRIF draws.')
+        : null;
       return joinSentences([
+        incOpener,
         (lang === 'fr'
           ? 'La couverture par revenus gouvernementaux est d environ ' + b(data.govCoverageRatio) + ' avec un ecart mensuel de ' + b(data.monthlyGap) + '.'
           : 'Government-income coverage is about ' + b(data.govCoverageRatio) + ', with a monthly gap of ' + b(data.monthlyGap) + '.'),
-        (lang === 'fr'
-          ? 'Depense cible: ' + b(data.monthlySpending) + ' par mois; revenus publics: ' + b(data.totalGovMonthly) + '.'
-          : 'Target spending is ' + b(data.monthlySpending) + ' per month; public income is ' + b(data.totalGovMonthly) + '.'),
-        (lang === 'fr'
-          ? 'Le besoin de retrait du portefeuille pourrait donc varier selon les marches.'
-          : 'Portfolio withdrawal needs could therefore vary with market paths.')
+        incCross
       ], detailPref);
     }
     if (key === 'taxInsight') {
+      var taxOpener = archetypeOpener(arch, 'taxInsight', data, lang);
+      // Cross-section synthesis: tie the tax burden back to the monthly gap from income.
+      var crossRef = data.monthlyGap && data.govCoverageRatio
+        ? (lang === 'fr'
+            ? 'En lien avec la couverture publique de ' + b(data.govCoverageRatio) + ' et un \u00e9cart mensuel de ' + b(data.monthlyGap) + ', les retraits qui comblent cet \u00e9cart sont ce qui d\u00e9clenche la fiscalit\u00e9 active.'
+            : 'Tied to the ' + b(data.govCoverageRatio) + ' public coverage and ' + b(data.monthlyGap) + ' monthly gap, the withdrawals that close this gap are what activate tax exposure.')
+        : null;
       return joinSentences([
+        taxOpener,
         (lang === 'fr'
           ? 'Le taux effectif moyen ressort a ' + b(data.avgEffectiveRate) + ' pour un impot vie estime a ' + b(data.lifetimeTax) + '.'
           : 'Average effective tax rate is ' + b(data.avgEffectiveRate) + ' with lifetime tax around ' + b(data.lifetimeTax) + '.'),
+        crossRef,
         (data.taxAlpha
           ? (lang === 'fr'
               ? 'Le tax alpha estime est de ' + b(data.taxAlpha) + ', ce qui suggere un gain potentiel via l ordre de retraits.'
               : 'Estimated tax alpha is ' + b(data.taxAlpha) + ', suggesting potential gain from withdrawal ordering.')
-          : (lang === 'fr'
-              ? 'Aucun tax alpha materialise n apparait dans cette projection.'
-              : 'No material tax alpha appears in this projection.')),
-        (lang === 'fr'
-          ? 'Annees de recuperation PSV estimees: ' + b(data.oasClawbackYears) + '.'
-          : 'Estimated OAS clawback years: ' + b(data.oasClawbackYears) + '.')
+          : null)
       ], detailPref);
     }
     if (key === 'estateInsight') {
+      // Cross-ref: tie estate to durability + lifetime tax (already-paid) for a coherent close.
+      var estCross = data.savingsDurability
+        ? (lang === 'fr'
+            ? 'Avec une durabilit\u00e9 d\'\u00e9pargne ' + b(data.savingsDurability) + ', le solde transmis refl\u00e8te ce qui n\'a pas \u00e9t\u00e9 consomm\u00e9 pendant les ann\u00e9es de retraite.'
+            : 'With savings durability ' + b(data.savingsDurability) + ', the transferred balance reflects what was not consumed during retirement years.')
+        : null;
       return joinSentences([
         (lang === 'fr'
           ? 'L heritage net median projete est de ' + b(data.netEstate) + ' avec un impot final estime a ' + b(data.taxAtDeath) + '.'
@@ -620,9 +842,7 @@ function buildLocalPromptSubstitute(promptObj, payload) {
         (lang === 'fr'
           ? 'Le scenario prudent d heritage est de ' + b(data.cautionEstate) + '.'
           : 'Prudent estate outcome is ' + b(data.cautionEstate) + '.'),
-        (lang === 'fr'
-          ? 'Cette lecture resterait sensible au timing de deces et aux rendements reels.'
-          : 'This read remains sensitive to timing of death and realized returns.')
+        estCross
       ], detailPref);
     }
     if (key === 'gis_insight') {
