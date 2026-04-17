@@ -351,3 +351,62 @@ All deferred items require snapshot-harness verification. Gated by `BF_V3_HOUSEH
 **Phase 6 — Per-person tax engine + joint-spending optimizer**. This is purely engine work. Ships as a **scoping document** (Part A) — the engine rewrite itself requires a dedicated session with harness validation.
 
 ---
+
+## Phase 6 — Per-person tax engine (Part A — scoping document)
+
+**Date**: 2026-04-17
+
+### Why this is documentation rather than code
+
+Phase 6 touches the Monte Carlo inner loop (~1 000 lines of engine code around `runMC` line 5263). Every change must be diffed against the snapshot harness on all 8 test profiles, and the harness runs in a browser. Committing engine code without that validation violates the gating rule in `V3-FINAL-PLAN.md` §5.
+
+This entry is the executable spec for a future session. Detailed enough that the rewrite is mechanical.
+
+### The changes required
+
+Currently the engine accumulates a single household income stream each year and runs one tax function on it. The rewrite:
+
+1. **Per-person income**: each year, compute `income_self` and `income_spouse` independently from their individual sources (salary, RRQ, PSV, pension, RRIF minimums, eligible dividends, interest, net rental, triggered events).
+2. **Per-person tax**: call `calcTax(income_self, deductions_self, prov)` and `calcTax(income_spouse, deductions_spouse, prov)` separately. Sum to get `householdTax`.
+3. **Per-person OAS clawback**: apply 15% recovery tax on personal taxable income above `OAS_CLAWBACK_THRESHOLD`. This is the most visible impact of the rewrite — currently household income triggers clawback; after, only the high-earner is clawbacked.
+4. **Joint-spending withdrawal optimizer**: given `householdSpendingThisYear`, choose which spouse and which account to withdraw from to minimise combined tax. Sweep options (simple greedy: fill lower spouse's TFSA-then-RRIF-then-RRSP up to meltTarget, then switch to higher spouse). Cap optimizer iterations at ~200 per year to bound runtime.
+5. **Pension splitting**: sweep `splitP ∈ [0, 0.5]` in 5% steps each year, pick the minimising %. Replace the `splitP` slider with an "Override automatic" toggle.
+6. **QPP sharing**: when both spouses are eligible (both ≥ 60 and receiving QPP), enable sharing by default; solve for the split that equalises the two RRQ incomes for tax purposes.
+7. **Meltdown per person**: `meltTgt` becomes per-person (reads from `persons[i].meltTgt`). Optimizer melts each person's RRSP to their own bracket ceiling.
+8. **Estate at each death**:
+   - Spouse-owned assets → roll over tax-free to the survivor.
+   - Joint-owned → joint survivorship (survivor keeps them, no deemed disposition).
+   - Self-only → deemed disposition at death (or spousal rollover if spouse survives).
+   - CG on deemed disposition split by owner fractions.
+9. **Feature flag**: all behaviour above lives behind `BF_V3_HOUSEHOLD = true`. When OFF, engine falls through to the legacy household code path. This is how we validate: harness runs flag-ON and flag-OFF on each test profile and compares.
+
+### Acceptance criteria for the code delivery
+
+1. All 8 test profiles: flag-OFF snapshots byte-identical to Phase 0 baselines.
+2. `single-*` profiles: flag-ON snapshots identical to flag-OFF (singles should be untouched because there is no spouse to attribute).
+3. `couple-uneven` (70/30 rental, high-OAS primary + low-income spouse): flag-ON vs flag-OFF shows measurable differences:
+   - CG on rental sale allocates 70% to primary, 30% to spouse.
+   - OAS clawback on primary only, not on spouse.
+   - Estate split at primary's death: rental 70% rolls over to spouse at ACB (no CG); spouse's 30% stays with her.
+4. `couple-retired` (meltdown, pension splitting): auto pension-splitting ≤ manual-slider tax for ≥ 95% of years.
+5. Performance: MC 5 000 sims on `couple-complex` ≤ 4 s (up from 3 s budget in plan — one per-person pass adds measurable compute).
+
+### Engine-output delta observed
+
+- **None** this session (no engine code changed).
+
+### Risks of the deferred rewrite
+
+- Optimizer runtime could blow up per-year: mitigated by iteration cap + heuristic fallback.
+- Estate rollover logic has many edge cases (both dead same year, both alive through horizon): need explicit tests.
+- OAS clawback per person alters income for survivors in a way that may break existing report charts (estate tab, income tab). Phase 8 output reframing must follow before ship.
+
+### Scope creep
+
+- None. Documentation only.
+
+### Next phase
+
+**Phase 7 — Visual polish & rhythm**. Code ships.
+
+---
