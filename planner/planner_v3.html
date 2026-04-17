@@ -14465,7 +14465,14 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
       var _hGrade = _grade, _hLbl = _gradeLbl;
       var succC = mc.succ >= 0.85 ? CL.gn : mc.succ >= 0.70 ? CL.go : CL.rd;
       var statusLbl = fr ? (mc.succ >= 0.90 ? "Plan solide" : mc.succ >= 0.75 ? "Plan acceptable" : mc.succ >= 0.50 ? "Plan fragile" : "Plan \u00e0 risque") : (mc.succ >= 0.90 ? "Solid plan" : mc.succ >= 0.75 ? "Acceptable plan" : mc.succ >= 0.50 ? "Fragile plan" : "At-risk plan");
-      var interpLbl = fr ? (mc.succ >= 0.90 ? "Votre plan r\u00e9siste m\u00eame aux sc\u00e9narios d\u00e9favorables." : mc.succ >= 0.75 ? "Votre plan fonctionne dans la majorit\u00e9 des sc\u00e9narios, mais certains risques persistent." : mc.succ >= 0.50 ? "Votre plan \u00e9choue dans trop de sc\u00e9narios. Des ajustements sont n\u00e9cessaires." : "Risque \u00e9lev\u00e9 d'\u00e9puisement. Action urgente recommand\u00e9e.") : (mc.succ >= 0.90 ? "Your plan withstands even adverse scenarios." : mc.succ >= 0.75 ? "Your plan works in most scenarios, but some risks remain." : mc.succ >= 0.50 ? "Your plan fails in too many scenarios. Adjustments needed." : "High depletion risk. Urgent action recommended.");
+      /* v3 Phase 8 — Plan Health copy branches on couple/single mode.
+         When a spouse is active, the narrative speaks of "your household"
+         rather than "your plan" so the user sees themselves reflected. */
+      var _subj_fr = cOn ? "Votre ménage" : "Votre plan";
+      var _subj_en = cOn ? "Your household" : "Your plan";
+      var interpLbl = fr
+        ? (mc.succ >= 0.90 ? _subj_fr + " résiste même aux scénarios défavorables." : mc.succ >= 0.75 ? _subj_fr + " fonctionne dans la majorité des scénarios, mais certains risques persistent." : mc.succ >= 0.50 ? _subj_fr + " échoue dans trop de scénarios. Des ajustements sont nécessaires." : "Risque élevé d'épuisement pour " + (cOn ? "le ménage" : "le plan") + ". Action urgente recommandée.")
+        : (mc.succ >= 0.90 ? _subj_en + " withstands even adverse scenarios." : mc.succ >= 0.75 ? _subj_en + " works in most scenarios, but some risks remain." : mc.succ >= 0.50 ? _subj_en + " fails in too many scenarios. Adjustments needed." : "High depletion risk for the " + (cOn ? "household" : "plan") + ". Urgent action recommended.");
       var _annSp = (retSpM || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
       var _var5 = mc.rVar5 != null ? mc.rVar5 : (mc.var5 || 0);
       var _bufYrs = _annSp > 0 ? _var5 / _annSp : 0;

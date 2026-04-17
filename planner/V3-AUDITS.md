@@ -457,3 +457,51 @@ Currently the engine accumulates a single household income stream each year and 
 **Phase 8 — Output reframing (household copy + owner series)**. Ships partial (copy branches); full owner-series chart refactor deferred until Phase 6 engine lands.
 
 ---
+
+## Phase 8 — Output reframing (household copy)
+
+**Date**: 2026-04-17
+
+### What was done
+
+- **Plan Health Summary narrative** now branches on `cOn`:
+  - Single: "Your plan withstands even adverse scenarios." / "Votre plan résiste…"
+  - Couple: "Your household withstands…" / "Votre ménage résiste…"
+- All four severity tiers (A / B+ / C / F) updated. Bilingual parity.
+- The final "High depletion risk…" copy also branches ("for the household" vs "for the plan").
+
+### Deferred items (blocked by Phase 6 engine)
+
+- **Income chart (Tab 2) per-owner series**. Currently the engine emits a single household income stream; splitting into `RRQ_self / RRQ_spouse / OAS_self / OAS_spouse / Pension_self / Pension_spouse / Withdraw_joint` requires the per-person income accumulation from Phase 6.
+- **Estate report (Tab 8) per-owner breakdown**. Needs Phase 6 estate rollover logic.
+- **Detailed report (Tab 9) per-person income/tax columns**. Needs Phase 6 per-person tax computation.
+- **AI narration prompts** branched for household vs single. Editing `docs/ARCH-BILAN-360.md` prompt templates is out of this planner's scope — that's the report generator's responsibility.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Plan Health copy branches on cOn | ✅ | 4 severity tiers × 2 languages. |
+| Bilingual parity maintained | ✅ | FR + EN updated together. |
+| Non-household copy remains unchanged for singles | ✅ | `cOn=false` path reads identically to pre-change. |
+| Owner series chart refactor | 🔵 Deferred | Blocked by Phase 6 engine. |
+| Per-owner estate report | 🔵 Deferred | Blocked by Phase 6. |
+| AI prompt reframing | 🔵 Out of scope | Lives in report generator (Bilan 360), not the planner. |
+
+### Engine-output delta observed
+
+- **None.** Copy-only change to a narrative string.
+
+### Risks exposed
+
+- "Votre ménage" framing assumes an adult couple. A user who's in a common-law arrangement or a business partnership might find "ménage" too intimate. Acceptable default for the Canadian retirement-planning context (the product's target is spouses/partners).
+
+### Scope creep
+
+- None.
+
+### Next phase
+
+**Phase 8.5 — Planner ↔ Report parity**. Ships scoping; the parity harness itself is a future session item because it requires the Bilan 360 report generator which lives outside `planner_v3.html`.
+
+---
