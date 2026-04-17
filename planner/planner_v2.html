@@ -14051,8 +14051,9 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         if (_fiNum < 625000) _tier = { key: "lean", fr: "Lean FIRE", en: "Lean FIRE", c: "#5fb3c4" };
         else if (_fiNum < 2500000) _tier = { key: "trad", fr: "FIRE", en: "FIRE", c: "#ff8c42" };
         else _tier = { key: "fat", fr: "Fat FIRE", en: "Fat FIRE", c: "#d4a017" };
-        // Barista hint: if part-time income is set and materially affects coverage
-        var _barista = (ptInc || 0) > 5000;
+        // Barista hint: part-time monthly income (ptM is MONTHLY state; >$400/mo
+        // ≈ $5k/yr, our "materially affects coverage" threshold).
+        var _barista = (ptM || 0) > 400;
         var _yrsStr = _yrs == null ? "\u2014" : (_yrs <= 0 ? (fr ? "atteint" : "reached") : _yrs > 60 ? (fr ? "60+" : "60+") : _yrs.toFixed(1));
         var _orange = "#ff8c42";
         return E("div", { style: { marginBottom: 14, padding: "12px 14px", background: "linear-gradient(135deg, rgba(255,140,66,0.06), rgba(255,140,66,0.02))", borderRadius: RAD.md + 2, border: "1px solid rgba(255,140,66,0.25)" } },
@@ -14093,7 +14094,10 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         var _totalFace = (lifeInsBenefit || 0) + (cOn ? (cLifeInsBenefit || 0) : 0);
         var _totalPrem = (lifeInsPremium || 0) + (cOn ? (cLifeInsPremium || 0) : 0);
         var _disabOn = (disabProb || 0) > 0 && age < retAge;
-        var _disabMo = disabilityMonths || 0;
+        // State var is disabMo (see useState at line ~8232). "disabilityMonths" is
+        // only the payload field used by the engine (p.disabilityMonths); in the
+        // React scope here we read the hook directly.
+        var _disabMo = (typeof disabMo !== "undefined" ? disabMo : 0);
         return E("div", { style: { marginBottom: 14, padding: "10px 12px", background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd } },
           E("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } },
             E("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
