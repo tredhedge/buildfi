@@ -14020,38 +14020,7 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
           : nSim + " simulated scenarios including market crashes, variable inflation and uncertain longevity. Based on 2026 Canadian tax rules and CPM 2023 mortality tables.")),
     React.createElement("span", { style: { fontSize: FS.xs, color: CL.dm } }, "ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢"))) : null,
 // ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â DECISION CARD ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â grade + vulnerability + lever ÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
-    !_planIncomplete && mc.succ > 0 ? (function() {
-      // Find first ACTIONABLE lever (has action property = user can click Apply)
-      var _topLever = recos.find(function(r) { return r.action; }) || null;
-      // Find first observation/warning (no action, or high priority warning)
-      var _topObs = recos.find(function(r) { return !r.action && r.pri >= 2; }) || null;
-      return E("div", { style: { padding: "16px 20px", marginBottom: 16, background: "linear-gradient(135deg, " + scoreCol + "08, " + CL.cd + ")", borderRadius: RAD.md + 4, border: "2px solid " + scoreCol + "40", position: "relative", overflow: "hidden" } },
-      E("div", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: 5, background: scoreCol, borderRadius: "6px 0 0 6px" } }),
-      E("div", { style: { display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" } },
-        E("div", { style: { width: 56, height: 56, borderRadius: 28, background: scoreCol + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "2px solid " + scoreCol + "40" } },
-          E("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: scoreCol } }, _grade)),
-        E("div", { style: { flex: 1, minWidth: 180 } },
-          E("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: CL.al, marginBottom: 4 } },
-            fr ? "Votre plan: " + _gradeLbl : "Your plan: " + _gradeLbl),
-          (mc.p5Ruin||999) < 999 ? E("div", { style: { fontSize: FS.sm, color: CL.rd, marginBottom: 2 } },
-            fr ? "\u26a0 Vuln\u00e9rabilit\u00e9: \u00e9puisement possible \u00e0 " + (mc.p5Ruin||999) + " ans (5% pires sc\u00e9narios)"
-               : "\u26a0 Vulnerability: possible depletion at age " + (mc.p5Ruin||999) + " (worst 5% scenarios)")
-          : mc.succ < 0.85 ? E("div", { style: { fontSize: FS.sm, color: CL.or, marginBottom: 2 } },
-            fr ? "\u26a0 Succ\u00e8s \u00e0 " + Math.round(mc.succ * 100) + "% \u2014 sous la r\u00e9f\u00e9rence de 85%"
-               : "\u26a0 Success at " + Math.round(mc.succ * 100) + "% \u2014 below 85% benchmark")
-          : E("div", { style: { fontSize: FS.sm, color: CL.gn, marginBottom: 2 } },
-            fr ? "\u2714 Plan robuste dans " + Math.round(mc.succ * 100) + "% des sc\u00e9narios"
-               : "\u2714 Plan robust in " + Math.round(mc.succ * 100) + "% of scenarios"),
-          // Actionable lever (if exists)
-          _topLever ? E("div", { style: { fontSize: FS.sm, color: CL.ac } },
-            fr ? "\u2728 Levier: " + _topLever.title + " (" + _topLever.impact + ")"
-               : "\u2728 Lever: " + _topLever.title + " (" + _topLever.impact + ")")
-          // Observation/warning (only if no actionable lever AND plan is not A+)
-          : _topObs && mc.succ < 0.95 ? E("div", { style: { fontSize: FS.sm, color: CL.or } },
-            fr ? "\u26a0 " + _topObs.title
-               : "\u26a0 " + _topObs.title)
-          : null))
-    ); }()) : null,
+    null, // Decision Card removed — merged into Plan Health Summary below
 // GK CTA ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â standalone after Decision Card
     !gkOn && mc.succ >= 0.30 && mc.succ < 0.95 && !_planIncomplete ? E("div", { style: { marginBottom: 16, padding: "14px 16px", background: "linear-gradient(135deg, " + CL.ac + "12, " + CL.ac + "06)", borderRadius: RAD.md, border: "1px solid " + CL.ac + "35", cursor: "pointer", position: "relative", overflow: "hidden" }, onClick: function() { setTab(30); } },
       E("div", { style: { position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: CL.ac, borderRadius: "4px 0 0 4px" } }),
@@ -14067,19 +14036,44 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         E("div", { style: { fontSize: FS.lg, color: CL.ac, fontWeight: FW.bold } }, "\u203a"))
     ) : null,
 
-    // === PLAN HEALTH SUMMARY ===
+    // === PLAN HEALTH SUMMARY (includes Resilience + top lever) ===
+    // Resilience = success × min(1, VaR5 / (5 × annual_spending)). Decouples
+    // "% of paths surviving" from "how much margin remains" — a plan with 100%
+    // success but a VaR5 that covers only 2 months of spending is fragile.
     !_planIncomplete ? (function() {
       var _hGrade = _grade, _hLbl = _gradeLbl;
       var succC = mc.succ >= 0.85 ? CL.gn : mc.succ >= 0.70 ? CL.go : CL.rd;
       var statusLbl = fr ? (mc.succ >= 0.90 ? "Plan solide" : mc.succ >= 0.75 ? "Plan acceptable" : mc.succ >= 0.50 ? "Plan fragile" : "Plan \u00e0 risque") : (mc.succ >= 0.90 ? "Solid plan" : mc.succ >= 0.75 ? "Acceptable plan" : mc.succ >= 0.50 ? "Fragile plan" : "At-risk plan");
       var interpLbl = fr ? (mc.succ >= 0.90 ? "Votre plan r\u00e9siste m\u00eame aux sc\u00e9narios d\u00e9favorables." : mc.succ >= 0.75 ? "Votre plan fonctionne dans la majorit\u00e9 des sc\u00e9narios, mais certains risques persistent." : mc.succ >= 0.50 ? "Votre plan \u00e9choue dans trop de sc\u00e9narios. Des ajustements sont n\u00e9cessaires." : "Risque \u00e9lev\u00e9 d'\u00e9puisement. Action urgente recommand\u00e9e.") : (mc.succ >= 0.90 ? "Your plan withstands even adverse scenarios." : mc.succ >= 0.75 ? "Your plan works in most scenarios, but some risks remain." : mc.succ >= 0.50 ? "Your plan fails in too many scenarios. Adjustments needed." : "High depletion risk. Urgent action recommended.");
-      return E("div", { style: { marginBottom: 14, padding: "14px 18px", background: succC + "08", borderRadius: RAD.md + 4, border: "2px solid " + succC + "30", display: "flex", alignItems: "center", gap: 18 } },
+      var _annSp = (retSpM || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
+      var _var5 = mc.rVar5 != null ? mc.rVar5 : (mc.var5 || 0);
+      var _bufYrs = _annSp > 0 ? _var5 / _annSp : 0;
+      var _resil = Math.max(0, Math.min(1, _bufYrs / 5)) * mc.succ;
+      var _resilPct = Math.round(_resil * 100);
+      var _resilC = _resil >= 0.75 ? CL.gn : _resil >= 0.40 ? CL.go : CL.rd;
+      var _bufLbl = _bufYrs >= 1 ? _bufYrs.toFixed(1) + (fr ? " ans" : " yr") + (!fr && _bufYrs >= 2 ? "s" : "") : Math.round(_bufYrs * 12) + (fr ? " mois" : " mo");
+      var _resilTip = fr
+        ? "R\u00e9silience = succ\u00e8s \u00d7 min(1, VaR5 / (5 \u00d7 d\u00e9penses ann.)). Ici VaR5 = " + f$(_var5) + " couvre ~" + _bufLbl + " de d\u00e9penses. Un plan \u00e0 100% de succ\u00e8s avec peu de marge reste fragile."
+        : "Resilience = success \u00d7 min(1, VaR5 / (5 \u00d7 annual spending)). VaR5 = " + f$(_var5) + " covers ~" + _bufLbl + " of spending. A 100%-success plan with thin margin is still fragile.";
+      var _topLever = recos.find(function(r) { return r.action; }) || null;
+      var _topObs = recos.find(function(r) { return !r.action && r.pri >= 2; }) || null;
+      return E("div", { style: { marginBottom: 14, padding: "14px 18px", background: succC + "08", borderRadius: RAD.md + 4, border: "2px solid " + succC + "30", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" } },
         E("div", { style: { textAlign: "center", minWidth: 60 } },
           E("div", { style: { fontSize: 36, fontWeight: FW.bold, color: succC, lineHeight: 1.1 } }, _hGrade),
           E("div", { style: { fontSize: FS.xs, color: succC, fontWeight: FW.medium, marginTop: 2 } }, Math.round(mc.succ * 100) + "%")),
-        E("div", { style: { flex: 1 } },
+        // Resilience chip
+        E("div", { className: "kpi-tip", "data-tip": _resilTip, style: { textAlign: "center", minWidth: 72, padding: "6px 10px", background: _resilC + "12", border: "1px solid " + _resilC + "55", borderRadius: RAD.sm + 2, cursor: "help" } },
+          E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _resilC, lineHeight: 1.1 } }, _resilPct + "%"),
+          E("div", { style: { fontSize: FS.xxs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.3, marginTop: 2 } }, fr ? "R\u00e9silience" : "Resilience"),
+          E("div", { style: { fontSize: FS.xxs, color: _resilC, marginTop: 1 } }, _bufLbl + (fr ? " marge" : " buffer"))),
+        E("div", { style: { flex: 1, minWidth: 200 } },
           E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, marginBottom: 2 } }, statusLbl),
           E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, interpLbl),
+          _topLever ? E("div", { style: { fontSize: FS.sm, color: CL.ac, marginTop: 4 } },
+            fr ? "\u2728 Levier: " + _topLever.title + " (" + _topLever.impact + ")"
+               : "\u2728 Lever: " + _topLever.title + " (" + _topLever.impact + ")")
+          : _topObs && mc.succ < 0.95 ? E("div", { style: { fontSize: FS.sm, color: CL.or, marginTop: 4 } },
+            (fr ? "\u26a0 " : "\u26a0 ") + _topObs.title) : null,
           recos.length > 0 ? E("div", {
             role: "button", tabIndex: 0,
             onClick: function() { setTab(23); },
@@ -14217,25 +14211,37 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
             E("span", { style: { fontSize: FS.md } }, "\ud83d\udd25"),
             E("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: _orange, letterSpacing: 0.3 } }, fr ? "Analyse FIRE" : "FIRE Analysis"),
             E("div", { style: { fontSize: FS.xxs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "R\u00e8gle du 4% (Trinity)" : "4% rule (Trinity)")),
-          E("div", { className: "bf-grid-4", style: { gap: 8, marginBottom: 8 } },
-            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + _tier.c + "40" } },
-              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _tier.c, lineHeight: 1.1 } }, fr ? _tier.fr : _tier.en),
-              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Cat\u00e9gorie" : "Category")),
-            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "D\u00e9penses annuelles (" + f$(_annSpend) + ") \u00d7 25. Retrait soutenable de 4%/an (r\u00e8gle de Trinity)." : "Annual spending (" + f$(_annSpend) + ") \u00d7 25. Sustainable 4%/year withdrawal (Trinity rule)." },
-              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, f$(_fiNum)),
-              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Nombre FI" : "FI number")),
-            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Cotisations annuelles (" + f$(_annContrib) + ") / revenu total (" + f$(_salTot) + "). Dans la culture FIRE, 50%+ = retraite anticip\u00e9e r\u00e9aliste, 25% = trajectoire conventionnelle." : "Annual contributions (" + f$(_annContrib) + ") / total income (" + f$(_salTot) + "). FIRE community: 50%+ = realistic early retirement, 25% = conventional track." },
-              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _savRate >= 0.5 ? CL.gn : _savRate >= 0.25 ? _orange : CL.rd, lineHeight: 1.1 } }, Math.round(_savRate * 100) + "%"),
-              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Taux d'\u00e9pargne" : "Savings rate")),
-            E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Ann\u00e9es jusqu'au nombre FI avec cotisations actuelles, rendement r\u00e9el ~" + Math.round(_r * 1000) / 10 + "%." : "Years to FI number at current contributions, real return ~" + Math.round(_r * 1000) / 10 + "%." },
-              E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, _yrsStr + (fr ? " ans" : "y")),
-              E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Ann\u00e9es \u00e0 FI" : "Years to FI"))),
+          (function() {
+            // Tier bracket shown under the category label so "Lean/FIRE/Fat" is
+            // self-interpretable without FIRE-culture knowledge.
+            var _tierRange = _tier.key === "lean" ? (fr ? "< 625 K$" : "< $625K")
+                           : _tier.key === "trad" ? (fr ? "625 K$ \u2013 2,5 M$" : "$625K \u2013 $2.5M")
+                           : (fr ? "> 2,5 M$" : "> $2.5M");
+            return E("div", { className: "bf-grid-4", style: { gap: 8, marginBottom: 8 } },
+              E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + _tier.c + "40" } },
+                E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _tier.c, lineHeight: 1.1 } }, fr ? _tier.fr : _tier.en),
+                E("div", { style: { fontSize: FS.xxs, color: _tier.c, marginTop: 3 } }, _tierRange),
+                E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 3, letterSpacing: 0.3 } }, fr ? "Cat\u00e9gorie" : "Category")),
+              E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "D\u00e9penses annuelles (" + f$(_annSpend) + ") \u00d7 25. Retrait soutenable de 4%/an (r\u00e8gle de Trinity). Exclut l'\u00e9quit\u00e9 immobili\u00e8re." : "Annual spending (" + f$(_annSpend) + ") \u00d7 25. Sustainable 4%/year withdrawal (Trinity rule). Real estate equity excluded." },
+                E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, f$(_fiNum)),
+                E("div", { style: { fontSize: FS.xxs, color: CL.dm, marginTop: 3 } }, fr ? "= " + f$(_annSpend) + " \u00d7 25" : "= " + f$(_annSpend) + " \u00d7 25"),
+                E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 3, letterSpacing: 0.3 } }, fr ? "Nombre FI" : "FI number")),
+              E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Cotisations annuelles (" + f$(_annContrib) + ") / revenu total (" + f$(_salTot) + "). Dans la culture FIRE, 50%+ = retraite anticip\u00e9e r\u00e9aliste, 25% = trajectoire conventionnelle." : "Annual contributions (" + f$(_annContrib) + ") / total income (" + f$(_salTot) + "). FIRE community: 50%+ = realistic early retirement, 25% = conventional track." },
+                E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _savRate >= 0.5 ? CL.gn : _savRate >= 0.25 ? _orange : CL.rd, lineHeight: 1.1 } }, Math.round(_savRate * 100) + "%"),
+                E("div", { style: { fontSize: FS.xxs, color: CL.dm, marginTop: 3 } }, fr ? "cotis. / revenu" : "contrib. / income"),
+                E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 3, letterSpacing: 0.3 } }, fr ? "Taux d'\u00e9pargne" : "Savings rate")),
+              E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "Ann\u00e9es jusqu'au nombre FI avec cotisations actuelles, rendement r\u00e9el ~" + Math.round(_r * 1000) / 10 + "%." : "Years to FI number at current contributions, real return ~" + Math.round(_r * 1000) / 10 + "%." },
+                E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.al, lineHeight: 1.1 } }, _yrsStr + (fr ? " ans" : "y")),
+                E("div", { style: { fontSize: FS.xxs, color: CL.dm, marginTop: 3 } }, fr ? "rend. r\u00e9el " + (Math.round(_r * 1000) / 10) + "%" : "real return " + (Math.round(_r * 1000) / 10) + "%"),
+                E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 3, letterSpacing: 0.3 } }, fr ? "Ann\u00e9es \u00e0 FI" : "Years to FI")));
+          })(),
           // Context badges: Coast / Barista / status
           E("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, fontSize: FS.xs } },
-            _isCoast ? E("div", { style: { padding: "3px 8px", background: "rgba(42,140,70,0.12)", border: "1px solid rgba(42,140,70,0.35)", borderRadius: RAD.lg, color: CL.gn, fontWeight: FW.medium } }, fr ? "\u2713 Coast FIRE \u2014 l'\u00e9pargne actuelle atteint FI par composition seule" : "\u2713 Coast FIRE \u2014 current savings reach FI by compounding alone") :
-              _coastAge && _coastAge <= (deathAge || 90) ? E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.lg, color: CL.dm } }, fr ? "Coast FIRE projet\u00e9 \u00e0 " + _coastAge + " ans (sans nouvelles cotisations)" : "Coast FIRE at age " + _coastAge + " (without new contributions)") : null,
+            _isCoast ? E("div", { style: { padding: "3px 8px", background: "rgba(42,140,70,0.12)", border: "1px solid rgba(42,140,70,0.35)", borderRadius: RAD.lg, color: CL.gn, fontWeight: FW.medium } }, fr ? "\u2713 Coast FIRE \u2014 si vous arr\u00eatez de cotiser aujourd'hui, la composition seule atteint FI" : "\u2713 Coast FIRE \u2014 if you stop contributing today, compounding alone reaches FI") :
+              _coastAge && _coastAge <= (deathAge || 90) ? E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.lg, color: CL.dm } }, fr ? "Coast FIRE \u00e0 " + _coastAge + " ans \u2014 si vous arr\u00eatez de cotiser aujourd'hui, la composition seule atteint FI" : "Coast FIRE at age " + _coastAge + " \u2014 if you stop contributing today, compounding alone reaches FI") : null,
             _barista ? E("div", { style: { padding: "3px 8px", background: "rgba(255,140,66,0.12)", border: "1px solid rgba(255,140,66,0.35)", borderRadius: RAD.lg, color: _orange, fontWeight: FW.medium } }, fr ? "\ud83c\udf7b Barista FIRE \u2014 revenu d'appoint mod\u00e9lis\u00e9" : "\ud83c\udf7b Barista FIRE \u2014 part-time income modeled") : null,
             _yrs != null && _yrs > 0 && (retAge || 65) - (age || 35) < _yrs ? E("div", { style: { padding: "3px 8px", background: "rgba(204,68,68,0.10)", border: "1px solid rgba(204,68,68,0.30)", borderRadius: RAD.lg, color: CL.rd } }, fr ? "\u26a0 Retraite vis\u00e9e (" + retAge + " ans) avant FI" : "\u26a0 Target retirement (" + retAge + ") before FI") : null,
+            E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px dashed " + CL.bd, borderRadius: RAD.lg, color: CL.dm, fontStyle: "italic" } }, fr ? "Exclut \u00e9quit\u00e9 immobili\u00e8re, RRQ/PSV et pensions \u2014 couverts par Monte Carlo." : "Excludes real estate equity, QPP/OAS and pensions \u2014 covered by Monte Carlo."),
             E("div", { style: { padding: "3px 8px", background: CL.cd, border: "1px dashed " + CL.bd, borderRadius: RAD.lg, color: CL.dm, fontStyle: "italic" } }, fr ? "R\u00e8gle 4% = estimation heuristique. Voir Monte Carlo pour la robustesse." : "4% rule = heuristic estimate. See Monte Carlo for robustness.")
           )
         );
@@ -15470,16 +15476,41 @@ tab === 6 && mc && React.createElement("div", { style: { padding: 16 } }, _ctxSu
                   changes.map(function(ch, ci) { return React.createElement("div", { key: ci, style: { fontSize: FS.base, color: CL.al } }, "\u2022 "+ch); })
                 );
               })(),
-              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 } },
-                React.createElement("div", { style: { textAlign: "center", padding: 10, background: CL.s2, borderRadius: RAD.sm + 2 } },
-                  React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang==="fr" ? "Actuel" : "Current"),
-                  React.createElement("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd } }, Math.round(mc.succ*100)+"%")
-                ),
-                React.createElement("div", { style: { textAlign: "center", padding: 10, background: CL.s2, borderRadius: RAD.sm + 2 } },
-                  React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, "What-If"),
-                  React.createElement("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: window._whatIfResults.succ >= 0.9 ? CL.gn : window._whatIfResults.succ >= 0.75 ? CL.go : CL.rd } }, Math.round(window._whatIfResults.succ*100)+"%")
-                )
-              ),
+              (function() {
+                // Resilience combines success with margin: a plan at 100% success but
+                // VaR5 that only covers 2 months of spending is fragile. Resilience
+                // = success × min(1, VaR5 / (5 × annual_spending)). Shown here so
+                // What-If visibly moves even when neither path hits $0.
+                var _annSpCur = (retSpM || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
+                var _annSpWi = ((window._whatIfResults.retSpM || retSpM) || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
+                var _vCur = mc.rVar5 != null ? mc.rVar5 : (mc.var5 || 0);
+                var _vWi = window._whatIfResults.var5 || 0;
+                var _rCur = _annSpCur > 0 ? Math.max(0, Math.min(1, _vCur / (5 * _annSpCur))) * mc.succ : 0;
+                var _rWi = _annSpWi > 0 ? Math.max(0, Math.min(1, _vWi / (5 * _annSpWi))) * window._whatIfResults.succ : 0;
+                var _cCur = _rCur >= 0.75 ? CL.gn : _rCur >= 0.40 ? CL.go : CL.rd;
+                var _cWi = _rWi >= 0.75 ? CL.gn : _rWi >= 0.40 ? CL.go : CL.rd;
+                var _bufCur = _annSpCur > 0 ? _vCur / _annSpCur : 0;
+                var _bufWi = _annSpWi > 0 ? _vWi / _annSpWi : 0;
+                var _fmtBuf = function(y) { return y >= 1 ? y.toFixed(1) + (lang==="fr"?" ans":"y") : Math.round(y*12) + (lang==="fr"?" mois":"mo"); };
+                return React.createElement("div", null,
+                  React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 6 } },
+                    React.createElement("div", { style: { textAlign: "center", padding: 10, background: CL.s2, borderRadius: RAD.sm + 2 } },
+                      React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, lang==="fr" ? "Actuel" : "Current"),
+                      React.createElement("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd } }, Math.round(mc.succ*100)+"%"),
+                      React.createElement("div", { style: { fontSize: FS.xxs, color: _cCur, marginTop: 4, fontWeight: FW.bold } }, (lang==="fr"?"R\u00e9silience ":"Resilience ") + Math.round(_rCur*100) + "%"),
+                      React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm } }, _fmtBuf(_bufCur) + (lang==="fr"?" de marge":" buffer"))
+                    ),
+                    React.createElement("div", { style: { textAlign: "center", padding: 10, background: CL.s2, borderRadius: RAD.sm + 2 } },
+                      React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 4 } }, "What-If"),
+                      React.createElement("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: window._whatIfResults.succ >= 0.9 ? CL.gn : window._whatIfResults.succ >= 0.75 ? CL.go : CL.rd } }, Math.round(window._whatIfResults.succ*100)+"%"),
+                      React.createElement("div", { style: { fontSize: FS.xxs, color: _cWi, marginTop: 4, fontWeight: FW.bold } }, (lang==="fr"?"R\u00e9silience ":"Resilience ") + Math.round(_rWi*100) + "%"),
+                      React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm } }, _fmtBuf(_bufWi) + (lang==="fr"?" de marge":" buffer"))
+                    )
+                  ),
+                  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, textAlign: "center", fontStyle: "italic", marginBottom: 8 } },
+                    lang==="fr" ? "R\u00e9silience = succ\u00e8s \u00d7 min(1, VaR5 / 5\u00d7d\u00e9penses ann.). Mesure la marge, pas seulement la survie." : "Resilience = success \u00d7 min(1, VaR5 / 5\u00d7annual spending). Captures margin, not just survival.")
+                );
+              })(),
               (function() {
                 var d = Math.round((window._whatIfResults.succ - mc.succ)*100);
                 var col = d > 0 ? CL.gn : d < 0 ? CL.rd : CL.dm;
