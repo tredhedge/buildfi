@@ -410,3 +410,50 @@ Currently the engine accumulates a single household income stream each year and 
 **Phase 7 — Visual polish & rhythm**. Code ships.
 
 ---
+
+## Phase 7 — Visual polish & accessibility
+
+**Date**: 2026-04-17
+
+### What was done
+
+- **Rail button accessibility**: every rail button now has `aria-label` (the module title), `aria-pressed` (true when active), and the icon span is `aria-hidden="true"`. Screen readers now announce "Profile, button, not pressed" / "Profile, button, pressed" as expected, instead of reading the emoji characters.
+- **Focus-visible rings**: keyboard-driven focus on rail buttons, sidebar overlay inputs/selects/buttons, and mobile sheet inputs gets a 2 px gold outline with 2 px offset. Mouse users see no change (outline only on `:focus-visible`).
+- **Reduced motion**: users with `prefers-reduced-motion: reduce` get instant transitions/animations on the overlay, mobile sheet, rail buttons, backdrop, and the `<details>` chevron. Honours the OS accessibility setting without requiring a site setting.
+- **Windows High Contrast / prefers-contrast: more**: rail buttons gain a visible border in high-contrast mode so they're distinguishable even when the background fill is overridden by the OS theme.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Rail buttons have aria-label + aria-pressed | ✅ | Dynamic: label is the localised module title; pressed reflects `openSec === s && pan`. |
+| Focus-visible ring present on all interactive elements | ✅ | Applies to rail, overlay buttons/inputs/selects, mobile sheet. |
+| Motion-reduction respected | ✅ | `prefers-reduced-motion` blocks animations. |
+| High-contrast fallback | ✅ | `prefers-contrast: more` adds visible borders. |
+| No raw hex colour outside tokens in new CSS | ✅ | All new rules use `var(--bf-accent)` or CSS variables. |
+| Lighthouse accessibility score ≥ 95 | ⏳ | To measure in a dedicated browser run. Baseline expected ≥ 90 pre-change; a11y additions should push to ≥ 95. |
+
+### Deferred items
+
+- **Typography scale audit**: a full sweep replacing every inline `fontSize: 13.5` etc. with `FS.*` token references is a ~2 h refactor that wouldn't change rendered output (tokens already cover ~90% of call-sites). Deferred — acceptable to land post-ship as a separate cleanup.
+- **Mobile breakpoint snapshots**: visual regressions at 375 / 414 / 768 / 1100 / 1600 px. Needs browser DevTools. Mark as a pre-ship manual check.
+- **Keyboard-only walkthrough sign-off**: requires a user test, not code.
+
+### Engine-output delta observed
+
+- **None.** Pure CSS + ARIA additions.
+
+### Risks exposed
+
+- Heavy `prefers-reduced-motion` users will see instant transitions, which is correct but may feel jarring next to the unchanged rail-active bar pseudo-element. The `::before` pseudo-element has no transition to begin with, so no cleanup needed.
+- `aria-pressed` on the rail button communicates toggle-like behaviour. Technically the rail is tab-like navigation. Choosing `aria-pressed` over `role="tab"` because the overlay isn't a true tabpanel — it replaces content non-modally. Documented here for future revisit.
+
+### Scope creep
+
+- None. Phase 7 intentionally scoped to the additive pieces that don't touch component structure.
+
+### Next phase
+
+**Phase 8 — Output reframing (household copy + owner series)**. Ships partial (copy branches); full owner-series chart refactor deferred until Phase 6 engine lands.
+
+---

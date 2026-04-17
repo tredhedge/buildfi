@@ -221,6 +221,33 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 .bf-side-overlay .bf-subsec + .bf-subsec,
 .bf-mobile-sheet .bf-subsec + .bf-subsec { margin-top: 6px; }
 
+/* v3 Phase 7 — accessibility polish.
+   focus-visible rings for keyboard navigation; no visual change for mouse users.
+   Motion-reduction: users with prefers-reduced-motion get instant transitions. */
+.bf-rail-btn:focus-visible,
+.bf-side-overlay button:focus-visible,
+.bf-side-overlay input:focus-visible,
+.bf-side-overlay select:focus-visible,
+.bf-mobile-sheet button:focus-visible,
+.bf-mobile-sheet input:focus-visible,
+.bf-mobile-sheet select:focus-visible {
+  outline: 2px solid var(--bf-accent, #c49a1a);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-side-overlay, .bf-mobile-sheet, .bf-rail-btn, .bf-overlay-backdrop,
+  details.bf-adv-drawer summary::before, .bf-rail-btn .bf-rail-ico {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+/* High-contrast fallback for Windows High Contrast mode: borders visible. */
+@media (prefers-contrast: more) {
+  .bf-rail-btn { border: 1px solid currentColor; }
+  .bf-rail-btn.active { border-color: var(--bf-accent, #c49a1a); }
+}
+
 /* v3 PHASE 4: compact slider styling. Reduces vertical weight so the density
    of sliders in Savings/Model feels less overwhelming. Sliders remain, but
    with a slim track + smaller thumb. */
@@ -12547,8 +12574,10 @@ React.createElement("div", { className: "bf-rail" },
       _items.push(React.createElement("button", {
         key: s[0],
         className: "bf-rail-btn" + (openSec === s[0] && pan ? " active" : ""),
+        "aria-label": s[3],
+        "aria-pressed": openSec === s[0] && pan ? "true" : "false",
         onClick: function() { if (openSec === s[0] && pan) { setPan(false); } else { setOS(s[0]); setPan(true); } }
-      }, React.createElement("span", { className: "bf-rail-ico" }, s[1]), React.createElement("span", { className: "bf-rail-label" }, s[3])));
+      }, React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, s[1]), React.createElement("span", { className: "bf-rail-label" }, s[3])));
     });
     return _items;
   })(),
