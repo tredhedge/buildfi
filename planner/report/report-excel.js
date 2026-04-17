@@ -89,6 +89,15 @@
     c.value = toNum(val);
     if (fmt) c.numFmt = fmt;
   }
+  // Write a formula cell with a cached result. Excel/LibreOffice/Sheets all show
+  // the result until recalc; the formula is visible in the formula bar making
+  // the export auditable instead of opaque.
+  function setFormula(ws, addr, formula, fmt, cachedResult) {
+    if (!ws) return;
+    var c = _cell(ws, addr);
+    c.value = { formula: formula, result: (cachedResult != null && !isNaN(cachedResult)) ? cachedResult : 0 };
+    if (fmt) c.numFmt = fmt;
+  }
   function setRow(ws, row, startCol, arr) {
     if (!ws) return;
     for (var i = 0; i < arr.length; i++) ws.getCell(row, startCol + i).value = (arr[i] == null ? "" : arr[i]);
@@ -96,6 +105,23 @@
   function setColWidths(ws, widths) {
     if (!ws || !widths) return;
     for (var i = 0; i < widths.length; i++) ws.getColumn(i + 1).width = widths[i];
+  }
+
+  // ── Sheet width templates ───────────────────────────────────────────────
+  // Earlier each of the 14 sheets defined its own width array, producing 14
+  // unique layouts. Three templates cover all real cases. setColWidths still
+  // accepts a raw array for sheets with truly bespoke needs.
+  // Convention: col 1 = gutter (3), col 2 = label column (varies), cols 3..N = data.
+  var SHEET_WIDTHS = {
+    // Numeric grids (Cash Flow, MC, Projection — wide data, narrow labels)
+    grid:     [3, 10, 8, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14],
+    // Mixed (Sommaire, Tax, Sensibilité — wider labels, ~14-col data block)
+    standard: [3, 24, 18, 18, 18, 18, 18, 14, 14, 14, 14, 14, 14, 14],
+    // Text-heavy (Méthodologie, Profil — long descriptions, fewer numeric cols)
+    textual:  [3, 26, 32, 42, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]
+  };
+  function applySheetTemplate(ws, kind, override) {
+    setColWidths(ws, override || SHEET_WIDTHS[kind] || SHEET_WIDTHS.standard);
   }
 
   // ── Tab banner: row 1 = spacer (h=8), row 2 = title merged B:N, row 3 = subtitle merged B:N ──
@@ -460,16 +486,26 @@
     setRow(wsS, 16, 2, [fr ? "M\u00e9trique" : "Metric", fr ? "Votre plan" : "Your plan", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]);
     styleTable(wsS, { hr: 16, fr: 17, to: 23, fc: 2, lc: 6 });
 
+    // Comparison rows — col C = your plan, col D = default, col E = delta as
+    // formula so the user can see "delta = your - default" in the formula bar.
     setRow(wsS, 17, 2, [fr ? "Succ\u00e8s MC" : "MC Success"]);
     setNum(wsS, wsS.getCell(17, 3), mc.succ || 0, "0%");
     if (naiveSucc != null) setNum(wsS, wsS.getCell(17, 4), naiveSucc, "0%");
-    if (succDelta != null) setDelta(wsS, wsS.getCell(17, 5), succDelta, '+0;-0;0" pts"');
+    if (succDelta != null) {
+      // Delta in pts = (your% - default%) * 100; formula uses raw ratios in C/D
+      setFormula(wsS, wsS.getCell(17, 5), '(C17-D17)*100', '+0" pts";-0" pts";0" pts"', succDelta);
+      if (succDelta < 0) wsS.getCell(17, 5).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.red } };
+      else if (succDelta > 0) wsS.getCell(17, 5).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.green } };
+    }
     set(wsS, wsS.getCell(17, 6), nSim + " sims");
 
     setRow(wsS, 18, 2, [fr ? "Imp\u00f4t total nominal" : "Total nominal tax"]);
     setNum(wsS, wsS.getCell(18, 3), optTax, FMT_MONEY);
     if (hasNaive) setNum(wsS, wsS.getCell(18, 4), naiveTax, FMT_MONEY);
-    if (hasNaive) setDelta(wsS, wsS.getCell(18, 5), -Math.max(0, taxAlpha), FMT_MONEY);
+    if (hasNaive) {
+      setFormula(wsS, wsS.getCell(18, 5), 'C18-D18', FMT_MONEY, -Math.max(0, taxAlpha));
+      if (taxAlpha > 0) wsS.getCell(18, 5).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.green } };
+    }
 
     setRow(wsS, 19, 2, [fr ? "Imp\u00f4t total r\u00e9el" : "Total real tax"]);
     setNum(wsS, wsS.getCell(19, 3), Math.round(optTax / Math.pow(1 + inf, 12)), FMT_MONEY);
@@ -593,16 +629,30 @@
       fr ? "Rendements esp\u00e9r\u00e9s constants, aucune volatilit\u00e9  \u2022  Valeurs nominales" : "Constant expected returns, no volatility  \u2022  Nominal values", 14);
     setRow(wsProj, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", "REER", "CELI", "NR", "FHSA", fr ? "Immobilier" : "Real Estate", fr ? "Hypoth\u00e8que" : "Mortgage", fr ? "Avoir immo." : "RE Equity", fr ? "Total financier" : "Total financial", fr ? "Total net" : "Total net", "Phase"]);
     var projN = Math.min((mc.pD || []).length, 51);
+    // Cols (B=year, C=age, D=REER, E=CELI, F=NR, G=FHSA, H=RE val, I=Mortgage,
+    // J=RE Equity, K=Total financial, L=Total net, M=Phase). Equity / totals
+    // are formulas so the user can audit "where does this number come from".
     (mc.pD || []).slice(0, 51).forEach(function(r, i) {
       var reV = toNum(r.reM), mtg = toNum(r.mtM), eq = reV - mtg;
       var fin = toNum(r.rrM) + toNum(r.tfM) + toNum(r.nrM) + toNum(r.peM) + toNum(r.fhM);
       var curAge = r.age || (age + i);
       var phase = curAge < retAge ? (fr ? "Accumulation" : "Accumulation") : (fr ? "D\u00e9caissement" : "Decumulation");
       var rr = 6 + i;
-      ws_setNumRow(wsProj, rr, 2, [y0 + i, curAge, toNum(r.rrM), toNum(r.tfM), toNum(r.nrM), toNum(r.fhM), reV, mtg, eq, fin, fin + eq]);
+      // Year + age + raw account balances as values
+      setNum(wsProj, wsProj.getCell(rr, 2), y0 + i);
+      setNum(wsProj, wsProj.getCell(rr, 3), curAge);
+      setNum(wsProj, wsProj.getCell(rr, 4), toNum(r.rrM), FMT_MONEY);
+      setNum(wsProj, wsProj.getCell(rr, 5), toNum(r.tfM), FMT_MONEY);
+      setNum(wsProj, wsProj.getCell(rr, 6), toNum(r.nrM), FMT_MONEY);
+      setNum(wsProj, wsProj.getCell(rr, 7), toNum(r.fhM), FMT_MONEY);
+      setNum(wsProj, wsProj.getCell(rr, 8), reV, FMT_MONEY);
+      setNum(wsProj, wsProj.getCell(rr, 9), mtg, FMT_MONEY);
+      // Derived columns as formulas so user sees the math
+      setFormula(wsProj, wsProj.getCell(rr, 10), 'H' + rr + '-I' + rr, FMT_MONEY, eq);
+      setFormula(wsProj, wsProj.getCell(rr, 11), 'SUM(D' + rr + ':G' + rr + ')', FMT_MONEY, fin);
+      setFormula(wsProj, wsProj.getCell(rr, 12), 'K' + rr + '+J' + rr, FMT_MONEY, fin + eq);
       set(wsProj, wsProj.getCell(rr, 13), phase);
       wsProj.getCell(rr, 13).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
-      for (var c = 4; c <= 12; c++) wsProj.getCell(rr, c).numFmt = FMT_MONEY;
     });
     styleTable(wsProj, { hr: 5, fr: 6, to: Math.max(6, 5 + projN), fc: 2, lc: 13 });
     footer(wsProj, 5 + projN + 3);
@@ -618,13 +668,24 @@
       fr ? "Revenus, d\u00e9penses, retraits et imp\u00f4t" : "Income, spending, withdrawals and tax", 14);
     setRow(wsCF, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Salaire" : "Salary", "RRQ/QPP", "PSV/OAS", "SRG", fr ? "Pension" : "Pension", fr ? "Retraits \u00e9p." : "Withdrawals", fr ? "D\u00e9penses" : "Spending", fr ? "Imp\u00f4t" : "Tax", fr ? "Taux eff." : "Eff. rate", fr ? "Rev. imposable" : "Taxable inc."]);
     var cfN = Math.min(revD.length, 51);
+    // Cols (B=Yr, C=Age, D=Salary, E=QPP, F=OAS, G=SRG, H=Pen, I=Wdl, J=Spend,
+    // K=Tax, L=Eff rate, M=Taxable inc). Eff. rate = K/M as formula.
     revD.slice(0, 51).forEach(function(r, i) {
       var eff = toNum(r.taxInc) > 0 ? toNum(r.tax) / toNum(r.taxInc) : 0;
       var rr = 6 + i;
-      ws_setNumRow(wsCF, rr, 2, [y0 + i, r.age || 0, toNum(r.sal), toNum(r.rrq), toNum(r.psv), toNum(r.gis || r.srg), toNum(r.pen), toNum(r.ret), toNum(r.spend), toNum(r.tax)]);
-      wsCF.getCell(rr, 12).value = eff; wsCF.getCell(rr, 12).numFmt = FMT_PCT;
-      wsCF.getCell(rr, 13).value = toNum(r.taxInc); wsCF.getCell(rr, 13).numFmt = FMT_MONEY;
-      for (var c = 4; c <= 11; c++) wsCF.getCell(rr, c).numFmt = FMT_MONEY;
+      setNum(wsCF, wsCF.getCell(rr, 2), y0 + i);
+      setNum(wsCF, wsCF.getCell(rr, 3), r.age || 0);
+      setNum(wsCF, wsCF.getCell(rr, 4), toNum(r.sal), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 5), toNum(r.rrq), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 6), toNum(r.psv), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 7), toNum(r.gis || r.srg), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 8), toNum(r.pen), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 9), toNum(r.ret), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 10), toNum(r.spend), FMT_MONEY);
+      setNum(wsCF, wsCF.getCell(rr, 11), toNum(r.tax), FMT_MONEY);
+      // Eff. rate = Tax / TaxableInc, with safe div-by-zero guard
+      setFormula(wsCF, wsCF.getCell(rr, 12), 'IFERROR(K' + rr + '/M' + rr + ',0)', FMT_PCT, eff);
+      setNum(wsCF, wsCF.getCell(rr, 13), toNum(r.taxInc), FMT_MONEY);
     });
     styleTable(wsCF, { hr: 5, fr: 6, to: Math.max(6, 5 + cfN), fc: 2, lc: 13 });
     footer(wsCF, 5 + cfN + 3);
@@ -633,7 +694,7 @@
     // SHEET 5: MC — PATRIMOINE
     // ────────────────────────────────────────────────────────────
     var wsMC = wb.addWorksheet(fr ? "MC \u2014 Patrimoine" : "MC \u2014 Wealth");
-    setColWidths(wsMC, [3, 10, 8, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    applySheetTemplate(wsMC, 'grid');
     printSetup(wsMC);
     addTabBanner(wsMC,
       fr ? "Monte Carlo \u2014 Distribution du patrimoine financier" : "Monte Carlo \u2014 Financial Wealth Distribution",
@@ -650,15 +711,13 @@
       wsMC.getCell(rr, 7).value = toNum(r.p50); wsMC.getCell(rr, 7).numFmt = FMT_MONEY;
       wsMC.getCell(rr, 8).value = toNum(r.p75); wsMC.getCell(rr, 8).numFmt = FMT_MONEY;
       wsMC.getCell(rr, 9).value = toNum(r.p95); wsMC.getCell(rr, 9).numFmt = FMT_MONEY;
-      // P50-Det delta — red if negative
+      // P50-Det delta as formula = P50(G) - Det(D), red if negative
       var p50det = toNum(r.p50) - det;
-      wsMC.getCell(rr, 10).value = p50det;
-      wsMC.getCell(rr, 10).numFmt = FMT_DELTA;
+      setFormula(wsMC, wsMC.getCell(rr, 10), 'G' + rr + '-D' + rr, FMT_DELTA, p50det);
       if (p50det < 0) wsMC.getCell(rr, 10).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
-      // Range P5-P95
+      // Range P5-P95 as formula = P95(I) - P5(E)
       var range = toNum(r.p95) - toNum(r.p5);
-      wsMC.getCell(rr, 11).value = range;
-      wsMC.getCell(rr, 11).numFmt = FMT_MONEY;
+      setFormula(wsMC, wsMC.getCell(rr, 11), 'I' + rr + '-E' + rr, FMT_MONEY, range);
       if (range < 0) wsMC.getCell(rr, 11).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
       // First data row gets blue tint
       if (i === 0) {
@@ -732,7 +791,7 @@
     // SHEET 7: FISCALITÉ
     // ────────────────────────────────────────────────────────────
     var wsTax = wb.addWorksheet(fr ? "Fiscalit\u00e9" : "Tax");
-    setColWidths(wsTax, [3, 24, 18, 18, 18, 18, 18, 14, 14, 14, 14, 14, 14, 14]);
+    applySheetTemplate(wsTax, 'standard');
     printSetup(wsTax);
     addTabBanner(wsTax,
       fr ? "Analyse fiscale \u2014 " + prov : "Tax analysis \u2014 " + prov,
@@ -742,16 +801,20 @@
       fr ? "F\u00e9d\u00e9ral + " + prov + " \u2014 taux combin\u00e9s" : "Federal + " + prov + " \u2014 combined rates", 13);
     setRow(wsTax, 7, 2, [fr ? "Revenu imposable" : "Taxable income", fr ? "F\u00e9d\u00e9ral" : "Federal", "Prov.", "Total", fr ? "Taux eff." : "Eff. rate", fr ? "Taux marg." : "Marg. rate"]);
     var brackets = [0, 20000, 40000, 60000, 80000, 100000, 120000, 150000, 200000, 250000, 300000];
+    // Cols (B=Income, C=Federal, D=Prov, E=Total, F=Eff rate, G=Marg rate).
+    // Total + eff rate are formulas so the user can edit Income (col B) and see
+    // Total/Eff recalc live. Federal/Prov stay as values (calcTax bracket math
+    // is too prov-specific to safely express as Excel formulas).
     brackets.forEach(function(inc, i) {
       var tx = calcTax(inc, 0, prov);
       var eff = inc > 0 ? tx.total / inc : 0;
       var r = 8 + i;
-      wsTax.getCell(r, 2).value = inc; wsTax.getCell(r, 2).numFmt = FMT_MONEY;
-      wsTax.getCell(r, 3).value = Math.round(tx.fed || tx.basic || 0); wsTax.getCell(r, 3).numFmt = FMT_MONEY;
-      wsTax.getCell(r, 4).value = Math.round(tx.prov || 0); wsTax.getCell(r, 4).numFmt = FMT_MONEY;
-      wsTax.getCell(r, 5).value = Math.round(tx.total); wsTax.getCell(r, 5).numFmt = FMT_MONEY;
-      wsTax.getCell(r, 6).value = eff; wsTax.getCell(r, 6).numFmt = FMT_PCT;
-      wsTax.getCell(r, 7).value = toNum(tx.marg); wsTax.getCell(r, 7).numFmt = FMT_PCT;
+      setNum(wsTax, wsTax.getCell(r, 2), inc, FMT_MONEY);
+      setNum(wsTax, wsTax.getCell(r, 3), Math.round(tx.fed || tx.basic || 0), FMT_MONEY);
+      setNum(wsTax, wsTax.getCell(r, 4), Math.round(tx.prov || 0), FMT_MONEY);
+      setFormula(wsTax, wsTax.getCell(r, 5), 'C' + r + '+D' + r, FMT_MONEY, Math.round(tx.total));
+      setFormula(wsTax, wsTax.getCell(r, 6), 'IFERROR(E' + r + '/B' + r + ',0)', FMT_PCT, eff);
+      setNum(wsTax, wsTax.getCell(r, 7), toNum(tx.marg), FMT_PCT);
     });
     styleTable(wsTax, { hr: 7, fr: 8, to: 18, fc: 2, lc: 7 });
 
@@ -825,12 +888,32 @@
     addTitle(wsSS, 17, 2, fr ? "SC\u00c9NARIOS DE STRESS" : "STRESS SCENARIOS",
       fr ? "Conditions historiques appliqu\u00e9es" : "Historical conditions applied", 13);
     setRow(wsSS, 19, 2, [fr ? "Sc\u00e9nario" : "Scenario", fr ? "P\u00e9riode" : "Period", fr ? "Succ\u00e8s" : "Success", "Delta", fr ? "Patrimoine P50" : "Wealth P50", "VaR 5%", fr ? "Ruine P5" : "Ruin P5", fr ? "R\u00e9silience" : "Resilience", "Description"]);
-    setRow(wsSS, 20, 2, [fr ? "R\u00e9f\u00e9rence" : "Reference", "\u2014", Math.round(toNum(mc.succ) * 100) + "%", "\u2014", _fmtK(mc.rMedF || mc.medF || 0, locale), _fmtK(mc.rVar5 || mc.var5 || 0, locale), mc.p5Ruin >= 999 ? (fr ? "Jamais" : "Never") : String(mc.p5Ruin), "\u2014", fr ? "Plan tel que configur\u00e9" : "Plan as configured"]);
+    // Stress rows — write as numbers with format codes so Excel can sum, sort,
+    // conditional-format. Previously these were strings via _fmtK which broke aggregation.
+    function _writeStressRow(rowN, label, period, succVal, deltaPts, wealthP50, var5, ruinAge, resilience, desc) {
+      set(wsSS, wsSS.getCell(rowN, 2), label);
+      set(wsSS, wsSS.getCell(rowN, 3), period);
+      // Success = numeric ratio with 0% format
+      if (succVal != null && !isNaN(succVal)) { wsSS.getCell(rowN, 4).value = toNum(succVal); wsSS.getCell(rowN, 4).numFmt = "0%"; }
+      else set(wsSS, wsSS.getCell(rowN, 4), "\u2014");
+      // Delta in percentage points — use FMT_DELTA so + sign appears
+      if (deltaPts != null && !isNaN(deltaPts)) { wsSS.getCell(rowN, 5).value = toNum(deltaPts); wsSS.getCell(rowN, 5).numFmt = '+0" pts";-0" pts";0" pts"'; }
+      else set(wsSS, wsSS.getCell(rowN, 5), "\u2014");
+      // Wealth + VaR as money (full value, not rounded to thousands — let format show K via numFmt)
+      if (wealthP50 != null) { wsSS.getCell(rowN, 6).value = toNum(wealthP50); wsSS.getCell(rowN, 6).numFmt = FMT_MONEY; }
+      if (var5 != null) { wsSS.getCell(rowN, 7).value = toNum(var5); wsSS.getCell(rowN, 7).numFmt = FMT_MONEY; }
+      // Ruin age as number when present, "Never" sentinel otherwise
+      if (ruinAge != null && ruinAge < 999) { wsSS.getCell(rowN, 8).value = toNum(ruinAge); wsSS.getCell(rowN, 8).numFmt = '0" ans"'; }
+      else set(wsSS, wsSS.getCell(rowN, 8), fr ? "Jamais" : "Never");
+      set(wsSS, wsSS.getCell(rowN, 9), resilience);
+      set(wsSS, wsSS.getCell(rowN, 10), desc);
+    }
+    _writeStressRow(20, fr ? "R\u00e9f\u00e9rence" : "Reference", "\u2014", mc.succ, null, mc.rMedF || mc.medF || 0, mc.rVar5 || mc.var5 || 0, mc.p5Ruin, "\u2014", fr ? "Plan tel que configur\u00e9" : "Plan as configured");
     var st = stressResults.slice(0, 5);
     st.forEach(function(s, i) {
-      var delta = Math.round((toNum(s.succ) - toNum(mc.succ)) * 100);
+      var deltaPts = Math.round((toNum(s.succ) - toNum(mc.succ)) * 100);
       var res = toNum(s.succ) >= 0.8 ? (fr ? "Robuste" : "Robust") : toNum(s.succ) >= 0.65 ? (fr ? "Mod\u00e9r\u00e9" : "Moderate") : (fr ? "Fragile" : "Fragile");
-      setRow(wsSS, 21 + i, 2, [s.name || s.key || "", s.period || "\u2014", Math.round(toNum(s.succ) * 100) + "%", (delta >= 0 ? "+" : "") + delta + " pts", _fmtK(s.medF || 0, locale), _fmtK(s.var5 || 0, locale), s.medRuin >= 999 ? (fr ? "Jamais" : "Never") : String(s.medRuin), res, s.desc || ""]);
+      _writeStressRow(21 + i, s.name || s.key || "", s.period || "\u2014", s.succ, deltaPts, s.medF || 0, s.var5 || 0, s.medRuin, res, s.desc || "");
     });
     styleTable(wsSS, { hr: 19, fr: 20, to: Math.max(20, 20 + st.length), fc: 2, lc: 10 });
     footer(wsSS, 28);
@@ -975,7 +1058,7 @@
     // SHEET 12: MÉTHODOLOGIE
     // ────────────────────────────────────────────────────────────
     var wsM = wb.addWorksheet(fr ? "M\u00e9thodologie" : "Methodology");
-    setColWidths(wsM, [3, 26, 32, 42, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+    applySheetTemplate(wsM, 'textual');
     printSetup(wsM);
     addTabBanner(wsM,
       fr ? "M\u00e9thodologie & avis l\u00e9gal" : "Methodology & Legal Notice",
@@ -1176,6 +1259,15 @@
   // ══════════════════════════════════════════════════════════════
   // BASIC SheetJS FALLBACK
   // ══════════════════════════════════════════════════════════════
+  // Used only when ExcelJS fails to load. Earlier implementation drifted from
+  // the real engine schema (read r.totalBal which engine doesn't write) and
+  // wrote every cell as a string via fM(), producing an unsummable spreadsheet.
+  // Rewritten to:
+  //  - Read engine schema fields (sal/cSal/aRR/aTF/aNR, wFromRR/wFromTF/wFromNR)
+  //  - Write values as numbers with !z (number format) so cells remain summable
+  //  - Emit Sommaire + Cash Flow + Projection (3 sheets, real data, no formulas
+  //    since SheetJS .aoa_to_sheet doesn't support per-cell formula construction
+  //    cleanly; for formulas the user gets the Pro path)
   function buildExcelBasic(data) {
     var XLSX = window.XLSX;
     if (!XLSX || !XLSX.utils) { alert("SheetJS not loaded"); return; }
@@ -1186,23 +1278,102 @@
     var mc = d.mc, p = d.p, client = d.client, fr = d.fr;
     var revData = d.revData;
     var wb = XLSX.utils.book_new();
-    function addSheet(name, rows) {
-      var ws = XLSX.utils.aoa_to_sheet(rows || [[]]);
-      var maxC = 0;
-      (rows || []).forEach(function(r) { maxC = Math.max(maxC, (r || []).length); });
-      if (maxC > 0) ws["!cols"] = Array.from({ length: maxC }, function(_, ci) {
-        var w = 10; (rows || []).forEach(function(r) { var v = (r && r[ci] != null) ? String(r[ci]) : ""; if (v.length > w) w = v.length; }); return { wch: Math.min(52, Math.max(8, w + 2)) };
+    var moneyFmt = '#,##0" $"';
+    var pctFmt = '0.0%';
+
+    // Helper: convert AOA where each cell can be {v:value, t:type, z:format}
+    // into a SheetJS sheet that preserves number types + format codes.
+    function addSheetTyped(name, rows) {
+      var ws = {};
+      var range = { s: { c: 0, r: 0 }, e: { c: 0, r: 0 } };
+      rows.forEach(function(row, ri) {
+        (row || []).forEach(function(cellSpec, ci) {
+          if (cellSpec == null) return;
+          var ref = XLSX.utils.encode_cell({ c: ci, r: ri });
+          var cell;
+          if (typeof cellSpec === 'object' && cellSpec.v !== undefined) {
+            cell = { v: cellSpec.v, t: cellSpec.t || (typeof cellSpec.v === 'number' ? 'n' : 's') };
+            if (cellSpec.z) cell.z = cellSpec.z;
+          } else {
+            cell = { v: cellSpec, t: typeof cellSpec === 'number' ? 'n' : 's' };
+          }
+          ws[ref] = cell;
+          if (ci > range.e.c) range.e.c = ci;
+          if (ri > range.e.r) range.e.r = ri;
+        });
       });
-      XLSX.utils.book_append_sheet(wb, ws, (name || "Sheet").slice(0, 31));
+      ws['!ref'] = XLSX.utils.encode_range(range);
+      // Auto-width based on visible string length (numbers approximated by digit count)
+      ws['!cols'] = [];
+      for (var ci = 0; ci <= range.e.c; ci++) {
+        var maxW = 8;
+        rows.forEach(function(row) {
+          var c = row && row[ci];
+          var s = c == null ? '' : (typeof c === 'object' ? String(c.v == null ? '' : c.v) : String(c));
+          if (s.length > maxW) maxW = s.length;
+        });
+        ws['!cols'].push({ wch: Math.min(40, maxW + 2) });
+      }
+      XLSX.utils.book_append_sheet(wb, ws, (name || 'Sheet').slice(0, 31));
     }
-    function fM(v) { return F.fmtMoney(v || 0, fr); }
-    function fP(v, dec) { return F.fmtPct(v, dec == null ? 1 : dec, fr); }
-    addSheet(fr ? "Sommaire" : "Summary", [[fr ? "Sommaire" : "Summary"], [fr ? "Client" : "Client", client.name || ""], ["Date", F.fmtDateShort()], [fr ? "Succ\u00e8s" : "Success", d.succVal != null ? fP(d.succVal, 1) : ""], [fr ? "Patrimoine m\u00e9dian" : "Median wealth", fM(mc.rMedF || mc.medF)], ["P5", fM(mc.rVar5 || mc.var5)], [fr ? "Alpha fiscal" : "Tax alpha", d._taxAlpha != null ? fM(d._taxAlpha) : ""]]);
-    var detR = [[fr ? "Projection" : "Projection"], [fr ? "\u00c2ge" : "Age", fr ? "Patrimoine" : "Wealth", "REER", "CELI", "NR", fr ? "Imp\u00f4t" : "Tax"]];
-    (revData || []).forEach(function(r) { detR.push([r.age, fM(r.mp_total || r.totalBal || r.balTot || 0), fM(r.aRR || r.balRR), fM(r.aTF || r.balTF), fM(r.aNR || r.balNR), fM(r.tax)]); });
-    addSheet(fr ? "Projection" : "Projection", detR);
-    var baseName = (client.name || "client").replace(/[^a-zA-Z0-9]/g, "_");
-    XLSX.writeFile(wb, "buildfi-" + baseName + ".xlsx");
+
+    function num(v, z) { return { v: toNum(v), t: 'n', z: z || moneyFmt }; }
+    function pct(v) { return { v: toNum(v), t: 'n', z: pctFmt }; }
+
+    // Sheet 1: Sommaire — KPIs as numbers so user can paste-link them elsewhere
+    var sommaireRows = [
+      [fr ? 'Sommaire' : 'Summary'],
+      [fr ? 'Client' : 'Client', client.name || ''],
+      ['Date', F.fmtDateShort()],
+      [fr ? 'Province' : 'Province', p.prov || 'QC'],
+      [],
+      [fr ? 'Indicateurs cl\u00e9s' : 'Key indicators'],
+      [fr ? 'Taux de succ\u00e8s' : 'Success rate', d.succVal != null ? pct(d.succVal) : ''],
+      [fr ? 'Patrimoine m\u00e9dian (P50)' : 'Median wealth (P50)', num(mc.rMedF != null ? mc.rMedF : mc.medF)],
+      [fr ? 'Sc\u00e9nario prudent (P25)' : 'Cautious (P25)', num(mc.rP25F != null ? mc.rP25F : (mc.p25F || 0))],
+      [fr ? 'VaR 5%' : 'VaR 5%', num(mc.rVar5 != null ? mc.rVar5 : (mc.var5 || 0))],
+      [fr ? 'Couverture gouvernementale' : 'Government coverage', d.covRatio != null ? pct(d.covRatio) : ''],
+      [fr ? '\u00c9cart mensuel' : 'Monthly gap', num(d.gapM)],
+      [fr ? 'Imp\u00f4t viager' : 'Lifetime tax', num(d._optTax)],
+      [fr ? 'Alpha fiscal' : 'Tax alpha', d._taxAlpha != null ? num(d._taxAlpha) : '']
+    ];
+    addSheetTyped(fr ? 'Sommaire' : 'Summary', sommaireRows);
+
+    // Sheet 2: Cash flow (real engine schema)
+    var cfHeader = [fr ? '\u00c2ge' : 'Age', fr ? 'Salaire' : 'Salary', 'RRQ/QPP', 'PSV/OAS', 'SRG',
+      fr ? 'Pension' : 'Pension', fr ? 'Retraits \u00e9p.' : 'Withdrawals',
+      fr ? 'D\u00e9penses' : 'Spending', fr ? 'Imp\u00f4t' : 'Tax'];
+    var cfRows = [[fr ? 'Flux de tr\u00e9sorerie' : 'Cash flow'], cfHeader];
+    (revData || []).forEach(function(r) {
+      cfRows.push([
+        r.age,
+        num((r.sal || 0) + (r.cSal || 0)),
+        num(r.rrq || 0),
+        num(r.psv || 0),
+        num(r.gis || r.srg || 0),
+        num(r.pen || 0),
+        num(r.ret || 0),
+        num(r.spend || r.sp || r.spending || 0),
+        num(r.tax || 0)
+      ]);
+    });
+    addSheetTyped(fr ? 'Flux' : 'Cash flow', cfRows);
+
+    // Sheet 3: Projection — wealth trajectory (engine pD)
+    var projHeader = [fr ? '\u00c2ge' : 'Age', 'REER', 'CELI', 'NR',
+      fr ? 'Total financier' : 'Total financial'];
+    var projRows = [[fr ? 'Projection patrimoine' : 'Wealth projection'], projHeader];
+    (mc.pD || []).slice(0, 51).forEach(function(r) {
+      var rrV = toNum(r.rrM != null ? r.rrM : r.mp_rr || 0);
+      var tfV = toNum(r.tfM != null ? r.tfM : r.mp_tf || 0);
+      var nrV = toNum(r.nrM != null ? r.nrM : r.mp_nr || 0);
+      var totV = toNum(r.mp_total != null ? r.mp_total : (rrV + tfV + nrV));
+      projRows.push([r.age || '', num(rrV), num(tfV), num(nrV), num(totV)]);
+    });
+    addSheetTyped(fr ? 'Projection' : 'Projection', projRows);
+
+    var baseName = (client.name || 'client').replace(/[^a-zA-Z0-9]/g, '_');
+    XLSX.writeFile(wb, 'buildfi-basic-' + baseName + '.xlsx');
   }
 
   // ══════════════════════════════════════════════════════════════

@@ -25,6 +25,7 @@
     "report:xsect": "node planner/report/hardening/sprint9/check-cross-section-consistency.js",
     "report:release:gate": "node planner/report/hardening/sprint8/release-gate.js",
     "report:release:gate:full": "node planner/report/hardening/sprint8/release-gate.js --full",
+    "report:excel:test": "node planner/report/excel-roundtrip-test.js",
     "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npx tsx tests/report-shared.test.ts && npx tsx tests/fiscal-constants-sync.test.ts && npm run lint:amf && npm run build",
     "test:constants": "tsx tests/constants-drift.test.js",
     "lint:amf": "node scripts/lint-amf.js"
