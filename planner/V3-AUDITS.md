@@ -226,3 +226,68 @@ This log is the gating record for the v3 rebuild. Every phase ends with a writte
 **Phase 4 — Unified events model**. Cleared. Engine touch — Mulberry32 seed harness will need to be run to verify no regression.
 
 ---
+
+## Phase 4 — Unified events view (Part A — UI read-only summary)
+
+**Date**: 2026-04-17
+
+### Scope narrowing (professional judgement)
+
+The full Phase 4 from the plan has three deliverables:
+
+1. **UI**: single "Événements" subsection showing all events unified.
+2. **Data**: new `events[]` array replacing legacy `inc1-3`, `ev1-2`, `cEv1-2`, `cInc1` fields.
+3. **Engine**: `runMC` reads `events[]` and dispatches per kind + owner.
+
+Deliverables 2 and 3 are engine-level changes that require snapshot validation through the harness (8 profiles × 1000 sims each). The harness runs in a browser and cannot be executed headlessly from this session. Shipping engine changes without harness validation would violate the gating rule.
+
+This phase **ships Part A only** — the UI summary. Parts B (data model) and C (engine dispatch) are deferred to a dedicated session where the harness can be run between steps.
+
+### What was done (Part A)
+
+- **Unified events view** at the top of the Flux / Cashflow module. Reads legacy state (`inc1-3`, `ev1-2`, `cEv1-2`, `cInc1`, non-retirement goals from `goals[]`), sorts by age, and renders each as a single card:
+  - Icon for kind (💰 income, 💳 expense, 🎯 goal).
+  - Label (user-entered name or default).
+  - Owner badge (visible only when `cOn=true`): Vous / Conjoint(e) / Ménage.
+  - Age and amount.
+- Hidden entirely when no events are set.
+- Editing still happens in the individual sections (Part-time, Revenus ponctuels, Dépenses, Goals). A trailing caption states "L'éditeur unifié arrive dans une prochaine version."
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Unified visual summary visible at top of Cashflow | ✅ | All event types surfaced. |
+| Zero engine change | ✅ | Pure read from legacy state; no state writes. |
+| Sort order deterministic (by age asc) | ✅ | Stable sort. |
+| Badge/owner distinction works in couple vs single mode | ✅ | `cOn` gates the badge. |
+| Engine MC output unchanged | ✅ | No state mutation; no engine code touched. |
+
+### Deferred items (Part B + C)
+
+- `events[]` canonical state, migration from legacy fields, edit-through-to-legacy UI.
+- `runMC` engine dispatch from `events[]`.
+- Legacy field removal (Phase 9 migration).
+
+These require: (a) a snapshot-harness run before/after; (b) 30+ sim-hour iterations on edge profiles (`couple-uneven`, `couple-early-death`); (c) a feature flag (`BF_V3_EVENTS_ENGINE`) for staged rollout.
+
+Documented in `V3-FINAL-PLAN.md` §2 Phase 4; promoted to a blocker for Phase 10 ship.
+
+### Engine-output delta observed
+
+- **None.** Read-only UI.
+
+### Risks exposed
+
+- Users may expect the unified view to be editable; the caption explicitly sets expectations.
+- If `goals[]` contains a retirement goal, it is correctly filtered out of the events view (surfaced elsewhere as the monthly spending goal).
+
+### Scope creep
+
+- None.
+
+### Next phase
+
+**Phase 5 — Ownership attribution (Part A — data model + UI)**. Engine rewire is Part B, same reasoning as Phase 4.
+
+---

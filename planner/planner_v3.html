@@ -11761,7 +11761,51 @@ secVis("profil") && React.createElement(React.Fragment, null,
   React.createElement("div", { style: { height: 3 } }),
   // (Previous duplicate Goals block removed — canonical Goals lives above AI Tone.)
 ),
-secVis("rev") && React.createElement(Sec, { t: lang === "fr" ? "Revenus & \u00c9v\u00e9nements" : "Income & Events", accent: CL.bl, open: secVis("rev"), onClick: function() { tog("rev"); } }), secVis("rev") && React.createElement(React.Fragment, null, React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 3 } }, lang === "fr" ? "Travail partiel \u00e0 la retraite" : "Part-time work in retirement"), React.createElement(Field, { l: t.partTimeRev }, React.createElement(NumField, { v: ptM, set: sPTM, step: 250 })), ptM > 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: "De " + retAge + " \u00e0 " + (retAge + ptYrs) + " ans (dur\u00e9e)" }, React.createElement(Slider, { v: ptYrs, set: sPTY, mn: 1, mx: 15 })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, lang === "fr" ? "Index\u00e9 \u00e0 l'inflation chaque ann\u00e9e" : "Inflation-indexed yearly")), React.createElement("div", { style: { height: 3 } }), React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 4 } }, lang === "fr" ? "Revenus ponctuels" : "One-time income"),
+secVis("rev") && React.createElement(Sec, { t: lang === "fr" ? "Revenus & \u00c9v\u00e9nements" : "Income & Events", accent: CL.bl, open: secVis("rev"), onClick: function() { tog("rev"); } }), secVis("rev") && React.createElement(React.Fragment, null,
+/* v3 Phase 4 — Unified events view (read-only summary).
+   Merges inc1-3, ev1-2, cEv1-2, cInc1 and retirement-type goals into a
+   single list so the user can see every planned inflow / outflow / goal
+   at a glance. Edits still happen in the individual sections below.
+   Engine dispatch unchanged — this block is pure UI. */
+(function() {
+  var _all = [];
+  // Primary — one-time income (3 slots)
+  if (inc1Age > 0) _all.push({ kind: "income",  icon: "💰", owner: "self",   age: inc1Age, amount: inc1Amt, label: inc1Name || (lang==="fr"?"Revenu 1":"Income 1") });
+  if (inc2Age > 0) _all.push({ kind: "income",  icon: "💰", owner: "self",   age: inc2Age, amount: inc2Amt, label: inc2Name || (lang==="fr"?"Revenu 2":"Income 2") });
+  if (inc3Age > 0) _all.push({ kind: "income",  icon: "💰", owner: "self",   age: inc3Age, amount: inc3Amt, label: inc3Name || (lang==="fr"?"Revenu 3":"Income 3") });
+  // Primary — one-time expenses (2 slots, drawn from the dep module)
+  if (ev1Age > 0)  _all.push({ kind: "expense", icon: "💳", owner: "self",   age: ev1Age,  amount: ev1Amt,  label: ev1Name  || (lang==="fr"?"Dépense 1":"Expense 1") });
+  if (ev2Age > 0)  _all.push({ kind: "expense", icon: "💳", owner: "self",   age: ev2Age,  amount: ev2Amt,  label: ev2Name  || (lang==="fr"?"Dépense 2":"Expense 2") });
+  // Spouse (couple only)
+  if (cOn) {
+    if ((cInc1Age || 0) > 0) _all.push({ kind: "income",  icon: "💰", owner: "spouse", age: cInc1Age, amount: cInc1Amt, label: (lang==="fr"?"Revenu conjoint(e)":"Spouse income") });
+    if ((cEv1Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv1Age,  amount: cEv1Amt,  label: (lang==="fr"?"Dépense conjoint(e) 1":"Spouse expense 1") });
+    if ((cEv2Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv2Age,  amount: cEv2Amt,  label: (lang==="fr"?"Dépense conjoint(e) 2":"Spouse expense 2") });
+  }
+  // Goals (retirement + education + lump-sum)
+  (goals || []).forEach(function(g) {
+    if (g.type === "retirement") return; // shown as the monthly spending goal elsewhere
+    _all.push({ kind: "goal", icon: g.icon || "🎯", owner: "joint", age: g.startAge, amount: g.amount, label: (lang==="fr" ? (g.name || "Objectif") : (g.nameEn || g.name || "Goal")) });
+  });
+  _all.sort(function(a, b) { return (a.age || 0) - (b.age || 0); });
+  if (_all.length === 0) return null;
+  var _ownerLabel = function(o) { return o === "self" ? (lang==="fr"?"Vous":"You") : o === "spouse" ? (lang==="fr"?"Conjoint(e)":"Spouse") : (lang==="fr"?"Ménage":"Household"); };
+  var _ownerColor = function(o) { return o === "self" ? CL.ac : o === "spouse" ? CL.tl : CL.gn; };
+  return React.createElement("div", { style: { padding: "10px 12px", marginBottom: 10, background: CL.bl + "08", borderRadius: RAD.sm + 2, border: "1px solid " + CL.bl + "30" } },
+    React.createElement("div", { style: { fontSize: FS.xxs, color: CL.bl, fontWeight: FW.bold, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 6 } }, lang === "fr" ? "Événements & objectifs planifiés" : "Planned events & goals"),
+    _all.map(function(e, i) {
+      return React.createElement("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "4px 0", borderBottom: i < _all.length - 1 ? "1px dashed " + CL.bd : "none" } },
+        React.createElement("span", { style: { fontSize: FS.md, width: 22, textAlign: "center" } }, e.icon),
+        React.createElement("span", { style: { fontSize: FS.base, color: CL.al, fontWeight: FW.medium, flex: 1 } }, e.label),
+        cOn && React.createElement("span", { style: { fontSize: FS.xxs, padding: "1px 6px", borderRadius: 8, background: _ownerColor(e.owner) + "22", color: _ownerColor(e.owner), fontWeight: FW.medium } }, _ownerLabel(e.owner)),
+        React.createElement("span", { style: { fontSize: FS.xs, color: CL.dm, minWidth: 42, textAlign: "right" } }, e.age + (lang==="fr"?" ans":" yrs")),
+        React.createElement("span", { style: { fontSize: FS.base, color: e.kind === "income" ? CL.gn : e.kind === "expense" ? CL.rd : CL.ac, fontWeight: FW.bold, minWidth: 70, textAlign: "right" } }, (e.kind === "expense" ? "-" : "") + f$(e.amount || 0))
+      );
+    }),
+    React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic", marginTop: 4 } }, lang === "fr" ? "Modifiez un événement dans sa section ci-dessous. L'éditeur unifié arrive dans une prochaine version." : "Edit an event in its section below. A unified editor is coming in a future release.")
+  );
+})(),
+React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 3 } }, lang === "fr" ? "Travail partiel \u00e0 la retraite" : "Part-time work in retirement"), React.createElement(Field, { l: t.partTimeRev }, React.createElement(NumField, { v: ptM, set: sPTM, step: 250 })), ptM > 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: "De " + retAge + " \u00e0 " + (retAge + ptYrs) + " ans (dur\u00e9e)" }, React.createElement(Slider, { v: ptYrs, set: sPTY, mn: 1, mx: 15 })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, lang === "fr" ? "Index\u00e9 \u00e0 l'inflation chaque ann\u00e9e" : "Inflation-indexed yearly")), React.createElement("div", { style: { height: 3 } }), React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 4 } }, lang === "fr" ? "Revenus ponctuels" : "One-time income"),
 // Card for each active income event
 inc1Age > 0 ? React.createElement("div", { style: { padding: "6px 8px", background: CL.cd, borderRadius: RAD.sm, marginBottom: 4, border: "1px solid " + CL.bd } },
   React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 } },
