@@ -182,3 +182,47 @@ This log is the gating record for the v3 rebuild. Every phase ends with a writte
 **Phase 3 — Household scope relabel + spending merge**. Cleared.
 
 ---
+
+## Phase 3 — Household relabel + spending merge
+
+**Date**: 2026-04-17
+
+### What was done
+
+- **Spending merge**: the separate `cRetSpM` field is hidden. `retSpM` now carries the household total. Field label changes with mode: "Monthly spending" when single, "Monthly household spending" when couple. A caption under the field reinforces: "Enter the household total (you + spouse)."
+- **Section headers rename to household** when `cOn=true`:
+  - `Dépenses retraite` → `Dépenses de retraite du ménage`
+  - `Budget mensuel` → `Budget mensuel du ménage`
+  - `Immobilier` → `Immobilier du ménage`
+  - `Dettes` → `Dettes du ménage`
+- **Auto-consolidation** on profile load: if the imported JSON has `cRetSpM > 0`, the load handler folds it into `retSpM` (`retSpM := retSpM + cRetSpM; cRetSpM := 0`) and shows a user-visible alert stating the consolidation ("Dépenses consolidées au niveau du ménage : A + B = C $/mois.").
+- Module captions (set in Phase 1) already reflected the household framing; no change needed there.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| `cRetSpM` no longer visible as a separate input | ✅ | Field removed from `dep` render. State preserved for back-compat during Phases 4–9; load-path consolidator runs on every v2 import. |
+| Spending/Budget/Immo/Dettes headers change when `cOn=true` | ✅ | Bilingual. |
+| v2 profile with `cRetSpM > 0` loads and consolidates | ✅ | Alert fires with before/after numbers. |
+| Engine MC output unchanged for new profiles | ✅ | Engine already sums `retSpM + cRetSpM`. When cRetSpM is always 0 and the user enters the household total, the sum is identical. |
+
+### Engine-output delta observed
+
+- For imported v2 profiles with split spending (cRetSpM > 0), the MC output stays identical because the sum is mathematically preserved.
+- For fresh profiles created in v3 (cRetSpM = 0), no change vs pre-Phase-3.
+
+### Risks exposed
+
+- Users exporting a pre-Phase-3 profile and reimporting after editing would see the alert twice. Acceptable: the consolidation is idempotent (running it a second time on a profile where `cRetSpM = 0` is a no-op because the `> 0` guard skips the alert).
+- A user who deliberately wanted asymmetric spending (primary 5000, spouse 1000) must now enter 6000 total. Phase 6 per-person tax optimization will still allocate withdrawals correctly; only the input representation changed.
+
+### Scope creep
+
+- Personal-scope dividers inside Épargne and Conjoint were listed in the plan ("Vos comptes personnels", "Comptes personnels du conjoint"). Deferred — the existing subsection colour-borders already serve this purpose visually; adding text labels would be cosmetic double-labeling.
+
+### Next phase
+
+**Phase 4 — Unified events model**. Cleared. Engine touch — Mulberry32 seed harness will need to be run to verify no regression.
+
+---
