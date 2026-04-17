@@ -1561,6 +1561,96 @@ if (typeof window !== "undefined") {
   if (typeof window.BF_V3_HOUSEHOLD === "undefined") window.BF_V3_HOUSEHOLD = false;
 }
 
+// === v3 SEEDED PRNG (harness reproducibility) ===
+// When the snapshot harness calls window.__bfSeed(n), Math.random is swapped
+// for a deterministic Mulberry32 PRNG seeded to n. window.__bfUnseed() or
+// window.__bfSeed(null) restores the native Math.random. Normal user runs are
+// untouched — this is only active when the harness explicitly seeds.
+// Guarantees byte-identical MC outputs for identical (profile, seed) pairs.
+(function () {
+  if (typeof window === "undefined") return;
+  var _nativeRand = Math.random;
+  var _state = null;
+  var _seededRand = function () {
+    _state = (_state + 0x6D2B79F5) | 0;
+    var t = _state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  window.__bfSeed = function (seed) {
+    if (seed === null || seed === undefined) {
+      Math.random = _nativeRand; _state = null; return;
+    }
+    _state = (seed | 0) >>> 0;
+    Math.random = _seededRand;
+  };
+  window.__bfUnseed = function () { Math.random = _nativeRand; _state = null; };
+  window.__bfRandIsSeeded = function () { return _state !== null; };
+})();
+
+// === v3 SCHEMA VALIDATOR ===
+// Returns { ok, errors, warnings, schema }.
+//   errors  - block (always invariant violations, e.g. owner sum != 1.000).
+//   warnings - transitional (fields that should move in v3.1 but are still
+//              tolerated while the rebuild is in flight).
+// Profiles tagged `_schema: "v3.1"` enforce ALL checks as errors.
+// Profiles without `_schema` or with legacy tags (v2, v3.0) downgrade
+// structural-location checks to warnings.
+function validateSchema(profile) {
+  var errors = [];
+  var warnings = [];
+  if (!profile || typeof profile !== "object") {
+    return { ok: false, errors: ["Profile is not an object."], warnings: [], schema: null };
+  }
+  var tag = profile._schema || "legacy";
+  var strict = tag === "v3.1";
+  var flag = function (msg, isStrictOnly) {
+    if (strict || !isStrictOnly) errors.push(msg);
+    else warnings.push(msg);
+  };
+
+  // Inflation: only one of { model.market.inflation, profile.inf } may hold it.
+  var hasModelInf = profile.model && profile.model.market && typeof profile.model.market.inflation === "number";
+  var hasLegacyInf = typeof profile.inf === "number";
+  if (hasModelInf && hasLegacyInf && Math.abs(profile.model.market.inflation - profile.inf) > 1e-6) {
+    errors.push("Conflicting inflation: model.market.inflation=" + profile.model.market.inflation + " vs profile.inf=" + profile.inf);
+  }
+  if (strict && hasLegacyInf && !hasModelInf) {
+    errors.push("v3.1: profile.inf is deprecated; use model.market.inflation.");
+  }
+
+  // Goals lived in a flat array in v2; v3.1 folds them into events[].
+  if (Array.isArray(profile.goals) && profile.goals.length > 0) {
+    flag("profile.goals is deprecated. Move entries to events[] with kind:'goal'.", true);
+  }
+
+  // Ownership sums (tolerance 0.001) — always an invariant when fields exist.
+  var checkOwner = function (arr, label) {
+    if (!Array.isArray(arr)) return;
+    arr.forEach(function (item, i) {
+      if (item && (typeof item.ownerSelf === "number" || typeof item.ownerSpouse === "number")) {
+        var s = (item.ownerSelf || 0) + (item.ownerSpouse || 0);
+        if (Math.abs(s - 1) > 0.001) {
+          errors.push(label + "[" + i + "] ownership sums to " + s.toFixed(4) + ", expected 1.000.");
+        }
+      }
+    });
+  };
+  checkOwner(profile.properties || profile.props, "properties");
+  checkOwner(profile.debts, "debts");
+  checkOwner(profile.nrInvestments, "nrInvestments");
+
+  // Sync flags location (v3.1: must live in persons[1].syncFlags).
+  if (profile.cSyncRetAge !== undefined || profile.cSyncGovAges !== undefined ||
+      profile.cUseStochMort !== undefined || profile.cAvgEAuto !== undefined) {
+    flag("Sync flags at root level. v3.1 moves them to persons[1].syncFlags.", true);
+  }
+
+  return { ok: errors.length === 0, errors: errors, warnings: warnings, schema: tag };
+}
+if (typeof window !== "undefined") window.validateSchema = validateSchema;
+
 // === NAMED CONSTANTS (2025 PAG) ===
 /*__ENGINE_START__*/
 /*__INJECTED_CONSTANTS_START__*/
@@ -7542,6 +7632,17 @@ function App() {
     return Object.assign({}, _subOnDefault, _moduleOn);
   }), sbFilter = _sbf[0], _setSbFilter = _sbf[1];
   var setSbFilter = function(key) { var nf = Object.assign({}, sbFilter); nf[key] = !nf[key]; _setSbFilter(nf); try { localStorage.setItem("bf_sbf", JSON.stringify(nf)); } catch(e){} };
+
+  // v3 Phase 0.5 — spouse sync flags live in profile state (not localStorage)
+  // so they travel with an exported profile. Default ON: spouse retirement
+  // age + gov pension ages mirror the primary, longevity follows the CPM
+  // table, and RRQ average earnings are auto-derived from salary. Users can
+  // flip any off in Phase 2's Conjoint UI to enter the raw value manually.
+  var _cSyncRetAge = useState(true), cSyncRetAge = _cSyncRetAge[0], sCSyncRetAge = _cSyncRetAge[1];
+  var _cSyncGovAges = useState(true), cSyncGovAges = _cSyncGovAges[0], sCSyncGovAges = _cSyncGovAges[1];
+  var _cUseStochMort = useState(true), cUseStochMort = _cUseStochMort[0], sCUseStochMort = _cUseStochMort[1];
+  var _cAvgEAuto = useState(true), cAvgEAuto = _cAvgEAuto[0], sCAvgEAuto = _cAvgEAuto[1];
+
   var _showWiz = useState(!localStorage.getItem("bf_used")), showWizard = _showWiz[0], setShowWiz = _showWiz[1];
   var _wizStep = useState(0), wizStep = _wizStep[0], setWizStep = _wizStep[1];
   var _gSubS = useState(0), guideSub = _gSubS[0], setGuideSub = _gSubS[1];
@@ -12534,7 +12635,7 @@ React.createElement("div", { style: sty.head },
       }
     }, 80);
   }, style: { background: mcComputing ? CL.bd : CL.ac, border: "none", color: mcComputing ? CL.dm : CL.bg, borderRadius: RAD.md, padding: "10px 28px", fontSize: FS.lg, cursor: "pointer", fontWeight: FW.bold, opacity: mcComputing ? 0.7 : 1, transition: "all 0.2s", letterSpacing: 0.5 }, "data-sim-btn": true }, mcComputing ? ("\u23f3 " + _simProgressPct + "%") : t.sim), React.createElement("span", { "aria-live": "polite", className: "sr-only", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" } }, mcComputing ? (lang === "fr" ? "Simulation en cours" : "Simulation running") : ""), React.createElement("div", { style: { display: "flex", gap: 2 } }, React.createElement("button", { onClick: function() {
-    var profile = { age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, allocOverride, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, peBal, peY, peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, ev1Name, ev2Name, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, cRetSpM, cDCBal: cDCBal2, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lang, dark, liraBal, cLiraBal, rrspRoom, lifeInsBenefit, lifeInsPremium, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, props, debts: debts };
+    var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, allocOverride, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, peBal, peY, peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, ev1Name, ev2Name, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, cRetSpM, cDCBal: cDCBal2, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lang, dark, liraBal, cLiraBal, rrspRoom, lifeInsBenefit, lifeInsPremium, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, props, debts: debts, cSyncRetAge: cSyncRetAge, cSyncGovAges: cSyncGovAges, cUseStochMort: cUseStochMort, cAvgEAuto: cAvgEAuto };
     var blob = new Blob([JSON.stringify(profile, null, 2)], { type: "application/json" });
     var a = document.createElement("a");
     a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profile, null, 2));
@@ -12744,6 +12845,11 @@ React.createElement("div", { style: sty.head },
             if (p3.insMGPrime != null) sInsMG(p3.insMGPrime);
             if (p3.insMGCov != null) sInsMGCov(p3.insMGCov);
             if (p3.family && Array.isArray(p3.family)) setFamily(p3.family);
+            // v3 Phase 0.5 — restore spouse sync flags from profile JSON.
+            if (p3.cSyncRetAge != null) sCSyncRetAge(!!p3.cSyncRetAge);
+            if (p3.cSyncGovAges != null) sCSyncGovAges(!!p3.cSyncGovAges);
+            if (p3.cUseStochMort != null) sCUseStochMort(!!p3.cUseStochMort);
+            if (p3.cAvgEAuto != null) sCAvgEAuto(!!p3.cAvgEAuto);
             window._mc = null; window._mcPending = false;
             alert("\u2713");
           } catch (er) {
