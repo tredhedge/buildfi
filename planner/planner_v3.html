@@ -1552,6 +1552,15 @@ const T_EN = {
   planHorizon: "Planning horizon",
   lifeExpect: "Life expectancy"
 };
+// === v3 FEATURE FLAGS ===
+// BF_V3_HOUSEHOLD gates Phase 5+ engine changes (ownership splits, per-person
+// tax with joint-spending optimizer). Default OFF so the current engine path
+// remains byte-identical until validation. Flip via window.BF_V3_HOUSEHOLD
+// = true in devtools to enable the household engine once it ships.
+if (typeof window !== "undefined") {
+  if (typeof window.BF_V3_HOUSEHOLD === "undefined") window.BF_V3_HOUSEHOLD = false;
+}
+
 // === NAMED CONSTANTS (2025 PAG) ===
 /*__ENGINE_START__*/
 /*__INJECTED_CONSTANTS_START__*/
