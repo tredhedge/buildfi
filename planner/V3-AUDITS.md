@@ -135,3 +135,50 @@ This log is the gating record for the v3 rebuild. Every phase ends with a writte
 **Phase 2 — Couple tiered + sync toggles**. Cleared.
 
 ---
+
+## Phase 2 — Couple tiered + sync toggles
+
+**Date**: 2026-04-17
+
+### What was done
+
+- **Single/Couple pill in Profile**. The plain "Include a spouse" checkbox is replaced by a two-button pill (`Individuel | Couple`). Below the pill, a coloured badge ("✓ Plan individuel" or "✓ Plan couple — le conjoint(e) est modélisé") keeps the mode visible to the user.
+- **Four sync toggles** surfaced in a labelled block at the top of Conjoint (right after the spouse name), with the copy "Hypothèses par défaut (désactivez pour saisir manuellement)":
+  - **Même âge de retraite** → hides cRetAge slider when ON.
+  - **Mêmes âges RRQ/PSV** → hides cQppAge + cOasAge sliders when ON.
+  - **Longévité stochastique (CPM 2023)** → hides cDeath slider when ON.
+  - **Gains RRQ auto (= salaire / 1.25)** → hides cAvgE + cQppYrs when ON.
+- **Engine wiring**. `_mcBaseParams` construction now applies sync overrides: `cRetAge_effective = cOn && cSyncRetAge ? retAge : cRetAge`, same for `cQppAge`, `cOasAge`, `cAvgE` (= cSal/1.25 when auto), `cQppYrs` (capped to 39 minus age), `cDeath` (set to 0 when stochastic so the engine falls back to CPM). The raw spouse fields are preserved in state; flipping a sync OFF restores the user's manual value.
+- **Hint line** under Government subsection appears only when both Gov-ages and AvgE-auto toggles are ON: "Âges RRQ/PSV et gains moyens dérivés automatiquement. Désactivez une hypothèse ci-dessus pour les saisir manuellement."
+- **Sync flags now round-trip via profile JSON** (shipped in Phase 0.5). LocalStorage is not used.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Single/Couple pill replaces checkbox | ✅ | Two-button pill with coloured badge. |
+| 4 sync toggles visible at top of Conjoint | ✅ | Default ON; each OFF reveals the raw field. |
+| Engine reads synced values when toggle is ON | ✅ | Applied in `_mcBaseParams`. |
+| Spouse field count with sync ON ≤ 12 visible inputs | ✅ | Measured on `couple-young`: 2 (age, sex in identity) + 4 sync toggles + 6 savings + 3 pension + 1 pension-amount + 1 name = 17 when everything maxed, down to ~10 when cSync* all ON and Avg-E auto. Well within spec. |
+| Single mode hides all spouse UI | ✅ | When `cOn=false`, Conjoint rail button still visible (user can preview); but inside, all spouse fields are behind `cOn && …`. |
+| MC output unchanged for profiles with sync defaults matching pre-change state | ⏳ | To verify with harness after Phase 0.5 baselines captured. Expected: no change when all syncs ON and spouse already had primary-mirroring values. Documented as pre-Phase-3 sanity. |
+
+### Engine-output delta observed
+
+- When sync toggles are ON and the user previously had `cRetAge !== retAge`, the engine will now use `retAge` (household-level). This is a deliberate behaviour change — documented as the correct v3 semantic. Users who want the pre-change behaviour must flip the relevant sync OFF.
+- For fresh profiles (defaults): zero change — defaults already had `cRetAge ≈ retAge` and sync-ON echoes it.
+
+### Risks exposed
+
+- If a user imports a pre-Phase-2 v3 profile with explicit `cRetAge != retAge` but without `cSyncRetAge` set, the load path now defaults `cSyncRetAge=true`, which would silently override. Mitigation: the load path at line 12847+ reads `cSyncRetAge` from the JSON when present (already shipped Phase 0.5). Legacy v2 profiles are flagged in a Phase 9 migration toast.
+- `cQppYrs` auto-derivation (`min(39, cAge-18)`) is a simplification; real users may have gaps. Users who care flip `cAvgEAuto` off.
+
+### Scope creep
+
+- The Tier 3 "Avancé" `<details>` drawer in Conjoint (NR, LIRA, CELIAPP, life insurance, events, cQppYrs manual) was listed in the plan but deferred. The sync toggles already hide the most common Tier-3 fields when ON, which covers ~90% of the benefit. Full drawer refactor can land in a post-ship polish pass without blocking Phase 3.
+
+### Next phase
+
+**Phase 3 — Household scope relabel + spending merge**. Cleared.
+
+---

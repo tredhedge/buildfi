@@ -9079,7 +9079,18 @@ function App() {
 
   // Auto-invalidate MC when key model params change
 
-  var _mcBaseParams = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, strs, custEq: custStrs, custBd, custInf, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, cDCBal: cDCBal2, cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
+  // v3 Phase 2 — apply spouse sync flags before the engine reads values.
+  // When sync is ON the primary's value is echoed to the spouse field;
+  // when OFF the raw spouse field is used. These overrides run every time
+  // _mcBaseParams is rebuilt, so flipping a toggle invalidates MC cleanly.
+  var _cRetAgeEff = (cOn && cSyncRetAge) ? retAge : cRetAge;
+  var _cQppAgeEff = (cOn && cSyncGovAges) ? qppAge : cQppAge;
+  var _cOasAgeEff = (cOn && cSyncGovAges) ? oasAge : cOasAge;
+  var _cAvgEEff = (cOn && cAvgEAuto) ? Math.round((cSal || 0) / 1.25) : cAvgE;
+  var _cQppYrsEff = (cOn && cAvgEAuto) ? Math.min(39, Math.max(0, (cAge - 18))) : cQppYrs;
+  var _cDeathEff = (cOn && cUseStochMort) ? 0 : cDeath; // 0 signals engine to use CPM table
+
+  var _mcBaseParams = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, strs, custEq: custStrs, custBd, custInf, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge: _cRetAgeEff, cDeath: _cDeathEff, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge: _cQppAgeEff, cAvgE: _cAvgEEff, cQppYrs: _cQppYrsEff, cOasAge: _cOasAgeEff, cPenType, cPenM, cDCBal: cDCBal2, cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
   // R6-OPTION-B: No auto-launch MC from render body. Placeholder only.
   // MC runs exclusively via Simuler button (clicked by useEffect on mount + profile switch).
   // This eliminates the race condition where render-body MC captured stale React state.
@@ -11653,13 +11664,40 @@ secVis("profil") && React.createElement(React.Fragment, null,
   ),
   // --- Conjoint toggle ---
   React.createElement("div", { style: { marginTop: 4, padding: "6px 8px", background: cOn ? CL.tl + "12" : CL.s2, borderRadius: RAD.sm, border: "1px solid " + (cOn ? CL.tl + "40" : CL.bd) } },
-    React.createElement(Check, { v: cOn, set: function(v) { sCOn(v); if (v && !sbFilter.conj) setSbFilter("conj"); }, l: lang === "fr" ? "Inclure un(e) conjoint(e) dans le plan" : "Include a spouse in the plan" }),
-    cOn && React.createElement("div", { role: "button", tabIndex: 0,
-      onClick: function() { setOS("conj"); setPan(true); setMobSb(true); },
-      onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOS("conj"); setPan(true); setMobSb(true); } },
-      style: { fontSize: FS.xs, color: CL.tl, marginTop: 4, paddingLeft: 20, cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3, fontWeight: FW.medium },
-      title: lang === "fr" ? "Ouvrir le module Conjoint(e)" : "Open Spouse module"
-    }, lang === "fr" ? "\u2192 D\u00e9finir le conjoint(e) dans son onglet" : "\u2192 Define the spouse in their own tab")
+    /* v3 Phase 2 — Single / Couple pill replaces the checkbox. Active
+       choice shows a colour-coded badge so the plan mode is obvious at
+       a glance throughout the app. */
+    React.createElement("div", { style: { marginTop: 8, marginBottom: 6 } },
+      React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 4 } }, lang === "fr" ? "Mode du plan" : "Plan mode"),
+      React.createElement("div", { style: { display: "flex", gap: 4 } },
+        [
+          ["single", lang === "fr" ? "Individuel" : "Single", false],
+          ["couple", lang === "fr" ? "Couple" : "Couple", true]
+        ].map(function(opt) {
+          var _isActive = (opt[2] === cOn);
+          return React.createElement("button", {
+            key: opt[0],
+            onClick: function() {
+              sCOn(opt[2]);
+              if (opt[2] && !sbFilter.conj) setSbFilter("conj");
+            },
+            style: { flex: 1, padding: "6px 10px", fontSize: FS.base, borderRadius: RAD.sm,
+              border: "1px solid " + (_isActive ? (opt[2] ? CL.tl : CL.ac) : CL.bd),
+              background: _isActive ? (opt[2] ? CL.tl : CL.ac) : "transparent",
+              color: _isActive ? CL.bg : TX.secondary(),
+              cursor: "pointer", fontWeight: _isActive ? 700 : 500 }
+          }, opt[1]);
+        })),
+      /* Badge under the pill — persists across every module as a mental anchor. */
+      React.createElement("div", { style: { fontSize: FS.xxs, color: cOn ? CL.tl : CL.ac, fontWeight: FW.medium, marginTop: 4, opacity: 0.85 } },
+        cOn ? (lang === "fr" ? "✓ Plan couple — le conjoint(e) est modélisé" : "✓ Couple plan — spouse is modelled")
+            : (lang === "fr" ? "✓ Plan individuel" : "✓ Single plan")),
+      cOn && React.createElement("div", { role: "button", tabIndex: 0,
+        onClick: function() { setOS("conj"); setPan(true); setMobSb(true); },
+        onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOS("conj"); setPan(true); setMobSb(true); } },
+        style: { fontSize: FS.xs, color: CL.tl, marginTop: 4, cursor: "pointer", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3, fontWeight: FW.medium },
+        title: lang === "fr" ? "Ouvrir le module Conjoint(e)" : "Open Spouse module"
+      }, lang === "fr" ? "→ Définir le conjoint(e) dans son onglet" : "→ Define the spouse in their own tab"))
   ),
   // --- Objectifs (Goals) — placed ABOVE AI tone because client objectives
   //     define the plan's purpose; the AI-tone settings only shape narrative style.
@@ -11755,15 +11793,29 @@ inc3Age > 0 ? React.createElement("div", { style: { padding: "6px 8px", backgrou
     tog("conj");
   } }), secVis("conj") && React.createElement(React.Fragment, null, React.createElement(Check, { v: cOn, set: sCOn, l: t.conjAct }), cOn && React.createElement(React.Fragment, null,
 // --- Spouse name field ---
-React.createElement(Field, { l: lang === "fr" ? "Pr\u00e9nom conjoint(e)" : "Spouse first name" }, React.createElement("input", { value: cSpouseName, onChange: function(e) { sCSN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Sophie" : "E.g. Sophie", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
+React.createElement(Field, { l: lang === "fr" ? "Prénom conjoint(e)" : "Spouse first name" }, React.createElement("input", { value: cSpouseName, onChange: function(e) { sCSN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Sophie" : "E.g. Sophie", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
 React.createElement("div", { style: { height: 4 } }),
-// --- Sub-header: Identit\u00e9 / Identity ---
-React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Identit\u00e9" : "Identity"),
+
+// v3 Phase 2 — Spouse sync toggles. Default ON; when ON the corresponding
+// raw spouse field is hidden and the primary's value (or a safe default)
+// is used by the engine. Flipping a toggle OFF reveals the raw field.
+React.createElement("div", { style: { padding: "8px 10px", background: CL.tl + "0a", borderRadius: RAD.sm + 2, border: "1px solid " + CL.tl + "30", marginBottom: 8 } },
+  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.tl, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 6 } }, lang === "fr" ? "Hypothèses par défaut (désactivez pour saisir manuellement)" : "Default assumptions (uncheck to enter manually)"),
+  React.createElement("div", { className: "bf-sb-grid2" },
+    React.createElement(Check, { v: cSyncRetAge, set: sCSyncRetAge, l: lang === "fr" ? "Même âge de retraite" : "Same retirement age" }),
+    React.createElement(Check, { v: cSyncGovAges, set: sCSyncGovAges, l: lang === "fr" ? "Mêmes âges RRQ/PSV" : "Same QPP/OAS ages" }),
+    React.createElement(Check, { v: cUseStochMort, set: sCUseStochMort, l: lang === "fr" ? "Longévité stochastique (CPM 2023)" : "Stochastic longevity (CPM 2023)" }),
+    React.createElement(Check, { v: cAvgEAuto, set: sCAvgEAuto, l: lang === "fr" ? "Gains RRQ auto (= salaire / 1,25)" : "QPP earnings auto (= salary / 1.25)" })
+  )
+),
+
+// --- Sub-header: Identité / Identity ---
+React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Identité" : "Identity"),
 React.createElement("div", { className: "bf-sb-grid2" },
-  React.createElement(Field, { l: lang === "fr" ? "\u00c2ge" : "Age" }, React.createElement(Slider, { v: cAge, set: sCAge, mn: 18, mx: 80 })),
+  React.createElement(Field, { l: lang === "fr" ? "Âge" : "Age" }, React.createElement(Slider, { v: cAge, set: sCAge, mn: 18, mx: 80 })),
   React.createElement(Field, { l: t.conjSex }, React.createElement("select", { value: cSex, onChange: function(e) { sCsex(e.target.value); }, style: selSty }, React.createElement("option", { value: "M" }, lang === "fr" ? "Homme" : "Male"), React.createElement("option", { value: "F" }, lang === "fr" ? "Femme" : "Female"))),
-  React.createElement(Field, { l: lang === "fr" ? "Retraite" : "Retirement", err: valErrors.cRetAge }, React.createElement(Slider, { v: cRetAge, set: sCRA, mn: 45, mx: 75 })),
-  React.createElement(Field, { l: lang === "fr" ? "Survie" : "Survival", tip: TIP.conjSurvie }, React.createElement(Slider, { v: cDeath, set: sCDeath, mn: 70, mx: 100 }))
+  !cSyncRetAge && React.createElement(Field, { l: lang === "fr" ? "Âge de retraite" : "Retirement age", err: valErrors.cRetAge }, React.createElement(Slider, { v: cRetAge, set: sCRA, mn: 45, mx: 75 })),
+  !cUseStochMort && React.createElement(Field, { l: lang === "fr" ? "Horizon de vie" : "Life horizon", tip: TIP.conjSurvie }, React.createElement(Slider, { v: cDeath, set: sCDeath, mn: 70, mx: 100 }))
 ),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: \u00c9pargne / Savings ---
@@ -11780,10 +11832,13 @@ React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Gouvernement / Government ---
 React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Gouvernement" : "Government"),
 React.createElement("div", { className: "bf-sb-grid2" },
-  React.createElement(Field, { l: lang === "fr" ? "RRQ d\u00e9but (60-72)" : "QPP start (60-72)", err: valErrors.cQppAge }, React.createElement(Slider, { v: cQppAge, set: sCQA, mn: 60, mx: 72 })),
-  React.createElement(Field, { l: lang === "fr" ? "Rev. moyen" : "Avg. earnings" }, React.createElement(NumField, { v: cAvgE, set: sCAvgE, step: 5e3 })),
-  React.createElement(Field, { l: lang === "fr" ? "Ann\u00e9es cotis." : "Contrib. years" }, React.createElement(Slider, { v: cQppYrs, set: sCQY, mn: 0, mx: 40 })),
-  React.createElement(Field, { l: lang === "fr" ? "PSV d\u00e9but" : "OAS start", err: valErrors.cOasAge }, React.createElement(Slider, { v: cOasAge, set: sCOA, mn: 65, mx: 72 }))
+  !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début RRQ (60-72)" : "QPP start (60-72)", err: valErrors.cQppAge }, React.createElement(Slider, { v: cQppAge, set: sCQA, mn: 60, mx: 72 })),
+  !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Gains admissibles moyens RRQ" : "Avg QPP pensionable earnings" }, React.createElement(NumField, { v: cAvgE, set: sCAvgE, step: 5e3 })),
+  !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Années cotisées" : "Contribution years" }, React.createElement(Slider, { v: cQppYrs, set: sCQY, mn: 0, mx: 40 })),
+  !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début PSV" : "OAS start", err: valErrors.cOasAge }, React.createElement(Slider, { v: cOasAge, set: sCOA, mn: 65, mx: 72 }))
+),
+(cSyncGovAges && cAvgEAuto) && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic", marginTop: -2, marginBottom: 6, paddingLeft: 6, borderLeft: "2px solid " + CL.tl + "50" } },
+  lang === "fr" ? "Âges RRQ/PSV et gains moyens dérivés automatiquement. Désactivez une hypothèse ci-dessus pour les saisir manuellement." : "QPP/OAS ages and average earnings are auto-derived. Uncheck an assumption above to enter them manually."
 ),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Pension & Emploi / Pension & Employment ---
