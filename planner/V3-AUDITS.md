@@ -91,3 +91,47 @@ This log is the gating record for the v3 rebuild. Every phase ends with a writte
 **Phase 1 — Sidebar structural completion**. Cleared to start.
 
 ---
+
+## Phase 1 — Sidebar structural completion
+
+**Date**: 2026-04-17
+
+### What was done
+
+- **Acronym expansion sweep**:
+  - MER labels on Savings: "REER MER" → "Frais REER (MER %)"; "CELI MER" → "Frais CÉLI (MER %)"; "NR MER" → "Frais non-enregistré (MER %)". Bilingual.
+  - "HELOC drawn" → "Home equity LOC (HELOC) drawn" / "Marge hypothécaire (HELOC) tirée".
+- **Real-estate progressive disclosure (per property)**:
+  - Advanced Strategies block (header + HELOC fields + Smith checkbox + refinance) and Sale/Downsizing block now gated on `pr.val > 0`. A freshly-added property shows only identity/value/mortgage/rent/expenses until the user enters a value, at which point strategies and sale planning reveal.
+  - Within Advanced Strategies, HELOC rate + Smith appear only when `pr.heloc > 0`, keeping the section light for owner-occupied properties.
+- **Labels polished**: "Advanced Strategies" → "Stratégies avancées"; "Downsizing" → "Vente ou downsizing" (FR) / "Sale or downsizing" (EN).
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Acronym grep against dictionary (MER, HELOC, CCPC, LCGE, DPA/CCA, ITA 8517) | ✅ | All visible labels expanded or tooltipped. Remaining occurrences are in code paths/engine comments (non-UI). |
+| Progressive disclosure applied to Real Estate | ✅ | Gated on `pr.val > 0` and `pr.heloc > 0`. |
+| No raw `<input type="range">` visible for zero-valued Real Estate fields | ✅ | All RE sliders now gated. |
+| Module audit table written to V3-AUDITS.md | 🟡 | Partial — scope prioritised visible fixes over an exhaustive table. Audit table deferred to Phase 2 rollup (same session). |
+| Advanced drawer wrap of Model stress / 2nd shock | 🟡 | Infrastructure exists (`.bf-adv-drawer`, Phase 0.5). Two-shock wrap deferred to a post-ship polish pass (low user impact, high refactor cost in the one-line React chain). |
+| Business CCPC progressive disclosure | 🟡 | Deferred — already gated at `bizOn` toggle; deeper gating is not user-visible noise. |
+| Special accounts (FHSA/RESP/FTQ) already gated on enable checkboxes | ✅ | Verified in code. |
+
+### Engine-output delta observed
+
+- **None.** All changes are UI-label or visibility-gate. Engine hot path untouched.
+
+### Risks exposed
+
+- Adding `(pr.val || 0) > 0 &&` to multiple siblings in a flat `React.createElement` chain is verbose and brittle; a future polish phase could refactor this block into a nested sub-component. Acceptable technical debt for now.
+
+### Scope creep
+
+- None. Phase 1 deliberately scoped.
+
+### Next phase
+
+**Phase 2 — Couple tiered + sync toggles**. Cleared.
+
+---
