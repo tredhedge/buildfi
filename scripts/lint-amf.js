@@ -22,6 +22,22 @@ const FORBIDDEN = [
   /\bassurez-vous\b/i,
   /\bpriorisez\b/i,
   /plan d['']action/i,
+  // Insurance-specific guardrails. Canadian insurance distribution is licensed
+  // activity (AMF, OSFI, provincial councils). Modeling user-entered coverage
+  // is fine; recommending specific amounts or products is not. Never say the
+  // user needs / should buy a specific product, suggest suitability, or quote
+  // a premium as if it were a regulated illustration.
+  /il vous faut\s+(?:une|un|des|de la|du)\s+assurance/i,
+  /vous avez besoin d['']une?\s+assurance/i,
+  /nous recommandons\s+(?:un(?:e)?\s+)?(?:montant|couverture|police|produit)/i,
+  /\bsouscrivez\b/i,
+  /achetez\s+(?:cette|ce|une|un)\s+(?:assurance|police|couverture)/i,
+  /you should buy\s+(?:this|a|an|insurance)/i,
+  /you need\s+(?:life|disability|insurance|coverage)/i,
+  /we recommend\s+\$\d/i,
+  /we recommend\s+(?:buying|purchasing|getting)\s+(?:a|an|insurance)/i,
+  /suitable for you\b/i,
+  /\badapt[ée]\s+(?:sp[ée]cifiquement\s+)?pour vous\b/i,
 ];
 
 // Lines that contain these strings are exempted (documentation / code comments about what NOT to do)
@@ -41,6 +57,12 @@ const EXEMPT_LINE_PATTERNS = [
   // Regex pattern literals (e.g., the AMF sanitizer regex itself in ai-constants.ts)
   /\\bdevriez\\b/,
   /\\bvous devez\\b/,
+  // Planner self-test that CHECKS for forbidden phrases as string literals in
+  // SAM strategies — the test code itself contains "devriez" as the search
+  // target, not as advisory language.
+  /indexOf\(["']devriez["']\)/,
+  /indexOf\(["']recommand/,
+  /AMF compliant/i,
 ];
 
 // File paths (relative) exempted entirely — these list forbidden terms in AI instructions
@@ -52,7 +74,7 @@ const EXEMPT_FILE_SUFFIXES = [
   "scripts/lint-amf.js",
 ];
 
-const SCAN_DIRS = ["lib", "public", "app"];
+const SCAN_DIRS = ["lib", "public", "app", "planner"];
 const INCLUDE_EXTS = new Set([".ts", ".tsx", ".js", ".html"]);
 
 let violations = 0;

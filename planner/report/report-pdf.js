@@ -1569,6 +1569,97 @@
     return h;
   }
 
+  // === SECTION: INSURANCE (conditional — rendered only when policies exist) ===
+  // Surfaces user-entered life insurance + disability in the report. STRICTLY
+  // observational: reflects existing coverage, describes impact on estate and
+  // cashflow, and routes the user to a licensed advisor for recommendations.
+  // No premium quotes, no product recommendations, no "you should buy" copy.
+  // AMF/OSFI compliance:
+  //   - conditional language ("la couverture actuelle ajoute…", "Les projections")
+  //   - premium shown as user's entered value (not a quote we produce)
+  //   - explicit disclaimer + advisor handoff at section end
+  function renderInsurance(d, secN) {
+    var p = d.p, fr = d.fr;
+    var lifeUser = p.lifeInsBenefit || 0;
+    var lifeSp = (p.cOn ? (p.cLifeInsBenefit || 0) : 0);
+    var premUser = p.lifeInsPremium || 0;
+    var premSp = (p.cOn ? (p.cLifeInsPremium || 0) : 0);
+    var dProb = p.disabProb || 0;
+    var dMo = p.disabilityMonths || p.disabMo || 0;
+    var dOn = dProb > 0 && p.age < p.retAge;
+    // Nothing to render: no policies, no disability
+    if (lifeUser + lifeSp <= 0 && !dOn) return '';
+
+    var fR = function(v) { return F.fmtMoney(v, fr); };
+    var f$ = F.fmtCompact;
+    var h = secPage();
+    h += F.Sec(secN, F.L('insurance', fr), 'sec-insurance');
+
+    // Intro narrative — strictly observational
+    var totalFace = lifeUser + lifeSp;
+    var totalPrem = premUser + premSp;
+    var yearsToRet = Math.max(0, (p.retAge || 65) - (p.age || 35));
+    var lifetimePremAccum = totalPrem * yearsToRet; // rough nominal (no indexation)
+    h += narr(fr
+      ? 'Vous avez renseign\u00e9 <strong>' + f$(totalFace) + '</strong> de capital-d\u00e9c\u00e8s total' + (p.cOn && lifeSp > 0 ? ' (vous + conjoint)' : '') + (totalPrem > 0 ? ', avec des primes annuelles de <strong>' + fR(totalPrem) + '</strong>' : '') + '. Le capital-d\u00e9c\u00e8s est ajout\u00e9 \u00e0 la succession m\u00e9diane (libre d\u2019imp\u00f4t). Les primes r\u00e9duisent l\u2019\u00e9pargne nette durant l\u2019accumulation.'
+      : 'You have entered <strong>' + f$(totalFace) + '</strong> total life coverage' + (p.cOn && lifeSp > 0 ? ' (you + spouse)' : '') + (totalPrem > 0 ? ', with annual premiums of <strong>' + fR(totalPrem) + '</strong>' : '') + '. The death benefit adds to projected median estate (tax-free). Premiums reduce net savings during accumulation.');
+
+    // Coverage table
+    if (totalFace > 0) {
+      h += F.CopyBtn('rpt-t-ins');
+      h += '<table id="rpt-t-ins" class="tbl"><thead><tr>';
+      h += '<th style="text-align:left">' + (fr ? 'Assur\u00e9' : 'Insured') + '</th>';
+      h += '<th>' + (fr ? 'Capital-d\u00e9c\u00e8s' : 'Death benefit') + '</th>';
+      h += '<th>' + (fr ? 'Prime annuelle' : 'Annual premium') + '</th>';
+      h += '<th>' + (fr ? 'Primes cumul. (\u00e0 retraite)' : 'Cumul. premiums (to ret.)') + '</th>';
+      h += '</tr></thead><tbody>';
+      if (lifeUser > 0) {
+        h += '<tr><td style="font-family:DM Sans,sans-serif">' + (fr ? 'Vous' : 'You') + '</td>';
+        h += '<td>' + fR(lifeUser) + '</td>';
+        h += '<td>' + (premUser > 0 ? fR(premUser) : '\u2014') + '</td>';
+        h += '<td>' + (premUser > 0 ? fR(premUser * yearsToRet) : '\u2014') + '</td></tr>';
+      }
+      if (lifeSp > 0) {
+        h += '<tr><td style="font-family:DM Sans,sans-serif">' + (fr ? 'Conjoint' : 'Spouse') + '</td>';
+        h += '<td>' + fR(lifeSp) + '</td>';
+        h += '<td>' + (premSp > 0 ? fR(premSp) : '\u2014') + '</td>';
+        h += '<td>' + (premSp > 0 ? fR(premSp * yearsToRet) : '\u2014') + '</td></tr>';
+      }
+      h += '</tbody></table>';
+    }
+
+    // KPI strip
+    h += '<div class="g3" style="margin-top:8px">';
+    if (totalFace > 0) h += F.KPI('<span class="mono">' + fR(totalFace) + '</span>', fr ? 'Capital-d\u00e9c\u00e8s total' : 'Total life coverage', C.blue);
+    if (totalPrem > 0) h += F.KPI('<span class="mono">' + fR(totalPrem) + '</span>/' + (fr ? 'an' : 'yr'), fr ? 'Primes annuelles' : 'Annual premiums', C.amber);
+    if (totalFace > 0 && d.mc && d.mc.medEstateNet) h += F.KPI('<span class="mono">' + f$(d.mc.medEstateNet) + '</span>', fr ? 'H\u00e9ritage m\u00e9dian P50' : 'Median estate P50', C.green);
+    h += '</div>';
+
+    // Disability block (if enabled)
+    if (dOn) {
+      h += '<div class="cd" style="margin-top:10px;padding:10px 12px;border-left:3px solid ' + C.amber + '">';
+      h += '<div style="font-weight:600;color:' + C.amber + ';font-size:12px;margin-bottom:4px">' + (fr ? 'Risque d\u2019invalidit\u00e9 mod\u00e9lis\u00e9' : 'Modeled disability risk') + '</div>';
+      h += '<div style="font-size:11px;color:#666;line-height:1.5">';
+      h += fr
+        ? 'Probabilit\u00e9 annuelle d\u2019interruption de revenu : <strong>' + Math.round(dProb * 100) + '%</strong>. Dur\u00e9e moyenne : <strong>' + dMo + ' mois</strong>. L\u2019impact sur le salaire est int\u00e9gr\u00e9 au Monte Carlo (r\u00e9duction temporaire des cotisations).'
+        : 'Annual probability of income interruption: <strong>' + Math.round(dProb * 100) + '%</strong>. Average duration: <strong>' + dMo + ' months</strong>. Salary impact is integrated in Monte Carlo (temporary contribution reduction).';
+      h += '</div></div>';
+    }
+
+    // Post-data observation (AI-free — insurance is sensitive, keep it deterministic)
+    h += narr(fr
+      ? 'Les projections indiquent que la couverture vie actuelle compense <strong>' + (totalFace > (d.mc && d.mc.medEstateTax || 0) ? f$(d.mc.medEstateTax || 0) : f$(totalFace)) + '</strong> de l\u2019imp\u00f4t successoral estim\u00e9. Un \u00e9cart entre les besoins (revenu survivant, dettes, d\u00e9pendants) et la couverture totale pourrait subsister selon votre situation personnelle.'
+      : 'Projections indicate the current life coverage offsets <strong>' + (totalFace > (d.mc && d.mc.medEstateTax || 0) ? f$(d.mc.medEstateTax || 0) : f$(totalFace)) + '</strong> of estimated estate tax. A gap between needs (survivor income, debts, dependents) and total coverage may remain depending on personal circumstances.');
+
+    // Disclaimer — AMF-safe handoff
+    h += F.Insight(fr
+      ? '<strong>Portée de cette section.</strong> Modélisation éducative du capital-décès et des primes que vous avez renseignés. Ce n\u2019est pas un conseil en assurance ni une évaluation de suffisance. Pour une recommandation personnalisée, consultez un conseiller accrédité (AMF au Québec, ou l\u2019autorité provinciale applicable).'
+      : '<strong>Scope of this section.</strong> Educational modeling of the death benefits and premiums you entered. This is not insurance advice or a sufficiency assessment. For a personalized recommendation, consult a licensed insurance advisor (AMF in Quebec, or your applicable provincial authority).');
+
+    h += secPageEnd();
+    return h;
+  }
+
   // === SECTION: STRATEGIES (SAM + recos) ===
   function renderStrategies(d, secN) {
     var fr = d.fr, exp = d.exp, ai = d.ai;
@@ -1941,7 +2032,11 @@
     var debtHtml = renderDebts(d, secN + 1);
     if (debtHtml) { secN++; h += debtHtml; }
 
-    // 16. Risk & Sensitivity (expert only)
+    // 16. Insurance (conditional — rendered only when user has coverage entered)
+    var insHtml = renderInsurance(d, secN + 1);
+    if (insHtml) { secN++; h += insHtml; }
+
+    // 17. Risk & Sensitivity (expert only)
     if (d.exp) { secN++; h += renderRisk(d, secN); }
 
     // 17. Methodology (always)

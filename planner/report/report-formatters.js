@@ -291,6 +291,7 @@
     rsu:             { fr: "Actions RSU", en: "RSU Grants" },
     corp:            { fr: "Corporation (SPCC)", en: "Corporation (CCPC)" },
     debt:            { fr: "Dettes", en: "Debts" },
+    insurance:       { fr: "Assurances", en: "Insurance" },
     risk:            { fr: "Risque & sensibilit\u00e9", en: "Risk & Sensitivity" },
     strategies:      { fr: "Strat\u00e9gies observ\u00e9es", en: "Observed Strategies" },
     methodology:     { fr: "M\u00e9thodologie", en: "Methodology" },

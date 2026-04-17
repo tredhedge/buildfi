@@ -7153,10 +7153,16 @@ var SAM_STRATEGIES = [
     apply: function(p) { return Object.assign({}, p, { gkOn: true, gkCeil: 1.2, gkFloor: 0.8, gkCut: 0.10, gkRaise: 0.05, gkMaxCut: 0.25 }); },
     explain: { fr: "Les projections indiquent que l\u2019ajustement dynamique des retraits selon les rendements du march\u00e9 am\u00e9liorerait la durabilit\u00e9.", en: "Projections indicate dynamic spending adjustments based on market returns would improve sustainability." } },
   // === INSURANCE ===
-  { id: "lifeIns", cat: "insurance", name: { fr: "Assurance vie 500K$", en: "Life insurance $500K" },
+  // Observation, not prescription: the strategy flags a coverage GAP and hands
+  // off to a licensed advisor. apply() simulates a generic coverage level so
+  // the user can see the projection impact, but the copy avoids specifying a
+  // "you should buy" amount. Keeping the apply() amount is necessary for the
+  // MC comparison to function; the name/explain framing is what regulators
+  // read.
+  { id: "lifeIns", cat: "insurance", name: { fr: "\u00c9valuer la couverture vie", en: "Review life coverage" },
     cond: function(p) { return p.cOn && (p.lifeInsBenefit || 0) < 100000; },
     apply: function(p) { return Object.assign({}, p, { lifeInsBenefit: 500000, lifeInsPremium: 150 }); },
-    explain: { fr: "Les projections indiquent qu\u2019une assurance vie de 500K$ prot\u00e9gerait le conjoint survivant contre un d\u00e9c\u00e8s pr\u00e9matur\u00e9.", en: "Projections indicate $500K life insurance would protect the surviving spouse against premature death." } },
+    explain: { fr: "Les projections identifient un \u00e9cart de couverture potentiel pour le conjoint survivant. Un conseiller en assurance accr\u00e9dit\u00e9 (AMF au Qu\u00e9bec) pourrait quantifier des options adapt\u00e9es.", en: "Projections identify a potential coverage gap for the surviving spouse. A licensed insurance advisor (AMF in Quebec) could quantify suitable options." } },
   // === COUPLE ===
   { id: "cSavings", cat: "couple", name: { fr: "Conjoint: \u00e9pargner au C\u00c9LI", en: "Spouse: save in TFSA" },
     cond: function(p) { return p.cOn && (p.cTFSAC || 0) < 3000 && (p.cSal || 0) > 20000; },
@@ -7217,7 +7223,14 @@ function calcInsuranceNeed(p) {
 
   var gap = Math.max(0, totalNeed - projectedEstate - existingCoverage);
 
-  // Premium estimate (simplified Canadian term life rates by age/sex)
+  // Premium estimate — returned as a RANGE, not a point, so callers can't
+  // present this as a quote. A specific premium would arguably be a
+  // regulated insurance illustration; a band labelled "ordre de grandeur"
+  // is closer to education than advice. Band derives from:
+  //   - low  ≈ preferred non-smoker, very good health  (0.7 × mid)
+  //   - mid  ≈ standard non-smoker                     (baseline table)
+  //   - high ≈ standard smoker or rated / impaired     (2.2 × mid)
+  // Baseline rates are order-of-magnitude industry averages (CLHIA 2024 range).
   var premiumPer1000 = 0;
   var insAge = p.age || 40;
   if (p.sex === "F") {
@@ -7225,8 +7238,11 @@ function calcInsuranceNeed(p) {
   } else {
     premiumPer1000 = insAge < 35 ? 0.65 : insAge < 45 ? 0.90 : insAge < 55 ? 1.60 : insAge < 65 ? 3.50 : 7.00;
   }
-  var annualPremium = (gap / 1000) * premiumPer1000;
-  var monthlyPremium = Math.round(annualPremium / 12);
+  var _annMid = (gap / 1000) * premiumPer1000;
+  var _annLow = _annMid * 0.7;
+  var _annHigh = _annMid * 2.2;
+  var annualPremium = Math.round(_annMid); // legacy field — keep for any external callers
+  var monthlyPremium = Math.round(_annMid / 12); // legacy field
 
   return {
     survivorIncome: survivorIncome,
@@ -7237,6 +7253,19 @@ function calcInsuranceNeed(p) {
     totalNeed: totalNeed,
     projectedEstate: projectedEstate,
     existingCoverage: existingCoverage,
+    // Premium RANGE — always prefer these when rendering to the user.
+    // The legacy monthlyPremium / annualPremium fields remain for internal
+    // callers but must not be surfaced as "your premium" in UI copy.
+    premiumRange: {
+      annualLow: Math.round(_annLow),
+      annualMid: Math.round(_annMid),
+      annualHigh: Math.round(_annHigh),
+      monthlyLow: Math.round(_annLow / 12),
+      monthlyMid: Math.round(_annMid / 12),
+      monthlyHigh: Math.round(_annHigh / 12),
+      perThousandMid: premiumPer1000,
+      source: "Ordre de grandeur \u2014 tarifs moyens du march\u00e9 canadien de l'assurance temporaire (CLHIA 2024). Le prix r\u00e9el varie selon l'\u00e9tat de sant\u00e9, le tabagisme, le fournisseur et la dur\u00e9e. Non un devis."
+    },
     gap: gap,
     monthlyPremium: monthlyPremium,
     annualPremium: Math.round(annualPremium)
@@ -11745,6 +11774,14 @@ React.createElement(Field, { l: t.rrspRoom , tip: TIP.rrspRoomDesc}, React.creat
 
 React.createElement(Field, { l: t.lifeIns, tip: TIP.insVie }, React.createElement(NumField, { v: lifeInsBenefit, set: sLifeIns, step: 25e3 })),
 lifeInsBenefit > 0 ? React.createElement(Field, { l: t.lifeInsPrem , tip: TIP.lifeInsDesc}, React.createElement(NumField, { v: lifeInsPremium, set: sLifeInsPrem, step: 100 })) : null,
+// Module-level disclaimer — shown whenever insurance inputs are engaged.
+// Frames the insurance modeling as educational / illustrative and points
+// users to a licensed advisor. Kept compact to avoid sidebar clutter.
+lifeInsBenefit > 0 ? React.createElement("div", {
+  style: { fontSize: FS.xxs, color: CL.dm, marginTop: 2, marginBottom: 4, padding: "4px 6px", background: "rgba(70,128,192,0.06)", borderLeft: "2px solid rgba(70,128,192,0.35)", borderRadius: 2, lineHeight: 1.4 }
+}, "\u2139\ufe0f ", lang === "fr"
+  ? "Mod\u00e9lisation de votre couverture existante \u2014 non un conseil en assurance. Pour une recommandation, consultez un conseiller accr\u00e9dit\u00e9 (AMF au Qu\u00e9bec)."
+  : "Models your existing coverage \u2014 not insurance advice. For a recommendation, consult a licensed advisor (AMF in Quebec).") : null,
  React.createElement("div", { style: { height: 3 } }), React.createElement(Field, { l: t.contGr, tip: TIP.contGrDesc }, React.createElement(Slider, { v: contGr, set: sCG2, mn: 0, mx: 0.05 })), React.createElement("div", { style: { height: 2 } }),
 React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, "FTQ / Fondaction"),
 React.createElement(Check, { v: ftqOn, set: setFTQ, l: lang === "fr" ? "Fonds de travailleurs (cr\u00e9dit 30%)" : "Labour funds (30% tax credit)" }),
@@ -14036,6 +14073,44 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         );
       }()) : null,
 
+      // === INSURANCE COVERAGE CHIPS ==========================================
+      // Surfaces existing user-entered insurance so the Diagnostic tab visibly
+      // acknowledges that coverage affects the projection (death benefits in
+      // estate, premiums in cashflow, disability interruption risk). No product
+      // recommendations — purely reflects what the user has entered.
+      !_planIncomplete && ((lifeInsBenefit || 0) > 0 || (cOn && (cLifeInsBenefit || 0) > 0) || ((disabProb || 0) > 0 && (age < retAge))) ? (function() {
+        var _totalFace = (lifeInsBenefit || 0) + (cOn ? (cLifeInsBenefit || 0) : 0);
+        var _totalPrem = (lifeInsPremium || 0) + (cOn ? (cLifeInsPremium || 0) : 0);
+        var _disabOn = (disabProb || 0) > 0 && age < retAge;
+        var _disabMo = disabilityMonths || 0;
+        return E("div", { style: { marginBottom: 14, padding: "10px 12px", background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd } },
+          E("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } },
+            E("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
+              E("span", { style: { fontSize: FS.md } }, "\ud83d\udee1\ufe0f"),
+              E("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, color: CL.ac, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "Couverture d'assurance" : "Insurance Coverage")),
+            E("div", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic" } }, fr ? "Mod\u00e9lisation \u2014 non un conseil" : "Modeling \u2014 not advice")),
+          E("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, fontSize: FS.xs } },
+            _totalFace > 0 ? E("div", { style: { padding: "3px 10px", background: CL.bl + "12", border: "1px solid " + CL.bl + "40", borderRadius: RAD.lg, color: CL.al }, title: fr ? "Capital-d\u00e9c\u00e8s total (vous + conjoint). Ajout\u00e9 \u00e0 la succession en cas de d\u00e9c\u00e8s \u2014 libre d'imp\u00f4t." : "Total face value (you + spouse). Added to estate at death \u2014 tax-free." },
+              E("span", { style: { color: CL.dm } }, fr ? "Vie: " : "Life: "),
+              E("strong", { style: { color: CL.al } }, f$(_totalFace))) : null,
+            _totalPrem > 0 ? E("div", { style: { padding: "3px 10px", background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.lg, color: CL.dm }, title: fr ? "Primes annuelles d\u00e9duites du cashflow d'\u00e9pargne." : "Annual premiums deducted from savings cashflow." },
+              E("span", { style: { color: CL.dm } }, fr ? "Primes: " : "Premiums: "),
+              E("strong", { style: { color: CL.al } }, f$(_totalPrem) + (fr ? "/an" : "/yr"))) : null,
+            _disabOn ? E("div", { style: { padding: "3px 10px", background: CL.or + "12", border: "1px solid " + CL.or + "35", borderRadius: RAD.lg, color: CL.al }, title: fr ? "Probabilit\u00e9 annuelle d'interruption de revenu et dur\u00e9e moyenne. Mod\u00e9lis\u00e9 dans le MC." : "Annual probability of income interruption and average duration. Modeled in MC." },
+              E("span", { style: { color: CL.dm } }, fr ? "Invalidit\u00e9: " : "Disability: "),
+              E("strong", { style: { color: CL.al } }, Math.round((disabProb || 0) * 100) + "% \u00d7 " + _disabMo + (fr ? " mois" : " mo"))) : null,
+            (_totalFace > 0 && mc && mc.medEstateNet > 0) ? E("div", { style: { padding: "3px 10px", background: CL.gn + "12", border: "1px solid " + CL.gn + "35", borderRadius: RAD.lg, color: CL.al }, title: fr ? "Le capital-d\u00e9c\u00e8s est reflet\u00e9 dans l'h\u00e9ritage m\u00e9dian projet\u00e9." : "Life benefit is reflected in projected median estate." },
+              E("span", { style: { color: CL.dm } }, fr ? "Reflet\u00e9 dans h\u00e9ritage: " : "Reflected in estate: "),
+              E("strong", { style: { color: CL.gn } }, f$(mc.medEstateNet))) : null,
+            E("div", {
+              onClick: function() { setInsNeedOpen && setInsNeedOpen(true); },
+              role: "button", tabIndex: 0,
+              onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setInsNeedOpen && setInsNeedOpen(true); } },
+              style: { padding: "3px 10px", background: "transparent", border: "1px dashed " + CL.ac + "50", borderRadius: RAD.lg, color: CL.ac, cursor: "pointer" }
+            }, fr ? "\u2192 Analyse des besoins" : "\u2192 Needs analysis"))
+        );
+      }()) : null,
+
       // --- Standard/Expert: secondary metrics ---
       true && !_planIncomplete ? E("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 14 } },
         E("div", { style: { textAlign: "center", padding: "8px 4px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "VaR 5%: patrimoine dans le pire 5%. Positif = m\u00eame les mauvais sc\u00e9narios laissent de l'argent." : "VaR 5%: wealth in worst 5%. Positive = bad scenarios still leave money." },
@@ -15855,12 +15930,17 @@ StratBadge(true),
       React.createElement("div", { style: { marginTop: 12, padding: "10px", background: ins.gap > 0 ? CL.or + "15" : CL.gn + "15", borderRadius: RAD.sm, border: "1px solid " + (ins.gap > 0 ? CL.or + "40" : CL.gn + "40"), textAlign: "center" } },
         React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: ins.gap > 0 ? CL.or : CL.gn } },
           ins.gap > 0 ? (lang === "fr" ? "\u00c9cart de couverture: " : "Coverage gap: ") + f$(ins.gap) : (lang === "fr" ? "Couverture suffisante \u2713" : "Sufficient coverage \u2713")),
-        ins.gap > 0 && React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginTop: 4 } },
-          lang === "fr" ? "Prime estim\u00e9e: ~" + fD(ins.monthlyPremium) + "$/mois (temporaire 20 ans)" : "Est. premium: ~$" + fD(ins.monthlyPremium) + "/mo (20-year term)")
+        ins.gap > 0 && ins.premiumRange && React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginTop: 4 } },
+          lang === "fr"
+            ? "Ordre de grandeur: ~" + fD(ins.premiumRange.monthlyLow) + "\u2013" + fD(ins.premiumRange.monthlyHigh) + "$/mois (terme 20 ans, sant\u00e9 standard \u00e0 fumeur)"
+            : "Order of magnitude: ~$" + fD(ins.premiumRange.monthlyLow) + "\u2013$" + fD(ins.premiumRange.monthlyHigh) + "/mo (20-yr term, standard to rated/smoker)")
       ),
-      // Disclaimer
-      React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, marginTop: 10, fontStyle: "italic" } },
-        lang === "fr" ? "Les projections indiquent un besoin th\u00e9orique d\u2019assurance. Cette analyse utilise des hypoth\u00e8ses simplifi\u00e9es et ne constitue pas un conseil. Consultez un professionnel certifi\u00e9." : "Projections indicate a theoretical insurance need. This analysis uses simplified assumptions and does not constitute advice. Consult a certified professional.")
+      // Disclaimer — AMF-safe framing: observation only, no product recommendation,
+      // premium shown as range (not a quote), explicit handoff to licensed advisor.
+      React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, marginTop: 10, fontStyle: "italic", lineHeight: 1.5 } },
+        lang === "fr"
+          ? "\u00c9cart th\u00e9orique bas\u00e9 sur la r\u00e8gle \"10\u00d7 revenu + dettes\" et vos param\u00e8tres. La plage de prime est un ordre de grandeur du march\u00e9 canadien (CLHIA), non un devis. Cette analyse n\u2019est pas un conseil en assurance. Pour une recommandation personnalis\u00e9e, consultez un conseiller accr\u00e9dit\u00e9 (AMF au Qu\u00e9bec)."
+          : "Theoretical gap based on the \"10\u00d7 income + debts\" rule and your inputs. The premium range is an order-of-magnitude from Canadian market data (CLHIA), not a quote. This analysis is not insurance advice. For a personalized recommendation, consult a licensed insurance advisor (AMF in Quebec).")
     );
   }())
 )
