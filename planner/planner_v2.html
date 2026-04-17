@@ -122,6 +122,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* &#9552;&#9552;&#9552; KPI CARDS RESPONSIVE &#9552;&#9552;&#9552; */
 .bf-kpi-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.bf-grid-4{display:grid;grid-template-columns:repeat(4,1fr)}
+@media(max-width:768px){.bf-grid-4{grid-template-columns:repeat(2,1fr)!important}}
+@media(max-width:400px){.bf-grid-4{grid-template-columns:1fr!important;gap:6px!important}}
+@media(max-width:400px){.bf-progress-bar{padding:2px 4px}.bf-progress-bar .step{font-size:8px;padding:1px 3px}.bf-progress-bar .step-line{display:none}}
 
 /* Clickable KPI affordance — subtle chevron + hover lift signals that the
    card routes to a drill-in tab. Applied via inline className="bf-kpi-click". */
@@ -8174,6 +8178,16 @@ function App() {
   var _fireL = useState((function() { try { return localStorage.getItem("bf_fire_lens") === "1"; } catch(_e) { return false; } })());
   var fireLens = _fireL[0], setFireLens = _fireL[1];
   useEffect(function() { try { localStorage.setItem("bf_fire_lens", fireLens ? "1" : "0"); } catch(_e) {} }, [fireLens]);
+  // Scenario compare: named snapshots of current params + headline KPIs.
+  // Capped at 10 (LRU) to stay well under localStorage quota. No chart
+  // overlay or AI narrative diff yet — MVP is side-by-side KPI deltas with
+  // tolerances borrowed from sprint9/kpi-baseline (±1pp rates, ±$5k money).
+  var _scList = useState(function() { try { var s = localStorage.getItem("bf_scenarios"); return s ? JSON.parse(s) : []; } catch(_e) { return []; } });
+  var scenarios = _scList[0], setScenarios = _scList[1];
+  var _scCmp = useState(function() { try { return localStorage.getItem("bf_compareId") || ""; } catch(_e) { return ""; } });
+  var compareId = _scCmp[0], setCompareId = _scCmp[1];
+  useEffect(function() { try { localStorage.setItem("bf_scenarios", JSON.stringify(scenarios)); } catch(_e) {} }, [scenarios]);
+  useEffect(function() { try { localStorage.setItem("bf_compareId", compareId || ""); } catch(_e) {} }, [compareId]);
   var _eqR = useState(0.07), eqRetS = _eqR[0], sEqR = _eqR[1];
   var _eqV = useState(0.16), eqVolS = _eqV[0], sEqV = _eqV[1];
   var _bR = useState(0.035), bndRetS = _bR[0], sBndR = _bR[1];
@@ -8993,7 +9007,9 @@ var _collectExportData = function() {
       cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
       cSal: cSal, cRetSpM: cRetSpM,
       cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge,
-      cLifeInsBenefit: cLifeInsBenefit, cSpouseName: cSpouseName,
+      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName,
+      lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium,
+      disabProb: disabProb, disabMo: disabMo,
       cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
       bizOn: bizOn,
       props: props, debts: debts, strs: stressResults,
@@ -12694,6 +12710,103 @@ React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, textTransfo
     _onDiag ? null : React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm } }, lang === "fr" ? "\u2192 Diagnostic" : "\u2192 Diagnostic")
   );
 }()),
+// ── SCENARIO COMPARE BAR ───────────────────────────────────────────
+// Named param snapshots + headline-KPI deltas. Click Save to freeze the
+// current plan; pick one from the dropdown to see delta chips (Δsuccess,
+// Δpatrimoine P50, Δhéritage, ΔVaR 5%). Cached KPIs only — no re-run yet.
+(function() {
+  if (!mc || !mc.pD || mc.pD.length === 0 || mc._placeholder) return null;
+  if (tab === 28) return null;
+  if (typeof mc.succ !== "number") return null;
+  var fr = lang === "fr";
+  var cmp = compareId ? scenarios.filter(function(s) { return s.id === compareId; })[0] || null : null;
+  var _saveCur = function() {
+    var dflt = (fr ? "Sc\u00e9nario " : "Scenario ") + (scenarios.length + 1);
+    var nm = prompt(fr ? "Nom du sc\u00e9nario:" : "Scenario name:", dflt);
+    if (!nm) return;
+    try {
+      var src = (typeof _collectExportData === "function") ? _collectExportData() : null;
+      if (!src || !src.params) return;
+      var rec = {
+        id: "sc_" + Date.now(),
+        name: String(nm).slice(0, 40),
+        createdAt: Date.now(),
+        params: src.params,
+        kpis: {
+          succ: mc.succ,
+          medF: (mc.rMedF != null ? mc.rMedF : (mc.medF != null ? mc.medF : null)),
+          medEstateNet: mc.medEstateNet != null ? mc.medEstateNet : null,
+          var5: (mc.rVar5 != null ? mc.rVar5 : (mc.var5 != null ? mc.var5 : null))
+        }
+      };
+      var nx = scenarios.concat([rec]);
+      if (nx.length > 10) nx = nx.slice(nx.length - 10);
+      setScenarios(nx);
+    } catch(_e) {}
+  };
+  var _delCmp = function() {
+    if (!cmp) return;
+    if (!confirm(fr ? ("Supprimer \u00ab " + cmp.name + " \u00bb ?") : ("Delete \u201c" + cmp.name + "\u201d?"))) return;
+    setScenarios(scenarios.filter(function(s) { return s.id !== cmp.id; }));
+    setCompareId("");
+  };
+  var _chip = function(label, cur, was, fmt, tolType) {
+    if (cur == null) return null;
+    var showDelta = cmp && was != null;
+    var d = showDelta ? (cur - was) : 0;
+    var sig = false;
+    if (showDelta) {
+      if (tolType === "pctAbs") sig = Math.abs(d * 100) >= 1;
+      else if (tolType === "money") sig = Math.abs(d) >= 5000;
+      else sig = d !== 0;
+    }
+    var dClr = sig ? (d > 0 ? CL.gn : CL.rd) : CL.dm;
+    var dTxt = sig ? ((d > 0 ? " \u25b2+" : " \u25bc") + fmt(Math.abs(d))) : (showDelta ? " \u2248" : "");
+    return React.createElement("span", { style: { fontSize: FS.xs, padding: "3px 8px", borderRadius: 10, background: CL.cd, border: "1px solid " + CL.bd, whiteSpace: "nowrap" } },
+      React.createElement("span", { style: { color: CL.dm, marginRight: 4 } }, label),
+      React.createElement("span", { style: { color: CL.al, fontWeight: FW.bold } }, fmt(cur)),
+      showDelta ? React.createElement("span", { style: { color: dClr, marginLeft: 4, fontWeight: FW.bold } }, dTxt) : null
+    );
+  };
+  var _fmtSucc = function(v) { return Math.round(v * 100) + "%"; };
+  var _fmtMoney = function(v) { return f$(v); };
+  return React.createElement("div", {
+    style: {
+      marginBottom: 8, padding: "5px 10px",
+      background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm + 2,
+      display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap"
+    }
+  },
+    React.createElement("span", {
+      style: { fontSize: FS.xxs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: FW.bold, marginRight: 2 }
+    }, fr ? "Sc\u00e9narios" : "Scenarios"),
+    React.createElement("button", {
+      onClick: _saveCur,
+      title: fr ? "Geler les param\u00e8tres et KPIs actuels" : "Freeze current params and KPIs",
+      style: { fontSize: FS.xs, padding: "3px 8px", background: CL.ac + "22", border: "1px solid " + CL.ac + "60", borderRadius: 6, color: CL.ac, cursor: "pointer", fontWeight: FW.bold }
+    }, fr ? "\ud83d\udcbe Sauvegarder" : "\ud83d\udcbe Save"),
+    scenarios.length > 0 ? React.createElement("select", {
+      value: compareId,
+      onChange: function(e) { setCompareId(e.target.value); },
+      title: fr ? "Choisir un sc\u00e9nario \u00e0 comparer" : "Pick a scenario to compare",
+      style: { fontSize: FS.xs, padding: "3px 6px", background: CL.bg, border: "1px solid " + CL.bd, borderRadius: 6, color: CL.al, maxWidth: 200 }
+    },
+      React.createElement("option", { value: "" }, fr ? "Comparer \u00e0\u2026" : "Compare to\u2026"),
+      scenarios.map(function(s) { return React.createElement("option", { key: s.id, value: s.id }, s.name); })
+    ) : React.createElement("span", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic" } }, fr ? "Aucun sc\u00e9nario sauvegard\u00e9" : "No saved scenarios"),
+    cmp ? React.createElement("button", {
+      onClick: _delCmp,
+      title: fr ? "Supprimer" : "Delete",
+      style: { fontSize: FS.xs, padding: "3px 6px", background: "transparent", border: "1px solid " + CL.rd + "50", borderRadius: 6, color: CL.rd, cursor: "pointer", lineHeight: 1 }
+    }, "\u2715") : null,
+    cmp ? React.createElement("div", { style: { display: "flex", gap: 4, flexWrap: "wrap", marginLeft: 4 } },
+      _chip(fr ? "Succ\u00e8s" : "Succ", mc.succ, cmp.kpis && cmp.kpis.succ, _fmtSucc, "pctAbs"),
+      _chip(fr ? "P50" : "P50", (mc.rMedF != null ? mc.rMedF : mc.medF), cmp.kpis && cmp.kpis.medF, _fmtMoney, "money"),
+      _chip(fr ? "H\u00e9ritage" : "Estate", mc.medEstateNet, cmp.kpis && cmp.kpis.medEstateNet, _fmtMoney, "money"),
+      _chip(fr ? "Pire 5%" : "Worst 5%", (mc.rVar5 != null ? mc.rVar5 : mc.var5), cmp.kpis && cmp.kpis.var5, _fmtMoney, "money")
+    ) : null
+  );
+}()),
 // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â PHASE 4: FIRST-VISIT CONTEXTUAL TIP ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
 (function() {
   if (mode === "expert") return null;
@@ -13777,6 +13890,49 @@ StratBadge(true), React.createElement("div", { style: { marginTop: 10, backgroun
     return E("div", null,
     tab === 5 ? E(React.Fragment, null,
 
+    // === VALIDATION ISSUES PANEL ===
+    // Renders the actual valErrors list so users who clicked "View" from the
+    // top-bar warning see what's wrong and can jump to the relevant field.
+    valCount > 0 ? (function() {
+      var _fieldLbl = {
+        age: fr ? "\u00c2ge" : "Age",
+        deathAge: fr ? "Horizon de vie" : "Life horizon",
+        retAge: fr ? "\u00c2ge de retraite" : "Retirement age",
+        qppAge: fr ? (prov === "QC" ? "D\u00e9but RRQ" : "D\u00e9but RPC") : "QPP/CPP start",
+        oasAge: fr ? "D\u00e9but PSV" : "OAS start",
+        retSpM: fr ? "D\u00e9penses mensuelles" : "Monthly spending",
+        rrsp: "REER", tfsa: fr ? "C\u00c9LI" : "TFSA", nr: fr ? "Non-enregistr\u00e9" : "Non-registered",
+        sal: fr ? "Salaire" : "Salary",
+        respReturnAge: fr ? "Retour REEE" : "RESP return",
+        splitP: fr ? "Fractionnement pension" : "Pension split",
+        cRetAge: fr ? "Retraite conjoint" : "Spouse retirement",
+        cQppAge: fr ? "RRQ conjoint" : "Spouse QPP",
+        cOasAge: fr ? "PSV conjoint" : "Spouse OAS"
+      };
+      var _destTab = function(k) { return k === "splitP" ? 4 : 1; };
+      var _rows = Object.keys(valErrors).map(function(k) {
+        var lbl = k.indexOf("debt_") === 0 ? (fr ? "Dette " : "Debt ") + (parseInt(k.slice(5), 10) + 1) : (_fieldLbl[k] || k);
+        return { k: k, lbl: lbl, msg: valErrors[k], tab: _destTab(k) };
+      });
+      return E("div", { style: { padding: "12px 16px", marginBottom: 14, background: "rgba(208,72,72,.08)", borderRadius: RAD.md + 2, border: "1px solid " + CL.rd + "55" } },
+        E("div", { style: { fontSize: FS.sm, fontWeight: FW.bold, color: CL.rd, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 } },
+          E("span", { style: { fontSize: FS.md } }, "\u26a0\ufe0f"),
+          fr ? "Probl\u00e8me" + (_rows.length > 1 ? "s" : "") + " d\u00e9tect\u00e9" + (_rows.length > 1 ? "s" : "") + " \u2014 \u00e0 corriger" : "Issue" + (_rows.length > 1 ? "s" : "") + " detected \u2014 please fix"),
+        E("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
+          _rows.map(function(r) {
+            return E("div", { key: r.k, role: "button", tabIndex: 0,
+              onClick: function() { setTab(r.tab); },
+              onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(r.tab); } },
+              style: { display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", background: CL.cd, borderRadius: RAD.sm, border: "1px solid " + CL.bd, cursor: "pointer" },
+              title: fr ? "Aller \u00e0 l'onglet" : "Jump to tab" },
+              E("span", { style: { fontSize: FS.sm, fontWeight: FW.medium, color: CL.al, minWidth: 160 } }, r.lbl),
+              E("span", { style: { flex: 1, fontSize: FS.sm, color: CL.rd } }, r.msg),
+              E("span", { style: { fontSize: FS.xs, color: CL.ac } }, fr ? "Corriger \u2192" : "Fix \u2192")
+            );
+          }))
+      );
+    }()) : null,
+
     // ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â PHASE 1: GUIDED LANDING BANNER (one-time, before summary) ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
     showGuidedBanner && E("div", { style: { padding: "16px 20px", marginBottom: 16, background: "linear-gradient(135deg, " + CL.ac + "15, " + CL.bl + "10)", borderRadius: RAD.md + 4, border: "2px solid " + CL.ac + "50", boxShadow: "0 4px 16px " + CL.ac + "12", animation: "fadeIn 0.4s ease" } },
       E("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 } },
@@ -13960,7 +14116,7 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         }, (fireLens ? "\u25c9" : "\u25cb") + " \ud83d\udd25 FIRE")),
 
       // 4 hero KPIs (all modes) - large, semantic colors, rich tooltips
-      E("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 10, marginBottom: 14 } },
+      E("div", { className: "bf-grid-4", style: { gap: 10, marginBottom: 14 } },
 
         // KPI 1: Succes / Solidite — click through to Stress tests (tab 6)
         E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + (mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd) + "30", cursor: "pointer" }, onClick: function() { setTab(6); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(6); } }, title: (fr ? "Taux de succ\u00e8s MC: " + Math.round(mc.succ * 100) + "% des " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (horizon fixe " + deathAge + " ans)") + ". Note " + _gr + ". \u2192 Stress tests." : "MC success: " + Math.round(mc.succ * 100) + "% of " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (fixed horizon " + deathAge + ")") + ". Grade " + _gr + ". \u2192 Stress tests.") },
@@ -14061,7 +14217,7 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
             E("span", { style: { fontSize: FS.md } }, "\ud83d\udd25"),
             E("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: _orange, letterSpacing: 0.3 } }, fr ? "Analyse FIRE" : "FIRE Analysis"),
             E("div", { style: { fontSize: FS.xxs, color: CL.dm, textTransform: "uppercase", letterSpacing: 0.5 } }, fr ? "R\u00e8gle du 4% (Trinity)" : "4% rule (Trinity)")),
-          E("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 8 } },
+          E("div", { className: "bf-grid-4", style: { gap: 8, marginBottom: 8 } },
             E("div", { style: { textAlign: "center", padding: "10px 6px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + _tier.c + "40" } },
               E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: _tier.c, lineHeight: 1.1 } }, fr ? _tier.fr : _tier.en),
               E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase", marginTop: 4, letterSpacing: 0.3 } }, fr ? "Cat\u00e9gorie" : "Category")),
@@ -14127,7 +14283,7 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
       }()) : null,
 
       // --- Standard/Expert: secondary metrics ---
-      true && !_planIncomplete ? E("div", { style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 14 } },
+      true && !_planIncomplete ? E("div", { className: "bf-grid-4", style: { gap: 8, marginBottom: 14 } },
         E("div", { style: { textAlign: "center", padding: "8px 4px", background: CL.cd, borderRadius: RAD.sm + 2, border: "1px solid " + CL.bd, cursor: "help" }, title: fr ? "VaR 5%: patrimoine dans le pire 5%. Positif = m\u00eame les mauvais sc\u00e9narios laissent de l'argent." : "VaR 5%: wealth in worst 5%. Positive = bad scenarios still leave money." },
           E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: (mc.rVar5 || mc.var5 || 0) >= 0 ? CL.gn : CL.rd } }, f$(mc.rVar5 || mc.var5 || 0)),
           E("div", { style: { fontSize: FS.xs, color: CL.dm, textTransform: "uppercase" } }, "VaR 5%")),
