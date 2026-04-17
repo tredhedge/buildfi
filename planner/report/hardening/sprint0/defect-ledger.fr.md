@@ -1,6 +1,6 @@
 # FR Report Defect Ledger (Harsh)
 
-Generated: 2026-04-17T08:37:22.488Z
+Generated: 2026-04-17T09:13:27.673Z
 Baseline source: C:\Users\tredh\OneDrive\Documents\GitHub\buildfi\planner\report\hardening\sprint0\baseline-fr-manifest.json
 Profiles audited: 10
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T08:37:21.754Z",
+  "generatedAt": "2026-04-17T09:13:27.005Z",
   "baselineType": "fr-reports-sprint0",
   "generatorScript": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-reports.js",
   "outputDir": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output",
@@ -9,7 +9,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\ccpc_owner_fr.html",
       "sizeBytes": 70851,
       "sha256": "2c36b821e13f92a287632e987a3a41bec3e851d85041378b085c780bece37e9b",
-      "modifiedAt": "2026-04-17T08:37:21.643Z",
+      "modifiedAt": "2026-04-17T09:13:26.885Z",
       "metrics": {
         "sectionCount": 10,
         "aiCallouts": 9,
@@ -28,7 +28,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\couple_transition_fr.html",
       "sizeBytes": 69409,
       "sha256": "c7522dd0188ce11fba0e5afe49b6cd22960a4194e42f471f1f0fd6af40434fe1",
-      "modifiedAt": "2026-04-17T08:37:21.587Z",
+      "modifiedAt": "2026-04-17T09:13:26.829Z",
       "metrics": {
         "sectionCount": 9,
         "aiCallouts": 8,
@@ -47,7 +47,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\debt_young_fr.html",
       "sizeBytes": 72540,
       "sha256": "0570173042d4eae25926c97d4b65eee3dab69d793a34dc59609e754207f5c8fd",
-      "modifiedAt": "2026-04-17T08:37:21.682Z",
+      "modifiedAt": "2026-04-17T09:13:26.930Z",
       "metrics": {
         "sectionCount": 10,
         "aiCallouts": 9,
@@ -66,7 +66,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\fire_seeker_fr.html",
       "sizeBytes": 74575,
       "sha256": "c9a85e5789013b8d61d633f2254d9aedff4805975b1c00115c5fe2a15bf3bc03",
-      "modifiedAt": "2026-04-17T08:37:21.618Z",
+      "modifiedAt": "2026-04-17T09:13:26.863Z",
       "metrics": {
         "sectionCount": 9,
         "aiCallouts": 8,
@@ -85,7 +85,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\hnw_couple_fr.html",
       "sizeBytes": 87156,
       "sha256": "a410fd2cd77cade94b0b6773a19611a447066b783653be05f330e43077b7ba4a",
-      "modifiedAt": "2026-04-17T08:37:21.670Z",
+      "modifiedAt": "2026-04-17T09:13:26.916Z",
       "metrics": {
         "sectionCount": 11,
         "aiCallouts": 10,
@@ -104,7 +104,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\low_income_gis_fr.html",
       "sizeBytes": 65149,
       "sha256": "248543dc9fb501f391ab8f78bdaca9006b55fbbe3d307f8724cb64fdf637910a",
-      "modifiedAt": "2026-04-17T08:37:21.629Z",
+      "modifiedAt": "2026-04-17T09:13:26.883Z",
       "metrics": {
         "sectionCount": 9,
         "aiCallouts": 8,
@@ -123,7 +123,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\real_estate_fr.html",
       "sizeBytes": 70686,
       "sha256": "40424c79deb64019d7de86999bd6610cc68f00184c66e0cb664101d487a60df2",
-      "modifiedAt": "2026-04-17T08:37:21.657Z",
+      "modifiedAt": "2026-04-17T09:13:26.902Z",
       "metrics": {
         "sectionCount": 10,
         "aiCallouts": 9,
@@ -142,7 +142,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\retiree_decum_fr.html",
       "sizeBytes": 62011,
       "sha256": "c8a80965a14b17de9a8dcee7d946ca22ee7c05f44bead4699dc8836ede024422",
-      "modifiedAt": "2026-04-17T08:37:21.599Z",
+      "modifiedAt": "2026-04-17T09:13:26.845Z",
       "metrics": {
         "sectionCount": 9,
         "aiCallouts": 8,
@@ -161,7 +161,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\rsu_tech_fr.html",
       "sizeBytes": 74128,
       "sha256": "f839f78394e56f9e67607aca4aa1ec64b7f4a52992f63c6b072985158b797ea0",
-      "modifiedAt": "2026-04-17T08:37:21.690Z",
+      "modifiedAt": "2026-04-17T09:13:26.941Z",
       "metrics": {
         "sectionCount": 10,
         "aiCallouts": 9,
@@ -180,7 +180,7 @@
       "path": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\test-output\\young_accum_fr.html",
       "sizeBytes": 69919,
       "sha256": "39b4e64ed1c8c0a844256c4a3258adfb95151950f504a10221313dac9aee62d7",
-      "modifiedAt": "2026-04-17T08:37:21.579Z",
+      "modifiedAt": "2026-04-17T09:13:26.827Z",
       "metrics": {
         "sectionCount": 9,
         "aiCallouts": 8,

@@ -1,6 +1,6 @@
 # FR Baseline Summary
 
-Generated: 2026-04-17T08:37:21.754Z
+Generated: 2026-04-17T09:13:27.005Z
 Profiles found: 10
 Total size: 700 KB
 
