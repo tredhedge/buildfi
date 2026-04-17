@@ -11439,17 +11439,16 @@ secVis("profil") && React.createElement(React.Fragment, null,
     React.createElement(Check, { v: cOn, set: function(v) { sCOn(v); if (v && !sbFilter.conj) setSbFilter("conj"); }, l: lang === "fr" ? "Conjoint(e) actif" : "Spouse active" }),
     cOn && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.tl, marginTop: 2, paddingLeft: 20 } }, lang === "fr" ? "\u2192 D\u00e9tails dans l'onglet Conjoint" : "\u2192 Details in Spouse tab")
   ),
-  // --- AI narrative tone preferences ---
-  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.ac, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", marginTop: SP[2], marginBottom: 4 } }, lang === "fr" ? "Ton du rapport IA" : "AI Report Tone"),
-  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, marginBottom: 6, lineHeight: 1.3 } }, lang === "fr" ? "Ces pr\u00e9f\u00e9rences fa\u00e7onnent le style narratif de l\u2019analyse IA." : "These preferences shape the AI narrative style."),
-  React.createElement("div", { className: "bf-sb-grid2" },
-    React.createElement(Field, { l: lang === "fr" ? "Stress financier" : "Financial stress" }, React.createElement("select", { value: stressLevel, onChange: function(e) { sStress(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "low" }, lang === "fr" ? "Faible" : "Low"), React.createElement("option", { value: "moderate" }, lang === "fr" ? "Mod\u00e9r\u00e9" : "Moderate"), React.createElement("option", { value: "high" }, lang === "fr" ? "\u00c9lev\u00e9" : "High"))),
-    React.createElement(Field, { l: lang === "fr" ? "Litt\u00e9ratie financi\u00e8re" : "Financial literacy" }, React.createElement("select", { value: finLiteracy, onChange: function(e) { sLit(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "beginner" }, lang === "fr" ? "D\u00e9butant" : "Beginner"), React.createElement("option", { value: "intermediate" }, lang === "fr" ? "Interm\u00e9diaire" : "Intermediate"), React.createElement("option", { value: "advanced" }, lang === "fr" ? "Avanc\u00e9" : "Advanced"))),
-    React.createElement(Field, { l: lang === "fr" ? "Style de communication" : "Communication style", full: true }, React.createElement("select", { value: detailPref, onChange: function(e) { sDetail(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "concise" }, lang === "fr" ? "Concis \u2014 faits cl\u00e9s" : "Concise \u2014 key facts"), React.createElement("option", { value: "balanced" }, lang === "fr" ? "\u00c9quilibr\u00e9" : "Balanced"), React.createElement("option", { value: "detailed" }, lang === "fr" ? "D\u00e9taill\u00e9 \u2014 explications compl\u00e8tes" : "Detailed \u2014 full explanations")))
+  // --- Objectifs (Goals) — placed ABOVE AI tone because client objectives
+  //     define the plan's purpose; the AI-tone settings only shape narrative style.
+  //     Prominent header (FS.sm, icon, accent border) so users don't miss it.
+  React.createElement("div", { style: { marginTop: SP[2], marginBottom: 6, padding: "6px 8px", background: "linear-gradient(90deg, " + CL.ac + "14, transparent)", borderLeft: "3px solid " + CL.ac, borderRadius: RAD.sm } },
+    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
+      React.createElement("span", { style: { fontSize: FS.md } }, "\ud83c\udfaf"),
+      React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.bold, color: CL.ac, letterSpacing: ".3px" } }, lang === "fr" ? "Objectifs" : "Goals"),
+      React.createElement("span", { style: { fontSize: FS.xxs, color: CL.dm, marginLeft: "auto" } }, lang === "fr" ? "Ce qui pilote le plan" : "Drives the plan")
+    )
   ),
-  React.createElement("div", { style: { height: 3 } }),
-  // --- Goals (merged into Profil) ---
-  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.ac, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", marginTop: SP[2], marginBottom: 4 } }, lang === "fr" ? "Objectifs" : "Goals"),
   React.createElement("div", { style: { padding: "6px 8px", background: CL.s2, borderRadius: RAD.sm, marginBottom: 6, border: "1px solid " + CL.bd } },
     React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
       React.createElement("span", null, "\ud83c\udfd6"),
@@ -11471,7 +11470,7 @@ secVis("profil") && React.createElement(React.Fragment, null,
       )
     );
   }),
-  React.createElement("div", { style: { display: "flex", gap: 4, marginTop: 6 } },
+  React.createElement("div", { style: { display: "flex", gap: 4, marginTop: 6, marginBottom: 6 } },
     React.createElement("button", { onClick: function() {
       var name = prompt(lang === "fr" ? "Nom (ex: Universit\u00e9 enfant 1):" : "Name (e.g. Child 1 university):", "");
       if (!name) return;
@@ -11489,7 +11488,18 @@ secVis("profil") && React.createElement(React.Fragment, null,
       if (isNaN(amt) || isNaN(startAge)) return;
       setGoals(goals.concat([{ id: "g_" + Date.now(), type: "lumpsum", name: name, nameEn: name, amount: amt, startAge: startAge, endAge: startAge, inflation: true, icon: "\ud83d\udc8e" }]));
     }, style: { flex: 1, padding: "6px", background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.xs, cursor: "pointer" } }, "\ud83d\udc8e " + (lang === "fr" ? "Ponctuel" : "Lump sum"))
-  )
+  ),
+  // --- AI narrative tone preferences (moved below Goals; Goals come first
+  //     because they define intent, AI tone is about communication style) ---
+  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.ac, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", marginTop: SP[2], marginBottom: 4 } }, lang === "fr" ? "Ton du rapport IA" : "AI Report Tone"),
+  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, marginBottom: 6, lineHeight: 1.3 } }, lang === "fr" ? "Ces pr\u00e9f\u00e9rences fa\u00e7onnent le style narratif de l\u2019analyse IA." : "These preferences shape the AI narrative style."),
+  React.createElement("div", { className: "bf-sb-grid2" },
+    React.createElement(Field, { l: lang === "fr" ? "Stress financier" : "Financial stress" }, React.createElement("select", { value: stressLevel, onChange: function(e) { sStress(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "low" }, lang === "fr" ? "Faible" : "Low"), React.createElement("option", { value: "moderate" }, lang === "fr" ? "Mod\u00e9r\u00e9" : "Moderate"), React.createElement("option", { value: "high" }, lang === "fr" ? "\u00c9lev\u00e9" : "High"))),
+    React.createElement(Field, { l: lang === "fr" ? "Litt\u00e9ratie financi\u00e8re" : "Financial literacy" }, React.createElement("select", { value: finLiteracy, onChange: function(e) { sLit(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "beginner" }, lang === "fr" ? "D\u00e9butant" : "Beginner"), React.createElement("option", { value: "intermediate" }, lang === "fr" ? "Interm\u00e9diaire" : "Intermediate"), React.createElement("option", { value: "advanced" }, lang === "fr" ? "Avanc\u00e9" : "Advanced"))),
+    React.createElement(Field, { l: lang === "fr" ? "Style de communication" : "Communication style", full: true }, React.createElement("select", { value: detailPref, onChange: function(e) { sDetail(e.target.value); }, style: { width: "100%", padding: "4px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + CL.bd, background: CL.bg, color: TX.primary() } }, React.createElement("option", { value: "concise" }, lang === "fr" ? "Concis \u2014 faits cl\u00e9s" : "Concise \u2014 key facts"), React.createElement("option", { value: "balanced" }, lang === "fr" ? "\u00c9quilibr\u00e9" : "Balanced"), React.createElement("option", { value: "detailed" }, lang === "fr" ? "D\u00e9taill\u00e9 \u2014 explications compl\u00e8tes" : "Detailed \u2014 full explanations")))
+  ),
+  React.createElement("div", { style: { height: 3 } }),
+  // (Previous duplicate Goals block removed — canonical Goals lives above AI Tone.)
 ),
 secVis("rev") && React.createElement(Sec, { t: lang === "fr" ? "Revenus & \u00c9v\u00e9nements" : "Income & Events", accent: CL.bl, open: secVis("rev"), onClick: function() { tog("rev"); } }), secVis("rev") && React.createElement(React.Fragment, null, React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 3 } }, lang === "fr" ? "Travail partiel \u00e0 la retraite" : "Part-time work in retirement"), React.createElement(Field, { l: t.partTimeRev }, React.createElement(NumField, { v: ptM, set: sPTM, step: 250 })), ptM > 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: "De " + retAge + " \u00e0 " + (retAge + ptYrs) + " ans (dur\u00e9e)" }, React.createElement(Slider, { v: ptYrs, set: sPTY, mn: 1, mx: 15 })), React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, lang === "fr" ? "Index\u00e9 \u00e0 l'inflation chaque ann\u00e9e" : "Inflation-indexed yearly")), React.createElement("div", { style: { height: 3 } }), React.createElement("div", { style: { fontSize: FS.base, color: CL.ac, fontWeight: FW.medium, marginBottom: 4 } }, lang === "fr" ? "Revenus ponctuels" : "One-time income"),
 // Card for each active income event
@@ -14016,7 +14026,8 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
         var _salTot = (sal || 0) + (cOn ? (cSal || 0) : 0);
         var _savRate = _salTot > 0 ? _annContrib / _salTot : 0;
         var _infR = inf || 0.021;
-        var _nomRet = (eqRet || 0.07) * (allocR || 0.6) + (bndRet || 0.035) * (1 - (allocR || 0.6));
+        // State vars are suffixed -S (eqRetS, bndRetS) per planner naming.
+        var _nomRet = (eqRetS || 0.07) * (allocR || 0.6) + (bndRetS || 0.035) * (1 - (allocR || 0.6));
         var _r = Math.max(0.001, _nomRet - _infR); // real return, floored to avoid div/zero
         // Years to FI
         var _yrs;
