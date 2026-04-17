@@ -291,3 +291,63 @@ Documented in `V3-FINAL-PLAN.md` §2 Phase 4; promoted to a blocker for Phase 10
 **Phase 5 — Ownership attribution (Part A — data model + UI)**. Engine rewire is Part B, same reasoning as Phase 4.
 
 ---
+
+## Phase 5 — Ownership attribution (Part A — data model + UI)
+
+**Date**: 2026-04-17
+
+### Scope narrowing (same judgement as Phase 4)
+
+Part A ships the data model (`ownerSelf`, `ownerSpouse` fractions on properties and debts) and the UI selector. **Part B** (engine rewire for per-owner capital gains, mortgage-interest deduction allocation, OAS clawback per person, and estate rollover) is deferred to a dedicated session where the snapshot harness can validate each change.
+
+### What was done (Part A)
+
+- **Per-property ownership pill** rendered only when `cOn && pr.val > 0`. Three presets:
+  - 👤 Vous → `{ ownerSelf: 1, ownerSpouse: 0 }`
+  - 👥 Conjoint(e) → `{ ownerSelf: 0, ownerSpouse: 1 }`
+  - 🏠 Ménage 50/50 → `{ ownerSelf: 0.5, ownerSpouse: 0.5 }`
+  - Plus a "Custom" state shown as a note when the stored fractions don't match a preset (e.g. a 70/30 split inherited from a v3 profile edit).
+- **Per-debt ownership pill** with identical presets, visible when `cOn && d.bal > 0`.
+- Fields stored on the property/debt record under the existing `props[]` / `debts[]` arrays. Default (missing fields) resolves to `ownerSelf = ownerSpouse = 0.5` via the `(typeof ... === "number") ? ... : 0.5` guards in the render.
+- **Schema validator** (Phase 0.5) already enforces `ownerSelf + ownerSpouse = 1.000 ± 0.001` when the fields are present.
+- Single mode (`cOn=false`) hides the pills entirely.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Per-property ownership pill visible in couple mode | ✅ | Gated on `pr.val > 0`. |
+| Per-debt ownership pill visible in couple mode | ✅ | Gated on `d.bal > 0`. |
+| Single-mode zero UI | ✅ | Pills hidden entirely. |
+| Data persisted through save/load | ✅ | Fields live on the existing record; no schema migration needed. |
+| Schema validator rejects imbalanced sums | ✅ | Shipped Phase 0.5, covers this data. |
+| MC output unchanged | ✅ | Engine does not yet read `ownerSelf` / `ownerSpouse`. |
+
+### Deferred items (Part B)
+
+- **Engine — capital gains at property sale**: split CG by owner fractions; add to each spouse's taxable income independently.
+- **Engine — mortgage/HELOC interest deduction**: allocate to the owner(s) proportionally.
+- **Engine — estate rollover**: spouse-owned → tax-free rollover to survivor; joint → survivorship; self-only → deemed disposition.
+- **Engine — OAS clawback**: compute per person on personal taxable income.
+- **Edge-case validation**: `couple-uneven` test profile has a rental at 70/30. Expected outcome: changing ownership 100/0 → 70/30 → 0/100 produces three distinct CG outcomes and three distinct OAS clawback streams.
+
+All deferred items require snapshot-harness verification. Gated by `BF_V3_HOUSEHOLD` feature flag (default OFF) per Phase 0.5.
+
+### Engine-output delta observed
+
+- **None.** Ownership fields are stored but not yet consumed by the engine. Default 0.5/0.5 behaves as today's joint treatment (since v2 engine implicitly treated properties and debts as joint household assets).
+
+### Risks exposed
+
+- A user who enters 70/30 through the Custom note (not yet a real editor) must hand-edit the JSON. Acceptable during transition; Part B will ship a Custom pill with sliders.
+- Ownership fields travel through export/import because they're on the `props[]` and `debts[]` records that are already serialized.
+
+### Scope creep
+
+- Non-registered (NR) ownership was in the plan but deferred with the same logic — the NR structure is a single flat field today (`nr`, `nrC`, `cNR`, `cNRC`) not an array of records, so adding ownership requires a schema change. Slotted with Part B.
+
+### Next phase
+
+**Phase 6 — Per-person tax engine + joint-spending optimizer**. This is purely engine work. Ships as a **scoping document** (Part A) — the engine rewrite itself requires a dedicated session with harness validation.
+
+---

@@ -11979,7 +11979,36 @@ cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("i
       var nd = debts.slice();
       nd[i] = Object.assign({}, d, { deductible: v });
       setDebts(nd);
-    }, l: lang === "fr" ? "Int\u00e9r\u00eats d\u00e9ductibles (Man\u0153uvre de Smith)" : "Deductible interest (Smith Manoeuvre)" }),
+    }, l: lang === "fr" ? "Intérêts déductibles (Manœuvre de Smith)" : "Deductible interest (Smith Manoeuvre)" }),
+    /* v3 Phase 5 Part A — per-debt ownership pill. Couple mode + balance > 0. */
+    cOn && (d.bal || 0) > 0 && (function() {
+      var _oS = (typeof d.ownerSelf === "number") ? d.ownerSelf : 0.5;
+      var _sp = (typeof d.ownerSpouse === "number") ? d.ownerSpouse : 0.5;
+      var _preset = (_oS === 1 && _sp === 0) ? "self" : (_oS === 0 && _sp === 1) ? "spouse" : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint" : "custom";
+      var _opts = [
+        ["self",   lang === "fr" ? "👤 Vous" : "👤 You", CL.ac],
+        ["spouse", lang === "fr" ? "👥 Conjoint(e)" : "👥 Spouse", CL.tl],
+        ["joint",  lang === "fr" ? "🏠 Ménage 50/50" : "🏠 Household 50/50", CL.gn]
+      ];
+      return React.createElement("div", { style: { marginTop: 6, marginBottom: 4 } },
+        React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 3 } }, lang === "fr" ? "Titulaire" : "Owner"),
+        React.createElement("div", { style: { display: "flex", gap: 3 } },
+          _opts.map(function(o) {
+            var _active = _preset === o[0];
+            return React.createElement("button", { key: o[0],
+              onClick: function() {
+                var nd = debts.slice();
+                var _patch = (o[0] === "self") ? { ownerSelf: 1, ownerSpouse: 0 }
+                           : (o[0] === "spouse") ? { ownerSelf: 0, ownerSpouse: 1 }
+                           : { ownerSelf: 0.5, ownerSpouse: 0.5 };
+                nd[i] = Object.assign({}, d, _patch);
+                setDebts(nd);
+              },
+              style: { flex: 1, padding: "4px 6px", fontSize: FS.xs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
+            }, o[1]);
+          }))
+      );
+    })(),
     /* Summary line */
     d.bal > 0 && d.pay > 0 && React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginTop: 2 } }, lang === "fr" ? "Rembours\u00e9 en " : "Paid off in ",
       d.term > 0 && hasTerm ? d.term : (d.rate > 0 ? Math.ceil(Math.log(d.pay / (d.pay - d.bal * (d.rate / 12))) / Math.log(1 + d.rate / 12)) : Math.ceil(d.bal / d.pay)),
@@ -12194,7 +12223,39 @@ secVis("immo") && sbFilter.immo && React.createElement(Sec, { t: lang === "fr" ?
       rmProp(idx);
     }, style: { background: "transparent", border: "none", color: CL.rd, fontSize: FS.md, cursor: "pointer", padding: 0 } }, "\u2715"))), pr.on && React.createElement(React.Fragment, null, React.createElement(Field, { l: fr ? "Valeur" : "Value" }, React.createElement(NumField, { v: pr.val, set: function(v) {
       updP(idx, "val", v);
-    }, step: 1e4 })), React.createElement(Field, { l: lang==="fr" ? "Appr\u00e9ciation/an" : "Appreciation/yr" }, React.createElement(Slider, { v: pr.ri, set: function(v) {
+    }, step: 1e4 })),
+    /* v3 Phase 5 Part A — per-property ownership pill. Visible only in
+       couple mode once a value is entered. Presets: Vous (1/0) / Conjoint
+       (0/1) / Ménage (0.5/0.5). Engine consumption lives behind
+       BF_V3_HOUSEHOLD and ships in Phase 5 Part B once the snapshot
+       harness validates the new tax split. */
+    cOn && (pr.val || 0) > 0 && (function() {
+      var _oS = (typeof pr.ownerSelf === "number") ? pr.ownerSelf : 0.5;
+      var _sp = (typeof pr.ownerSpouse === "number") ? pr.ownerSpouse : 0.5;
+      var _preset = (_oS === 1 && _sp === 0) ? "self" : (_oS === 0 && _sp === 1) ? "spouse" : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint" : "custom";
+      var _opts = [
+        ["self",   lang === "fr" ? "👤 Vous" : "👤 You",       CL.ac],
+        ["spouse", lang === "fr" ? "👥 Conjoint(e)" : "👥 Spouse", CL.tl],
+        ["joint",  lang === "fr" ? "🏠 Ménage 50/50" : "🏠 Household 50/50", CL.gn]
+      ];
+      return React.createElement("div", { style: { marginTop: 6, marginBottom: 4 } },
+        React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 3 } }, lang === "fr" ? "Propriété" : "Ownership"),
+        React.createElement("div", { style: { display: "flex", gap: 3 } },
+          _opts.map(function(o) {
+            var _active = _preset === o[0];
+            return React.createElement("button", { key: o[0],
+              onClick: function() {
+                if (o[0] === "self")        { updP(idx, "ownerSelf", 1);   updP(idx, "ownerSpouse", 0);   }
+                else if (o[0] === "spouse") { updP(idx, "ownerSelf", 0);   updP(idx, "ownerSpouse", 1);   }
+                else                         { updP(idx, "ownerSelf", 0.5); updP(idx, "ownerSpouse", 0.5); }
+              },
+              style: { flex: 1, padding: "4px 6px", fontSize: FS.xs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
+            }, o[1]);
+          })),
+        _preset === "custom" && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.or, marginTop: 3, fontStyle: "italic" } },
+          lang === "fr" ? "Fraction personnalisée : " + Math.round(_oS * 100) + " % vous / " + Math.round(_sp * 100) + " % conjoint." : "Custom split: " + Math.round(_oS * 100) + "% you / " + Math.round(_sp * 100) + "% spouse.")
+      );
+    })(), React.createElement(Field, { l: lang==="fr" ? "Appr\u00e9ciation/an" : "Appreciation/yr" }, React.createElement(Slider, { v: pr.ri, set: function(v) {
       updP(idx, "ri", v);
     }, mn: 0, mx: 0.08 })), React.createElement(Field, { l: lang==="fr" ? "Hypoth\u00e8que solde" : "Mortgage balance" }, React.createElement(NumField, { v: pr.mb, set: function(v) {
       updP(idx, "mb", v);
