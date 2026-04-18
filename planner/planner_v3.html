@@ -11916,9 +11916,11 @@ secVis("rev") && React.createElement(Sec, { t: lang === "fr" ? "Revenus & \u00c9
   if (ev2Age > 0)  _all.push({ kind: "expense", icon: "💳", owner: "self",   age: ev2Age,  amount: ev2Amt,  label: ev2Name  || (lang==="fr"?"Dépense 2":"Expense 2") });
   // Spouse (couple only)
   if (cOn) {
-    if ((cInc1Age || 0) > 0) _all.push({ kind: "income",  icon: "💰", owner: "spouse", age: cInc1Age, amount: cInc1Amt, label: (lang==="fr"?"Revenu conjoint(e)":"Spouse income") });
-    if ((cEv1Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv1Age,  amount: cEv1Amt,  label: (lang==="fr"?"Dépense conjoint(e) 1":"Spouse expense 1") });
-    if ((cEv2Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv2Age,  amount: cEv2Amt,  label: (lang==="fr"?"Dépense conjoint(e) 2":"Spouse expense 2") });
+    if ((cInc1Age || 0) > 0) _all.push({ kind: "income",  icon: "💰", owner: "spouse", age: cInc1Age, amount: cInc1Amt, label: cInc1Name || (lang==="fr"?"Revenu conjoint(e) 1":"Spouse income 1") });
+    if ((cInc2Age || 0) > 0) _all.push({ kind: "income",  icon: "💰", owner: "spouse", age: cInc2Age, amount: cInc2Amt, label: cInc2Name || (lang==="fr"?"Revenu conjoint(e) 2":"Spouse income 2") });
+    if ((cInc3Age || 0) > 0) _all.push({ kind: "income",  icon: "💰", owner: "spouse", age: cInc3Age, amount: cInc3Amt, label: cInc3Name || (lang==="fr"?"Revenu conjoint(e) 3":"Spouse income 3") });
+    if ((cEv1Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv1Age,  amount: cEv1Amt,  label: cEv1Name  || (lang==="fr"?"Dépense conjoint(e) 1":"Spouse expense 1") });
+    if ((cEv2Age || 0)  > 0) _all.push({ kind: "expense", icon: "💳", owner: "spouse", age: cEv2Age,  amount: cEv2Amt,  label: cEv2Name  || (lang==="fr"?"Dépense conjoint(e) 2":"Spouse expense 2") });
   }
   // Goals (retirement + education + lump-sum)
   (goals || []).forEach(function(g) {
@@ -12117,18 +12119,35 @@ React.createElement("div", { style: { height: 6 } }),
 React.createElement(Field, { l: lang === "fr" ? "Assurance collective — part employé ($/mois)" : "Group insurance — employee share ($/mo)" }, React.createElement(NumField, { v: cInsColPrime, set: sCICP, step: 10 })),
 
 React.createElement("div", { style: { height: 4 } }),
-React.createElement(Field, { l: (cEv1Name || (lang === "fr" ? "\u00c9v\u00e9nement conj. 1" : "Spouse event 1")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cEv1Age, set: sCEv1A, mn: 0, mx: 95 })),
-cEv1Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cEv1Name, onChange: function(e) { sCEv1N(e.target.value); }, placeholder: lang === "fr" ? "ex: R\u00e9no" : "e.g. Reno", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cEv1Amt, set: sCEv1M, step: 1e4 }))),
-React.createElement(Field, { l: (cEv2Name || (lang === "fr" ? "\u00c9v\u00e9nement conj. 2" : "Spouse event 2")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cEv2Age, set: sCEv2A, mn: 0, mx: 95 })),
-cEv2Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cEv2Name, onChange: function(e) { sCEv2N(e.target.value); }, placeholder: lang === "fr" ? "ex: H\u00e9ritage" : "e.g. Inheritance", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cEv2Amt, set: sCEv2M, step: 1e4 }))),
+/* v3 — spouse event/income entries now use a Name field (labeled) so
+   each row reads "Name: Héritage · Age: 68 · Amount: 50 000 $" clearly,
+   matching the primary's inc1/inc2 pattern. */
+React.createElement(Field, { l: lang === "fr" ? "Événement conj. 1 — Âge (0 = aucun)" : "Spouse event 1 — Age (0 = none)" }, React.createElement(Slider, { v: cEv1Age, set: sCEv1A, mn: 0, mx: 95 })),
+cEv1Age > 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Nom" : "Name" }, React.createElement("input", { value: cEv1Name, onChange: function(e) { sCEv1N(e.target.value); }, placeholder: lang === "fr" ? "ex : Rénovation" : "e.g. Renovation", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "4px 6px", outline: "none" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Montant ($)" : "Amount ($)" }, React.createElement(NumField, { v: cEv1Amt, set: sCEv1M, step: 1e4 }))),
+
+React.createElement(Field, { l: lang === "fr" ? "Événement conj. 2 — Âge (0 = aucun)" : "Spouse event 2 — Age (0 = none)" }, React.createElement(Slider, { v: cEv2Age, set: sCEv2A, mn: 0, mx: 95 })),
+cEv2Age > 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Nom" : "Name" }, React.createElement("input", { value: cEv2Name, onChange: function(e) { sCEv2N(e.target.value); }, placeholder: lang === "fr" ? "ex : Héritage" : "e.g. Inheritance", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "4px 6px", outline: "none" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Montant ($)" : "Amount ($)" }, React.createElement(NumField, { v: cEv2Amt, set: sCEv2M, step: 1e4 }))),
+
 React.createElement("div", { style: { height: 4 } }),
-React.createElement(Field, { l: (cInc1Name || (lang === "fr" ? "Revenu conj. 1" : "Spouse income 1")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc1Age, set: sCI1A, mn: 0, mx: 95 })),
-cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc1Name, onChange: function(e) { sCI1N(e.target.value); }, placeholder: lang === "fr" ? "ex: Rente" : "e.g. Annuity", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc1Amt, set: sCI1M, step: 1e4 }))),
-/* v3 Wave 4 — spouse income 2 & 3 (parity with primary 3 slots) */
-React.createElement(Field, { l: (cInc2Name || (lang === "fr" ? "Revenu conj. 2" : "Spouse income 2")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc2Age, set: sCI2A, mn: 0, mx: 95 })),
-cInc2Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc2Name, onChange: function(e) { sCI2N(e.target.value); }, placeholder: lang === "fr" ? "ex: H\u00e9ritage" : "e.g. Inheritance", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc2Amt, set: sCI2M, step: 1e4 }))),
-React.createElement(Field, { l: (cInc3Name || (lang === "fr" ? "Revenu conj. 3" : "Spouse income 3")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc3Age, set: sCI3A, mn: 0, mx: 95 })),
-cInc3Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc3Name, onChange: function(e) { sCI3N(e.target.value); }, placeholder: lang === "fr" ? "ex: Prime" : "e.g. Bonus", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc3Amt, set: sCI3M, step: 1e4 }))),
+
+React.createElement(Field, { l: lang === "fr" ? "Revenu conj. 1 — Âge (0 = aucun)" : "Spouse income 1 — Age (0 = none)" }, React.createElement(Slider, { v: cInc1Age, set: sCI1A, mn: 0, mx: 95 })),
+cInc1Age > 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Nom" : "Name" }, React.createElement("input", { value: cInc1Name, onChange: function(e) { sCI1N(e.target.value); }, placeholder: lang === "fr" ? "ex : Rente" : "e.g. Annuity", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "4px 6px", outline: "none" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Montant ($)" : "Amount ($)" }, React.createElement(NumField, { v: cInc1Amt, set: sCI1M, step: 1e4 }))),
+
+React.createElement(Field, { l: lang === "fr" ? "Revenu conj. 2 — Âge (0 = aucun)" : "Spouse income 2 — Age (0 = none)" }, React.createElement(Slider, { v: cInc2Age, set: sCI2A, mn: 0, mx: 95 })),
+cInc2Age > 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Nom" : "Name" }, React.createElement("input", { value: cInc2Name, onChange: function(e) { sCI2N(e.target.value); }, placeholder: lang === "fr" ? "ex : Héritage" : "e.g. Inheritance", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "4px 6px", outline: "none" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Montant ($)" : "Amount ($)" }, React.createElement(NumField, { v: cInc2Amt, set: sCI2M, step: 1e4 }))),
+
+React.createElement(Field, { l: lang === "fr" ? "Revenu conj. 3 — Âge (0 = aucun)" : "Spouse income 3 — Age (0 = none)" }, React.createElement(Slider, { v: cInc3Age, set: sCI3A, mn: 0, mx: 95 })),
+cInc3Age > 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Nom" : "Name" }, React.createElement("input", { value: cInc3Name, onChange: function(e) { sCI3N(e.target.value); }, placeholder: lang === "fr" ? "ex : Prime" : "e.g. Bonus", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "4px 6px", outline: "none" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Montant ($)" : "Amount ($)" }, React.createElement(NumField, { v: cInc3Amt, set: sCI3M, step: 1e4 }))),
 React.createElement("div", { style: { height: 4 } }),
 /* v3 Wave 4 — spouse part-time at retirement (parity with primary ptM/ptYrs) */
 React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 4, marginBottom: 2 } }, lang === "fr" ? "Travail partiel à la retraite" : "Part-time work in retirement"),
