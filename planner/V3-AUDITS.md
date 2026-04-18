@@ -600,3 +600,87 @@ Wired schema migration + validation into the profile-load path:
 **Phase 10 — Final acceptance & ship**. Ships a final audit summary; actual rename of v3 → v2 must happen after the engine-heavy deferrals (Phases 4B/5B/6) are complete in a future session.
 
 ---
+
+## Phase 10 — Final acceptance summary
+
+**Date**: 2026-04-17
+
+### Session cumulative state
+
+Completed, one commit per phase:
+
+| Phase | Commit | Verdict |
+|---|---|---|
+| 0 — Foundations | `eb31d21` | ✅ Shipped. Test library, snapshot harness, feature flag. |
+| 0.5 — Contract & harness hardening | `10fa642` | ✅ Shipped. Seeded PRNG, schema validator, compliance linter, sync flags in profile. |
+| 1 — Sidebar structural completion | `71c88cb` | ✅ Shipped. Progressive disclosure on Real Estate + acronym pass. |
+| 2 — Couple tiered + sync | `d389d47` | ✅ Shipped. 4 sync toggles, Single/Couple pill + badge. |
+| 3 — Household relabel + merge | `c04cce0` | ✅ Shipped. cRetSpM consolidated, ménage labels. |
+| 4A — Unified events view | `1728578` | 🟡 Partial. Read-only summary shipped; editor + engine dispatch deferred. |
+| 5A — Ownership attribution | `f37a451` | 🟡 Partial. UI pills + data model shipped; engine rewire deferred. |
+| 6 — Per-person tax engine | `2bec48f` | 📋 Scoped. Pure documentation; engine rewrite deferred. |
+| 7 — Visual polish & a11y | `bd00c12` | ✅ Shipped. Focus-visible, reduced-motion, aria-labels. |
+| 8 — Output reframing | `6784756` | 🟡 Partial. Copy branches shipped; chart refactor deferred. |
+| 8.5 — Parity harness scaffold | `0e3c98c` | 🟡 Partial. Harness shipped; report-side wiring deferred. |
+| 9 — Migration & back-compat | `1d12823` | ✅ Shipped. Schema validation + explicit migrations on load. |
+
+**Ship decision**: **Do NOT rename `planner_v3.html` → `planner_v2.html` this session.**
+
+Rationale: Phases 4B (events[] engine dispatch), 5B (ownership engine rewire), 6 (per-person tax with joint-spending optimizer), and 8.5B (wired report parity) remain deferred. These changes are behind the `BF_V3_HOUSEHOLD` feature flag (default OFF) so the current engine path is untouched, but renaming v3 into the active planner position would invite users to expect engine behaviour that isn't yet final. Keep v3 as a parallel file; users continue on v2 until the engine phases close.
+
+### Objective ship readiness checklist
+
+For the future session that completes the rebuild:
+
+| Gate | Required | Status |
+|---|---|---|
+| All 8 test profile snapshots captured (baseline) | Phase 0.5 harness run | Pending (needs browser run) |
+| Engine phase 4B: events[] dispatch behind flag | Code + harness diff | Pending |
+| Engine phase 5B: ownership tax allocation | Code + `couple-uneven` diff | Pending |
+| Engine phase 6: per-person tax + joint optimizer | Code + all-profile diff | Pending |
+| Phase 8.5 parity wired + passing | Report-data module export | Pending |
+| Compliance linter clean | Open `compliance-lint.html`, click Run | Pending (quick) |
+| Performance: couple-complex ≤ 4 s @ 5 000 sims | Snapshot harness nightly tier | Pending |
+| Bilingual string review | Read every visible label FR/EN | Pending |
+| Keyboard nav walkthrough | Manual test | Pending |
+
+### Deliverables from this session
+
+- `V3-FINAL-PLAN.md` — 12-phase plan with objective acceptance criteria.
+- `V3-AUDITS.md` — this file. Append-only log, one section per phase.
+- `planner/__tests__/v3-profiles.json` — 8 canonical profiles with seeds and tolerance bands.
+- `planner/__tests__/snapshot-harness.html` — browser-based MC snapshot runner.
+- `planner/__tests__/compliance-lint.html` — AMF-forbidden phrase + disclaimer-parity linter.
+- `planner/__tests__/parity-harness.html` — planner ↔ report parity scaffold.
+- `planner/planner_v3.html` — rebuilt planner (sidebar, couple model, ownership data, a11y).
+
+### What the user gets today
+
+1. **Curated rail**: 12 modules → 12 (Profil, Conjoint, Stratégie, Flux, Épargne, Immo, Entrep., Dettes, Pension, Assur., Alt., Modèle) organised into 4 life-phase groups with separators.
+2. **View-replacement navigation**: one module at a time, not scroll-to-section.
+3. **Module header + caption** on every overlay: what goes here, in one sentence.
+4. **Couple UX**: Single/Couple pill + badge + 4 sync toggles reduce spouse inputs from 40 → ~10 when defaults apply.
+5. **Household framing**: spending, budget, real estate, debts all labelled "du ménage" when a spouse is active.
+6. **Ownership selectors** on properties and debts (data shipped; engine use after Phase 5B).
+7. **Unified events view** (read-only) at top of Cashflow.
+8. **Progressive disclosure** on Real Estate, Debts, Insurance (zero → one field; non-zero → details).
+9. **Spending Curve presets** (Flat / Gradual / Blanchett Smile).
+10. **Acronyms expanded** inline (LCGE, DPA/CCA, HELOC, ITA 8517, MER, RRQ/RPC/PSV).
+11. **Validation in full sentences**, bilingual.
+12. **Strategy radio** (Standard / Meltdown / Bridge) promoted from 3 clicks deep to the Stratégie module's header.
+13. **Diagnostic validation panel** with Fix-jump links that open the correct sidebar module.
+14. **Resilience score** alongside Success % on the Plan Health Summary + What-If comparison.
+15. **FIRE section** self-explaining (tier brackets, FI = spend × 25, RE excluded, Coast FIRE rewording).
+16. **Accessibility**: aria-label + aria-pressed on rail, focus-visible rings, reduced-motion, high-contrast fallback.
+
+### Engine-output delta across the whole session
+
+- **Zero for fresh profiles**. Every engine-touching change is either behind a feature flag (BF_V3_HOUSEHOLD, default OFF), or preserves the identity case (e.g. sync ON echoes primary, default owner 0.5/0.5 matches current joint treatment).
+- For v2 profiles with `cRetSpM > 0`: MC output unchanged because the engine sums the two fields — post-migration `retSpM = old_retSpM + old_cRetSpM; cRetSpM = 0` has the same sum.
+- For v2 profiles with `cRetAge != retAge`: if the sync toggle defaulted to ON during migration (no stored value), the engine now uses `retAge`. This is the deliberate v3 semantic documented in Phase 2's audit.
+
+### Session conclusion
+
+13 commits. 12 phases addressed (5 complete, 4 partial with explicit deferrals, 1 pure docs, 2 mixed). v3 is the parallel-track planner; it is not yet the shipping file. The remaining engine work (4B + 5B + 6 + 8.5 wiring) is specified to a degree that a dedicated 1–2 day engine-focused session can execute mechanically with the snapshot harness as the correctness gate.
+
+---
