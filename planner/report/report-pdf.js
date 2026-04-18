@@ -1724,8 +1724,8 @@
 
     // Post-data narrative — AI supersedes deterministic
     var _stratDet = fr
-      ? 'Les strat\u00e9gies ci-dessus sont observ\u00e9es \u00e0 partir des donn\u00e9es du moteur de calcul. Leur impact est estim\u00e9 en comparant le sc\u00e9nario de base au sc\u00e9nario modifi\u00e9. L\u2019application r\u00e9elle de ces strat\u00e9gies d\u00e9pend de votre situation personnelle et devrait \u00eatre valid\u00e9e avec un planificateur financier.'
-      : 'The strategies above are observed from the calculation engine data. Their impact is estimated by comparing the baseline scenario to the modified scenario. Actual implementation depends on your personal situation and should be validated with a financial planner.';
+      ? 'Les strat\u00e9gies ci-dessus sont observ\u00e9es \u00e0 partir des donn\u00e9es du moteur de calcul. Leur impact est estim\u00e9 en comparant le sc\u00e9nario de base au sc\u00e9nario modifi\u00e9. L\u2019application r\u00e9elle de ces strat\u00e9gies d\u00e9pend de votre situation personnelle et pourrait \u00eatre valid\u00e9e avec un planificateur financier.'
+      : 'The strategies above are observed from the calculation engine data. Their impact is estimated by comparing the baseline scenario to the modified scenario. Actual implementation depends on your personal situation and may be validated with a financial planner.';
     h += narrAi(_stratDet, ai.best_move_explainer, fr, fr ? 'Strat\u00e9gies \u2014 Analyse IA' : 'Strategies \u2014 AI Analysis');
     h += secPageEnd();
     return h;
