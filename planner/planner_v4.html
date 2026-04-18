@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BuildFi Laboratoire — Plan de retraite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─────────────── Design tokens ─────────────── */
+:root {
+  --bg:            #0e1420;
+  --surface:       #172033;
+  --surface-2:     #1e2940;
+  --surface-3:     #293552;
+  --border:        #2d3a56;
+  --border-soft:   #24304a;
+  --text:          #e8ecf5;
+  --text-soft:     #b4becf;
+  --text-dim:      #7a8499;
+  --text-muted:    #505a70;
+  --accent:        #c49a1a;
+  --accent-soft:   #c49a1a33;
+  --accent-strong: #d9a820;
+  --blue:          #5090c8;
+  --green:         #2a8c46;
+  --red:           #d04848;
+  --orange:        #d48820;
+  --teal:          #48b8a8;
+  --purple:        #8468c0;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.4);
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 24px;
+  --fs-3xl: 32px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-size: var(--fs-md); line-height: 1.55; }
+body { min-height: 100vh; }
+
+/* ─────────────── Layout ─────────────── */
+.app { max-width: 1120px; margin: 0 auto; padding: 32px 40px 96px; }
+@media (max-width: 960px) { .app { padding: 20px 16px 80px; } }
+
+/* ─────────────── Header ─────────────── */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px; margin-bottom: 28px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.brand-logo {
+  font-size: var(--fs-2xl); font-weight: 700; letter-spacing: -0.02em;
+  color: var(--accent); font-family: "Plus Jakarta Sans";
+}
+.brand-tag {
+  font-size: var(--fs-sm); color: var(--text-dim); letter-spacing: 0.02em;
+}
+.hdr-actions { display: flex; align-items: center; gap: 8px; }
+.btn {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+  padding: 8px 14px; border-radius: var(--radius-md); font-family: inherit;
+  font-size: var(--fs-md); font-weight: 500; cursor: pointer; display: inline-flex;
+  align-items: center; gap: 6px; transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { background: var(--surface-3); border-color: var(--text-dim); }
+.btn-primary {
+  background: var(--accent); color: #0e1420; border-color: var(--accent);
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+.btn-ghost:hover { color: var(--text); background: var(--surface); }
+.lang-toggle {
+  display: inline-flex; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.lang-toggle button {
+  background: transparent; border: none; color: var(--text-dim);
+  padding: 6px 12px; font-family: inherit; font-size: var(--fs-sm); font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.lang-toggle button.on { background: var(--accent); color: #0e1420; }
+
+/* ─────────────── Page intro ─────────────── */
+.page-title { font-size: var(--fs-3xl); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.page-sub { font-size: var(--fs-lg); color: var(--text-soft); margin-bottom: 28px; max-width: 720px; }
+
+/* ─────────────── ToC (sticky side nav) ─────────────── */
+.body-grid { display: grid; grid-template-columns: 220px 1fr; gap: 36px; align-items: start; }
+@media (max-width: 960px) { .body-grid { grid-template-columns: 1fr; } .toc { display: none; } }
+.toc {
+  position: sticky; top: 20px;
+  background: var(--surface); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md); padding: 14px 12px;
+}
+.toc-head { font-size: var(--fs-xs); font-weight: 700; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; padding: 0 6px; }
+.toc-link {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm);
+  font-size: var(--fs-sm); color: var(--text-soft); text-decoration: none; transition: all 0.12s;
+  border-left: 2px solid transparent;
+}
+.toc-link:hover { background: var(--surface-2); color: var(--text); }
+.toc-link .ico { width: 16px; text-align: center; font-size: var(--fs-md); }
+.toc-link .label { flex: 1; }
+.toc-link .stamp { font-size: 9px; color: var(--text-muted); font-family: "JetBrains Mono"; }
+.toc-link.active { color: var(--accent); background: var(--accent-soft); border-left-color: var(--accent); }
+
+/* ─────────────── Search ─────────────── */
+.search-wrap { position: relative; margin-bottom: 12px; }
+.search {
+  width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 8px 10px 8px 32px; font-family: inherit;
+  font-size: var(--fs-sm); outline: none;
+}
+.search::placeholder { color: var(--text-muted); }
+.search:focus { border-color: var(--accent); }
+.search-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: var(--fs-md); pointer-events: none; }
+
+/* ─────────────── Sections (collapsibles) ─────────────── */
+details.section {
+  background: var(--surface); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg); margin-bottom: 14px;
+  transition: border-color 0.15s, box-shadow 0.2s;
+  overflow: hidden;
+}
+details.section[open] { border-color: var(--border); box-shadow: var(--shadow-md); }
+details.section > summary {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer;
+  list-style: none; user-select: none;
+  transition: background 0.12s;
+}
+details.section > summary::-webkit-details-marker { display: none; }
+details.section > summary:hover { background: var(--surface-2); }
+.sec-ico {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  flex-shrink: 0;
+}
+.sec-meta { flex: 1; min-width: 0; }
+.sec-title { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -0.01em; margin-bottom: 2px; }
+.sec-sub { font-size: var(--fs-sm); color: var(--text-dim); }
+.sec-status { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; font-size: var(--fs-xs); color: var(--text-dim); }
+.sec-status .count { color: var(--text); font-weight: 600; font-family: "JetBrains Mono"; }
+.sec-status .stamp { font-family: "JetBrains Mono"; }
+.sec-chev { color: var(--text-dim); transition: transform 0.2s; font-size: 14px; flex-shrink: 0; width: 16px; text-align: center; }
+details[open] .sec-chev { transform: rotate(90deg); }
+.sec-body { padding: 8px 20px 24px; border-top: 1px solid var(--border-soft); }
+
+/* ─────────────── Subsections & field rows ─────────────── */
+.subsec { margin-top: 18px; }
+.subsec:first-child { margin-top: 12px; }
+.subsec-head { font-size: var(--fs-xs); font-weight: 700; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid var(--accent); }
+.subsec-intro { font-size: var(--fs-sm); color: var(--text-soft); margin-bottom: 12px; padding-left: 10px; }
+
+/* ─────────────── Field primitive ─────────────── */
+.field-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px;
+}
+@media (max-width: 720px) { .field-grid { grid-template-columns: 1fr; } }
+.field-grid.one-col { grid-template-columns: 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-head { display: flex; align-items: center; gap: 6px; }
+.field-label { font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+.field-req { color: var(--accent); margin-left: 2px; }
+.field-unit { color: var(--text-dim); font-weight: 400; font-size: var(--fs-xs); margin-left: 2px; }
+.tip-trigger {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--surface-3); color: var(--text-dim);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; cursor: help;
+  transition: all 0.15s;
+}
+.tip-trigger:hover { background: var(--accent); color: #0e1420; }
+.tip-wrap { position: relative; display: inline-flex; }
+.tip-body {
+  position: absolute; left: 18px; top: -4px;
+  background: #0a0f1a; color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 8px 12px;
+  font-size: var(--fs-xs); line-height: 1.5;
+  width: 260px; z-index: 100;
+  opacity: 0; pointer-events: none; transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: var(--shadow-lg);
+}
+.tip-wrap:hover .tip-body, .tip-trigger:focus + .tip-body {
+  opacity: 1; pointer-events: auto; transform: translateY(0);
+}
+
+.field-help { font-size: var(--fs-xs); color: var(--text-dim); line-height: 1.5; }
+.field-input {
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 10px; font-family: inherit; font-size: var(--fs-md);
+  outline: none; transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+}
+.field-input:focus { border-color: var(--accent); background: var(--surface); }
+.field-input::placeholder { color: var(--text-muted); font-style: italic; }
+.field-input.is-default { color: var(--text-muted); font-style: italic; }
+
+.field-hint {
+  font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;
+  display: flex; align-items: center; gap: 6px;
+}
+.field-hint .default-pill {
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  padding: 1px 6px; border-radius: 8px; font-style: normal; color: var(--text-dim);
+}
+.field-hint button.revert {
+  background: transparent; border: none; color: var(--accent); cursor: pointer;
+  font-size: var(--fs-xs); padding: 0; text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+select.field-input { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%237a8499' d='M6 9L1 4h10z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+.check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+  background: var(--surface-2); cursor: pointer; transition: border-color 0.12s;
+}
+.check-row:hover { border-color: var(--border); }
+.check-row input { margin: 2px 0 0 0; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.check-row .check-label { font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+.check-row .check-help { font-size: var(--fs-xs); color: var(--text-dim); margin-top: 2px; }
+
+/* ─────────────── Pill group (radios as pills) ─────────────── */
+.pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  flex: 1; min-width: 80px;
+  background: var(--surface-2); color: var(--text-soft);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 10px 12px; font-family: inherit; font-size: var(--fs-sm); font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.pill:hover { border-color: var(--text-dim); color: var(--text); }
+.pill.on { background: var(--accent); color: #0e1420; border-color: var(--accent); font-weight: 700; }
+.pill .pill-desc { display: block; font-size: 10px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+/* ─────────────── Couple side-by-side columns ─────────────── */
+.couple-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-top: 10px;
+}
+@media (max-width: 720px) { .couple-grid { grid-template-columns: 1fr; } }
+.couple-col {
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md); padding: 14px 16px;
+}
+.couple-col.primary { border-left: 3px solid var(--accent); }
+.couple-col.spouse { border-left: 3px solid var(--teal); }
+.couple-col-head {
+  font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.couple-col.primary .couple-col-head { color: var(--accent); }
+.couple-col.spouse .couple-col-head { color: var(--teal); }
+
+/* ─────────────── Callouts ─────────────── */
+.callout {
+  display: flex; gap: 12px; padding: 12px 14px;
+  border-radius: var(--radius-md); border-left: 3px solid var(--blue);
+  background: rgba(80,144,200,0.08); margin: 14px 0;
+  font-size: var(--fs-sm); color: var(--text-soft); line-height: 1.5;
+}
+.callout.tip     { border-left-color: var(--blue);  background: rgba(80,144,200,0.08); }
+.callout.warn    { border-left-color: var(--orange); background: rgba(212,136,32,0.08); }
+.callout.success { border-left-color: var(--green);  background: rgba(42,140,70,0.10); }
+.callout-ico { font-size: 16px; flex-shrink: 0; }
+.callout strong { color: var(--text); }
+
+/* ─────────────── Footer ─────────────── */
+.footer {
+  margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border-soft);
+  font-size: var(--fs-xs); color: var(--text-muted); line-height: 1.6; text-align: center;
+}
+.footer strong { color: var(--text-dim); }
+
+/* ─────────────── Accessibility ─────────────── */
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ─────────────── Floating Simulate CTA ─────────────── */
+.simulate-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 200;
+  padding: 14px 22px; background: var(--accent); color: #0e1420;
+  border: none; border-radius: 999px; font-family: inherit;
+  font-size: var(--fs-md); font-weight: 700; cursor: pointer;
+  box-shadow: var(--shadow-lg); display: inline-flex; align-items: center; gap: 8px;
+  transition: transform 0.15s, background 0.15s;
+}
+.simulate-fab:hover { background: var(--accent-strong); transform: translateY(-2px); }
+
+/* ─────────────── Utilities ─────────────── */
+.spacer-sm { height: 8px; }
+.spacer-md { height: 14px; }
+.spacer-lg { height: 22px; }
+.mono { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+.row { display: flex; align-items: center; gap: 10px; }
+.muted { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─────────────── Header ─────────────── -->
+  <header class="hdr">
+    <div class="brand">
+      <div class="brand-logo">BuildFi</div>
+      <div class="brand-tag" data-i18n="brandTag">Laboratoire · Plan de retraite</div>
+    </div>
+    <div class="hdr-actions">
+      <div class="lang-toggle" role="tablist" aria-label="Langue">
+        <button id="lang-fr" class="on" aria-pressed="true" onclick="setLang('fr')">FR</button>
+        <button id="lang-en" aria-pressed="false" onclick="setLang('en')">EN</button>
+      </div>
+      <button class="btn btn-ghost" onclick="loadProfile()" data-i18n="load">📂 Charger</button>
+      <button class="btn" onclick="saveProfile()" data-i18n="save">💾 Sauvegarder</button>
+      <a class="btn btn-ghost" href="planner_v3.html" style="text-decoration:none" data-i18n="toSidebar">🧭 Vue compacte</a>
+    </div>
+  </header>
+
+  <!-- ─────────────── Intro ─────────────── -->
+  <h1 class="page-title" data-i18n="pageTitle">Formulaire de plan de retraite</h1>
+  <p class="page-sub" data-i18n="pageSub">
+    Chaque section rassemble les informations nécessaires pour un plan complet. Les valeurs par défaut, en italique grisé, représentent la médiane canadienne pour votre profil — remplacez uniquement ce qui diffère de votre situation. Un plan de retraite évolue avec le temps ; revenez valider les sections chaque trimestre.
+  </p>
+
+  <div class="body-grid">
+
+    <!-- ─────────────── ToC ─────────────── -->
+    <aside class="toc" aria-label="Navigation">
+      <div class="toc-head" data-i18n="sections">Sections</div>
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input id="search" class="search" placeholder="Rechercher un champ…" oninput="filterFields(this.value)" data-i18n-ph="searchPh">
+      </div>
+      <a class="toc-link" href="#sec-identity"><span class="ico">👤</span><span class="label" data-i18n="tocIdentity">Identité & ménage</span></a>
+      <a class="toc-link" href="#sec-income"><span class="ico">💸</span><span class="label" data-i18n="tocIncome">Revenus & dépenses</span></a>
+      <a class="toc-link" href="#sec-savings"><span class="ico">📈</span><span class="label" data-i18n="tocSavings">Épargne & placements</span></a>
+      <a class="toc-link" href="#sec-realestate"><span class="ico">🏠</span><span class="label" data-i18n="tocRealEstate">Immobilier</span></a>
+      <a class="toc-link" href="#sec-pensions"><span class="ico">🏛️</span><span class="label" data-i18n="tocPensions">Pensions</span></a>
+      <a class="toc-link" href="#sec-strategy"><span class="ico">🧾</span><span class="label" data-i18n="tocStrategy">Stratégie</span></a>
+      <a class="toc-link" href="#sec-insurance"><span class="ico">🛡️</span><span class="label" data-i18n="tocInsurance">Assurances</span></a>
+      <a class="toc-link" href="#sec-assumptions"><span class="ico">⚙️</span><span class="label" data-i18n="tocAssumptions">Hypothèses techniques</span></a>
+    </aside>
+
+    <!-- ─────────────── Main form ─────────────── -->
+    <main>
+
+      <!-- ─── Section: Identity & Household ─── -->
+      <details class="section" id="sec-identity" open>
+        <summary>
+          <div class="sec-ico" style="background:#2a8c4622;color:#2a8c46">👤</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="identityTitle">Identité & ménage</div>
+            <div class="sec-sub" data-i18n="identitySub">Qui fait l'objet du plan et dans quelle province. Le strict minimum pour lancer une simulation.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="identity">0 / 8</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="youHead">Vous</div>
+            <div class="field-grid">
+              <div class="field" data-search-keywords="prénom first name nom identity">
+                <div class="field-head">
+                  <label class="field-label" for="firstName" data-i18n="firstName">Prénom</label>
+                </div>
+                <input id="firstName" class="field-input" placeholder="Ex : Marie" autocomplete="given-name">
+                <div class="field-help" data-i18n="nameHelp">Utilisé dans le rapport et les tableaux — uniquement local à ce plan.</div>
+              </div>
+              <div class="field" data-search-keywords="nom de famille last name">
+                <div class="field-head">
+                  <label class="field-label" for="lastName" data-i18n="lastName">Nom</label>
+                </div>
+                <input id="lastName" class="field-input" placeholder="Ex : Tremblay" autocomplete="family-name">
+                <div class="field-help">&nbsp;</div>
+              </div>
+
+              <div class="field" data-search-keywords="âge age actuel current">
+                <div class="field-head">
+                  <label class="field-label" for="age" data-i18n="age">Âge actuel <span class="field-req">*</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" role="tooltip" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="ageTip">Votre âge à la date d'aujourd'hui. Détermine la durée de la simulation (aujourd'hui → espérance de vie). Doit se situer entre 18 et 80 ans.</span>
+                  </span>
+                </div>
+                <input id="age" type="number" class="field-input" placeholder="45" min="18" max="80">
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>45 ans — médiane des utilisateurs</span></div>
+              </div>
+
+              <div class="field" data-search-keywords="sexe sex genre">
+                <div class="field-head">
+                  <label class="field-label" for="sex" data-i18n="sex">Sexe <span class="field-req">*</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="sexTip">Utilisé pour la table de mortalité CPM 2023. Les femmes ont une espérance de vie ~3 ans supérieure en moyenne, ce qui allonge l'horizon de planification.</span>
+                  </span>
+                </div>
+                <select id="sex" class="field-input">
+                  <option value="F" data-i18n="female">Femme</option>
+                  <option value="M" data-i18n="male">Homme</option>
+                </select>
+              </div>
+
+              <div class="field" data-search-keywords="province résidence tax impôt">
+                <div class="field-head">
+                  <label class="field-label" for="prov" data-i18n="province">Province de résidence <span class="field-req">*</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="provTip">Détermine les tranches d'imposition, le RRQ vs RPC, l'accès au GIS/SRG et certaines règles successorales (ex : homologation hors Québec).</span>
+                  </span>
+                </div>
+                <select id="prov" class="field-input">
+                  <option value="QC">Québec (QC)</option>
+                  <option value="ON">Ontario (ON)</option>
+                  <option value="BC">Colombie-Britannique (BC)</option>
+                  <option value="AB">Alberta (AB)</option>
+                  <option value="SK">Saskatchewan (SK)</option>
+                  <option value="MB">Manitoba (MB)</option>
+                  <option value="NB">Nouveau-Brunswick (NB)</option>
+                  <option value="NS">Nouvelle-Écosse (NS)</option>
+                  <option value="PE">Île-du-Prince-Édouard (PE)</option>
+                  <option value="NL">Terre-Neuve-et-Labrador (NL)</option>
+                  <option value="NT">Territoires du Nord-Ouest (NT)</option>
+                  <option value="YT">Yukon (YT)</option>
+                  <option value="NU">Nunavut (NU)</option>
+                </select>
+              </div>
+
+              <div class="field" data-search-keywords="retraite âge retirement age">
+                <div class="field-head">
+                  <label class="field-label" for="retAge" data-i18n="retAge">Âge de retraite souhaité <span class="field-req">*</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="retAgeTip">L'âge auquel vous prévoyez cesser votre travail principal. C'est un choix — vous pourrez toujours le modifier pour tester d'autres scénarios.</span>
+                  </span>
+                </div>
+                <input id="retAge" type="number" class="field-input" placeholder="65" min="45" max="75">
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans (âge RRQ standard)</span></div>
+              </div>
+
+              <div class="field" data-search-keywords="horizon de vie survival death">
+                <div class="field-head">
+                  <label class="field-label" for="deathAge" data-i18n="deathAge">Horizon de vie planifié</label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="deathAgeTip">Âge auquel on projette le plan. Laisser vide pour utiliser la longévité stochastique (table CPM 2023) qui simule un âge de décès variable plutôt qu'un âge fixe.</span>
+                  </span>
+                </div>
+                <input id="deathAge" type="number" class="field-input" placeholder="93" min="70" max="110">
+                <div class="field-hint"><span class="default-pill" data-i18n="stoch">stochastique</span> <span data-i18n="deathAgeHint">par défaut : longévité variable CPM 2023</span></div>
+              </div>
+
+              <div class="field" data-search-keywords="salaire salary brut gross">
+                <div class="field-head">
+                  <label class="field-label" for="sal" data-i18n="salary">Salaire brut annuel <span class="field-unit">$</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="salTip">Salaire annuel avant impôts et cotisations. Entrez 0 si vous êtes déjà à la retraite. Utilisé pour estimer les cotisations REER maximales et le RRQ.</span>
+                  </span>
+                </div>
+                <input id="sal" type="number" class="field-input" placeholder="68 000" min="0" step="1000">
+                <div class="field-hint"><span class="default-pill" data-i18n="median">médiane QC</span> <span>68 000 $</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="planModeHead">Mode du plan</div>
+            <div class="pill-group" role="radiogroup">
+              <button class="pill on" onclick="setPlanMode('single', this)" role="radio" aria-checked="true">
+                <span data-i18n="modeSingle">Individuel</span>
+                <span class="pill-desc" data-i18n="modeSingleSub">Une seule personne dans le plan</span>
+              </button>
+              <button class="pill" onclick="setPlanMode('couple', this)" role="radio" aria-checked="false">
+                <span data-i18n="modeCouple">Couple</span>
+                <span class="pill-desc" data-i18n="modeCoupleSub">Deux personnes, ménage commun</span>
+              </button>
+            </div>
+            <div class="callout tip" style="margin-top:12px" id="couple-hint" hidden>
+              <span class="callout-ico">💡</span>
+              <span data-i18n="coupleHint">En mode Couple, les dépenses du ménage sont un total commun. Les comptes REER et CÉLI restent individuels. Les actifs partagés (immobilier, dettes) peuvent se répartir selon un pourcentage personnalisé.</span>
+            </div>
+          </div>
+
+          <!-- Spouse section (revealed when couple) -->
+          <div class="subsec" id="spouse-block" hidden>
+            <div class="subsec-head" data-i18n="spouseHead">Conjoint(e)</div>
+            <div class="subsec-intro" data-i18n="spouseIntro">Par défaut, nous utilisons vos valeurs pour éviter la double saisie. Les champs techniques (âge RRQ, mortalité, gains admissibles) sont partagés. Décochez une hypothèse pour révéler une valeur propre au conjoint(e).</div>
+            <div class="couple-grid">
+              <div class="couple-col primary">
+                <div class="couple-col-head" data-i18n="youCol">Vous</div>
+                <div class="muted" data-i18n="youColBody">Identité + revenus saisis ci-dessus. Mêmes informations utilisées par défaut pour le conjoint(e).</div>
+              </div>
+              <div class="couple-col spouse">
+                <div class="couple-col-head" data-i18n="spouseCol">Conjoint(e)</div>
+                <div class="field-grid one-col">
+                  <div class="field">
+                    <div class="field-head"><label class="field-label" for="cFirstName" data-i18n="spouseFirst">Prénom</label></div>
+                    <input id="cFirstName" class="field-input" placeholder="Ex : Sophie">
+                  </div>
+                  <div class="field">
+                    <div class="field-head"><label class="field-label" for="cAge" data-i18n="spouseAge">Âge actuel</label></div>
+                    <input id="cAge" type="number" class="field-input" placeholder="43" min="18" max="80">
+                  </div>
+                  <div class="field">
+                    <div class="field-head"><label class="field-label" for="cSex" data-i18n="spouseSex">Sexe</label></div>
+                    <select id="cSex" class="field-input">
+                      <option value="F" data-i18n="female">Femme</option>
+                      <option value="M" data-i18n="male">Homme</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <div class="field-head"><label class="field-label" for="cSal" data-i18n="spouseSal">Salaire brut <span class="field-unit">$/an</span></label></div>
+                    <input id="cSal" type="number" class="field-input" placeholder="58 000" min="0" step="1000">
+                  </div>
+                </div>
+                <div class="spacer-md"></div>
+                <label class="check-row">
+                  <input type="checkbox" id="cSyncRet" checked>
+                  <div>
+                    <div class="check-label" data-i18n="sameRet">Même âge de retraite</div>
+                    <div class="check-help" data-i18n="sameRetHelp">Par défaut, le conjoint(e) prend sa retraite la même année que vous.</div>
+                  </div>
+                </label>
+                <div class="spacer-sm"></div>
+                <label class="check-row">
+                  <input type="checkbox" id="cSyncGov" checked>
+                  <div>
+                    <div class="check-label" data-i18n="sameGov">Mêmes âges RRQ/PSV</div>
+                    <div class="check-help" data-i18n="sameGovHelp">Les dates de début de RRQ et PSV suivent les vôtres.</div>
+                  </div>
+                </label>
+                <div class="spacer-sm"></div>
+                <label class="check-row">
+                  <input type="checkbox" id="cSyncPortfolio" checked>
+                  <div>
+                    <div class="check-label" data-i18n="samePortfolio">Mêmes allocations & frais de gestion</div>
+                    <div class="check-help" data-i18n="samePortfolioHelp">Les comptes du conjoint(e) utilisent vos allocations d'actions/obligations et vos MER.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- ─── Section: Income & Expenses ─── -->
+      <details class="section" id="sec-income">
+        <summary>
+          <div class="sec-ico" style="background:#5090c822;color:#5090c8">💸</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="incomeTitle">Revenus & dépenses</div>
+            <div class="sec-sub" data-i18n="incomeSub">Ce qui entre chaque mois, ce qui sort chaque mois, et les événements ponctuels à venir.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="income">0 / 6</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spendingHead">Dépenses mensuelles du ménage à la retraite</div>
+            <div class="subsec-intro" data-i18n="spendingIntro">Le montant que le ménage prévoit dépenser chaque mois une fois à la retraite. C'est le chiffre le plus important de votre plan — il détermine combien vous devez accumuler.</div>
+            <div class="field-grid">
+              <div class="field" data-search-keywords="dépenses spending retraite retirement">
+                <div class="field-head">
+                  <label class="field-label" for="retSpM" data-i18n="retSpM">Dépenses mensuelles <span class="field-req">*</span> <span class="field-unit">$/mois</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="retSpMTip">Logement, transport, alimentation, loisirs, soins — le total mensuel que vous anticipez à la retraite. Une règle de pouce : 60–80 % des dépenses actuelles, sauf si vous prévoyez voyager ou déménager.</span>
+                  </span>
+                </div>
+                <input id="retSpM" type="number" class="field-input" placeholder="6 200" min="0" step="100">
+                <div class="field-hint"><span class="default-pill" data-i18n="median">médiane</span> <span>6 200 $/mois (couple, QC)</span></div>
+              </div>
+              <div class="field" data-search-keywords="inflation santé health">
+                <div class="field-head">
+                  <label class="field-label" for="healthInflate" data-i18n="healthInflate">Hausse soins santé / an <span class="field-unit">%</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="healthInflateTip">Les coûts de santé augmentent plus vite que l'inflation générale après 75 ans. Les données canadiennes montrent ~4 % par an au-dessus de l'IPC pour les soins prolongés et les médicaments.</span>
+                  </span>
+                </div>
+                <input id="healthInflate" type="number" class="field-input" placeholder="4.0" min="0" max="10" step="0.1">
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>4,0 %</span></div>
+              </div>
+            </div>
+            <div class="callout tip">
+              <span class="callout-ico">💡</span>
+              <span data-i18n="spendingCallout"><strong>Astuce :</strong> si vous ne savez pas, commencez par 70 % de vos dépenses actuelles. La plupart des gens dépensent moins à la retraite (plus de transports, moins de repas au restaurant) — sauf la première année, où les voyages et les rénovations augmentent.</span>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="ptHead">Travail partiel à la retraite (optionnel)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="ptM" data-i18n="ptM">Revenu partiel mensuel <span class="field-unit">$/mois</span></label>
+                </div>
+                <input id="ptM" type="number" class="field-input" placeholder="0" min="0" step="100">
+                <div class="field-help" data-i18n="ptMHelp">Revenus d'un travail à temps partiel ou consultation après la retraite. Laissez à 0 si aucun.</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="ptYrs" data-i18n="ptYrs">Durée <span class="field-unit">années</span></label></div>
+                <input id="ptYrs" type="number" class="field-input" placeholder="5" min="0" max="20" step="1">
+                <div class="field-help" data-i18n="ptYrsHelp">Nombre d'années que le travail partiel durera après la retraite.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- ─── Section: Savings ─── -->
+      <details class="section" id="sec-savings">
+        <summary>
+          <div class="sec-ico" style="background:#c49a1a22;color:#c49a1a">📈</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="savingsTitle">Épargne & placements</div>
+            <div class="sec-sub" data-i18n="savingsSub">Soldes actuels et cotisations annuelles par type de compte.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="savings">0 / 10</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+
+          <div class="callout tip">
+            <span class="callout-ico">📋</span>
+            <span data-i18n="savingsCallout"><strong>Où trouver ces chiffres :</strong> connectez-vous à votre institution financière et prenez les soldes actuels. Les plafonds annuels 2026 : REER = 18 % du salaire (max 33 810 $), CÉLI = 7 000 $, CELIAPP = 8 000 $.</span>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="rrspHead">REER (régime enregistré d'épargne-retraite)</div>
+            <div class="field-grid">
+              <div class="field" data-search-keywords="REER RRSP solde balance">
+                <div class="field-head">
+                  <label class="field-label" for="rrsp" data-i18n="rrsp">Solde actuel <span class="field-unit">$</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="rrspTip">Total combiné de tous vos comptes REER (incluant les fonds de pension à cotisations définies convertis en REER). Vérifiez votre relevé le plus récent — pas seulement le chiffre de fin d'année.</span>
+                  </span>
+                </div>
+                <input id="rrsp" type="number" class="field-input" placeholder="85 000" min="0" step="1000">
+              </div>
+              <div class="field" data-search-keywords="REER cotisation contribution">
+                <div class="field-head">
+                  <label class="field-label" for="rrspC" data-i18n="rrspC">Cotisation annuelle <span class="field-unit">$/an</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="rrspCTip">Total que vous cotisez chaque année — incluez la partie automatique de votre paie (cotisations déduites à la source) plus les ajouts manuels.</span>
+                  </span>
+                </div>
+                <input id="rrspC" type="number" class="field-input" placeholder="12 000" min="0" step="500">
+                <div class="field-hint"><span class="default-pill" data-i18n="max2026">plafond 2026</span> <span>33 810 $</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="tfsaHead">CÉLI (compte d'épargne libre d'impôt)</div>
+            <div class="field-grid">
+              <div class="field" data-search-keywords="CELI TFSA solde balance">
+                <div class="field-head">
+                  <label class="field-label" for="tfsa" data-i18n="tfsa">Solde actuel <span class="field-unit">$</span></label>
+                </div>
+                <input id="tfsa" type="number" class="field-input" placeholder="42 000" min="0" step="1000">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="tfsaC" data-i18n="tfsaC">Cotisation annuelle <span class="field-unit">$/an</span></label>
+                </div>
+                <input id="tfsaC" type="number" class="field-input" placeholder="7 000" min="0" max="7000" step="500">
+                <div class="field-hint"><span class="default-pill" data-i18n="max2026">plafond 2026</span> <span>7 000 $</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="nrHead">Non-enregistré (hors abri fiscal)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="nr" data-i18n="nr">Solde actuel <span class="field-unit">$</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="nrTip">Comptes d'investissement réguliers (non-REER, non-CÉLI). Les gains sont imposables chaque année : dividendes, intérêts, gains en capital.</span>
+                  </span>
+                </div>
+                <input id="nr" type="number" class="field-input" placeholder="0" min="0" step="1000">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="nrC" data-i18n="nrC">Cotisation annuelle <span class="field-unit">$/an</span></label>
+                </div>
+                <input id="nrC" type="number" class="field-input" placeholder="0" min="0" step="500">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="specialHead">Comptes spéciaux (optionnels)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="fhsa" data-i18n="fhsa">CELIAPP / FHSA <span class="field-unit">$</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="fhsaTip">Compte d'épargne libre d'impôt pour l'achat d'une première propriété. Contribuable jusqu'à 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables.</span>
+                  </span>
+                </div>
+                <input id="fhsa" type="number" class="field-input" placeholder="0" min="0" max="40000" step="1000">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="lira" data-i18n="lira">CRI / LIRA <span class="field-unit">$</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="liraTip">Compte de retraite immobilisé — provient d'un ancien fonds de pension d'employeur. Les retraits sont réglementés et commencent à un âge prescrit (55-71 selon la province).</span>
+                  </span>
+                </div>
+                <input id="lira" type="number" class="field-input" placeholder="0" min="0" step="1000">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- ─── Section: Real Estate ─── -->
+      <details class="section" id="sec-realestate">
+        <summary>
+          <div class="sec-ico" style="background:#5090c822;color:#5090c8">🏠</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="reTitle">Immobilier</div>
+            <div class="sec-sub" data-i18n="reSub">Résidence principale et immeubles locatifs — soldes, hypothèques, vente éventuelle.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="realestate">0 / 0</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="subsec">
+            <div class="subsec-intro" data-i18n="reIntro">Ajoutez chaque propriété une à la fois. Pour chaque bien, précisez la valeur, le solde hypothécaire et — si vous êtes en couple — la part de propriété de chacun (100 % vous, 100 % conjoint(e), 50/50, ou personnalisé).</div>
+            <button class="btn" data-i18n="addProperty">🏠 Ajouter une propriété</button>
+            <div class="spacer-md"></div>
+            <div class="muted" style="font-size:var(--fs-sm)" data-i18n="reEmpty">Aucune propriété enregistrée.</div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─── Section: Pensions ─── -->
+      <details class="section" id="sec-pensions">
+        <summary>
+          <div class="sec-ico" style="background:#2a8c4622;color:#2a8c46">🏛️</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="pensionsTitle">Pensions</div>
+            <div class="sec-sub" data-i18n="pensionsSub">RRQ/RPC, PSV/OAS et pension employeur (prestation déterminée ou cotisations définies).</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="pensions">0 / 5</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="govPensions">Pensions gouvernementales</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="qppAge" data-i18n="qppAge">Début RRQ/RPC</label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="qppAgeTip">Âge auquel vous commencez à recevoir le RRQ (Québec) ou RPC (hors Québec). Reporter après 65 ans augmente la prestation de 8,4 %/an (jusqu'à 72 ans). Commencer avant 65 la réduit de 7,2 %/an.</span>
+                  </span>
+                </div>
+                <input id="qppAge" type="number" class="field-input" placeholder="65" min="60" max="72">
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans</span></div>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="oasAge" data-i18n="oasAge">Début PSV/OAS</label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="oasAgeTip">Pension de Sécurité de la Vieillesse. Commencer à 65 ou reporter jusqu'à 70 (+7,2 %/an). Attention à la récupération (clawback) si votre revenu annuel dépasse ~95 000 $.</span>
+                  </span>
+                </div>
+                <input id="oasAge" type="number" class="field-input" placeholder="65" min="65" max="70">
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="employerPen">Pension employeur</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="penType" data-i18n="penType">Type de régime</label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="penTypeTip">Prestation déterminée (PD) : montant garanti à vie, habituellement dans le secteur public. Cotisations définies (CD) : solde accumulé qui dépend du rendement. RREGOP, RRPE, RPDB, etc. sont des variantes.</span>
+                  </span>
+                </div>
+                <select id="penType" class="field-input">
+                  <option value="none" data-i18n="penNone">Aucun</option>
+                  <option value="db" data-i18n="penDB">Prestation déterminée (PD)</option>
+                  <option value="cd" data-i18n="penCD">Cotisations définies (CD)</option>
+                  <option value="rpdb" data-i18n="penRPDB">Régime à participation différée (RPDB)</option>
+                </select>
+              </div>
+              <div class="field" id="penM-field" hidden>
+                <div class="field-head">
+                  <label class="field-label" for="penM" data-i18n="penM">Prestation mensuelle <span class="field-unit">$/mois</span></label>
+                </div>
+                <input id="penM" type="number" class="field-input" placeholder="2 400" min="0" step="100">
+                <div class="field-help" data-i18n="penMHelp">Le montant mensuel garanti à l'âge de retraite normal du régime.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─── Section: Strategy ─── -->
+      <details class="section" id="sec-strategy">
+        <summary>
+          <div class="sec-ico" style="background:#d4882022;color:#d48820">🧾</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="strategyTitle">Stratégie de décaissement</div>
+            <div class="sec-sub" data-i18n="strategySub">Comment vous allez retirer votre épargne et minimiser l'impôt à la retraite.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="strategy">0 / 3</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="withdrawalMode">Mode de retrait</div>
+            <div class="pill-group">
+              <button class="pill on" onclick="setStrategy('standard', this)" role="radio" aria-checked="true">
+                <span data-i18n="stratStd">Standard</span>
+                <span class="pill-desc" data-i18n="stratStdSub">Retraits minimums REER/FERR</span>
+              </button>
+              <button class="pill" onclick="setStrategy('meltdown', this)" role="radio" aria-checked="false">
+                <span>Meltdown</span>
+                <span class="pill-desc" data-i18n="stratMeltSub">Fondre le REER avant 72 ans</span>
+              </button>
+              <button class="pill" onclick="setStrategy('bridge', this)" role="radio" aria-checked="false">
+                <span data-i18n="stratBridge">Pont</span>
+                <span class="pill-desc" data-i18n="stratBridgeSub">Retraits pour couvrir avant RRQ/PSV</span>
+              </button>
+            </div>
+            <div class="callout tip" style="margin-top:14px">
+              <span class="callout-ico">💡</span>
+              <span data-i18n="strategyHint"><strong>Meltdown</strong> retire volontairement plus du REER chaque année pour éviter les tranches d'impôt élevées plus tard — utile quand on prévoit un gros revenu à 72 ans (FERR obligatoire + RRQ + PSV). <strong>Pont</strong> sert à combler la période entre la retraite et le début du RRQ/PSV.</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─── Section: Insurance ─── -->
+      <details class="section" id="sec-insurance">
+        <summary>
+          <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">🛡️</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="insTitle">Assurances</div>
+            <div class="sec-sub" data-i18n="insSub">Vie, invalidité, maladies graves et assurance collective.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="insurance">0 / 0</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="callout warn">
+            <span class="callout-ico">ℹ️</span>
+            <span data-i18n="insDisclaimer"><strong>Ce n'est pas un conseil en assurance.</strong> Les champs ci-dessous visent à inclure vos protections existantes dans le plan de retraite. Consultez un conseiller en sécurité financière pour valider vos besoins.</span>
+          </div>
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="lifeInsHead">Assurance vie</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="lifeCov" data-i18n="lifeCov">Couverture <span class="field-unit">$</span></label></div>
+                <input id="lifeCov" type="number" class="field-input" placeholder="0" min="0" step="10000">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="lifePrem" data-i18n="lifePrem">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <input id="lifePrem" type="number" class="field-input" placeholder="0" min="0" step="10">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─── Section: Technical assumptions ─── -->
+      <details class="section" id="sec-assumptions">
+        <summary>
+          <div class="sec-ico" style="background:#8468c022;color:#8468c0">⚙️</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="assumpTitle">Hypothèses techniques</div>
+            <div class="sec-sub" data-i18n="assumpSub">Allocations d'actifs, frais de gestion, rendements projetés, scénarios de stress. Les valeurs par défaut conviennent à la plupart des plans.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="assumptions">0 / 12</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+
+          <div class="callout tip">
+            <span class="callout-ico">🎯</span>
+            <span data-i18n="assumpCallout"><strong>Vous pouvez sauter cette section.</strong> Les valeurs par défaut sont calibrées sur les normes de l'industrie (Institut de planification financière + PAG 2025). Modifiez seulement si vous avez une raison spécifique.</span>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="assumpInflation">Inflation</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="inflation" data-i18n="inflation">IPC général <span class="field-unit">%/an</span></label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="inflationTip">Indice des prix à la consommation. Cible Banque du Canada : 2,0 %. Moyenne historique 50 ans : ~3,5 %. Nous utilisons 2,1 % par défaut (PAG 2025).</span>
+                  </span>
+                </div>
+                <input id="inflation" type="number" class="field-input" placeholder="2.1" min="0" max="6" step="0.1">
+                <div class="field-hint"><span class="default-pill" data-i18n="pag2025">PAG 2025</span> <span>2,1 %</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="assumpAlloc">Allocation du portefeuille</div>
+            <div class="subsec-intro" data-i18n="assumpAllocIntro">La portion en actions de vos comptes de placement. 60 % actions / 40 % obligations est la référence classique. Les règles 100-âge ou glide path sont des alternatives.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="allocR" data-i18n="allocR">REER — % actions <span class="field-unit">%</span></label>
+                </div>
+                <input id="allocR" type="number" class="field-input" placeholder="60" min="0" max="100" step="5">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="allocT" data-i18n="allocT">CÉLI — % actions <span class="field-unit">%</span></label>
+                </div>
+                <input id="allocT" type="number" class="field-input" placeholder="60" min="0" max="100" step="5">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="allocN" data-i18n="allocN">Non-enr. — % actions <span class="field-unit">%</span></label>
+                </div>
+                <input id="allocN" type="number" class="field-input" placeholder="50" min="0" max="100" step="5">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="assumpMER">Frais de gestion (MER)</div>
+            <div class="subsec-intro" data-i18n="assumpMERIntro">0,1–0,5 % pour les FNB indiciels. 1,5–2,5 % pour les fonds communs en service-conseil complet.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="merR" data-i18n="merR">Frais REER <span class="field-unit">%/an</span></label></div>
+                <input id="merR" type="number" class="field-input" placeholder="0.5" min="0" max="3" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="merT" data-i18n="merT">Frais CÉLI <span class="field-unit">%/an</span></label></div>
+                <input id="merT" type="number" class="field-input" placeholder="0.5" min="0" max="3" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="merN" data-i18n="merN">Frais non-enr. <span class="field-unit">%/an</span></label></div>
+                <input id="merN" type="number" class="field-input" placeholder="0.3" min="0" max="3" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="assumpReturns">Rendements projetés</div>
+            <div class="subsec-intro" data-i18n="assumpReturnsIntro">Rendements réels (après inflation) utilisés par la simulation Monte Carlo. Conformes aux Projections des hypothèses 2025 de l'Institut de planification financière.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="eqRet" data-i18n="eqRet">Rend. actions <span class="field-unit">%/an</span></label></div>
+                <input id="eqRet" type="number" class="field-input" placeholder="6.9" min="0" max="15" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="bndRet" data-i18n="bndRet">Rend. obligations <span class="field-unit">%/an</span></label></div>
+                <input id="bndRet" type="number" class="field-input" placeholder="3.4" min="0" max="8" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="eqVol" data-i18n="eqVol">Volatilité actions <span class="field-unit">%</span></label></div>
+                <input id="eqVol" type="number" class="field-input" placeholder="16" min="5" max="40" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="bndVol" data-i18n="bndVol">Volatilité obligations <span class="field-unit">%</span></label></div>
+                <input id="bndVol" type="number" class="field-input" placeholder="6" min="2" max="20" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="assumpMC">Monte Carlo</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="nSim" data-i18n="nSim">Nombre de simulations</label>
+                  <span class="tip-wrap">
+                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
+                    <span class="tip-body" data-i18n="nSimTip">Plus de simulations = résultat plus stable mais calcul plus long. 1 000 suffit pour un usage courant ; 5 000+ pour une analyse finale.</span>
+                  </span>
+                </div>
+                <input id="nSim" type="number" class="field-input" placeholder="1 000" min="500" max="10000" step="500">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" data-i18n="stochMort">Longévité stochastique</label></div>
+                <label class="check-row" style="margin-top:2px">
+                  <input type="checkbox" id="stochMort" checked>
+                  <div>
+                    <div class="check-label" data-i18n="stochMortLabel">Utiliser la table CPM 2023</div>
+                    <div class="check-help" data-i18n="stochMortHelp">Simule un âge de décès variable plutôt qu'une valeur fixe.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─────────────── Footer ─────────────── -->
+      <footer class="footer">
+        <div><strong>BuildFi Laboratoire v4</strong> — Outil éducatif de planification de retraite</div>
+        <div style="margin-top:6px" data-i18n="disclaimer">Les résultats sont des projections basées sur des hypothèses statistiques. Ne constitue pas un conseil financier. Consultez un planificateur financier qualifié avant toute décision.</div>
+        <div style="margin-top:10px" data-i18n="engine">Moteur Monte Carlo · 453 tests · Institut de planification financière 2025 · CPM 2023</div>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<button class="simulate-fab" onclick="runSimulation()" data-i18n="simulate">▶ Simuler mon plan</button>
+
+<script>
+/* ─────────────── i18n ─────────────── */
+var _lang = "fr";
+var I18N = {
+  fr: {
+    brandTag: "Laboratoire · Plan de retraite",
+    pageTitle: "Formulaire de plan de retraite",
+    pageSub: "Chaque section rassemble les informations nécessaires pour un plan complet. Les valeurs par défaut, en italique grisé, représentent la médiane canadienne pour votre profil — remplacez uniquement ce qui diffère de votre situation. Un plan de retraite évolue avec le temps ; revenez valider les sections chaque trimestre.",
+    sections: "Sections",
+    searchPh: "Rechercher un champ…",
+    notReviewed: "non revue",
+    suggested: "suggéré", median: "médiane QC", stoch: "stochastique", max2026: "plafond 2026", pag2025: "PAG 2025",
+    load: "📂 Charger", save: "💾 Sauvegarder", toSidebar: "🧭 Vue compacte", simulate: "▶ Simuler mon plan",
+    female: "Femme", male: "Homme",
+    tocIdentity: "Identité & ménage", tocIncome: "Revenus & dépenses", tocSavings: "Épargne & placements",
+    tocRealEstate: "Immobilier", tocPensions: "Pensions", tocStrategy: "Stratégie", tocInsurance: "Assurances",
+    tocAssumptions: "Hypothèses techniques",
+    identityTitle: "Identité & ménage", identitySub: "Qui fait l'objet du plan et dans quelle province. Le strict minimum pour lancer une simulation.",
+    youHead: "Vous",
+    firstName: "Prénom", lastName: "Nom",
+    nameHelp: "Utilisé dans le rapport et les tableaux — uniquement local à ce plan.",
+    age: "Âge actuel", ageTip: "Votre âge à la date d'aujourd'hui. Détermine la durée de la simulation (aujourd'hui → espérance de vie). Doit se situer entre 18 et 80 ans.",
+    sex: "Sexe", sexTip: "Utilisé pour la table de mortalité CPM 2023. Les femmes ont une espérance de vie ~3 ans supérieure en moyenne, ce qui allonge l'horizon de planification.",
+    province: "Province de résidence", provTip: "Détermine les tranches d'imposition, le RRQ vs RPC, l'accès au GIS/SRG et certaines règles successorales (ex : homologation hors Québec).",
+    retAge: "Âge de retraite souhaité", retAgeTip: "L'âge auquel vous prévoyez cesser votre travail principal. C'est un choix — vous pourrez toujours le modifier pour tester d'autres scénarios.",
+    deathAge: "Horizon de vie planifié", deathAgeTip: "Âge auquel on projette le plan. Laisser vide pour utiliser la longévité stochastique (table CPM 2023) qui simule un âge de décès variable plutôt qu'un âge fixe.",
+    deathAgeHint: "par défaut : longévité variable CPM 2023",
+    salary: "Salaire brut annuel", salTip: "Salaire annuel avant impôts et cotisations. Entrez 0 si vous êtes déjà à la retraite. Utilisé pour estimer les cotisations REER maximales et le RRQ.",
+    planModeHead: "Mode du plan",
+    modeSingle: "Individuel", modeSingleSub: "Une seule personne dans le plan",
+    modeCouple: "Couple", modeCoupleSub: "Deux personnes, ménage commun",
+    coupleHint: "En mode Couple, les dépenses du ménage sont un total commun. Les comptes REER et CÉLI restent individuels. Les actifs partagés (immobilier, dettes) peuvent se répartir selon un pourcentage personnalisé.",
+    spouseHead: "Conjoint(e)",
+    spouseIntro: "Par défaut, nous utilisons vos valeurs pour éviter la double saisie. Les champs techniques (âge RRQ, mortalité, gains admissibles) sont partagés. Décochez une hypothèse pour révéler une valeur propre au conjoint(e).",
+    youCol: "Vous", youColBody: "Identité + revenus saisis ci-dessus. Mêmes informations utilisées par défaut pour le conjoint(e).",
+    spouseCol: "Conjoint(e)", spouseFirst: "Prénom", spouseAge: "Âge actuel", spouseSex: "Sexe", spouseSal: "Salaire brut",
+    sameRet: "Même âge de retraite", sameRetHelp: "Par défaut, le conjoint(e) prend sa retraite la même année que vous.",
+    sameGov: "Mêmes âges RRQ/PSV", sameGovHelp: "Les dates de début de RRQ et PSV suivent les vôtres.",
+    samePortfolio: "Mêmes allocations & frais de gestion", samePortfolioHelp: "Les comptes du conjoint(e) utilisent vos allocations d'actions/obligations et vos MER.",
+    incomeTitle: "Revenus & dépenses", incomeSub: "Ce qui entre chaque mois, ce qui sort chaque mois, et les événements ponctuels à venir.",
+    spendingHead: "Dépenses mensuelles du ménage à la retraite",
+    spendingIntro: "Le montant que le ménage prévoit dépenser chaque mois une fois à la retraite. C'est le chiffre le plus important de votre plan — il détermine combien vous devez accumuler.",
+    retSpM: "Dépenses mensuelles", retSpMTip: "Logement, transport, alimentation, loisirs, soins — le total mensuel que vous anticipez à la retraite. Une règle de pouce : 60–80 % des dépenses actuelles, sauf si vous prévoyez voyager ou déménager.",
+    healthInflate: "Hausse soins santé / an", healthInflateTip: "Les coûts de santé augmentent plus vite que l'inflation générale après 75 ans. Les données canadiennes montrent ~4 % par an au-dessus de l'IPC pour les soins prolongés et les médicaments.",
+    spendingCallout: "<strong>Astuce :</strong> si vous ne savez pas, commencez par 70 % de vos dépenses actuelles. La plupart des gens dépensent moins à la retraite (plus de transports, moins de repas au restaurant) — sauf la première année, où les voyages et les rénovations augmentent.",
+    ptHead: "Travail partiel à la retraite (optionnel)",
+    ptM: "Revenu partiel mensuel", ptMHelp: "Revenus d'un travail à temps partiel ou consultation après la retraite. Laissez à 0 si aucun.",
+    ptYrs: "Durée", ptYrsHelp: "Nombre d'années que le travail partiel durera après la retraite.",
+    savingsTitle: "Épargne & placements", savingsSub: "Soldes actuels et cotisations annuelles par type de compte.",
+    savingsCallout: "<strong>Où trouver ces chiffres :</strong> connectez-vous à votre institution financière et prenez les soldes actuels. Les plafonds annuels 2026 : REER = 18 % du salaire (max 33 810 $), CÉLI = 7 000 $, CELIAPP = 8 000 $.",
+    rrspHead: "REER (régime enregistré d'épargne-retraite)",
+    rrsp: "Solde actuel", rrspTip: "Total combiné de tous vos comptes REER (incluant les fonds de pension à cotisations définies convertis en REER). Vérifiez votre relevé le plus récent — pas seulement le chiffre de fin d'année.",
+    rrspC: "Cotisation annuelle", rrspCTip: "Total que vous cotisez chaque année — incluez la partie automatique de votre paie (cotisations déduites à la source) plus les ajouts manuels.",
+    tfsaHead: "CÉLI (compte d'épargne libre d'impôt)",
+    tfsa: "Solde actuel", tfsaC: "Cotisation annuelle",
+    nrHead: "Non-enregistré (hors abri fiscal)",
+    nr: "Solde actuel", nrTip: "Comptes d'investissement réguliers (non-REER, non-CÉLI). Les gains sont imposables chaque année : dividendes, intérêts, gains en capital.",
+    nrC: "Cotisation annuelle",
+    specialHead: "Comptes spéciaux (optionnels)",
+    fhsa: "CELIAPP / FHSA", fhsaTip: "Compte d'épargne libre d'impôt pour l'achat d'une première propriété. Contribuable jusqu'à 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables.",
+    lira: "CRI / LIRA", liraTip: "Compte de retraite immobilisé — provient d'un ancien fonds de pension d'employeur. Les retraits sont réglementés et commencent à un âge prescrit (55-71 selon la province).",
+    reTitle: "Immobilier", reSub: "Résidence principale et immeubles locatifs — soldes, hypothèques, vente éventuelle.",
+    reIntro: "Ajoutez chaque propriété une à la fois. Pour chaque bien, précisez la valeur, le solde hypothécaire et — si vous êtes en couple — la part de propriété de chacun (100 % vous, 100 % conjoint(e), 50/50, ou personnalisé).",
+    addProperty: "🏠 Ajouter une propriété", reEmpty: "Aucune propriété enregistrée.",
+    pensionsTitle: "Pensions", pensionsSub: "RRQ/RPC, PSV/OAS et pension employeur (prestation déterminée ou cotisations définies).",
+    govPensions: "Pensions gouvernementales",
+    qppAge: "Début RRQ/RPC", qppAgeTip: "Âge auquel vous commencez à recevoir le RRQ (Québec) ou RPC (hors Québec). Reporter après 65 ans augmente la prestation de 8,4 %/an (jusqu'à 72 ans). Commencer avant 65 la réduit de 7,2 %/an.",
+    oasAge: "Début PSV/OAS", oasAgeTip: "Pension de Sécurité de la Vieillesse. Commencer à 65 ou reporter jusqu'à 70 (+7,2 %/an). Attention à la récupération (clawback) si votre revenu annuel dépasse ~95 000 $.",
+    employerPen: "Pension employeur",
+    penType: "Type de régime", penTypeTip: "Prestation déterminée (PD) : montant garanti à vie, habituellement dans le secteur public. Cotisations définies (CD) : solde accumulé qui dépend du rendement. RREGOP, RRPE, RPDB, etc. sont des variantes.",
+    penNone: "Aucun", penDB: "Prestation déterminée (PD)", penCD: "Cotisations définies (CD)", penRPDB: "Régime à participation différée (RPDB)",
+    penM: "Prestation mensuelle", penMHelp: "Le montant mensuel garanti à l'âge de retraite normal du régime.",
+    strategyTitle: "Stratégie de décaissement", strategySub: "Comment vous allez retirer votre épargne et minimiser l'impôt à la retraite.",
+    withdrawalMode: "Mode de retrait",
+    stratStd: "Standard", stratStdSub: "Retraits minimums REER/FERR",
+    stratMeltSub: "Fondre le REER avant 72 ans",
+    stratBridge: "Pont", stratBridgeSub: "Retraits pour couvrir avant RRQ/PSV",
+    strategyHint: "<strong>Meltdown</strong> retire volontairement plus du REER chaque année pour éviter les tranches d'impôt élevées plus tard — utile quand on prévoit un gros revenu à 72 ans (FERR obligatoire + RRQ + PSV). <strong>Pont</strong> sert à combler la période entre la retraite et le début du RRQ/PSV.",
+    insTitle: "Assurances", insSub: "Vie, invalidité, maladies graves et assurance collective.",
+    insDisclaimer: "<strong>Ce n'est pas un conseil en assurance.</strong> Les champs ci-dessous visent à inclure vos protections existantes dans le plan de retraite. Consultez un conseiller en sécurité financière pour valider vos besoins.",
+    lifeInsHead: "Assurance vie", lifeCov: "Couverture", lifePrem: "Prime mensuelle",
+    assumpTitle: "Hypothèses techniques", assumpSub: "Allocations d'actifs, frais de gestion, rendements projetés, scénarios de stress. Les valeurs par défaut conviennent à la plupart des plans.",
+    assumpCallout: "<strong>Vous pouvez sauter cette section.</strong> Les valeurs par défaut sont calibrées sur les normes de l'industrie (Institut de planification financière + PAG 2025). Modifiez seulement si vous avez une raison spécifique.",
+    assumpInflation: "Inflation",
+    inflation: "IPC général", inflationTip: "Indice des prix à la consommation. Cible Banque du Canada : 2,0 %. Moyenne historique 50 ans : ~3,5 %. Nous utilisons 2,1 % par défaut (PAG 2025).",
+    assumpAlloc: "Allocation du portefeuille",
+    assumpAllocIntro: "La portion en actions de vos comptes de placement. 60 % actions / 40 % obligations est la référence classique. Les règles 100-âge ou glide path sont des alternatives.",
+    allocR: "REER — % actions", allocT: "CÉLI — % actions", allocN: "Non-enr. — % actions",
+    assumpMER: "Frais de gestion (MER)",
+    assumpMERIntro: "0,1–0,5 % pour les FNB indiciels. 1,5–2,5 % pour les fonds communs en service-conseil complet.",
+    merR: "Frais REER", merT: "Frais CÉLI", merN: "Frais non-enr.",
+    assumpReturns: "Rendements projetés",
+    assumpReturnsIntro: "Rendements réels (après inflation) utilisés par la simulation Monte Carlo. Conformes aux Projections des hypothèses 2025 de l'Institut de planification financière.",
+    eqRet: "Rend. actions", bndRet: "Rend. obligations", eqVol: "Volatilité actions", bndVol: "Volatilité obligations",
+    assumpMC: "Monte Carlo", nSim: "Nombre de simulations", nSimTip: "Plus de simulations = résultat plus stable mais calcul plus long. 1 000 suffit pour un usage courant ; 5 000+ pour une analyse finale.",
+    stochMort: "Longévité stochastique", stochMortLabel: "Utiliser la table CPM 2023",
+    stochMortHelp: "Simule un âge de décès variable plutôt qu'une valeur fixe.",
+    disclaimer: "Les résultats sont des projections basées sur des hypothèses statistiques. Ne constitue pas un conseil financier. Consultez un planificateur financier qualifié avant toute décision.",
+    engine: "Moteur Monte Carlo · 453 tests · Institut de planification financière 2025 · CPM 2023"
+  },
+  en: {
+    brandTag: "Laboratory · Retirement plan",
+    pageTitle: "Retirement planning form",
+    pageSub: "Each section gathers the information needed for a complete plan. Default values shown in grey italic represent the Canadian median for your profile — replace only what differs from your situation. A retirement plan evolves over time; come back to review each section every quarter.",
+    sections: "Sections", searchPh: "Search a field…", notReviewed: "not reviewed",
+    suggested: "suggested", median: "QC median", stoch: "stochastic", max2026: "2026 limit", pag2025: "PAG 2025",
+    load: "📂 Load", save: "💾 Save", toSidebar: "🧭 Compact view", simulate: "▶ Simulate my plan",
+    female: "Female", male: "Male",
+    tocIdentity: "Identity & household", tocIncome: "Income & expenses", tocSavings: "Savings & investments",
+    tocRealEstate: "Real estate", tocPensions: "Pensions", tocStrategy: "Strategy", tocInsurance: "Insurance",
+    tocAssumptions: "Technical assumptions",
+    identityTitle: "Identity & household", identitySub: "Who the plan is for and in what province. The bare minimum to run a simulation.",
+    youHead: "You",
+    firstName: "First name", lastName: "Last name",
+    nameHelp: "Used in the report and tables — local to this plan only.",
+    age: "Current age", ageTip: "Your age today. Sets the simulation horizon (today → life expectancy). Must be between 18 and 80.",
+    sex: "Sex", sexTip: "Used for the CPM 2023 mortality table. Women have ~3 more years of life expectancy on average, which lengthens the planning horizon.",
+    province: "Province of residence", provTip: "Determines tax brackets, QPP vs CPP, GIS eligibility, and certain estate rules (e.g. probate outside Quebec).",
+    retAge: "Target retirement age", retAgeTip: "The age you plan to stop your main work. This is a choice — you can always change it to test other scenarios.",
+    deathAge: "Planned life horizon", deathAgeTip: "Age to which the plan projects. Leave blank to use stochastic longevity (CPM 2023 table), which simulates a variable death age instead of a fixed one.",
+    deathAgeHint: "default: variable longevity CPM 2023",
+    salary: "Annual gross salary", salTip: "Annual salary before taxes and deductions. Enter 0 if you are already retired. Used to estimate max RRSP contributions and QPP.",
+    planModeHead: "Plan mode",
+    modeSingle: "Single", modeSingleSub: "One person in the plan",
+    modeCouple: "Couple", modeCoupleSub: "Two people, shared household",
+    coupleHint: "In Couple mode, household spending is a shared total. RRSP and TFSA accounts remain individual. Shared assets (real estate, debts) can be split by a custom percentage.",
+    spouseHead: "Spouse",
+    spouseIntro: "By default, we use your values to avoid duplicate entry. Technical fields (QPP age, mortality, pensionable earnings) are shared. Uncheck an assumption to reveal a spouse-specific value.",
+    youCol: "You", youColBody: "Identity + income entered above. Same values used by default for spouse.",
+    spouseCol: "Spouse", spouseFirst: "First name", spouseAge: "Current age", spouseSex: "Sex", spouseSal: "Gross salary",
+    sameRet: "Same retirement age", sameRetHelp: "By default, the spouse retires the same year as you.",
+    sameGov: "Same QPP/OAS ages", sameGovHelp: "QPP and OAS start dates follow yours.",
+    samePortfolio: "Same allocations & management fees", samePortfolioHelp: "Spouse accounts use your equity/bond allocations and your MERs.",
+    incomeTitle: "Income & expenses", incomeSub: "What comes in each month, what goes out each month, and upcoming one-off events.",
+    spendingHead: "Household monthly spending in retirement",
+    spendingIntro: "The amount the household plans to spend each month once retired. This is the most important number in your plan — it determines how much you need to accumulate.",
+    retSpM: "Monthly spending", retSpMTip: "Housing, transport, food, leisure, care — the monthly total you anticipate in retirement. Rule of thumb: 60–80% of current spending, unless you plan to travel or relocate.",
+    healthInflate: "Health cost inflation", healthInflateTip: "Health costs rise faster than general inflation after 75. Canadian data shows ~4% above CPI for long-term care and medications.",
+    spendingCallout: "<strong>Tip:</strong> if unsure, start with 70% of current spending. Most people spend less in retirement (more transit, fewer restaurant meals) — except the first year, when travel and renovations bump up.",
+    ptHead: "Part-time work in retirement (optional)",
+    ptM: "Part-time monthly income", ptMHelp: "Income from part-time work or consulting after retirement. Leave at 0 if none.",
+    ptYrs: "Duration", ptYrsHelp: "Number of years the part-time work lasts after retirement.",
+    savingsTitle: "Savings & investments", savingsSub: "Current balances and annual contributions by account type.",
+    savingsCallout: "<strong>Where to find these:</strong> log in to your financial institution and take the current balances. 2026 annual limits: RRSP = 18% of salary (max $33,810), TFSA = $7,000, FHSA = $8,000.",
+    rrspHead: "RRSP (registered retirement savings plan)",
+    rrsp: "Current balance", rrspTip: "Combined total of all your RRSP accounts (including defined-contribution pensions converted to RRSP). Check your most recent statement — not just year-end.",
+    rrspC: "Annual contribution", rrspCTip: "Total you contribute yearly — include automatic paycheck deductions plus manual additions.",
+    tfsaHead: "TFSA (tax-free savings account)",
+    tfsa: "Current balance", tfsaC: "Annual contribution",
+    nrHead: "Non-registered (taxable)",
+    nr: "Current balance", nrTip: "Regular investment accounts (non-RRSP, non-TFSA). Gains are taxable each year: dividends, interest, capital gains.",
+    nrC: "Annual contribution",
+    specialHead: "Special accounts (optional)",
+    fhsa: "FHSA", fhsaTip: "First Home Savings Account. Contribute up to $8,000/year, $40,000 lifetime. Contributions deductible + withdrawals tax-free.",
+    lira: "LIRA", liraTip: "Locked-in retirement account — from a former employer pension. Withdrawals are regulated and start at a prescribed age (55–71 depending on province).",
+    reTitle: "Real estate", reSub: "Principal residence and rental properties — balances, mortgages, future sale.",
+    reIntro: "Add each property one at a time. For each, enter the value, mortgage balance, and — if you're in a couple — the ownership share (100% you, 100% spouse, 50/50, or custom).",
+    addProperty: "🏠 Add a property", reEmpty: "No property entered yet.",
+    pensionsTitle: "Pensions", pensionsSub: "QPP/CPP, OAS and employer pension (defined-benefit or defined-contribution).",
+    govPensions: "Government pensions",
+    qppAge: "QPP/CPP start", qppAgeTip: "Age at which you start receiving QPP (Quebec) or CPP (outside Quebec). Deferring past 65 increases benefit 8.4%/yr (up to 72). Starting before 65 reduces it 7.2%/yr.",
+    oasAge: "OAS start", oasAgeTip: "Old Age Security. Start at 65 or defer to 70 (+7.2%/yr). Watch clawback if annual income exceeds ~$95,000.",
+    employerPen: "Employer pension",
+    penType: "Plan type", penTypeTip: "Defined Benefit (DB): guaranteed lifetime amount, typically public sector. Defined Contribution (DC): accumulated balance depending on returns. RREGOP, RRPE, DPSP, etc. are variants.",
+    penNone: "None", penDB: "Defined Benefit (DB)", penCD: "Defined Contribution (DC)", penRPDB: "Deferred Profit-Sharing (DPSP)",
+    penM: "Monthly benefit", penMHelp: "The guaranteed monthly amount at the plan's normal retirement age.",
+    strategyTitle: "Withdrawal strategy", strategySub: "How you'll draw down your savings and minimize retirement tax.",
+    withdrawalMode: "Withdrawal mode",
+    stratStd: "Standard", stratStdSub: "RRSP/RRIF minimum withdrawals",
+    stratMeltSub: "Melt RRSP before 72",
+    stratBridge: "Bridge", stratBridgeSub: "Withdraw to cover pre-QPP/OAS",
+    strategyHint: "<strong>Meltdown</strong> deliberately withdraws more from RRSP each year to avoid high tax brackets later — useful when expecting big income at 72 (mandatory RRIF + QPP + OAS). <strong>Bridge</strong> covers the gap between retirement and QPP/OAS start.",
+    insTitle: "Insurance", insSub: "Life, disability, critical illness and group coverage.",
+    insDisclaimer: "<strong>Not insurance advice.</strong> The fields below aim to include your existing protections in the retirement plan. Consult a licensed insurance advisor to validate your needs.",
+    lifeInsHead: "Life insurance", lifeCov: "Coverage", lifePrem: "Monthly premium",
+    assumpTitle: "Technical assumptions", assumpSub: "Asset allocation, management fees, projected returns, stress scenarios. Default values work for most plans.",
+    assumpCallout: "<strong>You can skip this section.</strong> Defaults are calibrated to industry norms (Financial Planning Standards Council + PAG 2025). Change only with specific reason.",
+    assumpInflation: "Inflation",
+    inflation: "General CPI", inflationTip: "Consumer Price Index. Bank of Canada target: 2.0%. 50-year historical average: ~3.5%. We use 2.1% by default (PAG 2025).",
+    assumpAlloc: "Portfolio allocation",
+    assumpAllocIntro: "The equity portion of your investment accounts. 60% equity / 40% bonds is the classic benchmark. 100-age and glide path are alternatives.",
+    allocR: "RRSP — % equity", allocT: "TFSA — % equity", allocN: "Non-reg — % equity",
+    assumpMER: "Management fees (MER)",
+    assumpMERIntro: "0.1–0.5% for index ETFs. 1.5–2.5% for full-service advisory mutual funds.",
+    merR: "RRSP fees", merT: "TFSA fees", merN: "Non-reg fees",
+    assumpReturns: "Projected returns",
+    assumpReturnsIntro: "Real returns (after inflation) used by the Monte Carlo simulation. Compliant with Financial Planning Standards Council 2025 projection assumptions.",
+    eqRet: "Equity return", bndRet: "Bond return", eqVol: "Equity volatility", bndVol: "Bond volatility",
+    assumpMC: "Monte Carlo", nSim: "Number of simulations", nSimTip: "More sims = more stable result but slower calc. 1,000 is fine for daily use; 5,000+ for final analysis.",
+    stochMort: "Stochastic longevity", stochMortLabel: "Use CPM 2023 table",
+    stochMortHelp: "Simulates a variable death age instead of a fixed value.",
+    disclaimer: "Results are projections based on statistical assumptions. Does not constitute financial advice. Consult a qualified financial planner before any decision.",
+    engine: "Monte Carlo engine · 453 tests · Financial Planning Standards Council 2025 · CPM 2023"
+  }
+};
+function setLang(l) {
+  _lang = l;
+  document.documentElement.lang = l;
+  document.getElementById("lang-fr").classList.toggle("on", l === "fr");
+  document.getElementById("lang-fr").setAttribute("aria-pressed", l === "fr" ? "true" : "false");
+  document.getElementById("lang-en").classList.toggle("on", l === "en");
+  document.getElementById("lang-en").setAttribute("aria-pressed", l === "en" ? "true" : "false");
+  var dict = I18N[l];
+  document.querySelectorAll("[data-i18n]").forEach(function (el) {
+    var k = el.getAttribute("data-i18n");
+    if (dict[k]) { if (dict[k].indexOf("<strong>") >= 0) el.innerHTML = dict[k]; else el.textContent = dict[k]; }
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
+    var k = el.getAttribute("data-i18n-ph"); if (dict[k]) el.setAttribute("placeholder", dict[k]);
+  });
+}
+
+/* ─────────────── Plan mode ─────────────── */
+function setPlanMode(m, btn) {
+  var pills = btn.parentElement.querySelectorAll(".pill");
+  pills.forEach(function (p) { p.classList.remove("on"); p.setAttribute("aria-checked", "false"); });
+  btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
+  document.getElementById("couple-hint").hidden = (m !== "couple");
+  document.getElementById("spouse-block").hidden = (m !== "couple");
+}
+function setStrategy(s, btn) {
+  var pills = btn.parentElement.querySelectorAll(".pill");
+  pills.forEach(function (p) { p.classList.remove("on"); p.setAttribute("aria-checked", "false"); });
+  btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
+}
+
+/* ─────────────── Pension type reveal ─────────────── */
+document.getElementById("penType").addEventListener("change", function () {
+  document.getElementById("penM-field").hidden = (this.value !== "db");
+});
+
+/* ─────────────── Search filter ─────────────── */
+function filterFields(q) {
+  q = (q || "").toLowerCase().trim();
+  document.querySelectorAll(".field[data-search-keywords]").forEach(function (f) {
+    var hay = (f.getAttribute("data-search-keywords") + " " + f.textContent).toLowerCase();
+    f.style.display = (!q || hay.indexOf(q) >= 0) ? "" : "none";
+  });
+  if (q) document.querySelectorAll("details.section").forEach(function (s) { s.open = true; });
+}
+
+/* ─────────────── ToC active state ─────────────── */
+function updateTocActive() {
+  var secs = document.querySelectorAll("details.section");
+  var tocLinks = document.querySelectorAll(".toc-link");
+  tocLinks.forEach(function (l) { l.classList.remove("active"); });
+  for (var i = secs.length - 1; i >= 0; i--) {
+    var r = secs[i].getBoundingClientRect();
+    if (r.top < window.innerHeight * 0.4) {
+      var id = secs[i].id;
+      var t = document.querySelector('.toc-link[href="#' + id + '"]');
+      if (t) t.classList.add("active");
+      break;
+    }
+  }
+}
+window.addEventListener("scroll", updateTocActive);
+
+/* ─────────────── Save / Load (JSON) ─────────────── */
+function collectProfile() {
+  var p = { _schema: "v4.0" };
+  document.querySelectorAll("input, select").forEach(function (el) {
+    if (!el.id) return;
+    if (el.type === "checkbox") p[el.id] = el.checked;
+    else if (el.type === "number") p[el.id] = el.value === "" ? null : parseFloat(el.value);
+    else p[el.id] = el.value;
+  });
+  return p;
+}
+function saveProfile() {
+  var p = collectProfile();
+  var blob = new Blob([JSON.stringify(p, null, 2)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "buildfi-plan-" + (new Date()).toISOString().slice(0, 10) + ".json";
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function loadProfile() {
+  var inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "application/json";
+  inp.onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) {
+      try {
+        var p = JSON.parse(ev.target.result);
+        Object.keys(p).forEach(function (k) {
+          var el = document.getElementById(k); if (!el) return;
+          if (el.type === "checkbox") el.checked = !!p[k];
+          else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+        });
+      } catch (e) { alert("Erreur de lecture du fichier"); }
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ─────────────── Simulate (placeholder hand-off) ─────────────── */
+function runSimulation() {
+  var p = collectProfile();
+  try { sessionStorage.setItem("buildfi_v4_profile", JSON.stringify(p)); } catch (e) {}
+  if (_lang === "fr") alert("Plan enregistré. Redirection vers le simulateur v3 (v4 = édition des données seulement pour l'instant).");
+  else alert("Plan saved. Redirecting to v3 simulator (v4 = data entry only for now).");
+  window.location.href = "planner_v3.html";
+}
+</script>
+
+</body>
+</html>
