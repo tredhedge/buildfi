@@ -8333,6 +8333,20 @@ function App() {
   var _c9 = useState("none"), cPenType = _c9[0], sCPT = _c9[1];
   var _c10 = useState(0), cPenM = _c10[0], sCPM = _c10[1];
   var _c11 = useState(0), cDCBal2 = _c11[0], sCDCB = _c11[1];
+  /* v3 — spouse pension depth brought to parity with primary.
+     cPenIdx: already consumed by engine (line 5007) but had no state/UI.
+     cPen2*: second pension (DB or CD) for the spouse; parallels pen2* for primary.
+     cBridge/cBrAmt/cBrEnd: bridge benefit for the spouse before QPP/OAS. */
+  var _cPIdx = useState(0), cPenIdx = _cPIdx[0], sCPIdx = _cPIdx[1];
+  var _cP2T = useState("none"), cPen2Type = _cP2T[0], sCP2T = _cP2T[1];
+  var _cP2M = useState(0), cPen2M = _cP2M[0], sCP2M = _cP2M[1];
+  var _cP2Idx = useState(0), cPen2Idx = _cP2Idx[0], sCP2Idx = _cP2Idx[1];
+  var _cDC2B = useState(0), cDC2Bal = _cDC2B[0], sCDC2B = _cDC2B[1];
+  var _cP2EE = useState(0), cPen2EE = _cP2EE[0], sCP2EE = _cP2EE[1];
+  var _cP2ER = useState(0), cPen2ER = _cP2ER[0], sCP2ER = _cP2ER[1];
+  var _cBr = useState(false), cBridge = _cBr[0], sCBr = _cBr[1];
+  var _cBrA = useState(0), cBrAmt = _cBrA[0], sCBrA = _cBrA[1];
+  var _cBrE = useState(65), cBrEnd = _cBrE[0], sCBrE = _cBrE[1];
   var _c12 = useState(0), cRetSpM = _c12[0], sCRSM = _c12[1];
   var _cNR = useState(0), cNR = _cNR[0], sCNR = _cNR[1];
   var _fhsa = useState(0), fhsaBal = _fhsa[0], setFhsaBal = _fhsa[1];
@@ -8970,6 +8984,16 @@ function App() {
     if (p3.lastName != null) sLN(p3.lastName);
     if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
     if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
+    if (p3.cPenIdx != null) sCPIdx(+p3.cPenIdx || 0);
+    if (p3.cPen2Type) sCP2T(p3.cPen2Type);
+    if (p3.cPen2M != null) sCP2M(+p3.cPen2M || 0);
+    if (p3.cPen2Idx != null) sCP2Idx(+p3.cPen2Idx || 0);
+    if (p3.cDC2Bal != null) sCDC2B(+p3.cDC2Bal || 0);
+    if (p3.cPen2EE != null) sCP2EE(+p3.cPen2EE || 0);
+    if (p3.cPen2ER != null) sCP2ER(+p3.cPen2ER || 0);
+    if (p3.cBridge != null) sCBr(!!p3.cBridge);
+    if (p3.cBrAmt != null) sCBrA(+p3.cBrAmt || 0);
+    if (p3.cBrEnd != null) sCBrE(+p3.cBrEnd || 65);
     if (p3.budgetMode) setBM(p3.budgetMode);
     if (p3.revSec != null) sRevSec(p3.revSec);
     if (p3.penAlim != null) sPenAlim(p3.penAlim);
@@ -9119,7 +9143,10 @@ function App() {
   var _cQppYrsEff = (cOn && cAvgEAuto) ? Math.min(39, Math.max(0, (cAge - 18))) : cQppYrs;
   var _cDeathEff = (cOn && cUseStochMort) ? 0 : cDeath; // 0 signals engine to use CPM table
 
-  var _mcBaseParams = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, strs, custEq: custStrs, custBd, custInf, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge: _cRetAgeEff, cDeath: _cDeathEff, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge: _cQppAgeEff, cAvgE: _cAvgEEff, cQppYrs: _cQppYrsEff, cOasAge: _cOasAgeEff, cPenType, cPenM, cDCBal: cDCBal2, cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
+  var _mcBaseParams = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, strs, custEq: custStrs, custBd, custInf, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge: _cRetAgeEff, cDeath: _cDeathEff, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge: _cQppAgeEff, cAvgE: _cAvgEEff, cQppYrs: _cQppYrsEff, cOasAge: _cOasAgeEff, cPenType, cPenM, cPenIdx, cDCBal: cDCBal2,
+cPen2Type, cPen2M, cPen2Idx, cDC2Bal, cPen2EE, cPen2ER,
+cBridge, cBrAmt, cBrEnd,
+cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
   // R6-OPTION-B: No auto-launch MC from render body. Placeholder only.
   // MC runs exclusively via Simuler button (clicked by useEffect on mount + profile switch).
   // This eliminates the race condition where render-body MC captured stale React state.
@@ -9244,7 +9271,7 @@ var _collectExportData = function() {
       cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
       cSal: cSal, cRetSpM: cRetSpM,
       cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge,
-      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName, cSpouseLastName: cSpouseLastName,
+      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName, cSpouseLastName: cSpouseLastName, cPenIdx: cPenIdx, cPen2Type: cPen2Type, cPen2M: cPen2M, cPen2Idx: cPen2Idx, cDC2Bal: cDC2Bal, cPen2EE: cPen2EE, cPen2ER: cPen2ER, cBridge: cBridge, cBrAmt: cBrAmt, cBrEnd: cBrEnd,
       lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium,
       disabProb: disabProb, disabMo: disabMo,
       cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
@@ -11923,9 +11950,37 @@ React.createElement("div", { style: { height: 4 } }),
 React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Pension & Emploi" : "Pension & Employment"),
 React.createElement(Field, { l: t.cSal || (lang === "fr" ? "Salaire conjoint" : "Spouse salary") }, React.createElement(NumField, { v: cSal, set: sCsal, step: 5e3 })),
 cSal > 0 && React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, lang === "fr" ? "Net: ~" + fD(cSalNet) + "/an" : "Net: ~" + fD(cSalNet) + "/yr"),
-React.createElement(Field, { l: "Pension" }, penOpts(cPenType, sCPT)),
-cPenType === "db" && React.createElement(Field, { l: t.penM }, React.createElement(NumField, { v: cPenM, set: sCPM, step: 100 })),
+
+/* Pension 1 */
+React.createElement(Field, { l: lang === "fr" ? "Pension 1 — type" : "Pension 1 — type" }, penOpts(cPenType, sCPT)),
+cPenType === "db" && React.createElement(React.Fragment, null,
+  React.createElement(Field, { l: lang === "fr" ? "Prestation mensuelle ($)" : "Monthly benefit ($)" }, React.createElement(NumField, { v: cPenM, set: sCPM, step: 100 })),
+  React.createElement(Field, { l: lang === "fr" ? "Indexation" : "Indexation", tip: TIP.indexation }, React.createElement("select", { value: cPenIdx, onChange: function(e) { sCPIdx(+e.target.value); }, style: selSty },
+    React.createElement("option", { value: 0 }, lang === "fr" ? "Aucune" : "None"),
+    React.createElement("option", { value: 1 }, lang === "fr" ? "50 % IPC" : "50% CPI"),
+    React.createElement("option", { value: 2 }, lang === "fr" ? "100 % IPC" : "100% CPI")))),
 ["cd", "rpdb", "rrs", "rver"].indexOf(cPenType) >= 0 && React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: cDCBal2, set: sCDCB, step: 5e3 })),
+
+/* Bridge — mirror of primary's bridge for the spouse */
+React.createElement(Check, { v: cBridge, set: sCBr, l: lang === "fr" ? "Prestation de pont (avant RRQ/PSV)" : "Bridge benefit (before QPP/OAS)" }),
+cBridge && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Montant mensuel ($)" : "Monthly amount ($)" }, React.createElement(NumField, { v: cBrAmt, set: sCBrA, step: 100 })),
+  React.createElement(Field, { l: lang === "fr" ? "Fin du pont (âge)" : "Bridge end age" }, React.createElement(NumField, { v: cBrEnd, set: sCBrE, step: 1, min: 60, max: 72 }))),
+
+/* Pension 2 (optional) — parallels primary's Pension 2 */
+React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 6, marginBottom: 2 } }, lang === "fr" ? "Pension 2 (facultative)" : "Pension 2 (optional)"),
+React.createElement(Field, { l: lang === "fr" ? "Type" : "Type" }, penOpts(cPen2Type, sCP2T)),
+cPen2Type === "db" && React.createElement(React.Fragment, null,
+  React.createElement(Field, { l: lang === "fr" ? "Prestation mensuelle ($)" : "Monthly benefit ($)" }, React.createElement(NumField, { v: cPen2M, set: sCP2M, step: 100 })),
+  React.createElement(Field, { l: lang === "fr" ? "Indexation" : "Indexation" }, React.createElement("select", { value: cPen2Idx, onChange: function(e) { sCP2Idx(+e.target.value); }, style: selSty },
+    React.createElement("option", { value: 0 }, lang === "fr" ? "Aucune" : "None"),
+    React.createElement("option", { value: 1 }, lang === "fr" ? "50 % IPC" : "50% CPI"),
+    React.createElement("option", { value: 2 }, lang === "fr" ? "100 % IPC" : "100% CPI")))),
+["cd", "rpdb", "rrs", "rver"].indexOf(cPen2Type) >= 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: cDC2Bal, set: sCDC2B, step: 5e3 })),
+  React.createElement(Field, { l: lang === "fr" ? "Cotis. employé/an" : "Employee contrib./yr", tip: TIP.penEE }, React.createElement(NumField, { v: cPen2EE, set: sCP2EE, step: 500 })),
+  React.createElement(Field, { l: lang === "fr" ? "Cotis. employeur/an" : "Employer contrib./yr", tip: TIP.penER }, React.createElement(NumField, { v: cPen2ER, set: sCP2ER, step: 500 }))),
+
 React.createElement(Field, { l: t.cLira || "CRI/LIRA", tip: TIP.liraDesc }, React.createElement(NumField, { v: cLiraBal, set: sCLIRA, step: 5e3 })),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Assurance & \u00c9v\u00e9nements / Insurance & Events ---
@@ -13100,6 +13155,16 @@ React.createElement("div", { style: sty.head },
             if (p3.cName != null) sCN(p3.cName);
             if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
     if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
+    if (p3.cPenIdx != null) sCPIdx(+p3.cPenIdx || 0);
+    if (p3.cPen2Type) sCP2T(p3.cPen2Type);
+    if (p3.cPen2M != null) sCP2M(+p3.cPen2M || 0);
+    if (p3.cPen2Idx != null) sCP2Idx(+p3.cPen2Idx || 0);
+    if (p3.cDC2Bal != null) sCDC2B(+p3.cDC2Bal || 0);
+    if (p3.cPen2EE != null) sCP2EE(+p3.cPen2EE || 0);
+    if (p3.cPen2ER != null) sCP2ER(+p3.cPen2ER || 0);
+    if (p3.cBridge != null) sCBr(!!p3.cBridge);
+    if (p3.cBrAmt != null) sCBrA(+p3.cBrAmt || 0);
+    if (p3.cBrEnd != null) sCBrE(+p3.cBrEnd || 65);
             if (p3.budgetMode) setBM(p3.budgetMode);
             if (p3.revSec != null) sRevSec(p3.revSec);
             if (p3.penAlim != null) sPenAlim(p3.penAlim);
