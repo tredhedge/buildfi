@@ -12850,6 +12850,42 @@ React.createElement("div", { style: sty.head },
         rd.onload = function(ev2) {
           try {
             var p3 = JSON.parse(ev2.target.result);
+            /* v3 Phase 9 — schema migration + validation.
+               On every load we:
+                 1. Tag the profile schema (legacy if unspecified).
+                 2. Run validateSchema to surface warnings/errors.
+                 3. Apply explicit field migrations that preserve MC output.
+               Migrations are idempotent: running twice on the same profile
+               is a no-op because each transform checks before writing. */
+            var _schemaTag = p3._schema || "legacy";
+            if (typeof window.validateSchema === "function") {
+              var _vs = window.validateSchema(p3);
+              if (!_vs.ok) {
+                console.warn("[v3 schema] errors on import:", _vs.errors);
+                alert((lang === "fr" ? "Erreurs de schéma détectées — voir la console.\n• " : "Schema errors detected — see console.\n• ") + _vs.errors.join("\n• "));
+              } else if ((_vs.warnings || []).length > 0) {
+                console.info("[v3 schema] warnings on import (" + _schemaTag + "):", _vs.warnings);
+              }
+            }
+            /* Migration: ownership fractions default to joint (0.5/0.5) when
+               missing on properties or debts. Preserves legacy behaviour since
+               the engine currently treats joint as the implicit case. */
+            if (Array.isArray(p3.props)) {
+              p3.props = p3.props.map(function (pr) {
+                if (pr && typeof pr.ownerSelf !== "number" && typeof pr.ownerSpouse !== "number") {
+                  return Object.assign({}, pr, { ownerSelf: 0.5, ownerSpouse: 0.5 });
+                }
+                return pr;
+              });
+            }
+            if (Array.isArray(p3.debts)) {
+              p3.debts = p3.debts.map(function (d) {
+                if (d && typeof d.ownerSelf !== "number" && typeof d.ownerSpouse !== "number") {
+                  return Object.assign({}, d, { ownerSelf: 0.5, ownerSpouse: 0.5 });
+                }
+                return d;
+              });
+            }
             if (p3.age) sAge(p3.age);
             if (p3.retAge) sRA(p3.retAge);
             if (p3.deathAge) sDA(p3.deathAge);

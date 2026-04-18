@@ -555,3 +555,48 @@ Option 2 is the lower-impact path. Adding an ES-module `export { buildReportData
 **Phase 9 — Migration & back-compat**. Ships.
 
 ---
+
+## Phase 9 — Migration & back-compat
+
+**Date**: 2026-04-17
+
+### What was done
+
+Wired schema migration + validation into the profile-load path:
+
+1. **Schema tagging**. On import, `p3._schema || "legacy"` identifies the source version. v2 exports lack this tag → tagged "legacy".
+2. **validateSchema** (shipped Phase 0.5) runs on every import. Errors raise an alert; warnings log to console.
+3. **Ownership migration**. Properties and debts missing `ownerSelf` / `ownerSpouse` get defaulted to `{ 0.5, 0.5 }` (joint). Idempotent — re-running on a profile that already has ownership fields is a no-op.
+4. **Sync-flag migration** (shipped Phase 0.5). Sync toggles default to ON if missing.
+5. **Spending merge** (shipped Phase 3). `cRetSpM > 0` triggers consolidation into `retSpM`.
+6. Export writes `_schema: "v3.1-transitional"` until the full engine cutover (Phase 4B/5B/6) lands, at which point the tag promotes to `"v3.1"`.
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| v2 exports import without breaking | ✅ | All defaulted fields get safe values; validator surfaces issues as warnings for legacy, errors for strict v3.1. |
+| Migration is idempotent | ✅ | Each transform checks before writing. |
+| No engine change | ✅ | Post-migration params map 1:1 onto current engine expectations. |
+| Alert on schema errors | ✅ | User sees issues immediately. |
+| Console log on warnings | ✅ | Developers see issues without blocking user. |
+| 90-day back-compat window | ✅ | v2 exports continue to work; will be revisited when `_schema: "v3.1"` strict is on. |
+
+### Engine-output delta observed
+
+- **None**. Migration defaults preserve legacy joint-treatment semantics exactly.
+
+### Risks exposed
+
+- If a v2 export has ownership fields set (unexpected) but sum ≠ 1.000, `validateSchema` raises an error. The user sees the alert; MC still runs with whatever values survived the JSON parse. Acceptable — better to surface the inconsistency than to silently fix.
+- `alert()` in the load path is blocking; a toast would be friendlier. Toast UI is a Phase 7+ polish item, intentionally not shipping here.
+
+### Scope creep
+
+- None.
+
+### Next phase
+
+**Phase 10 — Final acceptance & ship**. Ships a final audit summary; actual rename of v3 → v2 must happen after the engine-heavy deferrals (Phases 4B/5B/6) are complete in a future session.
+
+---
