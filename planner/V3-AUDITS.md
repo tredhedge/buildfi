@@ -505,3 +505,53 @@ Currently the engine accumulates a single household income stream each year and 
 **Phase 8.5 — Planner ↔ Report parity**. Ships scoping; the parity harness itself is a future session item because it requires the Bilan 360 report generator which lives outside `planner_v3.html`.
 
 ---
+
+## Phase 8.5 — Planner ↔ Report parity (Part A — harness scaffold)
+
+**Date**: 2026-04-17
+
+### What was done
+
+Shipped `planner/__tests__/parity-harness.html`:
+
+- Loads the 8 test profiles.
+- Runs `runMC` inside the hidden `planner_v3.html` iframe with the profile's fixed seed.
+- Defines a `getReportOutputs(profile)` stub that will call the Bilan 360 report generator (`planner/report/report-data.js`). Currently returns `null` → verdict "pending" is reported per profile.
+- Compares five summary metrics (succ, medF, medEstateNet, medEstateTax, p5Ruin) against the report generator's equivalents with tolerances: succ ±0.3 pp; money columns ±0.5 %.
+- Verdict table + downloadable JSON diff.
+
+### Why the report side is a stub
+
+`planner/report/report-data.js` is a Node module (loaded via `require`) that drives the server-side Bilan 360 render path. Importing it into a browser harness requires either:
+
+1. A Node-side CLI that runs the parity comparison. Adds a build dependency.
+2. A browser-friendly bundle exposing `buildReportData` on `window` when the script is loaded as a module. Single addition, but must not break existing Node usage.
+
+Option 2 is the lower-impact path. Adding an ES-module `export { buildReportData }` at the bottom of `report-data.js` and wiring the harness to `await import("../report/report-data.js")` gets the full parity loop running. This is a 1 h follow-up that belongs with the Phase 6 engine work (same session — it's pointless to validate parity before the engine is final).
+
+### Acceptance criteria
+
+| Criterion | Status | Notes |
+|---|---|---|
+| Harness HTML runs in browser without errors | ✅ | Hidden iframe loads, profiles iterate, verdicts render "pending". |
+| Planner side produces snapshot metrics | ✅ | Uses the Phase 0.5 seeded PRNG for reproducibility. |
+| Report side wiring | 🔵 Deferred | Needs `report-data.js` to expose `buildReportData` as a browser module or a Node CLI to run the comparison. |
+| Year-by-year diff (not just summary) | 🔵 Future work | Current harness compares summary only. Year-by-year `incomeByYear`, `withdrawalByYear` adds robustness but requires the engine to emit those arrays — out of today's scope. |
+
+### Engine-output delta observed
+
+- **None.** Harness is read-only of the planner's public engine API.
+
+### Risks exposed
+
+- Phase 6 engine changes (per-person tax) will produce DIFFERENT outputs from the current report generator until the report generator also ingests per-person data. The parity harness needs the two sides to track each other. Recommend sequencing: Phase 6 engine → Phase 6 report-data update → Phase 8.5 parity re-run.
+
+### Scope creep
+
+- None.
+
+### Next phase
+
+**Phase 9 — Migration & back-compat**. Ships.
+
+---
