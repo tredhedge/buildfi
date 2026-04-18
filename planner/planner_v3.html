@@ -8574,6 +8574,7 @@ function App() {
   var _rp4 = useState(""), cPhone = _rp4[0], sCP = _rp4[1];
   var _rp5 = useState(""), cEmail = _rp5[0], sCE = _rp5[1];
   var _rp6 = useState(""), cSpouseName = _rp6[0], sCSN = _rp6[1];
+  var _rp6b = useState(""), cSpouseLastName = _rp6b[0], sCSLN = _rp6b[1];
   var _rp7 = useState(""), cAdvisor = _rp7[0], sCAd = _rp7[1];
   var _rp8 = useState(""), cFirm = _rp8[0], sCF = _rp8[1];
   var _rp9 = useState(""), cNotes = _rp9[0], sCNt = _rp9[1];
@@ -8968,6 +8969,7 @@ function App() {
     if (p3.firstName != null) sFN(p3.firstName);
     if (p3.lastName != null) sLN(p3.lastName);
     if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
+    if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
     if (p3.budgetMode) setBM(p3.budgetMode);
     if (p3.revSec != null) sRevSec(p3.revSec);
     if (p3.penAlim != null) sPenAlim(p3.penAlim);
@@ -9242,7 +9244,7 @@ var _collectExportData = function() {
       cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
       cSal: cSal, cRetSpM: cRetSpM,
       cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge,
-      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName,
+      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName, cSpouseLastName: cSpouseLastName,
       lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium,
       disabProb: disabProb, disabMo: disabMo,
       cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
@@ -11863,15 +11865,20 @@ inc3Age > 0 ? React.createElement("div", { style: { padding: "6px 8px", backgrou
 ), secVis("conj") && sbFilter.conj && true && React.createElement(Sec, { t: lang === "fr" ? "Conjoint" : "Spouse", accent: CL.tl, open: secVis("conj"), onClick: function() {
     tog("conj");
   } }), secVis("conj") && React.createElement(React.Fragment, null, React.createElement(Check, { v: cOn, set: sCOn, l: t.conjAct }), cOn && React.createElement(React.Fragment, null,
-// --- Spouse name field ---
-React.createElement(Field, { l: lang === "fr" ? "Prénom conjoint(e)" : "Spouse first name" }, React.createElement("input", { value: cSpouseName, onChange: function(e) { sCSN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Sophie" : "E.g. Sophie", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
+// --- Spouse name fields (first + last) ---
+React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Prénom conjoint(e)" : "Spouse first name" }, React.createElement("input", { value: cSpouseName, onChange: function(e) { sCSN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Sophie" : "E.g. Sophie", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
+  React.createElement(Field, { l: lang === "fr" ? "Nom conjoint(e)" : "Spouse last name" }, React.createElement("input", { value: cSpouseLastName, onChange: function(e) { sCSLN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Tremblay" : "E.g. Smith", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } }))
+),
 React.createElement("div", { style: { height: 4 } }),
 
 // v3 Phase 2 — Spouse sync toggles. Default ON; when ON the corresponding
 // raw spouse field is hidden and the primary's value (or a safe default)
 // is used by the engine. Flipping a toggle OFF reveals the raw field.
 React.createElement("div", { style: { padding: "8px 10px", background: CL.tl + "0a", borderRadius: RAD.sm + 2, border: "1px solid " + CL.tl + "30", marginBottom: 8 } },
-  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.tl, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 6 } }, lang === "fr" ? "Hypothèses par défaut (désactivez pour saisir manuellement)" : "Default assumptions (uncheck to enter manually)"),
+  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.tl, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 3 } }, lang === "fr" ? "Hypothèses par défaut (désactivez pour saisir manuellement)" : "Default assumptions (uncheck to enter manually)"),
+  React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, lineHeight: 1.4, marginBottom: 6, fontStyle: "italic" } },
+    lang === "fr" ? "Le conjoint(e) a accès au même niveau de détail que vous. Par défaut, nous copions vos hypothèses pour éviter la double saisie. Décochez une case pour révéler et modifier une valeur spécifique au conjoint(e)." : "The spouse has access to the same level of detail as you. Defaults mirror your assumptions to avoid duplicate entry. Uncheck any box to reveal and edit a spouse-specific value."),
   React.createElement("div", { className: "bf-sb-grid2" },
     React.createElement(Check, { v: cSyncRetAge, set: sCSyncRetAge, l: lang === "fr" ? "Même âge de retraite" : "Same retirement age" }),
     React.createElement(Check, { v: cSyncGovAges, set: sCSyncGovAges, l: lang === "fr" ? "Mêmes âges RRQ/PSV" : "Same QPP/OAS ages" }),
@@ -12011,12 +12018,22 @@ cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("i
     cOn && (d.bal || 0) > 0 && (function() {
       var _oS = (typeof d.ownerSelf === "number") ? d.ownerSelf : 0.5;
       var _sp = (typeof d.ownerSpouse === "number") ? d.ownerSpouse : 0.5;
-      var _preset = (_oS === 1 && _sp === 0) ? "self" : (_oS === 0 && _sp === 1) ? "spouse" : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint" : "custom";
+      var _preset = (_oS === 1 && _sp === 0) ? "self"
+                  : (_oS === 0 && _sp === 1) ? "spouse"
+                  : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint"
+                  : "custom";
       var _opts = [
-        ["self",   lang === "fr" ? "👤 Vous" : "👤 You", CL.ac],
+        ["self",   lang === "fr" ? "👤 Vous" : "👤 You",          CL.ac],
         ["spouse", lang === "fr" ? "👥 Conjoint(e)" : "👥 Spouse", CL.tl],
-        ["joint",  lang === "fr" ? "🏠 Ménage 50/50" : "🏠 Household 50/50", CL.gn]
+        ["joint",  lang === "fr" ? "🏠 50/50" : "🏠 50/50",         CL.gn],
+        ["custom", lang === "fr" ? "⚖ Personnalisé" : "⚖ Custom",  CL.or]
       ];
+      var _pct = Math.round(_oS * 100);
+      var _writeSplit = function(s, sp) {
+        var nd = debts.slice();
+        nd[i] = Object.assign({}, d, { ownerSelf: s, ownerSpouse: sp });
+        setDebts(nd);
+      };
       return React.createElement("div", { style: { marginTop: 6, marginBottom: 4 } },
         React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 3 } }, lang === "fr" ? "Titulaire" : "Owner"),
         React.createElement("div", { style: { display: "flex", gap: 3 } },
@@ -12024,16 +12041,26 @@ cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("i
             var _active = _preset === o[0];
             return React.createElement("button", { key: o[0],
               onClick: function() {
-                var nd = debts.slice();
-                var _patch = (o[0] === "self") ? { ownerSelf: 1, ownerSpouse: 0 }
-                           : (o[0] === "spouse") ? { ownerSelf: 0, ownerSpouse: 1 }
-                           : { ownerSelf: 0.5, ownerSpouse: 0.5 };
-                nd[i] = Object.assign({}, d, _patch);
-                setDebts(nd);
+                if (o[0] === "self")        _writeSplit(1, 0);
+                else if (o[0] === "spouse") _writeSplit(0, 1);
+                else if (o[0] === "joint")  _writeSplit(0.5, 0.5);
+                else { if (_preset !== "custom") _writeSplit(0.7, 0.3); }
               },
-              style: { flex: 1, padding: "4px 6px", fontSize: FS.xs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
+              style: { flex: 1, padding: "4px 4px", fontSize: FS.xxs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
             }, o[1]);
-          }))
+          })),
+        _preset === "custom" && React.createElement("div", { style: { marginTop: 4, padding: "6px 8px", background: CL.or + "0a", borderRadius: RAD.sm, border: "1px solid " + CL.or + "30" } },
+          React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: FS.xs, color: CL.or, fontWeight: FW.medium, marginBottom: 3 } },
+            React.createElement("span", null, (lang === "fr" ? "Vous : " : "You: ") + _pct + " %"),
+            React.createElement("span", null, (lang === "fr" ? "Conjoint(e) : " : "Spouse: ") + (100 - _pct) + " %")),
+          React.createElement("input", { type: "range", min: 1, max: 99, step: 1, value: _pct,
+            onChange: function(e) {
+              var p = +e.target.value / 100;
+              _writeSplit(Math.round(p * 1000) / 1000, Math.round((1 - p) * 1000) / 1000);
+            },
+            style: { width: "100%" }
+          })
+        )
       );
     })(),
     /* Summary line */
@@ -12252,19 +12279,24 @@ secVis("immo") && sbFilter.immo && React.createElement(Sec, { t: lang === "fr" ?
       updP(idx, "val", v);
     }, step: 1e4 })),
     /* v3 Phase 5 Part A — per-property ownership pill. Visible only in
-       couple mode once a value is entered. Presets: Vous (1/0) / Conjoint
-       (0/1) / Ménage (0.5/0.5). Engine consumption lives behind
-       BF_V3_HOUSEHOLD and ships in Phase 5 Part B once the snapshot
-       harness validates the new tax split. */
+       couple mode once a value is entered. Four presets (Vous / Conjoint /
+       Ménage / Personnalisé) plus a slider that reveals when the user
+       picks the Custom preset or enters a profile with a non-preset split
+       (e.g. 70/30). Engine consumption lives behind BF_V3_HOUSEHOLD. */
     cOn && (pr.val || 0) > 0 && (function() {
       var _oS = (typeof pr.ownerSelf === "number") ? pr.ownerSelf : 0.5;
       var _sp = (typeof pr.ownerSpouse === "number") ? pr.ownerSpouse : 0.5;
-      var _preset = (_oS === 1 && _sp === 0) ? "self" : (_oS === 0 && _sp === 1) ? "spouse" : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint" : "custom";
+      var _preset = (_oS === 1 && _sp === 0) ? "self"
+                  : (_oS === 0 && _sp === 1) ? "spouse"
+                  : (Math.abs(_oS - 0.5) < 0.01 && Math.abs(_sp - 0.5) < 0.01) ? "joint"
+                  : "custom";
       var _opts = [
-        ["self",   lang === "fr" ? "👤 Vous" : "👤 You",       CL.ac],
-        ["spouse", lang === "fr" ? "👥 Conjoint(e)" : "👥 Spouse", CL.tl],
-        ["joint",  lang === "fr" ? "🏠 Ménage 50/50" : "🏠 Household 50/50", CL.gn]
+        ["self",   lang === "fr" ? "👤 Vous" : "👤 You",             CL.ac],
+        ["spouse", lang === "fr" ? "👥 Conjoint(e)" : "👥 Spouse",    CL.tl],
+        ["joint",  lang === "fr" ? "🏠 50/50" : "🏠 50/50",            CL.gn],
+        ["custom", lang === "fr" ? "⚖ Personnalisé" : "⚖ Custom",     CL.or]
       ];
+      var _pct = Math.round(_oS * 100);
       return React.createElement("div", { style: { marginTop: 6, marginBottom: 4 } },
         React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 3 } }, lang === "fr" ? "Propriété" : "Ownership"),
         React.createElement("div", { style: { display: "flex", gap: 3 } },
@@ -12272,15 +12304,29 @@ secVis("immo") && sbFilter.immo && React.createElement(Sec, { t: lang === "fr" ?
             var _active = _preset === o[0];
             return React.createElement("button", { key: o[0],
               onClick: function() {
-                if (o[0] === "self")        { updP(idx, "ownerSelf", 1);   updP(idx, "ownerSpouse", 0);   }
-                else if (o[0] === "spouse") { updP(idx, "ownerSelf", 0);   updP(idx, "ownerSpouse", 1);   }
-                else                         { updP(idx, "ownerSelf", 0.5); updP(idx, "ownerSpouse", 0.5); }
+                if (o[0] === "self")        { updP(idx, "ownerSelf", 1);    updP(idx, "ownerSpouse", 0); }
+                else if (o[0] === "spouse") { updP(idx, "ownerSelf", 0);    updP(idx, "ownerSpouse", 1); }
+                else if (o[0] === "joint")  { updP(idx, "ownerSelf", 0.5);  updP(idx, "ownerSpouse", 0.5); }
+                else { /* custom: seed with 70/30 if not already custom */
+                  if (_preset !== "custom") { updP(idx, "ownerSelf", 0.7); updP(idx, "ownerSpouse", 0.3); }
+                }
               },
-              style: { flex: 1, padding: "4px 6px", fontSize: FS.xs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
+              style: { flex: 1, padding: "4px 4px", fontSize: FS.xxs, borderRadius: RAD.sm, border: "1px solid " + (_active ? o[2] : CL.bd), background: _active ? o[2] + "22" : "transparent", color: _active ? o[2] : TX.secondary(), cursor: "pointer", fontWeight: _active ? 700 : 500 }
             }, o[1]);
           })),
-        _preset === "custom" && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.or, marginTop: 3, fontStyle: "italic" } },
-          lang === "fr" ? "Fraction personnalisée : " + Math.round(_oS * 100) + " % vous / " + Math.round(_sp * 100) + " % conjoint." : "Custom split: " + Math.round(_oS * 100) + "% you / " + Math.round(_sp * 100) + "% spouse.")
+        _preset === "custom" && React.createElement("div", { style: { marginTop: 4, padding: "6px 8px", background: CL.or + "0a", borderRadius: RAD.sm, border: "1px solid " + CL.or + "30" } },
+          React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: FS.xs, color: CL.or, fontWeight: FW.medium, marginBottom: 3 } },
+            React.createElement("span", null, (lang === "fr" ? "Vous : " : "You: ") + _pct + " %"),
+            React.createElement("span", null, (lang === "fr" ? "Conjoint(e) : " : "Spouse: ") + (100 - _pct) + " %")),
+          React.createElement("input", { type: "range", min: 1, max: 99, step: 1, value: _pct,
+            onChange: function(e) {
+              var p = +e.target.value / 100;
+              updP(idx, "ownerSelf", Math.round(p * 1000) / 1000);
+              updP(idx, "ownerSpouse", Math.round((1 - p) * 1000) / 1000);
+            },
+            style: { width: "100%" }
+          })
+        )
       );
     })(), React.createElement(Field, { l: lang==="fr" ? "Appr\u00e9ciation/an" : "Appreciation/yr" }, React.createElement(Slider, { v: pr.ri, set: function(v) {
       updP(idx, "ri", v);
@@ -12600,8 +12646,8 @@ React.createElement("div", { className: "bf-overlay-backdrop" + (pan ? " visible
     rev:    { ico: "\ud83d\udcb8", title: fr?"Flux mon\u00e9taires":"Cashflow", cap: fr?"Revenus d'emploi, \u00e9v\u00e9nements ponctuels, budget mensuel et d\u00e9penses de retraite.":"Employment income, one-off events, monthly budget and retirement spending.", col: CL.bl },
     ep:     { ico: "\ud83d\udcc8", title: fr?"\u00c9pargne & placements":"Savings & investments", cap: fr?"Comptes enregistr\u00e9s (REER, C\u00c9LI), non-enregistr\u00e9, CELIAPP, REEE, RSU et allocations.":"Registered (RRSP, TFSA), non-registered, FHSA, RESP, RSU and allocations.", col: CL.ac },
     immo:   { ico: "\ud83c\udfe0", title: fr?"Immobilier":"Real estate", cap: fr?"R\u00e9sidence principale et immeubles locatifs : hypoth\u00e8que, d\u00e9penses, plus-value, vente.":"Primary home and rentals: mortgage, expenses, appreciation, sale.", col: CL.bl },
-    biz:    { ico: "\ud83c\udfe2", title: fr?"Entreprise":"Business", cap: fr?"Soci\u00e9t\u00e9 par actions ou travailleur autonome : revenus, extraction et vente \u00e9ventuelle.":"Incorporated or sole proprietor: income, extraction and eventual sale.", col: CL.cp || CL.pr },
-    debt:   { ico: "\ud83d\udcb3", title: fr?"Dettes":"Debts", cap: fr?"Hypoth\u00e8que (hors immo), marges, pr\u00eats auto ou \u00e9tudes, cartes de cr\u00e9dit.":"Mortgages (non-real-estate), HELOCs, auto/student loans, credit cards.", col: CL.rd },
+    biz:    { ico: "\ud83c\udfe2", title: fr?"Entreprise incorporée":"Incorporated business", cap: fr?"Pour les propriétaires d'une SPCC (société privée sous contrôle canadien) : revenus corporatifs, extraction via salaire ou dividendes, vente et exonération LCGE. Ignorer si vous êtes salarié seulement.":"For owners of a CCPC (Canadian-controlled private corporation): corporate income, extraction via salary or dividends, sale and lifetime capital-gains exemption. Skip if you are a salaried employee only.", col: CL.cp || CL.pr },
+    debt:   { ico: "\ud83d\udcb3", title: fr?"Dettes du ménage":"Household debts", cap: fr?"Toutes les dettes non garanties par l'immobilier : marges de crédit, prêts auto ou étudiants, cartes de crédit. L'hypothèque de votre maison se trouve dans le module Immobilier.":"All debts not secured by real estate: lines of credit, auto or student loans, credit cards. Your home mortgage lives inside the Real Estate module.", col: CL.rd },
     gov:    { ico: "\ud83c\udfdb\ufe0f", title: fr?"Pensions":"Pensions", cap: fr?"RRQ/RPC, PSV/OAS et pensions d'employeur (prestation d\u00e9termin\u00e9e ou cotisations).":"QPP/CPP, OAS and employer pensions (defined-benefit or defined-contribution).", col: CL.gn },
     ins:    { ico: "\ud83d\udee1\ufe0f", title: fr?"Assurances":"Insurance", cap: fr?"Vie, invalidit\u00e9, maladies graves et assurance collective.":"Life, disability, critical illness and group coverage.", col: CL.tl },
     alt:    { ico: "\ud83e\udde9", title: fr?"Placements alternatifs":"Alternative investments", cap: fr?"Capital-investissement priv\u00e9 et dette priv\u00e9e \u2014 hypoth\u00e8ses de rendement et sortie.":"Private equity and private debt \u2014 return assumptions and exit plan.", col: CL.pr },
@@ -13053,6 +13099,7 @@ React.createElement("div", { style: sty.head },
             if (p3.respAlready != null) setRespAlready(p3.respAlready);
             if (p3.cName != null) sCN(p3.cName);
             if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
+    if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
             if (p3.budgetMode) setBM(p3.budgetMode);
             if (p3.revSec != null) sRevSec(p3.revSec);
             if (p3.penAlim != null) sPenAlim(p3.penAlim);
