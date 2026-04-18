@@ -8389,6 +8389,45 @@ function App() {
   var _cI1A = useState(0), cInc1Age = _cI1A[0], sCI1A = _cI1A[1];
   var _cI1M = useState(0), cInc1Amt = _cI1M[0], sCI1M = _cI1M[1];
   var _cI1N = useState(""), cInc1Name = _cI1N[0], sCI1N = _cI1N[1];
+  /* v3 Wave 4 — spouse income events 2 & 3 (parity with primary's inc2/inc3)
+     and part-time retirement income for the spouse (cPtM, cPtYrs). */
+  var _cI2A = useState(0), cInc2Age = _cI2A[0], sCI2A = _cI2A[1];
+  var _cI2M = useState(0), cInc2Amt = _cI2M[0], sCI2M = _cI2M[1];
+  var _cI2N = useState(""), cInc2Name = _cI2N[0], sCI2N = _cI2N[1];
+  var _cI3A = useState(0), cInc3Age = _cI3A[0], sCI3A = _cI3A[1];
+  var _cI3M = useState(0), cInc3Amt = _cI3M[0], sCI3M = _cI3M[1];
+  var _cI3N = useState(""), cInc3Name = _cI3N[0], sCI3N = _cI3N[1];
+  var _cPtM = useState(0), cPtM = _cPtM[0], sCPtM = _cPtM[1];
+  var _cPtYrs = useState(5), cPtYrs = _cPtYrs[0], sCPtYrs = _cPtYrs[1];
+  /* v3 Wave 1 — spouse allocation + MER with sync default. If cSyncPortfolio
+     is ON, the engine reads primary's allocations/MER for spouse accounts.
+     OFF reveals the 6 spouse sliders. Couples who share a portfolio strategy
+     (the common case) keep it simple; couples with separate accounts unlock
+     when they want per-person tuning. */
+  var _cSyncP = useState(true), cSyncPortfolio = _cSyncP[0], sCSyncPortfolio = _cSyncP[1];
+  var _cAlR = useState(0.6),  cAllocR = _cAlR[0], sCAlR = _cAlR[1];
+  var _cAlT = useState(0.6),  cAllocT = _cAlT[0], sCAlT = _cAlT[1];
+  var _cAlN = useState(0.5),  cAllocN = _cAlN[0], sCAlN = _cAlN[1];
+  var _cMerR = useState(0.01),   cMerR = _cMerR[0], sCMerR = _cMerR[1];
+  var _cMerT = useState(0.005),  cMerT = _cMerT[0], sCMerT = _cMerT[1];
+  var _cMerN = useState(0.005),  cMerN = _cMerN[0], sCMerN = _cMerN[1];
+  /* v3 Wave 3 — spouse insurance parity. Defaults: life insurance type +
+     duration mirror primary (cSyncInsLife = ON). Disability, critical
+     illness, and group insurance are individual — dedicated spouse fields
+     because coverage is tied to that person's salary/health. */
+  var _cSyncIL = useState(true), cSyncInsLife = _cSyncIL[0], sCSyncInsLife = _cSyncIL[1];
+  var _cIVT = useState("none"), cInsVieType = _cIVT[0], sCIVT = _cIVT[1];
+  var _cIVD = useState(20), cInsVieDur = _cIVD[0], sCIVD = _cIVD[1];
+  var _cIIC = useState(0), cInsInvCov = _cIIC[0], sCIIC = _cIIC[1];
+  var _cIIP = useState(0), cInsInvPrime = _cIIP[0], sCIIP = _cIIP[1];
+  var _cIMC = useState(0), cInsMGCov = _cIMC[0], sCIMC = _cIMC[1];
+  var _cIMP = useState(0), cInsMGPrime = _cIMP[0], sCIMP = _cIMP[1];
+  var _cICP = useState(0), cInsColPrime = _cICP[0], sCICP = _cICP[1];
+  /* v3 Wave 2 — spouse Pension 1 CD cotisations (EE/ER) + MER.
+     Shown only when cPenType is a CD variant (cd/rpdb/rrs/rver). */
+  var _cPEE = useState(0), cPenEE = _cPEE[0], sCPEE = _cPEE[1];
+  var _cPER = useState(0), cPenER = _cPER[0], sCPER = _cPER[1];
+  var _cPMER = useState(0.005), cPenMER = _cPMER[0], sCPMER = _cPMER[1];
   var _projR = useState(false), projReal = _projR[0], setProjReal = _projR[1];
   var _projV = useState("family"), projView = _projV[0], setProjView = _projV[1];
   var _wiI = useState(0), whatIfInc = _wiI[0], setWhatIfInc = _wiI[1];
@@ -8994,6 +9033,32 @@ function App() {
     if (p3.cBridge != null) sCBr(!!p3.cBridge);
     if (p3.cBrAmt != null) sCBrA(+p3.cBrAmt || 0);
     if (p3.cBrEnd != null) sCBrE(+p3.cBrEnd || 65);
+    if (p3.cInc2Age != null) sCI2A(+p3.cInc2Age || 0);
+    if (p3.cInc2Amt != null) sCI2M(+p3.cInc2Amt || 0);
+    if (p3.cInc2Name != null) sCI2N(p3.cInc2Name);
+    if (p3.cInc3Age != null) sCI3A(+p3.cInc3Age || 0);
+    if (p3.cInc3Amt != null) sCI3M(+p3.cInc3Amt || 0);
+    if (p3.cInc3Name != null) sCI3N(p3.cInc3Name);
+    if (p3.cPtM != null) sCPtM(+p3.cPtM || 0);
+    if (p3.cPtYrs != null) sCPtYrs(+p3.cPtYrs || 5);
+    if (p3.cSyncPortfolio != null) sCSyncPortfolio(!!p3.cSyncPortfolio);
+    if (p3.cAllocR != null) sCAlR(+p3.cAllocR);
+    if (p3.cAllocT != null) sCAlT(+p3.cAllocT);
+    if (p3.cAllocN != null) sCAlN(+p3.cAllocN);
+    if (p3.cMerR != null) sCMerR(+p3.cMerR);
+    if (p3.cMerT != null) sCMerT(+p3.cMerT);
+    if (p3.cMerN != null) sCMerN(+p3.cMerN);
+    if (p3.cSyncInsLife != null) sCSyncInsLife(!!p3.cSyncInsLife);
+    if (p3.cInsVieType) sCIVT(p3.cInsVieType);
+    if (p3.cInsVieDur != null) sCIVD(+p3.cInsVieDur || 20);
+    if (p3.cInsInvCov != null) sCIIC(+p3.cInsInvCov || 0);
+    if (p3.cInsInvPrime != null) sCIIP(+p3.cInsInvPrime || 0);
+    if (p3.cInsMGCov != null) sCIMC(+p3.cInsMGCov || 0);
+    if (p3.cInsMGPrime != null) sCIMP(+p3.cInsMGPrime || 0);
+    if (p3.cInsColPrime != null) sCICP(+p3.cInsColPrime || 0);
+    if (p3.cPenEE != null) sCPEE(+p3.cPenEE || 0);
+    if (p3.cPenER != null) sCPER(+p3.cPenER || 0);
+    if (p3.cPenMER != null) sCPMER(+p3.cPenMER || 0.005);
     if (p3.budgetMode) setBM(p3.budgetMode);
     if (p3.revSec != null) sRevSec(p3.revSec);
     if (p3.penAlim != null) sPenAlim(p3.penAlim);
@@ -9142,10 +9207,27 @@ function App() {
   var _cAvgEEff = (cOn && cAvgEAuto) ? Math.round((cSal || 0) / 1.25) : cAvgE;
   var _cQppYrsEff = (cOn && cAvgEAuto) ? Math.min(39, Math.max(0, (cAge - 18))) : cQppYrs;
   var _cDeathEff = (cOn && cUseStochMort) ? 0 : cDeath; // 0 signals engine to use CPM table
+  /* v3 Wave 1 — portfolio sync: when cSyncPortfolio is ON, spouse inherits
+     primary's allocations and MER per account. Default ON for the typical
+     couple-shares-a-portfolio case. Toggle OFF reveals per-spouse sliders. */
+  var _cAllocREff = (cOn && cSyncPortfolio) ? allocR : cAllocR;
+  var _cAllocTEff = (cOn && cSyncPortfolio) ? allocT : cAllocT;
+  var _cAllocNEff = (cOn && cSyncPortfolio) ? allocN : cAllocN;
+  var _cMerREff   = (cOn && cSyncPortfolio) ? merR   : cMerR;
+  var _cMerTEff   = (cOn && cSyncPortfolio) ? merT   : cMerT;
+  var _cMerNEff   = (cOn && cSyncPortfolio) ? merN   : cMerN;
 
   var _mcBaseParams = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, strs, custEq: custStrs, custBd, custInf, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge: _cRetAgeEff, cDeath: _cDeathEff, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge: _cQppAgeEff, cAvgE: _cAvgEEff, cQppYrs: _cQppYrsEff, cOasAge: _cOasAgeEff, cPenType, cPenM, cPenIdx, cDCBal: cDCBal2,
 cPen2Type, cPen2M, cPen2Idx, cDC2Bal, cPen2EE, cPen2ER,
 cBridge, cBrAmt, cBrEnd,
+cInc2Age, cInc2Amt, cInc2Name, cInc3Age, cInc3Amt, cInc3Name,
+cPtM, cPtYrs,
+cAllocR: _cAllocREff, cAllocT: _cAllocTEff, cAllocN: _cAllocNEff,
+cMerR: _cMerREff, cMerT: _cMerTEff, cMerN: _cMerNEff,
+cInsVieType: (cSyncInsLife ? insVieType : cInsVieType),
+cInsVieDur: (cSyncInsLife ? insVieDur : cInsVieDur),
+cInsInvCov, cInsInvPrime, cInsMGCov, cInsMGPrime, cInsColPrime,
+cPenEE, cPenER, cPenMER,
 cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
   // R6-OPTION-B: No auto-launch MC from render body. Placeholder only.
   // MC runs exclusively via Simuler button (clicked by useEffect on mount + profile switch).
@@ -9271,7 +9353,7 @@ var _collectExportData = function() {
       cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR,
       cSal: cSal, cRetSpM: cRetSpM,
       cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge,
-      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName, cSpouseLastName: cSpouseLastName, cPenIdx: cPenIdx, cPen2Type: cPen2Type, cPen2M: cPen2M, cPen2Idx: cPen2Idx, cDC2Bal: cDC2Bal, cPen2EE: cPen2EE, cPen2ER: cPen2ER, cBridge: cBridge, cBrAmt: cBrAmt, cBrEnd: cBrEnd,
+      cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cSpouseName: cSpouseName, cSpouseLastName: cSpouseLastName, cPenIdx: cPenIdx, cPen2Type: cPen2Type, cPen2M: cPen2M, cPen2Idx: cPen2Idx, cDC2Bal: cDC2Bal, cPen2EE: cPen2EE, cPen2ER: cPen2ER, cBridge: cBridge, cBrAmt: cBrAmt, cBrEnd: cBrEnd, cInc2Age: cInc2Age, cInc2Amt: cInc2Amt, cInc2Name: cInc2Name, cInc3Age: cInc3Age, cInc3Amt: cInc3Amt, cInc3Name: cInc3Name, cPtM: cPtM, cPtYrs: cPtYrs, cSyncPortfolio: cSyncPortfolio, cAllocR: cAllocR, cAllocT: cAllocT, cAllocN: cAllocN, cMerR: cMerR, cMerT: cMerT, cMerN: cMerN, cSyncInsLife: cSyncInsLife, cInsVieType: cInsVieType, cInsVieDur: cInsVieDur, cInsInvCov: cInsInvCov, cInsInvPrime: cInsInvPrime, cInsMGCov: cInsMGCov, cInsMGPrime: cInsMGPrime, cInsColPrime: cInsColPrime, cPenEE: cPenEE, cPenER: cPenER, cPenMER: cPenMER,
       lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium,
       disabProb: disabProb, disabMo: disabMo,
       cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
@@ -11910,7 +11992,8 @@ React.createElement("div", { style: { padding: "8px 10px", background: CL.tl + "
     React.createElement(Check, { v: cSyncRetAge, set: sCSyncRetAge, l: lang === "fr" ? "Même âge de retraite" : "Same retirement age" }),
     React.createElement(Check, { v: cSyncGovAges, set: sCSyncGovAges, l: lang === "fr" ? "Mêmes âges RRQ/PSV" : "Same QPP/OAS ages" }),
     React.createElement(Check, { v: cUseStochMort, set: sCUseStochMort, l: lang === "fr" ? "Longévité stochastique (CPM 2023)" : "Stochastic longevity (CPM 2023)" }),
-    React.createElement(Check, { v: cAvgEAuto, set: sCAvgEAuto, l: lang === "fr" ? "Gains RRQ auto (= salaire / 1,25)" : "QPP earnings auto (= salary / 1.25)" })
+    React.createElement(Check, { v: cAvgEAuto, set: sCAvgEAuto, l: lang === "fr" ? "Gains RRQ auto (= salaire / 1,25)" : "QPP earnings auto (= salary / 1.25)" }),
+    React.createElement(Check, { v: cSyncPortfolio, set: sCSyncPortfolio, l: lang === "fr" ? "Mêmes allocations & frais (MER)" : "Same allocations & fees (MER)" })
   )
 ),
 
@@ -11928,10 +12011,22 @@ React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight:
 React.createElement("div", { className: "bf-sb-grid2" },
   React.createElement(Field, { l: "REER/RRSP" }, React.createElement(NumField, { v: cRRSP, set: sCRRSP, step: 5e3 })),
   React.createElement(Field, { l: lang === "fr" ? "Cotis. REER/an" : "RRSP contrib./yr" }, React.createElement(NumField, { v: cRRSPC, set: sCRRSPC, step: 1e3 })),
-  React.createElement(Field, { l: "C\u00c9LI/TFSA" }, React.createElement(NumField, { v: cTFSA, set: sCTFSA, step: 5e3 })),
-  React.createElement(Field, { l: lang === "fr" ? "Cotis. C\u00c9LI/an" : "TFSA contrib./yr" }, React.createElement(NumField, { v: cTFSAC, set: sCTFSAC, step: 1e3 })),
+  React.createElement(Field, { l: "CÉLI/TFSA" }, React.createElement(NumField, { v: cTFSA, set: sCTFSA, step: 5e3 })),
+  React.createElement(Field, { l: lang === "fr" ? "Cotis. CÉLI/an" : "TFSA contrib./yr" }, React.createElement(NumField, { v: cTFSAC, set: sCTFSAC, step: 1e3 })),
   React.createElement(Field, { l: t.conjNR }, React.createElement(NumField, { v: cNR, set: sCNR, step: 5e3 })),
   React.createElement(Field, { l: t.conjNRC }, React.createElement(NumField, { v: cNRC, set: sCNRC, step: 1e3 }))
+),
+/* v3 Wave 1 — spouse allocation + MER (visible only when sync OFF) */
+!cSyncPortfolio && React.createElement("details", { className: "bf-adv-drawer", open: true, style: { marginTop: 6 } },
+  React.createElement("summary", null, lang === "fr" ? "Allocations & frais de gestion du conjoint" : "Spouse allocations & management fees"),
+  React.createElement("div", { className: "bf-sb-grid2" },
+    React.createElement(Field, { l: lang === "fr" ? "REER % actions" : "RRSP % equity" }, React.createElement(Slider, { v: cAllocR, set: sCAlR, mn: 0, mx: 1 })),
+    React.createElement(Field, { l: lang === "fr" ? "CÉLI % actions" : "TFSA % equity" }, React.createElement(Slider, { v: cAllocT, set: sCAlT, mn: 0, mx: 1 })),
+    React.createElement(Field, { l: lang === "fr" ? "NR % actions" : "NR % equity" }, React.createElement(Slider, { v: cAllocN, set: sCAlN, mn: 0, mx: 1 })),
+    React.createElement(Field, { l: lang === "fr" ? "Frais REER (MER %)" : "RRSP fees (MER %)" }, React.createElement(Slider, { v: cMerR, set: sCMerR, mn: 0, mx: 0.03 })),
+    React.createElement(Field, { l: lang === "fr" ? "Frais CÉLI (MER %)" : "TFSA fees (MER %)" }, React.createElement(Slider, { v: cMerT, set: sCMerT, mn: 0, mx: 0.03 })),
+    React.createElement(Field, { l: lang === "fr" ? "Frais NR (MER %)" : "Non-registered fees (MER %)" }, React.createElement(Slider, { v: cMerN, set: sCMerN, mn: 0, mx: 0.03 }))
+  )
 ),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Gouvernement / Government ---
@@ -11959,7 +12054,12 @@ cPenType === "db" && React.createElement(React.Fragment, null,
     React.createElement("option", { value: 0 }, lang === "fr" ? "Aucune" : "None"),
     React.createElement("option", { value: 1 }, lang === "fr" ? "50 % IPC" : "50% CPI"),
     React.createElement("option", { value: 2 }, lang === "fr" ? "100 % IPC" : "100% CPI")))),
-["cd", "rpdb", "rrs", "rver"].indexOf(cPenType) >= 0 && React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: cDCBal2, set: sCDCB, step: 5e3 })),
+["cd", "rpdb", "rrs", "rver"].indexOf(cPenType) >= 0 && React.createElement("div", { className: "bf-sb-grid2" },
+  React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: cDCBal2, set: sCDCB, step: 5e3 })),
+  React.createElement(Field, { l: lang === "fr" ? "Cotis. employé/an" : "Employee contrib./yr", tip: TIP.penEE }, React.createElement(NumField, { v: cPenEE, set: sCPEE, step: 500 })),
+  React.createElement(Field, { l: lang === "fr" ? "Cotis. employeur/an" : "Employer contrib./yr", tip: TIP.penER }, React.createElement(NumField, { v: cPenER, set: sCPER, step: 500 })),
+  React.createElement(Field, { l: lang === "fr" ? "Frais fonds (MER %)" : "Fund fees (MER %)" }, React.createElement(Slider, { v: cPenMER, set: sCPMER, mn: 0, mx: 0.03 }))
+),
 
 /* Bridge — mirror of primary's bridge for the spouse */
 React.createElement(Check, { v: cBridge, set: sCBr, l: lang === "fr" ? "Prestation de pont (avant RRQ/PSV)" : "Bridge benefit (before QPP/OAS)" }),
@@ -11984,9 +12084,38 @@ cPen2Type === "db" && React.createElement(React.Fragment, null,
 React.createElement(Field, { l: t.cLira || "CRI/LIRA", tip: TIP.liraDesc }, React.createElement(NumField, { v: cLiraBal, set: sCLIRA, step: 5e3 })),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Assurance & \u00c9v\u00e9nements / Insurance & Events ---
-React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Assurance & \u00c9v\u00e9nements" : "Insurance & Events"),
-React.createElement(Field, { l: t.cLifeIns || (lang === "fr" ? "Assurance vie conjoint ($)" : "Spouse life insurance ($)") }, React.createElement(NumField, { v: cLifeInsBenefit, set: sCLifeIns, step: 1e4 })),
-cLifeInsBenefit > 0 && React.createElement(Field, { l: t.cLifeInsPrem || (lang === "fr" ? "Prime conjoint/an ($)" : "Spouse premium/yr ($)") }, React.createElement(NumField, { v: cLifeInsPremium, set: sCLifeInsP, step: 50 })),
+React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Assurance & Événements" : "Insurance & Events"),
+/* v3 Wave 3 — spouse insurance parity with primary. Life type/duration
+   follows primary via cSyncInsLife (default ON); disability, critical
+   illness and group insurance are individual fields because coverage
+   depends on the spouse's own salary/health. */
+React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 2, marginBottom: 2 } }, lang === "fr" ? "Assurance vie" : "Life insurance"),
+React.createElement(Field, { l: lang === "fr" ? "Couverture ($)" : "Coverage ($)" }, React.createElement(NumField, { v: cLifeInsBenefit, set: sCLifeIns, step: 1e4 })),
+cLifeInsBenefit > 0 && React.createElement(React.Fragment, null,
+  React.createElement(Field, { l: lang === "fr" ? "Prime/mois ($)" : "Premium/mo ($)" }, React.createElement(NumField, { v: cLifeInsPremium, set: sCLifeInsP, step: 10 })),
+  React.createElement(Check, { v: cSyncInsLife, set: sCSyncInsLife, l: lang === "fr" ? "Même type de police que vous" : "Same policy type as you" }),
+  !cSyncInsLife && React.createElement("div", { className: "bf-sb-grid2" },
+    React.createElement(Field, { l: lang === "fr" ? "Type" : "Type" }, React.createElement("select", { value: cInsVieType, onChange: function(e) { sCIVT(e.target.value); }, style: selSty },
+      React.createElement("option", { value: "none" }, lang === "fr" ? "Aucune" : "None"),
+      React.createElement("option", { value: "temp" }, lang === "fr" ? "Temporaire" : "Term"),
+      React.createElement("option", { value: "perm" }, lang === "fr" ? "Permanente" : "Permanent"))),
+    cInsVieType === "temp" && React.createElement(Field, { l: lang === "fr" ? "Durée (années)" : "Duration (yrs)" }, React.createElement(Slider, { v: cInsVieDur, set: sCIVD, mn: 5, mx: 30 })))),
+
+React.createElement("div", { style: { height: 6 } }),
+React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 2, marginBottom: 2 } }, lang === "fr" ? "Assurance invalidité" : "Disability insurance"),
+React.createElement(Field, { l: lang === "fr" ? "Couverture (% salaire)" : "Coverage (% salary)" }, React.createElement(Slider, { v: cInsInvCov, set: sCIIC, mn: 0, mx: 80 })),
+cInsInvCov > 0 && React.createElement(React.Fragment, null,
+  React.createElement(Field, { l: lang === "fr" ? "Prime/mois ($)" : "Premium/mo ($)" }, React.createElement(NumField, { v: cInsInvPrime, set: sCIIP, step: 10 })),
+  React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 3 } }, lang === "fr" ? "Prestation : " + f$(Math.round(cSal * cInsInvCov / 100)) + "/an si invalidité" : "Benefit: " + f$(Math.round(cSal * cInsInvCov / 100)) + "/yr if disabled")),
+
+React.createElement("div", { style: { height: 6 } }),
+React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 2, marginBottom: 2 } }, lang === "fr" ? "Maladies graves" : "Critical illness"),
+React.createElement(Field, { l: lang === "fr" ? "Couverture ($)" : "Coverage ($)" }, React.createElement(NumField, { v: cInsMGCov, set: sCIMC, step: 1e4 })),
+cInsMGCov > 0 && React.createElement(Field, { l: lang === "fr" ? "Prime/mois ($)" : "Premium/mo ($)" }, React.createElement(NumField, { v: cInsMGPrime, set: sCIMP, step: 10 })),
+
+React.createElement("div", { style: { height: 6 } }),
+React.createElement(Field, { l: lang === "fr" ? "Assurance collective — part employé ($/mois)" : "Group insurance — employee share ($/mo)" }, React.createElement(NumField, { v: cInsColPrime, set: sCICP, step: 10 })),
+
 React.createElement("div", { style: { height: 4 } }),
 React.createElement(Field, { l: (cEv1Name || (lang === "fr" ? "\u00c9v\u00e9nement conj. 1" : "Spouse event 1")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cEv1Age, set: sCEv1A, mn: 0, mx: 95 })),
 cEv1Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cEv1Name, onChange: function(e) { sCEv1N(e.target.value); }, placeholder: lang === "fr" ? "ex: R\u00e9no" : "e.g. Reno", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cEv1Amt, set: sCEv1M, step: 1e4 }))),
@@ -11994,7 +12123,18 @@ React.createElement(Field, { l: (cEv2Name || (lang === "fr" ? "\u00c9v\u00e9neme
 cEv2Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cEv2Name, onChange: function(e) { sCEv2N(e.target.value); }, placeholder: lang === "fr" ? "ex: H\u00e9ritage" : "e.g. Inheritance", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cEv2Amt, set: sCEv2M, step: 1e4 }))),
 React.createElement("div", { style: { height: 4 } }),
 React.createElement(Field, { l: (cInc1Name || (lang === "fr" ? "Revenu conj. 1" : "Spouse income 1")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc1Age, set: sCI1A, mn: 0, mx: 95 })),
-cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc1Name, onChange: function(e) { sCI1N(e.target.value); }, placeholder: lang === "fr" ? "ex: Rente" : "e.g. Annuity", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc1Amt, set: sCI1M, step: 1e4 })))
+cInc1Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc1Name, onChange: function(e) { sCI1N(e.target.value); }, placeholder: lang === "fr" ? "ex: Rente" : "e.g. Annuity", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc1Amt, set: sCI1M, step: 1e4 }))),
+/* v3 Wave 4 — spouse income 2 & 3 (parity with primary 3 slots) */
+React.createElement(Field, { l: (cInc2Name || (lang === "fr" ? "Revenu conj. 2" : "Spouse income 2")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc2Age, set: sCI2A, mn: 0, mx: 95 })),
+cInc2Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc2Name, onChange: function(e) { sCI2N(e.target.value); }, placeholder: lang === "fr" ? "ex: H\u00e9ritage" : "e.g. Inheritance", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc2Amt, set: sCI2M, step: 1e4 }))),
+React.createElement(Field, { l: (cInc3Name || (lang === "fr" ? "Revenu conj. 3" : "Spouse income 3")) + " \u2014 " + (lang === "fr" ? "\u00c2ge (0=off)" : "Age (0=off)") }, React.createElement(Slider, { v: cInc3Age, set: sCI3A, mn: 0, mx: 95 })),
+cInc3Age > 0 && React.createElement(React.Fragment, null, React.createElement("input", { value: cInc3Name, onChange: function(e) { sCI3N(e.target.value); }, placeholder: lang === "fr" ? "ex: Prime" : "e.g. Bonus", style: { background: "transparent", border: "none", borderBottom: "1px solid " + CL.bd, color: CL.tx, fontSize: FS.sm, width: "100%", outline: "none", padding: "2px 0" } }), React.createElement(Field, { l: lang === "fr" ? "Montant $" : "Amount $" }, React.createElement(NumField, { v: cInc3Amt, set: sCI3M, step: 1e4 }))),
+React.createElement("div", { style: { height: 4 } }),
+/* v3 Wave 4 — spouse part-time at retirement (parity with primary ptM/ptYrs) */
+React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontWeight: FW.bold, letterSpacing: 0.3, textTransform: "uppercase", marginTop: 4, marginBottom: 2 } }, lang === "fr" ? "Travail partiel à la retraite" : "Part-time work in retirement"),
+React.createElement(Field, { l: lang === "fr" ? "Revenu mensuel conjoint ($)" : "Spouse monthly income ($)" }, React.createElement(NumField, { v: cPtM, set: sCPtM, step: 250 })),
+cPtM > 0 && React.createElement(Field, { l: lang === "fr" ? "Durée (années)" : "Duration (years)" }, React.createElement(Slider, { v: cPtYrs, set: sCPtYrs, mn: 1, mx: 15 })),
+cPtM > 0 && React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, marginBottom: 3, fontStyle: "italic" } }, lang === "fr" ? "Indexé à l'inflation. Débute à l'âge de retraite du conjoint." : "Inflation-indexed. Starts at spouse retirement age.")
 )), secVis("budget") && sbFilter.budget && true && React.createElement(Sec, { t: lang === "fr" ? (cOn ? "Budget mensuel du ménage" : "Budget mensuel") : (cOn ? "Household monthly budget" : "Monthly budget"), open: secVis("budget"), onClick: function() {
     tog("budget");
   } }), secVis("budget") && React.createElement(React.Fragment, null, React.createElement("select", { value: budgetMode, onChange: function(e) { setBM(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } },
@@ -13165,6 +13305,32 @@ React.createElement("div", { style: sty.head },
     if (p3.cBridge != null) sCBr(!!p3.cBridge);
     if (p3.cBrAmt != null) sCBrA(+p3.cBrAmt || 0);
     if (p3.cBrEnd != null) sCBrE(+p3.cBrEnd || 65);
+    if (p3.cInc2Age != null) sCI2A(+p3.cInc2Age || 0);
+    if (p3.cInc2Amt != null) sCI2M(+p3.cInc2Amt || 0);
+    if (p3.cInc2Name != null) sCI2N(p3.cInc2Name);
+    if (p3.cInc3Age != null) sCI3A(+p3.cInc3Age || 0);
+    if (p3.cInc3Amt != null) sCI3M(+p3.cInc3Amt || 0);
+    if (p3.cInc3Name != null) sCI3N(p3.cInc3Name);
+    if (p3.cPtM != null) sCPtM(+p3.cPtM || 0);
+    if (p3.cPtYrs != null) sCPtYrs(+p3.cPtYrs || 5);
+    if (p3.cSyncPortfolio != null) sCSyncPortfolio(!!p3.cSyncPortfolio);
+    if (p3.cAllocR != null) sCAlR(+p3.cAllocR);
+    if (p3.cAllocT != null) sCAlT(+p3.cAllocT);
+    if (p3.cAllocN != null) sCAlN(+p3.cAllocN);
+    if (p3.cMerR != null) sCMerR(+p3.cMerR);
+    if (p3.cMerT != null) sCMerT(+p3.cMerT);
+    if (p3.cMerN != null) sCMerN(+p3.cMerN);
+    if (p3.cSyncInsLife != null) sCSyncInsLife(!!p3.cSyncInsLife);
+    if (p3.cInsVieType) sCIVT(p3.cInsVieType);
+    if (p3.cInsVieDur != null) sCIVD(+p3.cInsVieDur || 20);
+    if (p3.cInsInvCov != null) sCIIC(+p3.cInsInvCov || 0);
+    if (p3.cInsInvPrime != null) sCIIP(+p3.cInsInvPrime || 0);
+    if (p3.cInsMGCov != null) sCIMC(+p3.cInsMGCov || 0);
+    if (p3.cInsMGPrime != null) sCIMP(+p3.cInsMGPrime || 0);
+    if (p3.cInsColPrime != null) sCICP(+p3.cInsColPrime || 0);
+    if (p3.cPenEE != null) sCPEE(+p3.cPenEE || 0);
+    if (p3.cPenER != null) sCPER(+p3.cPenER || 0);
+    if (p3.cPenMER != null) sCPMER(+p3.cPenMER || 0.005);
             if (p3.budgetMode) setBM(p3.budgetMode);
             if (p3.revSec != null) sRevSec(p3.revSec);
             if (p3.penAlim != null) sPenAlim(p3.penAlim);

@@ -684,3 +684,39 @@ For the future session that completes the rebuild:
 13 commits. 12 phases addressed (5 complete, 4 partial with explicit deferrals, 1 pure docs, 2 mixed). v3 is the parallel-track planner; it is not yet the shipping file. The remaining engine work (4B + 5B + 6 + 8.5 wiring) is specified to a degree that a dedicated 1–2 day engine-focused session can execute mechanically with the snapshot harness as the correctness gate.
 
 ---
+
+## Post-Phase-10 — Spouse parity pass (4 waves)
+
+**Date**: 2026-04-17
+**Driver**: user feedback "on peut pas etre 4 fois plus simple". Goal: narrow the primary-vs-spouse field ratio from 2.7:1 toward 1:1 without duplicating everything. Principle: anything technical that a couple typically shares defaults to primary; only user-facing differentiators get dedicated spouse fields.
+
+### Wave 4 — Events & part-time (UI + state only)
+- Spouse income slots: `cInc2Age/Amt/Name`, `cInc3Age/Amt/Name` — now 3 slots like primary (was 1).
+- Spouse part-time retirement: `cPtM`, `cPtYrs`.
+- Wired into `_mcBaseParams`; save/load round-trips.
+
+### Wave 1 — Allocations + MER with sync
+- New state: `cAllocR/T/N`, `cMerR/T/N`, plus a 5th sync toggle `cSyncPortfolio` (default ON).
+- UI: `<details class="bf-adv-drawer">` in Conjoint → Épargne revealing 6 spouse sliders only when sync is OFF.
+- Engine override: when `cSyncPortfolio` is ON, `_cAllocR/T/NEff` and `_cMerR/T/NEff` mirror primary's values. Default-ON path is byte-identical to pre-change behaviour.
+
+### Wave 3 — Insurance parity with sync
+- `cSyncInsLife` (default ON) toggles whether spouse life type + duration mirror primary.
+- `cInsInvCov`, `cInsInvPrime` (disability); `cInsMGCov`, `cInsMGPrime` (critical illness); `cInsColPrime` (group) — individual fields always visible.
+- Wired; save/load round-trips.
+
+### Wave 2 — Spouse Pension 1 CD cotisations
+- New state: `cPenEE`, `cPenER`, `cPenMER`.
+- UI: rendered in Conjoint → Pension & Emploi only when Pension 1 type is a CD variant.
+- Wired; save/load round-trips.
+
+### Ratio after parity pass
+~0.95:1 primary-to-spouse (effective) when `cOn=true`. Visible input burden stays low thanks to the 6 sync toggles (cSyncRetAge, cSyncGovAges, cUseStochMort, cAvgEAuto, cSyncPortfolio, cSyncInsLife).
+
+### Engine-output delta
+**None with defaults.** All sync toggles default ON; spouse uses primary's allocations, MER, life insurance type/duration. When user flips a sync OFF, the engine consumes the spouse-specific value. Phase 6 engine work will fully exploit these fields behind `BF_V3_HOUSEHOLD`.
+
+### Deliberately NOT duplicated
+`donAnn` (household), `salVol/disabProb/disabMo` (model-wide), RSU (niche), FTQ (niche), Entreprise CCPC (single-owner constraint), Goals (household), `retSpM` (household — Phase 3).
+
+---
