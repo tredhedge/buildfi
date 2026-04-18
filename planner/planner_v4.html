@@ -354,6 +354,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
       <a class="toc-link" href="#sec-income"><span class="ico">💸</span><span class="label" data-i18n="tocIncome">Revenus & dépenses</span></a>
       <a class="toc-link" href="#sec-savings"><span class="ico">📈</span><span class="label" data-i18n="tocSavings">Épargne & placements</span></a>
       <a class="toc-link" href="#sec-realestate"><span class="ico">🏠</span><span class="label" data-i18n="tocRealEstate">Immobilier</span></a>
+      <a class="toc-link" href="#sec-debts"><span class="ico">💳</span><span class="label" data-i18n="tocDebts">Dettes</span></a>
       <a class="toc-link" href="#sec-pensions"><span class="ico">🏛️</span><span class="label" data-i18n="tocPensions">Pensions</span></a>
       <a class="toc-link" href="#sec-strategy"><span class="ico">🧾</span><span class="label" data-i18n="tocStrategy">Stratégie</span></a>
       <a class="toc-link" href="#sec-insurance"><span class="ico">🛡️</span><span class="label" data-i18n="tocInsurance">Assurances</span></a>
@@ -764,17 +765,39 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="sec-sub" data-i18n="reSub">Résidence principale et immeubles locatifs — soldes, hypothèques, vente éventuelle.</div>
           </div>
           <div class="sec-status">
-            <span class="count" data-count="realestate">0 / 0</span>
+            <span class="count" id="re-count">0 bien</span>
             <span class="stamp" data-i18n="notReviewed">non revue</span>
           </div>
           <span class="sec-chev">▸</span>
         </summary>
         <div class="sec-body">
           <div class="subsec">
-            <div class="subsec-intro" data-i18n="reIntro">Ajoutez chaque propriété une à la fois. Pour chaque bien, précisez la valeur, le solde hypothécaire et — si vous êtes en couple — la part de propriété de chacun (100 % vous, 100 % conjoint(e), 50/50, ou personnalisé).</div>
-            <button class="btn" data-i18n="addProperty">🏠 Ajouter une propriété</button>
-            <div class="spacer-md"></div>
-            <div class="muted" style="font-size:var(--fs-sm)" data-i18n="reEmpty">Aucune propriété enregistrée.</div>
+            <div class="subsec-intro" data-i18n="reIntro">Ajoutez chaque propriété. Pour chaque bien : valeur, hypothèque, loyer (si locatif), et — en couple — la part de propriété (100 % vous / 100 % conjoint(e) / 50-50 / personnalisée).</div>
+            <div id="prop-list"></div>
+            <button class="btn btn-primary" onclick="addProperty()" style="margin-top:8px"><span>🏠</span> <span data-i18n="addProperty">Ajouter une propriété</span></button>
+          </div>
+        </div>
+      </details>
+
+      <!-- ─── Section: Debts ─── -->
+      <details class="section" id="sec-debts">
+        <summary>
+          <div class="sec-ico" style="background:#d0484822;color:#d04848">💳</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="debtsTitle">Dettes</div>
+            <div class="sec-sub" data-i18n="debtsSub">Marges de crédit, prêts auto ou étudiants, cartes de crédit. L'hypothèque de votre maison se trouve dans la section Immobilier.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" id="debt-count">0 dette</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="subsec">
+            <div class="subsec-intro" data-i18n="debtsIntro">Seules les dettes avec un solde positif sont modélisées. Les intérêts déductibles (stratégie de Smith, prêt d'investissement) peuvent être marqués comme tels.</div>
+            <div id="debt-list"></div>
+            <button class="btn btn-primary" onclick="addDebt()" style="margin-top:8px"><span>💳</span> <span data-i18n="addDebt">Ajouter une dette</span></button>
           </div>
         </div>
       </details>
@@ -1291,6 +1314,8 @@ function setPlanMode(m, btn) {
   btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
   document.getElementById("couple-hint").hidden = (m !== "couple");
   document.getElementById("spouse-block").hidden = (m !== "couple");
+  window._cOn = (m === "couple");
+  renderProps(); renderDebts();
 }
 function setStrategy(s, btn) {
   var pills = btn.parentElement.querySelectorAll(".pill");
@@ -1330,11 +1355,166 @@ function updateTocActive() {
 }
 window.addEventListener("scroll", updateTocActive);
 
+/* ─────────────── Dynamic property + debt editors ─────────────── */
+/* v4 aligns with v3's schema: props[] and debts[] use the exact same keys
+   that runMC consumes. A profile exported from v4 loads cleanly into v3. */
+var _props = [];
+var _debts = [];
+
+function addProperty() {
+  _props.push({
+    on: true, val: 0, ri: 0.03, mb: 0, rate: 0.05, term: 60, renewRate: 0.05, amort: 25,
+    rent: 0, exp: 0, tax: 0, ins: 0, pri: _props.length === 0,
+    dpaOn: false, dpaRate: 0.04, heloc: 0, helocRate: 0.065, smithOn: false,
+    refiAge: 0, refiAmt: 0, dsAge: 0, dsVal: 0,
+    ownerSelf: 0.5, ownerSpouse: 0.5
+  });
+  renderProps();
+}
+function removeProperty(i) { _props.splice(i, 1); renderProps(); }
+function updP(i, k, v) { _props[i][k] = v; renderProps(); }
+
+function renderProps() {
+  var list = document.getElementById("prop-list");
+  if (!list) return;
+  var fr = _lang === "fr";
+  list.innerHTML = "";
+  _props.forEach(function (pr, i) {
+    var card = document.createElement("div");
+    card.className = "subsec";
+    card.style.cssText = "background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:10px";
+    var titleLabel = pr.pri ? (fr ? "🏠 Résidence principale" : "🏠 Principal residence") : (fr ? "🏘️ Immeuble locatif" : "🏘️ Rental property");
+    card.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+      + '<div style="flex:1"><div style="font-weight:700;font-size:var(--fs-md);color:var(--text)">' + titleLabel + ' #' + (i + 1) + '</div>'
+      + '<div style="font-size:var(--fs-xs);color:var(--text-dim)">' + (fr ? "Valeur estimée : " : "Est. value: ") + '$' + (pr.val || 0).toLocaleString() + '</div></div>'
+      + '<button class="btn btn-ghost" onclick="removeProperty(' + i + ')" style="color:var(--red)">✕</button></div>'
+      + '<label class="check-row"><input type="checkbox" ' + (pr.pri ? "checked" : "") + ' onchange="updP(' + i + ', \'pri\', this.checked)">'
+      +   '<div><div class="check-label">' + (fr ? "Résidence principale" : "Principal residence") + '</div>'
+      +   '<div class="check-help">' + (fr ? "Gain en capital exempt d'impôt à la vente." : "Capital gain tax-exempt on sale.") + '</div></div></label>'
+      + '<div class="spacer-md"></div>'
+      + '<div class="field-grid">'
+      +   _f("val-" + i, fr ? "Valeur actuelle" : "Current value", "$", pr.val, function(v){updP(i,"val",+v);})
+      +   _f("ri-" + i, fr ? "Appréciation /an" : "Appreciation /yr", "%", (pr.ri * 100).toFixed(1), function(v){updP(i,"ri",+v/100);})
+      +   _f("mb-" + i, fr ? "Solde hypothécaire" : "Mortgage balance", "$", pr.mb, function(v){updP(i,"mb",+v);})
+      +   _f("rate-" + i, fr ? "Taux hypothèque" : "Mortgage rate", "%", (pr.rate * 100).toFixed(2), function(v){updP(i,"rate",+v/100);})
+      +   _f("term-" + i, fr ? "Terme (mois rest.)" : "Term (months left)", "", pr.term, function(v){updP(i,"term",+v);})
+      +   _f("amort-" + i, fr ? "Amortissement" : "Amortization", "ans", pr.amort, function(v){updP(i,"amort",+v);})
+      +   (!pr.pri ? _f("rent-" + i, fr ? "Loyer mensuel" : "Monthly rent", "$", pr.rent, function(v){updP(i,"rent",+v);}) : "")
+      +   (!pr.pri ? _f("exp-" + i, fr ? "Dépenses /an" : "Expenses /yr", "$", pr.exp, function(v){updP(i,"exp",+v);}) : "")
+      +   _f("tax-" + i, fr ? "Taxes foncières /an" : "Property tax /yr", "$", pr.tax, function(v){updP(i,"tax",+v);})
+      +   _f("ins-" + i, fr ? "Assurance /an" : "Insurance /yr", "$", pr.ins, function(v){updP(i,"ins",+v);})
+      + '</div>'
+      + (pr.val > 0 ? '<div class="spacer-md"></div>'
+        + '<details class="bf-adv-drawer" style="background:var(--bg);border:1px dashed var(--border);border-radius:6px;padding:10px 12px">'
+        +   '<summary style="cursor:pointer;font-size:var(--fs-xs);color:var(--text-dim);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;list-style:none">▸ ' + (fr ? "Stratégies avancées" : "Advanced strategies") + '</summary>'
+        +   '<div style="margin-top:10px">'
+        +     _f("heloc-" + i, fr ? "HELOC (marge) tirée" : "HELOC drawn", "$", pr.heloc, function(v){updP(i,"heloc",+v);})
+        +     (pr.heloc > 0 ? _f("helocRate-" + i, fr ? "Taux HELOC" : "HELOC rate", "%", (pr.helocRate * 100).toFixed(2), function(v){updP(i,"helocRate",+v/100);}) : "")
+        +     (pr.heloc > 0 ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (pr.smithOn ? "checked" : "") + ' onchange="updP(' + i + ', \'smithOn\', this.checked)">'
+        +       '<div><div class="check-label">' + (fr ? "Manœuvre de Smith (intérêts déductibles)" : "Smith Manoeuvre (deductible interest)") + '</div>'
+        +       '<div class="check-help">' + (fr ? "Chaque remboursement de capital est réemprunté via HELOC et investi." : "Each principal payment is re-borrowed via HELOC and invested.") + '</div></div></label>' : "")
+        +     (!pr.pri ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (pr.dpaOn ? "checked" : "") + ' onchange="updP(' + i + ', \'dpaOn\', this.checked)">'
+        +       '<div><div class="check-label">' + (fr ? "Réclamer la DPA (amortissement fiscal)" : "Claim CCA (capital cost allowance)") + '</div>'
+        +       '<div class="check-help">' + (fr ? "Déduit ~4 %/an de la bâtisse. Récupéré à 100 % à la vente." : "Deducts ~4%/yr of the building. Recaptured 100% on sale.") + '</div></div></label>' : "")
+        +     '<div class="spacer-md"></div>'
+        +     '<div class="field-grid">'
+        +       _f("refiAge-" + i, fr ? "Âge refinancement (0 = jamais)" : "Refinance age (0 = off)", "", pr.refiAge, function(v){updP(i,"refiAge",+v);})
+        +       (pr.refiAge > 0 ? _f("refiAmt-" + i, fr ? "Montant refi" : "Refi amount", "$", pr.refiAmt, function(v){updP(i,"refiAmt",+v);}) : "")
+        +       _f("dsAge-" + i, fr ? "Âge de vente (0 = garder)" : "Sale age (0 = keep)", "", pr.dsAge, function(v){updP(i,"dsAge",+v);})
+        +       (pr.dsAge > 0 ? _f("dsVal-" + i, fr ? "Valeur de vente" : "Sale value", "$", pr.dsVal, function(v){updP(i,"dsVal",+v);}) : "")
+        +     '</div>'
+        +   '</div>'
+        + '</details>' : "")
+      + (window._cOn && pr.val > 0 ? _ownerPillHTML(i, "prop", pr.ownerSelf, pr.ownerSpouse) : "");
+    list.appendChild(card);
+  });
+  document.getElementById("re-count").textContent = _props.length + (fr ? (_props.length === 1 ? " bien" : " biens") : (_props.length === 1 ? " property" : " properties"));
+}
+
+function addDebt() {
+  _debts.push({ type: "other", bal: 0, rate: 0.08, term: 0, pay: 0, deductible: false, ownerSelf: 0.5, ownerSpouse: 0.5 });
+  renderDebts();
+}
+function removeDebt(i) { _debts.splice(i, 1); renderDebts(); }
+function updD(i, k, v) { _debts[i][k] = v; renderDebts(); }
+
+function renderDebts() {
+  var list = document.getElementById("debt-list"); if (!list) return;
+  var fr = _lang === "fr";
+  var TYPES = {
+    heloc: fr ? "Marge hypothécaire (HELOC)" : "HELOC", auto: fr ? "Prêt auto" : "Auto loan",
+    student: fr ? "Prêt étudiant" : "Student loan", card: fr ? "Carte de crédit" : "Credit card",
+    other: fr ? "Autre" : "Other"
+  };
+  list.innerHTML = "";
+  _debts.forEach(function (d, i) {
+    var card = document.createElement("div");
+    card.className = "subsec";
+    card.style.cssText = "background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:10px";
+    var opts = Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(d.type===k?' selected':'')+'>'+TYPES[k]+'</option>';}).join("");
+    card.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+      + '<div style="flex:1"><div style="font-weight:700;font-size:var(--fs-md);color:var(--text)">💳 ' + (TYPES[d.type] || TYPES.other) + '</div>'
+      + '<div style="font-size:var(--fs-xs);color:var(--text-dim)">' + (fr ? "Solde : " : "Balance: ") + '$' + (d.bal || 0).toLocaleString() + ' · ' + (fr ? "Taux " : "Rate ") + (d.rate * 100).toFixed(2) + '%</div></div>'
+      + '<button class="btn btn-ghost" onclick="removeDebt(' + i + ')" style="color:var(--red)">✕</button></div>'
+      + '<div class="field-grid">'
+      +   '<div class="field"><div class="field-head"><label class="field-label">' + (fr ? "Type" : "Type") + '</label></div>'
+      +     '<select class="field-input" onchange="updD(' + i + ', \'type\', this.value)">' + opts + '</select></div>'
+      +   _f("dbal-" + i, fr ? "Solde" : "Balance", "$", d.bal, function(v){updD(i,"bal",+v);})
+      +   (d.bal > 0 ? _f("drate-" + i, fr ? "Taux" : "Rate", "%", (d.rate * 100).toFixed(2), function(v){updD(i,"rate",+v/100);}) : "")
+      +   (d.bal > 0 ? _f("dpay-" + i, fr ? "Paiement /mois" : "Payment /mo", "$", d.pay, function(v){updD(i,"pay",+v);}) : "")
+      +   (d.bal > 0 && (d.type === "auto" || d.type === "student" || d.type === "other") ? _f("dterm-" + i, fr ? "Terme (mois rest.)" : "Term (months left)", "", d.term, function(v){updD(i,"term",+v);}) : "")
+      + '</div>'
+      + (d.bal > 0 ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (d.deductible ? "checked" : "") + ' onchange="updD(' + i + ', \'deductible\', this.checked)">'
+      +   '<div><div class="check-label">' + (fr ? "Intérêts déductibles d'impôt (Manœuvre de Smith)" : "Tax-deductible interest (Smith Manoeuvre)") + '</div>'
+      +   '<div class="check-help">' + (fr ? "Prêt dont l'intérêt est déductible — ex : emprunt pour investir." : "Loan whose interest is deductible — e.g. borrowing to invest.") + '</div></div></label>' : "")
+      + (window._cOn && d.bal > 0 ? _ownerPillHTML(i, "debt", d.ownerSelf, d.ownerSpouse) : "");
+    list.appendChild(card);
+  });
+  document.getElementById("debt-count").textContent = _debts.length + (fr ? (_debts.length === 1 ? " dette" : " dettes") : (_debts.length === 1 ? " debt" : " debts"));
+}
+
+/* Compact field-row HTML builder (for injection into dynamic cards). */
+function _f(id, label, unit, val, onChange) {
+  var key = "_v4cb_" + id;
+  window[key] = onChange;
+  return '<div class="field"><div class="field-head"><label class="field-label">' + label + (unit ? ' <span class="field-unit">' + unit + '</span>' : '') + '</label></div>'
+    + '<input id="' + id + '" class="field-input" type="number" value="' + (val == null ? "" : val) + '" onchange="window[\'' + key + '\'](this.value)"></div>';
+}
+
+/* Ownership pill HTML (couple mode only). 4 presets + custom slider. */
+function _ownerPillHTML(i, kind, os, sp) {
+  var fr = _lang === "fr";
+  var preset = (os === 1 && sp === 0) ? "self" : (os === 0 && sp === 1) ? "spouse"
+             : (Math.abs(os - 0.5) < 0.01 && Math.abs(sp - 0.5) < 0.01) ? "joint" : "custom";
+  var pct = Math.round((os || 0) * 100);
+  var updF = kind === "prop" ? "updP" : "updD";
+  var opts = [
+    ["self", fr ? "👤 Vous" : "👤 You", "var(--accent)"],
+    ["spouse", fr ? "👥 Conjoint" : "👥 Spouse", "var(--teal)"],
+    ["joint", "🏠 50/50", "var(--green)"],
+    ["custom", fr ? "⚖ Personnalisé" : "⚖ Custom", "var(--orange)"]
+  ];
+  var pills = opts.map(function(o){
+    var on = preset === o[0];
+    var handler = o[0] === "self" ? (updF+"("+i+",'ownerSelf',1);"+updF+"("+i+",'ownerSpouse',0)")
+               : o[0] === "spouse" ? (updF+"("+i+",'ownerSelf',0);"+updF+"("+i+",'ownerSpouse',1)")
+               : o[0] === "joint"  ? (updF+"("+i+",'ownerSelf',0.5);"+updF+"("+i+",'ownerSpouse',0.5)")
+               : (preset !== "custom" ? (updF+"("+i+",'ownerSelf',0.7);"+updF+"("+i+",'ownerSpouse',0.3)") : "");
+    return '<button class="pill' + (on ? " on" : "") + '" style="flex:1;padding:6px 8px;font-size:11px" onclick="' + handler + '">' + o[1] + '</button>';
+  }).join("");
+  var slider = preset === "custom" ? '<div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">'
+    + '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--orange);margin-bottom:4px"><span>' + (fr ? "Vous : " : "You: ") + pct + '%</span><span>' + (fr ? "Conjoint : " : "Spouse: ") + (100 - pct) + '%</span></div>'
+    + '<input type="range" min="1" max="99" step="1" value="' + pct + '" oninput="' + updF + '(' + i + ', \'ownerSelf\', +this.value/100);' + updF + '(' + i + ', \'ownerSpouse\', 1 - +this.value/100)" style="width:100%">'
+    + '</div>' : "";
+  return '<div style="margin-top:10px"><div style="font-size:11px;color:var(--text-dim);font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px">' + (fr ? "Propriété" : "Ownership") + '</div>'
+    + '<div style="display:flex;gap:4px">' + pills + '</div>' + slider + '</div>';
+}
+
 /* ─────────────── Save / Load (JSON) ─────────────── */
 function collectProfile() {
-  var p = { _schema: "v4.0" };
+  var p = { _schema: "v4.0", props: _props, debts: _debts };
   document.querySelectorAll("input, select").forEach(function (el) {
-    if (!el.id) return;
+    if (!el.id || el.id.indexOf("-") >= 0) return; // skip dynamic per-row inputs
     if (el.type === "checkbox") p[el.id] = el.checked;
     else if (el.type === "number") p[el.id] = el.value === "" ? null : parseFloat(el.value);
     else p[el.id] = el.value;
@@ -1358,7 +1538,10 @@ function loadProfile() {
     rd.onload = function (ev) {
       try {
         var p = JSON.parse(ev.target.result);
+        if (Array.isArray(p.props)) { _props = p.props; renderProps(); }
+        if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
         Object.keys(p).forEach(function (k) {
+          if (k === "props" || k === "debts" || k === "_schema") return;
           var el = document.getElementById(k); if (!el) return;
           if (el.type === "checkbox") el.checked = !!p[k];
           else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
