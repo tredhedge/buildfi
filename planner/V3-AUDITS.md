@@ -720,3 +720,94 @@ For the future session that completes the rebuild:
 `donAnn` (household), `salVol/disabProb/disabMo` (model-wide), RSU (niche), FTQ (niche), Entreprise CCPC (single-owner constraint), Goals (household), `retSpM` (household — Phase 3).
 
 ---
+
+## Phase 7 — Cockpit mode + wizard hand-off + v4 aesthetic pass (2026-04-17)
+
+### Scope
+Pragmatic cockpit/blueprint split. Instead of the 20-hour `<Field>` primitive refactor outlined in `V3-COCKPIT-PLAN.md`, introduce a single `_cockpitMode` state driven by a CSS rule (`body[data-bf-cockpit="1"] .bf-t2 { display: none !important }`). Tag the heaviest Tier-2 clusters with a `className: "bf-t2"` wrapper; drop the "Alt" and "Model" rails from the cockpit. Wire the wizard to route users to cockpit or blueprint (v4 form) on completion.
+
+### v3 changes
+
+**State + persistence**
+- `_cockpitMode = useState(localStorage.getItem("bf_cockpit") !== "0")` — defaults ON for new users.
+- `useEffect` syncs `document.body[data-bf-cockpit]` + `localStorage`.
+
+**Rail controls**
+- New rail button "Cockpit" / "Complet" with icon swap (🎯 / 🔬).
+- `_railSections` hides `alt` and `model` entries in cockpit mode — those modules are pure Tier-2 (assumption tuning, stress scenarios, MC count).
+- Dropped modules are always reachable via the header `📋 Formulaire` button (v4 full form).
+
+**Tier-2 wrappers**
+- Pension module: `<div className="bf-t2">` wrapping the CV-analysis block (rente vs rachat) + entire Pension 2 subsection. CV is only offered when `penType === "db"`; Pension 2 is the second (rare) employer pension.
+- Savings module: `<div className="bf-t2">` wrapping "Gestion du portefeuille" (glide path, rebalancing, FX volatility).
+- Fiscal module: `<div className="bf-t2">` wrapping `splitP` slider + `qppShare` checkbox (keeps the split checkbox visible as a Tier-1 lever).
+
+**Blueprint jump**
+- Inside every sidebar module panel, a dashed "Besoin d'un champ avancé? Ouvrir le formulaire complet" row now appears in cockpit mode.
+- Reuses `window._bfGoBlueprint()` — same handoff payload as the header `📋 Formulaire` button, no payload duplication.
+
+**Wizard step 7**
+- `_wizFinish(target)` gained a target parameter: `"cockpit"`, `"blueprint"`, or `"full"`.
+- Step 7 now presents two prominent buttons ("🎯 Vue cockpit", "📋 Formulaire complet") + a muted "← Affiner mes réponses" link.
+- `"blueprint"` triggers `_bfGoBlueprint()` and hands off to `planner_v4.html` with the full profile via `sessionStorage["bf_mode_handoff"]`.
+
+### v4 changes (aesthetic pass)
+
+**Design tokens**
+- Radius bumped: `--radius-sm` 4→6, `--radius-md` 8→10, `--radius-lg` 12→14.
+- Duration + easing tokens added (`--dur-fast/med/slow`, `--ease` cubic-bezier).
+- `--ring` token for focus box-shadow; `--accent-ring` for glow.
+- Root gradient on `body` (radial accent + blue tints, near-black base).
+- Font feature settings enabled (`cv01/03/04`, `ss01`).
+
+**Typography**
+- Page title now gets a text-clip gradient (white → soft-white).
+- Letter-spacing tightened on titles (-0.025em); subsec heads bump to 0.1em upper-case rhythm.
+- All inputs use tabular-nums for clean number alignment.
+
+**Sections**
+- `details.section[open]` gains a 3px accent bar on the left (via `::before`) + shadow-md.
+- Section icon scales 1.04x when open; chevron colours accent.
+- Section body animates in (`@keyframes secBodyIn` — fade + translateY).
+- Count pill on the right switched to a 999px radius with bg.
+
+**Fields**
+- Focus ring = 3px accent glow (`--ring`). Hover state darkens border.
+- Native number spinners hidden.
+- Placeholder italic; check-row uses `:has(input:checked)` → accent background + border.
+- Pill button has gradient + shadow when `.on`; active state translateY(1px).
+- Tip-trigger scales 1.1x on hover.
+
+**Dynamic editor cards**
+- New `.editor-card` class with gradient surface, shadow-sm, hover → shadow-md.
+- `.editor-card-head` with bottom divider; `.editor-card-title` and `.editor-card-meta` (JetBrains Mono).
+- `.editor-card-remove` red-tinted background on hover.
+- `.bf-adv-drawer` summary hover + open state now uses accent color.
+- Applied to property, debt, RSU, goals cards.
+
+**Sticky form toolbar**
+- Semi-transparent glass bar at top of main form: "⤢ Tout ouvrir / ⤡ Tout fermer" + meta hint.
+- Accessibility: `role="toolbar"`, `aria-label`.
+
+**FAB**
+- Gradient background; shadow and translate on hover.
+
+### Acceptance
+- `node --check` on extracted v3 main script → clean.
+- v4 paren / brace / bracket diffs = 0 / 0 / 0.
+- v4 main script parses via `new Function(code)` → OK (66.4 KB).
+- Default cockpit-ON users: `.bf-t2` clusters hidden → pension 2, CV analysis, portfolio-management block, splitP slider, qppShare, Alt rail, Model rail all collapse from the sidebar.
+- Blueprint toggle in the rail → `.bf-t2` reveals; Alt + Model rails reappear.
+- Wizard step-7 "Formulaire complet" button → handoff to v4 with full profile.
+- v4 `🧭 Vue compacte →` handoff back to v3 unchanged.
+
+### Deliberately NOT done
+- Per-field tier prop on `<Field>` primitive (would require 190 edits; high effort, low return while the cluster-wrapper covers the bulk).
+- Budget categories not tagged `.bf-t2` — users enabling manual-mode budget expect all 9 categories; hiding some but not others would be worse.
+- Real-estate deep-strategy drawer already uses `<details class="bf-adv-drawer">` progressive disclosure — did not wrap in `.bf-t2` since the drawer is already collapsed by default.
+- RSU grants editor stays visible in cockpit (expert-only gate + small blast radius).
+- Rail order unchanged — cockpit does not re-sort; it only filters.
+
+### Reversibility
+- Every change is additive. `git revert <sha>` restores the full-width sidebar with all rails. Feature flag: toggle `bf_cockpit=0` in localStorage to disable in production without a deploy.
+

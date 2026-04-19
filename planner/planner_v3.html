@@ -248,6 +248,51 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
   .bf-rail-btn.active { border-color: var(--bf-accent, #c49a1a); }
 }
 
+/* v3 Phase 7 — Cockpit mode hides Tier-2 fields by default. Any element
+   wearing .bf-t2 collapses when the body is marked cockpit. Blueprint mode
+   reveals everything (set data-bf-cockpit="0"). Rule lives at top level so
+   it beats inline styles on wrappers. */
+body[data-bf-cockpit="1"] .bf-t2 { display: none !important; }
+body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
+
+/* Mode toggle in the rail footer — compact pill group */
+.bf-mode-toggle {
+  display: inline-flex; background: var(--bf-rail-bg);
+  border: 1px solid var(--bf-rail-border); border-radius: 999px;
+  padding: 2px; gap: 2px;
+}
+.bf-mode-toggle button {
+  background: transparent; border: none; color: var(--bf-rail-btn);
+  padding: 4px 10px; font-family: inherit; font-size: 10px; font-weight: 700;
+  cursor: pointer; border-radius: 999px; letter-spacing: 0.04em;
+  transition: background .15s, color .15s;
+}
+.bf-mode-toggle button.on {
+  background: var(--bf-accent, #c49a1a); color: #0e1420;
+}
+.bf-mode-toggle button:not(.on):hover { color: var(--bf-rail-hover-tx); }
+
+/* "Open the full form" jump link that lives at the top of every sidebar module
+   when cockpit mode is ON. A quiet, dashed row the user can ignore or click. */
+.bf-blueprint-jump {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 11px; margin-bottom: 8px;
+  background: var(--bf-field-bg);
+  border: 1px dashed var(--bf-field-border);
+  border-radius: 6px;
+  font-size: 11px; color: var(--text-secondary);
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, border-color .15s, color .15s;
+  line-height: 1.35;
+}
+.bf-blueprint-jump:hover {
+  background: var(--bf-rail-hover-bg);
+  border-color: var(--bf-accent, #c49a1a);
+  color: var(--bf-accent, #c49a1a);
+}
+.bf-blueprint-jump .bf-bpj-ico { font-size: 13px; line-height: 1; }
+.bf-blueprint-jump .bf-bpj-arrow { margin-left: auto; opacity: 0.6; }
+
 /* v3 PHASE 4: compact slider styling. Reduces vertical weight so the density
    of sliders in Savings/Model feels less overwhelming. Sliders remain, but
    with a slim track + smaller thumb. */
@@ -7670,6 +7715,23 @@ function App() {
   var _cUseStochMort = useState(true), cUseStochMort = _cUseStochMort[0], sCUseStochMort = _cUseStochMort[1];
   var _cAvgEAuto = useState(true), cAvgEAuto = _cAvgEAuto[0], sCAvgEAuto = _cAvgEAuto[1];
 
+  // v3 Phase 7 — Cockpit vs Blueprint. Cockpit (default) keeps only the ~30
+  // Tier-1 lever fields visible in the sidebar; Tier-2 elements are tagged
+  // .bf-t2 and hidden via the body[data-bf-cockpit="1"] CSS rule. Blueprint
+  // mode reveals everything (mirrors v4's full form inline in the sidebar).
+  // Rail buttons for pure Tier-2 modules (Model, Alt, Insurance, Business)
+  // collapse to a "→ Open form" jump in cockpit mode.
+  var _cockpitMode = useState(function() { try { return localStorage.getItem("bf_cockpit") !== "0"; } catch(e) { return true; } });
+  var cockpitMode = _cockpitMode[0], setCockpitMode = _cockpitMode[1];
+  useEffect(function() {
+    try {
+      if (typeof document !== "undefined") {
+        document.body.setAttribute("data-bf-cockpit", cockpitMode ? "1" : "0");
+      }
+      localStorage.setItem("bf_cockpit", cockpitMode ? "1" : "0");
+    } catch(e) {}
+  }, [cockpitMode]);
+
   var _showWiz = useState(!localStorage.getItem("bf_used")), showWizard = _showWiz[0], setShowWiz = _showWiz[1];
   var _wizStep = useState(0), wizStep = _wizStep[0], setWizStep = _wizStep[1];
   var _gSubS = useState(0), guideSub = _gSubS[0], setGuideSub = _gSubS[1];
@@ -11349,7 +11411,7 @@ var acroExpand = function(term) {
 };
 var V = function(key) { var v = VOCAB[key]; if (!v) return key; return v[mode] || v.expert || key; };
 
-var _wizFinish = function() {
+var _wizFinish = function(target) {
   // === Auto-configure: fill gaps the user might have missed ===
   var _newF = Object.assign({}, sbFilter);
   if ((sal > 0 || rrsp > 0) && !_newF.hasRRSP) _newF.hasRRSP = true;
@@ -11359,6 +11421,22 @@ var _wizFinish = function() {
   if (penType && penType !== "none" && !_newF.pension) _newF.pension = true;
   _setSbFilter(_newF);
   try { localStorage.setItem("bf_sbf", JSON.stringify(_newF)); } catch(e) {}
+  // v3 Phase 7 — wizard-driven entry mode. "blueprint" hands off to v4's form;
+  // "cockpit" (default) keeps the user in the trimmed sidebar. Either way we
+  // mark the wizard as seen so it doesn't re-open.
+  if (target === "blueprint") {
+    try { localStorage.setItem("bf_cockpit", "1"); } catch(e) {}
+    setShowProg(true); setShowWiz(false); localStorage.setItem("bf_used", "1");
+    setTimeout(function() { if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint(); }, 80);
+    return;
+  }
+  if (target === "cockpit") {
+    setCockpitMode(true);
+    try { localStorage.setItem("bf_cockpit", "1"); } catch(e) {}
+  } else if (target === "full") {
+    setCockpitMode(false);
+    try { localStorage.setItem("bf_cockpit", "0"); } catch(e) {}
+  }
   setShowProg(true); setShowWiz(false); localStorage.setItem("bf_used", "1"); setTab(5);
 };
 var _vBan = useState(function() { try { return localStorage.getItem("bf_dismiss_v") !== "v12.0.0"; } catch(e) { return true; } }), showVerBanner = _vBan[0], setShowVerBanner = _vBan[1];
@@ -11637,13 +11715,32 @@ wizStep === 6 && React.createElement("div", null,
             }
             return React.createElement(React.Fragment, null, elems);
           }()),
-          React.createElement("div", { style: { display: "flex", gap: 8, marginTop: 10 } },
-            React.createElement("button", { onClick: _wizFinish,
-              style: { flex: 2, padding: "10px 16px", background: CL.ac, border: "none", borderRadius: RAD.md, color: "#fff", fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer" } },
-              lang === "fr" ? "Explorer mon plan en d\u00e9tail" : "Explore my plan in detail"),
+          // v3 Phase 7 — wizard hand-off choice. Three doors to the plan:
+          //   Cockpit — trimmed sidebar (~30 levers) for weekly tweaking.
+          //   Formulaire — v4 blueprint form for exhaustive first-time setup.
+          //   Affiner — return to wizard step 2 to edit answers.
+          React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginTop: 12, marginBottom: 6, textAlign: "center" } },
+            lang === "fr" ? "Comment souhaitez-vous continuer ?" : "How would you like to continue?"),
+          React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 } },
+            React.createElement("button", {
+              onClick: function() { _wizFinish("cockpit"); },
+              style: { padding: "12px 14px", background: CL.ac, border: "none", borderRadius: RAD.md, color: "#0e1420", fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer", textAlign: "left", lineHeight: 1.3 }
+            },
+              React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.bold } }, "\ud83c\udfaf " + (lang === "fr" ? "Vue cockpit" : "Cockpit view")),
+              React.createElement("div", { style: { fontSize: FS.xxs, opacity: 0.85, marginTop: 2, fontWeight: FW.medium } }, lang === "fr" ? "~30 leviers principaux. Pour ajuster régulièrement." : "~30 core levers. Tweak often.")
+            ),
+            React.createElement("button", {
+              onClick: function() { _wizFinish("blueprint"); },
+              style: { padding: "12px 14px", background: "transparent", border: "1px solid " + CL.ac, borderRadius: RAD.md, color: CL.ac, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer", textAlign: "left", lineHeight: 1.3 }
+            },
+              React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.bold } }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire complet" : "Full form")),
+              React.createElement("div", { style: { fontSize: FS.xxs, opacity: 0.85, marginTop: 2, fontWeight: FW.medium } }, lang === "fr" ? "~190 variables, tooltips, par défaut. Pour le premier remplissage." : "~190 variables, tooltips, defaults. First-time setup.")
+            )
+          ),
+          React.createElement("div", { style: { textAlign: "center", marginTop: 8 } },
             React.createElement("button", { onClick: function() { setWizStep(2); },
-              style: { flex: 1, padding: "10px 12px", background: "transparent", border: "1px solid " + CL.bd, borderRadius: RAD.md, color: CL.dm, fontSize: FS.sm, cursor: "pointer" } },
-              lang === "fr" ? "Affiner" : "Refine")))),
+              style: { padding: "6px 14px", background: "transparent", border: "none", color: CL.dm, fontSize: FS.sm, cursor: "pointer", textDecoration: "underline" } },
+              lang === "fr" ? "\u2190 Affiner mes réponses" : "\u2190 Refine my answers")))),
 
       // === NAVIGATION BUTTONS ===
       wizStep < 7 && React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 16 } },
@@ -12554,7 +12651,9 @@ fhsaBal > 0 && fhsaForHome && React.createElement(Field, { l: lang === "fr" ? "\
 
 cOn && React.createElement(Field, { l: (lang === "fr" ? "Conjoint " : "Spouse ") + "CELIAPP" }, React.createElement(NumField, { v: cFhsaBal, set: setCFhsaBal, step: 1e3 })),
 cOn && cFhsaBal > 0 && React.createElement(Field, { l: lang === "fr" ? "Conj. cotis./an" : "Sp. contrib./yr" }, React.createElement(NumField, { v: cFhsaC, set: setCFhsaC, step: 1e3 })),
-React.createElement("div", { style: { height: 2 } }), React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Gestion du portefeuille" : "Portfolio Management"), React.createElement(Check, { v: glide, set: setGlide, l: lang === "fr" ? "Glide Path (\u2193 actions avec l'\u00e2ge)" : "Glide Path (\u2193 equity with age)" }), glide && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "R\u00e9duction/an apr\u00e8s 50 ans" : "Reduction/yr after age 50" , tip: TIP.glideDesc}, React.createElement(Slider, { v: glideSpd, set: setGlideSpd, mn: 5e-3, mx: 0.05 }))), React.createElement(Check, { v: rebal, set: setRebal, l: lang === "fr" ? "R\u00e9\u00e9quilibrage annuel" : "Annual rebalancing" }), React.createElement("div", { style: { height: 3 } }), React.createElement(Field, { l: lang === "fr" ? "Vol. CAD/USD (PE & PM)" : "CAD/USD Vol (PE & PM)" }, React.createElement(Slider, { v: fxVol, set: setFxVol, mn: 0, mx: 0.15 }))),
+React.createElement("div", { className: "bf-t2" },
+React.createElement("div", { style: { height: 2 } }), React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Gestion du portefeuille" : "Portfolio Management"), React.createElement(Check, { v: glide, set: setGlide, l: lang === "fr" ? "Glide Path (\u2193 actions avec l'\u00e2ge)" : "Glide Path (\u2193 equity with age)" }), glide && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "R\u00e9duction/an apr\u00e8s 50 ans" : "Reduction/yr after age 50" , tip: TIP.glideDesc}, React.createElement(Slider, { v: glideSpd, set: setGlideSpd, mn: 5e-3, mx: 0.05 }))), React.createElement(Check, { v: rebal, set: setRebal, l: lang === "fr" ? "R\u00e9\u00e9quilibrage annuel" : "Annual rebalancing" }), React.createElement("div", { style: { height: 3 } }), React.createElement(Field, { l: lang === "fr" ? "Vol. CAD/USD (PE & PM)" : "CAD/USD Vol (PE & PM)" }, React.createElement(Slider, { v: fxVol, set: setFxVol, mn: 0, mx: 0.15 })))
+),
 secVis("biz") && sbFilter.biz && true && React.createElement(Sec, { t: lang === "fr" ? "Entreprise" : "Business", accent: CL.cp, open: secVis("biz"), onClick: function() { tog("biz"); } }), secVis("biz") && React.createElement(React.Fragment, null,
 // Structure
 React.createElement(Field, { l: lang === "fr" ? "Structure" : "Structure", tip: TIP.bizStructure }, React.createElement("select", { value: bizType, onChange: function(e) { setBizType(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } }, React.createElement("option", { value: "ccpc" }, lang === "fr" ? "CCPC / SPC" : "CCPC / CPC"), React.createElement("option", { value: "sole" }, lang === "fr" ? "Travailleur autonome" : "Sole proprietor"))),
@@ -12789,6 +12888,10 @@ React.createElement(Field, { l: t.penType }, penOpts(penType, sPT3)), penType ==
       React.createElement(Field, { l: t.eeContrib, tip: TIP.penEE }, React.createElement(NumField, { v: penEE, set: sPEE2, step: 500 })),
       React.createElement(Field, { l: t.erContrib, tip: TIP.penER }, React.createElement(NumField, { v: penER, set: sPER, step: 500 }))
     ), React.createElement(Field, { l: t.fundMER }, React.createElement(Slider, { v: penMER, set: sPMER, mn: 0, mx: 0.03 }))), React.createElement(Check, { v: bridge, set: sBr, l: t.bridge }), bridge && React.createElement(React.Fragment, null, React.createElement(Field, { l: t.brAmt }, React.createElement(NumField, { v: brAmt, set: sBA, step: 100 })), React.createElement(Field, { l: t.brEnd }, React.createElement(Slider, { v: brEnd, set: sBE, mn: 60, mx: 70 }))), React.createElement("div", { style: { height: 3 } }),
+// v3 Phase 7 — CV analysis + Pension 2 are pure Tier-2 clusters. Wrap in a
+// div.bf-t2 so cockpit mode drops them in one stroke without surgery at
+// every nested conditional below.
+React.createElement("div", { className: "bf-t2" },
 penType === "db" ? React.createElement(React.Fragment, null,
 React.createElement("div", { style: { height: 4, borderTop: "1px dashed " + CL.bd, marginTop: 4, marginBottom: 4 } }),
 React.createElement("div", { style: { fontSize: FS.base, color: CL.or, fontWeight: FW.medium, marginBottom: 3 } }, lang === "fr" ? "Analyse Rente vs Rachat" : "Pension vs Lump Sum"),
@@ -12801,7 +12904,8 @@ cvAnalysis ? React.createElement(React.Fragment, null,
 React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 6, marginTop: 10, paddingBottom: 4, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "80", borderBottom: "1px dashed " + CL.ac + "40" } }, lang === "fr" ? "Pension 2 (optionnel)" : "Pension 2 (optional)"), React.createElement(Field, { l: lang === "fr" ? "Type pension 2" : "Pension 2 type" }, penOpts(pen2Type, sP2T)), pen2Type === "db" && React.createElement(React.Fragment, null, React.createElement(Field, { l: t.penM }, React.createElement(NumField, { v: pen2M, set: sP2M, step: 100 })), React.createElement(Field, { l: t.indexation, tip: TIP.indexation }, React.createElement("select", { value: pen2Idx, onChange: function(e) { sP2Idx(+e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } },
     React.createElement("option", { value: 0 }, t.idxNone),
     React.createElement("option", { value: 1 }, lang === "fr" ? "50% IPC" : "50% CPI"),
-    React.createElement("option", { value: 2 }, lang === "fr" ? "100% IPC" : "100% CPI")))), ["cd", "rpdb", "rrs", "rver"].indexOf(pen2Type) >= 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: dc2Bal, set: sDC2B, step: 5e3 })), React.createElement(Field, { l: t.eeContrib, tip: TIP.penEE }, React.createElement(NumField, { v: pen2EE, set: sP2EE, step: 500 })), React.createElement(Field, { l: t.erContrib, tip: TIP.penER }, React.createElement(NumField, { v: pen2ER, set: sP2ER, step: 500 })))), secVis("fisc") && sbFilter.fisc && true && React.createElement(Sec, { t: lang === "fr" ? "Strat\u00e9gie de d\u00e9caissement" : "Withdrawal strategy", open: secVis("fisc"), onClick: function() {
+    React.createElement("option", { value: 2 }, lang === "fr" ? "100% IPC" : "100% CPI")))), ["cd", "rpdb", "rrs", "rver"].indexOf(pen2Type) >= 0 && React.createElement(React.Fragment, null, React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: dc2Bal, set: sDC2B, step: 5e3 })), React.createElement(Field, { l: t.eeContrib, tip: TIP.penEE }, React.createElement(NumField, { v: pen2EE, set: sP2EE, step: 500 })), React.createElement(Field, { l: t.erContrib, tip: TIP.penER }, React.createElement(NumField, { v: pen2ER, set: sP2ER, step: 500 })))
+)), secVis("fisc") && sbFilter.fisc && true && React.createElement(Sec, { t: lang === "fr" ? "Strat\u00e9gie de d\u00e9caissement" : "Withdrawal strategy", open: secVis("fisc"), onClick: function() {
     tog("fisc");
   } }), secVis("fisc") && React.createElement(React.Fragment, null,
     // v3: Withdrawal Strategy radio (Standard / Meltdown / Bridge). Canonical
@@ -12839,8 +12943,11 @@ React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight:
       React.createElement("option", { value: "tfsa" }, t.wTFSAFirst),
       React.createElement("option", { value: "optimized" }, lang === "fr" ? "Optimis\u00e9 (min. imp\u00f4t)" : "Optimized (min. tax)"))),
     React.createElement(Check, { v: split, set: sSplit, l: t.split }),
-    split && React.createElement(Field, { l: t.splitP, tip: TIP.splitDesc }, React.createElement(Slider, { v: splitP, set: sSP, mn: 0, mx: 0.5 })),
-    cOn && React.createElement(Check, { v: qppShare, set: setQppShare, l: t.qppShare })),
+    /* Tier-2 — splitP percent is fine-tuning, qppShare is advanced splitting. */
+    React.createElement("div", { className: "bf-t2" },
+      split && React.createElement(Field, { l: t.splitP, tip: TIP.splitDesc }, React.createElement(Slider, { v: splitP, set: sSP, mn: 0, mx: 0.5 })),
+      cOn && React.createElement(Check, { v: qppShare, set: setQppShare, l: t.qppShare })
+    )),
 secVis("model") && React.createElement(Sec, { t: lang === "fr" ? "\u2699\ufe0f Mod\u00e8le & Simulation" : "\u2699\ufe0f Model & Simulation", open: secVis("model"), onClick: function() {
     tog("model");
   } }), secVis("model") && React.createElement(React.Fragment, null, React.createElement(Field, { l: t.inf , tip: TIP.fatTailDesc}, React.createElement(Slider, { v: inf, set: sInf, mn: 0.01, mx: 0.05 })), React.createElement(Check, { v: fatT, set: sFT, l: t.fatTail, tip: TIP.fatTailDesc2 }), React.createElement(Check, { v: stochInf, set: setSI, l: t.stochInf, tip: TIP.stochInflDesc2 }), React.createElement("div", { style: { height: 4 } }), React.createElement("div", { style: { height: 4 } }), React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Courbe de d\u00e9penses" : "Spending Curve"),
@@ -12921,6 +13028,9 @@ React.createElement("div", { style: { display: "grid", gap: 4, marginTop: 8 } },
 // - Fiscal sits high alongside Profile: withdrawal strategy is a core decision.
 // - Insurance out of expert-only gate (core to every plan).
 // - Debts placed AFTER assets (what you own, then what you owe).
+// v3 Phase 7 — cockpit mode drops the "advanced" rail group (alt, model).
+// Everything there is pure Tier-2 (assumption tuning, stress, MC count).
+// Users open the full form for that depth. Blueprint mode keeps all rails.
 var _railSections = [
   ["profil", "\ud83d\udc64", true, lang==="fr"?"Profil":"Profile", "you"],
   ["conj",   "\ud83d\udc65", true, lang==="fr"?"Conjoint":"Spouse", "you"],
@@ -12932,8 +13042,8 @@ var _railSections = [
   ["debt",   "\ud83d\udcb3", true, lang==="fr"?"Dettes":"Debts", "flow"],
   ["gov",    "\ud83c\udfdb\ufe0f", true, lang==="fr"?"Pension":"Pension", "retire"],
   ["ins",    "\ud83d\udee1\ufe0f", true, lang==="fr"?"Assur.":"Insur.", "retire"],
-  ["alt",    "\ud83e\udde9", mode === "expert", lang==="fr"?"Altern.":"Alt.", "advanced"],
-  ["model",  "\u2699\ufe0f", true, lang==="fr"?"Mod\u00e8le":"Model", "advanced"]
+  ["alt",    "\ud83e\udde9", mode === "expert" && !cockpitMode, lang==="fr"?"Altern.":"Alt.", "advanced"],
+  ["model",  "\u2699\ufe0f", !cockpitMode, lang==="fr"?"Mod\u00e8le":"Model", "advanced"]
 ].filter(function(s) { return s[2]; });
 
 return React.createElement("div", { style: sty.wrap, className: "bf-wrap" }, React.createElement("a", { href: "#bf-main", style: { position: "absolute", left: "-9999px", top: "auto", width: "1px", height: "1px", overflow: "hidden", zIndex: 9999 }, onFocus: function(e) { e.target.style.left = "10px"; e.target.style.top = "10px"; e.target.style.width = "auto"; e.target.style.height = "auto"; }, onBlur: function(e) { e.target.style.left = "-9999px"; } }, lang === "fr" ? "Aller au contenu" : "Skip to content"), _wizardOverlay, React.createElement("div", { className: sty.sideMob && mobSbOpen ? "bf-backdrop bf-backdrop-visible" : "bf-backdrop", onClick: function() { setMobSb(false); }, style: { cursor: "pointer" } }),
@@ -12963,6 +13073,19 @@ React.createElement("div", { className: "bf-rail" },
     return _items;
   })(),
   React.createElement("div", { className: "bf-rail-sep", style: { marginTop: 3, marginBottom: 3 } }),
+  // v3 Phase 7 — Cockpit ↔ Blueprint mode toggle. Cockpit = Tier-1 only;
+  // Blueprint = all ~190 vars visible inline. Toggle label is terse so it
+  // fits the narrow rail. Full form (v4) is still one click away.
+  React.createElement("button", {
+    className: "bf-rail-btn",
+    onClick: function() { setCockpitMode(function(v) { return !v; }); },
+    title: cockpitMode
+      ? (lang === "fr" ? "Mode cockpit actif — seuls les ~30 leviers principaux. Cliquez pour tout afficher." : "Cockpit mode — only the ~30 core levers. Click to reveal everything.")
+      : (lang === "fr" ? "Mode complet — toutes les variables. Cliquez pour revenir au cockpit." : "Full mode — all variables. Click to return to cockpit.")
+  },
+    React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, cockpitMode ? "\ud83c\udfaf" : "\ud83d\udd2c"),
+    React.createElement("span", { className: "bf-rail-label" }, cockpitMode ? (lang === "fr" ? "Cockpit" : "Cockpit") : (lang === "fr" ? "Complet" : "Full"))
+  ),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, React.createElement("span", { className: "bf-rail-ico" }, dark ? "\u2600\ufe0f" : "\ud83c\udf19"), React.createElement("span", { className: "bf-rail-label" }, dark ? "Light" : "Dark")),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, React.createElement("span", { className: "bf-rail-ico" }, "\ud83d\udcda"), React.createElement("span", { className: "bf-rail-label" }, "Guide")),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setLang(function(prev) { var n = prev === "fr" ? "en" : "fr"; document.documentElement.lang = n; return n; }); }, style: { fontSize: 11, fontWeight: 700 } }, lang === "fr" ? "EN" : "FR")
@@ -13003,6 +13126,23 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
         style: { background: "none", border: "none", color: CL.dm, fontSize: 18, cursor: "pointer", padding: "2px 6px", flexShrink: 0, lineHeight: 1 } }, "\u2715")
     );
   })(),
+  // v3 Phase 7 — Cockpit mode shows a soft "Open the full form" affordance at
+  // the top of each module panel. Uses the same bf_mode_handoff mechanism as
+  // the header Formulaire button, so the profile transfers in memory.
+  cockpitMode && React.createElement("a", {
+    className: "bf-blueprint-jump",
+    href: "#",
+    role: "button",
+    onClick: function(e) {
+      e.preventDefault();
+      if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint();
+    },
+    title: lang === "fr" ? "Ouvre le formulaire complet (v4) avec toutes les variables" : "Opens the full form (v4) with every variable"
+  },
+    React.createElement("span", { className: "bf-bpj-ico" }, "\ud83d\udccb"),
+    React.createElement("span", null, lang === "fr" ? "Besoin d'un champ avancé? Ouvrir le formulaire complet" : "Need an advanced field? Open the full form"),
+    React.createElement("span", { className: "bf-bpj-arrow" }, "\u2192")
+  ),
   _sidebarContent
 ),
 
@@ -13529,16 +13669,20 @@ React.createElement("div", { style: sty.head },
       React.createElement("button", { onClick: _saveToFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder profil (JSON)":"Save profile (JSON)" }, "\ud83d\udcbe"),
       React.createElement("button", { onClick: _loadFromFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Charger profil (JSON)":"Load profile (JSON)" }, "\ud83d\udcc2"),
       /* v3 \u2192 v4 bidirectional switch. Same sessionStorage key as v4's
-         auto-loader; the entire profile transfers in memory, no file needed. */
-      React.createElement("button", {
-        onClick: function () {
+         auto-loader; the entire profile transfers in memory, no file needed.
+         Extracted to window._bfGoBlueprint so the cockpit jump-link in each
+         module can trigger the same handoff without duplicating the payload. */
+      (function() {
+        window._bfGoBlueprint = function () {
           try {
-            /* Build the same payload as _saveToFile without downloading. */
             var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs };
             sessionStorage.setItem("bf_mode_handoff", JSON.stringify({ from: "v3", when: Date.now(), profile: profile }));
             window.location.href = "planner_v4.html?from=v3";
           } catch (e) { alert("Handoff failed: " + e.message); }
-        },
+        };
+      })(),
+      React.createElement("button", {
+        onClick: function () { window._bfGoBlueprint(); },
         style: { padding: "6px 10px", background: CL.ac + "1a", color: CL.ac, border: "1px solid " + CL.ac + "60", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" },
         title: lang === "fr" ? "Basculer vers la vue formulaire (v4) avec transfert automatique" : "Switch to form view (v4) with auto-transfer"
       }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire" : "Form")),
