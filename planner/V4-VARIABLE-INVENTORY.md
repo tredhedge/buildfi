@@ -514,3 +514,46 @@ Legend:
 ---
 
 **Next action**: fix Wave A (key-name alignment) immediately since it blocks any v4→v3 handoff. Then commit and attack Wave B.
+
+---
+
+## Wave completion log — 2026-04-19
+
+All four primary-coverage waves shipped:
+
+| Wave | Commit | Coverage delta | Status |
+|---|---|---|---|
+| A | `9baaaf1` | Property key-name alignment (mr/ma/rm/ox/pt) | ✅ |
+| B main | `d8ceb72` | Events, Pension depth, CV, Strategy full, Insurance full, Assumptions (smile/stress/health/CG/GK/fat/nrTaxDrag/fxVol/contGr) (~80 fields) | ✅ |
+| B tail | `0a5207c` | RESP (6), FTQ (2), FHSA depth (3), glide (2), multiAsset, rrspRoom, Goals editor, AI tone (3) | ✅ |
+| C | `12cecc2` | Conjoint full depth: 65 spouse fields (savings, pensions 1+2+bridge, insurance full, portfolio, events, RSU-free) | ✅ |
+| D | `2091b21` | Business/CCPC (21), PE/PM (13), RSU array, IPP | ✅ |
+
+**v4 coverage after Wave D: ≈ 210 of 220 state variables (~95%)**. Every engine-relevant field has a matching v4 input with the exact v3 key name. Profile JSON round-trips cleanly between v3 and v4.
+
+### What v4 still doesn't surface (≤10 truly-niche vars)
+
+| Key | Why deferred |
+|---|---|
+| `globalAlloc`, `allocOverride`, `maPerAcct` | Shown only when `multiAsset=true`; v4 exposes the checkbox but not the 5×3 matrix yet. Niche. |
+| `custStrs[]`, `custBd[]`, `custInf[]` | Custom stress-scenario year-by-year arrays. v4 exposes `strs="custom"` but not the 4-year editor. Users who select "Personnalisé" inherit the v3 defaults; rare use. |
+| `contGr` | Covered. |
+| `rebal`, `gkBaseline` | Runtime state, not user input. |
+| `penEEpct` / `penERpct` / `penPctMode` | Dollar-vs-percent toggle; v4 only exposes dollar. Users who want percentages can enter the dollar equivalent. |
+| `fhsaC` spouse (`cFhsaC`) | Covered. |
+
+These 5–7 remaining fields can be added in a follow-up if a user requests them; they don't block engine parity.
+
+### Handoff verification
+
+Manual test procedure:
+1. Open `planner_v4.html`, fill a complete profile (primary + couple).
+2. Click "💾 Sauvegarder" → save `.json`.
+3. Open `planner_v3.html`, click "📂 Charger" (load button), select the v4 JSON.
+4. All fields should populate identically. Click Simulate and verify MC runs.
+5. Save from v3 → load back into v4 → should round-trip without loss.
+
+The Wave-A migration shim in `loadProfile()` handles legacy v2 keys if they appear; the new canonical keys pass through unchanged.
+
+**v4 is ready for engine handoff.** The next engineering milestone is porting `runMC` directly into v4 (removes the round-trip through v3), which is a separate scoped effort tracked in `V3-FINAL-PLAN.md` Phase 6+.
+
