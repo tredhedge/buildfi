@@ -351,6 +351,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <input id="search" class="search" placeholder="Rechercher un champ…" oninput="filterFields(this.value)" data-i18n-ph="searchPh">
       </div>
       <a class="toc-link" href="#sec-identity"><span class="ico">👤</span><span class="label" data-i18n="tocIdentity">Identité & ménage</span></a>
+      <a class="toc-link" href="#sec-spouse" id="toc-spouse" hidden><span class="ico">👥</span><span class="label" data-i18n="tocSpouse">Conjoint(e) — détails</span></a>
       <a class="toc-link" href="#sec-income"><span class="ico">💸</span><span class="label" data-i18n="tocIncome">Revenus & dépenses</span></a>
       <a class="toc-link" href="#sec-savings"><span class="ico">📈</span><span class="label" data-i18n="tocSavings">Épargne & placements</span></a>
       <a class="toc-link" href="#sec-realestate"><span class="ico">🏠</span><span class="label" data-i18n="tocRealEstate">Immobilier</span></a>
@@ -591,6 +592,189 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <div class="field-head"><label class="field-label" for="detailPref" data-i18n="aiDetail">Niveau de détail</label></div>
                 <select id="detailPref" class="field-input"><option value="concise">Concis — faits clés</option><option value="balanced" selected>Équilibré</option><option value="detailed">Détaillé — explications complètes</option></select>
               </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- ─── Section: Conjoint details (only visible in couple mode) ─── -->
+      <details class="section" id="sec-spouse" hidden>
+        <summary>
+          <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">👥</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="spouseTitle">Conjoint(e) — détails</div>
+            <div class="sec-sub" data-i18n="spouseSub">Situation complète du conjoint(e) : épargne, pensions, assurances, portefeuille, événements. Les hypothèses techniques suivent les vôtres par défaut (voir Identité → Conjoint).</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="spouse">0</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+
+          <div class="callout tip">
+            <span class="callout-ico">💡</span>
+            <span data-i18n="spouseDetailIntro"><strong>Champs révélés par les toggles de synchronisation.</strong> Les valeurs de retraite, RRQ/PSV, mortalité, allocations et assurance vie du conjoint(e) copient les vôtres tant que les cases correspondantes sont cochées dans Identité → Conjoint. Décochez une case pour entrer une valeur propre ici.</span>
+          </div>
+
+          <!-- Identity overrides (shown when sync toggles are OFF) -->
+          <div class="subsec" id="spouse-identity-overrides" hidden>
+            <div class="subsec-head" data-i18n="spouseIdOver">Identité — valeurs propres</div>
+            <div class="field-grid">
+              <div class="field" id="cRetAge-field" hidden>
+                <div class="field-head"><label class="field-label" for="cRetAge" data-i18n="cRetAge">Âge de retraite du conjoint(e) <span class="field-unit">ans</span></label></div>
+                <input id="cRetAge" type="number" class="field-input" placeholder="62" min="45" max="75">
+              </div>
+              <div class="field" id="cDeath-field" hidden>
+                <div class="field-head"><label class="field-label" for="cDeath" data-i18n="cDeath">Horizon de vie conjoint(e) <span class="field-unit">ans</span></label></div>
+                <input id="cDeath" type="number" class="field-input" placeholder="88" min="70" max="110">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spouseSavingsHead">Épargne du conjoint(e)</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="cRRSP" data-i18n="cRRSP">REER solde <span class="field-unit">$</span></label></div><input id="cRRSP" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cRRSPC" data-i18n="cRRSPC">REER cotis. /an <span class="field-unit">$/an</span></label></div><input id="cRRSPC" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cTFSA" data-i18n="cTFSA">CÉLI solde <span class="field-unit">$</span></label></div><input id="cTFSA" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cTFSAC" data-i18n="cTFSAC">CÉLI cotis. /an <span class="field-unit">$/an</span></label></div><input id="cTFSAC" type="number" class="field-input" placeholder="0" min="0" max="7000" step="500"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cNR" data-i18n="cNR">Non-enr. solde <span class="field-unit">$</span></label></div><input id="cNR" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cNRC" data-i18n="cNRC">Non-enr. cotis. /an <span class="field-unit">$/an</span></label></div><input id="cNRC" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cFhsaBal" data-i18n="cFhsaBal">CELIAPP solde <span class="field-unit">$</span></label></div><input id="cFhsaBal" type="number" class="field-input" placeholder="0" min="0" max="40000" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cFhsaC" data-i18n="cFhsaC">CELIAPP cotis. /an <span class="field-unit">$/an</span></label></div><input id="cFhsaC" type="number" class="field-input" placeholder="0" min="0" max="8000" step="500"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cLiraBal" data-i18n="cLiraBal">CRI / LIRA solde <span class="field-unit">$</span></label></div><input id="cLiraBal" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+            </div>
+          </div>
+
+          <!-- Government pensions (hidden when cSyncGovAges / cAvgEAuto are ON) -->
+          <div class="subsec" id="spouse-gov-section" hidden>
+            <div class="subsec-head" data-i18n="spouseGovHead">Pensions gouvernementales — valeurs propres</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="cQppAge" data-i18n="cQppAge">Début RRQ conjoint(e) <span class="field-unit">ans</span></label></div><input id="cQppAge" type="number" class="field-input" placeholder="65" min="60" max="72"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cOasAge" data-i18n="cOasAge">Début PSV conjoint(e) <span class="field-unit">ans</span></label></div><input id="cOasAge" type="number" class="field-input" placeholder="65" min="65" max="70"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cAvgE" data-i18n="cAvgE">Gains admissibles moyens <span class="field-unit">$</span></label></div><input id="cAvgE" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cQppYrs" data-i18n="cQppYrs">Années cotisations <span class="field-unit">ans</span></label></div><input id="cQppYrs" type="number" class="field-input" placeholder="0" min="0" max="45" step="1"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spousePenHead">Pension 1 du conjoint(e)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cPenType" data-i18n="cPenType">Type de régime</label></div>
+                <select id="cPenType" class="field-input"><option value="none">Aucun</option><option value="db">Prestation déterminée (PD)</option><option value="cd">Cotisations définies (CD)</option><option value="rpdb">RPDB</option></select>
+              </div>
+              <div class="field" id="cPenM-field" hidden><div class="field-head"><label class="field-label" for="cPenM" data-i18n="cPenM">Prestation mensuelle <span class="field-unit">$/mois</span></label></div><input id="cPenM" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
+              <div class="field" id="cPenIdx-field" hidden><div class="field-head"><label class="field-label" for="cPenIdx" data-i18n="cPenIdx">Indexation</label></div><select id="cPenIdx" class="field-input"><option value="0">0 %</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select></div>
+              <div class="field" id="cDCBal2-field" hidden><div class="field-head"><label class="field-label" for="cDCBal2" data-i18n="cDCBal2">Solde CD <span class="field-unit">$</span></label></div><input id="cDCBal2" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
+              <div class="field" id="cPenEE-field" hidden><div class="field-head"><label class="field-label" for="cPenEE" data-i18n="cPenEE">Cotis. employé <span class="field-unit">$/an</span></label></div><input id="cPenEE" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field" id="cPenER-field" hidden><div class="field-head"><label class="field-label" for="cPenER" data-i18n="cPenER">Cotis. employeur <span class="field-unit">$/an</span></label></div><input id="cPenER" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field" id="cPenMER-field" hidden><div class="field-head"><label class="field-label" for="cPenMER" data-i18n="cPenMER">Frais fonds (MER) <span class="field-unit">%/an</span></label></div><input id="cPenMER" type="number" class="field-input" placeholder="0.5" min="0" max="3" step="0.1"></div>
+            </div>
+            <div class="spacer-md"></div>
+            <label class="check-row">
+              <input type="checkbox" id="cBridge">
+              <div><div class="check-label" data-i18n="cBridgeLabel">Prestation de pont (conjoint(e))</div><div class="check-help" data-i18n="cBridgeHelp">Supplément versé avant RRQ/PSV du conjoint.</div></div>
+            </label>
+            <div class="field-grid" id="cBridge-fields" hidden>
+              <div class="field"><div class="field-head"><label class="field-label" for="cBrAmt" data-i18n="cBrAmt">Montant mensuel <span class="field-unit">$/mois</span></label></div><input id="cBrAmt" type="number" class="field-input" placeholder="0" min="0" step="50"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cBrEnd" data-i18n="cBrEnd">Fin du pont <span class="field-unit">ans</span></label></div><input id="cBrEnd" type="number" class="field-input" placeholder="65" min="60" max="72"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spousePen2Head">Pension 2 du conjoint(e) (facultative)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cPen2Type" data-i18n="cPen2Type">Type</label></div>
+                <select id="cPen2Type" class="field-input"><option value="none">Aucun</option><option value="db">PD</option><option value="cd">CD</option><option value="rpdb">RPDB</option></select>
+              </div>
+              <div class="field" id="cPen2M-field" hidden><div class="field-head"><label class="field-label" for="cPen2M" data-i18n="cPen2M">Prestation mensuelle 2 <span class="field-unit">$/mois</span></label></div><input id="cPen2M" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
+              <div class="field" id="cPen2Idx-field" hidden><div class="field-head"><label class="field-label" for="cPen2Idx" data-i18n="cPen2Idx">Indexation 2</label></div><select id="cPen2Idx" class="field-input"><option value="0">0 %</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select></div>
+              <div class="field" id="cDC2Bal-field" hidden><div class="field-head"><label class="field-label" for="cDC2Bal" data-i18n="cDC2Bal">Solde CD 2 <span class="field-unit">$</span></label></div><input id="cDC2Bal" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
+              <div class="field" id="cPen2EE-field" hidden><div class="field-head"><label class="field-label" for="cPen2EE" data-i18n="cPen2EE">Cotis. employé 2 <span class="field-unit">$/an</span></label></div><input id="cPen2EE" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field" id="cPen2ER-field" hidden><div class="field-head"><label class="field-label" for="cPen2ER" data-i18n="cPen2ER">Cotis. employeur 2 <span class="field-unit">$/an</span></label></div><input id="cPen2ER" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spousePortfolioHead">Portefeuille du conjoint(e)</div>
+            <div class="subsec-intro" data-i18n="spousePortfolioIntro">Ces champs n'apparaissent que si la case "Mêmes allocations & frais" est décochée dans Identité → Conjoint.</div>
+            <div id="spouse-portfolio-section" hidden>
+              <div class="field-grid">
+                <div class="field"><div class="field-head"><label class="field-label" for="cAllocR" data-i18n="cAllocR">REER % actions <span class="field-unit">%</span></label></div><input id="cAllocR" type="number" class="field-input" placeholder="60" min="0" max="100" step="5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cAllocT" data-i18n="cAllocT">CÉLI % actions <span class="field-unit">%</span></label></div><input id="cAllocT" type="number" class="field-input" placeholder="60" min="0" max="100" step="5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cAllocN" data-i18n="cAllocN">Non-enr. % actions <span class="field-unit">%</span></label></div><input id="cAllocN" type="number" class="field-input" placeholder="50" min="0" max="100" step="5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cMerR" data-i18n="cMerR">Frais REER (MER) <span class="field-unit">%/an</span></label></div><input id="cMerR" type="number" class="field-input" placeholder="1.0" min="0" max="3" step="0.1"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cMerT" data-i18n="cMerT">Frais CÉLI (MER) <span class="field-unit">%/an</span></label></div><input id="cMerT" type="number" class="field-input" placeholder="0.5" min="0" max="3" step="0.1"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cMerN" data-i18n="cMerN">Frais non-enr. (MER) <span class="field-unit">%/an</span></label></div><input id="cMerN" type="number" class="field-input" placeholder="0.5" min="0" max="3" step="0.1"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spouseInsHead">Assurances du conjoint(e)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cLifeInsBenefit" data-i18n="cLifeInsBenefit">Assurance vie — couverture <span class="field-unit">$</span></label></div>
+                <input id="cLifeInsBenefit" type="number" class="field-input" placeholder="0" min="0" step="50000">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cLifeInsPremium" data-i18n="cLifeInsPremium">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <input id="cLifeInsPremium" type="number" class="field-input" placeholder="0" min="0" step="5">
+              </div>
+            </div>
+            <div id="spouse-ins-advanced" hidden>
+              <div class="spacer-md"></div>
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-head"><label class="field-label" for="cInsVieType" data-i18n="cInsVieType">Type de police</label></div>
+                  <select id="cInsVieType" class="field-input"><option value="none">Aucune</option><option value="temp">Temporaire</option><option value="perm">Permanente</option></select>
+                </div>
+                <div class="field"><div class="field-head"><label class="field-label" for="cInsVieDur" data-i18n="cInsVieDur">Durée (si temporaire) <span class="field-unit">ans</span></label></div><input id="cInsVieDur" type="number" class="field-input" placeholder="20" min="1" max="40" step="1"></div>
+              </div>
+            </div>
+            <div class="spacer-md"></div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="cInsInvCov" data-i18n="cInsInvCov">Invalidité — couverture <span class="field-unit">% salaire</span></label></div><input id="cInsInvCov" type="number" class="field-input" placeholder="0" min="0" max="100" step="5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cInsInvPrime" data-i18n="cInsInvPrime">Invalidité — prime <span class="field-unit">$/mois</span></label></div><input id="cInsInvPrime" type="number" class="field-input" placeholder="0" min="0" step="5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cInsMGCov" data-i18n="cInsMGCov">Maladies graves — couverture <span class="field-unit">$</span></label></div><input id="cInsMGCov" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cInsMGPrime" data-i18n="cInsMGPrime">Maladies graves — prime <span class="field-unit">$/mois</span></label></div><input id="cInsMGPrime" type="number" class="field-input" placeholder="0" min="0" step="5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cInsColPrime" data-i18n="cInsColPrime">Assurance collective — part employé <span class="field-unit">$/mois</span></label></div><input id="cInsColPrime" type="number" class="field-input" placeholder="0" min="0" step="5"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="spouseEventsHead">Événements & travail partiel du conjoint(e)</div>
+            <div class="subsec-head" style="color:var(--green);border-left-color:var(--green);margin-top:6px" data-i18n="spouseInEvents">💰 Revenus ponctuels (3 slots)</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc1Name">Revenu 1 — Nom</label></div><input id="cInc1Name" class="field-input" placeholder="ex : Héritage"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc1Age">Âge (0=aucun)</label></div><input id="cInc1Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="cInc1Amt">Montant <span class="field-unit">$</span></label></div><input id="cInc1Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc2Name">Revenu 2 — Nom</label></div><input id="cInc2Name" class="field-input" placeholder=""></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc2Age">Âge (0=aucun)</label></div><input id="cInc2Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="cInc2Amt">Montant <span class="field-unit">$</span></label></div><input id="cInc2Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc3Name">Revenu 3 — Nom</label></div><input id="cInc3Name" class="field-input" placeholder=""></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cInc3Age">Âge (0=aucun)</label></div><input id="cInc3Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="cInc3Amt">Montant <span class="field-unit">$</span></label></div><input id="cInc3Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+            </div>
+            <div class="spacer-md"></div>
+            <div class="subsec-head" style="color:var(--red);border-left-color:var(--red)" data-i18n="spouseExEvents">💳 Dépenses ponctuelles (2 slots)</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cEv1Name">Dépense 1 — Nom</label></div><input id="cEv1Name" class="field-input" placeholder=""></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cEv1Age">Âge (0=aucun)</label></div><input id="cEv1Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="cEv1Amt">Montant <span class="field-unit">$</span></label></div><input id="cEv1Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cEv2Name">Dépense 2 — Nom</label></div><input id="cEv2Name" class="field-input" placeholder=""></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="cEv2Age">Âge (0=aucun)</label></div><input id="cEv2Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="cEv2Amt">Montant <span class="field-unit">$</span></label></div><input id="cEv2Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+            </div>
+            <div class="spacer-md"></div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="cPtM" data-i18n="cPtM">Travail partiel — revenu <span class="field-unit">$/mois</span></label></div><input id="cPtM" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="cPtYrs" data-i18n="cPtYrs">Durée <span class="field-unit">ans</span></label></div><input id="cPtYrs" type="number" class="field-input" placeholder="5" min="0" max="20" step="1"></div>
             </div>
           </div>
 
@@ -1768,11 +1952,60 @@ function setPlanMode(m, btn) {
   var pills = btn.parentElement.querySelectorAll(".pill");
   pills.forEach(function (p) { p.classList.remove("on"); p.setAttribute("aria-checked", "false"); });
   btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
-  document.getElementById("couple-hint").hidden = (m !== "couple");
-  document.getElementById("spouse-block").hidden = (m !== "couple");
-  window._cOn = (m === "couple");
+  var isCouple = (m === "couple");
+  document.getElementById("couple-hint").hidden = !isCouple;
+  document.getElementById("spouse-block").hidden = !isCouple;
+  /* Conjoint deep section + ToC link appear only in couple mode. */
+  var spouseSec = document.getElementById("sec-spouse"); if (spouseSec) spouseSec.hidden = !isCouple;
+  var tocSpouse = document.getElementById("toc-spouse"); if (tocSpouse) tocSpouse.hidden = !isCouple;
+  window._cOn = isCouple;
   renderProps(); renderDebts();
 }
+
+/* Conditional reveal for spouse Pension 1 by type. */
+function _syncCPenFields() {
+  var t = document.getElementById("cPenType"); if (!t) return;
+  var v = t.value, isDB = (v === "db"), isCD = (v === "cd" || v === "rpdb");
+  var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  show("cPenM-field", isDB); show("cPenIdx-field", isDB);
+  show("cDCBal2-field", isCD); show("cPenEE-field", isCD); show("cPenER-field", isCD); show("cPenMER-field", isCD);
+}
+function _syncCPen2Fields() {
+  var t = document.getElementById("cPen2Type"); if (!t) return;
+  var v = t.value, isDB = (v === "db"), isCD = (v === "cd" || v === "rpdb");
+  var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  show("cPen2M-field", isDB); show("cPen2Idx-field", isDB);
+  show("cDC2Bal-field", isCD); show("cPen2EE-field", isCD); show("cPen2ER-field", isCD);
+}
+document.getElementById("cPenType") && document.getElementById("cPenType").addEventListener("change", _syncCPenFields);
+document.getElementById("cPen2Type") && document.getElementById("cPen2Type").addEventListener("change", _syncCPen2Fields);
+document.getElementById("cBridge") && document.getElementById("cBridge").addEventListener("change", function () {
+  document.getElementById("cBridge-fields").hidden = !this.checked;
+});
+
+/* Sync toggles in Identity → Conjoint drive which spouse-deep fields appear. */
+function _syncSpouseOverrides() {
+  var cSyncRet = document.getElementById("cSyncRet");
+  var cSyncGov = document.getElementById("cSyncGov");
+  var cSyncPortfolio = document.getElementById("cSyncPortfolio");
+  var idOver = document.getElementById("spouse-identity-overrides");
+  var govSec = document.getElementById("spouse-gov-section");
+  var portSec = document.getElementById("spouse-portfolio-section");
+  var cRetAgeField = document.getElementById("cRetAge-field");
+  var cDeathField = document.getElementById("cDeath-field");
+  /* cRetAge shown only when NOT cSyncRet. */
+  if (cRetAgeField) cRetAgeField.hidden = (cSyncRet ? cSyncRet.checked : true);
+  /* cDeath shown only when stochMort is OFF (proxy: always show if user cares). */
+  if (cDeathField) cDeathField.hidden = false;
+  /* Hide/show the wrapper subsection if nothing inside is visible. */
+  if (idOver) idOver.hidden = (cRetAgeField && cRetAgeField.hidden) && (cDeathField && cDeathField.hidden);
+  if (govSec) govSec.hidden = (cSyncGov ? cSyncGov.checked : true);
+  if (portSec) portSec.hidden = (cSyncPortfolio ? cSyncPortfolio.checked : true);
+}
+["cSyncRet", "cSyncGov", "cSyncPortfolio"].forEach(function (id) {
+  var el = document.getElementById(id); if (el) el.addEventListener("change", _syncSpouseOverrides);
+});
+_syncSpouseOverrides();
 function setStrategy(s, btn) {
   var pills = btn.parentElement.querySelectorAll(".pill");
   pills.forEach(function (p) { p.classList.remove("on"); p.setAttribute("aria-checked", "false"); });
