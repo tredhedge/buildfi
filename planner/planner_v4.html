@@ -1361,12 +1361,22 @@ window.addEventListener("scroll", updateTocActive);
 var _props = [];
 var _debts = [];
 
+/* v4 — property object uses v3's exact key names so runMC(profile.props)
+   works unchanged: mr=mortgage rate, mr2=renewal rate, ma=amortization,
+   mt1=term (years), rm=rent monthly, ox=operating expenses, pt=prop tax,
+   pa=purchase age, sa=sale age (legacy, prefer dsAge), cg=CG inclusion,
+   helocMax=HELOC ceiling %, landPct=land portion (for CCA). Anything
+   renamed would break v3 engine consumption. */
 function addProperty() {
   _props.push({
-    on: true, val: 0, ri: 0.03, mb: 0, rate: 0.05, term: 60, renewRate: 0.05, amort: 25,
-    rent: 0, exp: 0, tax: 0, ins: 0, pri: _props.length === 0,
-    dpaOn: false, dpaRate: 0.04, heloc: 0, helocRate: 0.065, smithOn: false,
-    refiAge: 0, refiAmt: 0, dsAge: 0, dsVal: 0,
+    on: true, name: "", val: 0, ri: 0.03,
+    mb: 0, mr: 0.05, mr2: 0.05, mt1: 5, ma: 25,
+    rm: 0, ox: 0, pt: 0, ins: 0,
+    pa: 35, sa: 0, pri: _props.length === 0, cg: 0.5,
+    dsAge: 0, dsVal: 0,
+    heloc: 0, helocRate: 0.065, helocMax: 0.65, smithOn: false,
+    refiAge: 0, refiAmt: 0,
+    dpaOn: false, dpaRate: 0.04, landPct: 0.30,
     ownerSelf: 0.5, ownerSpouse: 0.5
   });
   renderProps();
@@ -1396,12 +1406,13 @@ function renderProps() {
       +   _f("val-" + i, fr ? "Valeur actuelle" : "Current value", "$", pr.val, function(v){updP(i,"val",+v);})
       +   _f("ri-" + i, fr ? "Appréciation /an" : "Appreciation /yr", "%", (pr.ri * 100).toFixed(1), function(v){updP(i,"ri",+v/100);})
       +   _f("mb-" + i, fr ? "Solde hypothécaire" : "Mortgage balance", "$", pr.mb, function(v){updP(i,"mb",+v);})
-      +   _f("rate-" + i, fr ? "Taux hypothèque" : "Mortgage rate", "%", (pr.rate * 100).toFixed(2), function(v){updP(i,"rate",+v/100);})
-      +   _f("term-" + i, fr ? "Terme (mois rest.)" : "Term (months left)", "", pr.term, function(v){updP(i,"term",+v);})
-      +   _f("amort-" + i, fr ? "Amortissement" : "Amortization", "ans", pr.amort, function(v){updP(i,"amort",+v);})
-      +   (!pr.pri ? _f("rent-" + i, fr ? "Loyer mensuel" : "Monthly rent", "$", pr.rent, function(v){updP(i,"rent",+v);}) : "")
-      +   (!pr.pri ? _f("exp-" + i, fr ? "Dépenses /an" : "Expenses /yr", "$", pr.exp, function(v){updP(i,"exp",+v);}) : "")
-      +   _f("tax-" + i, fr ? "Taxes foncières /an" : "Property tax /yr", "$", pr.tax, function(v){updP(i,"tax",+v);})
+      +   _f("mr-" + i, fr ? "Taux hypothèque" : "Mortgage rate", "%", (pr.mr * 100).toFixed(2), function(v){updP(i,"mr",+v/100);})
+      +   _f("mr2-" + i, fr ? "Taux au renouvellement" : "Renewal rate", "%", (pr.mr2 * 100).toFixed(2), function(v){updP(i,"mr2",+v/100);})
+      +   _f("mt1-" + i, fr ? "Terme restant (années)" : "Term left (years)", "", pr.mt1, function(v){updP(i,"mt1",+v);})
+      +   _f("ma-" + i, fr ? "Amortissement" : "Amortization", "ans", pr.ma, function(v){updP(i,"ma",+v);})
+      +   (!pr.pri ? _f("rm-" + i, fr ? "Loyer mensuel" : "Monthly rent", "$", pr.rm, function(v){updP(i,"rm",+v);}) : "")
+      +   (!pr.pri ? _f("ox-" + i, fr ? "Dépenses /an" : "Expenses /yr", "$", pr.ox, function(v){updP(i,"ox",+v);}) : "")
+      +   _f("pt-" + i, fr ? "Taxes foncières /an" : "Property tax /yr", "$", pr.pt, function(v){updP(i,"pt",+v);})
       +   _f("ins-" + i, fr ? "Assurance /an" : "Insurance /yr", "$", pr.ins, function(v){updP(i,"ins",+v);})
       + '</div>'
       + (pr.val > 0 ? '<div class="spacer-md"></div>'
@@ -1538,7 +1549,22 @@ function loadProfile() {
     rd.onload = function (ev) {
       try {
         var p = JSON.parse(ev.target.result);
-        if (Array.isArray(p.props)) { _props = p.props; renderProps(); }
+        /* v4 migration: legacy v2/early-v4 property records may have the
+           pre-schema keys (rate/amort/rent/exp/tax). Map them onto v3's
+           canonical keys (mr/ma/rm/ox/pt) so the engine can consume. */
+        if (Array.isArray(p.props)) {
+          _props = p.props.map(function (pr) {
+            if (pr.rate != null && pr.mr == null) pr.mr = pr.rate;
+            if (pr.renewRate != null && pr.mr2 == null) pr.mr2 = pr.renewRate;
+            if (pr.amort != null && pr.ma == null) pr.ma = pr.amort;
+            if (pr.term != null && pr.mt1 == null) pr.mt1 = pr.term;
+            if (pr.rent != null && pr.rm == null) pr.rm = pr.rent;
+            if (pr.exp != null && pr.ox == null) pr.ox = pr.exp;
+            if (pr.tax != null && pr.pt == null) pr.pt = pr.tax;
+            return pr;
+          });
+          renderProps();
+        }
         if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
         Object.keys(p).forEach(function (k) {
           if (k === "props" || k === "debts" || k === "_schema") return;
