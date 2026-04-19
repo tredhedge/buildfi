@@ -8707,6 +8707,127 @@ function App() {
   React.useEffect(function() {
     if (tab === 19) setTab(27);
   }, [tab]);
+
+  // v3 ↔ v4 bidirectional handoff on mount.
+  // When v4 redirects here with sessionStorage `bf_mode_handoff` (from:v4),
+  // we apply the profile through all the relevant setters. Same-shape JSON
+  // as the regular save/load so no translation needed.
+  useEffect(function () {
+    try {
+      var raw = sessionStorage.getItem("bf_mode_handoff");
+      if (!raw) return;
+      var msg = JSON.parse(raw);
+      if (!msg || msg.from !== "v4" || !msg.profile) return;
+      sessionStorage.removeItem("bf_mode_handoff");
+      var p3 = msg.profile;
+      if (p3.age != null) sAge(p3.age);
+      if (p3.retAge != null) sRA(p3.retAge);
+      if (p3.deathAge != null) sDA(p3.deathAge);
+      if (p3.sal != null) sSal(p3.sal);
+      if (p3.sex) setSex(p3.sex);
+      if (p3.prov) setProv(p3.prov);
+      if (p3.rrsp != null) sRR(p3.rrsp);
+      if (p3.tfsa != null) sTF(p3.tfsa);
+      if (p3.nr != null) sNR(p3.nr);
+      if (p3.rrspC != null) sRC(p3.rrspC);
+      if (p3.tfsaC != null) sTC(p3.tfsaC);
+      if (p3.nrC != null) sNC(p3.nrC);
+      if (p3.retSpM != null) sSM(p3.retSpM);
+      if (p3.inf != null) sInf(p3.inf);
+      if (p3.qppAge != null) sQA(p3.qppAge);
+      if (p3.avgE != null) sAE(p3.avgE);
+      if (p3.qppYrs != null) sQY(p3.qppYrs);
+      if (p3.oasAge != null) sOA(p3.oasAge);
+      if (p3.penType) sPT3(p3.penType);
+      if (p3.penM != null) sPM(p3.penM);
+      if (p3.penIdx != null) sPIdx(+p3.penIdx);
+      if (p3.dcBal != null) sDCB(p3.dcBal);
+      if (p3.dcY != null) sDCY(p3.dcY);
+      if (p3.bridge != null) sBr(!!p3.bridge);
+      if (p3.brAmt != null) sBA(p3.brAmt);
+      if (p3.brEnd != null) sBE(p3.brEnd);
+      if (p3.pen2Type) sP2T(p3.pen2Type);
+      if (p3.pen2M != null) sP2M(p3.pen2M);
+      if (p3.pen2Idx != null) sP2Idx(+p3.pen2Idx);
+      if (p3.dc2Bal != null) sDC2B(p3.dc2Bal);
+      if (p3.pen2EE != null) sP2EE(p3.pen2EE);
+      if (p3.pen2ER != null) sP2ER(p3.pen2ER);
+      if (p3.penEE != null) sPEE2(p3.penEE);
+      if (p3.penER != null) sPER(p3.penER);
+      if (p3.penMER != null) sPMER(p3.penMER);
+      if (p3.allocR != null) sAlR(p3.allocR);
+      if (p3.allocT != null) sAlT(p3.allocT);
+      if (p3.allocN != null) sAlN(p3.allocN);
+      if (p3.merR != null) sMR2(p3.merR);
+      if (p3.merT != null) sMT2(p3.merT);
+      if (p3.merN != null) sMN2(p3.merN);
+      if (p3.wStrat) setWS(p3.wStrat);
+      if (p3.melt != null) sMelt(!!p3.melt);
+      if (p3.meltTgt != null) setMeltTgt(p3.meltTgt);
+      if (p3.split != null) sSplit(!!p3.split);
+      if (p3.splitP != null) sSP(p3.splitP);
+      if (p3.qppShare != null) setQppShare(!!p3.qppShare);
+      if (p3.rrifTax != null) sRF(!!p3.rrifTax);
+      if (p3.fatT != null) sFT(!!p3.fatT);
+      if (p3.stochMort != null) setSM2(!!p3.stochMort);
+      if (p3.stochInf != null) setSI(!!p3.stochInf);
+      if (p3.strs) setSTS(p3.strs);
+      if (p3.stWhen) setStWhen(p3.stWhen);
+      if (p3.stAge != null) setStAge(p3.stAge);
+      if (p3.strs2) setStrs2(p3.strs2);
+      if (p3.stWhen2) setStWhen2(p3.stWhen2);
+      if (p3.stAge2 != null) setStAge2(p3.stAge2);
+      if (Array.isArray(p3.custStrs)) setCustStrs(p3.custStrs);
+      if (Array.isArray(p3.custBd)) setCustBd(p3.custBd);
+      if (Array.isArray(p3.custInf)) setCustInf(p3.custInf);
+      if (p3.goP != null) sGP(p3.goP);
+      if (p3.slP != null) sSLP(p3.slP);
+      if (p3.noP != null) sNP(p3.noP);
+      if (p3.smileSlAge != null) setSmSlA(p3.smileSlAge);
+      if (p3.smileNoAge != null) setSmNoA(p3.smileNoAge);
+      if (p3.healthMul != null) setHM(p3.healthMul);
+      if (p3.healthAge != null) setHA(p3.healthAge);
+      if (p3.ptM != null) sPTM(p3.ptM);
+      if (p3.ptYrs != null) sPTY(p3.ptYrs);
+      if (p3.nSim != null) sNS(p3.nSim);
+      if (p3.ev1Age != null) sE1A(p3.ev1Age); if (p3.ev1Amt != null) sE1M(p3.ev1Amt); if (p3.ev1Name != null) sEv1N(p3.ev1Name);
+      if (p3.ev2Age != null) sE2A(p3.ev2Age); if (p3.ev2Amt != null) sE2M(p3.ev2Amt); if (p3.ev2Name != null) sEv2N(p3.ev2Name);
+      if (p3.inc1Age != null) sInc1A(p3.inc1Age); if (p3.inc1Amt != null) sInc1M(p3.inc1Amt); if (p3.inc1Name != null) sInc1N(p3.inc1Name);
+      if (p3.inc2Age != null) sInc2A(p3.inc2Age); if (p3.inc2Amt != null) sInc2M(p3.inc2Amt); if (p3.inc2Name != null) sInc2N(p3.inc2Name);
+      if (p3.inc3Age != null) sInc3A(p3.inc3Age); if (p3.inc3Amt != null) sInc3M(p3.inc3Amt); if (p3.inc3Name != null) sInc3N(p3.inc3Name);
+      if (p3.cOn != null) sCOn(!!p3.cOn);
+      if (p3.cAge != null) sCAge(p3.cAge); if (p3.cSex) sCsex(p3.cSex);
+      if (p3.cRetAge != null) sCRA(p3.cRetAge); if (p3.cDeath != null) sCDeath(p3.cDeath);
+      if (p3.cSal != null) sCsal(p3.cSal);
+      if (p3.cRRSP != null) sCRRSP(p3.cRRSP); if (p3.cRRSPC != null) sCRRSPC(p3.cRRSPC);
+      if (p3.cTFSA != null) sCTFSA(p3.cTFSA); if (p3.cTFSAC != null) sCTFSAC(p3.cTFSAC);
+      if (p3.cNR != null) sCNR(p3.cNR); if (p3.cNRC != null) sCNRC(p3.cNRC);
+      if (p3.cQppAge != null) sCQA(p3.cQppAge); if (p3.cAvgE != null) sCAvgE(p3.cAvgE);
+      if (p3.cQppYrs != null) sCQY(p3.cQppYrs); if (p3.cOasAge != null) sCOA(p3.cOasAge);
+      if (p3.cPenType) sCPT(p3.cPenType); if (p3.cPenM != null) sCPM(p3.cPenM);
+      if (Array.isArray(p3.props)) setProps(p3.props);
+      if (Array.isArray(p3.debts)) setDebts(p3.debts);
+      if (Array.isArray(p3.goals)) setGoals(p3.goals);
+      if (Array.isArray(p3.rsuGrants)) setRsuGrants(p3.rsuGrants);
+      if (p3.globalAlloc && typeof p3.globalAlloc === "object") setGlobalAlloc(p3.globalAlloc);
+      if (p3.multiAsset != null) setMultiAsset(!!p3.multiAsset);
+      if (p3.glide != null) setGlide(!!p3.glide);
+      if (p3.glideSpd != null) setGlideSpd(p3.glideSpd);
+      if (p3.bizOn != null) setBizOn(!!p3.bizOn);
+      if (p3.bizType) setBizType(p3.bizType);
+      if (p3.bizRevenue != null) setBizRevenue(p3.bizRevenue);
+      if (p3.bizExpenses != null) setBizExpenses(p3.bizExpenses);
+      if (p3.firstName != null) sFN(p3.firstName);
+      if (p3.lastName != null) sLN(p3.lastName);
+      if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
+      if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
+      window._mc = null; window._mcPending = false; window._mcProfileDirty = true;
+      setTimeout(function () {
+        try { alert(lang === "fr" ? "✓ Profil importé de la vue formulaire. Cliquez Simuler pour calculer." : "✓ Profile imported from form view. Click Simulate to calculate."); } catch (e) {}
+      }, 120);
+    } catch (e) { console.error("v4→v3 handoff failed:", e); }
+  }, []);
+
   // === PHASE 0A: Bidirectional family sync ===
   useEffect(function() {
     if (_syncLock.current) return;
@@ -13407,6 +13528,20 @@ React.createElement("div", { style: sty.head },
   }, style: { display: "none" } }),
       React.createElement("button", { onClick: _saveToFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder profil (JSON)":"Save profile (JSON)" }, "\ud83d\udcbe"),
       React.createElement("button", { onClick: _loadFromFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Charger profil (JSON)":"Load profile (JSON)" }, "\ud83d\udcc2"),
+      /* v3 \u2192 v4 bidirectional switch. Same sessionStorage key as v4's
+         auto-loader; the entire profile transfers in memory, no file needed. */
+      React.createElement("button", {
+        onClick: function () {
+          try {
+            /* Build the same payload as _saveToFile without downloading. */
+            var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs };
+            sessionStorage.setItem("bf_mode_handoff", JSON.stringify({ from: "v3", when: Date.now(), profile: profile }));
+            window.location.href = "planner_v4.html?from=v3";
+          } catch (e) { alert("Handoff failed: " + e.message); }
+        },
+        style: { padding: "6px 10px", background: CL.ac + "1a", color: CL.ac, border: "1px solid " + CL.ac + "60", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" },
+        title: lang === "fr" ? "Basculer vers la vue formulaire (v4) avec transfert automatique" : "Switch to form view (v4) with auto-transfer"
+      }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire" : "Form")),
       React.createElement("button", { onClick: function() { setTab(9); }, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Rapport client":"Client report" }, "\ud83d\udcca"),
       mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: "6px 16px", borderBottom: "1px solid " + CL.bd, opacity: tab === 5 ? 0.35 : 1, maxHeight: tab === 5 ? 36 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", cursor: tab === 5 ? "pointer" : "default" }, onClick: tab === 5 ? function() { /* no-op, just visual hint */ } : undefined, title: tab === 5 ? (lang === "fr" ? "Ces indicateurs sont d\u00e9taill\u00e9s ci-dessous" : "These indicators are detailed below") : undefined }, React.createElement("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
 cOn && React.createElement("div", { style: { gridColumn: "1 / -1", textAlign: "center", fontSize: FS.sm, color: CL.tl, fontWeight: FW.medium, background: "rgba(72,184,168,0.06)", borderRadius: RAD.sm, padding: "3px 0", border: "1px solid rgba(72,184,168,0.15)" } }, "\ud83d\udc6a ", lang === "fr" ? "R\u00e9sultats Monte Carlo pour le m\u00e9nage (deux conjoints combin\u00e9s)" : "Monte Carlo results for the household (both spouses combined)"),

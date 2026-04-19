@@ -331,7 +331,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
       </div>
       <button class="btn btn-ghost" onclick="loadProfile()" data-i18n="load">📂 Charger</button>
       <button class="btn" onclick="saveProfile()" data-i18n="save">💾 Sauvegarder</button>
-      <a class="btn btn-ghost" href="planner_v3.html" style="text-decoration:none" data-i18n="toSidebar">🧭 Vue compacte</a>
+      <button class="btn btn-ghost" onclick="switchToPlanner()" title="Basculer vers la vue compacte (v3) avec transfert automatique des données" data-i18n="toSidebar">🧭 Vue compacte →</button>
     </div>
   </header>
 
@@ -1050,6 +1050,26 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 </label>
               </div>
             </div>
+
+            <!-- Global allocation matrix (v3 key: globalAlloc { can, us, intl, em, bnd }) -->
+            <div class="spacer-md"></div>
+            <div id="globalAlloc-panel" hidden style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div class="subsec-head" style="border-left-color:var(--purple);color:var(--purple);margin-bottom:8px" data-i18n="gaHead">Répartition globale (multi-actifs)</div>
+              <div class="subsec-intro" data-i18n="gaIntro">Les cinq fractions doivent totaliser 100 %. Appliquée à tous les comptes sauf si vous ajoutez une dérogation par compte ci-dessous.</div>
+              <div class="field-grid">
+                <div class="field"><div class="field-head"><label class="field-label" for="ga_can" data-i18n="gaCan">Actions CAN <span class="field-unit">%</span></label></div><input id="ga_can" type="number" class="field-input" placeholder="25" min="0" max="100" step="1" oninput="_syncGA()"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="ga_us" data-i18n="gaUs">Actions US <span class="field-unit">%</span></label></div><input id="ga_us" type="number" class="field-input" placeholder="35" min="0" max="100" step="1" oninput="_syncGA()"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="ga_intl" data-i18n="gaIntl">Actions internationales <span class="field-unit">%</span></label></div><input id="ga_intl" type="number" class="field-input" placeholder="20" min="0" max="100" step="1" oninput="_syncGA()"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="ga_em" data-i18n="gaEm">Marchés émergents <span class="field-unit">%</span></label></div><input id="ga_em" type="number" class="field-input" placeholder="5" min="0" max="100" step="1" oninput="_syncGA()"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="ga_bnd" data-i18n="gaBnd">Obligations <span class="field-unit">%</span></label></div><input id="ga_bnd" type="number" class="field-input" placeholder="15" min="0" max="100" step="1" oninput="_syncGA()"></div>
+              </div>
+              <div id="ga-sum" class="field-hint" style="margin-top:8px"></div>
+              <div class="spacer-md"></div>
+              <label class="check-row"><input type="checkbox" id="maPerAcct">
+                <div><div class="check-label" data-i18n="maPerAcctLabel">Répartition différente par compte</div>
+                <div class="check-help" data-i18n="maPerAcctHelp">Si coché, vous pourrez override l'allocation globale pour REER / CÉLI / NR individuellement (à venir dans une prochaine version).</div></div>
+              </label>
+            </div>
           </div>
 
         </div>
@@ -1352,6 +1372,12 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <div class="field-head"><label class="field-label" for="dcBal" data-i18n="dcBal">Solde actuel (CD) <span class="field-unit">$</span></label></div>
                 <input id="dcBal" type="number" class="field-input" placeholder="0" min="0" step="5000">
               </div>
+              <div class="field" id="penPctMode-field" hidden>
+                <label class="check-row"><input type="checkbox" id="penPctMode">
+                  <div><div class="check-label" data-i18n="penPctModeLabel">Cotisations en % du salaire</div>
+                  <div class="check-help" data-i18n="penPctModeHelp">Basculer entre cotisations en $ et en % du salaire brut.</div></div>
+                </label>
+              </div>
               <div class="field" id="penEE-field" hidden>
                 <div class="field-head"><label class="field-label" for="penEE" data-i18n="penEE">Cotisation employé <span class="field-unit">$/an</span></label></div>
                 <input id="penEE" type="number" class="field-input" placeholder="0" min="0" step="500">
@@ -1359,6 +1385,14 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
               <div class="field" id="penER-field" hidden>
                 <div class="field-head"><label class="field-label" for="penER" data-i18n="penER">Cotisation employeur <span class="field-unit">$/an</span></label></div>
                 <input id="penER" type="number" class="field-input" placeholder="0" min="0" step="500">
+              </div>
+              <div class="field" id="penEEpct-field" hidden>
+                <div class="field-head"><label class="field-label" for="penEEpct" data-i18n="penEEpct">Cotisation employé <span class="field-unit">% salaire</span></label></div>
+                <input id="penEEpct" type="number" class="field-input" placeholder="5" min="0" max="25" step="0.5">
+              </div>
+              <div class="field" id="penERpct-field" hidden>
+                <div class="field-head"><label class="field-label" for="penERpct" data-i18n="penERpct">Cotisation employeur <span class="field-unit">% salaire</span></label></div>
+                <input id="penERpct" type="number" class="field-input" placeholder="5" min="0" max="25" step="0.5">
               </div>
               <div class="field" id="penMER-field" hidden>
                 <div class="field-head"><label class="field-label" for="penMER" data-i18n="penMER">Frais fonds (MER) <span class="field-unit">%/an</span></label></div>
@@ -1712,10 +1746,25 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <select id="stWhen" class="field-input"><option value="ret">À la retraite (SORR)</option><option value="now">Maintenant</option><option value="age">Âge précis</option><option value="before">Avant la retraite</option></select>
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="stAge" data-i18n="stAge">Âge du choc (si précis) <span class="field-unit">ans</span></label></div>
-                <input id="stAge" type="number" class="field-input" placeholder="60" min="30" max="95" step="1">
+                <div class="field-head"><label class="field-label" for="stAge" data-i18n="stAge" id="stAge-label">Âge du choc <span class="field-unit">ans</span></label>
+                  <span class="tip-wrap" id="stAge-before-tip" hidden><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="stAgeBeforeTip">Avec le timing « Avant retraite », ce champ représente le nombre d'années avant la retraite, pas l'âge absolu.</span></span>
+                </div>
+                <input id="stAge" type="number" class="field-input" placeholder="60" min="0" max="95" step="1">
+                <div class="field-help" id="stAge-hint-before" hidden data-i18n="stAgeBeforeHint">Nombre d'années avant la retraite (ex : 3 = 3 ans avant)</div>
               </div>
             </div>
+
+            <!-- Custom stress year-by-year editor (v3 keys: custStrs, custBd, custInf) -->
+            <div id="custom-stress-panel" hidden style="margin-top:14px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div class="subsec-head" style="border-left-color:var(--red);color:var(--red);margin-bottom:6px" data-i18n="customStressHead">Scénario personnalisé — rendements année par année</div>
+              <div class="subsec-intro" data-i18n="customStressIntro">Entrez les rendements d'actions, d'obligations et l'inflation pour chaque année du choc. Ajoutez ou retirez des années au besoin.</div>
+              <div id="custom-stress-list"></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn" onclick="addCustomYear()"><span>＋</span> <span data-i18n="addYear">Ajouter une année</span></button>
+                <button class="btn btn-ghost" onclick="removeCustomYear()"><span>−</span> <span data-i18n="removeYear">Retirer la dernière</span></button>
+              </div>
+            </div>
+
             <div class="spacer-md"></div>
             <div class="subsec-head" style="color:var(--purple);border-left-color:var(--purple);margin-top:6px" data-i18n="stress2Head">Second choc (optionnel)</div>
             <div class="field-grid">
@@ -2189,19 +2238,24 @@ function setStrategy(s, btn) {
 }
 
 /* ─────────────── Conditional reveal handlers ─────────────── */
-/* Pension 1 reveals depending on type (DB vs CD family). */
+/* Pension 1 reveals depending on type (DB vs CD family) and percent-mode. */
 function _syncPenFields() {
   var t = document.getElementById("penType").value;
   var isDB = (t === "db"), isCD = (t === "cd" || t === "rpdb");
+  var pct = document.getElementById("penPctMode") && document.getElementById("penPctMode").checked;
   var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
   show("penM-field", isDB);
   show("penIdx-field", isDB);
   show("dcBal-field", isCD);
-  show("penEE-field", isCD);
-  show("penER-field", isCD);
+  show("penPctMode-field", isCD);
+  show("penEE-field", isCD && !pct);
+  show("penER-field", isCD && !pct);
+  show("penEEpct-field", isCD && pct);
+  show("penERpct-field", isCD && pct);
   show("penMER-field", isCD);
 }
 document.getElementById("penType").addEventListener("change", _syncPenFields);
+document.getElementById("penPctMode") && document.getElementById("penPctMode").addEventListener("change", _syncPenFields);
 
 function _syncPen2Fields() {
   var t = document.getElementById("pen2Type").value;
@@ -2308,6 +2362,77 @@ function renderRsu() {
     list.appendChild(card);
   });
   document.getElementById("rsu-count").textContent = _rsuGrants.length + (fr ? (_rsuGrants.length === 1 ? " tranche" : " tranches") : (_rsuGrants.length === 1 ? " grant" : " grants"));
+}
+
+/* ─────────────── Custom stress editor + stWhen reveal ─────────────── */
+/* v3 reads custStrs/custBd/custInf (equity, bond, inflation arrays per year)
+   only when strs === "custom". UI mirrors v3 defaults at first open. */
+var _custStrs = [-0.20, -0.10,  0.05,  0.10];
+var _custBd   = [ 0.05,  0.03,  0.00, -0.01];
+var _custInf  = [ 0.025, 0.030, 0.025, 0.020];
+
+function addCustomYear() { _custStrs.push(0); _custBd.push(0); _custInf.push(0.021); renderCustomStress(); }
+function removeCustomYear() { if (_custStrs.length <= 1) return; _custStrs.pop(); _custBd.pop(); _custInf.pop(); renderCustomStress(); }
+
+function renderCustomStress() {
+  var list = document.getElementById("custom-stress-list"); if (!list) return;
+  var fr = _lang === "fr";
+  list.innerHTML = '<div style="display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:6px;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:6px"><span>' + (fr ? "An" : "Yr") + '</span><span style="text-align:center;color:var(--red)">' + (fr ? "Actions %" : "Equity %") + '</span><span style="text-align:center;color:var(--blue)">' + (fr ? "Obligations %" : "Bonds %") + '</span><span style="text-align:center;color:var(--orange)">' + (fr ? "Inflation %" : "Inflation %") + '</span></div>';
+  _custStrs.forEach(function (_, i) {
+    var row = document.createElement("div");
+    row.style.cssText = "display:grid;grid-template-columns:50px 1fr 1fr 1fr;gap:6px;margin-bottom:4px";
+    row.innerHTML = '<span style="color:var(--text-dim);padding-top:8px">Y+' + (i + 1) + '</span>'
+      + '<input type="number" class="field-input" style="text-align:center" step="0.5" value="' + (_custStrs[i] * 100).toFixed(1) + '" onchange="_custStrs[' + i + '] = +this.value/100">'
+      + '<input type="number" class="field-input" style="text-align:center" step="0.5" value="' + (_custBd[i] * 100).toFixed(1) + '" onchange="_custBd[' + i + '] = +this.value/100">'
+      + '<input type="number" class="field-input" style="text-align:center" step="0.1" value="' + (_custInf[i] * 100).toFixed(1) + '" onchange="_custInf[' + i + '] = +this.value/100">';
+    list.appendChild(row);
+  });
+}
+document.getElementById("strs") && document.getElementById("strs").addEventListener("change", function () {
+  var panel = document.getElementById("custom-stress-panel");
+  if (panel) { panel.hidden = (this.value !== "custom"); if (!panel.hidden) renderCustomStress(); }
+});
+
+/* Gap 4 — stWhen dropdown controls how stAge is labeled and which caption appears. */
+function _syncStAgeLabels() {
+  var w = document.getElementById("stWhen").value;
+  var fr = _lang === "fr";
+  var label = document.getElementById("stAge-label");
+  var hint = document.getElementById("stAge-hint-before");
+  var tip = document.getElementById("stAge-before-tip");
+  if (!label) return;
+  if (w === "before") {
+    label.innerHTML = (fr ? "Années avant la retraite" : "Years before retirement") + ' <span class="field-unit">' + (fr ? "ans" : "yrs") + '</span>';
+    hint.hidden = false; tip.hidden = false;
+  } else if (w === "age") {
+    label.innerHTML = (fr ? "Âge du choc" : "Shock age") + ' <span class="field-unit">' + (fr ? "ans" : "yrs") + '</span>';
+    hint.hidden = true; tip.hidden = true;
+  } else {
+    label.innerHTML = (fr ? "Âge du choc (si précis)" : "Shock age (if specific)") + ' <span class="field-unit">' + (fr ? "ans" : "yrs") + '</span>';
+    hint.hidden = true; tip.hidden = true;
+  }
+}
+document.getElementById("stWhen") && document.getElementById("stWhen").addEventListener("change", _syncStAgeLabels);
+
+/* ─────────────── Multi-asset matrix ─────────────── */
+/* v3 reads globalAlloc = { can, us, intl, em, bnd } when multiAsset=true.
+   UI hides the matrix until the checkbox turns on; running sum indicator
+   warns when fractions don't add to 100. Each input stores 0..100; on
+   save we convert to 0..1 fractions to match the v3 schema. */
+document.getElementById("multiAsset") && document.getElementById("multiAsset").addEventListener("change", function () {
+  var panel = document.getElementById("globalAlloc-panel"); if (panel) panel.hidden = !this.checked;
+});
+function _syncGA() {
+  var ids = ["ga_can", "ga_us", "ga_intl", "ga_em", "ga_bnd"];
+  var sum = ids.reduce(function (t, id) { var v = parseFloat(document.getElementById(id).value) || 0; return t + v; }, 0);
+  var out = document.getElementById("ga-sum");
+  if (!out) return;
+  var fr = _lang === "fr";
+  if (Math.abs(sum - 100) < 0.5) {
+    out.innerHTML = '<span style="color:var(--green);font-style:normal;font-weight:600">✓ ' + (fr ? "Total : " : "Total: ") + sum.toFixed(0) + ' %</span>';
+  } else {
+    out.innerHTML = '<span style="color:var(--red);font-style:normal;font-weight:600">⚠ ' + (fr ? "Total : " : "Total: ") + sum.toFixed(0) + ' % — ' + (fr ? "doit être 100 %" : "must be 100%") + '</span>';
+  }
 }
 
 /* ─────────────── Business reveal ─────────────── */
@@ -2541,10 +2666,18 @@ function collectProfile() {
   var p = { _schema: "v4.0", props: _props, debts: _debts, goals: _goals, rsuGrants: _rsuGrants };
   document.querySelectorAll("input, select").forEach(function (el) {
     if (!el.id || el.id.indexOf("-") >= 0) return; // skip dynamic per-row inputs
+    if (el.id.indexOf("ga_") === 0) return; // globalAlloc handled below as single object
     if (el.type === "checkbox") p[el.id] = el.checked;
     else if (el.type === "number") p[el.id] = el.value === "" ? null : parseFloat(el.value);
     else p[el.id] = el.value;
   });
+  /* Pack globalAlloc into v3's shape: { can, us, intl, em, bnd } as 0..1 fractions. */
+  var _gv = function (id) { return (parseFloat(document.getElementById(id).value) || 0) / 100; };
+  p.globalAlloc = { can: _gv("ga_can"), us: _gv("ga_us"), intl: _gv("ga_intl"), em: _gv("ga_em"), bnd: _gv("ga_bnd") };
+  /* Custom stress arrays (v3 keys: custStrs, custBd, custInf). */
+  p.custStrs = _custStrs.slice();
+  p.custBd = _custBd.slice();
+  p.custInf = _custInf.slice();
   return p;
 }
 function saveProfile() {
@@ -2583,8 +2716,20 @@ function loadProfile() {
         if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
         if (Array.isArray(p.goals)) { _goals = p.goals; renderGoals(); }
         if (Array.isArray(p.rsuGrants)) { _rsuGrants = p.rsuGrants; renderRsu(); }
+        if (Array.isArray(p.custStrs)) { _custStrs = p.custStrs.slice(); }
+        if (Array.isArray(p.custBd)) { _custBd = p.custBd.slice(); }
+        if (Array.isArray(p.custInf)) { _custInf = p.custInf.slice(); }
+        renderCustomStress();
+        /* Unpack globalAlloc object into the 5 ga_* percent inputs. */
+        if (p.globalAlloc && typeof p.globalAlloc === "object") {
+          var _gset = function (id, v) { var el = document.getElementById(id); if (el && v != null) el.value = Math.round(v * 100); };
+          _gset("ga_can", p.globalAlloc.can); _gset("ga_us", p.globalAlloc.us);
+          _gset("ga_intl", p.globalAlloc.intl); _gset("ga_em", p.globalAlloc.em);
+          _gset("ga_bnd", p.globalAlloc.bnd);
+          _syncGA();
+        }
         Object.keys(p).forEach(function (k) {
-          if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "_schema") return;
+          if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
           var el = document.getElementById(k); if (!el) return;
           if (el.type === "checkbox") el.checked = !!p[k];
           else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
@@ -2600,14 +2745,92 @@ function loadProfile() {
 renderGoals();
 renderRsu();
 
-/* ─────────────── Simulate (placeholder hand-off) ─────────────── */
-function runSimulation() {
-  var p = collectProfile();
-  try { sessionStorage.setItem("buildfi_v4_profile", JSON.stringify(p)); } catch (e) {}
-  if (_lang === "fr") alert("Plan enregistré. Redirection vers le simulateur v3 (v4 = édition des données seulement pour l'instant).");
-  else alert("Plan saved. Redirecting to v3 simulator (v4 = data entry only for now).");
-  window.location.href = "planner_v3.html";
+/* ─────────────── Mode switch + Simulate (v3 handoff) ─────────────── */
+/* One-click bidirectional switching. When v4 → v3, we pack the current
+   profile into sessionStorage under 'bf_mode_handoff' and redirect. v3
+   checks the key on load (wired in v3 via a small loader) and applies
+   the profile through its existing load path. Same JSON shape v3's
+   save/load already uses, so no mapping needed. */
+function _writeHandoff() {
+  try {
+    var p = collectProfile();
+    sessionStorage.setItem("bf_mode_handoff", JSON.stringify({ from: "v4", when: Date.now(), profile: p }));
+    return true;
+  } catch (e) { console.error("handoff failed:", e); return false; }
 }
+function switchToPlanner() {
+  if (!_writeHandoff()) {
+    alert(_lang === "fr" ? "Impossible de transférer. Utilisez Sauvegarder puis Charger manuellement." : "Could not hand off. Use Save then Load manually.");
+    return;
+  }
+  window.location.href = "planner_v3.html?from=v4";
+}
+function runSimulation() {
+  /* Simulate = same handoff, but redirect to v3 which runs the MC. */
+  switchToPlanner();
+}
+
+/* Auto-load on arrival: if v3 pushed a profile to us via 'bf_mode_handoff'
+   with from==='v3', unpack it into v4's inputs. Fires once on load. */
+(function _autoLoadHandoff() {
+  try {
+    var raw = sessionStorage.getItem("bf_mode_handoff");
+    if (!raw) return;
+    var msg = JSON.parse(raw);
+    if (!msg || msg.from !== "v3" || !msg.profile) return;
+    sessionStorage.removeItem("bf_mode_handoff");
+    /* Reuse loadProfile's parsing by simulating its code path. */
+    var p = msg.profile;
+    if (Array.isArray(p.props)) {
+      _props = p.props.map(function (pr) {
+        if (pr.rate != null && pr.mr == null) pr.mr = pr.rate;
+        if (pr.renewRate != null && pr.mr2 == null) pr.mr2 = pr.renewRate;
+        if (pr.amort != null && pr.ma == null) pr.ma = pr.amort;
+        if (pr.term != null && pr.mt1 == null) pr.mt1 = pr.term;
+        if (pr.rent != null && pr.rm == null) pr.rm = pr.rent;
+        if (pr.exp != null && pr.ox == null) pr.ox = pr.exp;
+        if (pr.tax != null && pr.pt == null) pr.pt = pr.tax;
+        return pr;
+      });
+      renderProps();
+    }
+    if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
+    if (Array.isArray(p.goals)) { _goals = p.goals; renderGoals(); }
+    if (Array.isArray(p.rsuGrants)) { _rsuGrants = p.rsuGrants; renderRsu(); }
+    if (Array.isArray(p.custStrs)) _custStrs = p.custStrs.slice();
+    if (Array.isArray(p.custBd)) _custBd = p.custBd.slice();
+    if (Array.isArray(p.custInf)) _custInf = p.custInf.slice();
+    renderCustomStress();
+    if (p.globalAlloc && typeof p.globalAlloc === "object") {
+      var _gset = function (id, v) { var el = document.getElementById(id); if (el && v != null) el.value = Math.round(v * 100); };
+      _gset("ga_can", p.globalAlloc.can); _gset("ga_us", p.globalAlloc.us);
+      _gset("ga_intl", p.globalAlloc.intl); _gset("ga_em", p.globalAlloc.em);
+      _gset("ga_bnd", p.globalAlloc.bnd);
+    }
+    Object.keys(p).forEach(function (k) {
+      if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
+      var el = document.getElementById(k); if (!el) return;
+      if (el.type === "checkbox") el.checked = !!p[k];
+      else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+    });
+    /* Couple mode + conditional reveals after fields land. */
+    if (p.cOn) {
+      var couplePill = document.querySelectorAll(".pill-group .pill")[1];
+      if (couplePill) setPlanMode("couple", couplePill);
+    }
+    if (typeof _syncPenFields === "function") _syncPenFields();
+    if (typeof _syncPen2Fields === "function") _syncPen2Fields();
+    if (typeof _syncInsLifeFields === "function") _syncInsLifeFields();
+    if (typeof _syncGA === "function") _syncGA();
+    if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+    /* Banner confirming the auto-load. */
+    var banner = document.createElement("div");
+    banner.style.cssText = "position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--green);color:#0e1420;padding:10px 18px;border-radius:999px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);font-size:13px";
+    banner.textContent = _lang === "fr" ? "✓ Profil importé de la vue compacte" : "✓ Profile imported from compact view";
+    document.body.appendChild(banner);
+    setTimeout(function () { banner.style.transition = "opacity 0.4s"; banner.style.opacity = "0"; setTimeout(function () { banner.remove(); }, 400); }, 2600);
+  } catch (e) { console.error("handoff autoload failed:", e); }
+})();
 </script>
 
 </body>
