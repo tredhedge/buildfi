@@ -811,3 +811,61 @@ Pragmatic cockpit/blueprint split. Instead of the 20-hour `<Field>` primitive re
 ### Reversibility
 - Every change is additive. `git revert <sha>` restores the full-width sidebar with all rails. Feature flag: toggle `bf_cockpit=0` in localStorage to disable in production without a deploy.
 
+
+## Phase 7.1 — Expand cockpit Tier-2 tagging (2026-04-17)
+
+Follow-up to Phase 7: user flagged that the sidebar in cockpit mode still
+surfaced many Tier-2 fields. Expanded the tag coverage.
+
+### New Tier-2 wraps / guards
+
+- **Profile — AI tone block**: `stressLevel`, `finLiteracy`, `detailPref`
+  wrapped in `<div class="bf-t2">`. Tone only shapes report narrative, not
+  plan math.
+- **Cashflow — One-time income**: `inc1/inc2/inc3` cards + "+ Ajouter un
+  revenu" button wrapped in `<div class="bf-t2">`. ptM/ptYrs (part-time
+  work) stays visible in cockpit.
+- **Cashflow — Budget module**: entire Budget Sec (header + mode selector +
+  9 categories + totals card) now gated with `!cockpitMode`. In cockpit
+  mode the section doesn't render at all. Budget mode can still be set from
+  the full form.
+- **Savings — allocation sliders**: `allocR`, `allocT`, `allocN` now use
+  `!multiAsset && !cockpitMode` so they disappear in cockpit.
+- **Savings — MER sliders**: `merR`, `merT`, `merN` gated with
+  `mode === "expert" && !cockpitMode`.
+- **Savings — nrTaxDrag slider**: gated with
+  `mode === "expert" && !multiAsset && !cockpitMode`.
+- **Savings — multiAsset toggle + matrix**: gated with
+  `mode === "expert" && !cockpitMode` so the 5-class matrix collapses in
+  cockpit.
+- **Pension — avgE + qppYrs Fields**: gated with `!cockpitMode` (kept QPP
+  start + OAS start + pen type + penM/dcBal as cockpit-visible levers).
+- **Conjoint — Pension & Emploi + Assurance + Events**: the entire block
+  from the "Pension & Emploi" sub-header through the last spouse income
+  card (cInc3) wrapped in `<div class="bf-t2">`. Only spouse identity
+  (name, age, sex), salary, and the 5 sync toggles stay visible in cockpit
+  when `cOn` is true.
+
+### Delta vs Phase 7
+
+Phase 7 tagged 3 clusters (CV analysis + Pension 2; portfolio management
+glide/rebal/fxVol; splitP + qppShare). Phase 7.1 adds 8 more clusters and
+~35 individual field guards across Profile / Cashflow / Savings / Pension /
+Conjoint modules. Estimated visible-in-cockpit field count now ~30
+(couple mode) vs ~80 pre-phase, matching the plan's target.
+
+### Intentionally still visible in cockpit
+
+- All rail modules (Profil, Conj, Fisc, Rev, Ep, Immo, Biz, Debt, Gov,
+  Ins) with only their Tier-1 levers.
+- Property cards: `val`, `mb`, `rent`, `pri` flag, ownership pills. Deep
+  strategy drawer (HELOC, Smith, refi) remains but already collapses
+  behind a `<details>`.
+- Debt cards: type, balance, rate, payment, deductible flag.
+- Insurance summary (life coverage + premium). Disability / CI / Group
+  details not tagged in Phase 7.1 — next pass if still noisy.
+
+### Acceptance
+- `node --check` on extracted v3 main script: clean.
+- Toggle cockpit OFF → every guarded field reappears (no data loss —
+  state lives in React hooks, CSS/guards only hide the UI).
