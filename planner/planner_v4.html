@@ -599,17 +599,8 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <input id="retSpM" type="number" class="field-input" placeholder="6 200" min="0" step="100">
                 <div class="field-hint"><span class="default-pill" data-i18n="median">médiane</span> <span>6 200 $/mois (couple, QC)</span></div>
               </div>
-              <div class="field" data-search-keywords="inflation santé health">
-                <div class="field-head">
-                  <label class="field-label" for="healthInflate" data-i18n="healthInflate">Hausse soins santé / an <span class="field-unit">%</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="healthInflateTip">Les coûts de santé augmentent plus vite que l'inflation générale après 75 ans. Les données canadiennes montrent ~4 % par an au-dessus de l'IPC pour les soins prolongés et les médicaments.</span>
-                  </span>
-                </div>
-                <input id="healthInflate" type="number" class="field-input" placeholder="4.0" min="0" max="10" step="0.1">
-                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>4,0 %</span></div>
-              </div>
+              <!-- Inflation santé — déplacé vers Hypothèses techniques (v3 key: infHealth) -->
+
             </div>
             <div class="callout tip">
               <span class="callout-ico">💡</span>
@@ -632,6 +623,33 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <input id="ptYrs" type="number" class="field-input" placeholder="5" min="0" max="20" step="1">
                 <div class="field-help" data-i18n="ptYrsHelp">Nombre d'années que le travail partiel durera après la retraite.</div>
               </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="eventsHead">Événements ponctuels</div>
+            <div class="subsec-intro" data-i18n="eventsIntro">Entrées ou sorties exceptionnelles : héritage, vente d'actif, rénovation, voyage majeur. Laissez l'âge à 0 pour désactiver un slot.</div>
+            <div class="subsec-head" style="color:var(--green);border-left-color:var(--green);margin-top:6px" data-i18n="inEventsHead">💰 Revenus ponctuels (3 slots)</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc1Name">Revenu 1 — Nom</label></div><input id="inc1Name" class="field-input" placeholder="ex : Héritage"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc1Age">Âge (0=aucun)</label></div><input id="inc1Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="inc1Amt">Montant <span class="field-unit">$</span></label></div><input id="inc1Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc2Name">Revenu 2 — Nom</label></div><input id="inc2Name" class="field-input" placeholder="ex : Prime"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc2Age">Âge (0=aucun)</label></div><input id="inc2Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="inc2Amt">Montant <span class="field-unit">$</span></label></div><input id="inc2Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc3Name">Revenu 3 — Nom</label></div><input id="inc3Name" class="field-input" placeholder="ex : Vente entreprise"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="inc3Age">Âge (0=aucun)</label></div><input id="inc3Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="inc3Amt">Montant <span class="field-unit">$</span></label></div><input id="inc3Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+            </div>
+            <div class="spacer-md"></div>
+            <div class="subsec-head" style="color:var(--red);border-left-color:var(--red)" data-i18n="exEventsHead">💳 Dépenses ponctuelles (2 slots)</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="ev1Name">Dépense 1 — Nom</label></div><input id="ev1Name" class="field-input" placeholder="ex : Rénovation"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="ev1Age">Âge (0=aucun)</label></div><input id="ev1Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="ev1Amt">Montant <span class="field-unit">$</span></label></div><input id="ev1Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="ev2Name">Dépense 2 — Nom</label></div><input id="ev2Name" class="field-input" placeholder="ex : Voyage majeur"></div>
+              <div class="field"><div class="field-head"><label class="field-label" data-i18n="ev2Age">Âge (0=aucun)</label></div><input id="ev2Age" type="number" class="field-input" placeholder="0" min="0" max="95"></div>
+              <div class="field field-full"><div class="field-head"><label class="field-label" data-i18n="ev2Amt">Montant <span class="field-unit">$</span></label></div><input id="ev2Amt" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
             </div>
           </div>
 
@@ -870,6 +888,81 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <input id="penM" type="number" class="field-input" placeholder="2 400" min="0" step="100">
                 <div class="field-help" data-i18n="penMHelp">Le montant mensuel garanti à l'âge de retraite normal du régime.</div>
               </div>
+              <div class="field" id="penIdx-field" hidden>
+                <div class="field-head"><label class="field-label" for="penIdx" data-i18n="penIdx">Indexation</label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="penIdxTip">Comment la prestation augmente annuellement. 0 % IPC (pas d'indexation) est fréquent pour les régimes privés. 50 % IPC est typique pour plusieurs régimes publics québécois. 100 % IPC (pleinement indexée) est réservée à certains régimes fédéraux.</span></span>
+                </div>
+                <select id="penIdx" class="field-input"><option value="0">0 % — Non indexée</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select>
+              </div>
+              <div class="field" id="dcBal-field" hidden>
+                <div class="field-head"><label class="field-label" for="dcBal" data-i18n="dcBal">Solde actuel (CD) <span class="field-unit">$</span></label></div>
+                <input id="dcBal" type="number" class="field-input" placeholder="0" min="0" step="5000">
+              </div>
+              <div class="field" id="penEE-field" hidden>
+                <div class="field-head"><label class="field-label" for="penEE" data-i18n="penEE">Cotisation employé <span class="field-unit">$/an</span></label></div>
+                <input id="penEE" type="number" class="field-input" placeholder="0" min="0" step="500">
+              </div>
+              <div class="field" id="penER-field" hidden>
+                <div class="field-head"><label class="field-label" for="penER" data-i18n="penER">Cotisation employeur <span class="field-unit">$/an</span></label></div>
+                <input id="penER" type="number" class="field-input" placeholder="0" min="0" step="500">
+              </div>
+              <div class="field" id="penMER-field" hidden>
+                <div class="field-head"><label class="field-label" for="penMER" data-i18n="penMER">Frais fonds (MER) <span class="field-unit">%/an</span></label></div>
+                <input id="penMER" type="number" class="field-input" placeholder="1.0" min="0" max="3" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="bridgeHead">Prestation de pont (avant RRQ/PSV)</div>
+            <div class="subsec-intro" data-i18n="bridgeIntro">Certains régimes PD versent un supplément jusqu'au début du RRQ/PSV. Cochez si votre régime offre cette prestation.</div>
+            <label class="check-row">
+              <input type="checkbox" id="bridge">
+              <div>
+                <div class="check-label" data-i18n="bridgeOn">Ma pension offre une prestation de pont</div>
+                <div class="check-help" data-i18n="bridgeHelp">Supplément mensuel versé entre la retraite et le début du RRQ/PSV.</div>
+              </div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="bridge-fields" hidden>
+              <div class="field"><div class="field-head"><label class="field-label" for="brAmt" data-i18n="brAmt">Montant mensuel du pont <span class="field-unit">$/mois</span></label></div><input id="brAmt" type="number" class="field-input" placeholder="500" min="0" step="50"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="brEnd" data-i18n="brEnd">Fin du pont (âge)</label></div><input id="brEnd" type="number" class="field-input" placeholder="65" min="60" max="72"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="pen2Head">Pension 2 (facultative)</div>
+            <div class="subsec-intro" data-i18n="pen2Intro">Si vous avez deux régimes de pension (ex : ancien employeur + nouveau).</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="pen2Type" data-i18n="pen2Type">Type de régime 2</label></div>
+                <select id="pen2Type" class="field-input"><option value="none">Aucun</option><option value="db">Prestation déterminée (PD)</option><option value="cd">Cotisations définies (CD)</option><option value="rpdb">RPDB</option></select>
+              </div>
+              <div class="field" id="pen2M-field" hidden><div class="field-head"><label class="field-label" for="pen2M" data-i18n="pen2M">Prestation mensuelle 2 <span class="field-unit">$/mois</span></label></div><input id="pen2M" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
+              <div class="field" id="pen2Idx-field" hidden><div class="field-head"><label class="field-label" for="pen2Idx" data-i18n="pen2Idx">Indexation pension 2</label></div><select id="pen2Idx" class="field-input"><option value="0">0 %</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select></div>
+              <div class="field" id="dc2Bal-field" hidden><div class="field-head"><label class="field-label" for="dc2Bal" data-i18n="dc2Bal">Solde pension 2 (CD) <span class="field-unit">$</span></label></div><input id="dc2Bal" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
+              <div class="field" id="pen2EE-field" hidden><div class="field-head"><label class="field-label" for="pen2EE" data-i18n="pen2EE">Cotis. employé 2 <span class="field-unit">$/an</span></label></div><input id="pen2EE" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+              <div class="field" id="pen2ER-field" hidden><div class="field-head"><label class="field-label" for="pen2ER" data-i18n="pen2ER">Cotis. employeur 2 <span class="field-unit">$/an</span></label></div><input id="pen2ER" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="cvHead">Valeur de rachat (commuted value)</div>
+            <div class="subsec-intro" data-i18n="cvIntro">Si vous quittez un employeur avec pension PD avant 55 ans, vous pouvez parfois prendre la valeur actuarielle comptant plutôt que la rente. Utile pour comparer les deux options.</div>
+            <label class="check-row">
+              <input type="checkbox" id="cvAnalysis">
+              <div><div class="check-label" data-i18n="cvOn">Comparer rachat vs rente</div><div class="check-help" data-i18n="cvHelp">Active l'analyse CV — imposition, transfert maximum ITA 8517, prestation au survivant.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="cv-fields" hidden>
+              <div class="field"><div class="field-head"><label class="field-label" for="cvAmount" data-i18n="cvAmt">Valeur de rachat offerte <span class="field-unit">$</span></label></div><input id="cvAmount" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cvTransferMax" data-i18n="cvMax">Transfert max REER (ITA 8517) <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="cvMaxTip">Selon la règle 8517 de la LIR, une fraction de la CV peut être transférée dans le REER à l'abri de l'impôt. Le reste est imposable immédiatement.</span></span>
+                </div>
+                <input id="cvTransferMax" type="number" class="field-input" placeholder="0" min="0" step="10000">
+              </div>
+              <div class="field"><div class="field-head"><label class="field-label" for="dbSurvivorPct" data-i18n="dbSurv">Survivant si rente <span class="field-unit">%</span></label></div><input id="dbSurvivorPct" type="number" class="field-input" placeholder="60" min="0" max="100" step="5"></div>
             </div>
           </div>
         </div>
@@ -910,6 +1003,52 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
               <span class="callout-ico">💡</span>
               <span data-i18n="strategyHint"><strong>Meltdown</strong> retire volontairement plus du REER chaque année pour éviter les tranches d'impôt élevées plus tard — utile quand on prévoit un gros revenu à 72 ans (FERR obligatoire + RRQ + PSV). <strong>Pont</strong> sert à combler la période entre la retraite et le début du RRQ/PSV.</span>
             </div>
+            <div class="field-grid" style="margin-top:14px">
+              <div class="field" id="meltTgt-field" hidden>
+                <div class="field-head"><label class="field-label" for="meltTgt" data-i18n="meltTgt">Palier cible de meltdown <span class="field-unit">$/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="meltTgtTip">Le revenu imposable cible chaque année. On retire du REER jusqu'à ce palier, ce qui remplit les tranches basses d'impôt sans les dépasser. 58 523 $ correspond à la limite de la 1re tranche fédérale 2026.</span></span>
+                </div>
+                <input id="meltTgt" type="number" class="field-input" placeholder="58 523" min="30000" max="200000" step="1000">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="wStratHead">Ordre de retrait des comptes</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="wStrat" data-i18n="wStrat">Stratégie de retrait</label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="wStratTip">« Optimal » retire d'abord des comptes non-enregistrés puis REER puis CÉLI pour maximiser la durée du CÉLI libre d'impôt. « CÉLI d'abord » protège le REER au maximum. « Optimisé » recherche le plan qui minimise l'impôt total projeté.</span></span>
+                </div>
+                <select id="wStrat" class="field-input"><option value="optimal">Optimal (NR→REER→CÉLI)</option><option value="tfsa">CÉLI en premier</option><option value="optimized">Optimisé (min. impôt)</option></select>
+              </div>
+              <div class="field">
+                <label class="check-row"><input type="checkbox" id="rrifTax">
+                  <div><div class="check-label" data-i18n="rrifTaxLabel">Retenue fiscale FERR à la source</div>
+                  <div class="check-help" data-i18n="rrifTaxHelp">Applique la retenue d'impôt standard sur les retraits FERR au-delà du minimum.</div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="splitHead">Fractionnement & partage</div>
+            <div class="subsec-intro" data-i18n="splitIntro">Uniquement pertinent en mode couple. Les deux conjoints doivent avoir ≥ 65 ans pour le fractionnement de pension ; 60 ans pour le partage du RRQ.</div>
+            <label class="check-row">
+              <input type="checkbox" id="split">
+              <div><div class="check-label" data-i18n="splitLabel">Fractionner les revenus de pension éligibles</div>
+              <div class="check-help" data-i18n="splitHelp">Jusqu'à 50 % des revenus de pension admissibles peuvent être attribués au conjoint pour réduire l'impôt combiné.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="split-fields" hidden>
+              <div class="field"><div class="field-head"><label class="field-label" for="splitP" data-i18n="splitP">% fractionné au conjoint <span class="field-unit">%</span></label></div><input id="splitP" type="number" class="field-input" placeholder="50" min="0" max="50" step="5"></div>
+            </div>
+            <div class="spacer-sm"></div>
+            <label class="check-row">
+              <input type="checkbox" id="qppShare">
+              <div><div class="check-label" data-i18n="qppShareLabel">Partager la rente RRQ entre conjoints</div>
+              <div class="check-help" data-i18n="qppShareHelp">Équilibre les rentes RRQ entre les deux conjoints pour lisser l'impôt.</div></div>
+            </label>
           </div>
         </div>
       </details>
@@ -937,12 +1076,64 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="subsec-head" data-i18n="lifeInsHead">Assurance vie</div>
             <div class="field-grid">
               <div class="field">
-                <div class="field-head"><label class="field-label" for="lifeCov" data-i18n="lifeCov">Couverture <span class="field-unit">$</span></label></div>
-                <input id="lifeCov" type="number" class="field-input" placeholder="0" min="0" step="10000">
+                <div class="field-head"><label class="field-label" for="insVieType" data-i18n="insVieType">Type de police</label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="insVieTypeTip">Temporaire (T-10, T-20…) : couverture fixe jusqu'au terme, prime basse, expire sans valeur. Permanente (vie entière, T-100, universelle) : couverture à vie, prime plus élevée, peut accumuler une valeur de rachat.</span></span>
+                </div>
+                <select id="insVieType" class="field-input"><option value="none">Aucune</option><option value="temp">Temporaire</option><option value="perm">Permanente</option></select>
+              </div>
+              <div class="field" id="insVieCov-field" hidden>
+                <div class="field-head"><label class="field-label" for="insVieCov" data-i18n="insVieCov">Montant de couverture <span class="field-unit">$</span></label></div>
+                <input id="insVieCov" type="number" class="field-input" placeholder="500 000" min="0" step="50000">
+              </div>
+              <div class="field" id="insViePrime-field" hidden>
+                <div class="field-head"><label class="field-label" for="insViePrime" data-i18n="insViePrime">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <input id="insViePrime" type="number" class="field-input" placeholder="45" min="0" step="5">
+              </div>
+              <div class="field" id="insVieDur-field" hidden>
+                <div class="field-head"><label class="field-label" for="insVieDur" data-i18n="insVieDur">Durée restante (temporaire) <span class="field-unit">ans</span></label></div>
+                <input id="insVieDur" type="number" class="field-input" placeholder="20" min="1" max="40" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="insInvHead">Assurance invalidité</div>
+            <div class="subsec-intro" data-i18n="insInvIntro">Remplacement du revenu si une invalidité vous empêche de travailler. Couvre typiquement 60–80 % du salaire brut jusqu'à 65 ans.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="insInvCov" data-i18n="insInvCov">Couverture <span class="field-unit">% du salaire</span></label></div>
+                <input id="insInvCov" type="number" class="field-input" placeholder="60" min="0" max="100" step="5">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="lifePrem" data-i18n="lifePrem">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
-                <input id="lifePrem" type="number" class="field-input" placeholder="0" min="0" step="10">
+                <div class="field-head"><label class="field-label" for="insInvPrime" data-i18n="insInvPrime">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <input id="insInvPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="insMGHead">Assurance maladies graves</div>
+            <div class="subsec-intro" data-i18n="insMGIntro">Versement forfaitaire si un diagnostic couvert survient (cancer, AVC, crise cardiaque, etc.). Non imposable.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="insMGCov" data-i18n="insMGCov">Montant de couverture <span class="field-unit">$</span></label></div>
+                <input id="insMGCov" type="number" class="field-input" placeholder="0" min="0" step="10000">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="insMGPrime" data-i18n="insMGPrime">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <input id="insMGPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="insColHead">Assurance collective (employeur)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="insColPrime" data-i18n="insColPrime">Part employé <span class="field-unit">$/mois</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="insColPrimeTip">Part que l'employé paie mensuellement pour l'assurance collective (santé, dentaire, vie de base, invalidité). Se trouve sur votre talon de paie.</span></span>
+                </div>
+                <input id="insColPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
               </div>
             </div>
           </div>
@@ -975,15 +1166,186 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="field-grid">
               <div class="field">
                 <div class="field-head">
-                  <label class="field-label" for="inflation" data-i18n="inflation">IPC général <span class="field-unit">%/an</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="inflationTip">Indice des prix à la consommation. Cible Banque du Canada : 2,0 %. Moyenne historique 50 ans : ~3,5 %. Nous utilisons 2,1 % par défaut (PAG 2025).</span>
-                  </span>
+                  <label class="field-label" for="inf" data-i18n="inflation">IPC général <span class="field-unit">%/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="inflationTip">Indice des prix à la consommation. Cible Banque du Canada : 2,0 %. Moyenne historique 50 ans : ~3,5 %. Nous utilisons 2,1 % par défaut (PAG 2025).</span></span>
                 </div>
-                <input id="inflation" type="number" class="field-input" placeholder="2.1" min="0" max="6" step="0.1">
+                <input id="inf" type="number" class="field-input" placeholder="2.1" min="0" max="6" step="0.1">
                 <div class="field-hint"><span class="default-pill" data-i18n="pag2025">PAG 2025</span> <span>2,1 %</span></div>
               </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="infHealth" data-i18n="infHealth">Inflation santé excédentaire <span class="field-unit">%/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="infHealthTip">Hausse supplémentaire des coûts de santé au-delà de l'IPC général. Canadiennement, les soins prolongés et médicaments augmentent de ~2 % par an au-delà de l'IPC.</span></span>
+                </div>
+                <input id="infHealth" type="number" class="field-input" placeholder="2.0" min="0" max="8" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="infHousing" data-i18n="infHousing">Inflation logement excédentaire <span class="field-unit">%/an</span></label></div>
+                <input id="infHousing" type="number" class="field-input" placeholder="1.0" min="0" max="8" step="0.1">
+              </div>
+              <div class="field">
+                <label class="check-row"><input type="checkbox" id="stochInf">
+                  <div><div class="check-label" data-i18n="stochInfLabel">Inflation stochastique</div>
+                  <div class="check-help" data-i18n="stochInfHelp">Simule une inflation variable année par année plutôt qu'une moyenne fixe. Plus réaliste.</div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="smileHead">Courbe de dépenses (smile de Blanchett)</div>
+            <div class="subsec-intro" data-i18n="smileIntro">Les dépenses de retraite varient par phase : <strong>Go-Go</strong> (début actif, voyages), <strong>Slow-Go</strong> (baisse progressive) et <strong>No-Go</strong> (soins accrus en fin de vie). Multiplicateurs appliqués aux dépenses de base de chaque phase.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="goP" data-i18n="goP">Multiplicateur Go-Go <span class="field-unit">×</span></label></div>
+                <input id="goP" type="number" class="field-input" placeholder="1.00" min="0.5" max="1.5" step="0.05">
+                <div class="field-help" data-i18n="goPHelp">De la retraite à l'âge Slow-Go. Souvent 1,00–1,10 (voyages).</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="slP" data-i18n="slP">Multiplicateur Slow-Go <span class="field-unit">×</span></label></div>
+                <input id="slP" type="number" class="field-input" placeholder="0.85" min="0.5" max="1.2" step="0.05">
+                <div class="field-help" data-i18n="slPHelp">Typiquement 0,80–0,90 (moins de voyages).</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="noP" data-i18n="noP">Multiplicateur No-Go <span class="field-unit">×</span></label></div>
+                <input id="noP" type="number" class="field-input" placeholder="0.95" min="0.5" max="1.5" step="0.05">
+                <div class="field-help" data-i18n="noPHelp">Typiquement 0,90–1,10 (hausse des soins).</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="smileSlAge" data-i18n="smileSlAge">Âge début Slow-Go <span class="field-unit">ans</span></label></div>
+                <input id="smileSlAge" type="number" class="field-input" placeholder="75" min="55" max="85" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="smileNoAge" data-i18n="smileNoAge">Âge début No-Go <span class="field-unit">ans</span></label></div>
+                <input id="smileNoAge" type="number" class="field-input" placeholder="85" min="70" max="95" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="healthCostHead">Coûts de santé accrus en fin de vie</div>
+            <div class="subsec-intro" data-i18n="healthCostIntro">Ajoute un choc annuel aux dépenses après un âge donné pour modéliser les soins prolongés ou résidences.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="healthAge" data-i18n="healthAge">Âge de début des coûts accrus <span class="field-unit">ans</span></label></div>
+                <input id="healthAge" type="number" class="field-input" placeholder="85" min="65" max="95" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="healthMul" data-i18n="healthMul">Multiplicateur annuel santé <span class="field-unit">%</span></label></div>
+                <input id="healthMul" type="number" class="field-input" placeholder="0" min="0" max="50" step="1">
+                <div class="field-help" data-i18n="healthMulHelp">Ex : 20 % applique +20 % de dépenses par an après l'âge de début.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="stressHead">Scénarios de stress</div>
+            <div class="subsec-intro" data-i18n="stressIntro">Teste la résilience du plan face à un choc de marché. Le scénario de stress se superpose à la simulation Monte Carlo.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="strs" data-i18n="strs">Scénario de choc primaire</label></div>
+                <select id="strs" class="field-input">
+                  <option value="none">Aucun</option>
+                  <option value="1929">Grande dépression (1929)</option>
+                  <option value="1974">Stagflation (1974)</option>
+                  <option value="2000">Bulle techno (2000)</option>
+                  <option value="2008">Crise financière (2008)</option>
+                  <option value="2020">COVID-19 (2020)</option>
+                  <option value="custom">Personnalisé</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="stWhen" data-i18n="stWhen">Quand frappe le choc</label></div>
+                <select id="stWhen" class="field-input"><option value="ret">À la retraite (SORR)</option><option value="now">Maintenant</option><option value="age">Âge précis</option><option value="before">Avant la retraite</option></select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="stAge" data-i18n="stAge">Âge du choc (si précis) <span class="field-unit">ans</span></label></div>
+                <input id="stAge" type="number" class="field-input" placeholder="60" min="30" max="95" step="1">
+              </div>
+            </div>
+            <div class="spacer-md"></div>
+            <div class="subsec-head" style="color:var(--purple);border-left-color:var(--purple);margin-top:6px" data-i18n="stress2Head">Second choc (optionnel)</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="strs2" data-i18n="strs2">Scénario secondaire</label></div>
+                <select id="strs2" class="field-input"><option value="none">Aucun</option><option value="1974">Stagflation</option><option value="2008">Crise 2008</option><option value="2020">COVID-19</option></select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="stWhen2" data-i18n="stWhen2">Timing</label></div>
+                <select id="stWhen2" class="field-input"><option value="ret">Retraite</option><option value="age">Âge précis</option><option value="before">Avant retraite</option></select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="stAge2" data-i18n="stAge2">Âge 2e choc <span class="field-unit">ans</span></label></div>
+                <input id="stAge2" type="number" class="field-input" placeholder="75" min="30" max="95" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="cgHead">Gains en capital (non-enregistré)</div>
+            <div class="subsec-intro" data-i18n="cgIntro">Depuis 2024, le taux d'inclusion est de 50 % sur les premiers 250 000 $ de gains et 66,67 % au-delà. Les défauts correspondent à la loi actuelle.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="costBase" data-i18n="costBase">Coût moyen de vos placements NR <span class="field-unit">$</span></label></div>
+                <input id="costBase" type="number" class="field-input" placeholder="100 000" min="0" step="10000">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cgIncLo" data-i18n="cgIncLo">Taux d'inclusion (sous seuil) <span class="field-unit">%</span></label></div>
+                <input id="cgIncLo" type="number" class="field-input" placeholder="50" min="0" max="100" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cgIncHi" data-i18n="cgIncHi">Taux d'inclusion (au-dessus) <span class="field-unit">%</span></label></div>
+                <input id="cgIncHi" type="number" class="field-input" placeholder="66.67" min="0" max="100" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="cgThresh" data-i18n="cgThresh">Seuil annuel <span class="field-unit">$</span></label></div>
+                <input id="cgThresh" type="number" class="field-input" placeholder="250 000" min="0" step="10000">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="fatHead">Modélisation avancée</div>
+            <div class="field-grid">
+              <div class="field">
+                <label class="check-row"><input type="checkbox" id="fatT">
+                  <div><div class="check-label" data-i18n="fatTLabel">Distribution à queues épaisses (Fat Tails)</div>
+                  <div class="check-help" data-i18n="fatTHelp">Simule des krachs extrêmes (comme 2008) plus fréquemment que la distribution normale ne le prédirait. Plus conservateur.</div></div>
+                </label>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="nrTaxDrag" data-i18n="nrTaxDrag">Drag fiscal NR annuel <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="nrTaxDragTip">Impôt annuel récurrent sur les distributions (dividendes, intérêts) des placements non-enregistrés. 0,3 % est typique pour un portefeuille 60/40 FNB.</span></span>
+                </div>
+                <input id="nrTaxDrag" type="number" class="field-input" placeholder="0.3" min="0" max="3" step="0.1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="fxVol" data-i18n="fxVol">Volatilité FX <span class="field-unit">%</span></label></div>
+                <input id="fxVol" type="number" class="field-input" placeholder="0" min="0" max="20" step="1">
+                <div class="field-help" data-i18n="fxVolHelp">Volatilité du taux de change CAD/USD sur les placements étrangers. 0 si tout en CAD.</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="contGr" data-i18n="contGr">Croissance cotisations /an <span class="field-unit">%</span></label></div>
+                <input id="contGr" type="number" class="field-input" placeholder="0" min="0" max="10" step="0.5">
+                <div class="field-help" data-i18n="contGrHelp">Augmentation annuelle des cotisations REER/CÉLI (ex : avec le salaire).</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="gkHead">Garde-fous Guyton-Klinger (optionnel)</div>
+            <div class="subsec-intro" data-i18n="gkIntro">Stratégie de décaissement dynamique qui ajuste les retraits selon la performance du portefeuille. Améliore le taux de succès sans réduire significativement le train de vie moyen.</div>
+            <label class="check-row">
+              <input type="checkbox" id="gkOn">
+              <div><div class="check-label" data-i18n="gkOnLabel">Activer les garde-fous Guyton-Klinger</div>
+              <div class="check-help" data-i18n="gkOnHelp">Réduit les retraits après une mauvaise année de marché et les augmente après une bonne.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="gk-fields" hidden>
+              <div class="field"><div class="field-head"><label class="field-label" for="gkCeil" data-i18n="gkCeil">Plafond taux retrait <span class="field-unit">%</span></label></div><input id="gkCeil" type="number" class="field-input" placeholder="5.5" min="3" max="10" step="0.1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="gkFloor" data-i18n="gkFloor">Plancher taux retrait <span class="field-unit">%</span></label></div><input id="gkFloor" type="number" class="field-input" placeholder="3.0" min="1" max="6" step="0.1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="gkCut" data-i18n="gkCut">Coupure (si plafond franchi) <span class="field-unit">%</span></label></div><input id="gkCut" type="number" class="field-input" placeholder="10" min="0" max="25" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="gkRaise" data-i18n="gkRaise">Hausse (si plancher) <span class="field-unit">%</span></label></div><input id="gkRaise" type="number" class="field-input" placeholder="10" min="0" max="25" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="gkMaxCut" data-i18n="gkMaxCut">Coupure cumulative max <span class="field-unit">%</span></label></div><input id="gkMaxCut" type="number" class="field-input" placeholder="25" min="0" max="50" step="1"></div>
             </div>
           </div>
 
@@ -1323,10 +1685,66 @@ function setStrategy(s, btn) {
   btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
 }
 
-/* ─────────────── Pension type reveal ─────────────── */
-document.getElementById("penType").addEventListener("change", function () {
-  document.getElementById("penM-field").hidden = (this.value !== "db");
+/* ─────────────── Conditional reveal handlers ─────────────── */
+/* Pension 1 reveals depending on type (DB vs CD family). */
+function _syncPenFields() {
+  var t = document.getElementById("penType").value;
+  var isDB = (t === "db"), isCD = (t === "cd" || t === "rpdb");
+  var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  show("penM-field", isDB);
+  show("penIdx-field", isDB);
+  show("dcBal-field", isCD);
+  show("penEE-field", isCD);
+  show("penER-field", isCD);
+  show("penMER-field", isCD);
+}
+document.getElementById("penType").addEventListener("change", _syncPenFields);
+
+function _syncPen2Fields() {
+  var t = document.getElementById("pen2Type").value;
+  var isDB = (t === "db"), isCD = (t === "cd" || t === "rpdb");
+  var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  show("pen2M-field", isDB);
+  show("pen2Idx-field", isDB);
+  show("dc2Bal-field", isCD);
+  show("pen2EE-field", isCD);
+  show("pen2ER-field", isCD);
+}
+document.getElementById("pen2Type").addEventListener("change", _syncPen2Fields);
+
+/* Bridge reveal */
+document.getElementById("bridge").addEventListener("change", function () {
+  document.getElementById("bridge-fields").hidden = !this.checked;
 });
+/* Commuted-value reveal */
+document.getElementById("cvAnalysis").addEventListener("change", function () {
+  document.getElementById("cv-fields").hidden = !this.checked;
+});
+/* Pension splitting reveal */
+document.getElementById("split").addEventListener("change", function () {
+  document.getElementById("split-fields").hidden = !this.checked;
+});
+/* Guyton-Klinger reveal */
+document.getElementById("gkOn").addEventListener("change", function () {
+  document.getElementById("gk-fields").hidden = !this.checked;
+});
+/* Insurance life-type reveal */
+function _syncInsLifeFields() {
+  var t = document.getElementById("insVieType").value;
+  var isTerm = (t === "temp"), isAny = (t !== "none");
+  var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  show("insVieCov-field", isAny);
+  show("insViePrime-field", isAny);
+  show("insVieDur-field", isTerm);
+}
+document.getElementById("insVieType").addEventListener("change", _syncInsLifeFields);
+
+/* Strategy pill → reveal meltTgt when meltdown chosen */
+var _origSetStrategy = setStrategy;
+setStrategy = function (s, btn) {
+  _origSetStrategy(s, btn);
+  var mt = document.getElementById("meltTgt-field"); if (mt) mt.hidden = (s !== "meltdown");
+};
 
 /* ─────────────── Search filter ─────────────── */
 function filterFields(q) {
