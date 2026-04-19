@@ -565,6 +565,35 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             </div>
           </div>
 
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="goalsHead">Objectifs (ce qui pilote le plan)</div>
+            <div class="subsec-intro" data-i18n="goalsIntro">La retraite est un objectif parmi d'autres. Ajoutez ici les projets qui exigent un décaissement ciblé : éducation des enfants, rénovations majeures, achat prévu. Chacun s'intègre aux simulations comme une dépense planifiée.</div>
+            <div id="goals-list"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn" onclick="addGoal('education')"><span>🎓</span> <span data-i18n="addGoalEdu">Ajouter éducation</span></button>
+              <button class="btn" onclick="addGoal('lumpsum')"><span>💎</span> <span data-i18n="addGoalLump">Ajouter ponctuel</span></button>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="aiToneHead">Ton du rapport IA</div>
+            <div class="subsec-intro" data-i18n="aiToneIntro">Les préférences ci-dessous façonnent le style narratif du rapport généré. Ne modifient pas les calculs — uniquement la façon dont les résultats sont racontés.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="stressLevel" data-i18n="aiStress">Stress financier</label></div>
+                <select id="stressLevel" class="field-input"><option value="low">Faible</option><option value="moderate" selected>Modéré</option><option value="high">Élevé</option></select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="finLiteracy" data-i18n="aiLit">Littératie financière</label></div>
+                <select id="finLiteracy" class="field-input"><option value="beginner">Débutant</option><option value="intermediate" selected>Intermédiaire</option><option value="advanced">Avancé</option></select>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="detailPref" data-i18n="aiDetail">Niveau de détail</label></div>
+                <select id="detailPref" class="field-input"><option value="concise">Concis — faits clés</option><option value="balanced" selected>Équilibré</option><option value="detailed">Détaillé — explications complètes</option></select>
+              </div>
+            </div>
+          </div>
+
         </div>
       </details>
 
@@ -750,23 +779,88 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="field-grid">
               <div class="field">
                 <div class="field-head">
-                  <label class="field-label" for="fhsa" data-i18n="fhsa">CELIAPP / FHSA <span class="field-unit">$</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="fhsaTip">Compte d'épargne libre d'impôt pour l'achat d'une première propriété. Contribuable jusqu'à 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables.</span>
-                  </span>
+                  <label class="field-label" for="fhsaBal" data-i18n="fhsa">CELIAPP / FHSA solde <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="fhsaTip">Compte d'épargne libre d'impôt pour l'achat d'une première propriété. Jusqu'à 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables.</span></span>
                 </div>
-                <input id="fhsa" type="number" class="field-input" placeholder="0" min="0" max="40000" step="1000">
+                <input id="fhsaBal" type="number" class="field-input" placeholder="0" min="0" max="40000" step="1000">
               </div>
               <div class="field">
-                <div class="field-head">
-                  <label class="field-label" for="lira" data-i18n="lira">CRI / LIRA <span class="field-unit">$</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="liraTip">Compte de retraite immobilisé — provient d'un ancien fonds de pension d'employeur. Les retraits sont réglementés et commencent à un âge prescrit (55-71 selon la province).</span>
-                  </span>
+                <div class="field-head"><label class="field-label" for="fhsaC" data-i18n="fhsaC">CELIAPP cotis. /an <span class="field-unit">$/an</span></label></div>
+                <input id="fhsaC" type="number" class="field-input" placeholder="8 000" min="0" max="8000" step="500">
+              </div>
+              <div class="field">
+                <label class="check-row"><input type="checkbox" id="fhsaForHome">
+                  <div><div class="check-label" data-i18n="fhsaForHomeLabel">Utiliser CELIAPP pour achat maison</div>
+                  <div class="check-help" data-i18n="fhsaForHomeHelp">Sinon, le CELIAPP est roulé vers le REER à l'expiration.</div></div>
+                </label>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="fhsaHomeAge" data-i18n="fhsaHomeAge">Âge achat maison <span class="field-unit">ans</span></label></div>
+                <input id="fhsaHomeAge" type="number" class="field-input" placeholder="0" min="0" max="60" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="liraBal" data-i18n="lira">CRI / LIRA solde <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="liraTip">Compte de retraite immobilisé — provient d'un ancien fonds de pension d'employeur. Les retraits sont réglementés et commencent à un âge prescrit (55–71 selon la province).</span></span>
                 </div>
-                <input id="lira" type="number" class="field-input" placeholder="0" min="0" step="1000">
+                <input id="liraBal" type="number" class="field-input" placeholder="0" min="0" step="1000">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="rrspRoom" data-i18n="rrspRoom">Droits de cotisation REER inutilisés <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="rrspRoomTip">Cotisations inutilisées accumulées des années passées. Se trouve sur votre avis de cotisation de l'ARC.</span></span>
+                </div>
+                <input id="rrspRoom" type="number" class="field-input" placeholder="0" min="0" step="1000">
+              </div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="respHead">REEE (régime enregistré d'épargne-études)</div>
+            <div class="subsec-intro" data-i18n="respIntro">Subvention fédérale SCEE de 20 % (max 7 200 $/enfant à vie) + IQEE Québec de 10 % (max 3 600 $).</div>
+            <label class="check-row">
+              <input type="checkbox" id="respOn">
+              <div><div class="check-label" data-i18n="respOnLabel">Activer un REEE</div>
+              <div class="check-help" data-i18n="respOnHelp">Requiert au moins un enfant.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="respKids" data-i18n="respKids">Nombre d'enfants</label></div><input id="respKids" type="number" class="field-input" placeholder="1" min="0" max="6" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="respAlready" data-i18n="respAlready">Capital déjà investi <span class="field-unit">$</span></label></div><input id="respAlready" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="respContrib" data-i18n="respContrib">Cotisation /mois/enfant <span class="field-unit">$</span></label></div><input id="respContrib" type="number" class="field-input" placeholder="208" min="0" max="500" step="10"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="respYrsLeft" data-i18n="respYrsLeft">Années cotisations restantes</label></div><input id="respYrsLeft" type="number" class="field-input" placeholder="10" min="0" max="20" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="respReturnAge" data-i18n="respReturnAge">Âge de retour du capital</label></div><input id="respReturnAge" type="number" class="field-input" placeholder="48" min="30" max="70" step="1"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="ftqHead">FTQ / Fondaction</div>
+            <div class="subsec-intro" data-i18n="ftqIntro">Crédits de 30 % (15 % fédéral + 15 % Québec) sur un max de 5 000 $/an de cotisations.</div>
+            <label class="check-row">
+              <input type="checkbox" id="ftqOn">
+              <div><div class="check-label" data-i18n="ftqOnLabel">Cotiser à un fonds de travailleurs</div>
+              <div class="check-help" data-i18n="ftqOnHelp">FTQ ou Fondaction — crédit d'impôt 30 % sur les premiers 5 000 $.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="ftqAmt" data-i18n="ftqAmt">Cotisation annuelle <span class="field-unit">$/an</span></label></div><input id="ftqAmt" type="number" class="field-input" placeholder="5 000" min="0" max="5000" step="500"></div>
+            </div>
+          </div>
+
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="glideHead">Glide path (désensibilisation avec l'âge)</div>
+            <div class="subsec-intro" data-i18n="glideIntro">Réduit progressivement la portion actions à mesure que vous approchez la retraite. Ex : retirer 0,5 % d'actions par année.</div>
+            <label class="check-row">
+              <input type="checkbox" id="glide">
+              <div><div class="check-label" data-i18n="glideLabel">Activer le glide path</div>
+              <div class="check-help" data-i18n="glideHelp">Désensibilisation automatique du portefeuille avec l'âge.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="glideSpd" data-i18n="glideSpd">Vitesse de désensibilisation <span class="field-unit">%/an</span></label></div><input id="glideSpd" type="number" class="field-input" placeholder="2.0" min="0" max="5" step="0.1"></div>
+              <div class="field">
+                <label class="check-row"><input type="checkbox" id="multiAsset">
+                  <div><div class="check-label" data-i18n="multiAssetLabel">Multi-actifs (5 classes)</div>
+                  <div class="check-help" data-i18n="multiAssetHelp">Affine l'allocation : actions CAN/US/INTL/EM + obligations.</div></div>
+                </label>
               </div>
             </div>
           </div>
@@ -1773,6 +1867,58 @@ function updateTocActive() {
 }
 window.addEventListener("scroll", updateTocActive);
 
+/* ─────────────── Goals editor (array) ─────────────── */
+/* v3 schema: goals[] = [{ id, type, name, nameEn, amount, startAge, endAge,
+   inflation, icon, locked? }]. The first goal is always "retirement" and
+   locked — it's the household monthly spending target, edited via retSpM.
+   Users add "education" and "lumpsum" goals here. */
+var _goals = [{ id: "ret", type: "retirement", name: "Retraite", nameEn: "Retirement", amount: 0, startAge: 0, endAge: 0, inflation: true, icon: "🏖", locked: true }];
+
+function addGoal(kind) {
+  var fr = _lang === "fr";
+  var name = prompt(fr
+    ? (kind === "education" ? "Nom (ex : Études Emma) :" : "Nom (ex : Rénovation maison) :")
+    : (kind === "education" ? "Name (e.g. Emma's studies):" : "Name (e.g. Home renovation):"), "");
+  if (!name) return;
+  var amt = parseFloat(prompt(fr ? "Montant annuel ($) :" : "Annual amount ($):", kind === "education" ? "12000" : "50000"));
+  var startAge = parseInt(prompt(fr ? "Votre âge au début :" : "Your age at start:", kind === "education" ? "50" : "55"));
+  if (isNaN(amt) || isNaN(startAge)) return;
+  var endAge = kind === "education"
+    ? (parseInt(prompt(fr ? "Âge à la fin :" : "Age at end:", String(startAge + 4))) || startAge + 4)
+    : startAge;
+  _goals.push({
+    id: "g_" + Date.now(), type: kind, name: name, nameEn: name,
+    amount: amt, startAge: startAge, endAge: endAge,
+    inflation: true, icon: kind === "education" ? "🎓" : "💎"
+  });
+  renderGoals();
+}
+function removeGoal(id) { _goals = _goals.filter(function(g){return g.id !== id;}); renderGoals(); }
+
+function renderGoals() {
+  var list = document.getElementById("goals-list"); if (!list) return;
+  var fr = _lang === "fr";
+  list.innerHTML = "";
+  var visible = _goals.filter(function(g){return g.type !== "retirement";});
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="muted" style="font-size:var(--fs-sm);font-style:italic">' + (fr ? "Aucun objectif supplémentaire. La retraite est toujours incluse (modifiez-la via les dépenses mensuelles dans Cashflow)." : "No additional goals. Retirement is always included (edit via monthly spending in Cashflow).") + '</div>';
+    return;
+  }
+  visible.forEach(function (g) {
+    var card = document.createElement("div");
+    card.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border-soft);border-left:3px solid " + (g.type === "education" ? "var(--blue)" : "var(--purple)") + ";border-radius:6px;margin-top:6px";
+    card.innerHTML = '<span style="font-size:18px">' + g.icon + '</span>'
+      + '<div style="flex:1"><div style="font-weight:600;color:var(--text)">' + g.name + '</div>'
+      + '<div style="font-size:var(--fs-xs);color:var(--text-dim)">'
+      +   (g.type === "education"
+          ? (fr ? "Éducation · " : "Education · ") + '$' + g.amount.toLocaleString() + (fr ? "/an · âges " : "/yr · ages ") + g.startAge + "–" + g.endAge
+          : (fr ? "Ponctuel · " : "Lump sum · ") + '$' + g.amount.toLocaleString() + " @ " + g.startAge + (fr ? " ans" : ""))
+      + '</div></div>'
+      + '<button class="btn btn-ghost" onclick="removeGoal(\'' + g.id + '\')" style="color:var(--red)">✕</button>';
+    list.appendChild(card);
+  });
+}
+
 /* ─────────────── Dynamic property + debt editors ─────────────── */
 /* v4 aligns with v3's schema: props[] and debts[] use the exact same keys
    that runMC consumes. A profile exported from v4 loads cleanly into v3. */
@@ -1941,7 +2087,7 @@ function _ownerPillHTML(i, kind, os, sp) {
 
 /* ─────────────── Save / Load (JSON) ─────────────── */
 function collectProfile() {
-  var p = { _schema: "v4.0", props: _props, debts: _debts };
+  var p = { _schema: "v4.0", props: _props, debts: _debts, goals: _goals };
   document.querySelectorAll("input, select").forEach(function (el) {
     if (!el.id || el.id.indexOf("-") >= 0) return; // skip dynamic per-row inputs
     if (el.type === "checkbox") p[el.id] = el.checked;
@@ -1984,8 +2130,9 @@ function loadProfile() {
           renderProps();
         }
         if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
+        if (Array.isArray(p.goals)) { _goals = p.goals; renderGoals(); }
         Object.keys(p).forEach(function (k) {
-          if (k === "props" || k === "debts" || k === "_schema") return;
+          if (k === "props" || k === "debts" || k === "goals" || k === "_schema") return;
           var el = document.getElementById(k); if (!el) return;
           if (el.type === "checkbox") el.checked = !!p[k];
           else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
@@ -1996,6 +2143,9 @@ function loadProfile() {
   };
   inp.click();
 }
+
+/* Initial render of dynamic lists on first load. */
+renderGoals();
 
 /* ─────────────── Simulate (placeholder hand-off) ─────────────── */
 function runSimulation() {
