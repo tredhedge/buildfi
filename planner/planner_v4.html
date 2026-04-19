@@ -1233,8 +1233,60 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
               <div class="spacer-md"></div>
               <label class="check-row"><input type="checkbox" id="maPerAcct">
                 <div><div class="check-label" data-i18n="maPerAcctLabel">Répartition différente par compte</div>
-                <div class="check-help" data-i18n="maPerAcctHelp">Si coché, vous pourrez override l'allocation globale pour REER / CÉLI / NR individuellement (à venir dans une prochaine version).</div></div>
+                <div class="check-help" data-i18n="maPerAcctHelp">Activez pour fixer une répartition spécifique par compte (REER, CÉLI, NR). Utile pour la localisation fiscale : obligations en REER, actions de croissance en CÉLI.</div></div>
               </label>
+              <!-- Per-account override matrix (v3 key: allocOverride) -->
+              <div id="allocOverride-panel" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+                <div class="subsec-intro" style="margin-bottom:12px" data-i18n="allocOvIntro">Chaque ligne doit totaliser 100 %. Les cases vides héritent de la répartition globale ci-dessus. Astuce : placez les obligations (revenus d'intérêt taxés au plein taux) dans le REER ; les actions à forte croissance dans le CÉLI.</div>
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;font-size:var(--fs-sm)">
+                    <thead>
+                      <tr>
+                        <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border)">Compte</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:60px">CAN %</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:60px">US %</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:60px">INTL %</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:60px">EM %</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:60px">BND %</th>
+                        <th style="text-align:center;padding:6px 4px;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--border);min-width:55px">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="padding:8px 8px;font-weight:600;color:var(--accent);border-bottom:1px solid var(--border-soft)">REER</td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_rrsp_can" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_rrsp_us" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_rrsp_intl" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_rrsp_em" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_rrsp_bnd" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td id="ov_rrsp_total" style="text-align:center;padding:6px 4px;font-family:'JetBrains Mono';font-size:var(--fs-xs);color:var(--text-dim);border-bottom:1px solid var(--border-soft)">—</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 8px;font-weight:600;color:var(--teal);border-bottom:1px solid var(--border-soft)">CÉLI</td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_tfsa_can" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_tfsa_us" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_tfsa_intl" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_tfsa_em" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px;border-bottom:1px solid var(--border-soft)"><input id="ov_tfsa_bnd" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td id="ov_tfsa_total" style="text-align:center;padding:6px 4px;font-family:'JetBrains Mono';font-size:var(--fs-xs);color:var(--text-dim);border-bottom:1px solid var(--border-soft)">—</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:8px 8px;font-weight:600;color:var(--orange)">NR</td>
+                        <td style="padding:4px 4px"><input id="ov_nr_can" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px"><input id="ov_nr_us" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px"><input id="ov_nr_intl" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px"><input id="ov_nr_em" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td style="padding:4px 4px"><input id="ov_nr_bnd" type="number" class="field-input" style="text-align:center;padding:6px 4px" min="0" max="100" step="1" oninput="_syncOverride()"></td>
+                        <td id="ov_nr_total" style="text-align:center;padding:6px 4px;font-family:'JetBrains Mono';font-size:var(--fs-xs);color:var(--text-dim)">—</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="callout tip" style="margin-top:12px">
+                  <span class="callout-ico">🎯</span>
+                  <span data-i18n="allocOvLocalization"><strong>Localisation fiscale :</strong> les <em>intérêts</em> (obligations) sont taxés à 100 % → REER prioritaire. Les <em>dividendes canadiens</em> bénéficient d'un crédit d'impôt → NR acceptable. Les <em>gains de croissance</em> ne sont taxés qu'à la vente à 50 % → NR ou CÉLI. Les dividendes étrangers subissent une retenue à la source → REER (conventions fiscales).</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1390,8 +1442,8 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <summary>
           <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">🧩</div>
           <div class="sec-meta">
-            <div class="sec-title" data-i18n="altTitle">Placements alternatifs (PE / PM)</div>
-            <div class="sec-sub" data-i18n="altSub">Capital-investissement privé et dette privée — rendement, volatilité, stratégie de sortie.</div>
+            <div class="sec-title" data-i18n="altTitle">Placements alternatifs (PE / métaux précieux)</div>
+            <div class="sec-sub" data-i18n="altSub">Capital-investissement privé et métaux précieux (or, argent) — rendement, volatilité, stratégie de sortie.</div>
           </div>
           <div class="sec-status">
             <span class="count" data-count="alt">0</span>
@@ -1402,30 +1454,32 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <div class="sec-body">
           <div class="callout warn">
             <span class="callout-ico">⚠️</span>
-            <span data-i18n="altDisclaimer"><strong>Placements de niche.</strong> Les PE et PM ont des périodes d'illiquidité et des frais de gestion élevés. Ignorer si vous investissez uniquement en FNB/fonds communs.</span>
+            <span data-i18n="altDisclaimer"><strong>Placements de niche.</strong> PE : périodes d'illiquidité + frais élevés. Métaux précieux : aucun rendement intrinsèque, couverture contre l'inflation. Ignorer si vous investissez uniquement en FNB/fonds communs.</span>
           </div>
           <div class="subsec">
             <div class="subsec-head" data-i18n="peHead">Capital-investissement privé (Private Equity)</div>
+            <div class="subsec-intro" data-i18n="peIntro">Parts dans une entreprise privée (fonds PE, investissement direct, LP). Horizon typique 5–10 ans, verrouillage initial, rendements supérieurs au marché côté en contrepartie de l'illiquidité.</div>
             <div class="field-grid">
-              <div class="field"><div class="field-head"><label class="field-label" for="peBal" data-i18n="peBal">Solde PE <span class="field-unit">$</span></label></div><input id="peBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peY" data-i18n="peY">Rendement espéré <span class="field-unit">%/an</span></label></div><input id="peY" type="number" class="field-input" placeholder="12" min="0" max="30" step="0.5"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peV" data-i18n="peV">Volatilité <span class="field-unit">%</span></label></div><input id="peV" type="number" class="field-input" placeholder="25" min="0" max="80" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peFee" data-i18n="peFee">Frais annuels <span class="field-unit">%/an</span></label></div><input id="peFee" type="number" class="field-input" placeholder="2.0" min="0" max="5" step="0.1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peLock" data-i18n="peLock">Période de verrouillage <span class="field-unit">ans</span></label></div><input id="peLock" type="number" class="field-input" placeholder="3" min="0" max="10" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peExit" data-i18n="peExit">Âge de sortie (0=conserver)</label></div><input id="peExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peBal" data-i18n="peBal">Solde PE <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peBalTip">Valeur marchande actuelle de votre portefeuille PE (NAV). Si vous avez engagé mais pas encore appelé, utilisez le capital déployé, pas l'engagement total.</span></span></div><input id="peBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peY" data-i18n="peY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peYTip">TRI net anticipé (après frais). Typiquement 10–15 %/an pour PE diversifié ; 8–12 % pour le PE immobilier ; 6–9 % pour la dette privée.</span></span></div><input id="peY" type="number" class="field-input" placeholder="12" min="0" max="30" step="0.5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peV" data-i18n="peV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peVTip">Écart-type annualisé. Le PE affiche une volatilité réelle élevée (20–30 %) mais lissée par les évaluations trimestrielles. Utiliser ~25 % pour refléter le risque réel.</span></span></div><input id="peV" type="number" class="field-input" placeholder="25" min="0" max="80" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peFee" data-i18n="peFee">Frais annuels <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peFeeTip">Frais de gestion (management fee). Structure "2 et 20" typique : 2 % de gestion + 20 % de carried interest sur la performance. Les frais de performance ne sont PAS inclus ici (le rendement espéré est net).</span></span></div><input id="peFee" type="number" class="field-input" placeholder="2.0" min="0" max="5" step="0.1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peLock" data-i18n="peLock">Période de verrouillage <span class="field-unit">ans</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peLockTip">Durée pendant laquelle le capital ne peut être retiré. Typiquement 3–7 ans pour PE traditionnel, 1–3 ans pour fonds semi-liquides. Bloque les retraits MC pendant la période.</span></span></div><input id="peLock" type="number" class="field-input" placeholder="3" min="0" max="10" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peExit" data-i18n="peExit">Âge de sortie (0=conserver)</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitTip">Âge auquel vous prévoyez liquider. 0 = conserver jusqu'au décès. Typiquement aligné sur votre retraite ou 5–10 ans après pour lisser l'impôt.</span></span></div><input id="peExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="peExitStrat" data-i18n="peExitStrat">Stratégie de sortie</label></div>
+                <div class="field-head"><label class="field-label" for="peExitStrat" data-i18n="peExitStrat">Stratégie de sortie</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitStratTip">Comment convertir en liquidités. Bloc = vente unique à l'âge de sortie. Échelonnée = vente linéaire sur N années. % par an = retrait d'un pourcentage fixe.</span></span></div>
                 <select id="peExitStrat" class="field-input"><option value="lump">Vente en bloc</option><option value="gradual">Échelonnée</option><option value="pct">% par an</option></select>
               </div>
               <div class="field"><div class="field-head"><label class="field-label" for="peExitYrs" data-i18n="peExitYrs">Durée sortie <span class="field-unit">ans</span></label></div><input id="peExitYrs" type="number" class="field-input" placeholder="5" min="2" max="15" step="1"></div>
             </div>
           </div>
           <div class="subsec">
-            <div class="subsec-head" data-i18n="pmHead">Dette privée (Private Mortgages)</div>
+            <div class="subsec-head" data-i18n="pmHead">Métaux précieux (Precious Metals)</div>
+            <div class="subsec-intro" data-i18n="pmIntro">Or, argent, platine — lingots, FNB adossés, pièces. Pas de rendement intrinsèque (pas de dividende, pas d'intérêt) ; se comporte comme une couverture contre l'inflation et les chocs géopolitiques.</div>
             <div class="field-grid">
-              <div class="field"><div class="field-head"><label class="field-label" for="pmBal" data-i18n="pmBal">Solde PM <span class="field-unit">$</span></label></div><input id="pmBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmY" data-i18n="pmY">Rendement espéré <span class="field-unit">%/an</span></label></div><input id="pmY" type="number" class="field-input" placeholder="3" min="0" max="15" step="0.5"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmV" data-i18n="pmV">Volatilité <span class="field-unit">%</span></label></div><input id="pmV" type="number" class="field-input" placeholder="15" min="0" max="40" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmBal" data-i18n="pmBal">Solde métaux <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmBalTip">Valeur marchande courante de vos avoirs en métaux précieux. Inclure physique + FNB (GLD, SLV, CGL.C, etc.).</span></span></div><input id="pmBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmY" data-i18n="pmY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmYTip">Rendement historique de l'or (~2–3 % réel long terme, zéro hors inflation). Les métaux précieux ne produisent pas de revenu ; toute plus-value vient uniquement du prix spot.</span></span></div><input id="pmY" type="number" class="field-input" placeholder="3" min="0" max="15" step="0.5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmV" data-i18n="pmV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmVTip">Écart-type annualisé. Or ~15 %, argent ~25 %, platine ~22 %. Corrélation faible/négative avec les actions — d'où l'intérêt comme diversifiant.</span></span></div><input id="pmV" type="number" class="field-input" placeholder="15" min="0" max="40" step="1"></div>
               <div class="field"><div class="field-head"><label class="field-label" for="pmExit" data-i18n="pmExit">Âge de sortie (0=conserver)</label></div><input id="pmExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
               <div class="field">
                 <div class="field-head"><label class="field-label" for="pmExitStrat" data-i18n="pmExitStrat">Stratégie de sortie</label></div>
@@ -1755,11 +1809,15 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="subsec-intro" data-i18n="insInvIntro">Remplacement du revenu si une invalidité vous empêche de travailler. Couvre typiquement 60–80 % du salaire brut jusqu'à 65 ans.</div>
             <div class="field-grid">
               <div class="field">
-                <div class="field-head"><label class="field-label" for="insInvCov" data-i18n="insInvCov">Couverture <span class="field-unit">% du salaire</span></label></div>
+                <div class="field-head"><label class="field-label" for="insInvCov" data-i18n="insInvCov">Couverture <span class="field-unit">% du salaire</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="insInvCovTip">Pourcentage du salaire brut versé par la police si vous devenez invalide. Limité typiquement à 60–70 % (imposable) ou 80 % (non imposable). Entrez 0 si vous n'avez que la couverture SAAQ/CNESST de base.</span></span>
+                </div>
                 <input id="insInvCov" type="number" class="field-input" placeholder="60" min="0" max="100" step="5">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="insInvPrime" data-i18n="insInvPrime">Prime mensuelle <span class="field-unit">$/mois</span></label></div>
+                <div class="field-head"><label class="field-label" for="insInvPrime" data-i18n="insInvPrime">Prime mensuelle <span class="field-unit">$/mois</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="insInvPrimeTip">Coût mensuel de la police d'invalidité. Non déductible d'impôt pour l'individuel. Si l'employeur paie la prime, la prestation devient imposable ; si vous la payez, elle est non imposable.</span></span>
+                </div>
                 <input id="insInvPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
               </div>
             </div>
@@ -1770,7 +1828,9 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
             <div class="subsec-intro" data-i18n="insMGIntro">Versement forfaitaire si un diagnostic couvert survient (cancer, AVC, crise cardiaque, etc.). Non imposable.</div>
             <div class="field-grid">
               <div class="field">
-                <div class="field-head"><label class="field-label" for="insMGCov" data-i18n="insMGCov">Montant de couverture <span class="field-unit">$</span></label></div>
+                <div class="field-head"><label class="field-label" for="insMGCov" data-i18n="insMGCov">Montant de couverture <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="insMGCovTip">Somme forfaitaire versée en une seule fois au diagnostic, non imposable. Couverture typique : 50 000 $ à 250 000 $ selon l'âge et le budget. Pertinent surtout 45–65 ans, quand le risque augmente mais le revenu n'est pas encore sécurisé.</span></span>
+                </div>
                 <input id="insMGCov" type="number" class="field-input" placeholder="0" min="0" step="10000">
               </div>
               <div class="field">
@@ -1951,23 +2011,51 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
           <div class="subsec">
             <div class="subsec-head" data-i18n="cgHead">Gains en capital (non-enregistré)</div>
-            <div class="subsec-intro" data-i18n="cgIntro">Depuis 2024, le taux d'inclusion est de 50 % sur les premiers 250 000 $ de gains et 66,67 % au-delà. Les défauts correspondent à la loi actuelle.</div>
+            <div class="subsec-intro" data-i18n="cgIntro">Ces champs décrivent comment vos placements hors REER/CÉLI sont imposés quand vous les vendez. Ne modifiez que si votre coût de base diffère de vos soldes actuels ou si la loi évolue — sinon, les défauts canadiens 2024 conviennent.</div>
+            <div class="callout tip">
+              <span class="callout-ico">💡</span>
+              <span data-i18n="cgExplain"><strong>À savoir :</strong> quand vous vendez un placement, seule une <em>fraction</em> du gain (la différence entre le prix de vente et ce que vous avez payé) est ajoutée à votre revenu imposable. Cette fraction s'appelle le <strong>taux d'inclusion</strong>. Règle actuelle : 50 % sur les premiers 250 000 $ de gains par année, 66,67 % au-delà.</span>
+            </div>
             <div class="field-grid">
               <div class="field">
-                <div class="field-head"><label class="field-label" for="costBase" data-i18n="costBase">Coût moyen de vos placements NR <span class="field-unit">$</span></label></div>
+                <div class="field-head">
+                  <label class="field-label" for="costBase" data-i18n="costBase">Prix d'achat (coût de base) de vos NR <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span>
+                    <span class="tip-body" data-i18n="costBaseTip">Le total que vous avez <strong>payé</strong> pour acheter vos placements non-enregistrés (somme des achats, ajustée pour les dividendes réinvestis). Ce n'est PAS la valeur actuelle — c'est le point de départ pour calculer le gain en capital à la vente. Si non précisé, le moteur suppose coût = solde (aucun gain latent).</span>
+                  </span>
+                </div>
                 <input id="costBase" type="number" class="field-input" placeholder="100 000" min="0" step="10000">
+                <div class="field-help" data-i18n="costBaseHelp">Exemple : 50 000 $ de valeur actuelle, 30 000 $ de coût d'achat → gain latent de 20 000 $.</div>
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="cgIncLo" data-i18n="cgIncLo">Taux d'inclusion (sous seuil) <span class="field-unit">%</span></label></div>
+                <div class="field-head">
+                  <label class="field-label" for="cgIncLo" data-i18n="cgIncLo">Taux d'inclusion (sous seuil) <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span>
+                    <span class="tip-body" data-i18n="cgIncLoTip">Fraction du gain ajoutée au revenu imposable quand le gain annuel reste sous le seuil. <strong>Défaut 50 %</strong> (taux en vigueur depuis toujours). Ne changer qu'en cas de réforme fiscale.</span>
+                  </span>
+                </div>
                 <input id="cgIncLo" type="number" class="field-input" placeholder="50" min="0" max="100" step="1">
+                <div class="field-help" data-i18n="cgIncLoHelp">Défaut : 50 %</div>
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="cgIncHi" data-i18n="cgIncHi">Taux d'inclusion (au-dessus) <span class="field-unit">%</span></label></div>
+                <div class="field-head">
+                  <label class="field-label" for="cgIncHi" data-i18n="cgIncHi">Taux d'inclusion (au-dessus) <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span>
+                    <span class="tip-body" data-i18n="cgIncHiTip">Fraction du gain pour la portion au-dessus du seuil. <strong>Défaut 66,67 %</strong> (2/3) — taux de 2024 appliqué aux gains annuels qui dépassent 250 000 $. Concerne surtout les vendeurs d'entreprise, d'immobilier locatif ou les meltdown agressifs.</span>
+                  </span>
+                </div>
                 <input id="cgIncHi" type="number" class="field-input" placeholder="66.67" min="0" max="100" step="0.1">
+                <div class="field-help" data-i18n="cgIncHiHelp">Défaut : 66,67 %</div>
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="cgThresh" data-i18n="cgThresh">Seuil annuel <span class="field-unit">$</span></label></div>
+                <div class="field-head">
+                  <label class="field-label" for="cgThresh" data-i18n="cgThresh">Seuil annuel du taux élevé <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span>
+                    <span class="tip-body" data-i18n="cgThreshTip">Montant annuel de gains <strong>en capital</strong> (pas le revenu total) à partir duquel le taux d'inclusion élevé s'applique. <strong>Défaut 250 000 $</strong> (loi canadienne 2024). Chaque année civile a son propre seuil ; vendre sur plusieurs années permet de rester sous le seuil.</span>
+                  </span>
+                </div>
                 <input id="cgThresh" type="number" class="field-input" placeholder="250 000" min="0" step="10000">
+                <div class="field-help" data-i18n="cgThreshHelp">Défaut : 250 000 $/an</div>
               </div>
             </div>
           </div>
@@ -2001,20 +2089,55 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
           </div>
 
           <div class="subsec">
-            <div class="subsec-head" data-i18n="gkHead">Garde-fous Guyton-Klinger (optionnel)</div>
-            <div class="subsec-intro" data-i18n="gkIntro">Stratégie de décaissement dynamique qui ajuste les retraits selon la performance du portefeuille. Améliore le taux de succès sans réduire significativement le train de vie moyen.</div>
+            <div class="subsec-head" data-i18n="gkHead">Garde-fous Guyton-Klinger (stratégie dynamique)</div>
+            <div class="subsec-intro" data-i18n="gkIntro">Les règles de Guyton-Klinger modulent vos retraits annuels selon la performance récente du portefeuille — vous prenez moins après une mauvaise année, plus après une bonne. L'objectif : éviter de vider le portefeuille dans une séquence défavorable.</div>
+            <div class="callout tip">
+              <span class="callout-ico">📚</span>
+              <span data-i18n="gkWhen"><strong>Pertinent si :</strong> vous prévoyez une retraite longue (30+ ans) <em>et</em> vous tolérez de réduire vos dépenses de ~10 % les mauvaises années. <strong>Moins pertinent si :</strong> revenu de retraite dominé par des pensions à prestations déterminées (RRQ, PSV, pension d'employeur PD) — les garde-fous n'agissent que sur les retraits de portefeuille.</span>
+            </div>
+            <div class="callout warn">
+              <span class="callout-ico">⚖️</span>
+              <span data-i18n="gkCaution"><strong>Contrepartie :</strong> votre train de vie devient plus variable (± 10 à 20 % d'une année à l'autre). Si vous avez besoin d'un revenu stable mois après mois (loyer, médicaments), utilisez plutôt une rente viagère pour la portion fixe.</span>
+            </div>
             <label class="check-row">
               <input type="checkbox" id="gkOn">
               <div><div class="check-label" data-i18n="gkOnLabel">Activer les garde-fous Guyton-Klinger</div>
-              <div class="check-help" data-i18n="gkOnHelp">Réduit les retraits après une mauvaise année de marché et les augmente après une bonne.</div></div>
+              <div class="check-help" data-i18n="gkOnHelp">Coupe les retraits de X % quand le taux dépasse le plafond ; les augmente de X % quand il passe sous le plancher.</div></div>
             </label>
             <div class="spacer-sm"></div>
             <div class="field-grid" id="gk-fields" hidden>
-              <div class="field"><div class="field-head"><label class="field-label" for="gkCeil" data-i18n="gkCeil">Plafond taux retrait <span class="field-unit">%</span></label></div><input id="gkCeil" type="number" class="field-input" placeholder="5.5" min="3" max="10" step="0.1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="gkFloor" data-i18n="gkFloor">Plancher taux retrait <span class="field-unit">%</span></label></div><input id="gkFloor" type="number" class="field-input" placeholder="3.0" min="1" max="6" step="0.1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="gkCut" data-i18n="gkCut">Coupure (si plafond franchi) <span class="field-unit">%</span></label></div><input id="gkCut" type="number" class="field-input" placeholder="10" min="0" max="25" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="gkRaise" data-i18n="gkRaise">Hausse (si plancher) <span class="field-unit">%</span></label></div><input id="gkRaise" type="number" class="field-input" placeholder="10" min="0" max="25" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="gkMaxCut" data-i18n="gkMaxCut">Coupure cumulative max <span class="field-unit">%</span></label></div><input id="gkMaxCut" type="number" class="field-input" placeholder="25" min="0" max="50" step="1"></div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="gkCeil" data-i18n="gkCeil">Plafond taux retrait <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="gkCeilTip">Si le taux de retrait actuel (retrait ÷ solde restant) dépasse ce seuil, le retrait est <strong>coupé</strong> de la "Coupure" ci-dessous. Règle originale : 120 % du taux initial (soit ~5,5 % si le retrait initial était 4 %).</span></span>
+                </div>
+                <input id="gkCeil" type="number" class="field-input" placeholder="5.5" min="3" max="10" step="0.1">
+                <div class="field-help" data-i18n="gkCeilHelp">Défaut : 5,5 %</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="gkFloor" data-i18n="gkFloor">Plancher taux retrait <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="gkFloorTip">Si le taux de retrait passe sous ce seuil (marchés ont bien performé), le retrait est <strong>augmenté</strong> de la "Hausse" ci-dessous. Règle originale : 80 % du taux initial (soit ~3,2 % si le retrait initial était 4 %).</span></span>
+                </div>
+                <input id="gkFloor" type="number" class="field-input" placeholder="3.0" min="1" max="6" step="0.1">
+                <div class="field-help" data-i18n="gkFloorHelp">Défaut : 3,0 %</div>
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="gkCut" data-i18n="gkCut">Coupure (si plafond franchi) <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="gkCutTip">De combien vous réduisez le retrait quand le plafond est franchi. Défaut 10 % — conforme à la règle originale. Plus grand = plus conservateur.</span></span>
+                </div>
+                <input id="gkCut" type="number" class="field-input" placeholder="10" min="0" max="25" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="gkRaise" data-i18n="gkRaise">Hausse (si plancher) <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="gkRaiseTip">De combien vous augmentez le retrait quand le taux passe sous le plancher. Défaut 10 %. Plus grand = récupération plus rapide du train de vie après une bonne séquence.</span></span>
+                </div>
+                <input id="gkRaise" type="number" class="field-input" placeholder="10" min="0" max="25" step="1">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="gkMaxCut" data-i18n="gkMaxCut">Coupure cumulative max <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="gkMaxCutTip">Limite la baisse cumulative du train de vie. 25 % signifie que même dans la pire séquence, vous ne descendez jamais sous 75 % du train de vie initial. Protection contre l'inconfort extrême.</span></span>
+                </div>
+                <input id="gkMaxCut" type="number" class="field-input" placeholder="25" min="0" max="50" step="1">
+              </div>
             </div>
           </div>
 
@@ -2071,15 +2194,21 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <input id="eqRet" type="number" class="field-input" placeholder="6.9" min="0" max="15" step="0.1">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="bndRet" data-i18n="bndRet">Rend. obligations <span class="field-unit">%/an</span></label></div>
+                <div class="field-head"><label class="field-label" for="bndRet" data-i18n="bndRet">Rend. obligations <span class="field-unit">%/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="bndRetTip">Rendement réel attendu des obligations (univers canadien, qualité investissement). Défaut PAG 2025 : 3,4 %/an. Historique long terme : 2–4 %.</span></span>
+                </div>
                 <input id="bndRet" type="number" class="field-input" placeholder="3.4" min="0" max="8" step="0.1">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="eqVol" data-i18n="eqVol">Volatilité actions <span class="field-unit">%</span></label></div>
+                <div class="field-head"><label class="field-label" for="eqVol" data-i18n="eqVol">Volatilité actions <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="eqVolTip">Écart-type annualisé des rendements boursiers. Plus élevé = plus de scénarios extrêmes générés. Historique S&P/TSX + MSCI World : 15–17 %. PAG 2025 utilise 15–16 %.</span></span>
+                </div>
                 <input id="eqVol" type="number" class="field-input" placeholder="16" min="5" max="40" step="1">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="bndVol" data-i18n="bndVol">Volatilité obligations <span class="field-unit">%</span></label></div>
+                <div class="field-head"><label class="field-label" for="bndVol" data-i18n="bndVol">Volatilité obligations <span class="field-unit">%</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="bndVolTip">Écart-type annualisé des obligations. Historique 4–7 % selon la duration. Plus la durée moyenne est longue, plus la volatilité est élevée.</span></span>
+                </div>
                 <input id="bndVol" type="number" class="field-input" placeholder="6" min="2" max="20" step="1">
               </div>
             </div>
@@ -2099,7 +2228,9 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
                 <input id="nSim" type="number" class="field-input" placeholder="1 000" min="500" max="10000" step="500">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" data-i18n="stochMort">Longévité stochastique</label></div>
+                <div class="field-head"><label class="field-label" data-i18n="stochMort">Longévité stochastique</label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="stochMortTip">Si activé, chaque simulation pige un âge de décès dans la table CPM 2023 de l'Institut canadien des actuaires (médiane ~87 homme, 90 femme). Sinon, toutes les simulations se terminent à « Horizon de vie planifié ». <strong>Activé = plus réaliste</strong> car votre propre longévité est un risque aléatoire.</span></span>
+                </div>
                 <label class="check-row" style="margin-top:2px">
                   <input type="checkbox" id="stochMort" checked>
                   <div>
@@ -2414,8 +2545,10 @@ function _syncPenFields() {
   var isDB = (t === "db"), isCD = (t === "cd" || t === "rpdb");
   var pct = document.getElementById("penPctMode") && document.getElementById("penPctMode").checked;
   var show = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };
+  /* DB-only fields */
   show("penM-field", isDB);
   show("penIdx-field", isDB);
+  /* CD/RPDB-only fields */
   show("dcBal-field", isCD);
   show("penPctMode-field", isCD);
   show("penEE-field", isCD && !pct);
@@ -2423,9 +2556,15 @@ function _syncPenFields() {
   show("penEEpct-field", isCD && pct);
   show("penERpct-field", isCD && pct);
   show("penMER-field", isCD);
+  /* Pension entirely hidden when type = none */
+  var noneSubsecs = document.getElementById("pen-detail-subsec");
+  if (noneSubsecs) noneSubsecs.hidden = (t === "none");
 }
 document.getElementById("penType").addEventListener("change", _syncPenFields);
 document.getElementById("penPctMode") && document.getElementById("penPctMode").addEventListener("change", _syncPenFields);
+/* Establish initial state on load — without this, the dynamic hidden logic
+   only runs on user change, leaving stale fields visible after a handoff. */
+_syncPenFields();
 
 function _syncPen2Fields() {
   var t = document.getElementById("pen2Type").value;
@@ -2438,6 +2577,7 @@ function _syncPen2Fields() {
   show("pen2ER-field", isCD);
 }
 document.getElementById("pen2Type").addEventListener("change", _syncPen2Fields);
+_syncPen2Fields();
 
 /* Bridge reveal */
 document.getElementById("bridge").addEventListener("change", function () {
@@ -2603,6 +2743,29 @@ function _syncGA() {
   } else {
     out.innerHTML = '<span style="color:var(--red);font-style:normal;font-weight:600">⚠ ' + (fr ? "Total : " : "Total: ") + sum.toFixed(0) + ' % — ' + (fr ? "doit être 100 %" : "must be 100%") + '</span>';
   }
+}
+
+/* ─────────────── Per-account override matrix (v3 key: allocOverride) ─────── */
+/* Stored as p.allocOverride = { rrsp: {can,us,intl,em,bnd}, tfsa: {...}, nr: {...} }
+   where blanks mean "inherit globalAlloc". Each row must sum to 100 when any
+   cell is filled, otherwise engine falls back to globalAlloc. */
+document.getElementById("maPerAcct") && document.getElementById("maPerAcct").addEventListener("change", function () {
+  var panel = document.getElementById("allocOverride-panel");
+  if (panel) panel.hidden = !this.checked;
+});
+function _syncOverride() {
+  var accts = ["rrsp", "tfsa", "nr"];
+  var cols = ["can", "us", "intl", "em", "bnd"];
+  var fr = _lang === "fr";
+  accts.forEach(function (a) {
+    var sum = cols.reduce(function (t, c) { var el = document.getElementById("ov_" + a + "_" + c); var v = el ? parseFloat(el.value) : NaN; return t + (isNaN(v) ? 0 : v); }, 0);
+    var anyFilled = cols.some(function (c) { var el = document.getElementById("ov_" + a + "_" + c); return el && el.value !== ""; });
+    var out = document.getElementById("ov_" + a + "_total");
+    if (!out) return;
+    if (!anyFilled) { out.textContent = fr ? "hérite global" : "inherits"; out.style.color = "var(--text-muted)"; return; }
+    if (Math.abs(sum - 100) < 0.5) { out.textContent = "✓ " + sum.toFixed(0); out.style.color = "var(--green)"; }
+    else { out.textContent = "⚠ " + sum.toFixed(0); out.style.color = "var(--red)"; }
+  });
 }
 
 /* ─────────────── Business reveal ─────────────── */
@@ -2838,6 +3001,7 @@ function collectProfile() {
   document.querySelectorAll("input, select").forEach(function (el) {
     if (!el.id || el.id.indexOf("-") >= 0) return; // skip dynamic per-row inputs
     if (el.id.indexOf("ga_") === 0) return; // globalAlloc handled below as single object
+    if (el.id.indexOf("ov_") === 0) return; // allocOverride handled below
     if (el.type === "checkbox") p[el.id] = el.checked;
     else if (el.type === "number") p[el.id] = el.value === "" ? null : parseFloat(el.value);
     else p[el.id] = el.value;
@@ -2845,6 +3009,21 @@ function collectProfile() {
   /* Pack globalAlloc into v3's shape: { can, us, intl, em, bnd } as 0..1 fractions. */
   var _gv = function (id) { return (parseFloat(document.getElementById(id).value) || 0) / 100; };
   p.globalAlloc = { can: _gv("ga_can"), us: _gv("ga_us"), intl: _gv("ga_intl"), em: _gv("ga_em"), bnd: _gv("ga_bnd") };
+  /* Pack allocOverride (v3 key). Blank rows are omitted so the engine falls
+     back to globalAlloc. Only emit a row when at least one cell is non-empty. */
+  if (document.getElementById("maPerAcct") && document.getElementById("maPerAcct").checked) {
+    var ov = {};
+    ["rrsp", "tfsa", "nr"].forEach(function (a) {
+      var row = {};
+      var any = false;
+      ["can", "us", "intl", "em", "bnd"].forEach(function (c) {
+        var el = document.getElementById("ov_" + a + "_" + c);
+        if (el && el.value !== "") { row[c] = (parseFloat(el.value) || 0) / 100; any = true; }
+      });
+      if (any) ov[a] = row;
+    });
+    if (Object.keys(ov).length > 0) p.allocOverride = ov;
+  }
   /* Custom stress arrays (v3 keys: custStrs, custBd, custInf). */
   p.custStrs = _custStrs.slice();
   p.custBd = _custBd.slice();
@@ -2899,8 +3078,21 @@ function loadProfile() {
           _gset("ga_bnd", p.globalAlloc.bnd);
           _syncGA();
         }
+        /* Unpack allocOverride rows into the per-account matrix cells. */
+        if (p.allocOverride && typeof p.allocOverride === "object") {
+          ["rrsp", "tfsa", "nr"].forEach(function (a) {
+            var row = p.allocOverride[a]; if (!row) return;
+            ["can", "us", "intl", "em", "bnd"].forEach(function (c) {
+              var el = document.getElementById("ov_" + a + "_" + c);
+              if (el && row[c] != null) el.value = Math.round(row[c] * 100);
+            });
+          });
+          var mpa = document.getElementById("maPerAcct");
+          if (mpa) { mpa.checked = true; document.getElementById("allocOverride-panel").hidden = false; }
+          _syncOverride();
+        }
         Object.keys(p).forEach(function (k) {
-          if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
+          if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
           var el = document.getElementById(k); if (!el) return;
           if (el.type === "checkbox") el.checked = !!p[k];
           else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
@@ -2915,6 +3107,52 @@ function loadProfile() {
 /* Initial render of dynamic lists on first load. */
 renderGoals();
 renderRsu();
+
+/* ─────────────── Section counter (data-count) ─────────────── */
+/* Live-updates "X / Y" on each section header. Inspects every <input> or
+   <select> inside the section body, counts ones that have a non-empty /
+   non-default value, and writes to <span class="count" data-count="ID">.
+   Fires on input/change once bound via a single delegated listener. */
+function _countSection(secEl) {
+  if (!secEl) return { filled: 0, total: 0 };
+  var fields = secEl.querySelectorAll(".sec-body input, .sec-body select");
+  var total = 0, filled = 0;
+  fields.forEach(function (el) {
+    /* Skip hidden fields (e.g. CD fields when penType=DB) and fields inside
+       hidden wrappers. Skip the per-row dynamic cells (editor-card inputs). */
+    if (el.closest(".editor-card")) return;
+    if (el.closest("[hidden]")) return;
+    /* Skip numeric allocation sub-cells (ga_*, ov_*) so the matrix counts as
+       "filled" only once, not 5 or 15 times. */
+    if (el.id && (el.id.indexOf("ga_") === 0 || el.id.indexOf("ov_") === 0)) return;
+    total++;
+    if (el.type === "checkbox") {
+      if (el.checked) filled++;
+    } else if (el.tagName === "SELECT") {
+      /* A select counts as filled if the value isn't "none"/"" */
+      if (el.value && el.value !== "none" && el.value !== "") filled++;
+    } else {
+      if (el.value !== "" && el.value !== null) filled++;
+    }
+  });
+  return { filled: filled, total: total };
+}
+function updateSectionCounts() {
+  document.querySelectorAll("details.section").forEach(function (sec) {
+    var countEl = sec.querySelector(".count[data-count]");
+    if (!countEl) return;
+    var c = _countSection(sec);
+    if (c.total === 0) { countEl.textContent = "—"; return; }
+    countEl.textContent = c.filled + " / " + c.total;
+    /* Accent colour when the user has touched something in the section. */
+    countEl.style.color = c.filled > 0 ? "var(--accent)" : "var(--text-dim)";
+  });
+}
+/* Bind once: one listener for input + change events on the document. */
+document.addEventListener("input", updateSectionCounts);
+document.addEventListener("change", updateSectionCounts);
+/* Run once on load so initial state is accurate (e.g. after handoff). */
+setTimeout(updateSectionCounts, 50);
 
 /* ─────────────── Mode switch + Simulate (v3 handoff) ─────────────── */
 /* One-click bidirectional switching. When v4 → v3, we pack the current
@@ -2978,8 +3216,19 @@ function runSimulation() {
       _gset("ga_intl", p.globalAlloc.intl); _gset("ga_em", p.globalAlloc.em);
       _gset("ga_bnd", p.globalAlloc.bnd);
     }
+    if (p.allocOverride && typeof p.allocOverride === "object") {
+      ["rrsp", "tfsa", "nr"].forEach(function (a) {
+        var row = p.allocOverride[a]; if (!row) return;
+        ["can", "us", "intl", "em", "bnd"].forEach(function (c) {
+          var el = document.getElementById("ov_" + a + "_" + c);
+          if (el && row[c] != null) el.value = Math.round(row[c] * 100);
+        });
+      });
+      var mpa = document.getElementById("maPerAcct");
+      if (mpa) { mpa.checked = true; var ovp = document.getElementById("allocOverride-panel"); if (ovp) ovp.hidden = false; }
+    }
     Object.keys(p).forEach(function (k) {
-      if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
+      if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
       var el = document.getElementById(k); if (!el) return;
       if (el.type === "checkbox") el.checked = !!p[k];
       else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
@@ -2993,6 +3242,7 @@ function runSimulation() {
     if (typeof _syncPen2Fields === "function") _syncPen2Fields();
     if (typeof _syncInsLifeFields === "function") _syncInsLifeFields();
     if (typeof _syncGA === "function") _syncGA();
+    if (typeof _syncOverride === "function") _syncOverride();
     if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
     /* Banner confirming the auto-load. */
     var banner = document.createElement("div");
