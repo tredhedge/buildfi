@@ -5116,7 +5116,7 @@ function optimizeDecum(p) {
     var cAlive = p.cOn && cAge2 <= cSimDeath;
 
     // Survivor rollover: when spouse dies, roll their accounts to person
-    if (p.cOn && !cAlive && cAge2 === cSimDeath + 1) {
+    if (p.cOn && cAge2 === Math.floor(cSimDeath) && y > 0) {
       // RRSPÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢RRSP, TFSAÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢TFSA (tax-free spousal rollover), NRÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢NR
       rr += crr; tf += ctf; nr += cnr;
       crr = 0; ctf = 0; cnr = 0;
@@ -6677,13 +6677,20 @@ function runMC(p, N, _progressCb) {
         }
         var need = Math.max(0, spending - govInc - rrifMin - cRrifMin - meltAmt);
         if (p.cOn && cAge2 === Math.floor(cSimDeath) && y > 0) {
+          // Canonical survivor rollover — harmonized with optimizeDecum
+          // path. Spousal rollover is tax-free for registered plans; NR
+          // transfers at ACB (combined under primary's cost base).
           rr += crr;
           tf += ctf;
-          nr += cnr;
-          lira += cLira; // LOG-07: transfer spouse LIRA
+          nr += cnr; nrACB += cNrACB; // inherit spouse's cost basis
+          lira += cLira;
+          if (typeof cdc === "number") { dc += cdc; cdc = 0; }
+          if (typeof cdc2 === "number") { dc2 += cdc2; cdc2 = 0; }
+          if (typeof cFhsa === "number") { fhsa += cFhsa; cFhsa = 0; }
           crr = 0;
           ctf = 0;
           cnr = 0;
+          cNrACB = 0;
           cLira = 0;
         }
         var _wFromRR = 0, _wFromTF = 0, _wFromNR = 0, _wFromCRR = 0, _wFromCTF = 0, _wFromCNR = 0;
