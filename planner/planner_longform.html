@@ -607,11 +607,16 @@ body[data-embed="1"] .simulate-fab { display: none; }
 .form-toolbar {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  background: rgba(14,20,32,0.82);
+  background: var(--surface);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-soft); border-radius: var(--radius-md);
   padding: 10px 14px; margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+/* Light-mode: more contrast + translucent surface to keep the blur feel */
+:root[data-theme="light"] .form-toolbar {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 2px 8px rgba(17,24,39,0.08);
 }
 .form-toolbar .meta { font-size: var(--fs-xs); color: var(--text-dim); }
 .form-toolbar .meta strong { color: var(--text); font-weight: 600; }
@@ -732,10 +737,6 @@ body[data-embed="1"] .simulate-fab { display: none; }
               <div class="field" data-search-keywords="âge age actuel current">
                 <div class="field-head">
                   <label class="field-label" for="age" data-i18n="age">Âge actuel <span class="field-req">*</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" role="tooltip" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="ageTip">Votre âge à la date d'aujourd'hui. Détermine la durée de la simulation (aujourd'hui → espérance de vie). Doit se situer entre 18 et 80 ans.</span>
-                  </span>
                 </div>
                 <input id="age" type="number" class="field-input" placeholder="45" min="18" max="80">
                 <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>45 ans — médiane des utilisateurs</span></div>
@@ -744,10 +745,6 @@ body[data-embed="1"] .simulate-fab { display: none; }
               <div class="field" data-search-keywords="sexe sex genre">
                 <div class="field-head">
                   <label class="field-label" for="sex" data-i18n="sex">Sexe <span class="field-req">*</span></label>
-                  <span class="tip-wrap">
-                    <span class="tip-trigger" tabindex="0" aria-label="Aide">i</span>
-                    <span class="tip-body" data-i18n="sexTip">Utilisé pour la table de mortalité CPM 2023. Les femmes ont une espérance de vie ~3 ans supérieure en moyenne, ce qui allonge l'horizon de planification.</span>
-                  </span>
                 </div>
                 <select id="sex" class="field-input">
                   <option value="F" data-i18n="female">Femme</option>
@@ -3499,6 +3496,31 @@ function saveProfile() {
   a.download = "buildfi-plan-" + (new Date()).toISOString().slice(0, 10) + ".json";
   a.click(); URL.revokeObjectURL(a.href);
 }
+/* v3 React state stores allocations, MERs, growth/volatility rates, etc. as
+ * fractions (0..1). The longform UI collects the same values as percentages
+ * (0..100) to match the familiar human-readable form. Without conversion,
+ * a preset profile with allocR=0.6 would populate the UI with "0.6" (which
+ * the user then reads as 0.6% rather than 60%). This helper maps engine-
+ * canonical fraction values onto UI-friendly percentages on write. */
+var _BF_PCT_KEYS = {
+  allocR:1, allocT:1, allocN:1, cAllocR:1, cAllocT:1, cAllocN:1,
+  merR:1, merT:1, merN:1, cMerR:1, cMerT:1, cMerN:1,
+  nrTaxDrag:1, cgIncLo:1, cgIncHi:1,
+  eqRet:1, eqVol:1, bndRet:1, bndVol:1, fxVol:1,
+  inf:1, infHealth:1, infHousing:1, contGr:1,
+  bizGrowth:1, bizVolatility:1, bizSoleGrowth:1, bizSoleVol:1,
+  bizSalaryPct:1, bizInvAlloc:1,
+  peY:1, peV:1, peFee:1, pmY:1, pmV:1,
+  gkCeil:1, gkFloor:1, gkCut:1, gkRaise:1, gkMaxCut:1,
+  splitP:1, healthMul:1, penEEpct:1, penERpct:1,
+  bizDebtRate:1
+};
+function _BF_TO_UI(key, value) {
+  if (_BF_PCT_KEYS[key] && typeof value === "number" && value > 0 && value <= 1) {
+    return Math.round(value * 10000) / 100; // 0.0667 → 6.67
+  }
+  return value;
+}
 function loadProfile() {
   var inp = document.createElement("input");
   inp.type = "file"; inp.accept = "application/json";
@@ -3793,7 +3815,7 @@ function _applyEmbedProfile(p) {
       if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
       var el = document.getElementById(k); if (!el) return;
       if (el.type === "checkbox") el.checked = !!p[k];
-      else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+      else if (p[k] !== null && p[k] !== undefined) el.value = _BF_TO_UI(k, p[k]);
     });
     if (p.cOn) {
       var couplePill = document.querySelectorAll(".pill-group .pill")[1];
@@ -3899,7 +3921,7 @@ function runSimulation() {
       if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
       var el = document.getElementById(k); if (!el) return;
       if (el.type === "checkbox") el.checked = !!p[k];
-      else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+      else if (p[k] !== null && p[k] !== undefined) el.value = _BF_TO_UI(k, p[k]);
     });
     /* Couple mode + conditional reveals after fields land. */
     if (p.cOn) {
