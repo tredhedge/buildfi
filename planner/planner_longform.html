@@ -3792,7 +3792,7 @@ function renderProps() {
         +     '</div>'
         +   '</div>'
         + '</details>' : "")
-      + (window._cOn && pr.val > 0 ? _ownerPillHTML(i, "prop", pr.ownerSelf, pr.ownerSpouse) : "");
+      + (window._cOn && pr.val > 0 && window.BF_V3_HOUSEHOLD ? _ownerPillHTML(i, "prop", pr.ownerSelf, pr.ownerSpouse) : "");
     list.appendChild(card);
   });
   document.getElementById("re-count").textContent = _props.length + (fr ? (_props.length === 1 ? " bien" : " biens") : (_props.length === 1 ? " property" : " properties"));
@@ -3892,7 +3892,7 @@ function renderDebts() {
       + (d.bal > 0 ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (d.deductible ? "checked" : "") + ' onchange="updD(' + i + ', \'deductible\', this.checked)">'
       +   '<div><div class="check-label">' + (fr ? "Intérêts déductibles d'impôt (Manœuvre de Smith)" : "Tax-deductible interest (Smith Manoeuvre)") + '</div>'
       +   '<div class="check-help">' + (fr ? "Prêt dont l'intérêt est déductible — ex : emprunt pour investir." : "Loan whose interest is deductible — e.g. borrowing to invest.") + '</div></div></label>' : "")
-      + (window._cOn && d.bal > 0 ? _ownerPillHTML(i, "debt", d.ownerSelf, d.ownerSpouse) : "");
+      + (window._cOn && d.bal > 0 && window.BF_V3_HOUSEHOLD ? _ownerPillHTML(i, "debt", d.ownerSelf, d.ownerSpouse) : "");
     list.appendChild(card);
   });
   document.getElementById("debt-count").textContent = _debts.length + (fr ? (_debts.length === 1 ? " dette" : " dettes") : (_debts.length === 1 ? " debt" : " debts"));

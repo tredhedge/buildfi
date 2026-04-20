@@ -13392,8 +13392,9 @@ cPtM > 0 && React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm,
       nd[i] = Object.assign({}, d, { deductible: v });
       setDebts(nd);
     }, l: lang === "fr" ? "Intérêts déductibles (Manœuvre de Smith)" : "Deductible interest (Smith Manoeuvre)" }),
-    /* v3 Phase 5 Part A — per-debt ownership pill. Couple mode + balance > 0. */
-    cOn && (d.bal || 0) > 0 && (function() {
+    /* v3 Phase 5 Part A — per-debt ownership pill. Couple mode + balance > 0.
+       Gated on BF_V3_HOUSEHOLD (see property-ownership block for rationale). */
+    cOn && (d.bal || 0) > 0 && (typeof window !== "undefined" && window.BF_V3_HOUSEHOLD) && (function() {
       var _oS = (typeof d.ownerSelf === "number") ? d.ownerSelf : 0.5;
       var _sp = (typeof d.ownerSpouse === "number") ? d.ownerSpouse : 0.5;
       var _preset = (_oS === 1 && _sp === 0) ? "self"
@@ -13677,11 +13678,13 @@ secVis("immo") && sbFilter.immo && React.createElement(Sec, { t: lang === "fr" ?
       updP(idx, "val", v);
     }, step: 1e4 })),
     /* v3 Phase 5 Part A — per-property ownership pill. Visible only in
-       couple mode once a value is entered. Four presets (Vous / Conjoint /
-       Ménage / Personnalisé) plus a slider that reveals when the user
-       picks the Custom preset or enters a profile with a non-preset split
-       (e.g. 70/30). Engine consumption lives behind BF_V3_HOUSEHOLD. */
-    cOn && (pr.val || 0) > 0 && (function() {
+       couple mode once a value is entered AND BF_V3_HOUSEHOLD flag is on.
+       Gate 2 audit (2026-04-20): hidden by default until engine actually
+       consumes ownerSelf/ownerSpouse in runMC (tax attribution + estate).
+       Showing the UI without engine wiring creates a false promise (user
+       enters 70/30 and nothing changes). Flip window.BF_V3_HOUSEHOLD=true
+       at runtime once the engine side lands. */
+    cOn && (pr.val || 0) > 0 && (typeof window !== "undefined" && window.BF_V3_HOUSEHOLD) && (function() {
       var _oS = (typeof pr.ownerSelf === "number") ? pr.ownerSelf : 0.5;
       var _sp = (typeof pr.ownerSpouse === "number") ? pr.ownerSpouse : 0.5;
       var _preset = (_oS === 1 && _sp === 0) ? "self"
