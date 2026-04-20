@@ -2690,8 +2690,8 @@ var CFG_SMOOTH = {
 };
 // === END NAMED CONSTANTS ===
 // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-// TAX BRACKETS \u2014 Federal: 2025 (CRA T1 General)
-//                Provincial: 2025 (respective provincial tax acts)
+// TAX BRACKETS \u2014 Federal: 2026 (CRA T1 General)
+//                Provincial: 2026 (respective provincial tax acts)
 // Sources: canada.ca/en/revenue-agency, revenuquebec.ca
 // Federal personal amount: $16,452 (2026), indexed annually
 // QC abatement: 16.5% federal tax reduction (fixed)
@@ -5104,7 +5104,7 @@ function optimizeDecum(p) {
     detCRetNR = eqRet * _dCAN + bndRet * (1 - _dCAN) - (p.cMerN || 0.005);
   }
 
-  var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0;
+  // cFhsa already declared at line 5073 with its contrib counter.
   var cSimDeath = p.cOn ? (p.cDeath || 90) : 0;
 
   for (var y = 0; y <= maxYrs; y++) {
@@ -5788,7 +5788,7 @@ function calcWHT(alloc, acctType) {
   }
   return 0; // NR handled via itemized tax
 }
-// === PAYROLL DEDUCTIONS (employee portion, 2025 rates) ===
+// === PAYROLL DEDUCTIONS (employee portion, 2026 rates) ===
 function calcPayroll(sal, prov, yr, infR) {
   if (sal <= 0) return 0;
   var inf = Math.pow(1 + (infR || 0.02), yr || 0);
@@ -5815,7 +5815,12 @@ function calcPayroll(sal, prov, yr, infR) {
   return Math.round(qpp + qpp2 + ei + rqap);
 }
 // === END PAYROLL DEDUCTIONS ===
-function runMC(p, N, _progressCb) {
+function runMC(pInput, N, _progressCb) {
+  // Defensive clone so runMC's in-place sanitization does not mutate the
+  // caller's object. Shallow is enough — only scalars are rewritten;
+  // assetAlloc (the only sub-object rebuilt) is cloned on the next line.
+  var p = Object.assign({}, pInput || {});
+  if (pInput && pInput.assetAlloc) p.assetAlloc = Object.assign({}, pInput.assetAlloc);
   // === PARAM SANITIZATION ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â engine-level safety net ===
   // Rates: clamp to physically possible ranges (prevents typo-level bugs)
     // Default deathAge if missing — prevents NaN propagation through entire simulation.
