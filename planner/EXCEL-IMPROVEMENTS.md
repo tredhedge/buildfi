@@ -72,14 +72,14 @@ user can see it's an approximation.
 
 ## P2 — Depth on existing sheets
 
-- [ ] **P2.1 — Mortgage amortization schedule per property**
+- [x] **P2.1 — Mortgage amortization schedule per property** ✓ (commit pending)
       Real Estate tab is one row per property. Users expect year-by-year
       amortization.
       Sources: `params.props[]` (mb, mr, ma, mr2 at renewal).
       Target: separate table per active property, year × (opening balance,
       interest, principal, closing balance, renewal impact).
 
-- [ ] **P2.2 — Diagnostic + recommendations**
+- [x] **P2.2 — Diagnostic + recommendations** ✓ (commit pending)
       HTML report has strengths / weaknesses / prioritized recommendations.
       Excel has one single action row.
       Sources: same logic the HTML report uses (likely in `report-pdf.js`
@@ -87,13 +87,11 @@ user can see it's an approximation.
       Target: "Diagnostic" tab with 3 columns (Strengths / Weaknesses /
       Actions), up to 5 rows each.
 
-- [ ] **P2.3 — Year-by-year stress trajectory**
-      Sensibilité & Stress tab is aggregated. Power users want a single
-      stress run's year-by-year path.
-      Sources: `mc.strsResults[]` per-scenario detail if available;
-      otherwise run `runMC` with `strs: "2008"` deterministically.
-      Target: dedicated row block showing the median path under the
-      primary stress scenario.
+- [~] **P2.3 — Year-by-year stress trajectory** DEFERRED
+      Current cached `stressResults[]` entries carry only aggregate fields
+      (name/succ/medF/var5/medRuin). Engine would need to retain per-sim
+      pD for each stress scenario, OR the export would need to re-run MC
+      at export time (expensive). Real work, skipping for this sprint.
 
 ## P3 — Polish + nice-to-haves
 

@@ -752,6 +752,109 @@
     }
 
     // ────────────────────────────────────────────────────────────
+    // SHEET 1B: DIAGNOSTIC — strengths / weaknesses / actions
+    // ────────────────────────────────────────────────────────────
+    // Programmatic diagnostic: observations that flow directly from MC
+    // metrics + params. AMF-safe language (conditional, observational).
+    // Mirrors the HTML report's diagnostic section but derived here from
+    // the same raw signals so numbers match.
+    var wsDiag = wb.addWorksheet(fr ? "Diagnostic" : "Diagnostic");
+    setColWidths(wsDiag, [3, 6, 40, 6, 40, 6, 40, 14, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsDiag);
+    addTabBanner(wsDiag,
+      fr ? "Diagnostic du plan" : "Plan Diagnostic",
+      fr ? "Forces, vuln\u00e9rabilit\u00e9s et actions prioritaires" : "Strengths, weaknesses, priority actions", 14);
+
+    // Build the three columns based on observable signals.
+    var succ = toNum(mc.succ);
+    var rVar5 = toNum(mc.rVar5 || mc.var5 || 0);
+    var rMedF = toNum(mc.rMedF || mc.medF || 0);
+    var annualSpend = toNum(retSpM || p.retSpM) * 12;
+    var strengths = [];
+    var weaknesses = [];
+    var actions = [];
+    // Strengths
+    if (succ >= 0.85) strengths.push(fr ? "Taux de succ\u00e8s \u00e9lev\u00e9 (" + Math.round(succ * 100) + "%) : le plan r\u00e9siste \u00e0 la plupart des sc\u00e9narios de march\u00e9." : "High success rate (" + Math.round(succ * 100) + "%): plan weathers most market scenarios.");
+    if (taxAlpha > 5000) strengths.push(fr ? "Strat\u00e9gie fiscale optimis\u00e9e : \u00e9conomie projet\u00e9e de " + _fmtM(taxAlpha, locale) + " sur la dur\u00e9e du plan." : "Optimized tax strategy: projected savings of " + _fmtM(taxAlpha, locale) + " over plan horizon.");
+    if (covRatio >= 0.5) strengths.push(fr ? "Revenus garantis couvrent " + Math.round(covRatio * 100) + "% des d\u00e9penses : expositon r\u00e9duite au risque de march\u00e9." : "Guaranteed income covers " + Math.round(covRatio * 100) + "% of spending: reduced market exposure.");
+    // activeProps is declared later; compute the diagnostic signal locally.
+    var _actPropsDiag = (props || []).filter(function (pp) { return pp.on; });
+    if (_actPropsDiag.length > 0) {
+      var _totalEq = _actPropsDiag.reduce(function (s, pp) { return s + toNum(pp.val) - toNum(pp.mb); }, 0);
+      if (_totalEq > 0) strengths.push(fr ? "Avoir immobilier de " + _fmtM(_totalEq, locale) + " : diversification hors placements financiers." : "Real estate equity " + _fmtM(_totalEq, locale) + ": diversification outside financial holdings.");
+    }
+    if (cOn) strengths.push(fr ? "Mode couple : deux sources de revenus gouvernementaux (RRQ + PSV \u00d7 2), fractionnement de pension possible." : "Couple mode: two government income streams (QPP + OAS × 2), pension splitting available.");
+    if (strengths.length === 0) strengths.push(fr ? "\u2014" : "\u2014");
+    // Weaknesses
+    if (succ < 0.75) weaknesses.push(fr ? "Taux de succ\u00e8s faible (" + Math.round(succ * 100) + "%) : environ " + (100 - Math.round(succ * 100)) + "% des sc\u00e9narios \u00e9puisent le capital avant le d\u00e9c\u00e8s." : "Low success rate (" + Math.round(succ * 100) + "%): ~" + (100 - Math.round(succ * 100)) + "% of scenarios exhaust capital before death.");
+    if (rVar5 < annualSpend * 2) weaknesses.push(fr ? "R\u00e9serve VaR 5% limit\u00e9e : " + _fmtM(rVar5, locale) + " couvre moins de 2 ans de d\u00e9penses en sc\u00e9nario d\u00e9favorable." : "Limited VaR 5% buffer: " + _fmtM(rVar5, locale) + " covers less than 2 years of spending in adverse scenario.");
+    if (rMedF < annualSpend * 3 && retAge < (p.deathAge || 90) - 20) weaknesses.push(fr ? "Patrimoine m\u00e9dian \u00e0 la retraite faible vs dur\u00e9e projet\u00e9e : attention au risque de s\u00e9quence." : "Low median wealth at retirement vs projected horizon: sequence-of-returns risk elevated.");
+    var debtSvc = (p.debts || []).reduce(function (s, d) { return s + toNum(d.pay) * 12; }, 0);
+    if (debtSvc > annualSpend * 0.20) weaknesses.push(fr ? "Service de la dette (" + _fmtM(debtSvc, locale) + "/an) > 20% des d\u00e9penses projet\u00e9es : remboursement acc\u00e9l\u00e9r\u00e9 \u00e0 envisager." : "Debt service (" + _fmtM(debtSvc, locale) + "/yr) > 20% of projected spending: accelerated payoff worth considering.");
+    var existingLife = (p.lifeInsBenefit || 0) + (p.cLifeInsBenefit || 0);
+    if (existingLife < annualSpend * 5 && p.cOn) weaknesses.push(fr ? "Couverture vie basse vs besoin du survivant (" + _fmtM(existingLife, locale) + " vs ~" + _fmtM(annualSpend * 5, locale) + ")." : "Low life coverage vs survivor need (" + _fmtM(existingLife, locale) + " vs ~" + _fmtM(annualSpend * 5, locale) + ").");
+    if ((p.oasAge || 65) === 65 && rMedF > 500000) weaknesses.push(fr ? "PSV d\u00e9bute \u00e0 65 : risque de r\u00e9cup\u00e9ration \u00e9lev\u00e9 si autres revenus importants." : "OAS starts at 65: elevated clawback risk if other income is high.");
+    if (weaknesses.length === 0) weaknesses.push(fr ? "\u2014" : "\u2014");
+    // Actions (observational, AMF-safe — conditional tense)
+    if (succ < 0.75) {
+      actions.push(fr ? "Les donn\u00e9es sugg\u00e8rent que retarder la retraite de 2\u20133 ans am\u00e9liorerait le taux de succ\u00e8s substantiellement." : "Data suggest that delaying retirement by 2\u20133 years would materially improve success rate.");
+      actions.push(fr ? "R\u00e9duire les d\u00e9penses cibles de 5\u201310% augmenterait la marge de s\u00e9curit\u00e9." : "Reducing target spending by 5\u201310% would increase the safety margin.");
+    }
+    if (!p.gkOn && succ < 0.90) actions.push(fr ? "Les garde-fous Guyton-Klinger moduleraient les retraits selon la performance \u2014 protection contre s\u00e9quences d\u00e9favorables." : "Guyton-Klinger guardrails would modulate withdrawals based on performance \u2014 protection against adverse sequences.");
+    if (p.cOn && !p.split) actions.push(fr ? "Le fractionnement de revenu de pension (apr\u00e8s 65) peut r\u00e9duire l'imp\u00f4t combin\u00e9 du m\u00e9nage." : "Pension-income splitting (after 65) can reduce the couple's combined tax.");
+    if (p.cOn && !p.qppShare) actions.push(fr ? "Le partage de la rente RRQ entre conjoints est disponible et peut lisser l'imp\u00f4t." : "QPP benefit sharing between spouses is available and can smooth tax.");
+    if (existingLife < annualSpend * 5 && p.cOn) actions.push(fr ? "Un conseiller en s\u00e9curit\u00e9 financi\u00e8re (AMF) pourrait quantifier une couverture temporaire pour combler l'\u00e9cart." : "A licensed financial security advisor (AMF) could quantify term coverage to fill the gap.");
+    if (!p.fatT) actions.push(fr ? "L'activation de la distribution \u00e0 queues \u00e9paisses (fat-tail) testerait la robustesse face aux krachs rares." : "Enabling fat-tail distribution would test robustness against rare crashes.");
+    if (actions.length === 0) actions.push(fr ? "Aucune action critique d\u00e9tect\u00e9e. R\u00e9visez le plan annuellement." : "No critical action detected. Review plan annually.");
+
+    // Headers (merged gold bars for each of 3 columns)
+    wsDiag.mergeCells(5, 2, 5, 3); set(wsDiag, wsDiag.getCell(5, 2), fr ? "\u2714 FORCES" : "\u2714 STRENGTHS");
+    wsDiag.mergeCells(5, 4, 5, 5); set(wsDiag, wsDiag.getCell(5, 4), fr ? "\u26a0 VULN\u00c9RABILIT\u00c9S" : "\u26a0 WEAKNESSES");
+    wsDiag.mergeCells(5, 6, 5, 7); set(wsDiag, wsDiag.getCell(5, 6), fr ? "\u2192 ACTIONS PRIORITAIRES" : "\u2192 PRIORITY ACTIONS");
+    [2, 4, 6].forEach(function (cc, ii) {
+      var c = wsDiag.getCell(5, cc);
+      c.font = { name: "Calibri", size: 12, bold: true, color: { argb: ii === 0 ? CL.green : ii === 1 ? CL.red : CL.gold } };
+      c.alignment = { horizontal: "left", vertical: "middle" };
+      c.fill = CARD_FILL;
+    });
+    wsDiag.getRow(5).height = 24;
+    // Rows 6-15: one bullet per row in each column
+    var maxDiagRows = Math.max(strengths.length, weaknesses.length, actions.length, 5);
+    for (var di = 0; di < maxDiagRows; di++) {
+      var rr = 6 + di;
+      wsDiag.getRow(rr).height = 38;
+      // Strengths column
+      if (di < strengths.length) {
+        set(wsDiag, wsDiag.getCell(rr, 2), "\u2022");
+        wsDiag.getCell(rr, 2).font = { name: "Calibri", size: 14, bold: true, color: { argb: CL.green } };
+        wsDiag.getCell(rr, 2).alignment = { vertical: "top", horizontal: "center" };
+        set(wsDiag, wsDiag.getCell(rr, 3), strengths[di]);
+        wsDiag.getCell(rr, 3).alignment = { wrapText: true, vertical: "top" };
+      }
+      if (di < weaknesses.length) {
+        set(wsDiag, wsDiag.getCell(rr, 4), "\u2022");
+        wsDiag.getCell(rr, 4).font = { name: "Calibri", size: 14, bold: true, color: { argb: CL.red } };
+        wsDiag.getCell(rr, 4).alignment = { vertical: "top", horizontal: "center" };
+        set(wsDiag, wsDiag.getCell(rr, 5), weaknesses[di]);
+        wsDiag.getCell(rr, 5).alignment = { wrapText: true, vertical: "top" };
+      }
+      if (di < actions.length) {
+        set(wsDiag, wsDiag.getCell(rr, 6), "\u2022");
+        wsDiag.getCell(rr, 6).font = { name: "Calibri", size: 14, bold: true, color: { argb: CL.gold } };
+        wsDiag.getCell(rr, 6).alignment = { vertical: "top", horizontal: "center" };
+        set(wsDiag, wsDiag.getCell(rr, 7), actions[di]);
+        wsDiag.getCell(rr, 7).alignment = { wrapText: true, vertical: "top" };
+      }
+    }
+    var diagEndRow = 6 + maxDiagRows;
+    wsDiag.mergeCells(diagEndRow + 1, 2, diagEndRow + 1, 7);
+    set(wsDiag, wsDiag.getCell(diagEndRow + 1, 2), fr ? "Diagnostic g\u00e9n\u00e9r\u00e9 \u00e0 partir des r\u00e9sultats Monte Carlo et des param\u00e8tres du plan. Les observations sont descriptives, non prescriptives. Pour des recommandations personnalis\u00e9es, consultez un planificateur financier qualifi\u00e9." : "Diagnostic generated from MC results and plan parameters. Observations are descriptive, not prescriptive. For personalized recommendations, consult a qualified financial planner.");
+    wsDiag.getCell(diagEndRow + 1, 2).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+    wsDiag.getCell(diagEndRow + 1, 2).alignment = { wrapText: true, vertical: "top" };
+    wsDiag.getRow(diagEndRow + 1).height = 36;
+    footer(wsDiag, diagEndRow + 4);
+
+    // ────────────────────────────────────────────────────────────
     // SHEET 2C: OBJECTIFS / GOALS
     // ────────────────────────────────────────────────────────────
     // params.goals[] is fed into the engine's calcGoalSpending() which
@@ -1572,7 +1675,62 @@
     }
     var reEndRow = Math.max(6, reTotalRow || (5 + activeProps.length));
     styleTable(wsRE, { hr: 5, fr: 6, to: reEndRow, fc: 2, lc: 10 });
-    footer(wsRE, reEndRow + 4);
+
+    // Per-property amortization schedules — one block per active property
+    // with a mortgage. Standard annuity: monthly pay = B·r/(1−(1+r)^−n).
+    // If pp.mr2 (renewal rate) differs and pp.mt1 (term in months) is set,
+    // the rate flips after mt1 months. Compressed to yearly rows.
+    var reScheduleAnchor = reEndRow + 3;
+    activeProps.forEach(function (pp, ppi) {
+      if (toNum(pp.mb) <= 0 || toNum(pp.mr) <= 0 || toNum(pp.ma) <= 0) return;
+      var propTitle = (pp.name || ((fr ? "Propri\u00e9t\u00e9 " : "Property ") + (ppi + 1)));
+      addTitle(wsRE, reScheduleAnchor, 2, (fr ? "AMORTISSEMENT \u2014 " : "AMORTIZATION \u2014 ") + propTitle.toUpperCase(), "", 13);
+      setRow(wsRE, reScheduleAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Solde d\u00e9but" : "Opening bal", fr ? "Int\u00e9r\u00eats" : "Interest", fr ? "Capital" : "Principal", fr ? "Solde fin" : "Closing bal", fr ? "Valeur" : "Value", fr ? "Avoir net" : "Equity", fr ? "Taux" : "Rate"]);
+      var propRow = reScheduleAnchor + 3;
+      var bal = toNum(pp.mb), rate = toNum(pp.mr), rate2 = toNum(pp.mr2) || rate;
+      var amortMonths = toNum(pp.ma) * 12;
+      var termMonthsInit = toNum(pp.mt1) ? toNum(pp.mt1) : amortMonths;
+      var monthsElapsed = 0;
+      var propVal = toNum(pp.val), appr = toNum(pp.ri);
+      // Compute monthly payment from initial rate + remaining amortization.
+      var rMo = rate / 12;
+      var monthlyPay = rMo > 0 ? bal * rMo / (1 - Math.pow(1 + rMo, -amortMonths)) : bal / amortMonths;
+      var yrsShown = 0;
+      while (bal > 0.5 && yrsShown < 30 && monthsElapsed < amortMonths) {
+        var opening = bal;
+        var yrInt = 0, yrPrin = 0;
+        var curRate = monthsElapsed < termMonthsInit ? rate : rate2;
+        for (var mo = 0; mo < 12 && bal > 0.5 && monthsElapsed < amortMonths; mo++) {
+          var intMo = bal * (curRate / 12);
+          var prinMo = Math.min(bal, Math.max(0, monthlyPay - intMo));
+          yrInt += intMo; yrPrin += prinMo;
+          bal = Math.max(0, bal - prinMo);
+          monthsElapsed++;
+          if (monthsElapsed === termMonthsInit && rate2 !== rate) {
+            curRate = rate2;
+            // Recompute monthly payment at new rate over remaining amortization.
+            var remainMonths = amortMonths - monthsElapsed;
+            var rNew = curRate / 12;
+            monthlyPay = rNew > 0 ? bal * rNew / (1 - Math.pow(1 + rNew, -remainMonths)) : bal / remainMonths;
+          }
+        }
+        var curVal = propVal * Math.pow(1 + appr, yrsShown);
+        set(wsRE, wsRE.getCell(propRow, 2), y0 + yrsShown);
+        set(wsRE, wsRE.getCell(propRow, 3), age + yrsShown);
+        wsRE.getCell(propRow, 4).value = opening; wsRE.getCell(propRow, 4).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 5).value = yrInt; wsRE.getCell(propRow, 5).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 6).value = yrPrin; wsRE.getCell(propRow, 6).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 7).value = bal; wsRE.getCell(propRow, 7).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 8).value = curVal; wsRE.getCell(propRow, 8).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 9).value = curVal - bal; wsRE.getCell(propRow, 9).numFmt = FMT_MONEY;
+        wsRE.getCell(propRow, 10).value = curRate; wsRE.getCell(propRow, 10).numFmt = FMT_PCT;
+        propRow++;
+        yrsShown++;
+      }
+      styleTable(wsRE, { hr: reScheduleAnchor + 2, fr: reScheduleAnchor + 3, to: propRow - 1, fc: 2, lc: 10 });
+      reScheduleAnchor = propRow + 2;
+    });
+    footer(wsRE, reScheduleAnchor + 2);
 
     // ────────────────────────────────────────────────────────────
     // SHEET 11: ENTREPRISE (CCPC)
