@@ -1,0 +1,2204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>planner_v3 Engine — Technical Reference</title>
+<style>
+  :root {
+    --bg: #fdfcfa;
+    --text: #1a1a1a;
+    --muted: #666;
+    --accent: #c4944a;
+    --accent-dark: #8a6428;
+    --code-bg: #f6f4ee;
+    --code-border: #e0d8c8;
+    --sidebar-bg: #f9f7f2;
+    --link: #4680c0;
+    --link-hover: #2a5a8c;
+    --table-header: #f5efe2;
+    --table-border: #d8d0c0;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "DM Sans", system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .toc { position: relative !important; height: auto !important; max-height: none !important; } }
+  .toc {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--code-border);
+    padding: 24px 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    font-size: 12.5px;
+  }
+  .toc h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent-dark);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc li { margin-bottom: 6px; line-height: 1.45; }
+  .toc a {
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .toc a:hover {
+    background: rgba(196, 148, 74, 0.12);
+    color: var(--accent-dark);
+  }
+  main {
+    max-width: 880px;
+    padding: 32px 56px 80px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  h1 {
+    font-size: 32px;
+    color: var(--accent-dark);
+    margin: 0 0 8px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  h2 {
+    font-size: 22px;
+    color: var(--accent-dark);
+    margin: 48px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  h3 {
+    font-size: 17px;
+    color: #333;
+    margin: 28px 0 10px;
+    font-weight: 700;
+  }
+  h4 {
+    font-size: 14.5px;
+    color: var(--muted);
+    margin: 20px 0 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  p { margin: 0 0 12px; }
+  hr { border: none; border-top: 1px solid var(--code-border); margin: 32px 0; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { color: var(--link-hover); text-decoration: underline; }
+  ul, ol { margin: 8px 0 12px; padding-left: 24px; }
+  li { margin-bottom: 4px; }
+  strong { color: #000; font-weight: 700; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, "JetBrains Mono", monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    color: #5a4830;
+    padding: 1px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--code-border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: "SF Mono", Menlo, Consolas, "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    margin: 8px 0 16px;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2a2a2a;
+    font-size: 12.5px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0 20px;
+    font-size: 13.5px;
+    background: #fff;
+  }
+  th {
+    background: var(--table-header);
+    color: var(--accent-dark);
+    font-weight: 700;
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid var(--table-border);
+    font-size: 12.5px;
+  }
+  td {
+    padding: 7px 12px;
+    border: 1px solid var(--table-border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fbfaf6; }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    background: rgba(196, 148, 74, 0.06);
+    padding: 8px 16px;
+    margin: 12px 0;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .header {
+    background: linear-gradient(180deg, #2c2418 0%, #1a1610 100%);
+    color: #f0ece4;
+    padding: 28px 56px;
+    border-bottom: 4px solid var(--accent);
+  }
+  .header h1 { color: var(--accent); margin: 0; }
+  .header .subtitle { color: #a09890; font-size: 14px; margin-top: 6px; }
+  @media print {
+    .layout { display: block; }
+    .toc { display: none; }
+    main { max-width: none; padding: 0; }
+    .header { background: none; color: var(--text); border-bottom: 2px solid var(--accent); padding: 0 0 12px; }
+    .header h1 { color: var(--accent-dark); }
+    h2 { page-break-before: auto; page-break-after: avoid; }
+    pre, table { page-break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc"><h3>Table of contents</h3><ol><li><a href="#table-of-contents">Table of contents</a></li><li><a href="#part-1-architecture-data-flow">Part 1 — Architecture & data flow</a></li><li><a href="#part-2-constants-reference-the-c-object">Part 2 — Constants reference (the `C` object)</a></li><li><a href="#part-3-tax-math-calctax-calccorptax-calcpayroll">Part 3 — Tax math (`calcTax`, `calcCorpTax`, `calcPayroll`)</a></li><li><a href="#part-4-government-benefits-calcqpp-calcoas-calcgis">Part 4 — Government benefits (`calcQPP`, `calcOAS`, `calcGIS`)</a></li><li><a href="#part-5-withdrawal-floors-getrrifmin-oasclbthrfor">Part 5 — Withdrawal floors (`getRRIFMin`, `oasClbThrFor`)</a></li><li><a href="#part-6-stochastic-primitives">Part 6 — Stochastic primitives</a></li><li><a href="#part-7-auxiliary-functions">Part 7 — Auxiliary functions</a></li><li><a href="#part-8-registered-accounts-encyclopedia">Part 8 — Registered accounts encyclopedia</a></li><li><a href="#part-9-deterministic-engine-optimizedecum">Part 9 — Deterministic engine (`optimizeDecum`)</a></li><li><a href="#part-10-monte-carlo-engine-runmc">Part 10 — Monte Carlo engine (`runMC`)</a></li><li><a href="#part-11-stress-scenarios-str-catalog">Part 11 — Stress scenarios (`STR` catalog)</a></li><li><a href="#part-12-result-schema">Part 12 — Result schema</a></li><li><a href="#part-13-invariants-defensive-guards">Part 13 — Invariants & defensive guards</a></li><li><a href="#part-14-known-limitations-flagged-items">Part 14 — Known limitations & flagged items</a></li><li><a href="#part-15-reproducibility-running-the-engine-outside-the-browser">Part 15 — Reproducibility (running the engine outside the browser)</a></li><li><a href="#appendix-a-function-signatures-one-liner">Appendix A — Function signatures (one-liner)</a></li><li><a href="#appendix-b-file-map">Appendix B — File map</a></li></ol></nav>
+<main>
+<div class="header"><h1>planner_v3 Engine</h1><div class="subtitle">Complete Technical Reference</div></div>
+<hundefined id="planner_v3-engine-complete-technical-reference">planner_v3 Engine — Complete Technical Reference</hundefined>
+<p><strong>Source:</strong> <code>planner/planner_v3.html</code> (BuildFi Laboratoire v12.0.0)
+<strong>Engine code:</strong> ~5000 lines, lines 1882–7376 of <code>planner_v3.html</code>
+<strong>Audience:</strong> Engineers, tax/compliance specialists, anyone who needs to understand what each number in a BuildFi report means and how it was computed.
+<strong>Conventions:</strong> All amounts are in nominal CAD unless noted. All tax/benefit constants are 2026 values, indexed to year <code>y</code> by <code>(1 + p.inf)^y</code>. Code snippets are extracted verbatim from <code>planner_v3.html</code> and may show character-encoding artefacts (the source file uses CP1252 in some comment blocks).</p>
+<hr>
+<hundefined id="table-of-contents">Table of contents</hundefined>
+<ul>
+<li><a href="#part-1--architecture--data-flow">Part 1 — Architecture &amp; data flow</a></li>
+<li><a href="#part-2--constants-reference-the-c-object">Part 2 — Constants reference (the <code>C</code> object)</a></li>
+<li><a href="#part-3--tax-math-calctax-calccorptax-calcpayroll">Part 3 — Tax math (<code>calcTax</code>, <code>calcCorpTax</code>, <code>calcPayroll</code>)</a></li>
+<li><a href="#part-4--government-benefits-calcqpp-calcoas-calcgis">Part 4 — Government benefits (<code>calcQPP</code>, <code>calcOAS</code>, <code>calcGIS</code>)</a></li>
+<li><a href="#part-5--withdrawal-floors-getrrifmin-oasclbthrfor">Part 5 — Withdrawal floors (<code>getRRIFMin</code>, <code>oasClbThrFor</code>)</a></li>
+<li><a href="#part-6--stochastic-primitives-chol-trn-stochdeath-smul-pcr-blends">Part 6 — Stochastic primitives (<code>chol</code>, <code>tRn</code>, <code>stochDeath</code>, <code>sMul</code>, <code>pCr</code>, blends)</a></li>
+<li><a href="#part-7--auxiliary-functions-calcnritemizedtax-calcwht-divisibilityfactor">Part 7 — Auxiliary functions (<code>calcNRItemizedTax</code>, <code>calcWHT</code>, <code>divEligibleFactor</code>)</a></li>
+<li><a href="#part-8--registered-accounts-encyclopedia">Part 8 — Registered accounts encyclopedia</a></li>
+<li><a href="#part-9--deterministic-engine-optimizedecum">Part 9 — Deterministic engine (<code>optimizeDecum</code>)</a></li>
+<li><a href="#part-10--monte-carlo-engine-runmc">Part 10 — Monte Carlo engine (<code>runMC</code>)</a></li>
+<li><a href="#part-11--stress-scenarios-str-catalog">Part 11 — Stress scenarios (<code>STR</code> catalog)</a></li>
+<li><a href="#part-12--result-schema">Part 12 — Result schema</a></li>
+<li><a href="#part-13--invariants--defensive-guards">Part 13 — Invariants &amp; defensive guards</a></li>
+<li><a href="#part-14--known-limitations--flagged-items">Part 14 — Known limitations &amp; flagged items</a></li>
+<li><a href="#part-15--reproducibility-running-the-engine-outside-the-browser">Part 15 — Reproducibility (running the engine outside the browser)</a></li>
+</ul>
+<hr>
+<hundefined id="part-1-architecture-data-flow">Part 1 — Architecture &amp; data flow</hundefined>
+<hundefined id="11-what-the-engine-is">1.1 What the engine is</hundefined>
+<p>The BuildFi engine is a Canadian retirement-planning calculator embedded in <code>planner_v3.html</code>. It produces two kinds of output from one input parameter object <code>p</code>:</p>
+<ol>
+<li><strong>A deterministic projection</strong> (<code>optimizeDecum(p)</code>) — one path showing exactly what happens year-by-year if all expected returns hit. Used for the in-page &quot;Projection déterministe&quot; table.</li>
+<li><strong>A Monte Carlo distribution</strong> (<code>runMC(p, N)</code>) — <code>N</code> independent simulations (typically 1000–5000) capturing return / inflation / mortality randomness. Used for success rate, percentile bands, fan charts.</li>
+</ol>
+<p>Both engines call the same tax + benefit primitives (<code>calcTax</code>, <code>calcQPP</code>, <code>calcOAS</code>, <code>calcGIS</code>, <code>getRRIFMin</code>, <code>calcCorpTax</code>, <code>calcPayroll</code>).</p>
+<hundefined id="12-the-p-parameter-object">1.2 The <code>p</code> parameter object</hundefined>
+<p><code>p</code> is a flat JavaScript object with ~150 fields covering:</p>
+<ul>
+<li>Identity &amp; timeline (<code>age</code>, <code>retAge</code>, <code>deathAge</code>, <code>sex</code>, <code>prov</code>)</li>
+<li>Compensation (<code>sal</code>, <code>salVol</code>, <code>disabProb</code>, <code>contGr</code>)</li>
+<li>Account balances (<code>rrsp</code>, <code>tfsa</code>, <code>nr</code>, <code>fhsaBal</code>, <code>liraBal</code>, <code>peBal</code>, <code>pmBal</code>, <code>dcBal</code>, <code>dc2Bal</code>)</li>
+<li>Annual contributions (<code>rrspC</code>, <code>tfsaC</code>, <code>nrC</code>, <code>fhsaC</code>)</li>
+<li>Spending (<code>retSpM</code>, <code>goP</code>, <code>slP</code>, <code>noP</code>, <code>smileSlAge</code>, <code>smileNoAge</code>, <code>healthAge</code>, <code>healthMul</code>)</li>
+<li>Government benefits (<code>qppAge</code>, <code>oasAge</code>, <code>avgE</code>, <code>qppYrs</code>, <code>gis</code> flag)</li>
+<li>Returns + risk (<code>eqRet</code>, <code>eqVol</code>, <code>bndRet</code>, <code>bndVol</code>, <code>inf</code>, <code>fatT</code>, <code>stochMort</code>, <code>stochInf</code>)</li>
+<li>Allocation (<code>allocR</code>, <code>allocT</code>, <code>allocN</code>, <code>glide</code>, <code>glideSpd</code>, <code>multiAsset</code>, <code>assetAlloc</code>, <code>allocOverride</code>)</li>
+<li>Fees (<code>merR</code>, <code>merT</code>, <code>merN</code>, <code>nrTaxDrag</code>)</li>
+<li>Pension (<code>penType</code>, <code>penM</code>, <code>penIdx</code>, <code>bridge</code>, <code>brAmt</code>, <code>brEnd</code>, <code>pen2Type</code>, <code>pen2M</code>, <code>pen2Idx</code>)</li>
+<li>Withdrawal strategy (<code>wStrat</code>, <code>melt</code>, <code>meltTgt</code>, <code>rrifTax</code>, <code>gkOn</code>)</li>
+<li>Spousal coordination (<code>cOn</code>, <code>cAge</code>, <code>cRetAge</code>, <code>cDeath</code>, <code>cSex</code>, <code>cSal</code>, <code>cRRSP</code>, <code>cTFSA</code>, <code>cNR</code>, <code>cQppAge</code>, <code>cAvgE</code>, <code>cQppYrs</code>, <code>cOasAge</code>, <code>cPenType</code>, <code>cPenM</code>, <code>cRetSpM</code>, <code>cFhsaBal</code>, <code>cFhsaC</code>, <code>cLiraBal</code>, <code>cLifeInsBenefit</code>, <code>cLifeInsPremium</code>, <code>qppShare</code>, <code>split</code>, <code>splitP</code>)</li>
+<li>Real estate (<code>props[]</code> with each entry having <code>on</code>, <code>val</code>, <code>mb</code>, <code>mr</code>, <code>ma</code>, <code>ri</code>, <code>rm</code>, <code>ox</code>, <code>pt</code>, <code>ins</code>, <code>sa</code>, <code>pri</code>, <code>cg</code>, <code>helocRate</code>, <code>helocMax</code>, <code>smithOn</code>, <code>refiAge</code>, <code>refiAmt</code>, <code>dsAge</code>, <code>dpaOn</code>, <code>dpaRate</code>, <code>landPct</code>)</li>
+<li>Corporate / CCPC (<code>bizOn</code>, <code>bizType</code>, <code>bizRevenue</code>, <code>bizExpenses</code>, <code>bizGrowth</code>, <code>bizVolatility</code>, <code>bizRemun</code>, <code>bizSalaryPct</code>, <code>bizRetainedEarnings</code>, <code>bizInvAlloc</code>, <code>bizExtractMode</code>, <code>bizExtractYrs</code>, <code>bizOasOptim</code>, <code>bizSaleAge</code>, <code>bizSalePrice</code>, <code>bizSaleACB</code>, <code>bizLCGE</code>, <code>bizDebtBal</code>, <code>bizDebtRate</code>, <code>bizDebtAmort</code>)</li>
+<li>IPP (<code>ippOn</code>, <code>ippBal</code>, <code>ippBal2</code>)</li>
+<li>Family / events / goals / debts / RSU (<code>family[]</code>, <code>goals[]</code>, <code>debts[]</code>, <code>rsuGrants[]</code>, <code>ev1Age</code>, <code>ev1Amt</code>, <code>ev1Name</code>, <code>inc1Age</code>, <code>inc1Amt</code>, <code>inc1Name</code>, …)</li>
+<li>RESP / education (<code>respOn</code>, <code>respContrib</code>, <code>respYrsLeft</code>, <code>respKids</code>, <code>respReturnAge</code>, <code>respAlready</code>)</li>
+<li>Insurance (<code>insOn</code>, <code>lifeInsBenefit</code>, <code>lifeInsPremium</code>)</li>
+<li>Stress (<code>strs</code>, <code>stWhen</code>, <code>stAge</code>, <code>strs2</code>, <code>stWhen2</code>, <code>stAge2</code>, <code>custEq</code>, <code>custBd</code>, <code>custInf</code>)</li>
+<li>MC controls (<code>nSim</code>, <code>fatT</code>, <code>stochMort</code>, <code>stochInf</code>, <code>eqRetS</code>, <code>eqVolS</code>, <code>bndRetS</code>, <code>bndVolS</code>)</li>
+<li>Cost basis &amp; cap gains (<code>costBase</code>, <code>cgIncLo</code>, <code>cgIncHi</code>, <code>cgThresh</code>)</li>
+<li>Charitable &amp; misc (<code>donAnn</code>, <code>ftqOn</code>, <code>ftqAmt</code>)</li>
+</ul>
+<p>Every field is optional except <code>age</code>, <code>retAge</code>, and <code>sal</code>. Defaults are applied through <code>||</code> fallbacks throughout the engine plus a sanitization pass at the top of <code>runMC</code>.</p>
+<hundefined id="13-top-level-data-flow">1.3 Top-level data flow</hundefined>
+<pre><code>                         ┌─────────────────────────┐
+                         │  Quiz / Wizard / API    │
+                         │  (validateSchema)       │
+                         └────────────┬────────────┘
+                                      │  p (params)
+                                      ▼
+        ┌────────────────────────────────────────────────────────┐
+        │  optimizeDecum(p)                runMC(p, N)           │
+        │  ───────────────                 ────────────          │
+        │  Single deterministic            N independent          │
+        │  year-by-year projection         simulations with       │
+        │                                  random returns,         │
+        │                                  inflation, mortality    │
+        └─────────────┬────────────────────────────┬──────────────┘
+                      │                            │
+                      ▼                            ▼
+              { schedule[],                 { pD[], medRevData[],
+                totalTax, totalGIS,           sens[], succ, medF,
+                oasClawbackYrs,               p5F/p25F/p50F/p75F/p95F,
+                finalBal,                     medEstateNet/Tax,
+                retStart }                    p5/25/75/95EstateNet/Tax,
+                                              ruinAges, deathAges,
+                                              sf, p5Ruin, gkAvg…,
+                                              histogram, deathVsRuin }
+</code></pre>
+<hundefined id="14-function-call-graph-engine-only">1.4 Function call graph (engine-only)</hundefined>
+<pre><code>runMC ──┬─ stochDeath               ──┬─ CPM_M / CPM_F (mortality tables)
+        ├─ tRn (×5 to 8 per year)    └─ random uniform
+        ├─ chol (precomputed CHL)
+        ├─ blendRet / blendMulti
+        ├─ calcQPP / calcOAS / calcGIS
+        ├─ getRRIFMin                ──── RRIF table (C.RRIF_MIN)
+        ├─ calcTax  ─────────────────── PROV_TAX, FED_BRACKETS, FED_RATES
+        ├─ calcCorpTax
+        ├─ calcPayroll
+        ├─ calcNRItemizedTax  ────────── divEligibleFactor
+        ├─ calcWHT
+        ├─ sMul (spending smile)
+        └─ pCr (pension credit)
+
+optimizeDecum ──── same primitives (deterministic path through the same logic)
+</code></pre>
+<hundefined id="15-engine-vs-ui">1.5 Engine vs UI</hundefined>
+<p>The engine is wrapped in inline <code>&lt;script&gt;</code> tags inside <code>planner_v3.html</code>. The same file also contains React UI components (Slider, ChartTooltip, MiniArea, etc.). The audit extractor (<code>report/realai/extract-v3-engine.mjs</code>) lifts only the engine block (constants → <code>runMC</code>) into a Node-runnable module to permit headless testing.</p>
+<hr>
+<hundefined id="part-2-constants-reference-the-c-object">Part 2 — Constants reference (the <code>C</code> object)</hundefined>
+<p>All constants live in a single literal at lines 1882–2547 of <code>planner_v3.html</code> (the <code>var C = { … }</code> block, terminated by the <code>/*__INJECTED_CONSTANTS_END__*/</code> marker). Below is the full inventory grouped by purpose. Values shown are 2026.</p>
+<hundefined id="21-returns-volatility-asset-class">2.1 Returns &amp; volatility (asset-class)</hundefined>
+<pre><code class="language-js">eqRet: 0.07,   eqVol: 0.16,     // generic equity (2-class mode)
+bndRet: 0.035, bndVol: 0.06,    // generic bonds
+canRet: 0.07,  canVol: 0.16,    // Canadian equity (8-class mode)
+usRet: 0.08,   usVol: 0.17,     // US equity
+intlRet: 0.07, intlVol: 0.18,   // EAFE
+emRet: 0.085,  emVol: 0.23,     // emerging markets
+peRet: 0.12,   peVol: 0.25,     // private equity
+pmRet: 0.03,   pmVol: 0.15,     // private mortgage
+dcRet: 0.05,   dcVol: 0.08,     // DC pension portfolio
+fxVol: 0.08,   reVol: 0.10,     // FX translation, real-estate price
+</code></pre>
+<p>These are <strong>default</strong> expected returns. The user can override any of them per <code>p.eqRet</code>, <code>p.eqVol</code>, etc. The runMC sanitization clamps to physical ranges (eqRet ∈ [-5%, +20%], eqVol ∈ [1%, 50%], etc.).</p>
+<hundefined id="22-default-allocations">2.2 Default allocations</hundefined>
+<pre><code class="language-js">allocR: 0.6,   // equity % in RRSP (rest = bonds)
+allocT: 0.8,   // equity % in TFSA
+allocN: 0.5,   // equity % in non-registered
+multiAsset: { can: 0.25, us: 0.35, intl: 0.20, em: 0.05, bnd: 0.15 }, // 8-class default
+</code></pre>
+<hundefined id="23-fees">2.3 Fees</hundefined>
+<pre><code class="language-js">merR: 0.01,    // RRSP MER
+merT: 0.005,   // TFSA MER
+merN: 0.005,   // NR MER
+nrTaxDrag: 0.009, // implicit tax drag in NR account when itemized accounting is OFF
+penMER: 0.01,  // employer pension MER
+peFee: 0.02,   // PE fund fee
+</code></pre>
+<hundefined id="24-inflation-spending">2.4 Inflation &amp; spending</hundefined>
+<pre><code class="language-js">inflation: 0.021,                 // Bank of Canada target ~2%
+goP: 1,    slP: 0.85,  noP: 0.75, // Go-Go / Slow-Go / No-Go spending multipliers (deterministic)
+mcSlP: 0.82, mcNoP: 0.92,         // MC variants (slightly different to capture variance)
+smileSlAge: 75, smileNoAge: 85,   // age transitions
+healthAge: 85, healthMul: 0.02,   // health-cost growth: +2%/yr above 85
+healthCostMax: 2,                 // max 2× base spending
+spendingBase: 0.7, spendingHousing: 0.15, spendingHealth: 0.15, // budget composition
+</code></pre>
+<p>The <strong>Blanchett spending smile</strong> is implemented via <code>sMul(age, retAge, goP, slP, noP, slAge, noAge)</code>. See Part 6.</p>
+<hundefined id="25-smoothing-knobs-smooth-sub-object">2.5 Smoothing knobs (<code>smooth</code> sub-object)</hundefined>
+<pre><code class="language-js">smooth: {
+  melt: 0.4,          // max year-over-year meltdown change (40%)
+  meltFloor: 5000,    // minimum absolute change ($5K) to allow movement
+  spend: 0.3,         // max spending-layer (RRSP+TFSA+NR draw) change
+  spendFloor: 10000,
+  back: 0.4,          // backward-pass cap
+  backFloor: 15000,
+  nrOver: 1.5,        // NR target capped at 1.5× current spending need
+  mcBlend: 0.7        // MC memory weight: 70% prior decision / 30% target
+}
+</code></pre>
+<p>These tame the optimizer&#39;s tendency to swing wildly year-to-year. Without <code>meltFloor</code>, low-balance accounts could trigger meltdown changes that look erratic in the year-by-year report.</p>
+<hundefined id="26-guyton-klinger-guardrails">2.6 Guyton-Klinger guardrails</hundefined>
+<pre><code class="language-js">gkCeil: 0.055,     // initial WR ceiling (5.5%)
+gkFloor: 0.03,     // initial WR floor (3%)
+gkCut: 0.10,       // 10% spending cut when ceiling breached
+gkRaise: 0.10,     // 10% raise when floor breached
+gkMaxCut: 0.25,    // cumulative max cut (25%)
+</code></pre>
+<hundefined id="27-glide-path">2.7 Glide path</hundefined>
+<pre><code class="language-js">glideSpeed: 0.02,    // 2%/yr de-risking (equity → bonds approaching retirement)
+glideFloor: 0.25,    // floor for general allocation
+glideEqFloor: 0.20,  // absolute equity floor (never go below 20%)
+</code></pre>
+<hundefined id="28-real-estate-constants">2.8 Real-estate constants</hundefined>
+<pre><code class="language-js">mortgageRate: 0.05,    // default fixed rate when none given
+propAppreciation: 0.035,
+helocRate: 0.065,
+rentalInflation: 0.02,
+reCostInflation: 0.03,
+refiAmortYears: 25,
+replacementRent: 1500, // /month rent assumed when forced primary residence sale
+HELOC_MAX_LTV: 0.65,
+REFI_MAX_LTV: 0.80,
+CCA_RATE: 0.04,        // class 1 building depreciation
+LAND_PORTION: 0.30,    // default land/building split
+PROPERTY_SALE_COST: 0.05, // 5% transaction cost
+</code></pre>
+<hundefined id="29-pension-defaults">2.9 Pension defaults</hundefined>
+<pre><code class="language-js">dcWithdrawalRate: 0.04,
+dcRrifConversionAge: 72,
+partialIndexation: 0.5, // 50% indexation default for partially indexed DB plans
+annuityRate: 0.04,
+deathAge: 90,
+spouseDeathAge: 90,
+</code></pre>
+<hundefined id="210-resp-education">2.10 RESP / education</hundefined>
+<pre><code class="language-js">respGrowthRate: 0.05,
+CESG_MAX_ELIGIBLE_ANNUAL: 2500,  // annual CESG-eligible contrib
+CESG_MATCH_RATE: 0.20,            // 20% federal match (basic)
+</code></pre>
+<hundefined id="211-corporate-ccpc">2.11 Corporate / CCPC</hundefined>
+<pre><code class="language-js">bizSalaryPct: 0.5,
+corpPassiveAlloc: 0.4,
+corpExtractYears: 10,
+bizSaleACB: 100,
+SBD_LIMIT: 500000,         // small business deduction limit
+PASSIVE_GRIND_THRESHOLD: 50000, // SBD reduced $5/$1 above this
+CORP_RATES: {
+  QC: { small: 0.122, general: 0.265, passive: 0.5017 },
+  ON: { small: 0.122, general: 0.265, passive: 0.5017 },
+  BC: { small: 0.110, general: 0.270, passive: 0.5067 },
+  // ...
+}
+</code></pre>
+<hundefined id="212-tax-brackets-credits-federal">2.12 Tax brackets &amp; credits (federal)</hundefined>
+<pre><code class="language-js">TAX_BASE_YEAR: 2026,
+FED_BRACKETS: [58523, 117045, 181440, 258482], // top of brackets 1-4
+FED_RATES:    [0.14,  0.205,  0.26,   0.29,   0.33], // 5 marginal rates
+FED_PERSONAL: 16452,           // BPA
+FED_AGE_AMT:    8790,          // age amount
+FED_AGE_THRESH: 44325,         // age-amount phase-out start
+FED_CREDIT_RATE: 0.15,         // non-refundable credit rate
+FED_AGE_CLAWBACK_RATE: 0.15,   // 15¢ phase-out per $1 above threshold
+PENSION_CREDIT_MAX: 2000,
+ELIG_GROSSUP: 1.38,            // eligible-dividend gross-up (38%)
+NON_ELIG_GROSSUP: 1.15,        // non-eligible (15%)
+FED_ELIG_DTC: 0.150198,        // federal eligible-dividend tax credit
+FED_NON_ELIG_DTC: 0.090301,    // federal non-eligible DTC
+</code></pre>
+<hundefined id="213-provincial-brackets-prov_tax">2.13 Provincial brackets (<code>PROV_TAX</code>)</hundefined>
+<p>Each province carries:</p>
+<ul>
+<li><code>b</code>: bracket-top thresholds (length n)</li>
+<li><code>r</code>: marginal rates (length n+1)</li>
+<li><code>pd</code>: provincial basic personal amount</li>
+<li><code>abate</code>: federal abatement multiplier (<code>0.835</code> for QC = 16.5% reduction, <code>1</code> for all others)</li>
+<li><code>eligDivCr</code>: provincial eligible-dividend tax credit rate</li>
+<li><code>nonEligDivCr</code>: provincial non-eligible DTC</li>
+<li><code>ageAmt</code>: provincial age amount</li>
+<li><code>ageThresh</code>: provincial age-amount phase-out start (0 = no phase-out)</li>
+<li><code>penAmt</code>: provincial pension-income credit amount</li>
+</ul>
+<p>Quebec example:</p>
+<pre><code class="language-js">QC: {
+  b: [54345, 108730, 132245],
+  r: [0.14, 0.19, 0.24, 0.2575],
+  pd: 18952,
+  abate: 0.835,
+  eligDivCr: 0.1118,
+  nonEligDivCr: 0.039362,
+  ageAmt: 3903,
+  ageThresh: 0,
+  penAmt: 2918
+}
+</code></pre>
+<p>All 13 provinces (QC, ON, BC, AB, SK, MB, NB, NS, PE, NL, NT, YT, NU) are present. Bracket and rate values are 2026 published values (Revenu Québec, ON Form 428, etc.).</p>
+<hundefined id="214-on-surtax">2.14 ON surtax</hundefined>
+<pre><code class="language-js">ON_SURTAX_THR1: 5710, // 2026 ON Form 428: 20% surtax above $5,710 prov tax
+ON_SURTAX_RATE1: 0.20,
+ON_SURTAX_THR2: 7307, // additional 36% above $7,307
+ON_SURTAX_RATE2: 0.36,
+</code></pre>
+<p>(Updated in the audit from 2024 values $4,991 / $6,387 to 2026 values.)</p>
+<hundefined id="215-government-benefits">2.15 Government benefits</hundefined>
+<pre><code class="language-js">OAS_CLAWBACK_THR: 95323,         // 2026 OAS recovery threshold
+OAS_MAX_MONTHLY: 742.31,         // 2026 Q1
+OAS_DEFERRAL_BONUS_PER_MONTH: 0.006, // +0.6%/month (=+7.2%/yr deferral)
+OAS_MAX_DEFERRAL_FACTOR: 1.36,   // cap at 60-month deferral
+OAS_75_PLUS_BONUS: 1.10,         // +10% for 75+
+OAS_CLAWBACK_RATE: 0.15,         // 15¢ per $1 above threshold
+
+GIS_MAX_SINGLE: 1105.43,
+GIS_MAX_COUPLE: 667.41,
+GIS_EMPLOYMENT_FULL_EXEMPT: 5000,    // first $5K of employment income exempt
+GIS_EMPLOYMENT_PARTIAL_CEILING: 15000, // 50% inclusion between $5K and $15K
+gisIncomeThreshold: 22000,           // GIS-protection threshold (engine internal)
+
+QPP_MAX_MONTHLY: 1507.65,            // CPP/QPP max @ 65 with enhancement
+QPP_MGA: 74600,                      // 2026 YMPE
+QPP_YAMPE: 85000,                    // 2026 YAMPE (CPP2 ceiling)
+QPP2_MAX_MONTHLY: 81.00,             // CPP2 enhancement at YAMPE
+QPP_BASIC_EXEMPTION: 3500,
+QPP_RATE_QC: 0.064,
+CPP_RATE_ROC: 0.0595,
+QPP2_CPP2_RATE: 0.04,
+QPP_MAX_CONTRIB_YEARS: 40,
+QPP_EARLY_REDUCTION_PER_MONTH: 0.006, // 0.6%/month early (-7.2%/yr)
+QPP_LATE_BONUS_PER_MONTH: 0.007,      // 0.7%/month late (+8.4%/yr)
+QPP_ADJ_FLOOR: 0.64,                  // [-36% floor]
+QPP_ADJ_CAP: 1.42,                    // [+42% ceiling]
+QPP_SURVIVOR_FRACTION: 0.6,           // 60% to survivor
+QPP_SURVIVOR_CAP_MONTHLY: 813,
+</code></pre>
+<hundefined id="216-rrif-table-rrif_min">2.16 RRIF table (<code>RRIF_MIN</code>)</hundefined>
+<p>Verbatim from CRA Schedule 7300. Key values:</p>
+<table>
+<thead>
+<tr>
+<th>Age</th>
+<th>Factor</th>
+<th>Age</th>
+<th>Factor</th>
+<th>Age</th>
+<th>Factor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>71</td>
+<td>0.0528</td>
+<td>80</td>
+<td>0.0682</td>
+<td>89</td>
+<td>0.1099</td>
+</tr>
+<tr>
+<td>72</td>
+<td>0.0540</td>
+<td>81</td>
+<td>0.0708</td>
+<td>90</td>
+<td>0.1192</td>
+</tr>
+<tr>
+<td>73</td>
+<td>0.0553</td>
+<td>82</td>
+<td>0.0738</td>
+<td>91</td>
+<td>0.1306</td>
+</tr>
+<tr>
+<td>74</td>
+<td>0.0567</td>
+<td>83</td>
+<td>0.0771</td>
+<td>92</td>
+<td>0.1449</td>
+</tr>
+<tr>
+<td>75</td>
+<td>0.0582</td>
+<td>84</td>
+<td>0.0808</td>
+<td>93</td>
+<td>0.1634</td>
+</tr>
+<tr>
+<td>76</td>
+<td>0.0598</td>
+<td>85</td>
+<td>0.0851</td>
+<td>94</td>
+<td>0.1879</td>
+</tr>
+<tr>
+<td>77</td>
+<td>0.0617</td>
+<td>86</td>
+<td>0.0899</td>
+<td>95+</td>
+<td>0.2000</td>
+</tr>
+<tr>
+<td>78</td>
+<td>0.0636</td>
+<td>87</td>
+<td>0.0955</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>79</td>
+<td>0.0658</td>
+<td>88</td>
+<td>0.1021</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><code>RRIF_MIN_95_PLUS: 0.20</code> is used for ages 95–105.</p>
+<hundefined id="217-account-contribution-caps">2.17 Account / contribution caps</hundefined>
+<pre><code class="language-js">TFSA_INDEX_ROUNDING: 500,           // round annual TFSA limit to nearest $500
+TFSA_ANNUAL_LIMIT: 7000,             // 2024-2026
+TFSA_LIMITS: [...]                   // historical schedule from 2009 ($5K) → 2026 ($7K)
+FHSA_LIFETIME_MAX: 40000,
+FHSA_ANNUAL_LIMIT: 8000,
+FHSA_MAX_YEARS: 15,
+FHSA_MANDATORY_CLOSE_AGE: 71,
+</code></pre>
+<hundefined id="218-capital-gains">2.18 Capital gains</hundefined>
+<pre><code class="language-js">CG_THRESHOLD: 250000,        // CRA $250K split (2024+)
+CG_INCLUSION_LOW: 0.50,      // first $250K @ 50%
+CG_INCLUSION_HIGH: 0.6667,   // excess @ 66.67%
+</code></pre>
+<hundefined id="219-pension-splitting-sharing">2.19 Pension splitting / sharing</hundefined>
+<pre><code class="language-js">PENSION_SPLIT_MAX: 0.5,          // 50% split rate
+QPP_SHARING_TAX_FACTOR: 0.15,    // proxy for tax benefit of QPP equalization
+</code></pre>
+<hundefined id="220-probate-per-province">2.20 Probate (per province)</hundefined>
+<pre><code class="language-js">PROBATE: {
+  ON: { exempt: 50000, rate: 0.015 },
+  BC: { exempt: 50000, rate: 0.014 },
+  NS: { rate: 0.015 }, NB: { rate: 0.015 }, PE: { rate: 0.015 },
+  NL: { rate: 0.006 }, SK: { rate: 0.007, cap: 7000 }, MB: { rate: 0.007, cap: 7000 },
+  AB: { flat: 525 }, QC: { flat: 1200 },
+  NT: { rate: 0.004 }, YT: { rate: 0.004 }, NU: { rate: 0.004 },
+  DEFAULT: { rate: 0.004 }
+}
+</code></pre>
+<hundefined id="221-mortality-cpm_m-cpm_f">2.21 Mortality (<code>CPM_M</code>, <code>CPM_F</code>)</hundefined>
+<p>CPM-2014 base rates (qx = annual death probability) projected to 2023 base year via Scale MI-2017. Sample (male):</p>
+<table>
+<thead>
+<tr>
+<th>Age</th>
+<th>qx</th>
+<th>Age</th>
+<th>qx</th>
+<th>Age</th>
+<th>qx</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>30</td>
+<td>0.00034</td>
+<td>65</td>
+<td>0.00631</td>
+<td>90</td>
+<td>0.2001</td>
+</tr>
+<tr>
+<td>50</td>
+<td>0.0013</td>
+<td>75</td>
+<td>0.0232</td>
+<td>95</td>
+<td>0.39</td>
+</tr>
+<tr>
+<td>60</td>
+<td>0.00394</td>
+<td>85</td>
+<td>0.09701</td>
+<td>100</td>
+<td>0.6783</td>
+</tr>
+</tbody></table>
+<p>Female table is similar but lower across all ages. Both extend to 105. <code>stochDeath</code> applies further annual improvement of <code>0.99^(impYrs + (age-startAge))</code> from 2023 onward.</p>
+<hundefined id="222-correlation-matrices-crm-crm8-crisis-variants">2.22 Correlation matrices (<code>CRM</code>, <code>CRM8</code>, crisis variants)</hundefined>
+<p>5-class matrix <code>CRM</code> (eq, bond, inf, PE, PM) — DMS 2024 values.
+8-class matrix <code>CRM8</code> (canEq, usEq, intlEq, emEq, bond, inf, PE, PM) for multi-asset mode.
+Each has a <code>_CRISIS</code> variant where eq-bond correlation goes more negative (flight to quality).</p>
+<p>Example <code>CRM[0]</code> (equity row): <code>[1, 0.20, -0.40, 0.65, 0.05]</code>. Cholesky factor <code>CHL</code> is precomputed at module load.</p>
+<hundefined id="223-stochastic-primitives">2.23 Stochastic primitives</hundefined>
+<pre><code class="language-js">CRISIS_THRESHOLD: -0.10, // shock of -10%+ triggers CRM_CRISIS
+STOCH_INF_VOL: 0.015,     // ±1.5% per-year inflation noise
+</code></pre>
+<hundefined id="224-engine-internals">2.24 Engine internals</hundefined>
+<pre><code class="language-js">fallbackMargRate: 0.42,
+detMargRate: 0.40,
+ruinThreshold: 100,        // balance below $100 = ruined
+dustThreshold: 100,
+wdSampleSims: 30,           // # of sims tracked for medRevData withdrawal sampling
+shortfallInterval: 3,
+sensSims: 50,               // sims used for sensitivity computation
+histogramBins: { min: 8, max: 20 },
+deathRuinMaxAge: 105,
+deathRuinBucket: 5,
+</code></pre>
+<hundefined id="225-other-constants">2.25 Other constants</hundefined>
+<ul>
+<li><code>RSU_TAX_RATE: 0.45</code> — flat top-bracket assumption for RSU vest tax</li>
+<li><code>disabilityMonths: 6</code> — months of disability assumed in MC random event</li>
+<li><code>salaryVolFloor: 0.20</code>, <code>peLockYears: 3</code>, <code>peLockHaircut: 0.30</code></li>
+<li><code>meltdownTarget: 58523</code> (default = first federal bracket top)</li>
+<li><code>WHT_RATE_FOREIGN: 0.15</code> — withholding tax on foreign dividends</li>
+<li><code>DONATION_*</code>, <code>FTQ_CSN_*</code>, <code>FRV_*</code>, <code>EI_*</code>, <code>RQAP_*</code> — see source for charitable giving, FTQ-CSN credit, FRV/LIF rules, payroll deductions</li>
+</ul>
+<hr>
+<hundefined id="part-3-tax-math-calctax-calccorptax-calcpayroll">Part 3 — Tax math (<code>calcTax</code>, <code>calcCorpTax</code>, <code>calcPayroll</code>)</hundefined>
+<hundefined id="31-calctaxinc-yr-prov-infr-retired-divinfo-personal-income-tax">3.1 <code>calcTax(inc, yr, prov, infR, retired, divInfo)</code> — personal income tax</hundefined>
+<p>Computes federal + provincial tax on an income figure for a given year, province, with optional dividend info and retiree credits.</p>
+<p><strong>Signature:</strong></p>
+<pre><code class="language-js">function calcTax(inc, yr, prov, infR, retired, divInfo) { ... }
+</code></pre>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li><code>inc</code> — non-dividend taxable income in nominal year-<code>yr</code> dollars</li>
+<li><code>yr</code> — year offset from <code>TAX_BASE_YEAR</code> (2026)</li>
+<li><code>prov</code> — 2-letter province code</li>
+<li><code>infR</code> — annual inflation rate for indexation (default 0.02)</li>
+<li><code>retired</code> — boolean; controls pension + age credits</li>
+<li><code>divInfo</code> — optional <code>{ eligDiv: cash$, nonEligDiv: cash$ }</code> for dividend treatment</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<pre><code class="language-js">{
+  total,        // total tax (fed + prov, after surtax)
+  fed,          // federal tax (post-credits, post-abatement, post-DTC)
+  prov,         // provincial tax (post-credits, post-DTC, post-surtax)
+  eff,          // total / cash income (effective rate)
+  marg,         // marginal rate (fed*abate + prov, on actual taxable income)
+  fedEff, provEff,
+  divCredFed, divCredProv,  // dollar value of dividend tax credits applied
+  taxableInc    // grossed-up taxable income used in bracket lookup
+}
+</code></pre>
+<p><strong>Step-by-step algorithm:</strong></p>
+<ol>
+<li><p><strong>Indexation factor:</strong> <code>idx = (1 + infR)^yr</code>. All thresholds (brackets, BPA, age amount, OAS clawback) are multiplied by <code>idx</code>.</p>
+</li>
+<li><p><strong>Dividend gross-up:</strong></p>
+<pre><code class="language-js">if (divInfo) {
+  eligTaxable = divInfo.eligDiv * 1.38;        // 38% gross-up
+  nonEligTaxable = divInfo.nonEligDiv * 1.15;  // 15% gross-up
+}
+var totalTaxableInc = inc + eligTaxable + nonEligTaxable;
+</code></pre>
+<p>Bracket lookups always use <code>totalTaxableInc</code> (post-gross-up), matching CRA T1 General.</p>
+</li>
+<li><p><strong>Zero-income early exit:</strong> Returns <code>{ total: 0, …, marg: 0.14 }</code> if <code>totalTaxableInc &lt;= 0</code>.</p>
+</li>
+<li><p><strong>Federal bracket walk:</strong></p>
+<pre><code class="language-js">var fb = FED_BRACKETS.map(v =&gt; v * idx);  // indexed thresholds
+var fed = 0, prev = 0;
+for (i = 0; i &lt; fb.length; i++) {
+  if (totalTaxableInc &lt;= fb[i]) { fed += (totalTaxableInc - prev) * fr[i]; break; }
+  fed += (fb[i] - prev) * fr[i];
+  prev = fb[i];
+  if (i === fb.length - 1) fed += (totalTaxableInc - fb[i]) * fr[i + 1]; // top bracket
+}
+</code></pre>
+</li>
+<li><p><strong>Federal credits (subtracted at 15%):</strong></p>
+<ul>
+<li><strong>BPA:</strong> <code>fpd = 16452 * idx</code>, credit = <code>fpd * 0.14</code> (at lowest rate 14%, not 15%, per CRA — this matches the engine&#39;s first rate of 0.14)</li>
+<li><strong>Pension credit (if retired):</strong> <code>min(2000 * idx, eligible_pension) × 0.15</code></li>
+<li><strong>Age credit (if retired):</strong> <code>max(0, 8790*idx − 0.15 × max(0, totalTaxableInc − 44325*idx)) × 0.15</code></li>
+</ul>
+<pre><code class="language-js">fed = max(0, fed - fpd*fr[0] - (retired ? penCreditMax * 0.15 : 0)
+                             - (retired ? ageCreditAmt * 0.15 : 0));
+</code></pre>
+</li>
+<li><p><strong>QC abatement:</strong></p>
+<pre><code class="language-js">fed *= pt.abate;  // QC: × 0.835 (16.5% reduction); all other prov: × 1
+</code></pre>
+</li>
+<li><p><strong>Federal dividend tax credit</strong> (applied <strong>after</strong> abatement — see Part 14 §14.1 for the flagged ordering issue):</p>
+<pre><code class="language-js">var divCredFed = eligTaxable * 0.150198 + nonEligTaxable * 0.090301;
+fed = max(0, fed - divCredFed);
+</code></pre>
+</li>
+<li><p><strong>Provincial bracket walk:</strong> Identical structure to federal, using <code>pt.b</code>, <code>pt.r</code>, indexed by <code>idx</code>.</p>
+</li>
+<li><p><strong>Provincial credits:</strong> BPA (<code>pd</code>), age amount (with optional ageThresh phase-out), pension amount (<code>penAmt</code>). All applied at the <strong>lowest provincial rate</strong> (<code>pr2[0]</code>).</p>
+</li>
+<li><p><strong>ON surtax</strong> (Ontario only):</p>
+<pre><code class="language-js">if (prov === &quot;ON&quot;) {
+  if (ptax &gt; C.ON_SURTAX_THR1 * idx) onSur += (ptax - C.ON_SURTAX_THR1 * idx) * 0.20;
+  if (ptax &gt; C.ON_SURTAX_THR2 * idx) onSur += (ptax - C.ON_SURTAX_THR2 * idx) * 0.36;
+  ptax += onSur;
+}
+</code></pre>
+<p>Surtax applies AFTER all non-refundable credits, BEFORE total summation, per ON Form 428.</p>
+</li>
+<li><p><strong>Provincial dividend credits:</strong></p>
+<pre><code class="language-js">var provEligCr = eligTaxable * pt.eligDivCr;
+var provNonEligCr = nonEligTaxable * pt.nonEligDivCr;
+ptax = max(0, ptax - provEligCr - provNonEligCr);
+</code></pre>
+<p>Note: this is <strong>before</strong> the ON surtax in the engine — confirm whether ON Form 428 has the order reversed.</p>
+</li>
+<li><p><strong>Total + marginal rate:</strong></p>
+<pre><code class="language-js">total = max(0, fed) + max(0, ptax);
+marg = fedMarg * pt.abate + provMarg;
+</code></pre>
+<p>Marginal rates <code>fedMarg</code> and <code>provMarg</code> are looked up by walking brackets one more time.</p>
+</li>
+<li><p><strong>Effective rate:</strong></p>
+<pre><code class="language-js">var cashInc = inc + (divInfo ? divInfo.eligDiv + divInfo.nonEligDiv : 0);
+eff = cashInc &gt; 0 ? total / cashInc : 0;
+</code></pre>
+<p>Note: divisor is <strong>cash income</strong>, not grossed-up taxable income, so eff% is comparable to take-home reasoning.</p>
+</li>
+</ol>
+<hundefined id="32-calccorptaxactiveincome-passiveincome-prov-yr-infr-ccpc-tax">3.2 <code>calcCorpTax(activeIncome, passiveIncome, prov, yr, infR)</code> — CCPC tax</hundefined>
+<pre><code class="language-js">function calcCorpTax(activeIncome, passiveIncome, prov, yr, infR) {
+  var idx = Math.pow(1 + (infR || 0.02), yr || 0);
+  var sbd = C.SBD_LIMIT * idx; // $500K business limit, indexed
+  // Passive income grind: SBD reduced $5/$1 of passive income above $50K
+  var passiveGrind = max(0, passiveIncome - C.PASSIVE_GRIND_THRESHOLD * idx);
+  var adjustedSBD = max(0, sbd - 5 * passiveGrind);
+  var cr = CORP_RATES[prov] || CORP_RATES.QC;
+  var smallBizInc = min(max(0, activeIncome), adjustedSBD);
+  var generalInc = max(0, activeIncome - adjustedSBD);
+  var activeTax = smallBizInc * cr.small + generalInc * cr.general;
+  // Passive taxed at ~50%
+  var passiveTax = max(0, passiveIncome) * cr.passive;
+  // RDTOH: ~30.67% of passive added to refundable pool
+  var rdtohAdded = max(0, passiveIncome) * 0.3067;
+  return {
+    activeTax, passiveTax, totalTax: activeTax + passiveTax,
+    rdtohAdded,
+    smallBizPortion: smallBizInc,    // → eligible for non-eligible dividends
+    generalPortion: generalInc,       // → GRIP, can pay eligible dividends
+    adjustedSBD,
+    effectiveRate: totalInc &gt; 0 ? totalTax / totalInc : 0
+  };
+}
+</code></pre>
+<p><strong>SBD passive grind</strong> is the centrepiece: every $1 of passive investment income above $50,000 reduces the business limit by $5. At $200K passive ($150K above threshold), <code>adjustedSBD = 500,000 − 5×150,000 = −250,000 → clamped to 0</code>. All active income then taxed at general rate.</p>
+<p><strong>Combined CCPC rates</strong> (per <code>CORP_RATES</code>):</p>
+<ul>
+<li>QC / ON: small 12.2%, general 26.5%, passive 50.17%</li>
+<li>BC: small 11.0%, general 27.0%, passive 50.67%</li>
+<li>AB: small 11.0%, general 23.0%, passive 46.67%</li>
+<li>(etc., one entry per province)</li>
+</ul>
+<hundefined id="33-calcpayrollsal-prov-yr-infr-employee-payroll-deductions">3.3 <code>calcPayroll(sal, prov, yr, infR)</code> — employee payroll deductions</hundefined>
+<p>Returns dollar amount of CPP/QPP + EI (+ RQAP for QC) deducted from gross salary.</p>
+<pre><code class="language-js">function calcPayroll(sal, prov, yr, infR) {
+  if (sal &lt;= 0) return 0;
+  var inf = Math.pow(1 + (infR || 0.02), yr || 0);
+  var isQC = (prov || &quot;QC&quot;) === &quot;QC&quot;;
+
+  // QPP/CPP: rate × pensionable earnings ($3,500-YMPE)
+  var qppExempt = 3500 * inf;
+  var qppMax = QPP_MGA * inf;     // 74600 indexed
+  var qppPensionable = max(0, min(sal, qppMax) - qppExempt);
+  var qppRate = isQC ? 0.064 : 0.0595;
+  var qpp = qppPensionable * qppRate;
+
+  // QPP2/CPP2: 4% on YMPE-YAMPE ($74,600 - $85,000)
+  var qpp2Max = QPP_YAMPE * inf;
+  var qpp2Pensionable = max(0, min(sal, qpp2Max) - qppMax);
+  var qpp2 = qpp2Pensionable * 0.04;
+
+  // EI
+  var eiMIE = 65700 * inf;
+  var eiRate = isQC ? 0.0127 : 0.0158;
+  var ei = min(sal, eiMIE) * eiRate;
+
+  // RQAP (QC parental insurance, QC only)
+  var rqap = isQC ? min(sal, 94000 * inf) * 0.00494 : 0;
+
+  return Math.round(qpp + qpp2 + ei + rqap);
+}
+</code></pre>
+<p>This function is <strong>not</strong> called as part of the simulation loop — it&#39;s used by report-side derivations (e.g., to display gross-to-net pay on the cash flow). The MC loop computes income net of payroll implicitly via the salary path.</p>
+<hr>
+<hundefined id="part-4-government-benefits-calcqpp-calcoas-calcgis">Part 4 — Government benefits (<code>calcQPP</code>, <code>calcOAS</code>, <code>calcGIS</code>)</hundefined>
+<hundefined id="41-calcqppstartage-avgearn-yrscontrib-cppqpp-monthly-benefit">4.1 <code>calcQPP(startAge, avgEarn, yrsContrib)</code> — CPP/QPP monthly benefit</hundefined>
+<p>Returns base monthly benefit (in 2026 dollars) at start age, given lifetime average earnings and years of contribution.</p>
+<pre><code class="language-js">function calcQPP(startAge, avgEarn, yrsContrib) {
+  var maxM = QPP_MAX_MONTHLY;          // 1507.65
+  var mga = QPP_MGA;                    // 74600
+  var ratio = min(1, avgEarn / mga) * min(1, yrsContrib / 40);
+  var adj = 1;
+  if (startAge &lt; 65) adj = 1 - 0.006 * (65 - startAge) * 12;  // -0.6%/mo early
+  else if (startAge &gt; 65) adj = 1 + 0.007 * (startAge - 65) * 12;  // +0.7%/mo late
+  adj = max(0.64, min(1.42, adj));     // [-36%, +42%]
+  var base = maxM * ratio * adj;
+  // CPP2 enhancement on YMPE-YAMPE earnings
+  var rrq2 = avgEarn &gt; mga ? 81 * min(1, (min(avgEarn, 85000) - 74600) / (85000 - 74600))
+                                * min(1, yrsContrib / 40) * adj : 0;
+  return base + rrq2;
+}
+</code></pre>
+<p><strong>Worked examples:</strong></p>
+<table>
+<thead>
+<tr>
+<th>startAge</th>
+<th>avgEarn</th>
+<th>yrsContrib</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>65</td>
+<td>$74,600</td>
+<td>40</td>
+<td>$1,507.65 (max)</td>
+</tr>
+<tr>
+<td>60</td>
+<td>$74,600</td>
+<td>40</td>
+<td>$1,507.65 × 0.64 = $964.90</td>
+</tr>
+<tr>
+<td>70</td>
+<td>$74,600</td>
+<td>40</td>
+<td>$1,507.65 × 1.42 = $2,140.86</td>
+</tr>
+<tr>
+<td>65</td>
+<td>$74,600</td>
+<td>20</td>
+<td>$1,507.65 × 0.5 = $753.83</td>
+</tr>
+<tr>
+<td>65</td>
+<td>$35,000</td>
+<td>40</td>
+<td>$1,507.65 × (35000/74600) = $707.30</td>
+</tr>
+<tr>
+<td>65</td>
+<td>$85,000</td>
+<td>40</td>
+<td>$1,507.65 + $81 = $1,588.65 (full CPP2)</td>
+</tr>
+</tbody></table>
+<p>Boundary clamps at 0.64 and 1.42 are intentional — they protect against typo-level startAge values (the actual 60-year window is 60–70).</p>
+<hundefined id="42-calcoasstartage-income-yr-infr-currentage-oas-monthly-benefit">4.2 <code>calcOAS(startAge, income, yr, infR, currentAge)</code> — OAS monthly benefit</hundefined>
+<pre><code class="language-js">function calcOAS(startAge, income, yr, infR, currentAge) {
+  var idxO = Math.pow(1 + (infR || 0.02), yr || 0);
+  var maxM = OAS_MAX_MONTHLY * idxO;     // 742.31 indexed
+  var adj = 1;
+  if (startAge &gt; 65) adj = 1 + 0.006 * (startAge - 65) * 12;  // +0.6%/mo deferral
+  adj = min(1.36, adj);                   // cap at 60-month deferral
+  var oas = maxM * adj;
+  if ((currentAge || startAge) &gt;= 75) oas *= 1.10;   // 75+ enhancement
+  var oasThr = OAS_CLAWBACK_THR * idxO;   // 95323 indexed
+  if (income &gt; oasThr) oas = max(0, oas - (income - oasThr) * 0.15 / 12);
+  return oas;
+}
+</code></pre>
+<p><strong>Key behaviour:</strong></p>
+<ul>
+<li><code>startAge</code> controls the deferral bonus only (one-time decision at start).</li>
+<li><code>currentAge</code> controls the 75+ bonus — a person who started OAS at 65 still gets 1.10× when they turn 75.</li>
+<li>Clawback uses <strong>monthly</strong> reduction — <code>(income − thr) × 15% ÷ 12</code>.</li>
+<li>Income passed in is <strong>annual taxable</strong> income in current-year nominal dollars; threshold is indexed.</li>
+<li><code>oasClbThrFor(age, baseAge, inf)</code> is a helper that returns the indexed threshold for a given age — used inside <code>optimizeDecum</code> and <code>runMC</code> to ensure clawback comparisons are always against the indexed value.</li>
+</ul>
+<hundefined id="43-calcgisage-nonoasincome-yr-infr-hasspouse-employmentinc-gis-supplement">4.3 <code>calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc)</code> — GIS supplement</hundefined>
+<pre><code class="language-js">function calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc) {
+  if (age &lt; 65) return 0;
+  var idx = Math.pow(1 + (infR || 0.02), yr || 0);
+  var maxGIS = (hasSpouse ? GIS_MAX_COUPLE : GIS_MAX_SINGLE) * idx;
+
+  // Employment income exemption (Bill C-19, applied 2025+)
+  var empInc = max(0, employmentInc || 0);
+  var empCountable = 0;
+  if (empInc &gt; 15000) {
+    // First $5K exempt, next $10K @ 50%, rest @ 100%
+    empCountable = 5000 + (empInc - 15000);
+  } else if (empInc &gt; 5000) {
+    empCountable = (empInc - 5000) * 0.5;
+  }
+  // Non-employment income unchanged
+  var nonEmpInc = max(0, nonOASincome - empInc);
+  var adjIncome = nonEmpInc + empCountable;
+
+  var reduction = adjIncome * 0.5 / 12;   // 50¢ per $1 of countable income
+  return max(0, maxGIS - reduction);
+}
+</code></pre>
+<p><strong>The 50¢ clawback</strong> is the dominant feature: every $1 of taxable income (post employment exemption) reduces GIS by $0.50/yr (~$0.04/mo). For low-income retirees, <strong>drawing from RRSP is double-taxed in effect</strong> — once at marginal rate, then again as GIS reduction.</p>
+<p>The engine&#39;s <code>optimizeDecum</code> implements a <code>gisEligible</code> flag (line 4943) that checks <code>fixedTaxable / infM &lt; 22000</code> and routes withdrawals to TFSA/NR first to protect GIS.</p>
+<hr>
+<hundefined id="part-5-withdrawal-floors-getrrifmin-oasclbthrfor">Part 5 — Withdrawal floors (<code>getRRIFMin</code>, <code>oasClbThrFor</code>)</hundefined>
+<hundefined id="51-getrrifminage-bal">5.1 <code>getRRIFMin(age, bal)</code></hundefined>
+<pre><code class="language-js">function getRRIFMin(age, bal) {
+  return age &gt;= 95 ? bal * 0.2
+       : RRIF[age] ? bal * RRIF[age]
+       : age &gt;= 71 ? bal * 0.2
+       : 0;
+}
+</code></pre>
+<ul>
+<li>Ages &lt; 71: returns 0 (RRIF withdrawals not yet mandatory; RRSP can stay an RRSP).</li>
+<li>Ages 71–94: indexes into the CRA prescribed-rate table (<code>C.RRIF_MIN</code>).</li>
+<li>Ages 95+: flat 20% (matches CRA&#39;s final published row).</li>
+<li>The fall-through <code>age &gt;= 71 ? bal * 0.2</code> catches the case where <code>age</code> is in [71, 94] but happens to be a non-integer or somehow misses the table lookup — defensive.</li>
+</ul>
+<hundefined id="52-oasclbthrforage-baseage-inf">5.2 <code>oasClbThrFor(age, baseAge, inf)</code></hundefined>
+<pre><code class="language-js">function oasClbThrFor(age, baseAge, inf) {
+  var yrs = max(0, (age || 0) - (baseAge || 0));
+  return OAS_CLAWBACK_THR * Math.pow(1 + (inf || 0), yrs);
+}
+</code></pre>
+<p>Wraps the clawback-threshold indexation. Used everywhere OAS clawback is checked against a per-year <code>taxInc</code>. Without this helper (or equivalent), comparisons would mix nominal year-Y income against unindexed 2026 threshold and over-state clawback years.</p>
+<hr>
+<hundefined id="part-6-stochastic-primitives">Part 6 — Stochastic primitives</hundefined>
+<hundefined id="61-cholm-cholesky-decomposition">6.1 <code>chol(m)</code> — Cholesky decomposition</hundefined>
+<pre><code class="language-js">function chol(m) {
+  var n = m.length, L = m.map(r =&gt; r.map(() =&gt; 0));
+  for (var i = 0; i &lt; n; i++) for (var j = 0; j &lt;= i; j++) {
+    var s = 0;
+    for (var k = 0; k &lt; j; k++) s += L[i][k] * L[j][k];
+    L[i][j] = i === j
+      ? Math.sqrt(Math.max(1e-3, m[i][i] - s))   // diagonal: floor at √0.001 to handle non-PSD
+      : (m[i][j] - s) / (L[j][j] || 1);          // off-diagonal
+  }
+  return L;
+}
+</code></pre>
+<p>Standard lower-triangular Cholesky. The <code>Math.max(1e-3, ...)</code> floor on diagonal entries protects against non-positive-definite correlation matrices (which would otherwise cause <code>Math.sqrt(negative) → NaN</code>). Tiny noise injection; doesn&#39;t materially distort PSD inputs.</p>
+<p>Precomputed at module load:</p>
+<pre><code class="language-js">var CHL = chol(CRM);            // 5×5 base
+var CHL_CRISIS = chol(CRM_CRISIS); // 5×5 stressed
+var CHL8 = chol(CRM8);          // 8×8 multi-asset
+var CHL8_CRISIS = chol(CRM8_CRISIS);
+</code></pre>
+<hundefined id="62-trndf-t-distribution-sampler">6.2 <code>tRn(df)</code> — t-distribution sampler</hundefined>
+<pre><code class="language-js">function tRn(df) {
+  var u = Math.random(), v = Math.random();
+  var z = Math.sqrt(-2 * Math.log(Math.max(u, 1e-10))) * Math.cos(2 * Math.PI * v);
+  if (!df || df &gt; 30) return z;     // t with df &gt; 30 ≈ normal
+  var c2 = 0;
+  for (var i = 0; i &lt; df; i++) {
+    var x = Math.sqrt(-2 * Math.log(Math.max(Math.random(), 1e-10))) * Math.cos(2 * Math.PI * Math.random());
+    c2 += x * x;                     // sum of df independent N(0,1)² = chi-square(df)
+  }
+  return z / Math.sqrt(c2 / df);     // standard t-distribution
+}
+</code></pre>
+<ul>
+<li>Box-Muller generates standard normals.</li>
+<li>Chi-square sample built from <code>df</code> independent N(0,1)² draws.</li>
+<li>For <code>df &gt; 30</code> (or undefined), returns plain normal (t converges to normal).</li>
+<li>BuildFi typically uses <code>df = 5</code> (<code>p.fatT = true</code>), giving fat-tailed returns (kurtosis ~6 vs normal kurtosis 3). Without fat tails (<code>p.fatT = false</code>), the engine passes <code>df = 999</code> ≈ normal.</li>
+</ul>
+<hundefined id="63-stochdeathstartage-sexcode-stochastic-death-age">6.3 <code>stochDeath(startAge, sexCode)</code> — stochastic death age</hundefined>
+<pre><code class="language-js">function stochDeath(startAge, sexCode) {
+  var tbl = sexCode === &quot;F&quot; ? CPM_F : CPM_M;
+  var age = startAge;
+  var impYrs = 2026 - 2023;             // 3 years of mortality improvement applied at start
+  while (age &lt;= 105) {
+    var baseQx = tbl[Math.floor(age)] || tbl[Math.min(100, Math.floor(age / 5) * 5)] || 1e-3;
+    var qx = baseQx * Math.pow(0.99, impYrs + (age - startAge));  // 1%/yr improvement
+    if (Math.random() &lt; qx) return age;
+    age++;
+  }
+  return 105;                           // CPM cap
+}
+</code></pre>
+<ul>
+<li>Uses CPM-2014 base rates (the <code>CPM_M</code> / <code>CPM_F</code> tables) with annual mortality improvement of 1%/year compounding from 2023 (Scale MI-2017 approximation).</li>
+<li>Walks year-by-year until either Bernoulli trial fires (death) or reaches 105 (cap).</li>
+<li>Empirical life expectancy at 65: ~86 (M), ~88.5 (F) — matches CIA published tables.</li>
+<li>Non-integer <code>startAge</code> is floored when looking up the base rate.</li>
+</ul>
+<hundefined id="64-smulage-retage-gop-slp-nop-slage-noage-blanchett-spending-smile">6.4 <code>sMul(age, retAge, goP, slP, noP, slAge, noAge)</code> — Blanchett spending smile</hundefined>
+<pre><code class="language-js">function sMul(age, ra, g, sl, n, slAge, noAge) {
+  if (age &lt; ra) return 0;
+  var s1 = slAge || Math.max(ra + 10, 75);
+  var s2 = noAge || Math.max(s1 + 10, 85);
+  if (age &lt; s1) return g;       // Go-Go phase
+  if (age &lt; s2) return sl;      // Slow-Go phase
+  return n;                     // No-Go phase
+}
+</code></pre>
+<p>Returns the spending-multiplier in the year <code>age</code> for someone retired at <code>ra</code>:</p>
+<ul>
+<li><strong>Go-Go</strong> (typically retAge → 75): full spending (<code>goP</code>, default 1.0)</li>
+<li><strong>Slow-Go</strong> (75 → 85): reduced (<code>slP</code>, default 0.85 deterministic / 0.82 MC)</li>
+<li><strong>No-Go</strong> (85+): further reduced (<code>noP</code>, default 0.75 / 0.92 MC)</li>
+</ul>
+<p>Pre-retirement: returns 0 (spending is zero in the engine pre-retirement; salary funds living standard implicitly via the contributions).</p>
+<hundefined id="65-pcrpi-age-pension-credit-value">6.5 <code>pCr(pi, age)</code> — pension credit value</hundefined>
+<pre><code class="language-js">function pCr(pi, age) {
+  return age &lt; 65 || pi &lt;= 0 ? 0 : Math.min(2000, pi) * (0.15 * 0.835 + 0.14);
+}
+</code></pre>
+<p>Returns the <strong>dollar value</strong> of the federal+QC pension credit on <code>pi</code> of eligible pension income at <code>age</code>.</p>
+<ul>
+<li><code>min(2000, pi)</code>: only first $2,000 of eligible pension income qualifies.</li>
+<li><code>0.15 * 0.835 + 0.14</code>: federal credit (15%, post-QC abatement) + QC credit (14% lowest provincial rate). This is hard-coded for QC — other provinces use <code>pt.penAmt</code> inside <code>calcTax</code>.</li>
+</ul>
+<hundefined id="66-blendret-blendmulti-resolvealloc">6.6 <code>blendRet</code>, <code>blendMulti</code>, <code>resolveAlloc</code></hundefined>
+<pre><code class="language-js">function blendRet(eqRet, bondRet, eqPct) {
+  return eqRet * eqPct + bondRet * (1 - eqPct);  // 2-class portfolio return
+}
+
+function blendMulti(rets, alloc) {
+  return rets.can * alloc.can + rets.us * alloc.us + rets.intl * alloc.intl
+       + rets.em * alloc.em + rets.bnd * alloc.bnd;  // 5-component blend
+}
+
+function resolveAlloc(p, acctKey) {
+  // Per-account override → global multiAsset → default
+  if (p.allocOverride &amp;&amp; p.allocOverride[acctKey]) return p.allocOverride[acctKey];
+  return p.assetAlloc || { can: 0.25, us: 0.35, intl: 0.20, em: 0.05, bnd: 0.15 };
+}
+</code></pre>
+<hr>
+<hundefined id="part-7-auxiliary-functions">Part 7 — Auxiliary functions</hundefined>
+<hundefined id="71-diveligiblefactorprov">7.1 <code>divEligibleFactor(prov)</code></hundefined>
+<p>Returns a province-specific factor (~0.5–0.8) used in <code>calcNRItemizedTax</code> to convert from &quot;marginal rate&quot; to &quot;effective tax rate on Canadian eligible dividends&quot; (after gross-up + DTC).</p>
+<pre><code class="language-js">var _DIV_ELIG_FACTOR = {
+  QC: 0.75, ON: 0.73, BC: 0.68, AB: 0.71, SK: 0.68, MB: 0.76, NB: 0.70,
+  NS: 0.79, PE: 0.75, NL: 0.80, YT: 0.54, NT: 0.58, NU: 0.62
+};
+function divEligibleFactor(prov) {
+  return (_DIV_ELIG_FACTOR[prov] != null) ? _DIV_ELIG_FACTOR[prov] : 0.70;
+}
+</code></pre>
+<p>Derived from EY 2026 personal tax rate tables, top-bracket effective eligible-dividend rates ÷ top marginal rates. Slightly understates benefit at lower incomes (DTC has a larger absolute effect in lower brackets).</p>
+<hundefined id="72-calcnritemizedtaxnrbal-retnr_gross-alloc-margrate-bndr-prov">7.2 <code>calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR, prov)</code></hundefined>
+<p>Itemized tax on a non-registered account, decomposing total return into dividend / interest / capital gain components and taxing each by its CRA treatment.</p>
+<pre><code class="language-js">function calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR, prov) {
+  if (nrBal &lt;= 0) return 0;
+  var turnover = 0.10;          // passive ETF turnover assumption
+  var divCAN = nrBal * alloc.can * 0.030;       // 3% Cdn dividend yield
+  var divUS = nrBal * alloc.us * 0.015;         // 1.5% US dividend yield
+  var divINTL = nrBal * (alloc.intl + alloc.em) * 0.020;
+  var interest = nrBal * alloc.bnd * Math.max(0, bndR);
+  var totalReturn = nrBal * retNR_gross;
+  var distributed = divCAN + divUS + divINTL + interest;
+  var capGain = Math.max(0, totalReturn - distributed);
+
+  var taxDivCAN = divCAN * margRate * divEligibleFactor(prov);    // eligible-div effective tax
+  var whtUS = divUS * 0.15;                                        // foreign WHT paid
+  var whtINTL = divINTL * 0.15;
+  var taxDivForeign = Math.max(0, (divUS + divINTL) * margRate - whtUS - whtINTL); // net of FTC
+  var taxInterest = interest * margRate;
+
+  // Capital gains: $250K split applied to REALIZED portion only
+  var capGainRealized = capGain * turnover;                        // turnover-based realization
+  var CG_THR = 250000;
+  var taxableCG = capGainRealized &gt; CG_THR
+    ? CG_THR * 0.50 + (capGainRealized - CG_THR) * 0.6667
+    : capGainRealized * 0.50;
+  var taxCapGain = taxableCG * margRate;
+
+  return Math.max(0, taxDivCAN + taxDivForeign + taxInterest + taxCapGain);
+}
+</code></pre>
+<p>Used in <code>optimizeDecum</code> and <code>runMC</code> when <code>p.multiAsset === true</code> — replaces the simplified <code>nrTaxDrag</code> constant (default 0.9%) with itemized tax flows.</p>
+<hundefined id="73-calcwhtalloc-accttype">7.3 <code>calcWHT(alloc, acctType)</code></hundefined>
+<p>Foreign withholding-tax drag on dividends from inside RRSPs and TFSAs.</p>
+<pre><code class="language-js">function calcWHT(alloc, acctType) {
+  if (acctType === &#39;rrsp&#39;) {
+    // RRSP: US WHT exempt by treaty; INTL/EM = 15%
+    return alloc.intl * 0.020 * 0.15 + alloc.em * 0.020 * 0.15;
+  } else if (acctType === &#39;tfsa&#39;) {
+    // TFSA: US = 15% (no treaty exemption), INTL/EM = 15%
+    return alloc.us * 0.015 * 0.15 + alloc.intl * 0.020 * 0.15 + alloc.em * 0.020 * 0.15;
+  }
+  return 0; // NR handled via itemized tax
+}
+</code></pre>
+<p>Tiny absolute drag (&lt;0.5%) but it compounds over 30+ year horizons.</p>
+<hr>
+<hundefined id="part-8-registered-accounts-encyclopedia">Part 8 — Registered accounts encyclopedia</hundefined>
+<hundefined id="81-rrsp-prrsp-prrspc">8.1 RRSP (<code>p.rrsp</code>, <code>p.rrspC</code>)</hundefined>
+<ul>
+<li>Contributions deductible in year made (engine doesn&#39;t model contribution tax savings explicitly because <code>p.sal</code> is gross — net-of-tax is computed by <code>calcTax</code>).</li>
+<li>Annual contribution capped at <code>Math.min(p.rrspC || 0, …)</code> — the engine does NOT enforce CRA&#39;s 18%-of-prior-year-income contribution cap; it trusts the user input.</li>
+<li>Grows at <code>retRR = blendRet(eqRet, bondRet, allocR) − merR</code> (or <code>blendMulti − merR − calcWHT(.., &#39;rrsp&#39;)</code> in multi-asset mode).</li>
+<li>Mandatory conversion to RRIF at age 71 (engine doesn&#39;t explicitly convert — but <code>getRRIFMin(age, rr)</code> returns 0 below 71, then the prescribed rate from 71 onward, automatically forcing minimum withdrawals).</li>
+<li>Withdrawals fully taxable as ordinary income.</li>
+</ul>
+<hundefined id="82-tfsa-ptfsa-ptfsac">8.2 TFSA (<code>p.tfsa</code>, <code>p.tfsaC</code>)</hundefined>
+<ul>
+<li><strong>TFSA room tracking</strong> is unique among engine accounts:<pre><code class="language-js">var _tfsaYrs18 = max(0, min(p.age - 17, 18)); // years eligible since 2009 launch (max 18)
+var _tfsaCumLim = /* historical cumulative limits 2009→2026 */;
+var _tfsaNetContrib = min(tf, _tfsaCumLim);   // conservative: assume balance is contrib + gains
+var tfsaRoom = max(0, _tfsaCumLim - _tfsaNetContrib);
+</code></pre>
+</li>
+<li>New room each year: <code>Math.round(7000 * (1+inf)^y / 500) * 500</code> (rounded to nearest $500 per CRA).</li>
+<li><strong>Restored room from prior-year withdrawals</strong>: <code>_tfsaLastYrWith</code> accumulates withdrawals during year Y, added to <code>tfsaRoom</code> at start of year Y+1.</li>
+<li>Contributions capped at <code>Math.min(p.tfsaC, tfsaRoom)</code>.</li>
+<li>Withdrawals tax-free, do NOT affect GIS or OAS clawback.</li>
+</ul>
+<hundefined id="83-non-registered-pnr-pnrc">8.3 Non-registered (<code>p.nr</code>, <code>p.nrC</code>)</hundefined>
+<ul>
+<li>Two accounting modes:<ul>
+<li><strong>Simplified</strong> (<code>p.multiAsset !== true</code>): grows at <code>eqRet*allocN + bndRet*(1-allocN) - merN - nrTaxDrag</code> where <code>nrTaxDrag</code> is a flat 0.9% drag.</li>
+<li><strong>Itemized</strong> (<code>p.multiAsset === true</code>): grows at gross return, then <code>calcNRItemizedTax</code> deducts dividend / interest / cap-gain tax explicitly.</li>
+</ul>
+</li>
+<li>ACB tracking: <code>nrACB = p.costBase || nr</code> initially; updated when shares vest from RSU or proceeds from FHSA/property sale flow in.</li>
+</ul>
+<hundefined id="84-fhsa-celiapp-pfhsabal-pfhsac-pfhsaforhome-pfhsahomeage">8.4 FHSA / CELIAPP (<code>p.fhsaBal</code>, <code>p.fhsaC</code>, <code>p.fhsaForHome</code>, <code>p.fhsaHomeAge</code>)</hundefined>
+<ul>
+<li>Contributions tax-deductible (like RRSP), withdrawals for first home tax-free (like TFSA).</li>
+<li>$40K lifetime / $8K annual limit (<code>FHSA_LIFETIME_MAX</code>, <code>FHSA_ANNUAL_LIMIT</code>).</li>
+<li>Account closes at age 71 OR after 15 years (whichever first) — at close, balance rolls to RRSP.</li>
+<li>If <code>p.fhsaForHome === true</code> and <code>age === p.fhsaHomeAge</code>: balance rolls to NR (non-taxable as it&#39;s a qualifying withdrawal), modeling first home purchase.</li>
+</ul>
+<pre><code class="language-js">if (fhsa &gt; 0 || fhsaContrib &lt; fhsaMax) {
+  fhsa *= (1 + retTF);  // grows tax-free like TFSA
+  if (!retired &amp;&amp; fhsaContrib &lt; fhsaMax) {
+    var fhsaAdd = Math.min(p.fhsaC || 0, 8000, fhsaMax - fhsaContrib);
+    fhsa += fhsaAdd;
+    fhsaContrib += fhsaAdd;
+  }
+  // Home purchase
+  if (p.fhsaForHome &amp;&amp; age === p.fhsaHomeAge &amp;&amp; fhsa &gt; 0) {
+    nr += fhsa; nrACB += fhsa;
+    fhsa = 0; fhsaContrib = fhsaMax;  // close
+  }
+  // Mandatory rollover at 71 or 15 yrs
+  var _fhsaYrsOpen = y + Math.min(5, Math.ceil((p.fhsaBal || 0) / 8000));
+  if ((age &gt;= 71 || _fhsaYrsOpen &gt;= 15) &amp;&amp; fhsa &gt; 0 &amp;&amp; !p.fhsaForHome) {
+    rr += fhsa;  // roll to RRSP, no room consumed
+    fhsa = 0;
+  }
+}
+</code></pre>
+<hundefined id="85-resp-prespon-prespcontrib-prespyrsleft-prespkids-prespreturnage-prespalready">8.5 RESP (<code>p.respOn</code>, <code>p.respContrib</code>, <code>p.respYrsLeft</code>, <code>p.respKids</code>, <code>p.respReturnAge</code>, <code>p.respAlready</code>)</hundefined>
+<ul>
+<li>Federal CESG match: 20% of first $2,500 contributed annually per child (<code>CESG_MAX_ELIGIBLE_ANNUAL</code>, <code>CESG_MATCH_RATE</code>).</li>
+<li>Engine treatment: RESP contributions are <strong>deducted from NR account</strong> during accumulation years (modelled as a parallel sleeve). The engine&#39;s <code>respOn</code> flag drives this debit but the explicit RESP balance is not tracked as a separate top-level field in the result schema — it&#39;s an outflow from NR.</li>
+<li>Test coverage: see <code>T(&quot;RESP&quot;,&quot;Reduces NR&quot;, ...)</code> test at line 3085.</li>
+</ul>
+<hundefined id="86-lira-plirabal-pclirabal">8.6 LIRA (<code>p.liraBal</code>, <code>p.cLiraBal</code>)</hundefined>
+<ul>
+<li>Locked-in retirement account from prior employment.</li>
+<li>Treated identically to RRSP for return + tax purposes; difference is <strong>withdrawal restrictions</strong> (LIRA → LIF/FRV with min/max annual draws).</li>
+<li>Engine carries <code>lira</code> and <code>cLira</code> balances through the simulation but doesn&#39;t enforce LIF max-withdrawal rules separately — they&#39;re folded into the global withdrawal target.</li>
+</ul>
+<hundefined id="87-ipp-pippon-pippbal-pippbal2">8.7 IPP (<code>p.ippOn</code>, <code>p.ippBal</code>, <code>p.ippBal2</code>)</hundefined>
+<p>Individual Pension Plan — for incorporated professionals.</p>
+<ul>
+<li>Higher contribution limits than RRSP (employer + employee).</li>
+<li>Modeled via <code>_ippBal</code> carried through <code>runMC</code> (line 5730).</li>
+<li>Rolls to RRSP-equivalent treatment at retirement.</li>
+</ul>
+<hundefined id="88-pe-private-equity-ppebal-ppey-ppev-ppefee-ppelock-ppeexit-ppeexitstrat-ppeexi">8.8 PE / Private Equity (<code>p.peBal</code>, <code>p.peY</code>, <code>p.peV</code>, <code>p.peFee</code>, <code>p.peLock</code>, <code>p.peExit</code>, <code>p.peExitStrat</code>, <code>p.peExitYrs</code>)</hundefined>
+<ul>
+<li>Higher expected return (12% default), higher volatility (25%), illiquid.</li>
+<li>3-year lockup with 30% exit haircut (<code>peLockYears</code>, <code>peLockHaircut</code>) when forced to exit early.</li>
+<li>Exit via scheduled liquidation (<code>peExitStrat</code> ∈ &quot;linear&quot; | &quot;balloon&quot; | …) over <code>peExitYrs</code>.</li>
+</ul>
+<hundefined id="89-pm-private-mortgage-ppmbal-ppmy-ppmv-ppmexit-">8.9 PM / Private Mortgage (<code>p.pmBal</code>, <code>p.pmY</code>, <code>p.pmV</code>, <code>p.pmExit</code>, …)</hundefined>
+<ul>
+<li>Lower return (3%), lower vol (15%), debt-like.</li>
+<li>Same exit mechanics as PE.</li>
+</ul>
+<hundefined id="810-dc-defined-contribution-pension-pdcbal-pdc2bal">8.10 DC / Defined Contribution Pension (<code>p.dcBal</code>, <code>p.dc2Bal</code>)</hundefined>
+<ul>
+<li>Employer-sponsored DC plan balance.</li>
+<li>Default 4% annual withdrawal rate during retirement (<code>dcWithdrawalRate</code>).</li>
+<li>Converts to RRIF at age 72 (<code>dcRrifConversionAge</code>).</li>
+</ul>
+<hundefined id="811-rpdb-rregop-public-pension-via-ppentype">8.11 RPDB / RREGOP / Public Pension (via <code>p.penType</code>)</hundefined>
+<ul>
+<li><code>penType ∈ {&quot;db&quot;, &quot;cd&quot;, &quot;rpdb&quot;, &quot;rrs&quot;, &quot;rver&quot;, &quot;none&quot;}</code></li>
+<li>DB (&quot;db&quot;): pays <code>p.penM</code>/month, indexed if <code>p.penIdx === true</code>, partially indexed at 50% otherwise.</li>
+<li>CD/RPDB/RRS/RVER: treated as DC (4% draw).</li>
+<li>Bridge benefit: if <code>p.bridge === true</code>, pays <code>p.brAmt</code>/month from retirement until <code>p.brEnd</code> age (typically 65, when CPP/QPP starts).</li>
+</ul>
+<hundefined id="812-nr-with-foreign-assets-multi-asset-mode">8.12 NR with foreign assets (multi-asset mode)</hundefined>
+<p>When <code>p.multiAsset === true</code>:</p>
+<ul>
+<li>Allocation defined per asset class via <code>p.assetAlloc</code> or per-account via <code>p.allocOverride</code>.</li>
+<li>Foreign WHT applied per <code>calcWHT</code> (RRSP exempt for US; TFSA + NR not).</li>
+<li>Itemized tax via <code>calcNRItemizedTax</code>.</li>
+</ul>
+<hundefined id="813-ccpc-corporate-pbizon-pbizrevenue-pbizexpenses-pbizretainedearnings-pbizsale">8.13 CCPC / Corporate (<code>p.bizOn</code>, <code>p.bizRevenue</code>, <code>p.bizExpenses</code>, <code>p.bizRetainedEarnings</code>, <code>p.bizSaleAge</code>, …)</hundefined>
+<ul>
+<li><code>corpBal</code> carried through MC; grows with retained earnings (revenue × margin − corp tax via <code>calcCorpTax</code>).</li>
+<li>Salary vs dividend extraction split via <code>p.bizSalaryPct</code>.</li>
+<li>Sale at <code>p.bizSaleAge</code>: <code>bizSalePrice</code> realized, <code>bizSaleACB</code> deducted, capital gain treated under CCPC LCGE if applicable (<code>p.bizLCGE</code>).</li>
+</ul>
+<hr>
+<hundefined id="part-9-deterministic-engine-optimizedecum">Part 9 — Deterministic engine (<code>optimizeDecum</code>)</hundefined>
+<hundefined id="91-purpose">9.1 Purpose</hundefined>
+<p>Single deterministic year-by-year projection. Used:</p>
+<ul>
+<li>For the in-page &quot;Projection déterministe&quot; table.</li>
+<li>Inside MC for the first sim only (<code>si === 0</code>) when <code>runMC</code> needs a deterministic anchor.</li>
+</ul>
+<p>Returns <code>{ schedule, totalTax, totalGIS, oasClawbackYrs, finalBal, retStart }</code>.</p>
+<hundefined id="92-setup-phase">9.2 Setup phase</hundefined>
+<pre><code class="language-js">function optimizeDecum(p) {
+  if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = 90;  // P0 guard
+  var maxYrs = p.deathAge - p.age;
+  var schedule = [];
+  var rr = p.rrsp || 0, tf = p.tfsa || 0, nr = p.nr || 0;
+  // TFSA cumulative room: full historical schedule from 2009
+  var _tfsaYrs18 = ... ;
+  var _tfsaCumLim = ... ;  // sum of $5K/yr × 4yrs + $5.5K/yr × 2yrs + $10K/yr × 1yr + ...
+  var tfsaRoom = max(0, _tfsaCumLim - min(tf, _tfsaCumLim));
+  var fhsa = p.fhsaBal || 0, ...;
+  var nrACB = p.costBase || nr;
+  var crr, ctf, cnr, cFhsa /* spousal balances if cOn */;
+  var reVals = (p.props || []).filter(pr =&gt; pr.on).map(...);
+
+  var inf = p.inf || 0.021;
+  var eqRet = p.eqRet || 0.07, bndRet = p.bndRet || 0.035;
+  var allocR = p.allocR || 0.6, allocT = p.allocT || 0.8, allocN = p.allocN || 0.5;
+  // Multi-asset returns
+  var _detMA = p.multiAsset === true;
+  if (_detMA) {
+    retRR = blendMulti(rets, _dAllocRR) - merR - calcWHT(_dAllocRR, &#39;rrsp&#39;);
+    retTF = blendMulti(rets, _dAllocTF) - merT - calcWHT(_dAllocTF, &#39;tfsa&#39;);
+    retNR = blendMulti(rets, _detAllocNR) - merN;  // NR tax via calcNRItemizedTax
+  } else {
+    retRR = eqRet * allocR + bndRet * (1 - allocR) - merR;
+    retTF = eqRet * allocT + bndRet * (1 - allocT) - merT;
+    retNR = eqRet * allocN + bndRet * (1 - allocN) - merN;
+  }
+</code></pre>
+<hundefined id="93-main-loop-one-iteration-per-year">9.3 Main loop — one iteration per year</hundefined>
+<p>For <code>y = 0</code> to <code>maxYrs</code>:</p>
+<hundefined id="93a-age-survivor-handling">9.3.a Age &amp; survivor handling</hundefined>
+<pre><code class="language-js">var age = p.age + y;
+var infM = Math.pow(1 + inf, y);
+var retired = age &gt;= p.retAge;
+var cAge2 = p.cOn ? p.cAge + y : 0;
+var cRetired = p.cOn &amp;&amp; cAge2 &gt;= (p.cRetAge || p.retAge);
+var cAlive = p.cOn &amp;&amp; cAge2 &lt;= cSimDeath;
+
+// Spousal rollover at death
+if (p.cOn &amp;&amp; !cAlive &amp;&amp; cAge2 === cSimDeath + 1) {
+  rr += crr; tf += ctf; nr += cnr;  // accounts roll to surviving spouse
+  crr = 0; ctf = 0; cnr = 0;
+}
+</code></pre>
+<hundefined id="93b-government-income">9.3.b Government income</hundefined>
+<pre><code class="language-js">var qpp = age &gt;= p.qppAge ? calcQPP(p.qppAge, p.avgE, p.qppYrs) * 12 * infM : 0;
+var oas = age &gt;= p.oasAge ? calcOAS(p.oasAge, 0, y, inf, age) * 12 : 0;  // first pass without clawback
+
+var penMonth = 0;
+if (p.penType === &quot;db&quot; &amp;&amp; retired) {
+  penMonth = (p.penM || 0) * (p.penIdx ? infM : 1);
+  if (p.bridge &amp;&amp; age &lt; p.brEnd) penMonth += (p.brAmt || 0);
+}
+if ([&quot;cd&quot;,&quot;rpdb&quot;,&quot;rrs&quot;,&quot;rver&quot;].indexOf(p.penType) &gt;= 0 &amp;&amp; retired) {
+  penMonth = (p.dcBal || 0) * 0.04 / 12;
+}
+var ptInc = retired &amp;&amp; p.ptM &gt; 0 &amp;&amp; y &lt; p.ptYrs ? p.ptM * 12 * infM : 0;  // part-time inc
+var penAnn = penMonth * 12;
+</code></pre>
+<hundefined id="93c-spending-blanchett-smile">9.3.c Spending (Blanchett smile)</hundefined>
+<pre><code class="language-js">var smileMul = 1;
+if (retired) {
+  var slA = p.smileSlAge || max(p.retAge + 10, 75);
+  var noA = p.smileNoAge || max(slA + 10, 85);
+  var hA = p.healthAge || 85;
+  if (age &lt; slA) smileMul = p.goP || 1;
+  else if (age &lt; noA) smileMul = p.slP || 0.85;
+  else smileMul = p.noP || 0.75;
+  if (age &gt;= hA) smileMul *= Math.pow(1 + p.healthMul, age - hA + 1);
+}
+var spending = retired ? (p.retSpM || 0) * 12 * infM * smileMul : 0;
+if (p.cOn &amp;&amp; cAlive &amp;&amp; cRetired) spending += (p.cRetSpM || 0) * 12 * infM * smileMul;
+// Goal-based spending (extra)
+spending += calcGoalSpending(p.goals, age, infM);
+</code></pre>
+<hundefined id="93d-rrif-mandatory-withdrawal">9.3.d RRIF mandatory withdrawal</hundefined>
+<pre><code class="language-js">var rrifMin = getRRIFMin(age, rr);
+var cRrifMin = p.cOn &amp;&amp; cAlive ? getRRIFMin(age + (p.cAge - p.age), crr) : 0;
+
+var fixedTaxable = qpp + penAnn + ptInc + rrifMin + cRrifMin;
+</code></pre>
+<hundefined id="93e-gis-eligible-flag-low-income-protection">9.3.e GIS-eligible flag (low-income protection)</hundefined>
+<pre><code class="language-js">var gisEligible = age &gt;= 65 &amp;&amp; fixedTaxable / infM &lt; 22000;
+</code></pre>
+<p>If true, the optimizer routes withdrawals to TFSA → NR before RRSP, to avoid GIS clawback.</p>
+<hundefined id="93f-oas-recalculation-with-clawback">9.3.f OAS recalculation with clawback</hundefined>
+<pre><code class="language-js">if (age &gt;= p.oasAge) {
+  var estInc = fixedTaxable + (retired ? max(0, spending - fixedTaxable - oas) * 0.5 : 0);
+  oas = calcOAS(p.oasAge, estInc / infM, y, inf, age) * 12;
+}
+var govInc = qpp + oas + penAnn + ptInc;
+</code></pre>
+<hundefined id="93g-pre-retirement-vs-retirement-branch">9.3.g Pre-retirement vs retirement branch</hundefined>
+<p><strong>If pre-retirement (<code>!retired</code>):</strong></p>
+<pre><code class="language-js">rr = rr * (1 + retRR) + (p.rrspC || 0);
+var _tfsaAnnLim = Math.round(7000 * (1+inf)^y / 500) * 500;
+tfsaRoom += _tfsaAnnLim + _tfsaLastYrWith;
+var _tfsaActualC = Math.min(p.tfsaC || 7000, tfsaRoom);
+tf = tf * (1 + retTF) + _tfsaActualC;
+tfsaRoom -= _tfsaActualC;
+nr = (multi-asset path) OR (nr * (1 + retNR - nrTaxDrag) + (p.nrC || 0));
+// Spousal accumulation if couple
+// RSU vest (deterministic)
+// FHSA grow + contrib + auto-rollover at 71
+// Snapshot balances + skip retirement branch
+schedule.push(row); continue;
+</code></pre>
+<p><strong>If retirement (<code>retired</code>):</strong></p>
+<p>The optimizer runs through this multi-step decision sequence:</p>
+<hundefined id="step-1-apply-rrif-minimum-mandatory">Step 1 — Apply RRIF minimum (mandatory)</hundefined>
+<pre><code class="language-js">if (rrifMin &gt; 0) rr = max(0, rr - rrifMin);
+if (cRrifMin &gt; 0) crr = max(0, crr - cRrifMin);
+</code></pre>
+<hundefined id="step-2-compute-net-spending-need">Step 2 — Compute net spending need</hundefined>
+<pre><code class="language-js">var totalFixed = govInc + rrifMin + cRrifMin;
+var need = max(0, spending - totalFixed);
+</code></pre>
+<hundefined id="step-3-meltdown-logic">Step 3 — Meltdown logic</hundefined>
+<p>If <code>p.melt === true</code> and <code>age &lt; 72</code> and RRSP &gt; 0:</p>
+<pre><code class="language-js">var _rawMeltTarget = 0;
+if (age &lt; p.qppAge) {
+  // Pre-QPP: fill the first federal bracket from RRSP
+  _rawMeltTarget = max(0, fedBr1 - fixedTaxable);
+} else {
+  // Post-QPP: fill up to OAS clawback OR second bracket (whichever lower)
+  var roomToOAS = max(0, oasClawThr - fixedTaxable);
+  var roomToBr2 = max(0, fedBr2 - fixedTaxable);
+  _rawMeltTarget = min(roomToOAS, roomToBr2);
+  if (age &gt;= 65 &amp;&amp; fixedTaxable &lt; penCreditMax + qpp) {
+    _rawMeltTarget = max(_rawMeltTarget, penCreditMax);  // ensure pension credit captured
+  }
+  _rawMeltTarget = max(0, _rawMeltTarget - rrifMin);
+}
+
+// Smoothing: max year-to-year change capped at 40% (or $5K floor)
+var _prevMelt = schedule[length-1].meltdown || 0;
+var _meltMaxChg = max(_prevMelt * 0.40, 5000);
+meltAmt = min(rr, max(
+  max(0, _prevMelt - _meltMaxChg),
+  min(_rawMeltTarget, _prevMelt + _meltMaxChg)
+));
+if (meltAmt &gt; 0) rr -= meltAmt;
+</code></pre>
+<p>Excess meltdown (above spending need) is parked in TFSA if room exists.</p>
+<hundefined id="step-4-determine-source-for-remaining-need">Step 4 — Determine source for remaining need</hundefined>
+<pre><code class="language-js">need = max(0, need - meltAmt);
+
+// NR depletion target (smooth over remaining horizon)
+var _nrDepYrs = max(5, min(20, (p.deathAge - age) * 0.5));
+var _retYrIdx = max(0, age - p.retAge);
+var _nrTarget = nr &gt; 0 ? nr / max(1, _nrDepYrs - _retYrIdx) : 0;
+_nrTarget = min(_nrTarget, max(need, 1) * 1.5);  // cap at 1.5× need
+
+var totalTaxable = fixedTaxable + meltAmt;
+var oasRisk = totalTaxable &gt; oasClawThr * 0.85;
+
+if (gisEligible || oasRisk) {
+  // Protect GIS/OAS: NR → TFSA → RRSP order
+  wNR = min(nr, max(need, _nrTarget)); nr -= wNR; need -= wNR;
+  wTF = min(tf, need); tf -= wTF; need -= wTF;
+  wRR = min(rr, need); rr -= wRR; need -= wRR;
+} else {
+  // Normal: NR (target) → RRSP (up to OAS clawback room) → TFSA
+  wNR = min(nr, max(need, _nrTarget)); nr -= wNR; need -= wNR;
+  rrspRoom = max(0, oasClawThr - totalTaxable);
+  wRR = min(rr, min(need, rrspRoom)); rr -= wRR; need -= wRR;
+  wTF = min(tf, need); tf -= wTF; need -= wTF;
+  if (need &gt; 0) {
+    // Final pass: tap remaining RRSP if TFSA exhausted
+    wRR2 = min(rr, need); rr -= wRR2; need -= wRR2;
+  }
+}
+
+// Spousal accounts as last resort
+if (need &gt; 0 &amp;&amp; p.cOn) {
+  wCR = min(crr, need); crr -= wCR; need -= wCR;
+  wCT = min(ctf, need); ctf -= wCT; need -= wCT;
+  wCNR = min(cnr, need); cnr -= wCNR; need -= wCNR;
+}
+
+// HELOC as emergency
+if (need &gt; 0) {
+  for (each property) {
+    helocRoom = max(0, val * 0.65 - mb - heloc);
+    helocDraw = min(need, helocRoom);
+    heloc += helocDraw; need -= helocDraw;
+  }
+}
+
+// Forced sale if still short
+if (need &gt; 0 &amp;&amp; retired) {
+  // 1. Sell rentals (cheapest equity first), proceeds to TFSA → NR
+  // 2. Sell primary residence last; add replacement rent to spending
+}
+</code></pre>
+<hundefined id="step-5-reinvest-meltdown-surplus">Step 5 — Reinvest meltdown surplus</hundefined>
+<pre><code class="language-js">if (availFromMelt &gt; 0) {
+  var toTF = min(availFromMelt, simplifiedRoom * 0.5);
+  tf += toTF;
+  nr += availFromMelt - toTF;
+}
+</code></pre>
+<hundefined id="step-6-compute-gis">Step 6 — Compute GIS</hundefined>
+<pre><code class="language-js">var finalTaxable = fixedTaxable + meltAmt + row.fromRRSP;
+var gis = age &gt;= 65 ? calcGIS(age, finalTaxable / infM, y, inf, p.cOn &amp;&amp; cAlive, ptInc / infM) * 12 : 0;
+row.gis = gis;
+</code></pre>
+<hundefined id="step-7-compute-tax-couple-aware">Step 7 — Compute tax (couple-aware)</hundefined>
+<pre><code class="language-js">var taxInc = qpp + (age &gt;= p.oasAge ? calcOAS(p.oasAge, finalTaxable, y, inf, age) * 12 : 0)
+           + penAnn + ptInc + rrifMin + meltAmt + row.fromRRSP;
+var cTaxInc = (couple computation including cQPP, cOAS, cRRIF, cPen);
+
+var tx1 = calcTax(taxInc, y, p.prov, inf, retired);
+var tx2 = cTaxInc &gt; 0 ? calcTax(cTaxInc, y, p.prov, inf, cRetired) : { total: 0, marg: 0 };
+var tx = { total: tx1.total + tx2.total, ... };
+
+row.tax = tx.total;
+row.taxInc = taxInc + cTaxInc;
+row.effRate = tx.eff;
+row.margRate = tx.marg;
+</code></pre>
+<hundefined id="step-8-snapshot-balances">Step 8 — Snapshot balances</hundefined>
+<pre><code class="language-js">row.balRR = rr; row.balTF = tf; row.balNR = nr;
+row.balCRR = crr; row.balCTF = ctf; row.balCNR = cnr;
+row.reEquity = sum(reVals[i].v - mb - heloc);
+row.totalWithdraw = rrifMin + cRrifMin + meltAmt + row.fromRRSP + row.fromTFSA + row.fromNR;
+row.netIncome = totalFixed + meltAmt + row.fromRRSP + row.fromTFSA + row.fromNR + gis - row.tax;
+schedule.push(row);
+</code></pre>
+<hundefined id="94-post-loop-smoothing-passes">9.4 Post-loop smoothing passes</hundefined>
+<p>After all years built:</p>
+<p><strong>Spending-layer soft cap (forward pass):</strong></p>
+<pre><code class="language-js">for each retired year:
+  var spendTot = fromRRSP + fromTFSA + fromNR;
+  if (prevSpendTotal &gt; 0) {
+    var maxDelta = max(prevSpendTotal * 0.30, 10000);
+    if (spendTot &gt; prevSpendTotal + maxDelta) {
+      // Trim NR first, then RRSP, then TFSA
+      var excess = spendTot - (prevSpendTotal + maxDelta);
+      // ... reduce
+    }
+  }
+</code></pre>
+<p>Prevents the year-to-year withdrawal pattern from oscillating wildly (e.g., $10K one year, $80K next).</p>
+<p><strong>Backward pass — caps only:</strong></p>
+<pre><code class="language-js">for (bp = length - 2; bp &gt;= 0; bp--) {
+  var currSp = schedule[bp].fromRRSP + .fromTFSA + .fromNR;
+  var nextSp = schedule[bp+1].fromRRSP + .fromTFSA + .fromNR;
+  var maxD2 = max(nextSp * 0.40, 15000);
+  if (currSp &gt; nextSp + maxD2) {
+    var over = currSp - (nextSp + maxD2);
+    // Reduce schedule[bp].fromNR first, then fromRRSP
+  }
+}
+</code></pre>
+<hundefined id="95-return-value">9.5 Return value</hundefined>
+<pre><code class="language-js">return {
+  schedule,         // array of per-year row objects
+  totalTax,         // sum of tax during retirement years
+  totalGIS,         // sum of GIS received
+  oasClawbackYrs,   // count of years where taxInc &gt; indexed clawback threshold
+  finalBal,         // last row&#39;s balRR + balTF + balNR
+  retStart          // index of first retirement year in schedule
+};
+</code></pre>
+<hr>
+<hundefined id="part-10-monte-carlo-engine-runmc">Part 10 — Monte Carlo engine (<code>runMC</code>)</hundefined>
+<hundefined id="101-purpose">10.1 Purpose</hundefined>
+<p>Run <code>N</code> independent simulations sampling from joint return / inflation / mortality distributions. Returns success rate, percentile bands, sensitivity, estate distribution, etc.</p>
+<hundefined id="102-structure">10.2 Structure</hundefined>
+<pre><code>runMC(p, N) ──┬─ Param sanitization (clamp to physical ranges)
+              ├─ Setup multi-asset / Cholesky factors
+              ├─ for si = 0 to N-1:
+              │    ├─ Sample stochastic death age
+              │    ├─ Per-sim memory state (NR/RRSP smoothing)
+              │    ├─ for y = 0 to maxYrs:
+              │    │    ├─ Sample correlated returns (Cholesky × N(0,1))
+              │    │    ├─ Apply stress shocks if active
+              │    │    ├─ Sample stochastic inflation
+              │    │    ├─ Build year&#39;s state (similar to optimizeDecum but with random returns)
+              │    │    ├─ Track GK guardrail decisions
+              │    │    ├─ Run withdrawal logic
+              │    │    ├─ Compute tax (with pension splitting if applicable)
+              │    │    ├─ Update balances + path[]
+              │    │    └─ Detect ruin
+              │    ├─ Record sim outcome (fins, ruinAge, deathAge, estate)
+              │    └─ Push path to all[]
+              ├─ Filter NaN/Infinity from fins[] (P0 defense)
+              ├─ Sort fins[]
+              ├─ Build histogram (with isFinite guard)
+              ├─ Build death-vs-ruin buckets
+              ├─ Compute sens[] (sensitivity)
+              ├─ Aggregate medRevData (median path) with withdrawal sampling
+              └─ Return aggregated result object
+</code></pre>
+<hundefined id="103-param-sanitization-defensive-top-of-function">10.3 Param sanitization (defensive top-of-function)</hundefined>
+<pre><code class="language-js">function runMC(p, N, _progressCb) {
+  // P0 guard: deathAge default
+  if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = p.stochMort ? 95 : 90;
+
+  // Rate clamps (prevent typo-level disaster)
+  p.merR = max(0, min(p.merR || 0, 0.05));
+  p.eqRet = max(-0.05, min(p.eqRet || 0.07, 0.20));
+  p.eqVol = max(0.01, min(p.eqVol || 0.16, 0.50));
+  // ...
+
+  // Allocation 0-1
+  p.allocR = max(0, min(p.allocR != null ? p.allocR : 0.6, 1));
+
+  // Multi-asset alloc auto-normalize if sum != 1
+  if (p.multiAsset &amp;&amp; p.assetAlloc) {
+    var maSum = p.assetAlloc.can + ... + p.assetAlloc.bnd;
+    if (maSum &gt; 0 &amp;&amp; Math.abs(maSum - 1) &gt; 0.01) {
+      // re-normalize all weights
+    }
+    if (p.allocOverride) { /* same for per-account overrides */ }
+  }
+
+  // Dollar non-negative
+  p.rrsp = max(0, p.rrsp || 0);
+  // ... all balance fields, sal, retSpM
+
+  // Spending phase clamps
+  p.goP = max(0, min(p.goP || 1, 1.5));
+  p.healthMul = max(0, min(p.healthMul || 0, 0.10));
+}
+</code></pre>
+<hundefined id="104-per-year-random-sampling">10.4 Per-year random sampling</hundefined>
+<p>For each year <code>y</code>:</p>
+<pre><code class="language-js">// 1. Detect crisis (negative shock) for correlation matrix selection
+var inCrisis = sEq &lt; C.CRISIS_THRESHOLD;  // -10% shock or worse
+var useL = inCrisis ? CHL_CRISIS : CHL;
+
+// 2. Generate independent N(0,1) samples (5 in 2-class, 8 in multi-asset)
+rw = [];
+for (i = 0; i &lt; 5; i++) rw.push(p.fatT ? tRn(5) : tRn(999));
+
+// 3. Apply Cholesky to get correlated zz
+zz = useL.map(row =&gt; row.reduce((s, v, i) =&gt; s + v * rw[i], 0));
+
+// 4. Construct asset returns
+eqR = eqRet2 + eqVol2 * zz[0] + sEq;       // sEq = stress shock for year y
+bndR = bndRet2 + bndVol2 * zz[1] + sBd;
+infShock = sInfOvr !== null ? sInfOvr
+        : p.stochInf ? p.inf + 0.015 * zz[2]
+        : p.inf;
+infShock = max(0.005, min(0.08, infShock));
+</code></pre>
+<p>In multi-asset mode (<code>p.multiAsset === true</code>), 8 independent draws → 8 correlated returns (canEq, usEq, intlEq, emEq, bond, inflation, PE, PM). The PE/PM returns are decorrelated from broad equity but retain a configurable correlation per <code>CRM8</code>.</p>
+<hundefined id="105-per-sim-contamination-protection">10.5 Per-sim contamination protection</hundefined>
+<pre><code class="language-js">for (var si = 0; si &lt; N; si++) {
+  if (_maOn) _maMargRate = _maMargRateInit;  // reset per-sim
+  // ...
+}
+</code></pre>
+<p>The <code>_maMargRateInit</code> save/restore prevents a previous sim&#39;s marginal-rate update from contaminating the next sim&#39;s pre-retirement marginal calculation.</p>
+<hundefined id="106-gk-guardrail-decisions-when-pgkon-true">10.6 GK guardrail decisions (when <code>p.gkOn === true</code>)</hundefined>
+<pre><code class="language-js">// Initial WR
+var initWR = spending / portfolioBal;
+var ceil = 1.20 * initWR;      // 20% above baseline
+var floor = 0.80 * initWR;
+var maxCutCum = 0.25;          // cap on cumulative cuts
+
+if (currentWR &gt; ceil) {
+  spending *= 0.90;            // 10% cut
+  gkSpendFactor *= 0.90;
+  gkCutCount++;
+  gkCutYrs++;
+  gkCurCutStreak++;
+  gkMaxCutStreak = max(gkMaxCutStreak, gkCurCutStreak);
+} else if (currentWR &lt; floor) {
+  if (gkSpendFactor &lt; 1.0) {
+    spending *= 1.10;          // restore (up to 1.0 max)
+    gkSpendFactor = min(1.0, gkSpendFactor * 1.10);
+    gkRaiseCount++;
+  }
+  gkCurCutStreak = 0;
+}
+</code></pre>
+<p>These are tracked across sims and surfaced in the return object as <code>gkAvgCuts</code>, <code>gkAvgRaises</code>, <code>gkP5MinSpend</code>, etc.</p>
+<hundefined id="107-pension-splitting-post-65-with-caveats">10.7 Pension splitting (post-65, with caveats)</hundefined>
+<pre><code class="language-js">if (p.split &amp;&amp; age &gt;= 65 &amp;&amp; (penMonth &gt; 0 || rrifMin &gt; 0) &amp;&amp; p.cOn &amp;&amp; cAlive) {
+  var eligiblePenInc = penMonth * 12 + (age &gt;= 65 ? rrifMin : 0);
+  var splitAmt = eligiblePenInc * (p.splitP || 0.5);
+  // Compute tax benefit: (taxBefore_split - taxAfter_split)
+  var myInc = qpp + oas + penMonth * 12 + estRrifMin + ptInc;
+  var spInc = cInc;
+  var taxBefore = calcTax(myInc / infM, ...) + calcTax(spInc / infM, ...);
+  var taxAfter = calcTax((myInc - splitAmt) / infM, ...) + calcTax((spInc + splitAmt) / infM, ...);
+  splitB = max(0, taxBefore - taxAfter);
+}
+</code></pre>
+<p><strong>Note</strong>: this can produce NaN under specific edge configurations (one spouse dead + active splitting + zero RRIF), which is what triggered the P0.2 histogram crash. The audit applied defensive <code>isFinite()</code> filters at the result stage; root-cause investigation in this block is recommended.</p>
+<hundefined id="108-defensive-nan-filter-post-p02-fix">10.8 Defensive NaN filter (post P0.2 fix)</hundefined>
+<pre><code class="language-js">// After sim loop, before sort/percentile extraction:
+fins = fins.filter(x =&gt; isFinite(x));
+liqFins = liqFins.filter(x =&gt; isFinite(x));
+if (fins.length === 0) fins = [0];
+if (liqFins.length === 0) liqFins = [0];
+fins.sort((a, b) =&gt; a - b);
+liqFins.sort((a, b) =&gt; a - b);
+</code></pre>
+<p>Without this, NaN values in <code>fins[]</code> would corrupt the sort (JavaScript&#39;s compare with NaN is undefined behaviour) and crash the histogram <code>_histBins[NaN]</code> lookup.</p>
+<hundefined id="109-histogram-post-p02-fix">10.9 Histogram (post P0.2 fix)</hundefined>
+<pre><code class="language-js">var _histBins = [];
+if (fins.length &gt; 0) {
+  var _hMin = fins[0], _hMax = fins[fins.length - 1];
+  var _hRange = _hMax - _hMin || 1;
+  var _nBins = min(20, max(8, Math.ceil(Math.sqrt(N))));
+  var _bw = _hRange / _nBins;
+  for (var bi = 0; bi &lt; _nBins; bi++) {
+    _histBins.push({ lo: _hMin + bi*_bw, hi: _hMin + (bi+1)*_bw, count: 0 });
+  }
+  fins.forEach(f =&gt; {
+    if (!isFinite(f)) return;       // P0.2 defense
+    var idx = min(_nBins - 1, max(0, Math.floor((f - _hMin) / _bw)));
+    if (_histBins[idx]) _histBins[idx].count++;
+  });
+}
+</code></pre>
+<hundefined id="1010-sensitivity-computation">10.10 Sensitivity computation</hundefined>
+<p><code>runMC</code> computes <code>sens[]</code> by re-running mini-MCs with one parameter perturbed at a time:</p>
+<pre><code class="language-js">sens = [
+  { name: &quot;Equity returns&quot;,  lo: -45000, hi: 62000 },  // ±1σ effect
+  { name: &quot;Inflation&quot;,        lo: -28000, hi: 31000 },
+  { name: &quot;Spending&quot;,         lo: -55000, hi: 48000 },
+  { name: &quot;Longevity&quot;,        lo: -15000, hi: 22000 }
+];
+</code></pre>
+<hundefined id="1011-medrevdata-enrichment-engine">10.11 medRevData enrichment (engine)</hundefined>
+<p>After the per-sim loop, <code>runMC</code> builds a single representative &quot;median revenue data&quot; array by:</p>
+<ol>
+<li>Picking the simulation closest to median final wealth (<code>medSimIdx</code>).</li>
+<li>Walking that sim&#39;s path year-by-year.</li>
+<li>For each retirement year, computing <code>wRrifMin</code>, <code>wFromRR</code>, <code>wFromTF</code>, <code>wFromNR</code>, <code>wMelt</code> by <strong>balance delta</strong> (previous year minus current year, only positive deltas).</li>
+<li>Optionally overriding withdrawal fields with the median across <code>wdSampleSims</code> (default 30) tracked sims for stability.</li>
+<li>Adding income components: <code>rrq</code>, <code>psv</code>, <code>srg</code>, <code>pen</code>, <code>pt</code>, <code>ret</code>, <code>spend</code>, <code>tax</code>, <code>taxInc</code>, <code>sal</code>, <code>cSal</code>, <code>payroll</code>, <code>cPayroll</code>, <code>aRR</code>/<code>aTF</code>/<code>aNR</code>/etc. (account balances), <code>corpBal</code>/<code>corpTax</code>/<code>corpDiv</code>/<code>corpExtract</code>/<code>corpCDA</code>/<code>corpRDTOH</code>.</li>
+</ol>
+<hundefined id="1012-return-value">10.12 Return value</hundefined>
+<p>See Part 12 for the full schema.</p>
+<hr>
+<hundefined id="part-11-stress-scenarios-str-catalog">Part 11 — Stress scenarios (<code>STR</code> catalog)</hundefined>
+<p>Each entry in the <code>STR</code> object defines a multi-year shock applied additively to baseline returns + inflation:</p>
+<pre><code class="language-js">STR = {
+  none: { eq: [], bd: [], inf: [], ... },
+  crash08: {
+    eq: [-0.37, -0.22, 0.15, 0.02],     // year 0 shock, year 1, ...
+    bd: [+0.05, +0.08, +0.02, -0.01],
+    inf: [0.038, 0.002, 0.018, 0.012]   // override inflation
+  },
+  dotcom: { eq: [-0.10, -0.13, -0.23, +0.26, +0.09], ... },
+  inflation70: { eq: [...10 years...], bd: [...], inf: [...] },
+  stagflation: { eq: [-0.14, -0.08, -0.12, +0.02, -0.05], ... },
+  japan: { eq: [+0.01, -0.02, ..., -0.01], ... },     // 10-year flat
+  covid: { eq: [-0.34, +0.18, +0.27, +0.01], ... },
+  longevity: { eq: [], bd: [], inf: [], extra: { deathAge: 5 } },
+  ratehike: { eq: [-0.12, -0.08, -0.05, +0.03, +0.06], ... },
+  prolonged: { eq: [-0.15, ..., +0.08], ... },        // 8 years
+  custom: { eq: [], bd: [], inf: [] }                 // user-provided
+};
+</code></pre>
+<p>Activation: <code>p.strs</code> selects the scenario, <code>p.stWhen</code> selects timing (&quot;ret&quot; / &quot;now&quot; / &quot;before&quot; / explicit age), <code>p.stAge</code> parameterizes &quot;before&quot;. A <strong>second stress</strong> can stack via <code>p.strs2</code> / <code>p.stWhen2</code> / <code>p.stAge2</code>.</p>
+<pre><code class="language-js">var stStartAge = p.stWhen === &quot;ret&quot; ? p.retAge
+              : p.stWhen === &quot;now&quot; ? p.age
+              : p.stWhen === &quot;before&quot; ? max(p.age, p.retAge - p.stAge)
+              : p.stAge || p.retAge;
+var stIdx = age - stStartAge;
+var sEq = stIdx &gt;= 0 &amp;&amp; stIdx &lt; stDef.eq.length ? stDef.eq[stIdx] : 0;
+// ... applied additively to that year&#39;s eqR, bndR, infShock
+</code></pre>
+<hr>
+<hundefined id="part-12-result-schema">Part 12 — Result schema</hundefined>
+<p><code>runMC(p, N)</code> returns:</p>
+<pre><code class="language-js">{
+  // Path data
+  pD,                        // deterministic path enriched (mp_total, mp_rr, mp_tf, ...)
+  medPath: medPathBilan,     // median sim&#39;s per-year state objects
+  medSimFinal,               // final wealth of median sim (raw)
+  medSimRuin,                // ruin age of median sim
+  medSimDeath,
+  medSimFinalR,              // medSimFinal / discount factor
+  medSimEstateTax,
+  medSimEstateNet,
+
+  // Success metric
+  succ,                      // proportion of sims where balance &gt; ruinThreshold at death
+
+  // All sim final balances (sorted)
+  fins,                      // sorted ascending (NaN-filtered)
+
+  // Survival fraction by age (for survival curve chart)
+  sf,                        // [{ age, pct }]
+
+  // Ruin metrics
+  medRuin,                   // median ruin age
+  ruinPct,                   // % of sims that hit ruin
+  p5Ruin,                    // 5th percentile ruin age (or 999 = never)
+  p10Ruin,
+
+  // Discounting
+  discFinal,                 // (1+inf)^horizon
+
+  // Sensitivity
+  sens,                      // [{ name, lo, hi }] dollar impact at ±1σ
+
+  // Year-by-year revenue data
+  revData,                   // raw per-year aggregate
+  medRevData,                // enriched median path year-by-year (full schema, see below)
+
+  // Mortality
+  avgDeath,
+  deathAges, cDeathAges, ruinAges,
+
+  // Wealth percentiles (nominal)
+  medF: fins[N*0.5],
+  p5F: var5,                 // = sorted 5th percentile = VaR 5%
+  p25F: fins[N*0.25],
+  p75F: fins[N*0.75],
+  p95F: fins[N*0.95],
+  mean,
+  sd,
+  var5,                      // 5th percentile (used as p5F)
+  cvar5,                     // mean of bottom 5% (conditional VaR)
+
+  // Wealth percentiles (real, discounted by inflation)
+  rMedF, rP5F, rP25F, rP75F, rP95F,
+  rMean, rSD, rVar5, rCvar5,
+
+  // Liquid wealth (excludes real estate)
+  liqMedF, liqP5, liqP25, liqP75, liqP95,
+  rLiqMedF, rLiqP5,
+  hasRE,                     // bool: at least one property active
+
+  // Estate distribution
+  medEstateTax, medEstateNet,
+  p5EstateNet, p10EstateNet, p25EstateNet, p75EstateNet, p90EstateNet, p95EstateNet,
+  p5EstateTax, p25EstateTax, p75EstateTax, p95EstateTax,
+  avgEstateTax,
+
+  // Histogram &amp; death-vs-ruin
+  histogram: [{ lo, hi, count }],
+  deathVsRuin: [{ age, alive, ruin }],
+
+  // Guyton-Klinger statistics
+  gkOn,
+  gkAvgCuts, gkAvgRaises, gkAvgSpend,
+  gkP5MinSpend, gkMedianCuts, gkP95Cuts,
+  gkAvgCutYrs, gkMedianCutYrs, gkAvgMaxStreak
+}
+</code></pre>
+<hundefined id="medrevdata-row-schema-per-year">medRevData row schema (per year)</hundefined>
+<pre><code class="language-js">{
+  age, rrq, psv, srg, pen, pt,        // government + pension income
+  ret,                                  // total withdrawal need
+  spend,                                // actual spending (capped if balances exhausted)
+  tax, taxInc,                          // total tax + taxable income
+  penCont,                              // pension contributions (working years)
+  sal, payroll, cSal, cPayroll,         // salary + payroll deductions (couple)
+  // Account end-of-year balances
+  aRR, aTF, aNR, aPE, aPM, aDC, aCRR, aCTF, aCNR, aRE, aLIRA,
+  // Withdrawals (annual)
+  wFromRR, wFromTF, wFromNR, wMelt, wRrifMin,
+  // Real estate
+  peExit, pmExit,
+  gis,
+  // Corporation
+  corpBal, corpTax, corpSal, corpDiv, corpExtract, corpCDA, corpRDTOH
+}
+</code></pre>
+<hr>
+<hundefined id="part-13-invariants-defensive-guards">Part 13 — Invariants &amp; defensive guards</hundefined>
+<hundefined id="131-sortedness-invariant">13.1 Sortedness invariant</hundefined>
+<p>After <code>fins.sort(...)</code>, the percentile extraction relies on:</p>
+<ul>
+<li><code>p5F = fins[floor(N*0.05)]</code></li>
+<li><code>p25F = fins[floor(N*0.25)]</code></li>
+<li><code>medF = fins[floor(N*0.5)]</code></li>
+<li><code>p75F = fins[floor(N*0.75)]</code></li>
+<li><code>p95F = fins[floor(N*0.95)]</code></li>
+</ul>
+<p>These respect <code>p5F ≤ p25F ≤ medF ≤ p75F ≤ p95F</code> only if <code>fins</code> is sorted. The defensive NaN filter (post-P0.2) is required because NaN compromises the sort.</p>
+<hundefined id="132-nan-guards">13.2 NaN guards</hundefined>
+<p>After P0.2 fix, two layers protect against NaN:</p>
+<ol>
+<li><code>fins.filter(isFinite)</code> before sort</li>
+<li><code>if (!isFinite(f)) return</code> inside histogram <code>forEach</code></li>
+<li><code>if (_histBins[idx]) _histBins[idx].count++</code> defensive index check</li>
+</ol>
+<hundefined id="133-deathage-guard-p01">13.3 deathAge guard (P0.1)</hundefined>
+<pre><code class="language-js">// At top of runMC:
+if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = p.stochMort ? 95 : 90;
+
+// At top of optimizeDecum:
+if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = 90;
+</code></pre>
+<hundefined id="134-param-sanitization-top-of-runmc">13.4 Param sanitization (top of <code>runMC</code>)</hundefined>
+<p>All numeric params clamped to physical ranges:</p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Min</th>
+<th>Max</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>merR/T/N</code></td>
+<td>0</td>
+<td>0.05</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>nrTaxDrag</code></td>
+<td>0</td>
+<td>0.03</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>inf</code></td>
+<td>0</td>
+<td>0.10</td>
+<td>0.021</td>
+</tr>
+<tr>
+<td><code>eqRet</code></td>
+<td>-0.05</td>
+<td>0.20</td>
+<td>0.07</td>
+</tr>
+<tr>
+<td><code>eqVol</code></td>
+<td>0.01</td>
+<td>0.50</td>
+<td>0.16</td>
+</tr>
+<tr>
+<td><code>bndRet</code></td>
+<td>-0.02</td>
+<td>0.12</td>
+<td>0.035</td>
+</tr>
+<tr>
+<td><code>bndVol</code></td>
+<td>0.01</td>
+<td>0.25</td>
+<td>0.06</td>
+</tr>
+<tr>
+<td><code>allocR/T/N</code></td>
+<td>0</td>
+<td>1</td>
+<td>0.6/0.8/0.5</td>
+</tr>
+<tr>
+<td><code>goP/slP/noP</code></td>
+<td>0</td>
+<td>1.5</td>
+<td>1/0.85/0.75</td>
+</tr>
+<tr>
+<td><code>healthMul</code></td>
+<td>0</td>
+<td>0.10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>dollar fields (<code>rrsp</code>, <code>tfsa</code>, <code>nr</code>, <code>sal</code>, <code>retSpM</code>)</td>
+<td>0</td>
+<td>∞</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>qppYrs</code></td>
+<td>0</td>
+<td>∞</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>qppAge</code></td>
+<td>(default 60)</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hundefined id="135-multi-asset-auto-normalization">13.5 Multi-asset auto-normalization</hundefined>
+<p>If <code>p.assetAlloc</code> weights don&#39;t sum to 1.0 (within ±0.01), they&#39;re divided by the sum to normalize. Same for per-account <code>allocOverride</code> weights.</p>
+<hundefined id="136-per-sim-isolation">13.6 Per-sim isolation</hundefined>
+<p>Variables that should reset between sims:</p>
+<ul>
+<li><code>_mcPrevNR</code>, <code>_mcPrevRR</code>: smoothing memory</li>
+<li><code>_maMargRate</code>: marginal rate (saved/restored from <code>_maMargRateInit</code>)</li>
+<li><code>gkSpendFactor</code>, <code>gkMinFactor</code>, <code>gkCurCutStreak</code>, etc.: GK state</li>
+<li><code>_mcTfsaRoom</code>, <code>_mcTfsaLastW</code>: TFSA room tracking</li>
+</ul>
+<p>If any of these accumulate across sims, success rates would be biased.</p>
+<hr>
+<hundefined id="part-14-known-limitations-flagged-items">Part 14 — Known limitations &amp; flagged items</hundefined>
+<hundefined id="141-p1-qc-dividend-tax-credit-ordering-flagged-not-fixed">14.1 P1 — QC dividend tax credit ordering (FLAGGED, not fixed)</hundefined>
+<p><code>calcTax</code> applies federal dividend credit AFTER QC abatement (line 2641 in source):</p>
+<pre><code class="language-js">fed *= pt.abate;                           // QC abatement (× 0.835)
+fed = max(0, fed - divCredFed);            // dividend credit AFTER
+</code></pre>
+<p>Per CRA T1 General appearance, dividend credit should subtract before abatement. Engine carries a code comment citing internal <code>PASSATION_CCPC_MODULE.md §4.6</code> justifying the order. Numerical impact: under-taxes QC dividend recipients by ~16.5% of credit value. <strong>Requires tax-expert review.</strong></p>
+<hundefined id="142-p1-pension-splitting-couple-mortality-nan-root-cause-not-eliminated">14.2 P1 — Pension splitting × couple-mortality NaN (root cause not eliminated)</hundefined>
+<p>The pension-splitting block (line 6098-6107 in source) can produce NaN in <code>splitB</code> under specific edge configurations:</p>
+<ul>
+<li>One spouse already deceased (<code>cInc</code> NaN propagation)</li>
+<li>Combined with <code>estRrifMin</code> of zero</li>
+<li>Combined with active <code>p.split === true</code></li>
+</ul>
+<p>The defensive <code>isFinite</code> filter (P0.2 fix) prevents the resulting histogram crash. The underlying NaN in <code>splitB</code> is currently masked, not eliminated. Recommend root-cause investigation in production runs.</p>
+<hundefined id="143-p2-capital-gains-250k-cliff-in-calcnritemizedtax">14.3 P2 — Capital gains $250K cliff in <code>calcNRItemizedTax</code></hundefined>
+<p>The graduated split is applied <strong>per-year per-call</strong>, so a sudden NR realization of exactly $251K vs $249K creates a discontinuity in tax at the boundary. This matches engine behavior elsewhere (PE/PM exits, deemed disposition at death) and is per CRA rules — but produces step changes the user might find counterintuitive.</p>
+<hundefined id="144-engine-doesnt-enforce-cra-contribution-limits">14.4 Engine doesn&#39;t enforce CRA contribution limits</hundefined>
+<ul>
+<li>RRSP contribution: engine accepts <code>p.rrspC</code> at face value — doesn&#39;t enforce 18% of prior year income or annual maximum (~$32K for 2026).</li>
+<li>Pension adjustment (PA): not modeled. DC/DB plan members have reduced RRSP room in real life.</li>
+</ul>
+<hundefined id="145-engine-doesnt-model-province-change-mid-life">14.5 Engine doesn&#39;t model province change mid-life</hundefined>
+<p>If <code>p.prov</code> is set, all calculations use that province for all years. Real residents who move provinces would have multi-province tax filings.</p>
+<hundefined id="146-lif-max-withdrawal-not-enforced">14.6 LIF max withdrawal not enforced</hundefined>
+<p>LIRA → LIF conversion at retirement triggers minimum AND maximum annual draw rules in real life. Engine respects RRIF minimum via <code>getRRIFMin</code> but doesn&#39;t cap LIF withdrawals at the maximum (which is province-specific).</p>
+<hundefined id="147-donations-charitable-giving">14.7 Donations &amp; charitable giving</hundefined>
+<p><code>p.donAnn</code> (annual donation $) is captured but not deducted as a tax credit in <code>calcTax</code> — engine doesn&#39;t model the $200 / $200+ first-tier donation credit split. Would need a follow-up to thread <code>donations</code> into <code>calcTax</code> as a credit.</p>
+<hundefined id="148-rsu-vesting-tax">14.8 RSU vesting tax</hundefined>
+<p><code>p.rsuGrants</code> carry vested shares as ordinary income but use a flat <code>RSU_TAX_RATE = 0.45</code> rather than running through <code>calcTax</code>. Conservative for top-bracket employees, may under-tax those in lower brackets.</p>
+<hr>
+<hundefined id="part-15-reproducibility-running-the-engine-outside-the-browser">Part 15 — Reproducibility (running the engine outside the browser)</hundefined>
+<hundefined id="151-extract-to-node">15.1 Extract to Node</hundefined>
+<pre><code class="language-bash">node planner/report/realai/extract-v3-engine.mjs
+</code></pre>
+<p>Pulls the engine block from <code>planner_v3.html</code> into a Node-runnable CommonJS module at <code>planner/report/realai/v3-engine.cjs</code>. Re-run after any engine edit.</p>
+<hundefined id="152-programmatic-invocation">15.2 Programmatic invocation</hundefined>
+<pre><code class="language-js">const E = require(&#39;./planner/report/realai/v3-engine.cjs&#39;);
+
+// Deterministic
+const det = E.optimizeDecum({
+  age: 50, retAge: 65, deathAge: 90, sex: &#39;M&#39;, prov: &#39;QC&#39;,
+  sal: 90000, rrsp: 250000, tfsa: 80000, nr: 50000,
+  rrspC: 8000, tfsaC: 6000, nrC: 5000,
+  retSpM: 5000, qppAge: 65, oasAge: 65, avgE: 90000, qppYrs: 25,
+  inf: 0.021, eqRet: 0.06,
+  merR: 0.005, merT: 0.005, merN: 0.005,
+  allocR: 0.6, allocT: 0.7, allocN: 0.5,
+  wStrat: &#39;optimized&#39;
+});
+console.log(&#39;Final balance:&#39;, det.finalBal);
+console.log(&#39;OAS clawback yrs:&#39;, det.oasClawbackYrs);
+
+// Monte Carlo
+const mc = E.runMC(/* same params */, 1000);
+console.log(&#39;Success rate:&#39;, (mc.succ * 100).toFixed(1) + &#39;%&#39;);
+console.log(&#39;Median wealth:&#39;, mc.medF);
+console.log(&#39;P5 wealth (VaR):&#39;, mc.p5F);
+</code></pre>
+<hundefined id="153-audit-suites">15.3 Audit suites</hundefined>
+<pre><code class="language-bash"># Tax + benefits + RRIF + MC primitives + edge cases (140 assertions)
+node planner/report/realai/v3-engine-audit.cjs
+
+# Deterministic engine + estate sortedness + QC div ordering + aux fns
+node planner/report/realai/v3-engine-audit-deep.cjs
+
+# Path features (GK/splitting/RE/CCPC/multi-asset/spousal) + 31-input what-if
+node planner/report/realai/v3-engine-audit-final.cjs
+</code></pre>
+<p>Expected: 218+ pass, 0 fail.</p>
+<hundefined id="154-production-webhook-integration">15.4 Production webhook integration</hundefined>
+<p>The production webhook (<code>/api/webhook</code> after Stripe payment) imports <code>lib/engine/index.js</code> (a hand-port of the same engine). Drift between <code>lib/engine/index.js</code> and <code>planner_v3.html</code> is a real risk — both files must be updated in lockstep when constants or logic change. Tax constants (<code>FED_BRACKETS</code>, <code>OAS_CLAWBACK_THR</code>, <code>PROV_TAX[*].b</code>, ON surtax thresholds) should be reviewed each January after Service Canada / Revenu Québec / CRA publish indexed values.</p>
+<p>The audit confirmed <code>lib/engine/index.js</code> has at least one drift (QC bracket [108680] vs v3&#39;s correct [108730]). Until the lib/engine path is reconciled, consumers should prefer the v3 path.</p>
+<hr>
+<hundefined id="appendix-a-function-signatures-one-liner">Appendix A — Function signatures (one-liner)</hundefined>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Signature</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>calcTax(inc, yr, prov, infR, retired, divInfo)</code></td>
+<td>personal income tax</td>
+<td><code>{ total, fed, prov, eff, marg, fedEff, provEff, divCredFed, divCredProv, taxableInc }</code></td>
+</tr>
+<tr>
+<td><code>calcCorpTax(activeIncome, passiveIncome, prov, yr, infR)</code></td>
+<td>CCPC tax</td>
+<td><code>{ activeTax, passiveTax, totalTax, rdtohAdded, smallBizPortion, generalPortion, adjustedSBD, effectiveRate }</code></td>
+</tr>
+<tr>
+<td><code>calcQPP(startAge, avgEarn, yrsContrib)</code></td>
+<td>$/month</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>calcOAS(startAge, income, yr, infR, currentAge)</code></td>
+<td>$/month</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>calcGIS(age, nonOASincome, yr, infR, hasSpouse, employmentInc)</code></td>
+<td>$/month</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>getRRIFMin(age, bal)</code></td>
+<td>RRIF minimum withdrawal $</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>oasClbThrFor(age, baseAge, inf)</code></td>
+<td>indexed OAS clawback threshold $</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>chol(m)</code></td>
+<td>lower-triangular Cholesky factor</td>
+<td>matrix</td>
+</tr>
+<tr>
+<td><code>tRn(df)</code></td>
+<td>t-distribution sample (≈ normal if df &gt; 30)</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>stochDeath(startAge, sexCode)</code></td>
+<td>stochastic death age</td>
+<td>int</td>
+</tr>
+<tr>
+<td><code>sMul(age, ra, g, sl, n, slAge, noAge)</code></td>
+<td>spending multiplier</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>pCr(pi, age)</code></td>
+<td>pension credit value (QC)</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>blendRet(eqRet, bondRet, eqPct)</code></td>
+<td>2-class blended return</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>blendMulti(rets, alloc)</code></td>
+<td>5-component blended return</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>resolveAlloc(p, acctKey)</code></td>
+<td>allocation object for account</td>
+<td>object</td>
+</tr>
+<tr>
+<td><code>divEligibleFactor(prov)</code></td>
+<td>dividend effective-rate factor</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>calcNRItemizedTax(nrBal, retNR_gross, alloc, margRate, bndR, prov)</code></td>
+<td>itemized NR tax $</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>calcWHT(alloc, acctType)</code></td>
+<td>foreign WHT drag</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>calcPayroll(sal, prov, yr, infR)</code></td>
+<td>CPP/EI/RQAP $</td>
+<td>scalar</td>
+</tr>
+<tr>
+<td><code>optimizeDecum(p)</code></td>
+<td>deterministic projection</td>
+<td><code>{ schedule, totalTax, totalGIS, oasClawbackYrs, finalBal, retStart }</code></td>
+</tr>
+<tr>
+<td><code>runMC(p, N, _progressCb)</code></td>
+<td>Monte Carlo results</td>
+<td>(see Part 12)</td>
+</tr>
+</tbody></table>
+<hundefined id="appendix-b-file-map">Appendix B — File map</hundefined>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>planner/planner_v3.html</code></td>
+<td>Source of truth — engine + UI</td>
+</tr>
+<tr>
+<td><code>planner/planner_v2.html</code></td>
+<td>Prior version (still in production for some paths)</td>
+</tr>
+<tr>
+<td><code>lib/engine/index.js</code></td>
+<td>Server-side mirror used by <code>/api/webhook</code> (DRIFT-PRONE)</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/extract-v3-engine.mjs</code></td>
+<td>Engine extractor</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/v3-engine.cjs</code></td>
+<td>Auto-generated Node module</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/v3-engine-audit.cjs</code></td>
+<td>Audit suite #1</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/v3-engine-audit-deep.cjs</code></td>
+<td>Audit suite #2 (deterministic + sortedness)</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/v3-engine-audit-final.cjs</code></td>
+<td>Audit suite #3 (paths + what-if)</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/V3-ENGINE-AUDIT-REPORT.md</code></td>
+<td>Last audit report</td>
+</tr>
+<tr>
+<td><code>planner/report/realai/V3-ENGINE-TECHNICAL-REFERENCE.md</code></td>
+<td>This document</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>End of reference. Last verified: 2026-04-20. For changes to constants, recompute the audit (<code>node planner/report/realai/v3-engine-audit*.cjs</code>) and refresh this document.</em></p>
+
+</main>
+</div>
+</body>
+</html>
