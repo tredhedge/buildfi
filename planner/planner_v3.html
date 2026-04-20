@@ -4005,6 +4005,77 @@ function runTestSuite() {
   // bizSaleACB exists
   T("MC-CCPC","bizSaleACB state exists",html.indexOf("bizSaleACB")>-1?1:0,1,0);
 
+  // ─── Sole-proprietorship (travailleur autonome) ───
+  var bpSole = Object.assign({}, bp, { bizOn:true, bizType:"sole",
+    bizSoleRev:120000, bizSoleExp:20000, bizSoleGrowth:0, bizSoleVol:0,
+    bizDebtBal:0, bizDebtRate:0, bizDebtAmort:10, sal:0 });
+  var mcSole = null, mcSoleOk = false;
+  try {
+    var _origRS = Math.random; var _sS = 42, _aS = 1664525, _cS = 1013904223, _mS = Math.pow(2,32);
+    Math.random = function(){ _sS=(_aS*_sS+_cS)%_mS; return _sS/_mS; };
+    mcSole = runMC(bpSole, 20); Math.random = _origRS; mcSoleOk = true;
+  } catch (e) { try { Math.random = _origRS; } catch(e_){} }
+  T("MC-Sole","Runs", mcSoleOk?1:0, 1, 0);
+  if (mcSoleOk && mcSole) {
+    T("MC-Sole","Succ 0-1", mcSole.succ>=0&&mcSole.succ<=1?1:0, 1, 0);
+    var _rdSole = mcSole.revData || mcSole.medRevData || [];
+    var _preRetSole = _rdSole.filter(function(r){ return r.age < 60; });
+    var _soleNetSum = _preRetSole.reduce(function(s,r){ return s+(r.bizSoleNet||0); }, 0);
+    T("MC-Sole","bizSoleNet>0 pre-ret", _soleNetSum>0?1:0, 1, 0);
+    // No corp fields on sole
+    var _soleCorpSum = _preRetSole.reduce(function(s,r){ return s+(r.corpTax||0)+(r.corpDiv||0); }, 0);
+    T("MC-Sole","No corp tax/div on sole", _soleCorpSum===0?1:0, 1, 0);
+    // CPP/QPP deduct >0 when net income positive
+    var _soleCppSum = _preRetSole.reduce(function(s,r){ return s+(r.bizSoleCppDeduct||0); }, 0);
+    T("MC-Sole","Self-emp CPP deduct>0", _soleCppSum>0?1:0, 1, 0);
+  }
+
+  // ─── Detailed spouse (bridge + pen2 + part-time) ───
+  var bpSpouse = Object.assign({}, bp, { cOn:true, cAge:55, cRetAge:58, cDeath:90, cSex:"F",
+    cRRSP:200000, cTFSA:80000, cNR:40000, cRRSPC:0, cTFSAC:0, cNRC:0,
+    cPenType:"db", cPenM:2500, cPenIdx:1,
+    cPen2Type:"cd", cPen2M:0, cDC2Bal:50000, cPen2EE:0, cPen2ER:0,
+    cBridge:true, cBrAmt:800, cBrEnd:65,
+    cPtM:1500, cPtYrs:3,
+    cQppAge:65, cAvgE:55000, cQppYrs:30, cOasAge:65,
+    cSyncPortfolio:true });
+  var mcSpouse = null, mcSpouseOk = false;
+  try {
+    var _origRSp = Math.random; var _sSp = 42;
+    Math.random = function(){ _sSp=(_aS*_sSp+_cS)%_mS; return _sSp/_mS; };
+    mcSpouse = runMC(bpSpouse, 20); Math.random = _origRSp; mcSpouseOk = true;
+  } catch (e) { try { Math.random = _origRSp; } catch(e_){} }
+  T("MC-Spouse","Runs", mcSpouseOk?1:0, 1, 0);
+
+  // ─── Independent spouse portfolio ───
+  var bpSyncOff = Object.assign({}, bpSpouse, { cSyncPortfolio:false,
+    cAllocR:0.3, cAllocT:0.3, cAllocN:0.2, cMerR:0.005, cMerT:0.005, cMerN:0.005 });
+  var mcSyncOff = null, mcSyncOffOk = false;
+  try {
+    var _origRSo = Math.random; var _sSo = 42;
+    Math.random = function(){ _sSo=(_aS*_sSo+_cS)%_mS; return _sSo/_mS; };
+    mcSyncOff = runMC(bpSyncOff, 20); Math.random = _origRSo; mcSyncOffOk = true;
+  } catch (e) { try { Math.random = _origRSo; } catch(e_){} }
+  T("MC-Spouse","SyncOff runs", mcSyncOffOk?1:0, 1, 0);
+  // Conservative spouse alloc (30/70) should yield <= household spouse balance
+  // than an aggressive match (not tested here — just checks path executes).
+
+  // ─── Detailed insurance premium drain ───
+  var bpIns = Object.assign({}, bp, {
+    insViePrime:50, insVieCov:300000, insVieType:"term", insVieDur:20,
+    insInvPrime:80, insInvCov:3000,
+    insMGPrime:40, insMGCov:100000,
+    insColPrime:25, nr:200000 });
+  var bpNoIns = Object.assign({}, bp, { nr:200000 });
+  var mcIns2 = safeMC(bpIns, 5), mcNoIns = safeMC(bpNoIns, 5);
+  T("MC-Insurance","Drain runs", mcIns2?1:0, 1, 0);
+  if (mcIns2 && mcNoIns && mcIns2.medF !== undefined && mcNoIns.medF !== undefined) {
+    // With insurance premiums, working-years NR slightly lower than without.
+    // Estate can swing either way depending on when death occurs so we only
+    // check the simulation completes and does not explode.
+    T("MC-Insurance","medF finite", isFinite(mcIns2.medF)?1:0, 1, 0);
+  }
+
   // ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â INTEGRATION TESTS (R4) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â catch multi-year simulation bugs ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
 
   // DC pension balance should show pension income in retirement
@@ -5984,9 +6055,12 @@ function runMC(p, N, _progressCb) {
           // Preserve primary's country/sector texture, re-scale equity
           // portion to spouse's target, put the complement in bonds.
           function _rescaleAlloc(baseAlloc, targetEq) {
+            // Clamp targetEq to [0,1] to protect against bad user input
+            // (would otherwise produce negative bond allocation).
+            var _te = Math.min(1, Math.max(0, targetEq));
             var _eqBase = (baseAlloc.can||0) + (baseAlloc.us||0) + (baseAlloc.intl||0) + (baseAlloc.em||0);
-            var _s = _eqBase > 0 ? targetEq / _eqBase : 1;
-            return { can: (baseAlloc.can||0) * _s, us: (baseAlloc.us||0) * _s, intl: (baseAlloc.intl||0) * _s, em: (baseAlloc.em||0) * _s, bnd: 1 - targetEq };
+            var _s = _eqBase > 0 ? _te / _eqBase : 1;
+            return { can: (baseAlloc.can||0) * _s, us: (baseAlloc.us||0) * _s, intl: (baseAlloc.intl||0) * _s, em: (baseAlloc.em||0) * _s, bnd: 1 - _te };
           }
           var _cAlRR = _rescaleAlloc(_glideAlloc(_maAllocRR), _cAR);
           var _cAlTF = _rescaleAlloc(_glideAlloc(_maAllocTF), _cAT);
@@ -6366,10 +6440,14 @@ function runMC(p, N, _progressCb) {
         // Salary volatility (Expert): stochastic multiplier on contributions
         var _salMul = 1;
         if ((p.salVol || 0) > 0) { _salMul = Math.max(0.2, 1 + (p.salVol || 0) * (2 * Math.random() - 1)); }
-        // Disability interruption (Expert): probability of losing income for X months
-        if ((p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
+        // Disability interruption (Expert): probability of losing income for X months.
+        // Single roll drives both the salary reduction and any insurance benefit.
+        var _disabTrig = (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0);
+        if (_disabTrig) {
           _salMul *= Math.max(0, 1 - (p.disabMo || 6) / 12);
         }
+        // Spouse disability — independent roll (different person)
+        var _cDisabTrig = p.cOn && cAlive && !cRetired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0);
         var _adjGr = cGr * _salMul;
         // TFSA: custom = fixed annual, default = CPI-indexed rounded to $500
         var tfsaLim = p.tfsaC != null ? p.tfsaC : Math.round(7e3 * Math.pow(1 + p.inf, y) / 500) * 500;
@@ -6419,8 +6497,12 @@ function runMC(p, N, _progressCb) {
         }
         // Insurance premiums — all lines, monthly × 12, drained from NR.
         // Term life (insVie) stops after insVieDur years from simulation start.
-        var _insVieActive = (p.insVieType === "perm") || (y < (p.insVieDur || 999));
-        var _cInsVieActive = (p.cInsVieType === "perm") || (y < (p.cInsVieDur || 999));
+        // When insVieDur is 0 or missing on a term policy we treat it as
+        // 20-year term (industry norm) to avoid silently zeroing the cover.
+        var _dur = p.insVieDur > 0 ? p.insVieDur : 20;
+        var _cDur = p.cInsVieDur > 0 ? p.cInsVieDur : 20;
+        var _insVieActive = (p.insVieType === "perm") || (y < _dur);
+        var _cInsVieActive = (p.cInsVieType === "perm") || (y < _cDur);
         var _totPrim = lifeInsPrem
           + (_insVieActive ? insViePrem : 0)
           + (!retired ? insInvPrem : 0)  // disability coverage ceases at retirement
@@ -6433,16 +6515,10 @@ function runMC(p, N, _progressCb) {
             + cInsMGPrem + cInsColPrem;
           if (_cTotPrim > 0 && cnr >= _cTotPrim) cnr -= _cTotPrim;
         }
-        // Disability benefit: when the yearly disability event triggers
-        // pre-retirement, compensate lost salary via insInvCov $/month
-        // for the disabMo months of interruption (part of _salMul path).
-        // Engine already reduces sal via _salMul; we add the benefit to nr.
-        if (!retired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
-          nr += (p.insInvCov || 0) * (p.disabMo || 6);
-        }
-        if (p.cOn && cAlive && !cRetired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
-          cnr += (p.cInsInvCov || 0) * (p.disabMo || 6);
-        }
+        // Disability benefit: same trigger flag as the salary reduction so
+        // benefit and loss are perfectly correlated (fixes earlier double-roll).
+        if (_disabTrig && !retired) nr += (p.insInvCov || 0) * (p.disabMo || 6);
+        if (_cDisabTrig) cnr += (p.cInsInvCov || 0) * (p.disabMo || 6);
         // Critical illness (maladies graves) — simplified trigger: ~1.5%/yr
         // at age 55+, ~2.5%/yr at 70+. Pays insMGCov lump sum to NR once
         // per lifetime when policy is in force.
@@ -6472,7 +6548,7 @@ function runMC(p, N, _progressCb) {
         if (p.cOn && cAlive && !cRetired) {
           var _cSalMul = 1;
           if ((p.salVol || 0) > 0) { _cSalMul = Math.max(0.2, 1 + (p.salVol || 0) * (2 * Math.random() - 1)); }
-          if ((p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) { _cSalMul *= Math.max(0, 1 - (p.disabMo || 6) / 12); }
+          if (_cDisabTrig) { _cSalMul *= Math.max(0, 1 - (p.disabMo || 6) / 12); }
           var _cAdjGr = cGr * _cSalMul;
           var cTfsaLim = p.cTFSAC != null ? p.cTFSAC : Math.round(7e3 * Math.pow(1 + p.inf, y) / 500) * 500;
           crr = crr * (1 + cRetRR) + (p.cRRSPC || 0) * _cAdjGr;
@@ -6746,10 +6822,11 @@ function runMC(p, N, _progressCb) {
             var _solePrinPay = Math.max(0, _bizDebtPay - _soleIntPay);
             _bizDebt = Math.max(0, _bizDebt - _solePrinPay);
           }
-          // Self-employed CPP/QPP — employer half deductible (2026 YMPE/exempt
-          // indexed via infM). 5.95% is the 2026 base rate per half.
-          var _ympe = 68500 * infM;
-          var _basicExempt = 3500 * infM;
+          // Self-employed CPP/QPP — employer half deductible. Uses the
+          // fiscal-constants YMPE (C.QPP_MGA, already 2026-indexed) so the
+          // test suite's constants-alignment check picks up future updates.
+          var _ympe = (typeof C !== "undefined" && C.QPP_MGA ? C.QPP_MGA : 68500) * infM;
+          var _basicExempt = (typeof C !== "undefined" && C.QPP_BASIC_EXEMPT ? C.QPP_BASIC_EXEMPT : 3500) * infM;
           var _pensionable = Math.min(Math.max(0, _soleNet - _basicExempt), _ympe - _basicExempt);
           _bizSoleCppDeduct = _pensionable * 0.0595;
           _bizSoleNetThisYr = Math.max(0, _soleNet - _bizSoleCppDeduct);
@@ -7129,11 +7206,13 @@ function runMC(p, N, _progressCb) {
     // death occurs within insVieDur years of simulation start; permanent
     // always pays. Additive to lifeIns/cLifeIns already carried forward.
     var _pDeathYr = Math.max(0, simDeath - p.age);
+    var _insVieDurEff = p.insVieDur > 0 ? p.insVieDur : 20;
+    var _cInsVieDurEff = p.cInsVieDur > 0 ? p.cInsVieDur : 20;
     var _insVieDeathBen = (p.insViePrime > 0 && (p.insVieCov || 0) > 0 &&
-      ((p.insVieType === "perm") || _pDeathYr < (p.insVieDur || 0))) ? (p.insVieCov || 0) : 0;
+      ((p.insVieType === "perm") || _pDeathYr < _insVieDurEff)) ? (p.insVieCov || 0) : 0;
     var _cDeathYr = p.cOn ? Math.max(0, (cSimDeath || p.cDeath || 0) - p.cAge) : 0;
     var _cInsVieDeathBen = p.cOn && p.cInsViePrime > 0 && (p.cInsVieCov || 0) > 0 &&
-      ((p.cInsVieType === "perm") || _cDeathYr < (p.cInsVieDur || 0)) ? (p.cInsVieCov || 0) : 0;
+      ((p.cInsVieType === "perm") || _cDeathYr < _cInsVieDurEff) ? (p.cInsVieCov || 0) : 0;
     var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0) + _insVieDeathBen + _cInsVieDeathBen;
     // GK per-sim stats
     gkAllCuts.push(gkCutCount); gkAllRaises.push(gkRaiseCount); gkAllCutYrs.push(gkCutYrs); gkAllMaxStreak.push(gkMaxCutStreak);
