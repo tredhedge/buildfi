@@ -9365,6 +9365,10 @@ function App() {
       if (p3.stressLevel != null) sStress(p3.stressLevel);
       if (p3.finLiteracy != null) sLit(p3.finLiteracy);
       if (p3.detailPref != null) sDetail(p3.detailPref);
+      // Spouse life insurance — consumed by MC (tax calc + coverage need),
+      // was missing from the bridge.
+      if (p3.cLifeInsBenefit != null) sCLifeIns(p3.cLifeInsBenefit);
+      if (p3.cLifeInsPremium != null) sCLifeInsP(p3.cLifeInsPremium);
       window._mc = null; window._mcPending = false; window._mcProfileDirty = true;
     } catch (e) { console.error("v4→v3 profile apply failed:", e); }
   };
