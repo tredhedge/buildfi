@@ -204,19 +204,26 @@ assert(pay0 === 0, 'calcPayroll @ $0 = $0');
 const payNeg = E.calcPayroll(-100, 'QC', 0, 0.02);
 assert(payNeg === 0, 'calcPayroll @ negative = $0 (sane)');
 
-// 5b. calcCorpTax — corporate tax with active + passive income
+// 5b. calcCorpTax — corporate tax with active + passive income.
+// Engine returns { totalTax, generalPortion, rdtohAdded } (not total).
 try {
   const ct = E.calcCorpTax(200000, 0, 'QC', 0, 0.02);
-  assert(typeof ct === 'object' && typeof ct.total === 'number', 'calcCorpTax returns total');
-  inRange(ct.total, 200000 * 0.05, 200000 * 0.30, 'corp tax @ $200K active QC in [5%, 30%]');
+  assert(typeof ct === 'object' && typeof ct.totalTax === 'number', 'calcCorpTax returns totalTax');
+  inRange(ct.totalTax, 200000 * 0.05, 200000 * 0.30, 'corp tax @ $200K active QC in [5%, 30%]');
 } catch (e) { fail++; console.error('  \u2717 calcCorpTax throws: ' + e.message); }
 
-// 5c. calcWHT — withholding tax on RRSP withdrawals
+// 5c. calcWHT — withholding tax on foreign dividend yield. Signature is
+// calcWHT(allocation, accountType) where allocation is a {can, us, intl,
+// em, bnd} fractions object, NOT a dollar amount. Returns a percentage
+// drag applied to blendMulti (e.g. 0.002 = 20 bps).
 try {
-  const wht5K = E.calcWHT(5000, 'rrsp');
-  inRange(wht5K, 0, 1500, 'WHT on $5K RRSP withdrawal in [$0, $1500]');
-  const wht20K = E.calcWHT(20000, 'rrsp');
-  assert(wht20K > wht5K, 'WHT scales with withdrawal amount');
+  const allocAllCan = { can: 1, us: 0, intl: 0, em: 0, bnd: 0 };
+  const allocAllUS  = { can: 0, us: 1, intl: 0, em: 0, bnd: 0 };
+  const whtCan = E.calcWHT(allocAllCan, 'rrsp');
+  const whtUS  = E.calcWHT(allocAllUS,  'rrsp');
+  inRange(whtCan, 0, 0.001, 'WHT on 100% CAN (RRSP) ≈ 0');
+  inRange(whtUS,  0, 0.01,  'WHT on 100% US (RRSP) in [0, 1%]');
+  assert(whtUS >= whtCan, 'US drag >= CAN drag in RRSP');
 } catch (e) { warn++; console.error('  \u26a0 calcWHT signature mismatch: ' + e.message); }
 
 // 5d. blendRet

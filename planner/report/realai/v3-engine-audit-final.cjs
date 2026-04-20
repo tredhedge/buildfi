@@ -130,15 +130,14 @@ console.log('  $50K elig div ON: $' + txDivON.total.toFixed(0));
 // ════════════════════════════════════════════════════════════════
 console.log('\n── 5. ON surtax (2026 thresholds) ──');
 
-// ON surtax: 20% on prov tax above $5554 (2025) or $5710 (2026)
-// Engine uses $4991 / $6387 — these are 2024 thresholds. Likely outdated.
-// Let's verify behavior is in ballpark
+// ON surtax: 20% on prov tax above $5710 (2026 THR1),
+// additional 36% above $7307 (2026 THR2). Engine uses these 2026 values.
 const txON_high = E.calcTax(180000, 0, 'ON');
 const txON_low = E.calcTax(60000, 0, 'ON');
 assert(txON_high.prov > txON_low.prov * 4, 'ON surtax kicks in at high income');
 console.log('  ON @ $60K: prov=$' + txON_low.prov.toFixed(0) + ' (no surtax)');
 console.log('  ON @ $180K: prov=$' + txON_high.prov.toFixed(0) + ' (full surtax)');
-console.log('  Engine surtax thresholds: $4991/$6387 — verify against ON 2026 published');
+console.log('  Engine surtax thresholds: $5710/$7307 (ON 2026 Form 428)');
 
 // ════════════════════════════════════════════════════════════════
 // 6. PENSION SPLITTING (p.split)

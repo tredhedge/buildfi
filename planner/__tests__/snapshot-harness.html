@@ -132,9 +132,33 @@ function waitForFrameReady(iframe) {
   });
 }
 
+/* Normalize legacy property schema (v3-profiles.json writes mort/rate/term/
+ * amort/rent/exp/tax/apprRate) into the canonical engine keys
+ * (mb/mr/mt1/ma/rm/ox/pt/appRate/ri). Engine reads mb/mr/ma/rm/ox/pt so
+ * missing keys produce zero-valued projections — snapshots were drifting
+ * silently for real-estate profiles before this mapping was added. */
+function normalizeProps(params) {
+  if (!params || !Array.isArray(params.props)) return params;
+  params.props = params.props.map(function(pr) {
+    var out = Object.assign({}, pr);
+    if (out.mb == null && out.mort != null) out.mb = out.mort;
+    if (out.mr == null && out.rate != null) out.mr = out.rate;
+    if (out.mr2 == null && out.renewRate != null) out.mr2 = out.renewRate;
+    if (out.mt1 == null && out.term != null) out.mt1 = out.term;
+    if (out.ma == null && out.amort != null) out.ma = out.amort;
+    if (out.rm == null && out.rent != null) out.rm = out.rent;
+    if (out.ox == null && out.exp != null) out.ox = out.exp;
+    if (out.pt == null && out.tax != null) out.pt = out.tax;
+    if (out.ri == null && out.appRate != null) out.ri = out.appRate;
+    if (out.ri == null && out.apprRate != null) out.ri = out.apprRate;
+    return out;
+  });
+  return params;
+}
+
 async function runProfile(profile, tier, win) {
   const nSim = tier === "nightly" ? 5000 : 1000;
-  const params = Object.assign({}, profile.params, { nSim: nSim });
+  const params = normalizeProps(Object.assign({}, profile.params, { nSim: nSim }));
   const t0 = performance.now();
   let result;
   try {
