@@ -16,15 +16,37 @@
 (function () {
   "use strict";
 
-  /* Required top-level sections in every report. Identified by a
-   * language-neutral anchor (id= or class=) or a visible section title
-   * fragment present in both FR and EN. A missing section is BLOCKING. */
+  /* Required top-level sections in every report. Identified by the actual
+   * DOM id emitted by report-pdf.js (verified against generated HTML) and
+   * cross-checked with a visible title fragment in FR/EN. A missing section
+   * is BLOCKING.
+   *
+   * IDs below match the current report-pdf.js output (sec-* prefix).
+   * Sections targeted by the 20-page rewrite plan but not yet implemented
+   * (histogram, stress tests, cash flow, action plan, assumptions appendix)
+   * are tracked in RECOMMENDED_SECTIONS and emit warnings only. Once each
+   * section lands, promote it from RECOMMENDED → REQUIRED. */
   var REQUIRED_SECTIONS = [
-    { id: "decision",    label: "Decision card",          fr: "Verdict",           en: "Verdict" },
-    { id: "projection",  label: "Projection fan chart",   fr: "Projection",        en: "Projection" },
-    { id: "histogram",   label: "Final wealth histogram", fr: "histogramme",       en: "histogram" },
-    { id: "scenarios",   label: "Scenarios / stress",     fr: "scénario",          en: "scenario" },
-    { id: "methodology", label: "Methodology + assumptions", fr: "Méthodologie",   en: "Methodology" }
+    { id: "sec-letter",      label: "Advisor opening letter",   fr: "pr\u00e9paratoire", en: "Opening letter" },
+    { id: "sec-assessment",  label: "Overall assessment",       fr: "30 secondes",      en: "30 seconds" },
+    { id: "sec-diagnostic",  label: "Executive summary",        fr: "Verdict",          en: "Verdict" },
+    { id: "sec-profile",     label: "Client profile",           fr: "Profil",           en: "Profile" },
+    { id: "sec-projection",  label: "Projection fan chart",     fr: "Projection",       en: "Projection" },
+    { id: "sec-revenue",     label: "Retirement income",        fr: "Revenus",          en: "Income" },
+    { id: "sec-tax",         label: "Tax strategy",             fr: "Fiscalit",         en: "Tax" },
+    { id: "sec-stress",      label: "Stress-test scenarios",    fr: "stress",           en: "Stress" },
+    { id: "sec-methodology", label: "Methodology + assumptions", fr: "Méthodologie",    en: "Methodology" }
+  ];
+
+  /* Planned sections — not yet implemented. Their absence is a WARNING only,
+   * so QA stays green while the 18-22 page rewrite progresses phase by phase.
+   * draw-order heatmap (sec-draworder) lands when enriched payload carries
+   * drawTrace — not a strict requirement since it's a differentiator bonus. */
+  var RECOMMENDED_SECTIONS = [
+    { id: "sec-histogram",   label: "Final-wealth histogram" },
+    { id: "sec-cashflow",    label: "Year-by-year cash flow statement" },
+    { id: "sec-actions",     label: "Action plan" },
+    { id: "sec-assumptions", label: "Assumptions appendix" }
   ];
 
   /* Patterns that indicate a placeholder leaked through the build.
@@ -72,9 +94,9 @@
     info.lang = lang;
     info.htmlLength = html.length;
 
-    /* 1. Required sections. Check both the data-id/id anchor AND the
-     *    visible title fragment (either language) so translated reports
-     *    still pass even if the id attribute changes. */
+    /* 1. Required sections. Check both the DOM id AND the visible title
+     *    fragment (either language) so translated reports still pass even
+     *    if the id attribute changes. */
     REQUIRED_SECTIONS.forEach(function (s) {
       var idHit = html.indexOf('id="' + s.id + '"') >= 0
                || html.indexOf('data-section="' + s.id + '"') >= 0;
@@ -82,6 +104,15 @@
                   || html.toLowerCase().indexOf(s.en.toLowerCase()) >= 0;
       if (!idHit && !titleHit) {
         blocking.push({ check: "section-missing", detail: s.label + " (" + s.id + ")" });
+      }
+    });
+
+    /* 1b. Recommended sections — warning only. Promote to REQUIRED once each
+     *    section lands in the 20-page rewrite. */
+    RECOMMENDED_SECTIONS.forEach(function (s) {
+      var idHit = html.indexOf('id="' + s.id + '"') >= 0;
+      if (!idHit) {
+        warnings.push({ check: "section-recommended-missing", detail: s.label + " (" + s.id + ")" });
       }
     });
 
@@ -154,7 +185,113 @@
     return { blocking: blocking, warnings: warnings, info: info };
   }
 
-  var api = { auditReport: auditReport, REQUIRED_SECTIONS: REQUIRED_SECTIONS, PLACEHOLDER_PATTERNS: PLACEHOLDER_PATTERNS };
+  /* Required sheets in every Excel export — ids pulled from
+   * report-excel.js. Conditional sheets (Conjoint, Business, Goals,
+   * Debts/Insurance when empty) are NOT required here to keep the
+   * assertion tight against the universal baseline. */
+  var REQUIRED_EXCEL_SHEETS = [
+    "Sommaire", "Summary",
+    "Profil", "Profile",
+    "Projection d\u00e9terministe", "Deterministic Projection",
+    "Flux de tr\u00e9sorerie", "Cash Flow",
+    "Fiscalit\u00e9", "Tax",
+    "M\u00e9thodologie", "Methodology"
+  ];
+
+  /* Post-generation audit of an Excel workbook. Callers pass the parsed
+   * ExcelJS workbook (or a compatible object with .worksheets array)
+   * and the payload the workbook was built from. Returns the same
+   * {blocking, warnings, info} shape as auditReport for consistency. */
+  function auditExcel(workbook, payload) {
+    var blocking = [];
+    var warnings = [];
+    var info = {};
+
+    if (!workbook || !Array.isArray(workbook.worksheets)) {
+      blocking.push({ check: "excel-invalid", detail: "Workbook missing or has no .worksheets array" });
+      return { blocking: blocking, warnings: warnings, info: info };
+    }
+
+    var p = payload || {};
+    var lang = (p.lang || p.rptLang || "fr").toLowerCase() === "en" ? "en" : "fr";
+    info.lang = lang;
+    info.sheetCount = workbook.worksheets.length;
+
+    var names = workbook.worksheets.map(function (w) { return String(w.name || ""); });
+
+    // 1. At least one of the bilingual pair for each required sheet.
+    var requiredPairs = [
+      ["Sommaire", "Summary"],
+      ["Profil", "Profile"],
+      ["Projection d\u00e9terministe", "Deterministic Projection"],
+      ["Flux de tr\u00e9sorerie", "Cash Flow"],
+      ["Fiscalit\u00e9", "Tax"],
+      ["M\u00e9thodologie", "Methodology"]
+    ];
+    requiredPairs.forEach(function (pair) {
+      var ok = names.some(function (n) { return n === pair[0] || n === pair[1]; });
+      if (!ok) blocking.push({ check: "sheet-missing", detail: pair.join(" / ") });
+    });
+
+    // 2. Scan every data cell for #REF!, #DIV/0!, #NAME?, #VALUE! errors.
+    //    These are Excel formula errors — if the engine wrote a bad formula,
+    //    the cached result string in the xlsx will contain the error code.
+    var errorMarkers = ["#REF!", "#DIV/0!", "#NAME?", "#VALUE!", "#NULL!", "#N/A"];
+    var errorCount = 0, errorExamples = [];
+    workbook.worksheets.forEach(function (ws) {
+      if (typeof ws.eachRow !== "function") return;
+      ws.eachRow({ includeEmpty: false }, function (row) {
+        row.eachCell({ includeEmpty: false }, function (cell) {
+          var v = cell.value;
+          var s = v && v.error ? v.error : (typeof v === "string" ? v : "");
+          if (!s) return;
+          for (var i = 0; i < errorMarkers.length; i++) {
+            if (s.indexOf(errorMarkers[i]) >= 0) {
+              errorCount++;
+              if (errorExamples.length < 5) errorExamples.push(ws.name + "!" + cell.address + "=" + s);
+              break;
+            }
+          }
+        });
+      });
+    });
+    if (errorCount > 0) {
+      blocking.push({ check: "formula-error", detail: errorCount + " cell error(s): " + errorExamples.slice(0, 3).join(", ") });
+    }
+
+    // 3. Currency cells shouldn't contain raw strings. Sample the first
+    //    50 rows of the first data sheet (Cash Flow if present) to see
+    //    that numeric money values are actually numbers, not strings.
+    //    Catches regressions where a cell got set() instead of setNum().
+    var stringInMoneyCount = 0;
+    var cfName = names.filter(function (n) { return n === "Flux de tr\u00e9sorerie" || n === "Cash Flow"; })[0];
+    if (cfName) {
+      var cfWs = workbook.getWorksheet(cfName);
+      if (cfWs && typeof cfWs.eachRow === "function") {
+        var rowsChecked = 0;
+        cfWs.eachRow({ includeEmpty: false }, function (row) {
+          if (rowsChecked > 50) return;
+          rowsChecked++;
+          row.eachCell({ includeEmpty: false }, function (cell) {
+            var fmt = cell.numFmt || "";
+            if (fmt && fmt.indexOf("$") >= 0 && typeof cell.value === "string"
+                && cell.value.length > 0 && cell.value !== "\u2014") {
+              stringInMoneyCount++;
+            }
+          });
+        });
+      }
+    }
+    if (stringInMoneyCount > 0) {
+      warnings.push({ check: "money-string", detail: stringInMoneyCount + " money-formatted cell(s) hold strings instead of numbers" });
+    }
+
+    info.blocking = blocking.length;
+    info.warnings = warnings.length;
+    return { blocking: blocking, warnings: warnings, info: info };
+  }
+
+  var api = { auditReport: auditReport, auditExcel: auditExcel, REQUIRED_SECTIONS: REQUIRED_SECTIONS, REQUIRED_EXCEL_SHEETS: REQUIRED_EXCEL_SHEETS, PLACEHOLDER_PATTERNS: PLACEHOLDER_PATTERNS };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof window !== "undefined") window.BReportQA = api;

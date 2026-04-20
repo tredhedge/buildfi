@@ -229,6 +229,33 @@
   var lenBlock = auditNull.blocking.filter(function (b) { return b.check === "html-length"; });
   assert(lenBlock.length === 1, "null HTML triggers html-length block");
 
+  // P4.3 — Excel-side QA hook
+  assert(typeof window.BReportQA.auditExcel === "function", "auditExcel fn exported");
+  // Null workbook → blocking
+  var auditNullExcel = window.BReportQA.auditExcel(null, {});
+  var excelInvalid = auditNullExcel.blocking.filter(function (b) { return b.check === "excel-invalid"; });
+  assert(excelInvalid.length === 1, "null workbook triggers excel-invalid block");
+  // Empty workbook → missing-sheet blocks for each required pair
+  var fakeWb = { worksheets: [] };
+  var auditEmptyExcel = window.BReportQA.auditExcel(fakeWb, { lang: "fr" });
+  var missingBlocks = auditEmptyExcel.blocking.filter(function (b) { return b.check === "sheet-missing"; });
+  assert(missingBlocks.length === 6, "empty workbook flags 6 missing required sheets, got " + missingBlocks.length);
+  // Workbook with all required sheets → no sheet-missing blocks
+  var minimalWb = {
+    worksheets: [
+      { name: "Sommaire", eachRow: function () {} },
+      { name: "Profil", eachRow: function () {} },
+      { name: "Projection d\u00e9terministe", eachRow: function () {} },
+      { name: "Flux de tr\u00e9sorerie", eachRow: function () {} },
+      { name: "Fiscalit\u00e9", eachRow: function () {} },
+      { name: "M\u00e9thodologie", eachRow: function () {} }
+    ],
+    getWorksheet: function (n) { return this.worksheets.find(function (w) { return w.name === n; }); }
+  };
+  var auditMin = window.BReportQA.auditExcel(minimalWb, { lang: "fr" });
+  var minMissing = auditMin.blocking.filter(function (b) { return b.check === "sheet-missing"; });
+  assert(minMissing.length === 0, "minimal workbook has 0 sheet-missing blocks, got " + minMissing.length);
+
   // ── Results ────────────────────────────────────────────────────────
   console.log("\n══════════════════════════════════════");
   console.log("  " + pass + " passed, " + fail + " failed");

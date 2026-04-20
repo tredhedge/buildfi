@@ -195,6 +195,18 @@
     ws.headerFooter = { oddFooter: "&L&8BuildFi Technologies inc.&C&8Page &P / &N&R&8&D" };
   }
 
+  // P4.4 — insert a hard page break before a given row so multi-section
+  // sheets (Cash Flow, Withdrawals, Methodology, MC Wealth with histogram
+  // + deathVsRuin appended) each section starts on a fresh page when
+  // printed. Callers pass (worksheet, rowNumber).
+  function addPageBreak(ws, row) {
+    if (!ws || !row || row < 2) return;
+    try {
+      var r = ws.getRow(row);
+      if (r) r.addPageBreak();
+    } catch (_) { /* ExcelJS fallback — property may not exist on older versions */ }
+  }
+
   function footer(ws, row) {
     if (!ws) return;
     var y = new Date().getFullYear();
@@ -1114,6 +1126,7 @@
     var histData = Array.isArray(mc.histogram) ? mc.histogram : [];
     if (histData.length > 0) {
       var hAnchor = 5 + mcN + 3;
+      addPageBreak(wsMC, hAnchor);
       addTitle(wsMC, hAnchor, 2, fr ? "DISTRIBUTION DU PATRIMOINE FINAL (HISTOGRAMME)" : "FINAL WEALTH DISTRIBUTION (HISTOGRAM)", "", 13);
       setRow(wsMC, hAnchor + 2, 2, [fr ? "Bin #" : "Bin #", fr ? "Borne inf." : "Lower", fr ? "Borne sup." : "Upper", fr ? "Compte" : "Count", fr ? "% des sims" : "% of sims"]);
       var totalSims = histData.reduce(function (s, b) { return s + toNum(b.count); }, 0) || 1;
@@ -1136,6 +1149,7 @@
     // the two risks: are we ruined BEFORE dying? Unused by Excel until now.
     var dvrData = Array.isArray(mc.deathVsRuin) ? mc.deathVsRuin : [];
     if (dvrData.length > 0) {
+      addPageBreak(wsMC, dvrAnchor);
       addTitle(wsMC, dvrAnchor, 2, fr ? "AGES DE D\u00c9C\u00c8S VS RUINE (SEAUX DE 5 ANS)" : "DEATH vs RUIN AGE (5-YEAR BUCKETS)", "", 13);
       setRow(wsMC, dvrAnchor + 2, 2, [fr ? "\u00c2ge" : "Age", fr ? "D\u00e9c\u00e8s (nb)" : "Deaths (n)", fr ? "Ruines (nb)" : "Ruins (n)", fr ? "Ratio ruine/d\u00e9c\u00e8s" : "Ruin/death ratio"]);
       dvrData.forEach(function (bucket, i) {
@@ -1280,6 +1294,7 @@
     // how well the plan fills the bottom bracket ceiling each year and
     // whether the melt target leaves room on the table.
     var bracketAnchor = 30;
+    addPageBreak(wsTax, bracketAnchor);
     addTitle(wsTax, bracketAnchor, 2, fr ? "EFFICACIT\u00c9 DES TRANCHES FISCALES" : "TAX BRACKET FILL EFFICIENCY", "", 13);
     if (!p.melt) {
       wsTax.mergeCells(bracketAnchor + 2, 2, bracketAnchor + 2, 7);
@@ -1429,6 +1444,7 @@
       } catch (_e) { trajRun = null; }
     }
 
+    addPageBreak(wsSS, trajAnchor);
     addTitle(wsSS, trajAnchor, 2,
       fr ? "TRAJECTOIRE ANN\u00c9E-PAR-ANN\u00c9E \u2014 PIRE SC\u00c9NARIO" : "YEAR-BY-YEAR TRAJECTORY \u2014 WORST SCENARIO", "", 13);
 
@@ -1516,6 +1532,7 @@
     // here decomposes the median result into its principal components so
     // the user can read where the tax came from. Any residual (engine −
     // sum of components) is surfaced explicitly instead of hidden.
+    addPageBreak(wsE, 14);
     addTitle(wsE, 14, 2, fr ? "CASCADE FISCALE AU D\u00c9C\u00c8S (M\u00c9DIANE)" : "TAX CASCADE AT DEATH (MEDIAN)", "", 13);
     var medNetMC = toNum(mc.medEstateNet);
     var medTaxMC = toNum(mc.medEstateTax);
@@ -1645,6 +1662,7 @@
       // run the amortization forward month-by-month across all debts and
       // show a compressed yearly snapshot (up to 20 years or zero-balance).
       var schedAnchor = debtTotalRow + 2;
+      addPageBreak(wsD, schedAnchor);
       addTitle(wsD, schedAnchor, 2, fr ? "\u00c9CH\u00c9ANCIER AGR\u00c9G\u00c9 (REMBOURSEMENT M\u00c9NAGE)" : "AGGREGATE PAYOFF SCHEDULE (HOUSEHOLD)", "", 13);
       setRow(wsD, schedAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Solde d\u00e9but" : "Opening bal", fr ? "Int\u00e9r\u00eats vers\u00e9s" : "Interest paid", fr ? "Capital rembours\u00e9" : "Principal paid", fr ? "Solde fin" : "Closing bal", fr ? "% rembours\u00e9" : "% paid"]);
       var schedRow = schedAnchor + 3;
@@ -1874,6 +1892,7 @@
     activeProps.forEach(function (pp, ppi) {
       if (toNum(pp.mb) <= 0 || toNum(pp.mr) <= 0 || toNum(pp.ma) <= 0) return;
       var propTitle = (pp.name || ((fr ? "Propri\u00e9t\u00e9 " : "Property ") + (ppi + 1)));
+      addPageBreak(wsRE, reScheduleAnchor);
       addTitle(wsRE, reScheduleAnchor, 2, (fr ? "AMORTISSEMENT \u2014 " : "AMORTIZATION \u2014 ") + propTitle.toUpperCase(), "", 13);
       setRow(wsRE, reScheduleAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Solde d\u00e9but" : "Opening bal", fr ? "Int\u00e9r\u00eats" : "Interest", fr ? "Capital" : "Principal", fr ? "Solde fin" : "Closing bal", fr ? "Valeur" : "Value", fr ? "Avoir net" : "Equity", fr ? "Taux" : "Rate"]);
       var propRow = reScheduleAnchor + 3;
@@ -2087,6 +2106,7 @@
     // the exact numeric values the engine was fed for this specific run,
     // so any reviewer can reproduce the numbers without guessing defaults.
     // All values come straight from params — no engine constants.
+    addPageBreak(wsM, 38);
     addTitle(wsM, 38, 2, fr ? "HYPOTH\u00c8SES UTILIS\u00c9ES DANS CE PLAN" : "ASSUMPTIONS USED IN THIS PLAN", "", 13);
     setRow(wsM, 40, 2, [fr ? "Param\u00e8tre" : "Parameter", fr ? "Valeur" : "Value", "Notes"]);
     var assumpAnchor = 41;

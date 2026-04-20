@@ -117,6 +117,57 @@ user can see it's an approximation.
 
 ---
 
+---
+
+## P4 — Workbook intelligence (post-P3)
+
+- [ ] **P4.1 — Cross-sheet formula references**
+      Sommaire values that mirror cells on Cash Flow / MC Wealth / Estate
+      are currently hardcoded. Replace with `='Cash Flow'!K50` so edits
+      propagate. Makes the workbook a live exploration tool instead of
+      a frozen snapshot.
+
+- [ ] **P4.2 — CCPC salary vs dividend comparison table**
+      Engine runs MC; users can only compare strategies by re-running.
+      Excel can surface a side-by-side table (total extracted after
+      corporate + personal tax, year-by-year cash to household) using
+      the existing `wStrat === "optimized" ? mc._naiveMC : null` pattern,
+      applied to bizRemun.
+
+- [x] **P4.3 — Excel-side QA hook** ✓ (commit pending)
+      BReportQA.auditReport covers HTML. Add auditExcel(buffer, payload)
+      that reads back the xlsx and checks: required sheets present,
+      no #REF / #DIV/0 in cached formulas, numeric cells are numeric
+      (not strings), currency format codes applied to money cells.
+
+- [x] **P4.4 — Explicit page breaks** ✓ (commit pending)
+      Some sheets (Cash Flow, Withdrawals, Methodology) span multiple
+      pages when printed landscape-letter. Add pageBreaks at section
+      boundaries so each block starts on a fresh page.
+
+- [ ] **P4.5 — Scenarios comparison (retire at 62/65/68)**
+      HTML report has a "what if you retired 3 years earlier / later"
+      scenario delta. Port via re-running runMC at N=300 each retAge
+      option, display as a table on Summary.
+
+- [ ] **P4.6 — Tax breakdown by source**
+      Cash Flow shows lumped tax. Engine has tiQpp / tiOas / tiPen /
+      tiRrif / tiDraw / tiRe / tiOther on revData. Tax sheet could
+      show a 6-column income decomposition per year.
+
 ## Completed (running list)
 
-_none yet; commits will be linked here as P0/P1/... items land._
+Phase 0 (the original sprint):
+- P0.1 Spouse sheet — [commit 4845f65](#)
+- P0.2 Insurance sheet — [commit 4845f65](#)
+- P0.3 Debts sheet — [commit 4845f65](#)
+- P1.1 Goals/RESP sheet — [commit 567a884](#)
+- P1.2 Assumptions appendix — [commit 567a884](#)
+- P1.3 Sole-prop branch — [commit 567a884](#)
+- P2.1 Mortgage amortization — [commit 007f330](#)
+- P2.2 Diagnostic tab — [commit 007f330](#)
+- P3.1 Terminal wealth histogram — [commit a10ce6b](#)
+- P3.2 Death vs ruin buckets — [commit a10ce6b](#)
+- P3.3 Composite resilience — [commit a10ce6b](#)
+- P3.4 Bracket-fill efficiency — [commit a10ce6b](#)
+- P2.3 Stress trajectory year-by-year — [commit 587bb3a](#)
