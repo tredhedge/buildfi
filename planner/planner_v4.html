@@ -455,6 +455,47 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 .row { display: flex; align-items: center; gap: 10px; }
 .muted { color: var(--text-dim); }
 
+/* ─────────────── Generic modal (goal add, etc.) ─────────────── */
+.bf-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(10,15,26,0.72);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  z-index: 300; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.bf-modal-backdrop[hidden] { display: none; }
+.bf-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px 26px;
+  max-width: 520px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: bf-modal-in 200ms var(--ease);
+}
+@keyframes bf-modal-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bf-modal-title { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.bf-modal-sub   { font-size: var(--fs-sm); color: var(--text-dim); line-height: 1.55; margin-bottom: 18px; }
+.bf-modal-body  { display: flex; flex-direction: column; gap: 14px; }
+.bf-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+/* ─────────────── ToC niche separator ─────────────── */
+.toc-sep {
+  margin: 8px 0 4px; padding: 4px 10px;
+  font-size: 10px; font-weight: 700;
+  color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase;
+  border-top: 1px dashed var(--border-soft);
+  padding-top: 10px;
+}
+
+/* ─────────────── Search result states ─────────────── */
+/* Sections with at least one match during an active search get a gentle
+   accent edge; sections with zero matches dim out so the user sees at a
+   glance where their query landed. */
+details.section.bf-search-hit { border-color: var(--accent) !important; }
+details.section.bf-search-empty { opacity: 0.42; pointer-events: none; }
+details.section.bf-search-empty > summary { cursor: default; }
+
 /* ─────────────── Embed mode (iframe inside v3 drawer) ─────────────── */
 /* When body has data-embed="1", this form is running inside an iframe in v3.
    Hide the standalone-only buttons (Load/Save/Compact) and reveal the embed
@@ -532,18 +573,23 @@ body[data-embed="1"] .simulate-fab { display: none; }
         <span class="search-ico">🔍</span>
         <input id="search" class="search" placeholder="Rechercher un champ…" oninput="filterFields(this.value)" data-i18n-ph="searchPh">
       </div>
-      <a class="toc-link" href="#sec-identity"><span class="ico">👤</span><span class="label" data-i18n="tocIdentity">Identité & ménage</span></a>
-      <a class="toc-link" href="#sec-spouse" id="toc-spouse" hidden><span class="ico">👥</span><span class="label" data-i18n="tocSpouse">Conjoint(e) — détails</span></a>
-      <a class="toc-link" href="#sec-income"><span class="ico">💸</span><span class="label" data-i18n="tocIncome">Revenus & dépenses</span></a>
-      <a class="toc-link" href="#sec-savings"><span class="ico">📈</span><span class="label" data-i18n="tocSavings">Épargne & placements</span></a>
+      <!-- v4 Phase 11 — ToC reordered per user proposal: Pensions/Strategy/
+           Insurance raised to core; Business/RSU/Alt pushed to niche zone
+           after a visual separator; Assumptions stays last. Labels match
+           the rail overlay titles in v3 for cross-UI consistency. -->
+      <a class="toc-link" href="#sec-identity"><span class="ico">👤</span><span class="label" data-i18n="tocIdentity">Profil &amp; identité</span></a>
+      <a class="toc-link" href="#sec-spouse" id="toc-spouse" hidden><span class="ico">👥</span><span class="label" data-i18n="tocSpouse">Conjoint(e)</span></a>
+      <a class="toc-link" href="#sec-income"><span class="ico">💸</span><span class="label" data-i18n="tocIncome">Revenus &amp; dépenses</span></a>
+      <a class="toc-link" href="#sec-savings"><span class="ico">📈</span><span class="label" data-i18n="tocSavings">Épargne &amp; placements</span></a>
       <a class="toc-link" href="#sec-realestate"><span class="ico">🏠</span><span class="label" data-i18n="tocRealEstate">Immobilier</span></a>
       <a class="toc-link" href="#sec-debts"><span class="ico">💳</span><span class="label" data-i18n="tocDebts">Dettes</span></a>
-      <a class="toc-link" href="#sec-business"><span class="ico">🏢</span><span class="label" data-i18n="tocBusiness">Entreprise</span></a>
-      <a class="toc-link" href="#sec-alt"><span class="ico">🧩</span><span class="label" data-i18n="tocAlt">Placements alternatifs</span></a>
-      <a class="toc-link" href="#sec-rsu"><span class="ico">📊</span><span class="label" data-i18n="tocRsu">Actions restreintes (RSU)</span></a>
       <a class="toc-link" href="#sec-pensions"><span class="ico">🏛️</span><span class="label" data-i18n="tocPensions">Pensions</span></a>
-      <a class="toc-link" href="#sec-strategy"><span class="ico">🧾</span><span class="label" data-i18n="tocStrategy">Stratégie</span></a>
+      <a class="toc-link" href="#sec-strategy"><span class="ico">🧾</span><span class="label" data-i18n="tocStrategy">Stratégie de décaissement</span></a>
       <a class="toc-link" href="#sec-insurance"><span class="ico">🛡️</span><span class="label" data-i18n="tocInsurance">Assurances</span></a>
+      <div class="toc-sep" aria-hidden="true"><span data-i18n="tocNiche">Niche · spécifique</span></div>
+      <a class="toc-link" href="#sec-business"><span class="ico">🏢</span><span class="label" data-i18n="tocBusiness">Entreprise</span></a>
+      <a class="toc-link" href="#sec-rsu"><span class="ico">📊</span><span class="label" data-i18n="tocRsu">Actions restreintes (RSU)</span></a>
+      <a class="toc-link" href="#sec-alt"><span class="ico">🧩</span><span class="label" data-i18n="tocAlt">Placements alternatifs</span></a>
       <a class="toc-link" href="#sec-assumptions"><span class="ico">⚙️</span><span class="label" data-i18n="tocAssumptions">Hypothèses techniques</span></a>
     </aside>
 
@@ -2632,13 +2678,72 @@ setStrategy = function (s, btn) {
 };
 
 /* ─────────────── Search filter ─────────────── */
+/* v4 Phase 11 — Functional full-form search. Filters by:
+   1. field label text (the <label class="field-label">),
+   2. the field's help/tooltip text (.field-help, .tip-body),
+   3. the subsection head (.subsec-head) the field lives under,
+   4. and the optional .data-search-keywords attribute (for synonyms).
+   Matching fields stay visible; non-matching fields get display:none.
+   Sections with zero matches are collapsed + dimmed. Empty query restores
+   everything. Also auto-opens sections that have at least one match. */
+var _bfSearchState = { prevOpen: null };
 function filterFields(q) {
   q = (q || "").toLowerCase().trim();
-  document.querySelectorAll(".field[data-search-keywords]").forEach(function (f) {
-    var hay = (f.getAttribute("data-search-keywords") + " " + f.textContent).toLowerCase();
-    f.style.display = (!q || hay.indexOf(q) >= 0) ? "" : "none";
+  var secs = document.querySelectorAll("details.section");
+  if (!q) {
+    /* Restore: show every field + subsec + callout, remove dim class on
+       sections. Preserve current open state (don't touch it). */
+    document.querySelectorAll(".field").forEach(function (f) { f.style.display = ""; });
+    document.querySelectorAll(".subsec").forEach(function (s) { s.style.display = ""; });
+    document.querySelectorAll(".callout").forEach(function (c) { c.style.display = ""; });
+    secs.forEach(function (s) { s.classList.remove("bf-search-empty"); s.classList.remove("bf-search-hit"); });
+    /* Restore pre-search open state if we saved one. */
+    if (_bfSearchState.prevOpen) {
+      secs.forEach(function (s) { s.open = !!_bfSearchState.prevOpen[s.id]; });
+      _bfSearchState.prevOpen = null;
+    }
+    return;
+  }
+  /* First query: snapshot current open state so we can restore on clear. */
+  if (!_bfSearchState.prevOpen) {
+    _bfSearchState.prevOpen = {};
+    secs.forEach(function (s) { _bfSearchState.prevOpen[s.id] = s.open; });
+  }
+  secs.forEach(function (sec) {
+    var sectionTitle = (sec.querySelector(".sec-title") || { textContent: "" }).textContent.toLowerCase();
+    var sectionHitViaTitle = sectionTitle.indexOf(q) >= 0;
+    var anyFieldHit = false;
+    /* Filter each subsec: show only subsecs with at least one matching field. */
+    sec.querySelectorAll(".subsec").forEach(function (sub) {
+      var subTitle = (sub.querySelector(".subsec-head") || { textContent: "" }).textContent.toLowerCase();
+      var subTitleHit = subTitle.indexOf(q) >= 0;
+      var subAnyHit = false;
+      sub.querySelectorAll(".field").forEach(function (f) {
+        var label = (f.querySelector(".field-label") || { textContent: "" }).textContent.toLowerCase();
+        var help = (f.querySelector(".field-help") || { textContent: "" }).textContent.toLowerCase();
+        var tip = (f.querySelector(".tip-body") || { textContent: "" }).textContent.toLowerCase();
+        var kw = (f.getAttribute("data-search-keywords") || "").toLowerCase();
+        var hit = sectionHitViaTitle || subTitleHit
+          || label.indexOf(q) >= 0 || help.indexOf(q) >= 0 || tip.indexOf(q) >= 0 || kw.indexOf(q) >= 0;
+        f.style.display = hit ? "" : "none";
+        if (hit) subAnyHit = true;
+      });
+      /* Hide the subsec entirely if no fields matched AND subsec title didn't match */
+      sub.style.display = (subAnyHit || subTitleHit || sectionHitViaTitle) ? "" : "none";
+      if (subAnyHit || subTitleHit) anyFieldHit = true;
+    });
+    /* Hide callouts when searching (they're not fields) */
+    sec.querySelectorAll(".callout").forEach(function (c) { c.style.display = sectionHitViaTitle ? "" : "none"; });
+    if (anyFieldHit || sectionHitViaTitle) {
+      sec.classList.remove("bf-search-empty");
+      sec.classList.add("bf-search-hit");
+      sec.open = true;
+    } else {
+      sec.classList.add("bf-search-empty");
+      sec.classList.remove("bf-search-hit");
+      sec.open = false;
+    }
   });
-  if (q) document.querySelectorAll("details.section").forEach(function (s) { s.open = true; });
 }
 
 /* ─────────────── ToC active state ─────────────── */
@@ -2657,6 +2762,35 @@ function updateTocActive() {
   }
 }
 window.addEventListener("scroll", updateTocActive);
+
+/* v4 Phase 11 — Clicking a ToC link must:
+   1. Open the target <details> (otherwise the anchor jump lands on a
+      collapsed summary and the user sees nothing new).
+   2. Smooth-scroll the section into view, aligned near the top.
+   3. Update the active state immediately (not wait for scroll event).
+   The default anchor behaviour is prevented in favour of this logic. */
+document.addEventListener("click", function (ev) {
+  var link = ev.target.closest ? ev.target.closest(".toc-link") : null;
+  if (!link) return;
+  var href = link.getAttribute("href") || "";
+  if (href.charAt(0) !== "#") return;
+  var target = document.getElementById(href.slice(1));
+  if (!target) return;
+  ev.preventDefault();
+  /* Open the target + every ancestor details (nested case). */
+  var cur = target;
+  while (cur) {
+    if (cur.tagName === "DETAILS") cur.open = true;
+    cur = cur.parentElement;
+  }
+  /* Smooth-scroll with a small top offset for the sticky toolbar. */
+  var rect = target.getBoundingClientRect();
+  var y = window.scrollY + rect.top - 70;
+  window.scrollTo({ top: y, behavior: "smooth" });
+  /* Sync active class without waiting for the scroll to settle. */
+  document.querySelectorAll(".toc-link").forEach(function (l) { l.classList.remove("active"); });
+  link.classList.add("active");
+});
 
 /* ─────────────── RSU grants editor (array) ─────────────── */
 /* v3 schema: rsuGrants[] = [{ name, shares, price, growth, vestYrs, exerciseAge }]. */
@@ -2801,17 +2935,51 @@ document.getElementById("ippOn") && document.getElementById("ippOn").addEventLis
    Users add "education" and "lumpsum" goals here. */
 var _goals = [{ id: "ret", type: "retirement", name: "Retraite", nameEn: "Retirement", amount: 0, startAge: 0, endAge: 0, inflation: true, icon: "🏖", locked: true }];
 
+/* v4 Phase 11 — Goal add via proper modal (was chained prompt() dialogs). */
 function addGoal(kind) {
+  _openGoalModal(kind);
+}
+function _openGoalModal(kind) {
   var fr = _lang === "fr";
-  var name = prompt(fr
-    ? (kind === "education" ? "Nom (ex : Études Emma) :" : "Nom (ex : Rénovation maison) :")
-    : (kind === "education" ? "Name (e.g. Emma's studies):" : "Name (e.g. Home renovation):"), "");
-  if (!name) return;
-  var amt = parseFloat(prompt(fr ? "Montant annuel ($) :" : "Annual amount ($):", kind === "education" ? "12000" : "50000"));
-  var startAge = parseInt(prompt(fr ? "Votre âge au début :" : "Your age at start:", kind === "education" ? "50" : "55"));
-  if (isNaN(amt) || isNaN(startAge)) return;
+  var modal = document.getElementById("bf-goal-modal");
+  if (!modal) return;
+  var isEdu = kind === "education";
+  modal.querySelector("[data-modal-title]").textContent = isEdu
+    ? (fr ? "🎓 Ajouter un objectif d'éducation" : "🎓 Add an education goal")
+    : (fr ? "💎 Ajouter une dépense ponctuelle" : "💎 Add a lump-sum expense");
+  modal.querySelector("[data-modal-sub]").textContent = isEdu
+    ? (fr ? "Études à financer sur plusieurs années. Le montant est indexé à l'inflation." : "Education to fund over several years. Amount is inflation-indexed.")
+    : (fr ? "Dépense unique à un âge donné (rénovation, voyage, cadeau). Indexée à l'inflation." : "One-time expense at a given age (renovation, trip, gift). Inflation-indexed.");
+  modal.querySelector("#goal-modal-name").value = "";
+  modal.querySelector("#goal-modal-name").placeholder = isEdu
+    ? (fr ? "Ex : Études Emma" : "E.g. Emma's studies")
+    : (fr ? "Ex : Rénovation maison" : "E.g. Home renovation");
+  modal.querySelector("#goal-modal-amt").value = isEdu ? 12000 : 50000;
+  modal.querySelector("#goal-modal-amt-label").textContent = isEdu
+    ? (fr ? "Coût annuel ($)" : "Annual cost ($)")
+    : (fr ? "Montant ($)" : "Amount ($)");
+  modal.querySelector("#goal-modal-start").value = isEdu ? 50 : 55;
+  modal.querySelector("[data-end-row]").hidden = !isEdu;
+  modal.querySelector("#goal-modal-end").value = isEdu ? 54 : 55;
+  modal.dataset.kind = kind;
+  modal.hidden = false;
+  setTimeout(function () { modal.querySelector("#goal-modal-name").focus(); }, 50);
+}
+function _closeGoalModal() {
+  var m = document.getElementById("bf-goal-modal"); if (m) m.hidden = true;
+}
+function _submitGoalModal() {
+  var modal = document.getElementById("bf-goal-modal"); if (!modal) return;
+  var kind = modal.dataset.kind;
+  var name = (modal.querySelector("#goal-modal-name").value || "").trim();
+  var amt = parseFloat(modal.querySelector("#goal-modal-amt").value);
+  var startAge = parseInt(modal.querySelector("#goal-modal-start").value, 10);
+  if (!name || isNaN(amt) || isNaN(startAge)) {
+    alert(_lang === "fr" ? "Nom, montant et âge requis." : "Name, amount and age are required.");
+    return;
+  }
   var endAge = kind === "education"
-    ? (parseInt(prompt(fr ? "Âge à la fin :" : "Age at end:", String(startAge + 4))) || startAge + 4)
+    ? (parseInt(modal.querySelector("#goal-modal-end").value, 10) || startAge + 4)
     : startAge;
   _goals.push({
     id: "g_" + Date.now(), type: kind, name: name, nameEn: name,
@@ -2819,6 +2987,7 @@ function addGoal(kind) {
     inflation: true, icon: kind === "education" ? "🎓" : "💎"
   });
   renderGoals();
+  _closeGoalModal();
 }
 function removeGoal(id) { _goals = _goals.filter(function(g){return g.id !== id;}); renderGoals(); }
 
@@ -3381,7 +3550,52 @@ function runSimulation() {
     setTimeout(function () { banner.style.transition = "opacity 0.4s"; banner.style.opacity = "0"; setTimeout(function () { banner.remove(); }, 400); }, 2600);
   } catch (e) { console.error("handoff autoload failed:", e); }
 })();
+
+/* v4 Phase 11 — Goal modal close via backdrop click + ESC. */
+document.addEventListener("click", function (ev) {
+  var m = document.getElementById("bf-goal-modal");
+  if (!m || m.hidden) return;
+  if (ev.target === m) _closeGoalModal();
+});
+document.addEventListener("keydown", function (ev) {
+  var m = document.getElementById("bf-goal-modal");
+  if (!m || m.hidden) return;
+  if (ev.key === "Escape") _closeGoalModal();
+  if (ev.key === "Enter" && ev.target && ev.target.id && ev.target.id.indexOf("goal-modal-") === 0) {
+    ev.preventDefault(); _submitGoalModal();
+  }
+});
 </script>
+
+<!-- v4 Phase 11 — Goal modal (replaces native prompt() chain). -->
+<div id="bf-goal-modal" class="bf-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="goal-modal-title">
+  <div class="bf-modal">
+    <div id="goal-modal-title" class="bf-modal-title" data-modal-title>🎓 Ajouter un objectif</div>
+    <div class="bf-modal-sub" data-modal-sub>Description de l'objectif.</div>
+    <div class="bf-modal-body">
+      <div class="field">
+        <div class="field-head"><label class="field-label" for="goal-modal-name">Nom</label></div>
+        <input id="goal-modal-name" class="field-input" type="text" autocomplete="off">
+      </div>
+      <div class="field">
+        <div class="field-head"><label class="field-label" for="goal-modal-amt" id="goal-modal-amt-label">Montant ($)</label></div>
+        <input id="goal-modal-amt" class="field-input" type="number" min="0" step="500">
+      </div>
+      <div class="field">
+        <div class="field-head"><label class="field-label" for="goal-modal-start">Âge au début</label></div>
+        <input id="goal-modal-start" class="field-input" type="number" min="0" max="100" step="1">
+      </div>
+      <div class="field" data-end-row hidden>
+        <div class="field-head"><label class="field-label" for="goal-modal-end">Âge à la fin</label></div>
+        <input id="goal-modal-end" class="field-input" type="number" min="0" max="100" step="1">
+      </div>
+    </div>
+    <div class="bf-modal-footer">
+      <button class="btn btn-ghost" onclick="_closeGoalModal()" data-i18n="cancel">Annuler</button>
+      <button class="btn btn-primary" onclick="_submitGoalModal()" data-i18n="add">Ajouter</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
