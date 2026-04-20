@@ -9526,11 +9526,42 @@ function App() {
     if (tab === 19) setTab(27);
   }, [tab]);
 
+  // Defensive normalizer — if an incoming profile stores percent-semantic
+  // fields in percent form (e.g. allocR=60 instead of 0.60 from a legacy
+  // save or hand-edited file), divide by 100 so state stays fraction.
+  // The current longform (post-fix) sends fractions; this covers legacy
+  // imports. Keys match longform's _BF_PCT_KEYS + a few extras the v3
+  // bridge reads under different aliases.
+  var _V3_PCT_KEYS = {
+    allocR:1, allocT:1, allocN:1, cAllocR:1, cAllocT:1, cAllocN:1,
+    merR:1, merT:1, merN:1, cMerR:1, cMerT:1, cMerN:1, cPenMER:1,
+    nrTaxDrag:1, cgIncLo:1, cgIncHi:1,
+    eqRet:1, eqVol:1, bndRet:1, bndVol:1, fxVol:1,
+    eqRetS:1, eqVolS:1, bndRetS:1, bndVolS:1, // aliases
+    inf:1, infHealth:1, infHousing:1, contGr:1,
+    bizGrowth:1, bizVolatility:1, bizSoleGrowth:1, bizSoleVol:1,
+    bizSalaryPct:1, bizInvAlloc:1, bizDebtRate:1,
+    peY:1, peV:1, peFee:1, pmY:1, pmV:1,
+    gkCeil:1, gkFloor:1, gkCut:1, gkRaise:1, gkMaxCut:1,
+    splitP:1, healthMul:1, penEEpct:1, penERpct:1
+  };
+  function _normalizeProfileFractions(p) {
+    if (!p || typeof p !== "object") return p;
+    Object.keys(_V3_PCT_KEYS).forEach(function (k) {
+      var v = p[k];
+      if (typeof v === "number" && v !== 0 && Math.abs(v) > 1) {
+        p[k] = v / 100;
+      }
+    });
+    return p;
+  }
+
   // v3 ↔ v4 bidirectional handoff — profile applicator. Used by both the
   // mount-time sessionStorage autoloader AND the Phase-10 drawer close
   // handler (postMessage from the iframe). Same JSON shape in both paths.
   var _applyProfileFromV4 = function (p3) {
     if (!p3) return;
+    p3 = _normalizeProfileFractions(p3);
     try {
       if (p3.age != null) sAge(p3.age);
       if (p3.retAge != null) sRA(p3.retAge);
@@ -11678,6 +11709,10 @@ var reportHTML = useMemo(function() {
       var rd = new FileReader(); rd.onload = function(ev) {
         try {
           var s = JSON.parse(ev.target.result);
+          // Legacy safety: some pre-2026-04-21 longform saves wrote percent
+          // values (allocR=60) rather than fractions. Normalize on load so
+          // MC sanitizer doesn't clamp everything to its hard limits.
+          s = _normalizeProfileFractions(s);
           if (s.age) sAge(s.age); if (s.sex) setSex(s.sex); if (s.prov) setProv(s.prov);
           if (s.retAge) sRA(s.retAge); if (s.deathAge) sDA(s.deathAge);
           if (s.sal !== undefined) sSal(s.sal); if (s.retSpM !== undefined) sSM(s.retSpM);
