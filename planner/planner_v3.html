@@ -666,6 +666,116 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
   .kpi-tip::after{display:none!important}
   .sb-tip .sb-tip-box{display:none!important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   v3 Phase 13 — Sidebar ↔ Longform visual alignment
+   Port Plus Jakarta Sans + longform's spacing/radii/focus aesthetic
+   to the React sidebar so the two surfaces feel like one product.
+   Scope: .bf-side-overlay + .bf-mobile-sheet only. Main dashboard
+   (charts, KPIs, tabs) keeps DM Sans and existing look. */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+.bf-side-overlay, .bf-mobile-sheet {
+  font-family: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv01", "cv03", "cv04", "ss01";
+  letter-spacing: -0.005em;
+}
+
+/* Inputs, selects, numbers — softer radius, tighter rhythm, crisper border. */
+.bf-side-overlay input[type="number"],
+.bf-side-overlay input[type="text"],
+.bf-side-overlay select,
+.bf-mobile-sheet input[type="number"],
+.bf-mobile-sheet input[type="text"],
+.bf-mobile-sheet select {
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+/* Section card — wider radius, softer elevation, stronger open state. */
+.bf-side-overlay .bf-subsec,
+.bf-mobile-sheet .bf-subsec {
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  margin: 12px 0 !important;
+  border-left-width: 3px !important;
+}
+
+/* Section title treatment — tighter letter-spacing, softer weight scale. */
+.bf-side-overlay .bf-subsec > div:first-child,
+.bf-side-overlay h3, .bf-side-overlay h4,
+.bf-mobile-sheet .bf-subsec > div:first-child {
+  letter-spacing: -0.015em;
+}
+
+/* Rail label typography. */
+.bf-rail-label {
+  letter-spacing: -0.005em;
+  font-weight: 500;
+}
+.bf-rail-btn.active .bf-rail-label { font-weight: 700; }
+
+/* Buttons inside sidebar — longform's pill rhythm. */
+.bf-side-overlay button:not(.bf-rail-btn):not(.bf-close-x):not(.pill),
+.bf-mobile-sheet button:not(.bf-rail-btn):not(.bf-close-x):not(.pill) {
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.bf-side-overlay button:not(.bf-rail-btn):not(.bf-close-x):active,
+.bf-mobile-sheet button:not(.bf-rail-btn):not(.bf-close-x):active {
+  transform: translateY(1px);
+}
+
+/* Labels — muted but legible, like longform's .field-label. */
+.bf-side-overlay label,
+.bf-mobile-sheet label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--bf-text-dim, #8690a3);
+}
+
+/* Details/summary (advanced drawers) — cleaner spacing. */
+.bf-side-overlay details > summary,
+.bf-mobile-sheet details > summary {
+  padding: 6px 4px;
+  border-radius: 6px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+/* Focus ring — 3px halo, longform-style. */
+.bf-side-overlay input:focus,
+.bf-side-overlay select:focus,
+.bf-side-overlay textarea:focus,
+.bf-mobile-sheet input:focus,
+.bf-mobile-sheet select:focus,
+.bf-mobile-sheet textarea:focus {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 3px rgba(196,154,26,0.33) !important;
+}
+
+/* Overlay shadow — deeper drop to echo longform's section[open]. */
+.bf-side-overlay.open {
+  box-shadow: 14px 0 40px rgba(0,0,0,0.38);
+}
+
+/* Pill groups (when used in sidebar) — longform look. */
+.bf-side-overlay .pill-group,
+.bf-mobile-sheet .pill-group {
+  display: inline-flex; gap: 2px; padding: 2px;
+  background: var(--bf-field-bg, rgba(255,255,255,0.03));
+  border: 1px solid var(--bf-rail-border); border-radius: 10px;
+}
 </style>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -9097,7 +9207,164 @@ function App() {
       if (p3.firstName != null) sFN(p3.firstName);
       if (p3.lastName != null) sLN(p3.lastName);
       if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
+      if (p3.cFirstName != null) sCSN(p3.cFirstName);
       if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
+      // Longform bridge extension — map 100+ additional fields to the MC engine.
+      // FHSA
+      if (p3.fhsaBal != null) setFhsaBal(p3.fhsaBal);
+      if (p3.fhsaC != null) setFhsaC(p3.fhsaC);
+      if (p3.fhsaForHome != null) setFhsaForHome(!!p3.fhsaForHome);
+      if (p3.fhsaHomeAge != null) setFhsaHomeAge(p3.fhsaHomeAge);
+      if (p3.cFhsaBal != null) setCFhsaBal(p3.cFhsaBal);
+      if (p3.cFhsaC != null) setCFhsaC(p3.cFhsaC);
+      // LIRA
+      if (p3.liraBal != null) sLIRA(p3.liraBal);
+      if (p3.cLiraBal != null) sCLIRA(p3.cLiraBal);
+      // RESP
+      if (p3.respOn != null) setRespOn(!!p3.respOn);
+      if (p3.respContrib != null) setRespContrib(p3.respContrib);
+      if (p3.respYrsLeft != null) setRespYrs(p3.respYrsLeft);
+      if (p3.respReturnAge != null) setRespRetAge(p3.respReturnAge);
+      if (p3.respKids != null) setRespKids(p3.respKids);
+      if (p3.respAlready != null) setRespAlready(p3.respAlready);
+      // FTQ
+      if (p3.ftqOn != null) setFTQ(!!p3.ftqOn);
+      if (p3.ftqAmt != null) setFTQAmt(p3.ftqAmt);
+      // Contribution growth / RRSP room
+      if (p3.contGr != null) sCG2(p3.contGr);
+      if (p3.rrspRoom != null) sRRRoom(p3.rrspRoom);
+      // CV / DB / IPP
+      if (p3.cvAnalysis != null) setCVA(!!p3.cvAnalysis);
+      if (p3.cvAmount != null) sCVAmt(p3.cvAmount);
+      if (p3.cvTransferMax != null) sCVMax(p3.cvTransferMax);
+      if (p3.dbSurvivorPct != null) sCVSurv(p3.dbSurvivorPct);
+      if (p3.ippOn != null) setIppOn(!!p3.ippOn);
+      if (p3.ippBal2 != null) setIppBal(p3.ippBal2);
+      // Guyton-Klinger
+      if (p3.gkOn != null) setGkOn(!!p3.gkOn);
+      if (p3.gkCeil != null) setGkCeil(p3.gkCeil);
+      if (p3.gkFloor != null) setGkFloor(p3.gkFloor);
+      if (p3.gkCut != null) setGkCut(p3.gkCut);
+      if (p3.gkRaise != null) setGkRaise(p3.gkRaise);
+      if (p3.gkMaxCut != null) setGkMaxCut(p3.gkMaxCut);
+      // Private equity / private markets
+      if (p3.peBal != null) sPEB(p3.peBal);
+      if (p3.peY != null) sPEY(p3.peY);
+      if (p3.peV != null) sPEV(p3.peV);
+      if (p3.peFee != null) sPEF(p3.peFee);
+      if (p3.peLock != null) sPEL(p3.peLock);
+      if (p3.peExit != null) sPEE(p3.peExit);
+      if (p3.peExitStrat != null) setPeExitStrat(p3.peExitStrat);
+      if (p3.peExitYrs != null) setPeExitYrs(p3.peExitYrs);
+      if (p3.pmBal != null) sPMB(p3.pmBal);
+      if (p3.pmY != null) sPMY(p3.pmY);
+      if (p3.pmV != null) sPMV(p3.pmV);
+      if (p3.pmExit != null) sPME(p3.pmExit);
+      if (p3.pmExitStrat != null) setPmExitStrat(p3.pmExitStrat);
+      if (p3.pmExitYrs != null) setPmExitYrs(p3.pmExitYrs);
+      // Capital markets assumptions
+      if (p3.eqRet != null) sEqR(p3.eqRet);
+      if (p3.eqVol != null) sEqV(p3.eqVol);
+      if (p3.bndRet != null) sBndR(p3.bndRet);
+      if (p3.bndVol != null) sBndV(p3.bndVol);
+      if (p3.fxVol != null) setFxVol(p3.fxVol);
+      // Inflation buckets
+      if (p3.infHealth != null) sInfH(p3.infHealth);
+      if (p3.infHousing != null) sInfL(p3.infHousing);
+      // Tax parameters
+      if (p3.cgIncLo != null) setCGLo(p3.cgIncLo);
+      if (p3.cgIncHi != null) setCGHi(p3.cgIncHi);
+      if (p3.cgThresh != null) setCGTh(p3.cgThresh);
+      if (p3.costBase != null) setCB(p3.costBase);
+      if (p3.nrTaxDrag != null) setNRTD(p3.nrTaxDrag);
+      // Pension — contribution % mode
+      if (p3.penPctMode != null) sPenPctMode(!!p3.penPctMode);
+      if (p3.penEEpct != null) sPEEpct(p3.penEEpct);
+      if (p3.penERpct != null) sPERpct(p3.penERpct);
+      // Insurance — primary
+      if (p3.insViePrime != null) sInsVie(p3.insViePrime);
+      if (p3.insVieCov != null) sInsVieCov(p3.insVieCov);
+      if (p3.insVieType != null) sInsVieType(p3.insVieType);
+      if (p3.insVieDur != null) sInsVieDur(p3.insVieDur);
+      if (p3.insInvPrime != null) sInsInv(p3.insInvPrime);
+      if (p3.insInvCov != null) sInsInvCov(p3.insInvCov);
+      if (p3.insMGPrime != null) sInsMG(p3.insMGPrime);
+      if (p3.insMGCov != null) sInsMGCov(p3.insMGCov);
+      if (p3.insColPrime != null) sInsCol(p3.insColPrime);
+      // Insurance — spouse
+      if (p3.cInsVieType != null) sCIVT(p3.cInsVieType);
+      if (p3.cInsVieDur != null) sCIVD(p3.cInsVieDur);
+      if (p3.cInsInvCov != null) sCIIC(p3.cInsInvCov);
+      if (p3.cInsInvPrime != null) sCIIP(p3.cInsInvPrime);
+      if (p3.cInsMGCov != null) sCIMC(p3.cInsMGCov);
+      if (p3.cInsMGPrime != null) sCIMP(p3.cInsMGPrime);
+      if (p3.cInsColPrime != null) sCICP(p3.cInsColPrime);
+      // Spouse — second pension + bridge + DC2
+      if (p3.cPen2Type != null) sCP2T(p3.cPen2Type);
+      if (p3.cPen2M != null) sCP2M(p3.cPen2M);
+      if (p3.cPen2Idx != null) sCP2Idx(+p3.cPen2Idx);
+      if (p3.cDC2Bal != null) sCDC2B(p3.cDC2Bal);
+      if (p3.cPen2EE != null) sCP2EE(p3.cPen2EE);
+      if (p3.cPen2ER != null) sCP2ER(p3.cPen2ER);
+      if (p3.cDCBal2 != null) sCDCB(p3.cDCBal2);
+      if (p3.cBridge != null) sCBr(!!p3.cBridge);
+      if (p3.cBrAmt != null) sCBrA(p3.cBrAmt);
+      if (p3.cBrEnd != null) sCBrE(p3.cBrEnd);
+      // Spouse — pension contributions
+      if (p3.cPenEE != null) sCPEE(p3.cPenEE);
+      if (p3.cPenER != null) sCPER(p3.cPenER);
+      if (p3.cPenMER != null) sCPMER(p3.cPenMER);
+      // Spouse — part-time income + allocation + MER
+      if (p3.cPtM != null) sCPtM(p3.cPtM);
+      if (p3.cPtYrs != null) sCPtYrs(p3.cPtYrs);
+      if (p3.cSyncPortfolio != null) sCSyncPortfolio(!!p3.cSyncPortfolio);
+      if (p3.cSyncRet != null) sCSyncRetAge(!!p3.cSyncRet);
+      if (p3.cSyncGov != null) sCSyncGovAges(!!p3.cSyncGov);
+      if (p3.cAllocR != null) sCAlR(p3.cAllocR);
+      if (p3.cAllocT != null) sCAlT(p3.cAllocT);
+      if (p3.cAllocN != null) sCAlN(p3.cAllocN);
+      if (p3.cMerR != null) sCMerR(p3.cMerR);
+      if (p3.cMerT != null) sCMerT(p3.cMerT);
+      if (p3.cMerN != null) sCMerN(p3.cMerN);
+      // Spouse — events & incomes
+      if (p3.cEv1Age != null) sCEv1A(p3.cEv1Age);
+      if (p3.cEv1Amt != null) sCEv1M(p3.cEv1Amt);
+      if (p3.cEv1Name != null) sCEv1N(p3.cEv1Name);
+      if (p3.cEv2Age != null) sCEv2A(p3.cEv2Age);
+      if (p3.cEv2Amt != null) sCEv2M(p3.cEv2Amt);
+      if (p3.cEv2Name != null) sCEv2N(p3.cEv2Name);
+      if (p3.cInc1Age != null) sCI1A(p3.cInc1Age);
+      if (p3.cInc1Amt != null) sCI1M(p3.cInc1Amt);
+      if (p3.cInc1Name != null) sCI1N(p3.cInc1Name);
+      if (p3.cInc2Age != null) sCI2A(p3.cInc2Age);
+      if (p3.cInc2Amt != null) sCI2M(p3.cInc2Amt);
+      if (p3.cInc2Name != null) sCI2N(p3.cInc2Name);
+      if (p3.cInc3Age != null) sCI3A(p3.cInc3Age);
+      if (p3.cInc3Amt != null) sCI3M(p3.cInc3Amt);
+      if (p3.cInc3Name != null) sCI3N(p3.cInc3Name);
+      // Business — detail
+      if (p3.bizVolatility != null) setBizVolatility(p3.bizVolatility);
+      if (p3.bizGrowth != null) setBizGrowth(p3.bizGrowth);
+      if (p3.bizRemun != null) setBizRemun(p3.bizRemun);
+      if (p3.bizSalaryPct != null) setBizSalaryPct(p3.bizSalaryPct);
+      if (p3.bizRetainedEarnings != null) setBizRetainedEarnings(p3.bizRetainedEarnings);
+      if (p3.bizInvAlloc != null) setBizInvAlloc(p3.bizInvAlloc);
+      if (p3.bizExtractMode != null) setBizExtractMode(p3.bizExtractMode);
+      if (p3.bizExtractYrs != null) setBizExtractYrs(p3.bizExtractYrs);
+      if (p3.bizOasOptim != null) setBizOasOptim(!!p3.bizOasOptim);
+      if (p3.bizSaleAge != null) setBizSaleAge(p3.bizSaleAge);
+      if (p3.bizSalePrice != null) setBizSalePrice(p3.bizSalePrice);
+      if (p3.bizSaleACB != null) setBizSaleACB(p3.bizSaleACB);
+      if (p3.bizLCGE != null) setBizLCGE(!!p3.bizLCGE);
+      if (p3.bizDebtBal != null) setBizDebtBal(p3.bizDebtBal);
+      if (p3.bizDebtRate != null) setBizDebtRate(p3.bizDebtRate);
+      if (p3.bizDebtAmort != null) setBizDebtAmort(p3.bizDebtAmort);
+      // Allocation override + tuning
+      if (p3.maPerAcct != null) setMaPerAcct(!!p3.maPerAcct);
+      if (p3.allocOverride && typeof p3.allocOverride === "object") setAllocOverride(p3.allocOverride);
+      if (p3.stressLevel != null) sStress(p3.stressLevel);
+      if (p3.finLiteracy != null) sLit(p3.finLiteracy);
+      if (p3.detailPref != null) sDetail(p3.detailPref);
       window._mc = null; window._mcPending = false; window._mcProfileDirty = true;
     } catch (e) { console.error("v4→v3 profile apply failed:", e); }
   };
