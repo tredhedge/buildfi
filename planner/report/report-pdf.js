@@ -15,27 +15,35 @@
   // ══════════════════════════════════════════════════════════════
 
   var css = [
-    '@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");',
+    // Editorial type stack — Playfair Display (serif display) for headings,
+    // Inter (humanist sans) for body, JetBrains Mono for numerics.
+    // Picked to visually distinguish BuildFi from enterprise-Word-export look
+    // (NaviPlan/Conquest-style). See BENCHMARK-MATRIX.md §7.
+    '@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");',
     '*{box-sizing:border-box;margin:0;padding:0}',
-    'body{font-family:"DM Sans",-apple-system,system-ui,sans-serif;max-width:820px;margin:0 auto;padding:24px 28px;color:#1a1a1a;font-size:13px;line-height:1.6;background:#fff}',
-    '.mono{font-family:"JetBrains Mono",monospace;font-weight:500}',
-    // Cover
+    // 8px-grid tokens baked in: padding 24px (3×8), line-height 1.6, 13px base.
+    'body{font-family:"Inter",-apple-system,system-ui,sans-serif;max-width:820px;margin:0 auto;padding:24px 28px;color:#1a1610;font-size:13px;line-height:1.62;background:#fff;font-feature-settings:"ss01","cv01","cv02"}',
+    '.mono{font-family:"JetBrains Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums}',
+    'em{font-style:italic;color:#4a3f33}',
+    // Cover — keeps dark luxurious feel, Playfair title.
     '.cover{min-height:960px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#1a1610 0%,#2c2418 40%,#3a3020 100%);color:#f0ece4;text-align:center;position:relative;border-radius:8px;margin-bottom:24px;page-break-after:always}',
-    '.cover-divider{width:120px;height:1px;background:'+C.gold+';margin:24px auto}',
-    '.cover-title{font-size:36px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+C.gold+'}',
-    '.cover-subtitle{font-size:16px;font-weight:400;color:#a09890;margin-top:6px;letter-spacing:1px}',
-    '.cover-client{font-size:22px;font-weight:600;margin-top:40px;color:#f0ece4}',
-    '.cover-grade-circle{width:150px;height:150px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;margin:30px auto 0}',
-    '.cover-grade-letter{font-size:36px;font-weight:800;font-family:"JetBrains Mono",monospace}',
-    '.cover-grade-pill{margin-top:14px;display:inline-block;padding:5px 20px;border-radius:16px;font-weight:800;font-size:12px;color:#fff;letter-spacing:0.5px}',
-    '.cover-date{font-size:13px;color:#888;margin-top:30px}',
-    '.cover-company{position:absolute;bottom:40px;font-size:11px;color:#666;letter-spacing:0.5px}',
-    // Headers
-    'h1{font-size:26px;color:'+C.gold+';font-weight:800;letter-spacing:-.5px;line-height:1.2}',
-    'h2{font-size:14px;color:#666;font-weight:400;margin-top:2px}',
-    '.sec{font-size:14px;color:'+C.gold+';border-bottom:2px solid '+C.gold+';padding-bottom:4px;margin:22px 0 10px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px;page-break-after:avoid}',
-    '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:11px;font-weight:800;flex-shrink:0}',
-    '.sec-q{font-size:11px;color:#888;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto}',
+    '.cover-divider{width:88px;height:1px;background:'+C.gold+';margin:24px auto;opacity:0.6}',
+    '.cover-title{font-family:"Playfair Display",Georgia,serif;font-size:42px;font-weight:700;letter-spacing:0;color:'+C.gold+';line-height:1.05}',
+    '.cover-subtitle{font-family:"Inter",sans-serif;font-size:13px;font-weight:400;color:#a09890;margin-top:10px;letter-spacing:3px;text-transform:uppercase}',
+    '.cover-client{font-family:"Playfair Display",Georgia,serif;font-size:26px;font-weight:600;margin-top:48px;color:#f0ece4;letter-spacing:0.3px}',
+    '.cover-grade-circle{width:150px;height:150px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;margin:32px auto 0}',
+    '.cover-grade-letter{font-size:36px;font-weight:700;font-family:"JetBrains Mono",monospace}',
+    '.cover-grade-pill{margin-top:14px;display:inline-block;padding:5px 20px;border-radius:16px;font-weight:700;font-size:11px;color:#fff;letter-spacing:1px;text-transform:uppercase}',
+    '.cover-date{font-size:12px;color:#888;margin-top:32px;letter-spacing:0.5px}',
+    '.cover-company{position:absolute;bottom:40px;font-size:10px;color:#706558;letter-spacing:1.5px;text-transform:uppercase}',
+    // Headers — Playfair for display hierarchy; sec stays sans for snappiness.
+    'h1{font-family:"Playfair Display",Georgia,serif;font-size:30px;color:'+C.gold+';font-weight:700;letter-spacing:-0.3px;line-height:1.15}',
+    'h2{font-size:13px;color:#706558;font-weight:400;margin-top:4px;letter-spacing:0.2px}',
+    // Section header — switched to a cleaner, thinner-rule look with small caps
+    // label. Reads less "corporate dashboard", more "editorial spread".
+    '.sec{font-size:12px;color:'+C.gold+';border-bottom:1px solid '+C.gold+';padding-bottom:6px;margin:28px 0 14px;text-transform:uppercase;letter-spacing:2px;font-weight:700;display:flex;align-items:center;gap:10px;page-break-after:avoid;font-family:"Inter",sans-serif}',
+    '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:10px;font-weight:700;flex-shrink:0;letter-spacing:0}',
+    '.sec-q{font-size:10px;color:#888;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto}',
     // Cards & containers
     '.cd{border:1px solid '+C.border+';border-radius:8px;padding:12px;background:'+C.bg+';break-inside:avoid;margin-bottom:8px}',
     'table{width:100%;border-collapse:collapse}',
@@ -58,19 +66,19 @@
     '.callout-insight{background:#f0f8f0;border:1px solid '+C.green+';border-left:4px solid '+C.green+'}',
     '.callout-warning{background:#fdf6e3;border:1px solid '+C.amber+';border-left:4px solid '+C.amber+'}',
     '.callout-alert{background:#fde8e8;border:1px solid '+C.red+';border-left:4px solid '+C.red+'}',
-    '.callout-ai{background:#f7f5ff;border:1px solid #c8c0e8;border-left:4px solid '+C.purple+'}',
+    '.callout-ai{background:#f7f5f0;border:1px solid #d8d4c8;border-left:3px solid '+C.purple+'}',
     '.callout-inaction{background:#fff8f0;border:1px solid #d4873c;border-left:4px solid #d4873c}',
     '.callout-breakeven{background:#f0f4f8;border:1px solid '+C.blue+';border-left:4px solid '+C.blue+'}',
     '.callout-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:flex;align-items:center;gap:4px}',
     '.callout-val{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:18px;margin-bottom:2px}',
-    '.ai-badge{display:inline-block;background:#e8e0f8;color:'+C.purple+';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}',
+    '.ai-badge{display:inline-block;background:#e8e4da;color:'+C.purple+';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}',
     '.callout-ai p{margin-top:4px;line-height:1.7}',
     // Tables
     '.tbl{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0}',
     '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:'+C.gold+';background:#f9f7f2;border-bottom:2px solid '+C.border+';letter-spacing:.35px}',
     '.tbl th:first-child{text-align:left}',
     '.tbl td{padding:4px 6px;text-align:right;border-bottom:1px solid #f0ece4;font-family:"JetBrains Mono",monospace;font-size:10px}',
-    '.tbl td:first-child{text-align:left;font-family:"DM Sans",sans-serif}',
+    '.tbl td:first-child{text-align:left;font-family:"Inter",sans-serif}',
     '.tbl tr.ret{font-weight:700;background:#faf8f3}',
     '.tbl tbody tr:nth-child(even):not(.ret) td{background:#fdfbf7}',
     // Charts
@@ -129,15 +137,23 @@
     '.toc-dots{flex:1;border-bottom:1px dotted #ccc;margin:0 8px;min-width:20px}',
     '.toc-pg{font-size:11px;color:#888;font-family:"JetBrains Mono",monospace}',
     // AI skeleton placeholder
-    '.ai-placeholder{background:#f7f5ff;border:1px dashed #c8c0e8;border-radius:6px;padding:14px 16px;margin:8px 0;text-align:center}',
+    '.ai-placeholder{background:#f7f5f0;border:1px dashed #d8d4c8;border-radius:6px;padding:14px 16px;margin:8px 0;text-align:center}',
     '.ai-placeholder-lbl{font-size:10px;color:'+C.purple+';font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}',
-    '.ai-placeholder-body{font-size:11px;color:#a099b8;line-height:1.6}',
+    '.ai-placeholder-body{font-size:11px;color:#9a9488;line-height:1.6}',
     // Section page wrapper
     '.sec-page{page-break-before:always;padding-top:8px;margin-top:2px}',
     '.sec-page:first-of-type{page-break-before:avoid}',
     '.sec + .narr{margin-top:8px}',
-    // Print
-    '@media print{@page{margin:1.5cm;size:letter}',
+    // Print — running header/footer via @page, page counter via CSS counter.
+    // 1.8cm top + bottom leaves room for header/footer without squeezing body.
+    '@media print{',
+    '@page{',
+      'margin:1.8cm 1.6cm 2cm 1.6cm;size:letter;',
+      '@top-center{content:"BuildFi \u2014 Plan de retraite";font-family:"Inter",sans-serif;font-size:9px;color:#a09080;letter-spacing:1px;text-transform:uppercase}',
+      '@bottom-right{content:counter(page) " / " counter(pages);font-family:"JetBrains Mono",monospace;font-size:9px;color:#a09080}',
+      '@bottom-left{content:"buildfi.ca";font-family:"Inter",sans-serif;font-size:9px;color:#a09080;letter-spacing:0.5px}',
+    '}',
+    '@page :first{@top-center{content:""}@bottom-right{content:""}@bottom-left{content:""}}',
     'h3.sec{page-break-after:avoid}',
     '.cd,.kpi,table,.callout,.reco-card,.chart-block{break-inside:avoid;page-break-inside:avoid}',
     'body{padding:0;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
@@ -149,10 +165,12 @@
     '.chart-legend{font-size:8px}',
     '.copy-btn,.no-print,[onclick]{display:none !important}',
     '.print-only{display:block !important}',
-    '.page-footer{display:block !important;position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px}',
     '.cover{page-break-after:always;min-height:100vh}',
     '.toc{page-break-after:always}',
     '.ai-placeholder{break-inside:avoid}',
+    // Widow/orphan control
+    'p,.narr{orphans:3;widows:3}',
+    'h1,h3.sec{break-after:avoid-page}',
     '}'
   ].join('\n');
 
@@ -170,7 +188,7 @@
     '<rect x="2" y="28" width="16" height="16" rx="2" fill="'+C.gold+'"/>' +
     '<rect x="2" y="10" width="16" height="16" rx="2" fill="'+C.gold+'" opacity="0.6"/>' +
     '<rect x="20" y="20" width="16" height="24" rx="2" fill="'+C.gold+'" opacity="0.8"/>' +
-    '<text x="44" y="38" font-family="Plus Jakarta Sans,DM Sans,sans-serif" font-weight="700" font-size="28" fill="'+C.gold+'">BuildFi</text>' +
+    '<text x="44" y="38" font-family="Plus Jakarta Sans,Inter,sans-serif" font-weight="700" font-size="28" fill="'+C.gold+'">BuildFi</text>' +
     '</svg>';
 
   // ══════════════════════════════════════════════════════════════
@@ -473,161 +491,252 @@
   }
 
   // === SECTION 1.5: WHAT COULD CHANGE THIS PLAN (sensitivity levers) ===
-  // Compute 4-6 elasticity-based "what if" scenarios. Estimates use closed-form
-  // approximations grounded in the existing payload (no extra MC re-run needed).
-  // Each lever: name, change description, delta on success rate (pts), delta on
-  // median final wealth ($). Archetype filters which levers appear.
+  // Renders a tornado-style table of real Monte Carlo sensitivity sweeps.
+  // Consumes `mc._sweeps.{returns,inflation}.{up,down}` — populated by
+  // gen-real-mc.mjs running 4 perturbed MC (500 sims each). No closed-form
+  // approximation; every delta traces to an actual MC run.
   function renderLevers(d, secN) {
-    var fr = d.fr, p = d.p;
+    if (!d.mc || !d.mc._sweeps) return '';
+    var fr = d.fr;
+    var mc = d.mc, sw = mc._sweeps;
     var f$ = F.fmtCompact;
-    var succ = (d.succVal != null ? d.succVal : 0.85) * 100;
-    var medF = d.mc && (d.mc.rMedF || d.mc.medF) || 0;
-    var horizon = Math.max(1, (p.deathAge || 90) - (p.age || 0));
-    var yrsRet = Math.max(0, (p.retAge || 65) - (p.age || 0));
-    var totalBal = d.totalBal || 0;
-    var retR = (p.eqRet || 0.06);
-    var alreadyRet = (p.age || 0) >= (p.retAge || 65);
+    var baseMedF = mc.rMedF || mc.medF || 0;
+    var baseSucc = mc.succ || 0;
 
-    // Closed-form lever estimates. Coefficients calibrated to engine sensitivity
-    // ranges from prior MC runs; published as illustrative not deterministic.
-    function compoundFV(rate, years) { return years <= 0 ? 1 : Math.pow(1 + rate, years); }
-    var lvFV = compoundFV(retR, yrsRet);
-
-    var levers = [];
-
-    // L1: contributions +$5K/yr (only meaningful pre-retirement)
-    if (yrsRet >= 3 && (p.rrspC || 0) + (p.tfsaC || 0) > 0) {
-      var addContrib = 5000;
-      // FV of $5K/yr annuity at retR over yrsRet
-      var annuityFV = retR > 0 ? addContrib * ((Math.pow(1 + retR, yrsRet) - 1) / retR) : addContrib * yrsRet;
-      var dWealth = annuityFV;
-      var dSucc = Math.min(8, Math.round((dWealth / Math.max(medF, 1)) * 30));
-      levers.push({
-        label: fr ? 'Cotiser 5 000 $/an de plus' : 'Add $5K/yr to contributions',
-        change: fr ? '+5 000 $/an au REER ou CELI' : '+$5K/yr to RRSP or TFSA',
-        dWealth: Math.round(dWealth),
-        dSucc: dSucc,
-        kind: 'savings'
-      });
+    function buildRow(label, change, upMC, downMC) {
+      if (!upMC || !downMC) return null;
+      var dMedUp = (upMC.medF || 0) - baseMedF;
+      var dMedDn = (downMC.medF || 0) - baseMedF;
+      var dSuccUp = Math.round(((upMC.succ || 0) - baseSucc) * 100);
+      var dSuccDn = Math.round(((downMC.succ || 0) - baseSucc) * 100);
+      return { label: label, change: change, dMedUp: dMedUp, dMedDn: dMedDn, dSuccUp: dSuccUp, dSuccDn: dSuccDn };
     }
 
-    // L2: retire +2 years (always relevant if not already retired)
-    if (!alreadyRet && yrsRet >= 1) {
-      // Two more years of compounding + two fewer years of drawdown
-      var twoYrCompound = totalBal * (compoundFV(retR, yrsRet + 2) / Math.max(lvFV, 0.0001) - 1);
-      var spendY = (p.retSpM || 3000) * 12;
-      var twoYrLessDrawdown = spendY * 2;
-      var dW2 = Math.round(twoYrCompound + twoYrLessDrawdown * 0.5);
-      var dS2 = Math.min(12, Math.max(3, Math.round((dW2 / Math.max(medF, 1)) * 25)));
-      levers.push({
-        label: fr ? 'Reporter la retraite de 2 ans' : 'Delay retirement by 2 years',
-        change: fr ? 'Retraite \u00e0 ' + ((p.retAge || 65) + 2) + ' au lieu de ' + (p.retAge || 65) : 'Retire at age ' + ((p.retAge || 65) + 2) + ' instead of ' + (p.retAge || 65),
-        dWealth: dW2,
-        dSucc: dS2,
-        kind: 'horizon'
-      });
-    }
+    var rows = [
+      buildRow(
+        fr ? 'Rendement actions' : 'Equity returns',
+        fr ? '\u00b1 1 % par an sur l\'horizon' : '\u00b1 1% annually across horizon',
+        sw.returns && sw.returns.up, sw.returns && sw.returns.down
+      ),
+      buildRow(
+        'Inflation',
+        fr ? '\u00b1 1 % par an sur l\'horizon' : '\u00b1 1% annually across horizon',
+        sw.inflation && sw.inflation.up, sw.inflation && sw.inflation.down
+      )
+    ].filter(Boolean);
 
-    // L3: returns +1% (always relevant)
-    var dW3 = Math.round(medF * (compoundFV(retR + 0.01, horizon) / compoundFV(retR, horizon) - 1));
-    var dS3 = Math.min(15, Math.max(2, Math.round(horizon * 0.35)));
-    levers.push({
-      label: fr ? 'Rendement +1 % par an' : 'Returns +1% per year',
-      change: fr ? 'Allocation plus orient\u00e9e croissance, ou r\u00e9duction des frais' : 'More growth-oriented allocation, or lower fees',
-      dWealth: dW3,
-      dSucc: dS3,
-      kind: 'returns'
-    });
-
-    // L4: returns -1% (downside)
-    var dW4 = Math.round(medF * (compoundFV(retR - 0.01, horizon) / compoundFV(retR, horizon) - 1));
-    var dS4 = -Math.min(15, Math.max(2, Math.round(horizon * 0.35)));
-    levers.push({
-      label: fr ? 'Rendement -1 % par an' : 'Returns -1% per year',
-      change: fr ? 'March\u00e9s d\u00e9favorables persistants' : 'Sustained unfavourable markets',
-      dWealth: dW4,
-      dSucc: dS4,
-      kind: 'returns'
-    });
-
-    // L5: spending -10% (always meaningful)
-    var spendBase = (p.retSpM || 3000) * 12;
-    var dW5 = Math.round(spendBase * 0.10 * Math.max(0, horizon - yrsRet));
-    var dS5 = Math.min(10, Math.max(2, Math.round((spendBase * 0.10 / Math.max(spendBase, 1)) * 60)));
-    levers.push({
-      label: fr ? 'D\u00e9penses -10 %' : 'Spending -10%',
-      change: fr ? 'Mode de vie l\u00e9g\u00e8rement plus sobre en retraite' : 'Slightly lower retirement lifestyle',
-      dWealth: dW5,
-      dSucc: dS5,
-      kind: 'spending'
-    });
-
-    // L6: archetype-specific lever
-    if (p.bizOn) {
-      // Defer corporate extraction by 5 yrs
-      var dW6 = Math.round((p.bizRetainedEarnings || 0) * 0.10);
-      levers.push({
-        label: fr ? 'Reporter l\'extraction corpo de 5 ans' : 'Defer corporate extraction 5 years',
-        change: fr ? 'R\u00e9investir dans la SPCC, extraire plus tard' : 'Reinvest in CCPC, extract later',
-        dWealth: dW6,
-        dSucc: 4,
-        kind: 'tax'
-      });
-    } else if ((p.qppAge || 65) <= 65 && !alreadyRet) {
-      // Delay QPP/CPP to 70 → +42% benefit (0.7%/month after 65)
-      var qppMon = (d.qppM || 700);
-      var dQppY = qppMon * 12 * 0.42;
-      var dW6b = Math.round(dQppY * Math.max(0, (p.deathAge || 90) - 70));
-      levers.push({
-        label: fr ? (p.prov === 'QC' ? 'Reporter le RRQ \u00e0 70 ans' : 'Reporter le RPC \u00e0 70 ans') : (p.prov === 'QC' ? 'Delay QPP to age 70' : 'Delay CPP to age 70'),
-        change: fr ? 'Bonus de +42 % sur la rente viag\u00e8re' : '+42% bonus on lifetime benefit',
-        dWealth: dW6b,
-        dSucc: 5,
-        kind: 'gov'
-      });
-    } else if ((d.totalBal || 0) > 0 && (p.merR || 0) + (p.merT || 0) + (p.merN || 0) > 0.015) {
-      // High MER — show fee reduction lever
-      var feeSavings = Math.round(d.feeCost * 0.5);
-      levers.push({
-        label: fr ? 'R\u00e9duire les frais de 50 bp' : 'Cut investment fees by 50 bp',
-        change: fr ? 'Passer aux fonds index\u00e9s ou n\u00e9gocier les frais' : 'Move to index funds or negotiate fees',
-        dWealth: feeSavings,
-        dSucc: 3,
-        kind: 'fees'
-      });
-    }
+    if (rows.length === 0) return '';
 
     var h = secPage();
     h += F.Sec(secN, F.L('levers', fr), 'sec-levers');
     h += narr(fr
-      ? 'Cette section illustre comment certaines d\u00e9cisions pourraient d\u00e9placer l\'aiguille du plan. Les ordres de grandeur sont calcul\u00e9s par \u00e9lasticit\u00e9 et compl\u00e9teraient une nouvelle simulation Monte Carlo pour confirmation.'
-      : 'This section illustrates how a few decisions could shift the plan\'s needle. Magnitudes are computed by elasticity and would be confirmed by a fresh Monte Carlo simulation.');
+      ? 'Chaque ligne compare le sc\u00e9nario de base \u00e0 deux simulations Monte Carlo additionnelles (500 chemins chacune) o\u00f9 un param\u00e8tre est perturb\u00e9 \u00e0 la hausse puis \u00e0 la baisse. Les d\u00e9ltas refl\u00e8tent l\'impact direct sur le patrimoine m\u00e9dian (P50, dollars r\u00e9els) et sur le taux de succ\u00e8s du plan.'
+      : 'Each row compares the baseline to two additional Monte Carlo runs (500 paths each) where a single parameter is perturbed up then down. Deltas show direct impact on median wealth (P50, real dollars) and on plan success rate.');
 
     h += '<table class="tbl"><thead><tr>';
-    h += '<th style="text-align:left">' + (fr ? 'Levier' : 'Lever') + '</th>';
-    h += '<th style="text-align:left">' + (fr ? 'Changement' : 'Change') + '</th>';
-    h += '<th>' + (fr ? '\u0394 Patrimoine' : '\u0394 Wealth') + '</th>';
+    h += '<th style="text-align:left">' + (fr ? 'Facteur' : 'Factor') + '</th>';
+    h += '<th style="text-align:left">' + (fr ? 'Perturbation' : 'Change') + '</th>';
+    h += '<th>' + (fr ? '\u0394 Patrimoine (hausse)' : '\u0394 Wealth (up)') + '</th>';
+    h += '<th>' + (fr ? '\u0394 Patrimoine (baisse)' : '\u0394 Wealth (down)') + '</th>';
     h += '<th>' + (fr ? '\u0394 Succ\u00e8s' : '\u0394 Success') + '</th>';
     h += '</tr></thead><tbody>';
-    levers.forEach(function(L) {
-      var dColor = L.dWealth >= 0 ? C.green : C.red;
-      var sColor = L.dSucc >= 0 ? C.green : C.red;
-      var dWStr = (L.dWealth >= 0 ? '+' : '') + f$(L.dWealth);
-      var dSStr = (L.dSucc >= 0 ? '+' : '') + L.dSucc + ' pts';
+    rows.forEach(function(r) {
+      var colorUp = r.dMedUp >= 0 ? C.green : C.red;
+      var colorDn = r.dMedDn >= 0 ? C.green : C.red;
+      var succStr = (r.dSuccUp >= 0 ? '+' : '') + r.dSuccUp + ' / ' + (r.dSuccDn >= 0 ? '+' : '') + r.dSuccDn + ' pts';
       h += '<tr>';
-      h += '<td style="font-weight:600">' + F.esc(L.label) + '</td>';
-      h += '<td style="font-family:DM Sans,sans-serif;color:#666;font-size:10px">' + F.esc(L.change) + '</td>';
-      h += '<td style="color:' + dColor + ';font-weight:700">' + dWStr + '</td>';
-      h += '<td style="color:' + sColor + ';font-weight:700">' + dSStr + '</td>';
+      h += '<td style="font-weight:600">' + F.esc(r.label) + '</td>';
+      h += '<td style="font-family:Inter,sans-serif;color:#666;font-size:10px">' + F.esc(r.change) + '</td>';
+      h += '<td style="color:' + colorUp + ';font-weight:700">' + (r.dMedUp >= 0 ? '+' : '\u2212') + f$(Math.abs(r.dMedUp)) + '</td>';
+      h += '<td style="color:' + colorDn + ';font-weight:700">' + (r.dMedDn >= 0 ? '+' : '\u2212') + f$(Math.abs(r.dMedDn)) + '</td>';
+      h += '<td style="font-family:JetBrains Mono,monospace;font-size:10px">' + succStr + '</td>';
       h += '</tr>';
     });
     h += '</tbody></table>';
 
     h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
       (fr
-        ? 'Note: estimations \u00e0 lecture indicative. Les leviers ne sont pas additifs; combiner plusieurs leviers demande une nouvelle simulation pour mesurer l\'effet net.'
-        : 'Note: indicative estimates. Levers are not additive; combining several requires a fresh simulation to measure net effect.') +
+        ? 'Chaque d\u00e9lta provient d\'une simulation Monte Carlo compl\u00e8te \u2014 pas d\'approximation analytique. Les facteurs ne sont pas additifs: combiner plusieurs perturbations requiert une simulation combin\u00e9e d\u00e9di\u00e9e.'
+        : 'Every delta originates from a complete Monte Carlo run \u2014 no closed-form approximation. Factors are not additive: combining multiple perturbations requires a dedicated combined simulation.') +
       '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: ADVISOR LETTER (page 2 of 18-22 plan) ===
+  // One-page warm narrative from the advisor to the client. AI-generated via
+  // `advisor_letter` slot; falls back to a phase-aware deterministic template
+  // when AI absent so the page never looks empty.
+  function renderAdvisorLetter(d) {
+    var fr = d.fr;
+    var name = d.fn ? F.esc(d.fn) : (fr ? 'Client' : 'Client');
+    var today = F.fmtDate(null, fr);
+    var h = '<div class="sec-page" id="sec-letter">';
+    h += '<div style="padding:40px 20px 30px;font-family:Inter,sans-serif;line-height:1.85;font-size:12px;color:#2a2420">';
+    h += '<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? 'Lettre pr\u00e9paratoire' : 'Opening letter') + '</div>';
+    h += '<div style="font-size:18px;font-weight:700;color:' + C.gold + ';margin-bottom:20px">' + (fr ? 'Cher' + (d.p.sex === 'F' ? 'e' : '') + ' ' + name : 'Dear ' + name) + ',</div>';
+    if (d.ai.advisor_letter) {
+      h += F.AiBlock(d.ai.advisor_letter, fr);
+    } else {
+      // Deterministic phase-aware fallback — kept short, conditional, AMF-safe.
+      var phase = d.R.phase;
+      var yrsToRet = Math.max(0, (d.p.retAge || 65) - (d.p.age || 0));
+      var body = '';
+      if (phase === 'decum') {
+        body = fr
+          ? 'Ce rapport examine la viabilit\u00e9 de votre plan de d\u00e9caissement sur les ann\u00e9es \u00e0 venir. Nous avons mod\u00e9lis\u00e9 ' + (d.p.nSim || 5000) + ' trajectoires en int\u00e9grant les rendements, l\'inflation et la long\u00e9vit\u00e9. Les pages qui suivent pr\u00e9sentent ce que les chiffres indiquent, les sensibilit\u00e9s principales, et les points qui m\u00e9ritent votre attention.'
+          : 'This report examines the viability of your retirement drawdown over the years ahead. We modelled ' + (d.p.nSim || 5000) + ' trajectories integrating returns, inflation, and longevity. The pages that follow set out what the numbers show, the main sensitivities, and the points that merit your attention.';
+      } else if (phase === 'transition') {
+        body = fr
+          ? 'La retraite approche \u2014 dans environ ' + yrsToRet + ' ans. Ce rapport \u00e9value si votre trajectoire actuelle soutiendrait le niveau de vie projet\u00e9 et identifie les leviers qui auraient le plus d\'effet sur la probabilit\u00e9 de succ\u00e8s. Je vous invite \u00e0 lire en particulier les sections objectifs, revenus et fiscalit\u00e9.'
+          : 'Retirement is approaching \u2014 approximately ' + yrsToRet + ' years away. This report evaluates whether your current trajectory would support the projected lifestyle, and identifies the levers with the largest effect on success probability. I encourage particular attention to the goals, income, and tax sections.';
+      } else {
+        body = fr
+          ? 'Vous \u00eates en phase d\'accumulation, avec ' + yrsToRet + ' ans devant vous avant la retraite pr\u00e9vue. Les projections ' + (d.p.nSim || 5000) + ' sc\u00e9narios mod\u00e9lisent comment votre \u00e9pargne actuelle, combin\u00e9e \u00e0 vos cotisations et aux rendements de march\u00e9, pourrait \u00e9voluer. Les sections fiscalit\u00e9 et leviers r\u00e9v\u00e8lent les d\u00e9cisions qui auraient le plus de poids sur le long terme.'
+          : 'You are in the accumulation phase, with ' + yrsToRet + ' years until planned retirement. The projections across ' + (d.p.nSim || 5000) + ' scenarios model how your current savings, combined with contributions and market returns, might evolve. The tax and levers sections highlight the decisions with the largest long-term weight.';
+      }
+      h += '<p class="narr">' + body + '</p>';
+    }
+    h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
+      ? 'Les projections sont conditionnelles et non garanties. Chaque chiffre de ce rapport est traceable \u00e0 une sortie du moteur; aucune donn\u00e9e n\'est invent\u00e9e.'
+      : 'Projections are conditional and not guaranteed. Every number in this report is traceable to an engine output; no data is invented.') + '</p>';
+    h += '<div style="margin-top:30px;padding-top:12px;border-top:1px solid ' + C.border + ';font-size:11px;color:#666">' + today + '<br/><span style="font-size:10px">BuildFi Technologies inc.</span></div>';
+    h += '</div></div>';
+    return h;
+  }
+
+  // === SECTION: DRAW-ORDER STRATEGY (our differentiator) ===
+  // Heatmap-style visualization of how retirement spending is funded each year.
+  // Consumes `mc._enriched.drawTrace[]`. Rows = accounts, columns = ages;
+  // cell darkness encodes $ drawn that year.
+  function renderDrawOrder(d, secN) {
+    if (!d.mc || !d.mc._enriched || !d.mc._enriched.drawTrace || d.mc._enriched.drawTrace.length === 0) return '';
+    var fr = d.fr;
+    var trace = d.mc._enriched.drawTrace;
+    var f$ = F.fmtCompact;
+
+    // Compute max draw per source to normalize heatmap intensity.
+    var maxRRSP = 0, maxTFSA = 0, maxNR = 0, maxMelt = 0;
+    trace.forEach(function(t) {
+      if (t.rrsp > maxRRSP) maxRRSP = t.rrsp;
+      if (t.tfsa > maxTFSA) maxTFSA = t.tfsa;
+      if (t.nr > maxNR) maxNR = t.nr;
+      if (t.melt > maxMelt) maxMelt = t.melt;
+    });
+
+    function cell(val, max, hue) {
+      if (val <= 0 || max <= 0) return '<td style="background:#f9f7f2;color:#ccc;font-size:8px">\u2013</td>';
+      var intensity = Math.min(1, val / max);
+      var bg = intensity < 0.2 ? '#fdf9f0' : intensity < 0.4 ? '#f5e8c8' : intensity < 0.6 ? '#e8c878' : intensity < 0.8 ? '#c49a1a' : '#8a6a10';
+      var fg = intensity >= 0.6 ? '#fff' : '#1a1a1a';
+      return '<td style="background:' + bg + ';color:' + fg + ';font-size:8.5px;font-family:JetBrains Mono,monospace">' + (val >= 1000 ? Math.round(val / 1000) + 'K' : val) + '</td>';
+    }
+
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Ordre des retraits' : 'Draw-order strategy', 'sec-draworder');
+
+    h += narr(fr
+      ? 'Ce tableau montre comment le financement des d\u00e9penses de retraite se r\u00e9partit entre vos comptes, ann\u00e9e apr\u00e8s ann\u00e9e. L\'intensit\u00e9 de couleur refl\u00e8te le montant retir\u00e9 de chaque source. Une strat\u00e9gie optimale tire d\'abord du non-enregistr\u00e9 et du meltdown REER avant les FERR obligatoires, puis du CELI en dernier recours.'
+      : 'This table shows how retirement spending is funded across your accounts year by year. Colour intensity reflects the amount drawn from each source. An optimised strategy typically draws non-registered and RRSP meltdown first, then RRIF minimums, with TFSA preserved as the last resort.');
+
+    // Limit to max 20 columns for readability
+    var rows = trace.slice(0, 20);
+    h += '<div style="overflow-x:auto;margin:8px 0">';
+    h += '<table class="tbl" style="font-size:9px">';
+    h += '<thead><tr><th style="text-align:left">' + (fr ? 'Compte' : 'Account') + '</th>';
+    rows.forEach(function(t) { h += '<th>' + t.age + '</th>'; });
+    h += '</tr></thead><tbody>';
+
+    h += '<tr><td style="text-align:left;font-weight:700">REER/RRSP</td>';
+    rows.forEach(function(t) { h += cell(t.rrsp, maxRRSP, 'gold'); });
+    h += '</tr>';
+
+    h += '<tr><td style="text-align:left;font-weight:700">' + (fr ? 'FERR min' : 'RRIF min') + '</td>';
+    rows.forEach(function(t) { h += cell(t.rrifMin, maxRRSP, 'gold'); });
+    h += '</tr>';
+
+    h += '<tr><td style="text-align:left;font-weight:700">Meltdown</td>';
+    rows.forEach(function(t) { h += cell(t.melt, maxMelt, 'gold'); });
+    h += '</tr>';
+
+    h += '<tr><td style="text-align:left;font-weight:700">NR</td>';
+    rows.forEach(function(t) { h += cell(t.nr, maxNR, 'gold'); });
+    h += '</tr>';
+
+    h += '<tr><td style="text-align:left;font-weight:700">CELI/TFSA</td>';
+    rows.forEach(function(t) { h += cell(t.tfsa, maxTFSA, 'gold'); });
+    h += '</tr>';
+
+    h += '</tbody></table></div>';
+
+    h += '<div style="font-size:10px;color:#888;margin-top:6px">' +
+      (fr ? 'Montants en milliers de dollars, chemin m\u00e9dian. Cellule vide (\u2013) = aucun retrait cette ann\u00e9e.'
+          : 'Amounts in thousands of dollars, median path. Empty cell (\u2013) = no withdrawal that year.') + '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: STRESS TESTS (6 named scenarios) ===
+  // Renders a one-page stress-matrix using the `mc._stress` payload populated
+  // by gen-real-mc.mjs running 6 perturbed MC scenarios.
+  function renderStressTests(d, secN) {
+    if (!d.mc || !d.mc._stress) return '';
+    var fr = d.fr;
+    var s = d.mc._stress;
+    var f$ = F.fmtCompact;
+    var baseMedF = d.mc.rMedF || d.mc.medF || 0;
+    var baseSucc = d.mc.succ || 0;
+
+    // Scenario metadata — labels + narrative hook per scenario
+    var META = {
+      gfc2008:       { fr: 'Crise financi\u00e8re 2008',         en: 'GFC 2008-style',              desc_fr: 'rendements fortement n\u00e9gatifs + volatilit\u00e9 accrue',          desc_en: 'strongly negative returns + elevated volatility' },
+      stagflation73: { fr: 'Stagflation 1973-74',              en: '1973-74 stagflation',         desc_fr: 'choc rendements + inflation persistante \u00e0 4 %',                  desc_en: 'returns shock + persistent 4% inflation' },
+      longevityPlus5: { fr: 'Long\u00e9vit\u00e9 +5 ans',        en: 'Longevity +5 years',          desc_fr: 'si vous viviez 5 ans de plus',                                       desc_en: 'if you lived 5 years longer' },
+      lostDecade:    { fr: 'D\u00e9cennie perdue',             en: 'Lost decade',                 desc_fr: 'rendements effectifs \u22122,5 % par rapport au sc\u00e9nario de base', desc_en: 'effective returns \u22122.5% vs baseline' },
+      persistentInf: { fr: 'Inflation persistante 4 %',        en: 'Persistent 4% inflation',     desc_fr: 'inflation structurellement \u00e9lev\u00e9e',                          desc_en: 'structurally elevated inflation' },
+      spendingUp15:  { fr: 'D\u00e9penses +15 %',              en: 'Spending +15%',               desc_fr: 'besoins de retraite plus \u00e9lev\u00e9s que pr\u00e9vu',               desc_en: 'retirement needs higher than expected' }
+    };
+
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Tests de stress' : 'Stress tests', 'sec-stress');
+
+    h += narr(fr
+      ? 'Six sc\u00e9narios nomm\u00e9s ont \u00e9t\u00e9 rejou\u00e9s en Monte Carlo (500 simulations chacun) avec des perturbations de param\u00e8tres repr\u00e9sentatives. Pour chaque sc\u00e9nario, le tableau montre le taux de succ\u00e8s obtenu et le patrimoine m\u00e9dian final, compar\u00e9 au sc\u00e9nario de base. Ces tests ne sont pas additifs et se lisent ind\u00e9pendamment.'
+      : 'Six named scenarios were re-run in Monte Carlo (500 simulations each) with representative parameter perturbations. For each scenario, the table shows the resulting success rate and median final wealth, compared to baseline. Tests are not additive and read best independently.');
+
+    h += '<table class="tbl"><thead><tr>';
+    h += '<th style="text-align:left">' + (fr ? 'Sc\u00e9nario' : 'Scenario') + '</th>';
+    h += '<th style="text-align:left">' + (fr ? 'Description' : 'Description') + '</th>';
+    h += '<th>' + (fr ? 'Succ\u00e8s' : 'Success') + '</th>';
+    h += '<th>' + (fr ? '\u0394 vs base' : '\u0394 vs base') + '</th>';
+    h += '<th>' + (fr ? 'Patrimoine m\u00e9dian' : 'Median wealth') + '</th>';
+    h += '</tr></thead><tbody>';
+
+    Object.keys(META).forEach(function(k) {
+      var run = s[k];
+      if (!run) return;
+      var meta = META[k];
+      var dSucc = Math.round(((run.succ || 0) - baseSucc) * 100);
+      var dMed = (run.medF || 0) - baseMedF;
+      var succPct = Math.round((run.succ || 0) * 100);
+      var succColor = succPct >= 80 ? C.green : succPct >= 60 ? C.amber : C.red;
+      var deltaColor = dSucc >= 0 ? C.green : C.red;
+      h += '<tr>';
+      h += '<td style="font-weight:600">' + (fr ? meta.fr : meta.en) + '</td>';
+      h += '<td style="font-family:Inter,sans-serif;color:#666;font-size:10px">' + (fr ? meta.desc_fr : meta.desc_en) + '</td>';
+      h += '<td style="color:' + succColor + ';font-weight:700">' + succPct + '%</td>';
+      h += '<td style="color:' + deltaColor + ';font-weight:700">' + (dSucc >= 0 ? '+' : '') + dSucc + ' pts</td>';
+      h += '<td>' + f$(run.medF || 0) + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+
+    // AI interpretation if available
+    if (d.ai.stress_interpretation) {
+      h += F.AiBlock(d.ai.stress_interpretation, fr);
+    }
 
     h += secPageEnd();
     return h;
@@ -719,7 +828,7 @@
     var _scope = d.R.couple ? (fr ? ' du m\u00e9nage' : ' for the household') : '';
     var _scopeIncome = d.R.couple ? (fr ? ' (vous + conjoint(e))' : ' (you + spouse)') : '';
     var _covDet = fr
-      ? 'Les revenus gouvernementaux (' + qLbl + ' + PSV' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ')' + _scopeIncome + ' totalisent <strong>' + fR(Math.round(d.govY)) + '</strong> par ann\u00e9e, ce qui couvre <strong>' + covPct + '%</strong> des d\u00e9penses de retraite pr\u00e9vues' + _scope + ' de ' + fR(_spendY) + '.' + (d.gapM > 0 ? ' L\u2019\u00e9cart de <strong>' + fR(Math.round(d.gapM)) + '</strong> par mois devra \u00eatre combl\u00e9 par des retraits d\u2019\u00e9pargne.' : ' Les revenus garantis couvrent l\u2019int\u00e9gralit\u00e9 des d\u00e9penses courantes.') + (d.R.couple ? ' Le fractionnement des revenus de pension pourrait r\u00e9duire la charge fiscale du m\u00e9nage.' : '')
+      ? 'Les revenus gouvernementaux (' + qLbl + ' + PSV' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ')' + _scopeIncome + ' totalisent <strong>' + fR(Math.round(d.govY)) + '</strong> par ann\u00e9e, ce qui couvre <strong>' + covPct + '%</strong> des d\u00e9penses de retraite pr\u00e9vues' + _scope + ' de ' + fR(_spendY) + '.' + (d.gapM > 0 ? ' L\u2019\u00e9cart de <strong>' + fR(Math.round(d.gapM)) + '</strong> par mois serait \u00e0 combler par des retraits d\u2019\u00e9pargne.' : ' Les revenus garantis couvrent l\u2019int\u00e9gralit\u00e9 des d\u00e9penses courantes.') + (d.R.couple ? ' Le fractionnement des revenus de pension pourrait r\u00e9duire la charge fiscale du m\u00e9nage.' : '')
       : 'Government income (' + qLbl + ' + OAS' + (p.penType && p.penType !== 'none' ? ' + pension' : '') + ')' + _scopeIncome + ' totals <strong>' + fR(Math.round(d.govY)) + '</strong> per year, covering <strong>' + covPct + '%</strong> of planned retirement spending' + _scope + ' of ' + fR(_spendY) + '.' + (d.gapM > 0 ? ' The gap of <strong>' + fR(Math.round(d.gapM)) + '</strong> per month would need to be funded from savings withdrawals.' : ' Guaranteed income covers all regular expenses.') + (d.R.couple ? ' Pension income splitting could reduce the household tax burden.' : '');
     h += narrAi(_covDet, d.ai.profile_summary, fr, fr ? 'Profil \u2014 Analyse IA' : 'Profile \u2014 AI Analysis');
 
@@ -728,7 +837,7 @@
       if (covPct >= 100) {
         h += F.Insight(fr ? 'Vos revenus gouvernementaux couvrent l\u2019int\u00e9gralit\u00e9 de vos d\u00e9penses pr\u00e9vues. L\u2019\u00e9pargne accumul\u00e9e constitue une marge de s\u00e9curit\u00e9 compl\u00e9mentaire.' : 'Your government income covers all planned spending. Accumulated savings provide an additional safety margin.');
       } else if (covPct < 40) {
-        h += F.Warning(fr ? 'La couverture gouvernementale est faible (' + covPct + '%). La plus grande partie de vos d\u00e9penses devra \u00eatre financ\u00e9e par vos \u00e9pargnes et placements.' : 'Government coverage is low (' + covPct + '%). Most of your spending will need to be funded from savings and investments.');
+        h += F.Warning(fr ? 'La couverture gouvernementale est faible (' + covPct + '%). Selon les projections, la plus grande partie des d\u00e9penses proviendrait des \u00e9pargnes et placements.' : 'Government coverage is low (' + covPct + '%). Projections indicate most of the spending would come from savings and investments.');
       }
     }
 
@@ -777,36 +886,61 @@
   function renderGoals(d, secN) {
     if (!d.R.hasGoals) return '';
     var fr = d.fr, goals = d.p.goals || [];
+    // Consume enriched goals ledger when available (Phase 2) — maps by index.
+    // Ledger fields: {desc, amount, targetAge, medianAvailable, probabilityMet,
+    //                 status ('on-track'|'tight'|'at-risk'), cushion}
+    var ledger = d.mc && d.mc._enriched && d.mc._enriched.goalsLedger ? d.mc._enriched.goalsLedger : [];
+    var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
     h += F.Sec(secN, F.L('goals', fr), 'sec-goals');
 
-    // Intro narrative
     var totalGoalCost = goals.reduce(function(s, g) { return s + (g.amount || 0); }, 0);
-    var highProbGoals = goals.filter(function(g) { return (g.prob || g.probability || 0) >= 0.85; }).length;
-    h += narr(fr
-      ? 'Vous avez d\u00e9fini <strong>' + goals.length + ' objectif' + (goals.length > 1 ? 's' : '') + '</strong> repr\u00e9sentant un montant total de <strong>' + F.fmtCompact(totalGoalCost) + '</strong>. Les objectifs sont \u00e9valu\u00e9s selon leur probabilit\u00e9 de r\u00e9alisation dans les ' + (d.p.nSim || 5000) + ' simulations Monte Carlo.' + (highProbGoals > 0 ? ' ' + highProbGoals + ' objectif' + (highProbGoals > 1 ? 's' : '') + ' affiche' + (highProbGoals > 1 ? 'nt' : '') + ' une probabilit\u00e9 sup\u00e9rieure \u00e0 85%.' : '')
-      : 'You have defined <strong>' + goals.length + ' goal' + (goals.length > 1 ? 's' : '') + '</strong> representing a total of <strong>' + F.fmtCompact(totalGoalCost) + '</strong>. Goals are evaluated by their probability of achievement across ' + (d.p.nSim || 5000) + ' Monte Carlo simulations.' + (highProbGoals > 0 ? ' ' + highProbGoals + ' goal' + (highProbGoals > 1 ? 's' : '') + ' show' + (highProbGoals > 1 ? '' : 's') + ' a probability above 85%.' : ''));
+    var onTrackN = ledger.filter(function(l) { return l.status === 'on-track'; }).length;
+    var atRiskN = ledger.filter(function(l) { return l.status === 'at-risk'; }).length;
 
+    h += narr(fr
+      ? 'Vous avez d\u00e9clar\u00e9 <strong>' + goals.length + ' objectif' + (goals.length > 1 ? 's' : '') + '</strong> pour un total de <strong>' + f$(totalGoalCost) + '</strong>. La probabilit\u00e9 de r\u00e9alisation est estim\u00e9e par interpolation percentile sur ' + (d.p.nSim || 5000) + ' simulations \u00e0 l\'\u00e2ge cible de chaque objectif.' + (onTrackN > 0 ? ' <strong>' + onTrackN + '</strong> objectif' + (onTrackN > 1 ? 's sont' : ' est') + ' en voie de r\u00e9alisation.' : '') + (atRiskN > 0 ? ' <strong>' + atRiskN + '</strong> paraissent \u00e0 risque.' : '')
+      : 'You declared <strong>' + goals.length + ' goal' + (goals.length > 1 ? 's' : '') + '</strong> totalling <strong>' + f$(totalGoalCost) + '</strong>. Probability of achievement is estimated by percentile interpolation on ' + (d.p.nSim || 5000) + ' simulations at each goal\'s target age.' + (onTrackN > 0 ? ' <strong>' + onTrackN + '</strong> goal' + (onTrackN > 1 ? 's appear' : ' appears') + ' on track.' : '') + (atRiskN > 0 ? ' <strong>' + atRiskN + '</strong> appear at risk.' : ''));
+
+    // Per-goal cards — one row each, uses enriched ledger when present, falls
+    // back to goal.prob if engine output not enriched yet.
     h += '<div class="cd">';
-    goals.forEach(function(g) {
-      var prob = g.prob || g.probability || 0;
-      var clr = prob >= 0.85 ? C.green : prob >= 0.6 ? C.amber : C.red;
-      h += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0ece4">';
-      h += '<div style="font-size:13px">' + (g.icon || '\ud83c\udfaf') + '</div>';
-      h += '<div style="flex:1"><strong>' + F.esc(g.name || '') + '</strong><br/><span style="font-size:10px;color:#888">' + F.esc(g.type || '') + ' \u2014 ' + F.fmtMoney(g.amount || 0, fr) + '</span></div>';
-      h += '<div style="text-align:right"><span class="mono" style="font-size:14px;color:' + clr + '">' + Math.round(prob * 100) + '%</span></div>';
+    goals.forEach(function(g, i) {
+      var led = ledger[i];
+      var prob = led ? led.probabilityMet / 100 : (g.prob || g.probability || 0);
+      var clr = prob >= 0.8 ? C.green : prob >= 0.5 ? C.amber : C.red;
+      var statusLabel = led
+        ? (led.status === 'on-track' ? (fr ? 'en voie' : 'on track')
+           : led.status === 'tight' ? (fr ? 'serr\u00e9' : 'tight')
+           : (fr ? '\u00e0 risque' : 'at risk'))
+        : '';
+      var cushion = led && led.cushion != null ? led.cushion : null;
+      h += '<div style="padding:10px 4px;border-bottom:1px solid #f0ece4">';
+      h += '<div style="display:flex;align-items:baseline;gap:8px">';
+      h += '<div style="flex:1"><strong style="font-size:12px">' + F.esc(g.desc || g.name || '') + '</strong>';
+      h += '<span style="color:#888;font-size:10px;margin-left:8px">' + (led ? (fr ? '\u00e0 ' : 'at ') + led.targetAge + (fr ? ' ans' : ' yrs') : '') + ' \u2014 ' + fR(g.amount || 0) + '</span></div>';
+      h += '<div style="text-align:right"><span class="mono" style="font-size:15px;font-weight:700;color:' + clr + '">' + Math.round(prob * 100) + '%</span>';
+      if (statusLabel) h += '<div style="font-size:9px;color:' + clr + ';text-transform:uppercase;letter-spacing:0.3px">' + statusLabel + '</div>';
+      h += '</div></div>';
+      // Detail line: median wealth at goal age + cushion
+      if (led) {
+        var cushionLbl = cushion >= 0
+          ? (fr ? 'coussin m\u00e9dian ' : 'median cushion ') + f$(cushion)
+          : (fr ? 'manque m\u00e9dian ' : 'median shortfall ') + f$(-cushion);
+        h += '<div style="font-size:10px;color:#888;margin-top:3px">' + (fr ? 'Patrimoine m\u00e9dian \u00e0 l\'\u00e2ge cible: ' : 'Median wealth at target age: ') + '<span class="mono">' + f$(led.medianAvailable) + '</span> \u2014 ' + cushionLbl + '</div>';
+      }
       h += '</div>';
     });
     h += '</div>';
 
-    // Post-data narrative — AI supersedes deterministic
-    var lowProbGoals = goals.filter(function(g) { return (g.prob || g.probability || 0) < 0.6; });
-    var _goalsDet = '';
-    if (lowProbGoals.length > 0) {
-      _goalsDet = fr
-        ? '' + lowProbGoals.length + ' objectif' + (lowProbGoals.length > 1 ? 's' : '') + ' affiche' + (lowProbGoals.length > 1 ? 'nt' : '') + ' une probabilit\u00e9 inf\u00e9rieure \u00e0 60%, ce qui indique que les conditions actuelles pourraient ne pas suffire \u00e0 les r\u00e9aliser dans la majorit\u00e9 des sc\u00e9narios simul\u00e9s.'
-        : '' + lowProbGoals.length + ' goal' + (lowProbGoals.length > 1 ? 's' : '') + ' show' + (lowProbGoals.length > 1 ? '' : 's') + ' a probability below 60%, indicating that current conditions may not be sufficient to achieve ' + (lowProbGoals.length > 1 ? 'them' : 'it') + ' in the majority of simulated scenarios.';
-    }
+    // Post-data narrative — AI supersedes deterministic fallback
+    var atRiskLeds = ledger.filter(function(l) { return l.status === 'at-risk'; });
+    var _goalsDet = atRiskLeds.length > 0
+      ? (fr
+         ? atRiskLeds.length + ' objectif' + (atRiskLeds.length > 1 ? 's affichent' : ' affiche') + ' une probabilit\u00e9 inf\u00e9rieure \u00e0 50 % dans les simulations \u2014 les param\u00e8tres actuels ne suffiraient pas \u00e0 les r\u00e9aliser dans la majorit\u00e9 des trajectoires projet\u00e9es.'
+         : atRiskLeds.length + ' goal' + (atRiskLeds.length > 1 ? 's show' : ' shows') + ' a probability below 50% in the simulations \u2014 current parameters would not be sufficient to achieve ' + (atRiskLeds.length > 1 ? 'them' : 'it') + ' in the majority of projected trajectories.')
+      : '';
+
     if (_goalsDet) {
       h += narrAi(_goalsDet, d.ai.goals_insight, fr, fr ? 'Objectifs \u2014 Analyse IA' : 'Goals \u2014 AI Analysis');
     } else {
@@ -1084,11 +1218,31 @@
     var h = secPage();
     h += F.Sec(secN, F.L('tax', fr), 'sec-tax');
 
-    // Intro narrative
+    // Intro narrative — Phase 8 adds a province-specific fiscal reference
+    // so the tax section reads as tailored to the client's actual jurisdiction.
     var _retLen = revData.filter(function(r) { return r.age >= p.retAge; }).length;
+    var _provNote = '';
+    var _prov = p.prov || 'QC';
+    if (_prov === 'QC') {
+      _provNote = fr
+        ? ' Au Qu\u00e9bec, l\'<strong>abattement du Qu\u00e9bec</strong> (16,5 %) r\u00e9duit l\'imp\u00f4t f\u00e9d\u00e9ral et le fractionnement de pension reste permis entre conjoints.'
+        : ' In Quebec, the <strong>Quebec abatement</strong> (16.5%) reduces federal tax, and pension income splitting between spouses remains permitted.';
+    } else if (_prov === 'ON') {
+      _provNote = fr
+        ? ' En Ontario, une <strong>surtaxe progressive</strong> s\'ajoute \u00e0 l\'imp\u00f4t provincial lorsque ce dernier d\u00e9passe certains seuils, augmentant le taux effectif marginal dans les paliers sup\u00e9rieurs.'
+        : ' In Ontario, a <strong>progressive surtax</strong> is added to provincial tax above certain thresholds, raising effective marginal rates in the upper brackets.';
+    } else if (_prov === 'BC') {
+      _provNote = fr
+        ? ' En Colombie-Britannique, les paliers provinciaux sup\u00e9rieurs (jusqu\'\u00e0 20,5 %) rendent la coordination interprovinciale du revenu particuli\u00e8rement sensible.'
+        : ' In British Columbia, upper provincial brackets (up to 20.5%) make inter-provincial income coordination particularly sensitive.';
+    } else if (_prov === 'AB') {
+      _provNote = fr
+        ? ' L\'Alberta applique une structure d\'imp\u00f4t provincial \u00e0 cinq paliers avec un maximum de 15 %.'
+        : ' Alberta applies a five-bracket provincial tax structure with a maximum rate of 15%.';
+    }
     h += narr(fr
-      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTax)) + '</strong>, avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e g\u00e9n\u00e8re un alpha fiscal de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '')
-      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTax)) + '</strong>, with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates a tax alpha of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : ''));
+      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTax)) + '</strong>, avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e g\u00e9n\u00e8re un alpha fiscal de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
+      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTax)) + '</strong>, with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates a tax alpha of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
 
     h += '<div class="' + (exp ? 'g4' : 'g3') + '" style="margin-bottom:8px">';
     h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
@@ -1542,7 +1696,7 @@
       }
       _totalDebt += bal; _totalPay += pay;
       if (bal <= 0) return;
-      h += '<tr><td style="font-family:DM Sans,sans-serif">' + F.esc(dd.name || dd.desc || (fr ? 'Dette' : 'Debt')) + '</td>';
+      h += '<tr><td style="font-family:Inter,sans-serif">' + F.esc(dd.name || dd.desc || (fr ? 'Dette' : 'Debt')) + '</td>';
       h += '<td>' + fR(bal) + '</td><td>' + F.fmtPct(rate, 1, fr) + '</td>';
       h += '<td>' + fR(pay) + '</td><td>' + months + '</td></tr>';
     });
@@ -1614,13 +1768,13 @@
       h += '<th>' + (fr ? 'Primes cumul. (\u00e0 retraite)' : 'Cumul. premiums (to ret.)') + '</th>';
       h += '</tr></thead><tbody>';
       if (lifeUser > 0) {
-        h += '<tr><td style="font-family:DM Sans,sans-serif">' + (fr ? 'Vous' : 'You') + '</td>';
+        h += '<tr><td style="font-family:Inter,sans-serif">' + (fr ? 'Vous' : 'You') + '</td>';
         h += '<td>' + fR(lifeUser) + '</td>';
         h += '<td>' + (premUser > 0 ? fR(premUser) : '\u2014') + '</td>';
         h += '<td>' + (premUser > 0 ? fR(premUser * yearsToRet) : '\u2014') + '</td></tr>';
       }
       if (lifeSp > 0) {
-        h += '<tr><td style="font-family:DM Sans,sans-serif">' + (fr ? 'Conjoint' : 'Spouse') + '</td>';
+        h += '<tr><td style="font-family:Inter,sans-serif">' + (fr ? 'Conjoint' : 'Spouse') + '</td>';
         h += '<td>' + fR(lifeSp) + '</td>';
         h += '<td>' + (premSp > 0 ? fR(premSp) : '\u2014') + '</td>';
         h += '<td>' + (premSp > 0 ? fR(premSp * yearsToRet) : '\u2014') + '</td></tr>';
@@ -1790,7 +1944,7 @@
         var succBase = d.succVal != null ? d.succVal : (st.succ || 0);
         var succDelta = st.succ != null ? Math.round((st.succ - succBase) * 100) : 0;
         var clr = succDelta >= 0 ? C.green : succDelta > -10 ? C.amber : C.red;
-        h += '<tr><td style="font-family:DM Sans,sans-serif">' + F.esc(st.name || st.label || '') + '</td>';
+        h += '<tr><td style="font-family:Inter,sans-serif">' + F.esc(st.name || st.label || '') + '</td>';
         h += '<td style="color:' + clr + ';font-weight:700">' + (st.succ != null ? Math.round(st.succ * 100) + '%' : '\u2014') + '</td>';
         h += '<td>' + (st.medF != null ? fR(st.medF) : '\u2014') + '</td>';
         h += '<td style="color:' + clr + '">' + (succDelta >= 0 ? '+' : '') + succDelta + ' pts</td></tr>';
@@ -1808,6 +1962,107 @@
       : 'The P25\u2013P75 range of <strong>' + f$(Math.round(_spread25)) + '</strong> represents the zone where your wealth falls in half of all simulated scenarios. A narrower range means more predictable outcomes.';
     h += narrAi(_riskDet, d.ai.riskInsight || d.ai.risk_plain_language, fr, fr ? 'Risque \u2014 Analyse IA' : 'Risk \u2014 AI Analysis');
     h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: ACTION PLAN (Phase 7) ===
+  // Renders the output of report-actions.js as prioritized cards.
+  // Hidden when no actions apply (robust plan).
+  function renderActionPlan(d, secN) {
+    if (!window.BActions) return '';
+    var actions = window.BActions.generateActions(d);
+    if (!actions || actions.length === 0) return '';
+    var fr = d.fr;
+    var f$ = F.fmtCompact;
+    var TL = window.BActions.TL;
+
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Plan d\'action' : 'Action plan', 'sec-actions');
+    h += narr(fr
+      ? 'Les observations ci-dessous d\u00e9coulent de r\u00e8gles d\'analyse appliqu\u00e9es aux sorties du moteur. Elles ne constituent pas des recommandations prescriptives \u2014 chaque point est un signal pour discussion avec un planificateur financier agr\u00e9\u00e9. Les actions sont class\u00e9es par priorit\u00e9 puis par niveau de confiance.'
+      : 'The observations below flow from analytical rules applied to engine outputs. They are not prescriptive recommendations — each point is a signal for discussion with a certified financial planner. Actions are ranked by priority then by confidence level.');
+
+    actions.forEach(function(a, idx) {
+      var priorityLabel = a.priority === 'high'
+        ? (fr ? 'Priorit\u00e9 \u00e9lev\u00e9e' : 'High priority')
+        : a.priority === 'medium' ? (fr ? 'Priorit\u00e9 moyenne' : 'Medium priority')
+        : (fr ? 'Priorit\u00e9 faible' : 'Low priority');
+      var priorityClass = a.priority === 'high' ? 'reco-priority-high'
+        : a.priority === 'medium' ? 'reco-priority-medium' : 'reco-priority-low';
+      var tlLabel = TL[a.timeline] ? TL[a.timeline][fr ? 'fr' : 'en'] : (fr ? 'moyen terme' : 'medium term');
+      var impactHtml = '';
+      if (a.dollarImpact != null && a.dollarImpact >= 1000) {
+        impactHtml = '<div class="reco-impact">~ ' + f$(a.dollarImpact) + '</div>';
+      }
+      h += '<div class="reco-card">';
+      h += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">';
+      h += '<span class="reco-priority ' + priorityClass + '">' + priorityLabel + '</span>';
+      h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px">' + (fr ? 'Horizon' : 'Timeline') + ' : ' + tlLabel + '</span>';
+      h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-left:auto">' + (fr ? 'Confiance' : 'Confidence') + ' : ' + a.confidence + '</span>';
+      h += '</div>';
+      h += impactHtml;
+      h += '<div class="reco-title">' + F.esc(a.title) + '</div>';
+      h += '<div class="reco-body">' + a.rationale + '</div>';
+      h += '</div>';
+    });
+
+    h += '<div class="disclaimer" style="margin-top:14px">' + (fr
+      ? 'Les actions ci-dessus sont observationnelles et conditionnelles. Avant toute d\u00e9cision, une consultation avec un planificateur financier agr\u00e9\u00e9 connaissant votre situation compl\u00e8te serait indiqu\u00e9e.'
+      : 'The actions above are observational and conditional. Before any decision, a consultation with a certified financial planner familiar with your full situation would be warranted.') + '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: SIGNATURE PAGE (Phase 10) ===
+  // Single-page signature block for advisor + client acknowledgment. Kept
+  // minimal — no legal language beyond the acknowledgment that the report
+  // was reviewed. Prints last before methodology/disclosures.
+  function renderSignaturePage(d) {
+    var fr = d.fr;
+    var today = F.fmtDate(null, fr);
+    var name = d.fn ? F.esc(d.fn) : (fr ? 'Client' : 'Client');
+    var spouseName = d.R.couple && d.sfn ? F.esc(d.sfn) : '';
+    var h = '<div class="sec-page" id="sec-signature">';
+    h += '<div style="padding:40px 20px;font-family:Inter,sans-serif">';
+    h += '<div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:30px">' +
+      (fr ? 'Accus\u00e9 de r\u00e9ception' : 'Acknowledgment') + '</div>';
+    h += '<h1 style="font-family:Playfair Display,Georgia,serif;font-size:26px;font-weight:700;color:' + C.gold + ';margin-bottom:18px">' +
+      (fr ? 'Accus\u00e9 de r\u00e9ception et de revue' : 'Acknowledgment of review') + '</h1>';
+    h += '<p class="narr" style="max-width:620px;margin-bottom:30px;font-size:12px">' +
+      (fr
+        ? 'Les signataires ci-dessous reconnaissent avoir pris connaissance du pr\u00e9sent rapport, des hypoth\u00e8ses et des mises en garde qui y figurent. Ce rapport est de nature observationnelle et projective; il ne constitue pas un conseil personnalis\u00e9. Toute d\u00e9cision importante b\u00e9n\u00e9ficierait d\'une consultation avec un planificateur financier agr\u00e9\u00e9.'
+        : 'The undersigned acknowledge having reviewed this report, the assumptions and the cautions it contains. This report is observational and projective in nature; it does not constitute personalized advice. Any material decision would benefit from consultation with a certified financial planner.') + '</p>';
+
+    h += '<div style="margin-top:60px;font-size:11px;color:#444">';
+    // Client signature
+    h += '<div style="margin-bottom:50px">';
+    h += '<div style="border-top:1px solid #888;width:280px;margin-bottom:6px"></div>';
+    h += '<div style="font-weight:600">' + name + '</div>';
+    h += '<div style="color:#888;font-size:10px">' + (fr ? 'Client \u2014 Date : ___________' : 'Client \u2014 Date: ___________') + '</div>';
+    h += '</div>';
+    // Spouse signature (couple only)
+    if (spouseName) {
+      h += '<div style="margin-bottom:50px">';
+      h += '<div style="border-top:1px solid #888;width:280px;margin-bottom:6px"></div>';
+      h += '<div style="font-weight:600">' + spouseName + '</div>';
+      h += '<div style="color:#888;font-size:10px">' + (fr ? 'Conjoint(e) \u2014 Date : ___________' : 'Spouse \u2014 Date: ___________') + '</div>';
+      h += '</div>';
+    }
+    // Advisor signature
+    h += '<div style="margin-bottom:20px">';
+    h += '<div style="border-top:1px solid #888;width:280px;margin-bottom:6px"></div>';
+    h += '<div style="font-weight:600">' + (d.client.advisor ? F.esc(d.client.advisor) : (fr ? 'Planificateur' : 'Planner')) + '</div>';
+    h += '<div style="color:#888;font-size:10px">' + (fr ? 'Date : ___________' : 'Date: ___________') + (d.client.firm ? ' \u2014 ' + F.esc(d.client.firm) : '') + '</div>';
+    h += '</div>';
+    h += '</div>';
+
+    h += '<div style="margin-top:60px;font-size:10px;color:#888;line-height:1.7">';
+    h += (fr
+      ? 'Version ' + F.VERSION + ' \u2014 Rapport pr\u00e9par\u00e9 le ' + today + ' par BuildFi Technologies inc.'
+      : 'Version ' + F.VERSION + ' \u2014 Report prepared on ' + today + ' by BuildFi Technologies inc.');
+    h += '</div>';
+    h += '</div></div>';
     return h;
   }
 
@@ -1901,7 +2156,7 @@
     // Empty / loading states
     if (d.empty) {
       if (d.mcComputing) {
-        return '<div style="padding:30px;text-align:center;font-family:DM Sans,sans-serif"><div style="font-size:18px;font-weight:600;color:' + C.gold + ';margin-bottom:10px">' + (d.fr ? 'Simulation en cours...' : 'Simulation running...') + '</div><div style="font-size:13px;color:#888">' + (d.fr ? 'Les r\u00e9sultats Monte Carlo appara\u00eetront sous peu.' : 'Monte Carlo results will appear shortly.') + '</div></div>';
+        return '<div style="padding:30px;text-align:center;font-family:Inter,sans-serif"><div style="font-size:18px;font-weight:600;color:' + C.gold + ';margin-bottom:10px">' + (d.fr ? 'Simulation en cours...' : 'Simulation running...') + '</div><div style="font-size:13px;color:#888">' + (d.fr ? 'Les r\u00e9sultats Monte Carlo appara\u00eetront sous peu.' : 'Monte Carlo results will appear shortly.') + '</div></div>';
       }
       return '';
     }
@@ -1909,7 +2164,7 @@
     // Invalid params guard — only reject truly broken configs (deathAge <= retAge for non-retired)
     var p = d.p;
     if (p.age < p.retAge && (p.deathAge || 90) <= p.retAge) {
-      return '<div style="padding:40px;text-align:center;color:' + C.red + ';font-size:16px;font-family:DM Sans,sans-serif">' + (d.fr ? 'Param\u00e8tres invalides. L\u2019horizon doit d\u00e9passer l\u2019\u00e2ge de retraite.' : 'Invalid parameters. Horizon must exceed retirement age.') + '</div>';
+      return '<div style="padding:40px;text-align:center;color:' + C.red + ';font-size:16px;font-family:Inter,sans-serif">' + (d.fr ? 'Param\u00e8tres invalides. L\u2019horizon d\u00e9clar\u00e9 est inf\u00e9rieur \u00e0 l\u2019\u00e2ge de retraite — v\u00e9rifiez l\u2019\u00e2ge de d\u00e9c\u00e8s et l\u2019\u00e2ge de retraite saisis.' : 'Invalid parameters. The declared horizon is lower than retirement age — please verify the death age and retirement age values.') + '</div>';
     }
 
     // Build HTML
@@ -1919,6 +2174,9 @@
 
     // Cover page
     h += renderCover(d);
+
+    // Advisor letter — page 2 of the 18-22 page plan
+    h += renderAdvisorLetter(d);
 
     // Main report header + grade
     h += renderHeader(d);
@@ -1931,13 +2189,19 @@
     var _hasStrats = d.R.hasSAM || (window._recos && window._recos.length > 0);
     // Succession pre-check (skip if all zeros)
     var _grossEstateCheck = (d.mc.medEstateNet || 0) + (d.mc.medEstateTax || 0) + (d.mc.p5EstateNet || 0);
+    // Levers section gated on real MC sweep data.
+    var _hasSweeps = !!(d.mc && d.mc._sweeps);
+    // Draw-order heatmap gated on enriched drawTrace.
+    var _hasDrawTrace = !!(d.mc && d.mc._enriched && d.mc._enriched.drawTrace && d.mc._enriched.drawTrace.length);
+    // Stress tests gated on _stress payload.
+    var _hasStress = !!(d.mc && d.mc._stress);
 
     // ── Build TOC sections array (pre-scan which sections will render) ──
     var tocSections = [];
     var _tocN = 0;
     tocSections.push({ n: '\u2606', id: 'sec-assessment', label: F.L('page_zero', d.fr) });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-diagnostic', label: F.L('diagnostic', d.fr) });
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-levers', label: F.L('levers', d.fr) });
+    if (_hasSweeps) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-levers', label: F.L('levers', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
     if (d.R.hasGoals) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-goals', label: F.L('goals', d.fr) }); }
@@ -1951,6 +2215,8 @@
     }
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
+    if (_hasDrawTrace) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
+    if (_hasStress) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
     if (_gisCheck.length > 0) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
     if (d.R.hasMeltdown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-meltdown', label: F.L('meltdown', d.fr) }); }
     if (_grossEstateCheck >= 1000) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-succession', label: F.L('succession', d.fr) }); }
@@ -1959,6 +2225,8 @@
     if (d.R.ccpc) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-corp', label: F.L('corp', d.fr) }); }
     if (d.R.debt) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-debt', label: F.L('debt', d.fr) }); }
     if (d.exp) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
+    // Action plan TOC entry added only if actions will fire (simple check: assume present)
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-actions', label: d.fr ? 'Plan d\'action' : 'Action plan' });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
 
     // Render TOC
@@ -1974,9 +2242,12 @@
     secN++;
     h += renderDiagnostic(d, secN);
 
-    // 1.5 What Could Change This (always — gives reader agency)
-    secN++;
-    h += renderLevers(d, secN);
+    // 1.5 What Could Change This — only if MC payload carries real sweep data
+    // (renderLevers is gated on mc._sweeps; avoids fabricated closed-form deltas).
+    if (_hasSweeps) {
+      secN++;
+      h += renderLevers(d, secN);
+    }
 
     // 2. Profile (always)
     secN++;
@@ -2003,6 +2274,18 @@
     // 8. Tax Strategy (always)
     secN++;
     h += renderTax(d, secN);
+
+    // 8.5 Draw-order strategy (if enriched data available)
+    if (_hasDrawTrace) {
+      secN++;
+      h += renderDrawOrder(d, secN);
+    }
+
+    // 8.6 Stress tests (if _stress payload present)
+    if (_hasStress) {
+      secN++;
+      h += renderStressTests(d, secN);
+    }
 
     // 9. GIS (conditional)
     var gisHtml = renderGIS(d, secN + 1);
@@ -2039,9 +2322,16 @@
     // 17. Risk & Sensitivity (expert only)
     if (d.exp) { secN++; h += renderRisk(d, secN); }
 
-    // 17. Methodology (always)
+    // 17.5 Action Plan (rule-based; hidden when no actions apply)
+    var actionsHtml = renderActionPlan(d, secN + 1);
+    if (actionsHtml) { secN++; h += actionsHtml; }
+
+    // 18. Methodology (always)
     secN++;
     h += renderMethodology(d, secN);
+
+    // 19. Signature page (last content page before footer)
+    h += renderSignaturePage(d);
 
     // Footer
     h += renderFooter(d);

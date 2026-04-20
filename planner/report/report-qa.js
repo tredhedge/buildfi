@@ -34,8 +34,9 @@
     { id: "sec-projection",  label: "Projection fan chart",     fr: "Projection",       en: "Projection" },
     { id: "sec-revenue",     label: "Retirement income",        fr: "Revenus",          en: "Income" },
     { id: "sec-tax",         label: "Tax strategy",             fr: "Fiscalit",         en: "Tax" },
-    { id: "sec-stress",      label: "Stress-test scenarios",    fr: "stress",           en: "Stress" },
-    { id: "sec-methodology", label: "Methodology + assumptions", fr: "Méthodologie",    en: "Methodology" }
+    { id: "sec-actions",     label: "Action plan",              fr: "Plan d'action",    en: "Action plan" },
+    { id: "sec-methodology", label: "Methodology + assumptions", fr: "Méthodologie",    en: "Methodology" },
+    { id: "sec-signature",   label: "Signature page",           fr: "Accus\u00e9",       en: "Acknowledgment" }
   ];
 
   /* Planned sections — not yet implemented. Their absence is a WARNING only,
@@ -43,11 +44,24 @@
    * draw-order heatmap (sec-draworder) lands when enriched payload carries
    * drawTrace — not a strict requirement since it's a differentiator bonus. */
   var RECOMMENDED_SECTIONS = [
+    { id: "sec-stress",      label: "Stress-test scenarios" },
     { id: "sec-histogram",   label: "Final-wealth histogram" },
     { id: "sec-cashflow",    label: "Year-by-year cash flow statement" },
-    { id: "sec-actions",     label: "Action plan" },
     { id: "sec-assumptions", label: "Assumptions appendix" }
   ];
+
+  /* AMF prescriptive-language blacklist. Every occurrence in the rendered
+   * HTML is BLOCKING under AMF/OSFI observational-only compliance rules.
+   * Words scanned as whole-word; "methodology" / "methodo" false-positives
+   * on "should" are excluded via allowlist below. */
+  var PRESCRIPTIVE_PATTERNS = [
+    /\bdoit\b/gi, /\bdoivent\b/gi, /\bdevra\b/gi, /\bdevront\b/gi,
+    /\bdevrait\b/gi, /\bdevraient\b/gi, /\bdevriez\b/gi,
+    /\bil faut\b/gi, /\bfaudrait\b/gi,
+    /\bmust\b(?! be noted| be acknowledged)/gi,   // allow narrow acknowledgment constructions
+    /\bshould\b/gi, /\brecommend\b/gi, /\badvise\b/gi
+  ];
+  var PRESCRIPTIVE_EXCLUDE = /methodo|methodology|\bshould not\b/i;
 
   /* Patterns that indicate a placeholder leaked through the build.
    * Blocking because they break trust (user sees "undefined" in a
@@ -124,6 +138,30 @@
       }
     });
 
+    /* 2b. AMF prescriptive-language leakage. BLOCKING — the report must read
+     *     as observational. Skip hits where the surrounding context matches
+     *     the allowlist (methodology section, "should not" negations). */
+    var prescripHits = 0;
+    var prescripSamples = [];
+    PRESCRIPTIVE_PATTERNS.forEach(function (pt) {
+      var match;
+      // Use a local copy of the regex to avoid lastIndex leaking
+      var re = new RegExp(pt.source, pt.flags);
+      while ((match = re.exec(html)) !== null) {
+        var ctx = html.substring(Math.max(0, match.index - 40), Math.min(html.length, match.index + match[0].length + 40));
+        if (PRESCRIPTIVE_EXCLUDE.test(ctx)) continue;
+        prescripHits++;
+        if (prescripSamples.length < 3) prescripSamples.push(match[0]);
+      }
+    });
+    if (prescripHits > 0) {
+      blocking.push({
+        check: "prescriptive-language",
+        detail: "AMF-prescriptive language detected ×" + prescripHits + " (samples: " + prescripSamples.join(", ") + ")"
+      });
+    }
+    info.prescriptiveHits = prescripHits;
+
     /* 3. Empty AI slots. Warning only — AI may be disabled / offline. */
     var emptyAi = countMatches(html, AI_SLOT_MARKER);
     if (emptyAi > 0) {
@@ -143,11 +181,17 @@
     if (p.mc && typeof p.mc.medF === "number" && p.mc.medF > 0) {
       var medF = p.mc.medF;
       /* Build a few formatting variants the report might emit. */
+      // Match all formatting variants the report actually emits, including
+      // the "500K$" (uppercase K, no space) shape used by BFmt.fmtCompact.
+      // Previously only tested "500k"/"500 K$" → false-negative warning.
+      var kMedK = Math.round(medF / 1000);
+      var kMedM = Math.round(medF / 1000000 * 10) / 10;
       var kvariants = [
-        Math.round(medF / 1000) + " k$",
-        Math.round(medF / 1000) + "k",
-        Math.round(medF / 1000000 * 10) / 10 + " M$",
-        Math.round(medF / 1000000 * 10) / 10 + "M"
+        kMedK + " k$",    kMedK + " K$",
+        kMedK + "k$",     kMedK + "K$",
+        kMedK + "k",      kMedK + "K",
+        kMedM + " M$",    kMedM + "M$",
+        kMedM + " M",     kMedM + "M"
       ];
       var found = kvariants.some(function (v) { return html.indexOf(v) >= 0; });
       /* Also accept the raw thousands-grouped integer anywhere. */
@@ -220,14 +264,12 @@
     var names = workbook.worksheets.map(function (w) { return String(w.name || ""); });
 
     // 1. At least one of the bilingual pair for each required sheet.
-    var requiredPairs = [
-      ["Sommaire", "Summary"],
-      ["Profil", "Profile"],
-      ["Projection d\u00e9terministe", "Deterministic Projection"],
-      ["Flux de tr\u00e9sorerie", "Cash Flow"],
-      ["Fiscalit\u00e9", "Tax"],
-      ["M\u00e9thodologie", "Methodology"]
-    ];
+    // Pairs pulled from REQUIRED_EXCEL_SHEETS (source of truth) instead of
+    // a local copy so the constant and the check can't drift apart.
+    var requiredPairs = [];
+    for (var rps = 0; rps < REQUIRED_EXCEL_SHEETS.length; rps += 2) {
+      requiredPairs.push([REQUIRED_EXCEL_SHEETS[rps], REQUIRED_EXCEL_SHEETS[rps + 1]]);
+    }
     requiredPairs.forEach(function (pair) {
       var ok = names.some(function (n) { return n === pair[0] || n === pair[1]; });
       if (!ok) blocking.push({ check: "sheet-missing", detail: pair.join(" / ") });
