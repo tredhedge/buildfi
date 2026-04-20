@@ -181,6 +181,50 @@
   var nullHtml = window.buildReport(null);
   assert(typeof nullHtml === "string", "buildReport(null) returns string");
 
+  // ── 7. Pre-release QA audit (Gate 4) ──────────────────────────────
+  console.log("\n=== BReportQA (Gate 4 pre-release audit) ===");
+  require("./report-qa.js");
+  assert(typeof window.BReportQA === "object", "BReportQA exported");
+  assert(typeof window.BReportQA.auditReport === "function", "auditReport fn exported");
+
+  // Happy path: full report with valid data → should have no blocking issues.
+  var fullPayload = {
+    mc: { pD: [{ age: 65, p5: 200000, p25: 350000, p50: 500000, p75: 650000, p95: 800000 }], medF: 500000, var5: 200000, var95: 800000, succRate: 0.85, n: 5000 },
+    params: { age: 35, retAge: 65, deathAge: 95, sal: 80000, retSpM: 4000, prov: "QC", rrsp: 50000, tfsa: 30000, nr: 10000 },
+    client: { name: "Test Client" },
+    rptLang: "fr",
+    lang: "fr"
+  };
+  var audit = window.BReportQA.auditReport(html, fullPayload);
+  assert(audit && typeof audit === "object", "auditReport returns result");
+  assert(Array.isArray(audit.blocking), "audit.blocking is array");
+  assert(Array.isArray(audit.warnings), "audit.warnings is array");
+  if (audit.blocking.length > 0) {
+    console.log("  BLOCKING ISSUES:");
+    audit.blocking.forEach(function (b) { console.log("    - " + b.check + ": " + b.detail); });
+  }
+  if (audit.warnings.length > 0) {
+    console.log("  WARNINGS:");
+    audit.warnings.forEach(function (w) { console.log("    - " + w.check + ": " + w.detail); });
+  }
+  // The real report is built with minimal data; section detection may warn
+  // but placeholder check must pass.
+  var placeholders = audit.blocking.filter(function (b) { return b.check === "placeholder"; });
+  assert(placeholders.length === 0, "no placeholder leakage (undefined/NaN/{{}}/TODO)");
+
+  // Negative case: corrupted HTML with undefined should be flagged blocking.
+  // Pad content so we clear the 500-char minimum-length sanity check.
+  var badHtml = "<!DOCTYPE html><html><body><h1>undefined</h1><p>medF = NaN</p><span>{{missing}}</span>"
+    + "<p>" + new Array(120).join("filler ") + "</p></body></html>";
+  var auditBad = window.BReportQA.auditReport(badHtml, { lang: "fr" });
+  var badPh = auditBad.blocking.filter(function (b) { return b.check === "placeholder"; });
+  assert(badPh.length >= 3, "bad HTML triggers 3+ placeholder-blocking (undefined, NaN, {{}}) — got " + badPh.length);
+
+  // Missing HTML should block at html-length.
+  var auditNull = window.BReportQA.auditReport(null, {});
+  var lenBlock = auditNull.blocking.filter(function (b) { return b.check === "html-length"; });
+  assert(lenBlock.length === 1, "null HTML triggers html-length block");
+
   // ── Results ────────────────────────────────────────────────────────
   console.log("\n══════════════════════════════════════");
   console.log("  " + pass + " passed, " + fail + " failed");
