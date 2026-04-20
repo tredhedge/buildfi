@@ -5798,6 +5798,9 @@ function runMC(p, N, _progressCb) {
       continue;
     }
     var rr = p.rrsp, tf = p.tfsa, nr = p.nr, pe = p.peBal || 0, pm = p.pmBal || 0, dc = p.dcBal || 0, dc2 = p.dc2Bal || 0;
+    // Spouse DC balances — mutable across the simulation years so pre-ret
+    // contributions (cPenEE + cPenER) compound at retDC net of cPenMER.
+    var cdc = p.cDCBal || 0, cdc2 = p.cDC2Bal || 0;
     var lira = p.liraBal || 0, cLira = p.cLiraBal || 0;
     var lifeIns = p.lifeInsBenefit || 0, lifeInsPrem = (p.lifeInsPremium || 0) * 12;
     var cLifeIns = p.cOn ? (p.cLifeInsBenefit || 0) : 0, cLifeInsPrem = p.cOn ? (p.cLifeInsPremium || 0) * 12 : 0;
@@ -6195,10 +6198,34 @@ function runMC(p, N, _progressCb) {
       var cQppY = 0, cOasY = 0, cPenY = 0, cGisY = 0;
       if (cAlive) {
         if (cRetired && cAge2 >= (p.cQppAge || 65)) { cQppY = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM; cInc += cQppY; }
-        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? (p.cDCBal || 0) * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
+        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? cdc * 0.04 : 0) + (p.cPen2Type === 'db' ? (p.cPen2M || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPen2Type) >= 0 ? cdc2 * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
         if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
         if (p.cPenType === "db" && cRetired) { cPenY = (p.cPenM || 0) * 12; cInc += cPenY; }
-        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = (p.cDCBal || 0) * 0.04; cPenY += _cdcY; cInc += _cdcY; }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = cdc * 0.04; cPenY += _cdcY; cInc += _cdcY; }
+        // Secondary spouse pension — income pass (pre-retirement handled below)
+        if (p.cPen2Type === "db" && cRetired) { cPenY += (p.cPen2M || 0) * 12; cInc += (p.cPen2M || 0) * 12; }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0 && cRetired) { var _cdc2Y = cdc2 * 0.04; cPenY += _cdc2Y; cInc += _cdc2Y; }
+      }
+      // Spouse DC/DC2 accumulation — only pre-retirement, only when cOn and
+      // alive. Employer + employee contributions at the annual flat amount
+      // (cPenEE/cPenER) compound at retDC net of cPenMER (MER). In retirement,
+      // a conservative 4%/yr draw is applied (mirrors primary dc block).
+      if (p.cOn && cAlive) {
+        var cMerEff = p.cPenMER || 0.01;
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0) {
+          cdc = cdc * (1 + retDC - cMerEff) + (cRetired ? 0 : (p.cPenEE || 0) + (p.cPenER || 0));
+          if (cRetired) {
+            var _cdcDraw = (cAge2 >= 72 ? getRRIFMin(cAge2, cdc) : cdc * 0.04);
+            cdc = Math.max(0, cdc - _cdcDraw);
+          }
+        }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) {
+          cdc2 = cdc2 * (1 + retDC - cMerEff) + (cRetired ? 0 : (p.cPen2EE || 0) + (p.cPen2ER || 0));
+          if (cRetired) {
+            var _cdc2Draw = (cAge2 >= 72 ? getRRIFMin(cAge2, cdc2) : cdc2 * 0.04);
+            cdc2 = Math.max(0, cdc2 - _cdc2Draw);
+          }
+        }
       }
       if (p.cOn && !cAlive && cAge2 > cSimDeath) {
           if (cLifeIns > 0) { nr += cLifeIns; cLifeIns = 0; }
@@ -6769,11 +6796,11 @@ function runMC(p, N, _progressCb) {
             var cPenInc = 0;
             // Primary spouse pension (monthly → annual, DB vs DC/RPDB/RRS/RVER)
             if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12 * ((+p.cPenIdx || 0) ? infM : 1);
-            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = (p.cDCBal || 0) * 0.04;
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = cdc * 0.04;
             // Secondary spouse pension (DB or CD — e.g. ex-employer plan)
             if (cRetired) {
               if (p.cPen2Type === "db") cPenInc += (p.cPen2M || 0) * 12 * ((+p.cPen2Idx || 0) ? infM : 1);
-              if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) cPenInc += (p.cDC2Bal || 0) * 0.04;
+              if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) cPenInc += cdc2 * 0.04;
             }
             // Spouse bridge benefit (DB supplement between retAge and age cBrEnd,
             // typically 65 when QPP kicks in full-force). Flat monthly, not indexed.
@@ -6823,7 +6850,16 @@ function runMC(p, N, _progressCb) {
           if (p.bizOn && p.bizType === "sole" && _bizSoleNetThisYr > 0) {
             taxableInc += _bizSoleNetThisYr;
           }
-          if (p.cOn && cAlive && !cRetired) cTaxableInc = (p.cSal || 0) * infM;
+          if (p.cOn && cAlive && !cRetired) {
+            cTaxableInc = (p.cSal || 0) * infM;
+            // Spouse RPA employee contribution is tax-deductible (CD/RPDB/RRS/RVER)
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0) {
+              cTaxableInc = Math.max(0, cTaxableInc - (p.cPenEE || 0));
+            }
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) {
+              cTaxableInc = Math.max(0, cTaxableInc - (p.cPen2EE || 0));
+            }
+          }
         }
         taxableInc = Math.max(0, taxableInc);
         // CCPC: add business sale capital gain if applicable
