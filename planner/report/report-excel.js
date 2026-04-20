@@ -619,6 +619,139 @@
     footer(wsP, 34);
 
     // ────────────────────────────────────────────────────────────
+    // SHEET 2B: CONJOINT(E) / SPOUSE (couple mode only)
+    // ────────────────────────────────────────────────────────────
+    // Couples previously got only primary figures in this workbook even
+    // though the engine fully projects spouse (independent DC accumulation
+    // via cdc, bridge benefit, pen2, part-time income, NR taxation, and a
+    // possibly independent portfolio when cSyncPortfolio is off).
+    // Sources anchored on engine output:
+    //   - params: p.cAge / cRetAge / cSex / cDeath / cSal / etc.
+    //   - MC per-year: mc.medRevData[].aCRR/aCTF/aCNR/aCLIRA (spouse balances),
+    //     .tax2, .taxInc2, .cLiraWith
+    //   - Gov income: calcQPP(cQppAge, cAvgE, cQppYrs) + calcOAS(cOasAge, ...)
+    if (cOn) {
+      var wsSp = wb.addWorksheet(fr ? "Conjoint(e)" : "Spouse");
+      setColWidths(wsSp, [3, 12, 8, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+      printSetup(wsSp);
+      var _cFull = (p.cSpouseName || "").toString().trim();
+      addTabBanner(wsSp,
+        fr ? "Conjoint(e)" + (_cFull ? " \u2014 " + _cFull : "") : "Spouse" + (_cFull ? " \u2014 " + _cFull : ""),
+        fr ? "Projection ind\u00e9pendante: \u00e9pargne, pensions, revenu, imp\u00f4t" : "Independent projection: savings, pensions, income, tax", 14);
+
+      // Profile block
+      addTitle(wsSp, 5, 2, fr ? "PROFIL DU CONJOINT(E)" : "SPOUSE PROFILE", "", 13);
+      var cSyncRet = p.cSyncRet !== false;
+      var cSyncGov = p.cSyncGov !== false;
+      var cSyncPort = p.cSyncPortfolio !== false;
+      var spProfile = [
+        [fr ? "\u00c2ge" : "Age", p.cAge || 0, ""],
+        [fr ? "Sexe" : "Sex", (p.cSex || "F") === "F" ? (fr ? "Femme" : "Female") : (fr ? "Homme" : "Male"), ""],
+        [fr ? "Retraite planifi\u00e9e" : "Planned retirement", p.cRetAge || 0, cSyncRet ? (fr ? "Synchronis\u00e9e avec le client" : "Synced with client") : (fr ? "Ind\u00e9pendante" : "Independent")],
+        [fr ? "Horizon (\u00e2ge au d\u00e9c\u00e8s)" : "Horizon (death age)", p.cDeath || 0, ""],
+        [fr ? "Salaire brut" : "Gross salary", p.cSal || 0, fr ? "Pr\u00e9-retraite" : "Pre-retirement"],
+        [fr ? "D\u00e9penses perso. mensuelles" : "Personal monthly spending", p.cRetSpM || 0, fr ? "Part du conjoint(e)" : "Spouse share"]
+      ];
+      setRow(wsSp, 7, 2, [fr ? "Champ" : "Field", fr ? "Valeur" : "Value", "Notes"]);
+      spProfile.forEach(function (sp, i) {
+        var r = 8 + i;
+        set(wsSp, wsSp.getCell(r, 2), sp[0]);
+        if (typeof sp[1] === "number" && (sp[0].indexOf("alaire") >= 0 || sp[0].indexOf("alary") >= 0 || sp[0].indexOf("D\u00e9penses") >= 0 || sp[0].indexOf("spending") >= 0)) {
+          wsSp.getCell(r, 3).value = sp[1]; wsSp.getCell(r, 3).numFmt = FMT_MONEY;
+        } else {
+          set(wsSp, wsSp.getCell(r, 3), sp[1]);
+        }
+        set(wsSp, wsSp.getCell(r, 4), sp[2]);
+      });
+      styleTable(wsSp, { hr: 7, fr: 8, to: 13, fc: 2, lc: 4 });
+
+      // Savings / balances snapshot — current (from params), projected from mc.
+      addTitle(wsSp, 15, 2, fr ? "\u00c9PARGNE \u2014 ACTUELLE & PROJET\u00c9E" : "SAVINGS \u2014 CURRENT & PROJECTED", "", 13);
+      setRow(wsSp, 17, 2, [fr ? "Compte" : "Account", fr ? "Solde actuel" : "Current balance", fr ? "Cotisation /an" : "Contribution /yr", fr ? "\u00c0 la retraite (P50)" : "At retirement (P50)", fr ? "Au d\u00e9c\u00e8s (P50)" : "At death (P50)"]);
+      // Find the row in mc.medRevData closest to spouse's retirement age
+      // and last available row (death). These come straight from the engine
+      // so figures align 1:1 with the HTML report's fan chart.
+      var revAtRet = revD.find(function (r) { return (p.cAge + (toNum(r.age) - age)) >= (p.cRetAge || 65); });
+      var revAtEnd = revD[revD.length - 1] || {};
+      var cBalancesRows = [
+        [fr ? "REER" : "RRSP", p.cRRSP || 0, p.cRRSPC || 0, revAtRet ? toNum(revAtRet.aCRR) : null, toNum(revAtEnd.aCRR)],
+        [fr ? "CELI" : "TFSA", p.cTFSA || 0, p.cTFSAC || 0, revAtRet ? toNum(revAtRet.aCTF) : null, toNum(revAtEnd.aCTF)],
+        [fr ? "Non-enregistr\u00e9" : "Non-registered", p.cNR || 0, p.cNRC || 0, revAtRet ? toNum(revAtRet.aCNR) : null, toNum(revAtEnd.aCNR)],
+        ["FHSA", p.cFhsaBal || 0, p.cFhsaC || 0, null, null],
+        [fr ? "CRI / LIRA" : "LIRA", p.cLiraBal || 0, 0, null, revAtRet ? toNum(revAtRet.aCLIRA) : 0],
+        [fr ? "DC (pension 1)" : "DC (pension 1)", p.cDCBal2 || 0, (p.cPenEE || 0) + (p.cPenER || 0), null, null],
+        [fr ? "DC (pension 2)" : "DC (pension 2)", p.cDC2Bal || 0, (p.cPen2EE || 0) + (p.cPen2ER || 0), null, null]
+      ];
+      cBalancesRows.forEach(function (row, i) {
+        var r = 18 + i;
+        set(wsSp, wsSp.getCell(r, 2), row[0]);
+        wsSp.getCell(r, 3).value = toNum(row[1]); wsSp.getCell(r, 3).numFmt = FMT_MONEY;
+        wsSp.getCell(r, 4).value = toNum(row[2]); wsSp.getCell(r, 4).numFmt = FMT_MONEY;
+        if (row[3] != null) { wsSp.getCell(r, 5).value = toNum(row[3]); wsSp.getCell(r, 5).numFmt = FMT_MONEY; }
+        if (row[4] != null) { wsSp.getCell(r, 6).value = toNum(row[4]); wsSp.getCell(r, 6).numFmt = FMT_MONEY; }
+      });
+      styleTable(wsSp, { hr: 17, fr: 18, to: 24, fc: 2, lc: 6 });
+
+      // Government pensions — monthly amounts from the engine's calc fns.
+      addTitle(wsSp, 26, 2, fr ? "PENSIONS GOUVERNEMENTALES" : "GOVERNMENT PENSIONS", "", 13);
+      setRow(wsSp, 28, 2, [fr ? "Prestation" : "Benefit", fr ? "\u00c2ge d\u00e9but" : "Start age", fr ? "Mensuel" : "Monthly", fr ? "Annuel" : "Annual", "Base"]);
+      var cQppFull = cOn ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) : 0;
+      var cOasFull = cOn ? calcOAS(p.cOasAge || 65, (p.cRetSpM || 0) * 12) : 0;
+      var govRows = [
+        [fr ? "RRQ/RPC" : "QPP/CPP", p.cQppAge || 65, cQppFull, cQppFull * 12, (p.cAvgE || 0).toLocaleString(locale) + (fr ? " $ gains adm." : " $ pensionable")],
+        [fr ? "PSV/OAS" : "OAS", p.cOasAge || 65, cOasFull, cOasFull * 12, cSyncGov ? (fr ? "Clawback selon revenu conjoint" : "Clawback per spouse income") : ""]
+      ];
+      govRows.forEach(function (row, i) {
+        var r = 29 + i;
+        set(wsSp, wsSp.getCell(r, 2), row[0]);
+        set(wsSp, wsSp.getCell(r, 3), row[1]);
+        wsSp.getCell(r, 4).value = toNum(row[2]); wsSp.getCell(r, 4).numFmt = FMT_MONEY;
+        wsSp.getCell(r, 5).value = toNum(row[3]); wsSp.getCell(r, 5).numFmt = FMT_MONEY;
+        set(wsSp, wsSp.getCell(r, 6), row[4]);
+      });
+      styleTable(wsSp, { hr: 28, fr: 29, to: 30, fc: 2, lc: 6 });
+
+      // Employer pension summary
+      addTitle(wsSp, 32, 2, fr ? "PENSION EMPLOYEUR" : "EMPLOYER PENSION", "", 13);
+      var cPenLabel = (p.cPenType || "none");
+      var cPenLabelHuman = cPenLabel === "db" ? (fr ? "PD (prestation d\u00e9termin\u00e9e)" : "DB (defined benefit)")
+                        : cPenLabel === "cd" ? (fr ? "CD (cotisations d\u00e9finies)" : "DC (defined contribution)")
+                        : cPenLabel === "rpdb" ? "RPDB / DPSP"
+                        : cPenLabel === "rrs" ? "RRS"
+                        : cPenLabel === "rver" ? "RVER"
+                        : (fr ? "Aucune" : "None");
+      setRow(wsSp, 34, 2, [fr ? "Type" : "Type", fr ? "Prestation mensuelle" : "Monthly benefit", "Indexation", fr ? "Pont / bridge" : "Bridge", fr ? "2e pension" : "2nd pension"]);
+      set(wsSp, wsSp.getCell(35, 2), cPenLabelHuman);
+      wsSp.getCell(35, 3).value = toNum(p.cPenM); wsSp.getCell(35, 3).numFmt = FMT_MONEY;
+      set(wsSp, wsSp.getCell(35, 4), (+p.cPenIdx || 0) ? (fr ? "IPC" : "CPI") : (fr ? "Fixe" : "Flat"));
+      set(wsSp, wsSp.getCell(35, 5), p.cBridge ? (toNum(p.cBrAmt) > 0 ? _fmtM(p.cBrAmt * 12, locale) + (fr ? "/an jusqu'\u00e0 " : "/yr until ") + (p.cBrEnd || 65) : (fr ? "Oui" : "Yes")) : (fr ? "Non" : "No"));
+      set(wsSp, wsSp.getCell(35, 6), (p.cPen2Type && p.cPen2Type !== "none") ? (p.cPen2Type + " " + _fmtM(p.cPen2M || 0, locale) + (fr ? "/mois" : "/mo")) : (fr ? "Aucune" : "None"));
+      styleTable(wsSp, { hr: 34, fr: 35, to: 35, fc: 2, lc: 6 });
+
+      // Taxation projection — from revData.tax2 / taxInc2 (engine's spouse
+      // taxable income + tax totals, including the NR cap-gain inclusion
+      // we added in 062c762).
+      addTitle(wsSp, 37, 2, fr ? "IMP\u00d4T CONJOINT(E) \u2014 PROJECTION M\u00c9DIANE MC" : "SPOUSE TAX \u2014 MC MEDIAN PROJECTION", "", 13);
+      setRow(wsSp, 39, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Revenu imposable" : "Taxable income", fr ? "Imp\u00f4t" : "Tax", fr ? "Taux effectif" : "Effective rate"]);
+      var cYrsShown = Math.min(revD.length, 30);
+      var sTR = 40;
+      revD.slice(0, 30).forEach(function (r, i) {
+        var cAgeY = (p.cAge || 0) + (toNum(r.age) - age);
+        var rr = sTR + i;
+        set(wsSp, wsSp.getCell(rr, 2), y0 + i);
+        set(wsSp, wsSp.getCell(rr, 3), cAgeY);
+        wsSp.getCell(rr, 4).value = toNum(r.taxInc2); wsSp.getCell(rr, 4).numFmt = FMT_MONEY;
+        wsSp.getCell(rr, 5).value = toNum(r.tax2); wsSp.getCell(rr, 5).numFmt = FMT_MONEY;
+        // Effective rate as formula so user sees the calc transparently.
+        setFormula(wsSp, wsSp.getCell(rr, 6),
+          'IFERROR(E' + rr + '/D' + rr + ',0)', FMT_PCT,
+          toNum(r.taxInc2) > 0 ? toNum(r.tax2) / toNum(r.taxInc2) : 0);
+      });
+      styleTable(wsSp, { hr: 39, fr: 40, to: 40 + cYrsShown - 1, fc: 2, lc: 6 });
+      footer(wsSp, 40 + cYrsShown + 2);
+    }
+
+    // ────────────────────────────────────────────────────────────
     // SHEET 3: PROJECTION DÉTERMINISTE
     // ────────────────────────────────────────────────────────────
     var wsProj = wb.addWorksheet(fr ? "Projection d\u00e9terministe" : "Deterministic Projection");
@@ -1045,6 +1178,256 @@
     wsE.getCell(estFinalRow, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
     styleTable(wsE, { hr: 16, fr: 17, to: estFinalRow, fc: 2, lc: 6 });
     footer(wsE, estFinalRow + 3);
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 9A: DETTES / DEBTS
+    // ────────────────────────────────────────────────────────────
+    // params.debts[] is tracked by the engine: each debt with a positive
+    // balance has interest accumulate and payments applied per the
+    // amortization formula. Previously the workbook ignored this entirely,
+    // leaving pre-retirement users with debt blind to their payoff horizon.
+    // Source: params.debts[] {name, type, bal, rate, pay, deductible}.
+    // Amortization math: same annuity formula the longform UI uses.
+    var debts = p.debts || [];
+    var activeDebts = debts.filter(function (d) { return toNum(d.bal) > 0; });
+    var wsD = wb.addWorksheet(fr ? "Dettes" : "Debts");
+    setColWidths(wsD, [3, 22, 16, 14, 14, 14, 14, 14, 32, 14, 14, 14, 14, 14]);
+    printSetup(wsD);
+    addTabBanner(wsD,
+      fr ? "Dettes et \u00e9ch\u00e9ancier" : "Debts and Payoff Schedule",
+      fr ? "Soldes, paiements mensuels, ann\u00e9e de liquidation" : "Balances, monthly payments, payoff year", 14);
+
+    if (activeDebts.length === 0) {
+      addTitle(wsD, 5, 2, fr ? "AUCUNE DETTE ACTIVE" : "NO ACTIVE DEBT", "", 13);
+      wsD.mergeCells(7, 2, 7, 8);
+      set(wsD, wsD.getCell(7, 2), fr ? "Le plan n'inclut aucune dette avec solde positif. Si vous avez une marge de cr\u00e9dit, pr\u00eat auto, pr\u00eat \u00e9tudiant ou solde de carte de cr\u00e9dit, ajoutez-le dans la section Dettes du formulaire pour qu'il soit int\u00e9gr\u00e9 aux projections (int\u00e9r\u00eats d\u00e9duits du cash flow, remboursement planifi\u00e9 avant la retraite). Votre hypoth\u00e8que r\u00e9sidentielle est g\u00e9r\u00e9e dans l'onglet Immobilier, pas ici." : "The plan has no debt with a positive balance. If you hold a line of credit, auto loan, student loan or credit card balance, add it in the Debts section of the form so it's integrated into the projections (interest deducted from cash flow, planned payoff before retirement). Your home mortgage is handled on the Real Estate tab, not here.");
+      wsD.getCell(7, 2).font = { name: "Calibri", size: 11, italic: true, color: { argb: CL.muted } };
+      wsD.getCell(7, 2).alignment = { wrapText: true, vertical: "top" };
+      wsD.getRow(7).height = 72;
+      footer(wsD, 11);
+    } else {
+      // Summary inventory
+      addTitle(wsD, 5, 2, fr ? "INVENTAIRE DES DETTES" : "DEBT INVENTORY", "", 13);
+      setRow(wsD, 7, 2, [fr ? "Dette" : "Debt", fr ? "Type" : "Type", fr ? "Solde" : "Balance", fr ? "Taux" : "Rate", fr ? "Paiement /mois" : "Payment /mo", fr ? "Terme restant" : "Term left", fr ? "Int\u00e9r\u00eats ded." : "Deductible", fr ? "Int\u00e9r\u00eats /an" : "Interest /yr"]);
+      // Compute per-debt derived figures. Amortization formula uses the
+      // standard annuity PV relation: if the user-supplied pay covers at
+      // least interest, term_months = -ln(1 - bal × r / pay) / ln(1 + r).
+      var totalBal = 0, totalPayMo = 0, totalIntAnn = 0;
+      activeDebts.forEach(function (d, i) {
+        var r = 8 + i;
+        var bal = toNum(d.bal), rate = toNum(d.rate), pay = toNum(d.pay);
+        var rM = rate / 12;
+        var intAnn = bal * rate;
+        totalBal += bal; totalPayMo += pay; totalIntAnn += intAnn;
+        // Term estimate from pay (months) — fallback to d.term (years) if
+        // pay insufficient to cover interest (pay ≤ bal × r month).
+        var termMo;
+        if (pay > bal * rM && rM > 0) {
+          termMo = Math.round(-Math.log(1 - bal * rM / pay) / Math.log(1 + rM));
+        } else if (toNum(d.term) > 0) {
+          termMo = toNum(d.term) * 12;
+        } else {
+          termMo = 0; // open-ended; interest-only or negative amortization
+        }
+        var termDisplay = termMo > 0 ? (Math.floor(termMo / 12) + (fr ? " ans " : "y ") + (termMo % 12) + (fr ? " mois" : "m")) : (fr ? "Ind\u00e9termin\u00e9" : "Undefined");
+        set(wsD, wsD.getCell(r, 2), d.name || ((fr ? "Dette " : "Debt ") + (i + 1)));
+        set(wsD, wsD.getCell(r, 3), d.type || (fr ? "Autre" : "Other"));
+        wsD.getCell(r, 4).value = bal; wsD.getCell(r, 4).numFmt = FMT_MONEY;
+        wsD.getCell(r, 5).value = rate; wsD.getCell(r, 5).numFmt = FMT_PCT;
+        wsD.getCell(r, 6).value = pay; wsD.getCell(r, 6).numFmt = FMT_MONEY;
+        set(wsD, wsD.getCell(r, 7), termDisplay);
+        set(wsD, wsD.getCell(r, 8), d.deductible ? (fr ? "Oui (Smith)" : "Yes (Smith)") : (fr ? "Non" : "No"));
+        wsD.getCell(r, 9).value = intAnn; wsD.getCell(r, 9).numFmt = FMT_MONEY;
+      });
+      // Total row
+      var debtTotalRow = 8 + activeDebts.length;
+      set(wsD, wsD.getCell(debtTotalRow, 2), fr ? "TOTAL" : "TOTAL");
+      wsD.getCell(debtTotalRow, 4).value = totalBal; wsD.getCell(debtTotalRow, 4).numFmt = FMT_MONEY;
+      wsD.getCell(debtTotalRow, 6).value = totalPayMo; wsD.getCell(debtTotalRow, 6).numFmt = FMT_MONEY;
+      wsD.getCell(debtTotalRow, 9).value = totalIntAnn; wsD.getCell(debtTotalRow, 9).numFmt = FMT_MONEY;
+      for (var dtc = 2; dtc <= 9; dtc++) {
+        wsD.getCell(debtTotalRow, dtc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+      }
+      styleTable(wsD, { hr: 7, fr: 8, to: debtTotalRow, fc: 2, lc: 9 });
+
+      // Aggregate payoff schedule — if the user's payments cover interest,
+      // run the amortization forward month-by-month across all debts and
+      // show a compressed yearly snapshot (up to 20 years or zero-balance).
+      var schedAnchor = debtTotalRow + 2;
+      addTitle(wsD, schedAnchor, 2, fr ? "\u00c9CH\u00c9ANCIER AGR\u00c9G\u00c9 (REMBOURSEMENT M\u00c9NAGE)" : "AGGREGATE PAYOFF SCHEDULE (HOUSEHOLD)", "", 13);
+      setRow(wsD, schedAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Solde d\u00e9but" : "Opening bal", fr ? "Int\u00e9r\u00eats vers\u00e9s" : "Interest paid", fr ? "Capital rembours\u00e9" : "Principal paid", fr ? "Solde fin" : "Closing bal", fr ? "% rembours\u00e9" : "% paid"]);
+      var schedRow = schedAnchor + 3;
+      // Copy current balances so we don't mutate params.
+      var state = activeDebts.map(function (d) { return { bal: toNum(d.bal), rate: toNum(d.rate), pay: toNum(d.pay) }; });
+      var initialTotal = state.reduce(function (s, x) { return s + x.bal; }, 0);
+      var yr = 0, maxYrs = 20;
+      while (yr < maxYrs) {
+        var opening = state.reduce(function (s, x) { return s + x.bal; }, 0);
+        if (opening < 1) break;
+        var yrInt = 0, yrPrin = 0;
+        for (var mo = 0; mo < 12; mo++) {
+          state.forEach(function (x) {
+            if (x.bal <= 0) return;
+            var intMo = x.bal * (x.rate / 12);
+            var prinMo = Math.min(x.bal, Math.max(0, x.pay - intMo));
+            x.bal = Math.max(0, x.bal - prinMo);
+            yrInt += intMo; yrPrin += prinMo;
+          });
+        }
+        var closing = state.reduce(function (s, x) { return s + x.bal; }, 0);
+        set(wsD, wsD.getCell(schedRow, 2), y0 + yr);
+        set(wsD, wsD.getCell(schedRow, 3), age + yr);
+        wsD.getCell(schedRow, 4).value = opening; wsD.getCell(schedRow, 4).numFmt = FMT_MONEY;
+        wsD.getCell(schedRow, 5).value = yrInt; wsD.getCell(schedRow, 5).numFmt = FMT_MONEY;
+        wsD.getCell(schedRow, 6).value = yrPrin; wsD.getCell(schedRow, 6).numFmt = FMT_MONEY;
+        wsD.getCell(schedRow, 7).value = closing; wsD.getCell(schedRow, 7).numFmt = FMT_MONEY;
+        var pctPaid = initialTotal > 0 ? 1 - closing / initialTotal : 1;
+        wsD.getCell(schedRow, 8).value = pctPaid; wsD.getCell(schedRow, 8).numFmt = FMT_PCT;
+        schedRow++;
+        yr++;
+      }
+      if (schedRow === schedAnchor + 3) {
+        // Payments don't cover interest — surface the problem.
+        wsD.mergeCells(schedRow, 2, schedRow, 8);
+        set(wsD, wsD.getCell(schedRow, 2), fr ? "\u26a0 Les paiements actuels ne couvrent pas les int\u00e9r\u00eats. Le solde ne diminuera jamais avec ces montants. V\u00e9rifiez les paiements mensuels dans le formulaire." : "\u26a0 Current payments do not cover interest. Balance will never decrease at these amounts. Check monthly payments in the form.");
+        wsD.getCell(schedRow, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.red } };
+        wsD.getCell(schedRow, 2).alignment = { wrapText: true };
+        wsD.getRow(schedRow).height = 32;
+        schedRow++;
+      } else {
+        styleTable(wsD, { hr: schedAnchor + 2, fr: schedAnchor + 3, to: schedRow - 1, fc: 2, lc: 8 });
+      }
+      footer(wsD, schedRow + 2);
+    }
+
+    // ────────────────────────────────────────────────────────────
+    // SHEET 9B: ASSURANCE / INSURANCE
+    // ────────────────────────────────────────────────────────────
+    // Life / disability / critical illness / group coverage are all modeled
+    // by the engine (commit 4b4d630): premiums drain NR yearly, death
+    // benefit is added to the estate if the policy is in force, disability
+    // triggers an insInvCov × disabMo payout, critical illness pays a
+    // one-time insMGCov lump sum. This sheet surfaces the full picture
+    // that was previously invisible to users.
+    var wsIns = wb.addWorksheet(fr ? "Assurance" : "Insurance");
+    setColWidths(wsIns, [3, 22, 16, 16, 16, 14, 14, 32, 14, 14, 14, 14, 14, 14]);
+    printSetup(wsIns);
+    addTabBanner(wsIns,
+      fr ? "Protection d'assurance" : "Insurance Protection",
+      fr ? "Vie \u2022 Invalidit\u00e9 \u2022 Maladies graves \u2022 Assurance collective" : "Life \u2022 Disability \u2022 Critical illness \u2022 Group", 14);
+
+    // ── Coverage inventory ────────────────────────────────────────
+    addTitle(wsIns, 5, 2, fr ? "INVENTAIRE DES COUVERTURES" : "COVERAGE INVENTORY", "", 13);
+    setRow(wsIns, 7, 2, [fr ? "Type" : "Type", fr ? "Titulaire" : "Holder", fr ? "Couverture" : "Coverage", fr ? "Prime /mois" : "Premium /mo", fr ? "Prime /an" : "Premium /yr", fr ? "Police" : "Policy", "Notes"]);
+    var _polType = function (t, d) {
+      if (!t || t === "none") return fr ? "Aucune" : "None";
+      if (t === "perm") return fr ? "Permanente" : "Permanent";
+      return fr ? "Temporaire " + (d || 20) + " ans" : "Term " + (d || 20) + " yrs";
+    };
+    // All values sourced from params. lifeInsPremium/insViePrime are monthly;
+    // annual premium is monthly × 12 so users can sum the yearly outflow.
+    var insRows = [
+      // Primary — life "simple" (lifeInsBenefit/Premium)
+      (p.lifeInsBenefit || p.lifeInsPremium) ? [fr ? "Vie (simple)" : "Life (simple)", fr ? "Client" : "Client", p.lifeInsBenefit || 0, p.lifeInsPremium || 0, (p.lifeInsPremium || 0) * 12, fr ? "Non sp\u00e9cifi\u00e9e" : "Unspecified", fr ? "Entr\u00e9e sidebar \"Assurance\"" : "Sidebar \"Insurance\" entry"] : null,
+      // Primary — life detailed (insViePrime/Cov/Type/Dur)
+      (p.insViePrime || p.insVieCov) ? [fr ? "Vie \u2014 d\u00e9taill\u00e9e" : "Life \u2014 detailed", fr ? "Client" : "Client", p.insVieCov || 0, p.insViePrime || 0, (p.insViePrime || 0) * 12, _polType(p.insVieType, p.insVieDur), fr ? "D\u00e9c\u00e8s couvert pendant la dur\u00e9e" : "Death covered during term"] : null,
+      // Primary — disability
+      (p.insInvPrime || p.insInvCov) ? [fr ? "Invalidit\u00e9" : "Disability", fr ? "Client" : "Client", (p.insInvCov || 0) * 12, p.insInvPrime || 0, (p.insInvPrime || 0) * 12, fr ? "Rente mensuelle" : "Monthly benefit", fr ? "Active seulement pr\u00e9-retraite" : "Pre-retirement only"] : null,
+      // Primary — critical illness
+      (p.insMGPrime || p.insMGCov) ? [fr ? "Maladies graves" : "Critical illness", fr ? "Client" : "Client", p.insMGCov || 0, p.insMGPrime || 0, (p.insMGPrime || 0) * 12, fr ? "Forfaitaire" : "Lump sum", fr ? "Probabilit\u00e9 \u00e2ge-d\u00e9pend. (0,5-2,5%/an)" : "Age-dep. probability (0.5-2.5%/yr)"] : null,
+      // Primary — group
+      (p.insColPrime) ? [fr ? "Collective" : "Group", fr ? "Client" : "Client", 0, p.insColPrime || 0, (p.insColPrime || 0) * 12, fr ? "Part employ\u00e9" : "Employee share", fr ? "Sant\u00e9 + dentaire + vie de base" : "Health + dental + basic life"] : null,
+      // Spouse mirrors
+      (p.cOn && (p.cLifeInsBenefit || p.cLifeInsPremium)) ? [fr ? "Vie (simple)" : "Life (simple)", fr ? "Conjoint(e)" : "Spouse", p.cLifeInsBenefit || 0, p.cLifeInsPremium || 0, (p.cLifeInsPremium || 0) * 12, fr ? "Non sp\u00e9cifi\u00e9e" : "Unspecified", ""] : null,
+      (p.cOn && (p.cInsViePrime || p.cInsVieCov)) ? [fr ? "Vie \u2014 d\u00e9taill\u00e9e" : "Life \u2014 detailed", fr ? "Conjoint(e)" : "Spouse", p.cInsVieCov || 0, p.cInsViePrime || 0, (p.cInsViePrime || 0) * 12, _polType(p.cInsVieType, p.cInsVieDur), ""] : null,
+      (p.cOn && (p.cInsInvPrime || p.cInsInvCov)) ? [fr ? "Invalidit\u00e9" : "Disability", fr ? "Conjoint(e)" : "Spouse", (p.cInsInvCov || 0) * 12, p.cInsInvPrime || 0, (p.cInsInvPrime || 0) * 12, fr ? "Rente mensuelle" : "Monthly benefit", ""] : null,
+      (p.cOn && (p.cInsMGPrime || p.cInsMGCov)) ? [fr ? "Maladies graves" : "Critical illness", fr ? "Conjoint(e)" : "Spouse", p.cInsMGCov || 0, p.cInsMGPrime || 0, (p.cInsMGPrime || 0) * 12, fr ? "Forfaitaire" : "Lump sum", ""] : null,
+      (p.cOn && p.cInsColPrime) ? [fr ? "Collective" : "Group", fr ? "Conjoint(e)" : "Spouse", 0, p.cInsColPrime || 0, (p.cInsColPrime || 0) * 12, fr ? "Part employ\u00e9" : "Employee share", ""] : null
+    ].filter(function (r) { return r !== null; });
+
+    if (insRows.length === 0) {
+      wsIns.mergeCells(8, 2, 8, 8);
+      set(wsIns, wsIns.getCell(8, 2), fr ? "Aucune couverture saisie. Si vous avez des polices, remplissez-les dans la section Assurances du formulaire \u2014 elles seront incluses dans le plan (primes d\u00e9duites du cash flow, prestation au d\u00e9c\u00e8s ajout\u00e9e au patrimoine successoral, invalidit\u00e9/maladies graves mod\u00e9lis\u00e9es)." : "No coverage entered. If you hold policies, fill them in the Insurance section of the form \u2014 they'll be included in the plan (premiums drained from cash flow, death benefit added to estate, disability/CI modeled).");
+      wsIns.getCell(8, 2).font = { name: "Calibri", size: 11, italic: true, color: { argb: CL.muted } };
+      wsIns.getCell(8, 2).alignment = { wrapText: true, vertical: "top" };
+      wsIns.getRow(8).height = 48;
+    } else {
+      insRows.forEach(function (row, i) {
+        var r = 8 + i;
+        set(wsIns, wsIns.getCell(r, 2), row[0]);
+        set(wsIns, wsIns.getCell(r, 3), row[1]);
+        wsIns.getCell(r, 4).value = toNum(row[2]); wsIns.getCell(r, 4).numFmt = FMT_MONEY;
+        wsIns.getCell(r, 5).value = toNum(row[3]); wsIns.getCell(r, 5).numFmt = FMT_MONEY;
+        wsIns.getCell(r, 6).value = toNum(row[4]); wsIns.getCell(r, 6).numFmt = FMT_MONEY;
+        set(wsIns, wsIns.getCell(r, 7), row[5]);
+        set(wsIns, wsIns.getCell(r, 8), row[6]);
+      });
+      // Total annual premium row
+      var insEnd = 8 + insRows.length - 1;
+      var insTotalRow = insEnd + 1;
+      set(wsIns, wsIns.getCell(insTotalRow, 2), fr ? "TOTAL PRIME ANNUELLE" : "TOTAL ANNUAL PREMIUM");
+      setFormula(wsIns, wsIns.getCell(insTotalRow, 6), 'SUM(F8:F' + insEnd + ')', FMT_MONEY);
+      for (var itc = 2; itc <= 8; itc++) {
+        wsIns.getCell(insTotalRow, itc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+      }
+      styleTable(wsIns, { hr: 7, fr: 8, to: insTotalRow, fc: 2, lc: 8 });
+    }
+
+    // ── Coverage-need analysis (simplified, same logic as calcInsuranceNeed) ──
+    var insAnchor = insRows.length > 0 ? (10 + insRows.length) : 12;
+    addTitle(wsIns, insAnchor, 2, fr ? "ANALYSE DE BESOIN \u2014 VIE" : "NEEDS ANALYSIS \u2014 LIFE", "", 13);
+    // Same method as calcInsuranceNeed in planner_v3.html (line 8165):
+    // needs = survivor income 70% × post-ret years + $250k/child + debts + mortgage + final expenses
+    // Resources = projected estate (P50) + existing life coverage
+    var _retYrs = Math.max(0, (p.deathAge || 90) - (p.retAge || 65));
+    var survivorIncNeed = (p.retSpM || 0) * 12 * 0.70 * _retYrs;
+    var childNeed = (p.respKids || 0) * 250000;
+    var debtNeed = (p.debts || []).reduce(function (s, d) { return s + toNum(d.bal); }, 0);
+    var mtgNeed = (p.props || []).reduce(function (s, pr) { return s + (pr.on ? toNum(pr.mb) : 0); }, 0);
+    var finalExp = 15000; // CRA median funeral + estate closing
+    var totalNeed = survivorIncNeed + childNeed + debtNeed + mtgNeed + finalExp;
+    var projEstate = toNum(mc.medEstateNet);
+    var currentLifeCov = (p.lifeInsBenefit || 0) + (p.cLifeInsBenefit || 0)
+      + ((p.insViePrime > 0) ? (p.insVieCov || 0) : 0)
+      + ((p.cOn && p.cInsViePrime > 0) ? (p.cInsVieCov || 0) : 0);
+    var gap = Math.max(0, totalNeed - projEstate - currentLifeCov);
+
+    setRow(wsIns, insAnchor + 2, 2, [fr ? "Composante" : "Component", fr ? "Montant" : "Amount", fr ? "Calcul" : "Basis"]);
+    var needRows = [
+      [fr ? "Revenu survivant (70%)" : "Survivor income (70%)", survivorIncNeed, fr ? _fmtM(p.retSpM * 12 * 0.70, locale) + "/an \u00d7 " + _retYrs + " ans" : _fmtM(p.retSpM * 12 * 0.70, locale) + "/yr \u00d7 " + _retYrs + " yrs"],
+      [fr ? "Enfants (REEE + co\u00fbts)" : "Children (RESP + costs)", childNeed, (p.respKids || 0) + (fr ? " enfant(s) \u00d7 250 000 $" : " child(ren) \u00d7 $250,000")],
+      [fr ? "Remboursement dettes" : "Debt payoff", debtNeed, ((p.debts || []).filter(function (d) { return d.bal > 0; }).length) + (fr ? " compte(s)" : " account(s)")],
+      [fr ? "Soldes hypoth\u00e9caires" : "Mortgage balances", mtgNeed, ((p.props || []).filter(function (pr) { return pr.on && pr.mb > 0; }).length) + (fr ? " propri\u00e9t\u00e9(s)" : " property(ies)")],
+      [fr ? "Frais fun\u00e9raires + succession" : "Final expenses + estate", finalExp, fr ? "M\u00e9diane canadienne" : "Canadian median"],
+      [fr ? "BESOIN TOTAL" : "TOTAL NEED", totalNeed, ""],
+      [fr ? "(\u2212) Patrimoine projet\u00e9 au d\u00e9c\u00e8s (P50)" : "(\u2212) Projected estate at death (P50)", -projEstate, fr ? "M\u00e9diane MC" : "MC median"],
+      [fr ? "(\u2212) Couverture vie existante" : "(\u2212) Existing life coverage", -currentLifeCov, fr ? "Somme des polices vie" : "Sum of life policies"],
+      [fr ? "\u00c9CART (besoin additionnel)" : "GAP (additional need)", gap, fr ? "0 $ = aucun manque" : "$0 = no shortfall"]
+    ];
+    needRows.forEach(function (row, i) {
+      var r = insAnchor + 3 + i;
+      set(wsIns, wsIns.getCell(r, 2), row[0]);
+      wsIns.getCell(r, 3).value = toNum(row[1]); wsIns.getCell(r, 3).numFmt = FMT_MONEY;
+      set(wsIns, wsIns.getCell(r, 4), row[2]);
+    });
+    // Bold the TOTAL NEED and GAP rows (rows 6 and 9 of needRows, 0-indexed 5 and 8)
+    var totalNeedRow = insAnchor + 3 + 5;
+    var gapRow = insAnchor + 3 + 8;
+    [totalNeedRow, gapRow].forEach(function (rr) {
+      for (var cc = 2; cc <= 4; cc++) {
+        wsIns.getCell(rr, cc).font = { name: "Calibri", size: 11, bold: true, color: { argb: gap > 0 && rr === gapRow ? CL.red : CL.gold } };
+      }
+    });
+    styleTable(wsIns, { hr: insAnchor + 2, fr: insAnchor + 3, to: gapRow, fc: 2, lc: 4 });
+
+    // Disclaimer
+    var insDiscRow = gapRow + 2;
+    wsIns.mergeCells(insDiscRow, 2, insDiscRow, 8);
+    set(wsIns, wsIns.getCell(insDiscRow, 2), fr ? "Cette analyse est informative. Consultez un conseiller en s\u00e9curit\u00e9 financi\u00e8re (titulaire de permis AMF au Qu\u00e9bec) pour \u00e9valuer vos besoins sp\u00e9cifiques et les produits adapt\u00e9s." : "This analysis is informational. Consult a licensed financial security advisor (AMF-licensed in Quebec) to evaluate your specific needs and appropriate products.");
+    wsIns.getCell(insDiscRow, 2).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+    wsIns.getCell(insDiscRow, 2).alignment = { wrapText: true, vertical: "top" };
+    wsIns.getRow(insDiscRow).height = 36;
+    footer(wsIns, insDiscRow + 2);
 
     // ────────────────────────────────────────────────────────────
     // SHEET 10: IMMOBILIER
