@@ -5941,6 +5941,19 @@ function runMC(p, N, _progressCb) {
         retTF = blendRet(eqR, bndR, aT) - (p.merT || 0);
         retNR = blendRet(eqR, bndR, aN) - (p.merN || 0);
       }
+      // Spouse effective returns — when cSyncPortfolio is off, apply
+      // spouse-specific alloc (cAllocR/T/N) and MER (cMerR/T/N). When on,
+      // mirror the household's retRR/retTF/retNR. Glide applies to both
+      // using the same gS spec.
+      var cRetRR = retRR, cRetTF = retTF, cRetNR = retNR;
+      if (p.cOn && p.cSyncPortfolio === false && !_maOn) {
+        var _cAR = Math.max(0.2, (p.cAllocR || 0.6) - gS * gYrs);
+        var _cAT = Math.max(0.2, (p.cAllocT || 0.6) - gS * gYrs);
+        var _cAN = Math.max(0.2, (p.cAllocN || 0.5) - gS * gYrs);
+        cRetRR = blendRet(eqR, bndR, _cAR) - (p.cMerR || 0.005);
+        cRetTF = blendRet(eqR, bndR, _cAT) - (p.cMerT || 0.005);
+        cRetNR = blendRet(eqR, bndR, _cAN) - (p.cMerN || 0.005);
+      }
       var fxNoise = (p.fxVol || 0.08) * tRn(999);
       var retPE = (p.yPE || 0.12) + (p.vPE || 0.25) * zz[_maOn ? 6 : 3] + sEq * 0.8 + fxNoise;
       var retPM = (p.yPM || 0.03) + (p.vPM || 0.15) * zz[_maOn ? 7 : 4] + sEq * 0.8 + fxNoise;
@@ -6368,13 +6381,13 @@ function runMC(p, N, _progressCb) {
           if ((p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) { _cSalMul *= Math.max(0, 1 - (p.disabMo || 6) / 12); }
           var _cAdjGr = cGr * _cSalMul;
           var cTfsaLim = p.cTFSAC != null ? p.cTFSAC : Math.round(7e3 * Math.pow(1 + p.inf, y) / 500) * 500;
-          crr = crr * (1 + retRR) + (p.cRRSPC || 0) * _cAdjGr;
-          ctf = ctf * (1 + retTF) + cTfsaLim;
+          crr = crr * (1 + cRetRR) + (p.cRRSPC || 0) * _cAdjGr;
+          ctf = ctf * (1 + cRetTF) + cTfsaLim;
           if (_maOn) {
             var _cnrTax = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
             cnr = cnr + cnr * retNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
           } else {
-            cnr = cnr * (1 + retNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
+            cnr = cnr * (1 + cRetNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
           }
         }
       } else {
@@ -6424,13 +6437,13 @@ function runMC(p, N, _progressCb) {
           nr = Math.max(0, nr - respAnnual);
         }
         if (p.cOn && cAlive) {
-          crr *= 1 + retRR;
-          ctf *= 1 + retTF;
+          crr *= 1 + cRetRR;
+          ctf *= 1 + cRetTF;
           if (_maOn) {
             var _cnrTaxRet = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
             cnr = cnr + cnr * retNR - _cnrTaxRet;
           } else {
-            cnr *= 1 + retNR - (p.nrTaxDrag || 9e-3);
+            cnr *= 1 + cRetNR - (p.nrTaxDrag || 9e-3);
           }
         }
         var rrifMin = getRRIFMin(age, rr), cRrifMin = p.cOn && cAlive ? getRRIFMin(cAge2, crr) : 0;
