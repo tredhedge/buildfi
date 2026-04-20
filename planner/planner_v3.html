@@ -7826,22 +7826,23 @@ function App() {
   var _cUseStochMort = useState(true), cUseStochMort = _cUseStochMort[0], sCUseStochMort = _cUseStochMort[1];
   var _cAvgEAuto = useState(true), cAvgEAuto = _cAvgEAuto[0], sCAvgEAuto = _cAvgEAuto[1];
 
-  // v3 Phase 7 — Cockpit vs Blueprint. Cockpit (default) keeps only the ~30
-  // Tier-1 lever fields visible in the sidebar; Tier-2 elements are tagged
-  // .bf-t2 and hidden via the body[data-bf-cockpit="1"] CSS rule. Blueprint
-  // mode reveals everything (mirrors v4's full form inline in the sidebar).
-  // Rail buttons for pure Tier-2 modules (Model, Alt, Insurance, Business)
-  // collapse to a "→ Open form" jump in cockpit mode.
-  var _cockpitMode = useState(function() { try { return localStorage.getItem("bf_cockpit") !== "0"; } catch(e) { return true; } });
-  var cockpitMode = _cockpitMode[0], setCockpitMode = _cockpitMode[1];
+  // v3 Phase 9.2 — Only two modes exist in the app:
+  //   • Cockpit (this sidebar, ~30-45 levers)
+  //   • Long form (v4, all ~190 variables — reachable via the Formulaire button)
+  // The former "Complet" mode is dropped; cockpitMode is always true. The
+  // variable + useEffect + setCockpitMode are retained so existing guard
+  // clauses (`!cockpitMode && …`) and `body[data-bf-cockpit="1"]` keep
+  // working without refactor.
+  var cockpitMode = true;
+  var setCockpitMode = function() {};
   useEffect(function() {
     try {
       if (typeof document !== "undefined") {
-        document.body.setAttribute("data-bf-cockpit", cockpitMode ? "1" : "0");
+        document.body.setAttribute("data-bf-cockpit", "1");
       }
-      localStorage.setItem("bf_cockpit", cockpitMode ? "1" : "0");
+      localStorage.setItem("bf_cockpit", "1");
     } catch(e) {}
-  }, [cockpitMode]);
+  }, []);
 
   var _showWiz = useState(!localStorage.getItem("bf_used")), showWizard = _showWiz[0], setShowWiz = _showWiz[1];
   var _wizStep = useState(0), wizStep = _wizStep[0], setWizStep = _wizStep[1];
@@ -13226,18 +13227,16 @@ React.createElement("div", { className: "bf-rail" },
     return _items;
   })(),
   React.createElement("div", { className: "bf-rail-sep", style: { marginTop: 3, marginBottom: 3 } }),
-  // v3 Phase 7 — Cockpit ↔ Blueprint mode toggle. Cockpit = Tier-1 only;
-  // Blueprint = all ~190 vars visible inline. Toggle label is terse so it
-  // fits the narrow rail. Full form (v4) is still one click away.
+  // v3 Phase 9.2 — Dedicated "Long form" rail button. The Cockpit/Complet
+  // toggle is removed; only two modes exist (Cockpit here, Long form in v4).
+  // Clicking this rail button hands off the full profile to v4 in one click.
   React.createElement("button", {
     className: "bf-rail-btn",
-    onClick: function() { setCockpitMode(function(v) { return !v; }); },
-    title: cockpitMode
-      ? (lang === "fr" ? "Mode cockpit actif — seuls les ~30 leviers principaux. Cliquez pour tout afficher." : "Cockpit mode — only the ~30 core levers. Click to reveal everything.")
-      : (lang === "fr" ? "Mode complet — toutes les variables. Cliquez pour revenir au cockpit." : "Full mode — all variables. Click to return to cockpit.")
+    onClick: function() { if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint(); },
+    title: lang === "fr" ? "Ouvrir le formulaire complet (long form) avec toutes les variables" : "Open the full form (long form) with every variable"
   },
-    React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, cockpitMode ? "\ud83c\udfaf" : "\ud83d\udd2c"),
-    React.createElement("span", { className: "bf-rail-label" }, cockpitMode ? (lang === "fr" ? "Cockpit" : "Cockpit") : (lang === "fr" ? "Complet" : "Full"))
+    React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, "\ud83d\udccb"),
+    React.createElement("span", { className: "bf-rail-label" }, lang === "fr" ? "Long form" : "Long form")
   ),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, React.createElement("span", { className: "bf-rail-ico" }, dark ? "\u2600\ufe0f" : "\ud83c\udf19"), React.createElement("span", { className: "bf-rail-label" }, dark ? "Light" : "Dark")),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, React.createElement("span", { className: "bf-rail-ico" }, "\ud83d\udcda"), React.createElement("span", { className: "bf-rail-label" }, "Guide")),
@@ -13324,10 +13323,10 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
       }, "\u2715")
     );
   })(),
-  // v3 Phase 7 — Cockpit mode shows a soft "Open the full form" affordance at
-  // the top of each module panel. Uses the same bf_mode_handoff mechanism as
-  // the header Formulaire button, so the profile transfers in memory.
-  cockpitMode && React.createElement("a", {
+  // v3 Phase 9.1 — "Open the full form" link at top of every module panel.
+  // Visible in BOTH modes now: cockpit users need it to reach Tier-2 fields,
+  // and Complet users still benefit as a one-click exit to the polished form.
+  React.createElement("a", {
     className: "bf-blueprint-jump",
     href: "#",
     role: "button",
@@ -13335,10 +13334,10 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
       e.preventDefault();
       if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint();
     },
-    title: lang === "fr" ? "Ouvre le formulaire complet (v4) avec toutes les variables" : "Opens the full form (v4) with every variable"
+    title: lang === "fr" ? "Ouvre le formulaire complet (long form) avec toutes les variables" : "Opens the full form (long form) with every variable"
   },
     React.createElement("span", { className: "bf-bpj-ico" }, "\ud83d\udccb"),
-    React.createElement("span", null, lang === "fr" ? "Besoin d'un champ avancé? Ouvrir le formulaire complet" : "Need an advanced field? Open the full form"),
+    React.createElement("span", null, lang === "fr" ? "Ouvrir le formulaire complet (long form)" : "Open the full form (long form)"),
     React.createElement("span", { className: "bf-bpj-arrow" }, "\u2192")
   ),
   _sidebarContent
