@@ -513,6 +513,37 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 .bf-modal-body  { display: flex; flex-direction: column; gap: 14px; }
 .bf-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
+/* ─────────────── Mobile polish (v4 Phase 12) ─────────────── */
+@media (max-width: 720px) {
+  .app { padding: 14px 12px 100px; }
+  .hdr { flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 14px; margin-bottom: 18px; }
+  .hdr-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .page-title { font-size: 22px; }
+  .page-sub { font-size: var(--fs-md); margin-bottom: 18px; }
+  .form-toolbar { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px; }
+  .form-toolbar > div:last-child { flex-wrap: wrap; }
+  details.section > summary { padding: 14px 16px; gap: 12px; }
+  .sec-ico { width: 34px; height: 34px; font-size: 17px; }
+  .sec-title { font-size: var(--fs-md); }
+  .sec-sub { font-size: 11px; }
+  .sec-body { padding: 6px 16px 20px; }
+  .field-grid { grid-template-columns: 1fr !important; gap: 12px; }
+  .couple-grid { grid-template-columns: 1fr !important; }
+  .pill-group { flex-direction: column; }
+  .pill { min-width: 0; }
+  .bf-modal { padding: 18px 18px; max-width: calc(100vw - 24px); }
+  .bf-modal-title { font-size: var(--fs-lg); }
+  #bf-whatif-card { right: 12px !important; bottom: 80px !important; left: 12px; min-width: 0 !important; max-width: none !important; }
+  .simulate-fab { right: 16px; bottom: 16px; font-size: var(--fs-sm); padding: 12px 18px; }
+}
+
+/* ─────────────── A11y focus management ─────────────── */
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+.bf-modal, .bf-drawer-content { scroll-margin-top: 80px; }
+
 /* ─────────────── Inline warnings (v4 Phase 12) ─────────────── */
 /* Warning chip rendered directly under an input when the value is
    above a tax limit (TFSA/RRSP/FHSA) or an unusual outlier. Three
@@ -622,6 +653,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
     </div>
     <div style="display:flex;gap:6px;align-items:center">
       <button class="btn btn-primary" onclick="openQuickStart()" data-i18n="quickStart" title="Remplir l'essentiel en 5 étapes">🚀 Démarrage rapide</button>
+      <button class="btn btn-ghost" onclick="toggleWhatif()" data-i18n="whatIf" title="Explorer des scénarios sans modifier le formulaire">🎯 What-if</button>
       <button class="btn btn-ghost" onclick="document.querySelectorAll('details.section').forEach(function(d){d.open=true;})" data-i18n="expandAll">⤢ Tout ouvrir</button>
       <button class="btn btn-ghost" onclick="document.querySelectorAll('details.section').forEach(function(d){d.open=false;})" data-i18n="collapseAll">⤡ Tout fermer</button>
     </div>
@@ -657,7 +689,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
     </aside>
 
     <!-- ─────────────── Main form ─────────────── -->
-    <main>
+    <main role="main" aria-label="Formulaire principal">
 
       <!-- ─── Section: Identity & Household ─── -->
       <details class="section" id="sec-identity" open>
@@ -3938,6 +3970,56 @@ window.addEventListener("beforeunload", _autoSave);
   } catch (e) { console.warn("autosave restore offer failed:", e); }
 })();
 
+/* ─────────────── What-if floating card (v4 Phase 12) ─────────────── */
+/* Minimal non-committing sliders so users can explore sensitivity without
+   mutating the form state. Three levers: retAge, retSpM, allocR (RRSP
+   equity %). Delta values display live; "Appliquer" writes the slider
+   values back to the form inputs (so the next Simulate picks them up).
+   Toggled via a "🎯 What-if" button in the form toolbar. */
+var _bfWhatif = { open: false, retAge: null, retSpM: null, allocR: null };
+function toggleWhatif() {
+  var card = document.getElementById("bf-whatif-card");
+  if (!card) return;
+  _bfWhatif.open = !_bfWhatif.open;
+  card.hidden = !_bfWhatif.open;
+  if (_bfWhatif.open) {
+    /* Seed sliders from current form values. */
+    var ra = +document.getElementById("retAge").value || 65;
+    var rs = +document.getElementById("retSpM").value || 5500;
+    var al = +document.getElementById("allocR").value || 60;
+    _bfWhatif.retAge = ra; _bfWhatif.retSpM = rs; _bfWhatif.allocR = al;
+    document.getElementById("wif-retAge").value = ra;
+    document.getElementById("wif-retSpM").value = rs;
+    document.getElementById("wif-allocR").value = al;
+    _updateWhatifLabels();
+  }
+}
+function _updateWhatifLabels() {
+  var ra = +document.getElementById("wif-retAge").value;
+  var rs = +document.getElementById("wif-retSpM").value;
+  var al = +document.getElementById("wif-allocR").value;
+  document.getElementById("wif-retAge-val").textContent = ra + (_lang === "fr" ? " ans" : " yrs") + " (Δ" + ((ra - _bfWhatif.retAge) >= 0 ? "+" : "") + (ra - _bfWhatif.retAge) + ")";
+  document.getElementById("wif-retSpM-val").textContent = "$" + rs.toLocaleString() + " (Δ" + ((rs - _bfWhatif.retSpM) >= 0 ? "+" : "") + (rs - _bfWhatif.retSpM) + ")";
+  document.getElementById("wif-allocR-val").textContent = al + "% (Δ" + ((al - _bfWhatif.allocR) >= 0 ? "+" : "") + (al - _bfWhatif.allocR) + ")";
+}
+function applyWhatif() {
+  document.getElementById("retAge").value = document.getElementById("wif-retAge").value;
+  document.getElementById("retSpM").value = document.getElementById("wif-retSpM").value;
+  document.getElementById("allocR").value = document.getElementById("wif-allocR").value;
+  if (typeof validateInputs === "function") validateInputs();
+  if (typeof updateSectionCounts === "function") updateSectionCounts();
+  /* Snapshot becomes new baseline */
+  _bfWhatif.retAge = +document.getElementById("wif-retAge").value;
+  _bfWhatif.retSpM = +document.getElementById("wif-retSpM").value;
+  _bfWhatif.allocR = +document.getElementById("wif-allocR").value;
+  _updateWhatifLabels();
+  var banner = document.createElement("div");
+  banner.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--green);color:#0e1420;padding:8px 16px;border-radius:999px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);font-size:12px";
+  banner.textContent = _lang === "fr" ? "✓ Appliqué au formulaire" : "✓ Applied to form";
+  document.body.appendChild(banner);
+  setTimeout(function () { banner.style.transition = "opacity 0.4s"; banner.style.opacity = "0"; setTimeout(function () { banner.remove(); }, 400); }, 2000);
+}
+
 /* ─────────────── Dark / Light theme (v4 Phase 12) ─────────────── */
 /* Default = dark. Persists in localStorage['bf_v4_theme']. In embed mode,
    inherits from URL param ?theme=light|dark (v3 sets it when opening the
@@ -4110,6 +4192,43 @@ document.addEventListener("keydown", function (ev) {
   }
 });
 </script>
+
+<!-- v4 Phase 12 — What-if floating card. Non-committing sliders to explore
+     sensitivity without writing the form. Toggle with 🎯 What-if button. -->
+<div id="bf-whatif-card" hidden style="position:fixed;right:24px;bottom:100px;z-index:220;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:16px 18px;min-width:320px;max-width:360px;box-shadow:var(--shadow-lg)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:var(--fs-md);font-weight:700;letter-spacing:-0.01em">🎯 What-if</div>
+    <button onclick="toggleWhatif()" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:0">✕</button>
+  </div>
+  <div style="font-size:var(--fs-xs);color:var(--text-dim);margin-bottom:12px;line-height:1.5" data-i18n="whatIfIntro">Explorez les 3 plus gros leviers sans modifier le formulaire. Cliquez Appliquer pour transférer les valeurs vers le formulaire principal.</div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label for="wif-retAge" style="font-size:var(--fs-sm);font-weight:600" data-i18n="wifRetAge">Âge de retraite</label>
+        <span id="wif-retAge-val" style="font-size:var(--fs-xs);color:var(--accent);font-family:'JetBrains Mono'">—</span>
+      </div>
+      <input id="wif-retAge" type="range" min="50" max="75" step="1" oninput="_updateWhatifLabels()" style="width:100%">
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label for="wif-retSpM" style="font-size:var(--fs-sm);font-weight:600" data-i18n="wifRetSpM">Dépenses mensuelles</label>
+        <span id="wif-retSpM-val" style="font-size:var(--fs-xs);color:var(--accent);font-family:'JetBrains Mono'">—</span>
+      </div>
+      <input id="wif-retSpM" type="range" min="2000" max="15000" step="100" oninput="_updateWhatifLabels()" style="width:100%">
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label for="wif-allocR" style="font-size:var(--fs-sm);font-weight:600" data-i18n="wifAllocR">REER — % actions</label>
+        <span id="wif-allocR-val" style="font-size:var(--fs-xs);color:var(--accent);font-family:'JetBrains Mono'">—</span>
+      </div>
+      <input id="wif-allocR" type="range" min="0" max="100" step="5" oninput="_updateWhatifLabels()" style="width:100%">
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:14px">
+    <button class="btn btn-ghost" onclick="toggleWhatif()" style="font-size:var(--fs-xs);padding:5px 10px" data-i18n="close">Fermer</button>
+    <button class="btn btn-primary" onclick="applyWhatif()" style="font-size:var(--fs-xs);padding:5px 12px" data-i18n="apply">✓ Appliquer</button>
+  </div>
+</div>
 
 <!-- v4 Phase 12 — Quick Start wizard (5 steps). Pre-fills the form with
      sensible Canadian medians so users can see a simulation within 2 min
