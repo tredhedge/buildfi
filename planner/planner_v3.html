@@ -169,14 +169,26 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bf-rail-btn.active .bf-rail-label { opacity: 1; }
 .bf-rail-sep { width: 24px; height: 1px; background: var(--bf-rail-border); margin: 4px 0; }
 
+/* v3 Phase 9 — v4 design-token alignment. Softer radii, ring focus glow,
+   easing tokens so all transitions share the same curve. Scoped to the
+   sidebar overlay + its children so the rest of the app is unaffected. */
+.bf-side-overlay, .bf-mobile-sheet {
+  --bfx-radius-sm: 6px;
+  --bfx-radius-md: 10px;
+  --bfx-radius-lg: 14px;
+  --bfx-dur: 180ms;
+  --bfx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --bfx-ring: 0 0 0 3px var(--bf-accent, #c49a1a)55;
+}
+
 /* Overlay panel (desktop) */
 .bf-side-overlay {
   position: fixed; left: 84px; top: 0; bottom: 0; width: 620px;
   background: var(--bf-overlay-bg); border-right: 1px solid var(--bf-rail-border);
-  z-index: 8600; overflow-y: auto; overflow-x: hidden; padding: 16px 18px;
+  z-index: 8600; overflow-y: auto; overflow-x: hidden; padding: 20px 22px;
   transform: translateX(-640px); opacity: 0; pointer-events: none;
   transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--bf-overlay-shadow);
   scrollbar-width: thin; scrollbar-color: var(--bf-rail-border) transparent;
 }
@@ -211,26 +223,54 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 /* v3 Module header (caption block at top of overlay/sheet). */
 .bf-module-head { padding-top: 2px; padding-bottom: 4px; }
 
-/* v3 subsection card — colored left border at 40% alpha, light inner padding.
-   Applied to elements with class "bf-subsec" wrapping a group of related fields.
-   Also auto-applies to inline headers following the pattern: small accent-text
-   with a 3px colored left-border on h4-like divs (legacy pattern used
-   throughout the sidebar content, e.g. "Identité", "Épargne", "Gouv."). */
+/* v3 subsection card — ported from v4's details.section[open] aesthetic.
+   Soft gradient surface + accent left bar + shadow elevation. Applied to
+   elements with class "bf-subsec". Inline section headers (.Sec component)
+   get a similar treatment via the React props. */
 .bf-side-overlay .bf-subsec,
-.bf-mobile-sheet .bf-subsec { background: rgba(255,255,255,0.015); border: 1px solid var(--bf-rail-border); border-left: 3px solid var(--bf-accent, #c49a1a)55; border-radius: 6px; padding: 8px 10px; margin: 8px 0; }
+.bf-mobile-sheet .bf-subsec {
+  background: linear-gradient(180deg, var(--bf-field-bg), rgba(255,255,255,0.01));
+  border: 1px solid var(--bf-rail-border);
+  border-left: 3px solid var(--bf-accent, #c49a1a);
+  border-radius: var(--bfx-radius-md);
+  padding: 12px 14px; margin: 10px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  transition: border-color var(--bfx-dur) var(--bfx-ease), box-shadow var(--bfx-dur) var(--bfx-ease);
+}
+.bf-side-overlay .bf-subsec:hover,
+.bf-mobile-sheet .bf-subsec:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.14); }
 .bf-side-overlay .bf-subsec + .bf-subsec,
-.bf-mobile-sheet .bf-subsec + .bf-subsec { margin-top: 6px; }
+.bf-mobile-sheet .bf-subsec + .bf-subsec { margin-top: 8px; }
+
+/* v3 Phase 9 — v4-aligned input + select focus ring. 3px accent glow via
+   box-shadow (not outline) so rounded corners don't clip the halo. */
+.bf-side-overlay input[type="number"]:focus,
+.bf-side-overlay input[type="text"]:focus,
+.bf-side-overlay select:focus,
+.bf-mobile-sheet input[type="number"]:focus,
+.bf-mobile-sheet input[type="text"]:focus,
+.bf-mobile-sheet select:focus {
+  outline: none;
+  border-color: var(--bf-accent, #c49a1a);
+  box-shadow: var(--bfx-ring);
+  border-radius: var(--bfx-radius-sm);
+}
+/* Softer hover border for editable fields */
+.bf-side-overlay input[type="number"]:hover:not(:focus),
+.bf-side-overlay input[type="text"]:hover:not(:focus),
+.bf-side-overlay select:hover:not(:focus),
+.bf-mobile-sheet input[type="number"]:hover:not(:focus),
+.bf-mobile-sheet input[type="text"]:hover:not(:focus),
+.bf-mobile-sheet select:hover:not(:focus) {
+  border-color: var(--bf-rail-btn) !important;
+}
 
 /* v3 Phase 7 — accessibility polish.
-   focus-visible rings for keyboard navigation; no visual change for mouse users.
-   Motion-reduction: users with prefers-reduced-motion get instant transitions. */
+   focus-visible rings for keyboard navigation on buttons/rails. Motion-reduction
+   users get instant transitions. */
 .bf-rail-btn:focus-visible,
 .bf-side-overlay button:focus-visible,
-.bf-side-overlay input:focus-visible,
-.bf-side-overlay select:focus-visible,
-.bf-mobile-sheet button:focus-visible,
-.bf-mobile-sheet input:focus-visible,
-.bf-mobile-sheet select:focus-visible {
+.bf-mobile-sheet button:focus-visible {
   outline: 2px solid var(--bf-accent, #c49a1a);
   outline-offset: 2px;
   border-radius: 3px;
@@ -272,26 +312,63 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 }
 .bf-mode-toggle button:not(.on):hover { color: var(--bf-rail-hover-tx); }
 
-/* "Open the full form" jump link that lives at the top of every sidebar module
-   when cockpit mode is ON. A quiet, dashed row the user can ignore or click. */
+/* v3 Phase 9 — Blueprint jump link ported from v4's .callout tip.
+   3px accent-tinted left border, soft background wash, rounded 10 corners. */
 .bf-blueprint-jump {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 11px; margin-bottom: 8px;
-  background: var(--bf-field-bg);
-  border: 1px dashed var(--bf-field-border);
-  border-radius: 6px;
-  font-size: 11px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; margin-bottom: 12px;
+  background: rgba(80,144,200,0.08);
+  border: none;
+  border-left: 3px solid var(--bf-accent, #c49a1a);
+  border-radius: var(--bfx-radius-md);
+  font-size: 12px; font-weight: 500;
+  color: var(--bf-rail-btn, #b4becf);
   cursor: pointer; text-decoration: none;
-  transition: background .15s, border-color .15s, color .15s;
-  line-height: 1.35;
+  transition: background var(--bfx-dur) var(--bfx-ease), color var(--bfx-dur) var(--bfx-ease), transform var(--bfx-dur) var(--bfx-ease);
+  line-height: 1.45;
 }
 .bf-blueprint-jump:hover {
-  background: var(--bf-rail-hover-bg);
-  border-color: var(--bf-accent, #c49a1a);
+  background: rgba(196,154,26,0.14);
   color: var(--bf-accent, #c49a1a);
+  transform: translateX(2px);
 }
-.bf-blueprint-jump .bf-bpj-ico { font-size: 13px; line-height: 1; }
-.bf-blueprint-jump .bf-bpj-arrow { margin-left: auto; opacity: 0.6; }
+.bf-blueprint-jump .bf-bpj-ico { font-size: 15px; line-height: 1; flex-shrink: 0; }
+.bf-blueprint-jump .bf-bpj-arrow { margin-left: auto; opacity: 0.7; transition: transform var(--bfx-dur) var(--bfx-ease); }
+.bf-blueprint-jump:hover .bf-bpj-arrow { transform: translateX(3px); opacity: 1; }
+
+/* v3 Phase 9 — Advanced drawer refined to match v4's .bf-adv-drawer polish. */
+.bf-side-overlay details.bf-adv-drawer,
+.bf-mobile-sheet details.bf-adv-drawer {
+  margin: 10px 0 6px;
+  border: 1px dashed var(--bf-rail-border);
+  border-radius: var(--bfx-radius-sm);
+  padding: 10px 12px;
+  background: var(--bf-field-bg);
+  transition: border-color var(--bfx-dur) var(--bfx-ease);
+}
+.bf-side-overlay details.bf-adv-drawer > summary,
+.bf-mobile-sheet details.bf-adv-drawer > summary {
+  cursor: pointer; font-size: 11px;
+  color: var(--bf-rail-btn, #b4becf);
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  transition: color var(--bfx-dur) var(--bfx-ease);
+}
+.bf-side-overlay details.bf-adv-drawer > summary:hover,
+.bf-mobile-sheet details.bf-adv-drawer > summary:hover { color: var(--bf-accent, #c49a1a); }
+.bf-side-overlay details.bf-adv-drawer[open] > summary,
+.bf-mobile-sheet details.bf-adv-drawer[open] > summary { color: var(--bf-accent, #c49a1a); margin-bottom: 8px; }
+
+/* v3 Phase 9 — v4-style compact input base (before focus state adds the ring) */
+.bf-side-overlay input[type="number"],
+.bf-side-overlay input[type="text"],
+.bf-side-overlay select,
+.bf-mobile-sheet input[type="number"],
+.bf-mobile-sheet input[type="text"],
+.bf-mobile-sheet select {
+  border-radius: var(--bfx-radius-sm) !important;
+  transition: border-color var(--bfx-dur) var(--bfx-ease), box-shadow var(--bfx-dur) var(--bfx-ease), background var(--bfx-dur) var(--bfx-ease) !important;
+  font-variant-numeric: tabular-nums;
+}
 
 /* v3 PHASE 4: compact slider styling. Reduces vertical weight so the density
    of sliders in Savings/Model feels less overwhelming. Sliders remain, but
@@ -7283,8 +7360,42 @@ function Field({ l, children, err, warn, tip, id, full }) {
   return React.createElement("div", { "data-bf-field": "1", className: "bf-field " + (full ? "bf-field-full" : ""), style: { marginBottom: hasErr ? 2 : 4, borderLeft: borderW, paddingLeft: hasErr || hasWarn ? 5 : 0 }, title: tip || "", role: "group", "aria-label": l }, React.createElement("div", { style: { fontSize: FS.base, color: hasErr ? CL.rd : hasWarn ? CL.or : TX.secondary(), fontWeight: FW.medium, letterSpacing: 0.3, marginBottom: 1 } }, l, tip && React.createElement("span", { style: { cursor: "help", opacity: 0.4, marginLeft: 3, fontSize: FS.xs } }, "\u24d8")), children, hasErr && React.createElement("div", { style: { fontSize: FS.xs, color: CL.rd, marginTop: 1 } }, err), hasWarn && React.createElement("div", { style: { fontSize: FS.xs, color: CL.or, marginTop: 1 } }, warn));
 }
 function Sec({ t, open, onClick, accent }) {
-  var _ac = accent || (open ? CL.ac : "transparent");
-  return React.createElement("div", { onClick, style: { fontSize: FS.sm, letterSpacing: 0.3, color: open ? CL.ac : CL.al, fontWeight: FW.medium, marginBottom: 2, marginTop: 8, paddingBottom: 4, paddingTop: 4, paddingLeft: 8, borderBottom: "1px solid " + (open ? CL.ac : CL.bd), borderLeft: "3px solid " + _ac, cursor: onClick ? "pointer" : "default", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none", transition: "all .15s" } }, React.createElement("span", null, t), onClick && React.createElement("span", { style: { fontSize: FS.md, color: open ? CL.ac : CL.dm, transition: "transform .2s", transform: open ? "rotate(0deg)" : "rotate(0deg)" } }, open ? "\u25be" : "\u25b8"));
+  // v3 Phase 9 — Sec header restyled to match v4's details.section[open]:
+  // soft gradient surface when open, 3px accent left bar, chevron rotates,
+  // box-shadow elevation. Closed state stays flat for visual quiet.
+  var _ac = accent || CL.ac;
+  var _bg = open
+    ? "linear-gradient(180deg, rgba(196,154,26,0.08), rgba(196,154,26,0.02))"
+    : "transparent";
+  return React.createElement("div", {
+    onClick,
+    style: {
+      fontSize: FS.md, letterSpacing: -0.1,
+      color: open ? _ac : CL.al,
+      fontWeight: FW.bold,
+      marginBottom: 2, marginTop: 10,
+      paddingBottom: 9, paddingTop: 9, paddingLeft: 14, paddingRight: 12,
+      borderLeft: "3px solid " + (open ? _ac : "transparent"),
+      borderRadius: "var(--bfx-radius-md, 10px)",
+      background: _bg,
+      boxShadow: open ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
+      cursor: onClick ? "pointer" : "default",
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      userSelect: "none",
+      transition: "background var(--bfx-dur, 180ms) var(--bfx-ease, ease), border-color var(--bfx-dur, 180ms) var(--bfx-ease, ease), box-shadow var(--bfx-dur, 180ms) var(--bfx-ease, ease), color var(--bfx-dur, 180ms) var(--bfx-ease, ease)"
+    }
+  },
+    React.createElement("span", null, t),
+    onClick && React.createElement("span", {
+      style: {
+        fontSize: FS.sm,
+        color: open ? _ac : CL.dm,
+        transition: "transform .2s var(--bfx-ease, ease)",
+        transform: open ? "rotate(90deg)" : "rotate(0deg)",
+        display: "inline-block"
+      }
+    }, "\u25b8")
+  );
 }
 // === STRATEGIC ADVICE MANAGER (SAM) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Strategy Definitions ===
 var SAM_STRATEGIES = [
@@ -13157,15 +13268,60 @@ React.createElement("div", { className: "bf-overlay-backdrop" + (pan ? " visible
 // === DESKTOP OVERLAY PANEL ===
 React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "") },
   (function() {
+    // v3 Phase 9 — module header polished to match v4's page-title aesthetic:
+    // icon in a tinted square, title slightly bigger with tighter tracking,
+    // italic caption wraps with more breathing room, bordered bottom divider.
     var _m = (window._bfModMeta || {})[openSec] || { ico: "", title: "", cap: "", col: CL.ac };
-    return React.createElement("div", { className: "bf-module-head", style: { borderLeft: "3px solid " + _m.col, paddingLeft: 10, marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 10 } },
-      React.createElement("div", { style: { fontSize: 22, lineHeight: 1, marginTop: 2 } }, _m.ico),
-      React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-        React.createElement("div", { style: { fontSize: 15, fontWeight: 700, color: _m.col, letterSpacing: 0.2, lineHeight: 1.2 } }, _m.title),
-        React.createElement("div", { style: { fontSize: 11, color: CL.dm, lineHeight: 1.4, marginTop: 3, fontStyle: "italic" } }, _m.cap)
+    return React.createElement("div", {
+      className: "bf-module-head",
+      style: {
+        marginBottom: 18, paddingBottom: 14,
+        borderBottom: "1px solid " + CL.bd,
+        display: "flex", alignItems: "flex-start", gap: 14
+      }
+    },
+      React.createElement("div", {
+        style: {
+          width: 44, height: 44,
+          borderRadius: "var(--bfx-radius-md, 10px)",
+          background: _m.col + "22",
+          color: _m.col,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 22, lineHeight: 1,
+          flexShrink: 0,
+          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)"
+        }
+      }, _m.ico),
+      React.createElement("div", { style: { flex: 1, minWidth: 0, paddingTop: 2 } },
+        React.createElement("div", {
+          style: {
+            fontSize: 17, fontWeight: 700,
+            color: _m.col, letterSpacing: -0.3,
+            lineHeight: 1.2, marginBottom: 4
+          }
+        }, _m.title),
+        React.createElement("div", {
+          style: {
+            fontSize: 12, color: CL.dm,
+            lineHeight: 1.5, fontStyle: "normal"
+          }
+        }, _m.cap)
       ),
-      React.createElement("button", { onClick: function() { setPan(false); }, "aria-label": lang==="fr"?"Fermer":"Close",
-        style: { background: "none", border: "none", color: CL.dm, fontSize: 18, cursor: "pointer", padding: "2px 6px", flexShrink: 0, lineHeight: 1 } }, "\u2715")
+      React.createElement("button", {
+        onClick: function() { setPan(false); },
+        "aria-label": lang==="fr"?"Fermer":"Close",
+        style: {
+          background: "transparent", border: "1px solid transparent",
+          color: CL.dm, fontSize: 18,
+          cursor: "pointer",
+          width: 32, height: 32, borderRadius: 8,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, lineHeight: 1,
+          transition: "background .15s, border-color .15s, color .15s"
+        },
+        onMouseEnter: function(e) { e.currentTarget.style.background = CL.s2; e.currentTarget.style.color = CL.al; },
+        onMouseLeave: function(e) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = CL.dm; }
+      }, "\u2715")
     );
   })(),
   // v3 Phase 7 — Cockpit mode shows a soft "Open the full form" affordance at
