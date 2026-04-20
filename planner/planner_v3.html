@@ -4830,7 +4830,10 @@ function runTestSuite() {
 // Generates a year-by-year optimal withdrawal schedule using tax-aware heuristics
 // Key objectives: minimize lifetime tax, protect OAS/GIS, use pension credit, manage RRIF
 function optimizeDecum(p) {
-  var maxYrs = (p.deathAge || 95) - p.age;
+  // Default deathAge for parity with runMC. Without this, NaN propagates if
+  // upstream callers omit the field (intake quiz, scenario compare, etc.).
+  if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = 90;
+  var maxYrs = p.deathAge - p.age;
   var schedule = [];
   var rr = p.rrsp || 0, tf = p.tfsa || 0, nr = p.nr || 0;
   // TFSA room tracking: Room = cumulative_limits - net_contributions
@@ -5587,6 +5590,10 @@ function calcPayroll(sal, prov, yr, infR) {
 function runMC(p, N, _progressCb) {
   // === PARAM SANITIZATION ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â engine-level safety net ===
   // Rates: clamp to physically possible ranges (prevents typo-level bugs)
+    // Default deathAge if missing — prevents NaN propagation through entire simulation.
+  // Without this, runMC builds an empty path[] and crashes at finalVal extraction.
+  // Defaults match Service Canada CPM-2023 LE@65 (~90 det / 95 stochastic).
+  if (p.deathAge == null || isNaN(p.deathAge)) p.deathAge = p.stochMort ? 95 : 90;
   p.merR = Math.max(0, Math.min(p.merR || 0, 0.05));      // MER: 0-5%
   p.merT = Math.max(0, Math.min(p.merT || 0, 0.05));
   p.merN = Math.max(0, Math.min(p.merN || 0, 0.05));
@@ -6810,6 +6817,14 @@ function runMC(p, N, _progressCb) {
     deathAges.push(simDeath);
     if (p.cOn) cDeathAges.push(cSimDeath);
   }
+  // Defensive: filter NaN/Infinity out of fins before sort/percentile extraction.
+  // Pension splitting can produce NaN finalVal under edge configurations
+  // (estRrifMin × splitP × calcTax cascade); filtering here prevents
+  // percentile corruption + downstream histogram crash.
+  fins = fins.filter(function(x) { return isFinite(x); });
+  liqFins = liqFins.filter(function(x) { return isFinite(x); });
+  if (fins.length === 0) fins = [0]; // never empty
+  if (liqFins.length === 0) liqFins = [0];
   fins.sort(function(a, b) {
     return a - b;
   });
@@ -7228,8 +7243,12 @@ function runMC(p, N, _progressCb) {
       _histBins.push({ lo: _hMin + _bi * _bw, hi: _hMin + (_bi + 1) * _bw, count: 0 });
     }
     fins.forEach(function(f) {
+      // Guard against NaN/Infinity in fins — would propagate to NaN idx and crash.
+      // Root cause is upstream (some sim path produced NaN final wealth) but the
+      // histogram should never crash the whole MC over one bad sim.
+      if (!isFinite(f)) return;
       var idx = Math.min(_nBins - 1, Math.max(0, Math.floor((f - _hMin) / _bw)));
-      _histBins[idx].count++;
+      if (_histBins[idx]) _histBins[idx].count++;
     });
   }
   // Build death vs ruin by 5-year age buckets
@@ -13525,7 +13544,7 @@ React.createElement("div", { className: "bf-drawer" + (drawerOpen ? " open" : ""
   ),
   drawerOpen ? React.createElement("iframe", {
     id: "bf-drawer-iframe",
-    src: "planner_v4.html?embed=1&lang=" + lang,
+    src: "planner_v4.html?embed=1&lang=" + lang + "&theme=" + (dark ? "dark" : "light"),
     title: lang === "fr" ? "Formulaire complet" : "Full form",
     onLoad: function() {
       var el = document.getElementById("bf-drawer-loading");

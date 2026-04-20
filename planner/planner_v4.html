@@ -54,6 +54,28 @@
   --dur-slow: 260ms;
   --ease:     cubic-bezier(0.22, 0.61, 0.36, 1);
 }
+/* v4 Phase 12 — Light mode. Overrides surface/text/border tokens when
+   documentElement gets data-theme="light". Accents (gold/blue/green/etc)
+   stay the same across themes so brand identity is consistent. */
+:root[data-theme="light"] {
+  --bg:            #f7f8fb;
+  --bg-soft:       #eef1f6;
+  --surface:       #ffffff;
+  --surface-2:     #f0f3f8;
+  --surface-3:     #e3e8f0;
+  --border:        #cdd4e0;
+  --border-soft:   #dfe3ec;
+  --text:          #0e1420;
+  --text-soft:     #374151;
+  --text-dim:      #5f6a7d;
+  --text-muted:    #8690a3;
+  --accent-soft:   #c49a1a1a;
+  --accent-ring:   #c49a1a55;
+  --shadow-sm: 0 1px 2px rgba(17,24,39,0.08);
+  --shadow-md: 0 4px 12px rgba(17,24,39,0.1);
+  --shadow-lg: 0 12px 28px rgba(17,24,39,0.18);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   background:
@@ -66,9 +88,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   font-feature-settings: "cv01", "cv03", "cv04", "ss01";
+  transition: background-color 200ms ease, color 200ms ease;
 }
 body { min-height: 100vh; }
 ::selection { background: var(--accent-ring); color: var(--text); }
+
+/* Light-mode button + pill adjustments (accent text on primary looks
+   wrong on white — keep the black-on-gold for primary buttons). */
+:root[data-theme="light"] .btn-primary { color: #0e1420; }
+:root[data-theme="light"] .pill.on { color: #0e1420; }
+:root[data-theme="light"] .simulate-fab { color: #0e1420; }
 
 /* ─────────────── Layout ─────────────── */
 .app { max-width: 1160px; margin: 0 auto; padding: 36px 40px 120px; }
@@ -564,6 +593,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
       <div class="brand-tag" data-i18n="brandTag">Laboratoire · Plan de retraite</div>
     </div>
     <div class="hdr-actions">
+      <button class="btn btn-ghost" onclick="toggleTheme()" title="Basculer le thème clair/sombre" id="bf-theme-btn" aria-label="Theme">🌙</button>
       <div class="lang-toggle" role="tablist" aria-label="Langue">
         <button id="lang-fr" class="on" aria-pressed="true" onclick="setLang('fr')">FR</button>
         <button id="lang-en" aria-pressed="false" onclick="setLang('en')">EN</button>
@@ -591,6 +621,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
       <span data-i18n="toolbarHint">Formulaire complet · ~190 variables · toutes les sections optionnelles sauf <strong>Identité</strong> et <strong>Revenus</strong>.</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-primary" onclick="openQuickStart()" data-i18n="quickStart" title="Remplir l'essentiel en 5 étapes">🚀 Démarrage rapide</button>
       <button class="btn btn-ghost" onclick="document.querySelectorAll('details.section').forEach(function(d){d.open=true;})" data-i18n="expandAll">⤢ Tout ouvrir</button>
       <button class="btn btn-ghost" onclick="document.querySelectorAll('details.section').forEach(function(d){d.open=false;})" data-i18n="collapseAll">⤡ Tout fermer</button>
     </div>
@@ -3907,6 +3938,163 @@ window.addEventListener("beforeunload", _autoSave);
   } catch (e) { console.warn("autosave restore offer failed:", e); }
 })();
 
+/* ─────────────── Dark / Light theme (v4 Phase 12) ─────────────── */
+/* Default = dark. Persists in localStorage['bf_v4_theme']. In embed mode,
+   inherits from URL param ?theme=light|dark (v3 sets it when opening the
+   drawer so the iframe matches v3's current theme). */
+function _applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  var btn = document.getElementById("bf-theme-btn");
+  if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
+}
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute("data-theme") || "dark";
+  var next = cur === "dark" ? "light" : "dark";
+  _applyTheme(next);
+  try { localStorage.setItem("bf_v4_theme", next); } catch (e) {}
+}
+(function _initTheme() {
+  try {
+    var params = new URLSearchParams(location.search);
+    var urlTheme = params.get("theme"); // only honored in embed mode
+    var saved = urlTheme && (urlTheme === "light" || urlTheme === "dark")
+      ? urlTheme
+      : (localStorage.getItem("bf_v4_theme") || "dark");
+    _applyTheme(saved);
+  } catch (e) { _applyTheme("dark"); }
+})();
+
+/* ─────────────── Quick Start wizard (v4 Phase 12) ─────────────── */
+/* 5-step wizard that captures the minimum: age/sex/prov, retAge, salary,
+   retSpM, total savings. Pre-fills the rest of the form with Canadian
+   medians (PAG 2025 + IPP 2026) so user can click Simulate right away. */
+var _bfQuick = { step: 1, data: {} };
+var BF_QUICK_STEPS = [
+  { key: 1, title: { fr: "Qui êtes-vous ?", en: "Who are you?" }, fields: [
+    { id: "age", type: "number", label: { fr: "Âge actuel", en: "Current age" }, min: 18, max: 80, ph: "45" },
+    { id: "sex", type: "select", label: { fr: "Sexe", en: "Sex" }, opts: [["F","Femme/Female"],["M","Homme/Male"]] },
+    { id: "prov", type: "select", label: { fr: "Province", en: "Province" }, opts: [["QC","QC"],["ON","ON"],["BC","BC"],["AB","AB"],["SK","SK"],["MB","MB"],["NB","NB"],["NS","NS"],["PE","PE"],["NL","NL"],["NT","NT"],["YT","YT"],["NU","NU"]] }
+  ]},
+  { key: 2, title: { fr: "Quand voulez-vous prendre votre retraite ?", en: "When do you want to retire?" }, fields: [
+    { id: "retAge", type: "number", label: { fr: "Âge de retraite visé", en: "Target retirement age" }, min: 45, max: 75, ph: "65" }
+  ], hint: { fr: "65 ans est l'âge médian au Canada. Plus tôt = plus d'épargne requise.", en: "65 is the Canadian median. Earlier = more savings needed." }},
+  { key: 3, title: { fr: "Quels sont vos revenus ?", en: "What's your income?" }, fields: [
+    { id: "sal", type: "number", label: { fr: "Salaire brut annuel ($)", en: "Annual gross salary ($)" }, min: 0, step: 5000, ph: "75 000" }
+  ], hint: { fr: "Utilisez 0 si déjà à la retraite. Sert à calculer vos cotisations REER max + rente RRQ.", en: "Use 0 if already retired. Drives RRSP room + QPP pension calc." }},
+  { key: 4, title: { fr: "Combien dépenserez-vous à la retraite ?", en: "How much will you spend in retirement?" }, fields: [
+    { id: "retSpM", type: "number", label: { fr: "Dépenses mensuelles prévues ($)", en: "Monthly spending expected ($)" }, min: 500, step: 100, ph: "5 500" }
+  ], hint: { fr: "Règle de pouce : 60-80 % des dépenses actuelles. Pour un couple québécois médian : ~5 500 $/mois.", en: "Rule of thumb: 60-80% of current spending. Median Quebec couple: ~$5,500/mo." }},
+  { key: 5, title: { fr: "Combien avez-vous déjà épargné ?", en: "How much have you saved?" }, fields: [
+    { id: "rrsp", type: "number", label: { fr: "REER — solde total ($)", en: "RRSP total balance ($)" }, min: 0, step: 5000, ph: "85 000" },
+    { id: "tfsa", type: "number", label: { fr: "CÉLI — solde total ($)", en: "TFSA total balance ($)" }, min: 0, step: 5000, ph: "42 000" },
+    { id: "nr", type: "number", label: { fr: "Non-enregistré — solde ($)", en: "Non-registered balance ($)" }, min: 0, step: 5000, ph: "0" }
+  ], hint: { fr: "Tous les trois comptes combinés. Les fonds de pension apparaissent dans la section Pensions.", en: "All three account types combined. Employer pension goes in the Pensions section." }}
+];
+function openQuickStart() {
+  _bfQuick = { step: 1, data: {} };
+  document.getElementById("bf-quick-modal").hidden = false;
+  _renderQuickStep();
+}
+function _closeQuickModal() { document.getElementById("bf-quick-modal").hidden = true; }
+function _renderQuickStep() {
+  var fr = _lang === "fr";
+  var step = BF_QUICK_STEPS[_bfQuick.step - 1];
+  var body = document.getElementById("bf-quick-body");
+  document.querySelectorAll(".bf-quick-step").forEach(function (s, i) {
+    s.style.background = i < _bfQuick.step ? "var(--accent)" : "var(--border)";
+  });
+  var html = '<div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:14px">' + step.title[fr ? "fr" : "en"] + '</div>';
+  step.fields.forEach(function (f) {
+    html += '<div class="field" style="margin-bottom:12px"><div class="field-head"><label class="field-label">' + f.label[fr ? "fr" : "en"] + '</label></div>';
+    if (f.type === "select") {
+      html += '<select class="field-input" id="qs_' + f.id + '">';
+      f.opts.forEach(function (o) {
+        var sel = (_bfQuick.data[f.id] === o[0]) ? " selected" : "";
+        html += '<option value="' + o[0] + '"' + sel + '>' + o[1] + '</option>';
+      });
+      html += '</select>';
+    } else {
+      var v = _bfQuick.data[f.id] != null ? _bfQuick.data[f.id] : "";
+      html += '<input class="field-input" id="qs_' + f.id + '" type="' + f.type + '" value="' + v + '"'
+        + (f.min != null ? ' min="' + f.min + '"' : '')
+        + (f.max != null ? ' max="' + f.max + '"' : '')
+        + (f.step != null ? ' step="' + f.step + '"' : '')
+        + (f.ph != null ? ' placeholder="' + f.ph + '"' : '')
+        + '>';
+    }
+    html += '</div>';
+  });
+  if (step.hint) html += '<div class="bf-warn-inline info" style="margin-top:4px"><span class="ico">💡</span><span>' + step.hint[fr ? "fr" : "en"] + '</span></div>';
+  body.innerHTML = html;
+  document.getElementById("bf-quick-prev").hidden = _bfQuick.step === 1;
+  document.getElementById("bf-quick-next").textContent = _bfQuick.step === BF_QUICK_STEPS.length ? (fr ? "✓ Remplir et fermer" : "✓ Fill and close") : (fr ? "Suivant →" : "Next →");
+  setTimeout(function () { var first = document.querySelector("#bf-quick-body input, #bf-quick-body select"); if (first) first.focus(); }, 50);
+}
+function _captureQuickStep() {
+  var step = BF_QUICK_STEPS[_bfQuick.step - 1];
+  step.fields.forEach(function (f) {
+    var el = document.getElementById("qs_" + f.id);
+    if (!el) return;
+    _bfQuick.data[f.id] = f.type === "number" ? (el.value === "" ? null : parseFloat(el.value)) : el.value;
+  });
+}
+function _quickPrev() { _captureQuickStep(); if (_bfQuick.step > 1) _bfQuick.step--; _renderQuickStep(); }
+function _quickNext() {
+  _captureQuickStep();
+  if (_bfQuick.step < BF_QUICK_STEPS.length) { _bfQuick.step++; _renderQuickStep(); return; }
+  _applyQuickStart(_bfQuick.data);
+  _closeQuickModal();
+}
+function _applyQuickStart(d) {
+  /* 1. Apply user-entered core values. */
+  ["age","retAge","sal","retSpM","rrsp","tfsa","nr"].forEach(function (id) {
+    if (d[id] != null) { var el = document.getElementById(id); if (el) el.value = d[id]; }
+  });
+  if (d.sex) document.getElementById("sex").value = d.sex;
+  if (d.prov) document.getElementById("prov").value = d.prov;
+  /* 2. Fill PAG 2025 medians where the field is currently empty. */
+  var medians = {
+    deathAge: 93, qppAge: 65, oasAge: 65, avgE: Math.round((d.sal || 70000) * 0.85), qppYrs: 35,
+    inf: 2.1, infHealth: 2.0, nSim: 1000,
+    eqRet: 5.5, eqVol: 16, bndRet: 3.4, bndVol: 6,
+    allocR: 60, allocT: 70, allocN: 50,
+    merR: 1.0, merT: 0.8, merN: 0.7,
+    rrspC: Math.min(Math.round((d.sal || 0) * 0.10), 33810),
+    tfsaC: 7000,
+    goP: 1.0, slP: 0.85, noP: 0.95, smileSlAge: 75, smileNoAge: 85,
+    healthAge: 85, healthMul: 0,
+    cgIncLo: 50, cgIncHi: 66.67, cgThresh: 250000
+  };
+  Object.keys(medians).forEach(function (k) {
+    var el = document.getElementById(k); if (!el) return;
+    if (el.value === "" || el.value == null) el.value = medians[k];
+  });
+  var stoch = document.getElementById("stochMort"); if (stoch) stoch.checked = true;
+  /* 3. Trigger recalcs + counter refresh. */
+  if (typeof _syncPenFields === "function") _syncPenFields();
+  if (typeof _syncGA === "function") _syncGA();
+  if (typeof validateInputs === "function") validateInputs();
+  if (typeof updateSectionCounts === "function") updateSectionCounts();
+  /* 4. Show banner. */
+  var banner = document.createElement("div");
+  banner.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--green);color:#0e1420;padding:10px 20px;border-radius:999px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);font-size:13px";
+  banner.textContent = _lang === "fr" ? "✓ Formulaire pré-rempli — cliquez Simuler ou affinez les sections" : "✓ Form pre-filled — click Simulate or refine sections";
+  document.body.appendChild(banner);
+  setTimeout(function () { banner.style.transition = "opacity 0.4s"; banner.style.opacity = "0"; setTimeout(function () { banner.remove(); }, 400); }, 3200);
+}
+/* Close quick modal on backdrop / ESC */
+document.addEventListener("click", function (ev) {
+  var m = document.getElementById("bf-quick-modal");
+  if (!m || m.hidden) return;
+  if (ev.target === m) _closeQuickModal();
+});
+document.addEventListener("keydown", function (ev) {
+  var m = document.getElementById("bf-quick-modal");
+  if (!m || m.hidden) return;
+  if (ev.key === "Escape") _closeQuickModal();
+  if (ev.key === "Enter") { ev.preventDefault(); _quickNext(); }
+});
+
 /* v4 Phase 11 — Goal modal close via backdrop click + ESC. */
 document.addEventListener("click", function (ev) {
   var m = document.getElementById("bf-goal-modal");
@@ -3922,6 +4110,29 @@ document.addEventListener("keydown", function (ev) {
   }
 });
 </script>
+
+<!-- v4 Phase 12 — Quick Start wizard (5 steps). Pre-fills the form with
+     sensible Canadian medians so users can see a simulation within 2 min
+     of landing. Same modal pattern as the goal modal. -->
+<div id="bf-quick-modal" class="bf-modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="bf-modal" style="max-width:600px">
+    <div class="bf-modal-title">🚀 <span data-i18n="quickTitle">Démarrage rapide</span></div>
+    <div class="bf-modal-sub" data-i18n="quickSub">Remplissez les 5 chiffres essentiels. Nous pré-remplirons le reste avec les médianes canadiennes 2026. Vous pourrez affiner tout après.</div>
+    <div style="display:flex;gap:4px;margin:14px 0">
+      <div class="bf-quick-step" data-step="1" style="flex:1;height:3px;background:var(--accent);border-radius:2px"></div>
+      <div class="bf-quick-step" data-step="2" style="flex:1;height:3px;background:var(--border);border-radius:2px"></div>
+      <div class="bf-quick-step" data-step="3" style="flex:1;height:3px;background:var(--border);border-radius:2px"></div>
+      <div class="bf-quick-step" data-step="4" style="flex:1;height:3px;background:var(--border);border-radius:2px"></div>
+      <div class="bf-quick-step" data-step="5" style="flex:1;height:3px;background:var(--border);border-radius:2px"></div>
+    </div>
+    <div class="bf-modal-body" id="bf-quick-body"></div>
+    <div class="bf-modal-footer">
+      <button class="btn btn-ghost" onclick="_closeQuickModal()" data-i18n="cancel">Annuler</button>
+      <button class="btn btn-ghost" id="bf-quick-prev" onclick="_quickPrev()" data-i18n="back" hidden>← Précédent</button>
+      <button class="btn btn-primary" id="bf-quick-next" onclick="_quickNext()" data-i18n="next">Suivant →</button>
+    </div>
+  </div>
+</div>
 
 <!-- v4 Phase 11 — Goal modal (replaces native prompt() chain). -->
 <div id="bf-goal-modal" class="bf-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="goal-modal-title">
