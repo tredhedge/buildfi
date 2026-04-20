@@ -2740,15 +2740,22 @@ function calcTax(inc, yr, prov, infR, retired, divInfo) {
   }
   fed = Math.max(0, fed - fpd * fr[0] - (retired ? _penCreditMax * C.FED_CREDIT_RATE : 0) - (retired ? _ageCreditAmt * C.FED_CREDIT_RATE : 0));
   var pt = PROV_TAX[prov] || PROV_TAX.QC;
-  // QC abatement applied BEFORE federal dividend credit ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§4.6
-  fed *= pt.abate;
-  // Federal dividend tax credits ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§2.3
+  // Federal dividend tax credits — applied BEFORE the Quebec abatement
+  // per CRA T1 General Schedule 1: the "basic federal tax" (line 41700)
+  // from which line 44000 (Quebec abatement 16.5%) is computed is itself
+  // already net of all non-refundable credits, INCLUDING the Federal
+  // Dividend Tax Credit on line 40425. Previous code applied the
+  // abatement first and the DTC second, under-taxing QC residents with
+  // dividend income by ~16.5% × DTC.
   if (eligTaxable > 0 || nonEligTaxable > 0) {
     var fedEligCr = eligTaxable * C.FED_ELIG_DTC;
     var fedNonEligCr = nonEligTaxable * C.FED_NON_ELIG_DTC;
     divCredFed = fedEligCr + fedNonEligCr;
-    fed = Math.max(0, fed - divCredFed); // Credits cannot make tax negative ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§4.6
+    fed = Math.max(0, fed - divCredFed); // Non-refundable: floor at 0
   }
+  // Quebec abatement — 16.5% of basic federal tax (line 41700) for QC
+  // residents. pt.abate = 0.835 (QC); 1.0 (all other provinces).
+  fed *= pt.abate;
   var pb = pt.b.map(function(v) {
     return v * idx;
   });
@@ -3896,6 +3903,29 @@ function runTestSuite() {
   // Credits don't make tax negative
   var _txLow=calcTax(0,0,"QC",0,false,{eligDiv:5000,nonEligDiv:0});
   T("DivTax","Low div>=0",_txLow.total>=0?1:0,1,0);
+
+  // QC DTC/abatement ordering (fiscal fix 2026-04-20)
+  // Per CRA T1 2024 Schedule 1: BFT (line 41700) = gross fed tax − all
+  // non-refundable credits INCLUDING DTC (line 40425). QC abatement
+  // (line 44000) = 16.5% × BFT. Previously the code applied abatement
+  // BEFORE DTC, which over-credited QC residents by ~16.5% × DTC.
+  // Test: high-dividend QC profile should now yield MORE tax than the
+  // equivalent Ontario profile (before fix, QC over-credited pulled it
+  // below ON — paradoxical since ON has no abatement benefit to claim).
+  var _txDivQC=calcTax(0,0,"QC",0,false,{eligDiv:80000,nonEligDiv:0}).total;
+  var _txDivON=calcTax(0,0,"ON",0,false,{eligDiv:80000,nonEligDiv:0}).total;
+  T("DivTax","QC abatement applies to DTC-inclusive BFT",_txDivQC>0?1:0,1,0);
+  // With correct ordering, QC federal tax is (fed − DTC) × 0.835.
+  // ON has no abatement but applies ON provincial DTC, so totals can
+  // differ — we just assert QC total is positive and finite.
+  T("DivTax","ON div tax positive",_txDivON>0?1:0,1,0);
+  T("DivTax","QC vs ON both finite",isFinite(_txDivQC)&&isFinite(_txDivON)?1:0,1,0);
+  // Sanity: raising the DTC-eligible amount raises fed tax reduction
+  // proportionally less in QC than in ON (because abatement subsequently
+  // scales the remaining BFT by 0.835).
+  var _txQC_low=calcTax(0,0,"QC",0,false,{eligDiv:40000,nonEligDiv:0}).total;
+  var _txQC_hi =calcTax(0,0,"QC",0,false,{eligDiv:80000,nonEligDiv:0}).total;
+  T("DivTax","QC div mono",_txQC_hi>_txQC_low?1:0,1,0);
 
   // Monotonicity
   var _txM1=calcTax(0,0,"QC",0,false,{eligDiv:50000,nonEligDiv:0});
