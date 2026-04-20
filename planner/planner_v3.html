@@ -6767,12 +6767,33 @@ function runMC(p, N, _progressCb) {
           if (p.cOn && cAlive) {
             var cQppInc = cAge2 >= (p.cQppAge || 65) ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM : 0;
             var cPenInc = 0;
-            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12;
+            // Primary spouse pension (monthly → annual, DB vs DC/RPDB/RRS/RVER)
+            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12 * ((+p.cPenIdx || 0) ? infM : 1);
             if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = (p.cDCBal || 0) * 0.04;
+            // Secondary spouse pension (DB or CD — e.g. ex-employer plan)
+            if (cRetired) {
+              if (p.cPen2Type === "db") cPenInc += (p.cPen2M || 0) * 12 * ((+p.cPen2Idx || 0) ? infM : 1);
+              if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) cPenInc += (p.cDC2Bal || 0) * 0.04;
+            }
+            // Spouse bridge benefit (DB supplement between retAge and age cBrEnd,
+            // typically 65 when QPP kicks in full-force). Flat monthly, not indexed.
+            var cBridgeInc = 0;
+            if (cRetired && p.cBridge && p.cBrEnd > 0 && cAge2 < p.cBrEnd) {
+              cBridgeInc = (p.cBrAmt || 0) * 12;
+              cPenInc += cBridgeInc;
+            }
+            // Spouse part-time income in retirement (flat monthly, for cPtYrs years
+            // starting from spouse retirement age).
+            var cPtInc = 0;
+            if (cRetired && p.cPtM > 0 && p.cPtYrs > 0) {
+              var _cYrsInRet = Math.max(0, cAge2 - (p.cRetAge || 65));
+              if (_cYrsInRet < p.cPtYrs) cPtInc = (p.cPtM || 0) * 12 * infM;
+            }
             _ctiQpp = cQppInc; _ctiPen = cPenInc;
             _ctiRrif = cEstRrifMin || 0;
             _ctiOther = (cLiraWith || 0);
             _ctiOther += _wFromCRR; // spouse RRSP voluntary withdrawals are taxable
+            _ctiOther += cPtInc;    // part-time employment income
             var _cActualInc = _ctiQpp + _ctiPen + _ctiRrif + _ctiOther;
             var cOasInc = cAge2 >= (p.cOasAge || 65) ? calcOAS(p.cOasAge || 65, _cActualInc, y, p.inf, cAge2) * 12 : 0;
             _ctiOas = cOasInc;
