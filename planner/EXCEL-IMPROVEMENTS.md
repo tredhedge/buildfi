@@ -49,20 +49,20 @@ user can see it's an approximation.
 
 ## P1 — Important depth + auditability
 
-- [ ] **P1.1 — Goals / RESP sheet**
+- [x] **P1.1 — Goals / RESP sheet** ✓ (commit pending)
       `params.goals[]` (retirement, education, lump-sum) + RESP fields
       projected by engine. No reporting.
       Target: per-goal table (name, amount, start/end age, inflation,
       funding status from relevant MC balance/income).
 
-- [ ] **P1.2 — Assumptions-used appendix**
+- [x] **P1.2 — Assumptions-used appendix** ✓ (commit pending)
       Methodology tab describes engine; doesn't expose the actual numeric
       values used by THIS plan. Auditability zero.
       Sources: all `params.*` scalar fields that influenced the MC.
       Target: one flat table ~30 rows: inflation 2.1 %, eq return 6.8 %,
       bond return 3.2 %, MER R/T/N, allocR/T/N, mortality CPM 2023, etc.
 
-- [ ] **P1.3 — Travailleur autonome (sole-prop) block**
+- [x] **P1.3 — Travailleur autonome (sole-prop) block** ✓ (commit pending)
       Engine added `bizType === "sole"` branch (T2125, self-emp CPP,
       no LCGE). Business tab only handles CCPC.
       Sources: `params.bizType`, `bizSoleRev/Exp/Growth/Vol`,

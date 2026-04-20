@@ -752,6 +752,104 @@
     }
 
     // ────────────────────────────────────────────────────────────
+    // SHEET 2C: OBJECTIFS / GOALS
+    // ────────────────────────────────────────────────────────────
+    // params.goals[] is fed into the engine's calcGoalSpending() which
+    // adds goal expenses to yearly spending. Users plan toward these goals
+    // but the workbook surfaced nothing about them. Skip the locked
+    // retirement goal (always index 0, type="retirement"); show only
+    // user-added education/lumpsum/other entries.
+    var goalsAll = Array.isArray(p.goals) ? p.goals : [];
+    var userGoals = goalsAll.filter(function (g) { return g && g.type !== "retirement" && toNum(g.amount) > 0; });
+    if (userGoals.length > 0 || p.respOn) {
+      var wsG = wb.addWorksheet(fr ? "Objectifs" : "Goals");
+      setColWidths(wsG, [3, 26, 16, 14, 14, 14, 14, 32, 14, 14, 14, 14, 14, 14]);
+      printSetup(wsG);
+      addTabBanner(wsG,
+        fr ? "Objectifs & REEE" : "Goals & RESP",
+        fr ? "D\u00e9penses planifi\u00e9es au-del\u00e0 de la retraite courante" : "Planned expenses beyond day-to-day retirement", 14);
+
+      if (userGoals.length > 0) {
+        addTitle(wsG, 5, 2, fr ? "OBJECTIFS PLANIFI\u00c9S" : "PLANNED GOALS", "", 13);
+        setRow(wsG, 7, 2, [fr ? "Nom" : "Name", fr ? "Type" : "Type", fr ? "Montant" : "Amount", fr ? "\u00c2ge d\u00e9but" : "Start age", fr ? "\u00c2ge fin" : "End age", fr ? "An\u00e9es" : "Years", fr ? "Total index\u00e9" : "Total indexed", "Notes"]);
+        userGoals.forEach(function (g, i) {
+          var r = 8 + i;
+          var yrs = Math.max(1, (g.endAge || g.startAge) - g.startAge + 1);
+          var nominalTotal = toNum(g.amount) * yrs;
+          // Inflation-indexed total: if g.inflation=true, amount grows at
+          // params.inf from today. Approximation: sum amount × (1+inf)^n
+          // for n = years from now to startAge.
+          var yrsToStart = Math.max(0, g.startAge - age);
+          var indexFactor = g.inflation ? Math.pow(1 + (p.inf || 0.021), yrsToStart) : 1;
+          var indexedTotal = nominalTotal * indexFactor;
+          var typeLabel = g.type === "education" ? (fr ? "\u00c9ducation" : "Education")
+                        : g.type === "lumpsum" ? (fr ? "Ponctuel" : "Lump-sum")
+                        : g.type === "other" ? (fr ? "Autre" : "Other")
+                        : g.type;
+          var notes = g.inflation ? (fr ? "Index\u00e9 \u00e0 l'IPC" : "CPI-indexed") : (fr ? "Nominal (non index\u00e9)" : "Nominal (not indexed)");
+          set(wsG, wsG.getCell(r, 2), (fr ? g.name : (g.nameEn || g.name)) || "");
+          set(wsG, wsG.getCell(r, 3), typeLabel);
+          wsG.getCell(r, 4).value = toNum(g.amount); wsG.getCell(r, 4).numFmt = FMT_MONEY;
+          set(wsG, wsG.getCell(r, 5), g.startAge);
+          set(wsG, wsG.getCell(r, 6), g.endAge || g.startAge);
+          set(wsG, wsG.getCell(r, 7), yrs);
+          wsG.getCell(r, 8).value = Math.round(indexedTotal); wsG.getCell(r, 8).numFmt = FMT_MONEY;
+          set(wsG, wsG.getCell(r, 9), notes);
+        });
+        // Totals row
+        var goalsTotalRow = 8 + userGoals.length;
+        set(wsG, wsG.getCell(goalsTotalRow, 2), fr ? "TOTAL" : "TOTAL");
+        setFormula(wsG, wsG.getCell(goalsTotalRow, 8), 'SUM(H8:H' + (goalsTotalRow - 1) + ')', FMT_MONEY);
+        for (var gtc = 2; gtc <= 9; gtc++) {
+          wsG.getCell(goalsTotalRow, gtc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+        }
+        styleTable(wsG, { hr: 7, fr: 8, to: goalsTotalRow, fc: 2, lc: 9 });
+      }
+
+      // RESP block — when respOn is true, show contribution/grant/target.
+      if (p.respOn) {
+        var respAnchor = userGoals.length > 0 ? (10 + userGoals.length) : 5;
+        addTitle(wsG, respAnchor, 2, fr ? "REEE \u2014 R\u00c9GIME ENREGISTR\u00c9 D'\u00c9PARGNE-\u00c9TUDES" : "RESP \u2014 REGISTERED EDUCATION SAVINGS PLAN", "", 13);
+        setRow(wsG, respAnchor + 2, 2, [fr ? "Param\u00e8tre" : "Parameter", fr ? "Valeur" : "Value", "Notes"]);
+        var respKids = toNum(p.respKids);
+        var respContrib = toNum(p.respContrib); // monthly, per child
+        var respYrs = toNum(p.respYrsLeft);
+        var respAlready = toNum(p.respAlready);
+        var respRet = toNum(p.respReturnAge);
+        // SCEE grant: 20% match up to $500/yr/child (first $2,500 contrib).
+        // Max lifetime $7,200/child. Simplified: grant = min(contrib*12, 2500)*0.20.
+        var scgeeAnnual = Math.min(respContrib * 12, 2500) * 0.20;
+        // QESI (Quebec only): 10% additional match.
+        var iqeeAnnual = prov === "QC" ? Math.min(respContrib * 12, 2500) * 0.10 : 0;
+        var projContribTotal = respContrib * 12 * respYrs * respKids;
+        var projGrantTotal = (scgeeAnnual + iqeeAnnual) * respYrs * respKids;
+        var respData = [
+          [fr ? "Capital d\u00e9j\u00e0 investi" : "Capital already invested", respAlready, fr ? "Valeur actuelle du REEE" : "Current RESP value"],
+          [fr ? "Nombre d'enfants" : "Number of children", respKids, ""],
+          [fr ? "Cotisation /mois/enfant" : "Contribution /mo/child", respContrib, ""],
+          [fr ? "Ann\u00e9es de cotisation restantes" : "Remaining contribution years", respYrs, ""],
+          [fr ? "SCEE f\u00e9d\u00e9rale (20%) /an /enfant" : "Federal CESG (20%) /yr /child", scgeeAnnual, fr ? "Max 7 200 $/enfant \u00e0 vie" : "Lifetime max $7,200/child"],
+          [fr ? "IQEE Qu\u00e9bec (10%) /an /enfant" : "Quebec QESI (10%) /yr /child", iqeeAnnual, prov === "QC" ? (fr ? "Max 3 600 $/enfant \u00e0 vie" : "Lifetime max $3,600/child") : (fr ? "Hors Qu\u00e9bec: non disponible" : "Non-QC: unavailable")],
+          [fr ? "Total cotisations projet\u00e9es" : "Projected contributions total", projContribTotal, ""],
+          [fr ? "Total subventions projet\u00e9es" : "Projected grants total", projGrantTotal, ""],
+          [fr ? "\u00c2ge de retour du capital" : "Capital return age", respRet, fr ? "\u00c2ge du client au retour" : "Client age at return"]
+        ];
+        respData.forEach(function (row, i) {
+          var r = respAnchor + 3 + i;
+          set(wsG, wsG.getCell(r, 2), row[0]);
+          if (typeof row[1] === "number" && row[1] > 100) {
+            wsG.getCell(r, 3).value = toNum(row[1]); wsG.getCell(r, 3).numFmt = FMT_MONEY;
+          } else {
+            set(wsG, wsG.getCell(r, 3), row[1]);
+          }
+          set(wsG, wsG.getCell(r, 4), row[2]);
+        });
+        styleTable(wsG, { hr: respAnchor + 2, fr: respAnchor + 3, to: respAnchor + 11, fc: 2, lc: 4 });
+      }
+      footer(wsG, (p.respOn ? (userGoals.length > 0 ? 10 + userGoals.length + 13 : 18) : 11 + userGoals.length));
+    }
+
+    // ────────────────────────────────────────────────────────────
     // SHEET 3: PROJECTION DÉTERMINISTE
     // ────────────────────────────────────────────────────────────
     var wsProj = wb.addWorksheet(fr ? "Projection d\u00e9terministe" : "Deterministic Projection");
@@ -1482,7 +1580,61 @@
     var wsB = wb.addWorksheet(fr ? "Entreprise (CCPC)" : "Business (CCPC)");
     setColWidths(wsB, [3, 10, 8, 16, 14, 14, 14, 14, 12, 12, 14, 12, 14]);
     printSetup(wsB);
-    if (bizOn) {
+    if (bizOn && p.bizType === "sole") {
+      // Sole proprietor (travailleur autonome). Engine added the T2125 branch
+      // in commit 1ba0dda: net revenue flows directly to personal taxable
+      // income; self-emp CPP/QPP contributions at 11.9% (employer half
+      // deductible); no retained earnings, no dividends, no LCGE on sale
+      // (only QSBC-qualified shares are LCGE-eligible).
+      // Source: revData[y].bizSoleNet + bizSoleCppDeduct (emitted by engine).
+      addTabBanner(wsB,
+        fr ? "Travailleur autonome (T2125)" : "Sole Proprietor (T2125)",
+        fr ? "Revenu net, cotisations RRQ travailleur autonome, projection annuelle" : "Net income, self-employed QPP/CPP, annual projection", 14);
+      setRow(wsB, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Revenus bruts" : "Gross revenue", fr ? "D\u00e9penses" : "Expenses", fr ? "Net avant RRQ" : "Net pre-CPP", fr ? "D\u00e9duc. RRQ TA" : "Self-emp CPP deduct", fr ? "Net imposable" : "Taxable net", "Phase"]);
+      var bizSoleRow = 6;
+      var cumGross = 0, cumNet = 0, cumCpp = 0;
+      revD.forEach(function(r) {
+        if (bizSoleRow > 42) return;
+        if (toNum(r.bizSoleNet) <= 0 && r.age >= retAge) return; // skip post-retirement zero rows
+        var phase = r.age < retAge ? (fr ? "Activit\u00e9" : "Active") : (fr ? "Retir\u00e9" : "Retired");
+        var netY = toNum(r.bizSoleNet);
+        var cppDed = toNum(r.bizSoleCppDeduct);
+        // Reconstruct gross/expenses from params (engine doesn't emit them
+        // separately per year; they are rev × growth × (1+noise) − exp).
+        var yrsFromStart = Math.max(0, toNum(r.age) - age);
+        var growth = Math.pow(1 + toNum(p.bizSoleGrowth), yrsFromStart);
+        var infY = Math.pow(1 + toNum(p.inf || 0.021), yrsFromStart);
+        var grossEst = r.age < retAge ? toNum(p.bizSoleRev) * growth * infY : 0;
+        var expEst = r.age < retAge ? toNum(p.bizSoleExp) * growth * infY : 0;
+        cumGross += grossEst; cumCpp += cppDed; cumNet += netY;
+        setRow(wsB, bizSoleRow, 2, [y0 + (r.age - age), r.age || 0]);
+        wsB.getCell(bizSoleRow, 4).value = grossEst; wsB.getCell(bizSoleRow, 4).numFmt = FMT_MONEY;
+        wsB.getCell(bizSoleRow, 5).value = expEst; wsB.getCell(bizSoleRow, 5).numFmt = FMT_MONEY;
+        wsB.getCell(bizSoleRow, 6).value = netY + cppDed; wsB.getCell(bizSoleRow, 6).numFmt = FMT_MONEY; // pre-CPP-half
+        wsB.getCell(bizSoleRow, 7).value = cppDed; wsB.getCell(bizSoleRow, 7).numFmt = FMT_MONEY_RED;
+        wsB.getCell(bizSoleRow, 8).value = netY; wsB.getCell(bizSoleRow, 8).numFmt = FMT_MONEY;
+        set(wsB, wsB.getCell(bizSoleRow, 9), phase);
+        wsB.getCell(bizSoleRow, 9).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+        bizSoleRow++;
+      });
+      styleTable(wsB, { hr: 5, fr: 6, to: Math.max(6, bizSoleRow - 1), fc: 2, lc: 9 });
+
+      // Cumulative totals + note about sole-prop specifics
+      var soleNotesRow = bizSoleRow + 2;
+      addTitle(wsB, soleNotesRow, 2, fr ? "TOTAUX CUMULATIFS (CARRI\u00c8RE)" : "CAREER TOTALS (CUMULATIVE)", "", 13);
+      setRow(wsB, soleNotesRow + 2, 2, [fr ? "Revenu brut total" : "Total gross revenue", fr ? "D\u00e9duc. RRQ TA totale" : "Total CPP deduct", fr ? "Revenu net imposable" : "Taxable net income"]);
+      var cumRow = soleNotesRow + 3;
+      wsB.getCell(cumRow, 2).value = cumGross; wsB.getCell(cumRow, 2).numFmt = FMT_MONEY;
+      wsB.getCell(cumRow, 3).value = cumCpp; wsB.getCell(cumRow, 3).numFmt = FMT_MONEY;
+      wsB.getCell(cumRow, 4).value = cumNet; wsB.getCell(cumRow, 4).numFmt = FMT_MONEY;
+      styleTable(wsB, { hr: soleNotesRow + 2, fr: soleNotesRow + 3, to: soleNotesRow + 3, fc: 2, lc: 4 });
+      var soleDiscRow = soleNotesRow + 5;
+      wsB.mergeCells(soleDiscRow, 2, soleDiscRow, 10);
+      set(wsB, wsB.getCell(soleDiscRow, 2), fr ? "Sp\u00e9cificit\u00e9s travailleur autonome : cotisations RRQ/RPC \u00e0 12,8% (vs 6,4% salari\u00e9), moiti\u00e9 employeur d\u00e9ductible. Aucune DGC \u00e0 la vente (r\u00e9serv\u00e9e aux SPCC). Aucun compte corporatif: revenu net va directement \u00e0 l'imp\u00f4t personnel." : "Sole prop specifics: self-employed QPP/CPP at 12.8% (vs 6.4% employee), employer half deductible. No LCGE on sale (QSBC-only). No corporate account: net income flows directly to personal tax.");
+      wsB.getCell(soleDiscRow, 2).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+      wsB.getCell(soleDiscRow, 2).alignment = { wrapText: true };
+      wsB.getRow(soleDiscRow).height = 36;
+    } else if (bizOn) {
       addTabBanner(wsB,
         fr ? "Actifs corporatifs (CCPC)" : "Corporate Assets (CCPC)",
         fr ? "Projection du solde, plan d'extraction, alertes DPE" : "Balance projection, extraction plan, SBD alerts", 14);
@@ -1582,15 +1734,68 @@
     setRow(wsM, 33, 2, ["Client", cName]); setRow(wsM, 34, 2, ["Province", prov]);
     setRow(wsM, 35, 2, ["Simulations", String(nSim)]); setRow(wsM, 36, 2, [fr ? "Mortalit\u00e9" : "Mortality", stochMort ? "CPM 2023" : (fr ? "D\u00e9terministe" : "Deterministic")]);
 
+    // ── Assumptions used for THIS plan (auditability) ──
+    // Methodology above describes HOW the engine works. This block lists
+    // the exact numeric values the engine was fed for this specific run,
+    // so any reviewer can reproduce the numbers without guessing defaults.
+    // All values come straight from params — no engine constants.
+    addTitle(wsM, 38, 2, fr ? "HYPOTH\u00c8SES UTILIS\u00c9ES DANS CE PLAN" : "ASSUMPTIONS USED IN THIS PLAN", "", 13);
+    setRow(wsM, 40, 2, [fr ? "Param\u00e8tre" : "Parameter", fr ? "Valeur" : "Value", "Notes"]);
+    var assumpAnchor = 41;
+    var assumpRows = [
+      [fr ? "Inflation (IPC g\u00e9n\u00e9ral)" : "Inflation (general CPI)", toNum(p.inf), fr ? "PAG 2025: 2,1%" : "PAG 2025: 2.1%", "pct"],
+      [fr ? "Inflation \u2014 sant\u00e9 excedentaire" : "Health inflation (excess)", toNum(p.infHealth), fr ? "+2% sur IPC apr\u00e8s 75 ans" : "+2% over CPI after 75", "pct"],
+      [fr ? "Rendement actions (r\u00e9el)" : "Equity return (real)", toNum(p.eqRet || p.eqRetS), fr ? "PAG 2025: 6,9%" : "PAG 2025: 6.9%", "pct"],
+      [fr ? "Volatilit\u00e9 actions" : "Equity volatility", toNum(p.eqVol || p.eqVolS), "PAG 2025: 16%", "pct"],
+      [fr ? "Rendement obligations (r\u00e9el)" : "Bond return (real)", toNum(p.bndRet || p.bndRetS), "PAG 2025: 3.4%", "pct"],
+      [fr ? "Volatilit\u00e9 obligations" : "Bond volatility", toNum(p.bndVol || p.bndVolS), "PAG 2025: 6%", "pct"],
+      [fr ? "Volatilit\u00e9 FX" : "FX volatility", toNum(p.fxVol), fr ? "Sur placements \u00e9trangers" : "On foreign holdings", "pct"],
+      [fr ? "Allocation REER (% actions)" : "RRSP allocation (% equity)", toNum(p.allocR), "", "pct"],
+      [fr ? "Allocation CELI (% actions)" : "TFSA allocation (% equity)", toNum(p.allocT), "", "pct"],
+      [fr ? "Allocation NR (% actions)" : "Non-reg allocation (% equity)", toNum(p.allocN), "", "pct"],
+      [fr ? "Frais REER (MER)" : "RRSP fees (MER)", toNum(p.merR), "", "pct"],
+      [fr ? "Frais CELI (MER)" : "TFSA fees (MER)", toNum(p.merT), "", "pct"],
+      [fr ? "Frais NR (MER)" : "Non-reg fees (MER)", toNum(p.merN), "", "pct"],
+      [fr ? "Drag fiscal NR" : "NR tax drag", toNum(p.nrTaxDrag), fr ? "Dividendes + int\u00e9r\u00eats annuels" : "Annual dividend + interest", "pct"],
+      [fr ? "Inclusion gains en capital (sous seuil)" : "CG inclusion (below threshold)", toNum(p.cgIncLo), "50% (2024)", "pct"],
+      [fr ? "Inclusion gains en capital (au-dessus)" : "CG inclusion (above threshold)", toNum(p.cgIncHi), "66,67% (2024)", "pct"],
+      [fr ? "Seuil annuel gain en capital" : "CG annual threshold", toNum(p.cgThresh), fr ? "250 000 $/an" : "$250,000/yr", "money"],
+      [fr ? "Multiplicateur Go-Go" : "Go-Go multiplier", toNum(p.goP), fr ? "D\u00e9penses tranche 1" : "Spending phase 1", "ratio"],
+      [fr ? "Multiplicateur Slow-Go" : "Slow-Go multiplier", toNum(p.slP), fr ? "D\u00e9penses tranche 2" : "Spending phase 2", "ratio"],
+      [fr ? "Multiplicateur No-Go" : "No-Go multiplier", toNum(p.noP), fr ? "D\u00e9penses tranche 3" : "Spending phase 3", "ratio"],
+      [fr ? "\u00c2ge d\u00e9but Slow-Go" : "Slow-Go start age", toNum(p.smileSlAge), "", "int"],
+      [fr ? "\u00c2ge d\u00e9but No-Go" : "No-Go start age", toNum(p.smileNoAge), "", "int"],
+      [fr ? "Simulations Monte Carlo" : "Monte Carlo simulations", nSim, "", "int"],
+      [fr ? "Glide path activ\u00e9" : "Glide path enabled", p.glide ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No"), p.glide ? (fr ? "D\u00e9sensibilisation annuelle " + (toNum(p.glideSpd) * 100).toFixed(1) + "%" : "Annual de-risk " + (toNum(p.glideSpd) * 100).toFixed(1) + "%") : "", "text"],
+      [fr ? "Queues \u00e9paisses (fat-tail)" : "Fat-tail distribution", p.fatT ? (fr ? "Oui (t-Student df=5)" : "Yes (t-Student df=5)") : (fr ? "Non (Normal)" : "No (Normal)"), "", "text"],
+      [fr ? "Inflation stochastique" : "Stochastic inflation", p.stochInf ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No"), "", "text"],
+      [fr ? "Mortalit\u00e9 stochastique" : "Stochastic mortality", stochMort ? (fr ? "Oui (CPM 2023)" : "Yes (CPM 2023)") : (fr ? "Non" : "No"), "", "text"],
+      [fr ? "Strat\u00e9gie de retrait" : "Withdrawal strategy", wStrat, "", "text"],
+      [fr ? "Province fiscale" : "Tax province", prov, "", "text"]
+    ];
+    assumpRows.forEach(function (row, i) {
+      var r = assumpAnchor + i;
+      set(wsM, wsM.getCell(r, 2), row[0]);
+      if (row[3] === "pct") { wsM.getCell(r, 3).value = toNum(row[1]); wsM.getCell(r, 3).numFmt = FMT_PCT; }
+      else if (row[3] === "money") { wsM.getCell(r, 3).value = toNum(row[1]); wsM.getCell(r, 3).numFmt = FMT_MONEY; }
+      else if (row[3] === "int") { wsM.getCell(r, 3).value = toNum(row[1]); }
+      else if (row[3] === "ratio") { wsM.getCell(r, 3).value = toNum(row[1]); wsM.getCell(r, 3).numFmt = '0.00'; }
+      else { set(wsM, wsM.getCell(r, 3), row[1]); }
+      set(wsM, wsM.getCell(r, 4), row[2]);
+    });
+    var assumpEndRow = assumpAnchor + assumpRows.length - 1;
+    styleTable(wsM, { hr: 40, fr: assumpAnchor, to: assumpEndRow, fc: 2, lc: 4 });
+
     // Legal
-    addTitle(wsM, 38, 2, fr ? "AVIS R\u00c9GLEMENTAIRE" : "REGULATORY NOTICE", "", 13);
-    wsM.mergeCells(40, 2, 40, 14);
-    set(wsM, wsM.getCell(40, 2), fr ? "Les projections sont fournies \u00e0 titre informatif uniquement et ne constituent pas un conseil financier." : "Projections are for informational purposes only and do not constitute financial advice.");
-    wsM.getCell(40, 2).font = SUB_FONT;
-    wsM.mergeCells(41, 2, 41, 14);
-    set(wsM, wsM.getCell(41, 2), fr ? "BuildFi Technologies inc. n'est pas un conseiller financier." : "BuildFi Technologies inc. is not a financial advisor.");
-    wsM.getCell(41, 2).font = SUB_FONT;
-    footer(wsM, 44);
+    var legalAnchor = assumpEndRow + 3;
+    addTitle(wsM, legalAnchor, 2, fr ? "AVIS R\u00c9GLEMENTAIRE" : "REGULATORY NOTICE", "", 13);
+    wsM.mergeCells(legalAnchor + 2, 2, legalAnchor + 2, 14);
+    set(wsM, wsM.getCell(legalAnchor + 2, 2), fr ? "Les projections sont fournies \u00e0 titre informatif uniquement et ne constituent pas un conseil financier." : "Projections are for informational purposes only and do not constitute financial advice.");
+    wsM.getCell(legalAnchor + 2, 2).font = SUB_FONT;
+    wsM.mergeCells(legalAnchor + 3, 2, legalAnchor + 3, 14);
+    set(wsM, wsM.getCell(legalAnchor + 3, 2), fr ? "BuildFi Technologies inc. n'est pas un conseiller financier." : "BuildFi Technologies inc. is not a financial advisor.");
+    wsM.getCell(legalAnchor + 3, 2).font = SUB_FONT;
+    footer(wsM, legalAnchor + 6);
 
     // ────────────────────────────────────────────────────────────
     // POPULATE COVER (already created as first tab)
