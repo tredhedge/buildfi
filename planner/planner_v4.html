@@ -479,6 +479,17 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 .bf-modal-body  { display: flex; flex-direction: column; gap: 14px; }
 .bf-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
+/* ─────────────── Auto-calc hint (debt cards) ─────────────── */
+.bf-autocalc-hint {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; margin-top: 10px;
+  background: rgba(80,144,200,0.08);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs); color: var(--text-soft); line-height: 1.5;
+}
+.bf-autocalc-hint span:first-child { font-size: 14px; line-height: 1.3; flex-shrink: 0; }
+
 /* ─────────────── ToC niche separator ─────────────── */
 .toc-sep {
   margin: 8px 0 4px; padding: 4px 10px;
@@ -601,7 +612,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
         <summary>
           <div class="sec-ico" style="background:#2a8c4622;color:#2a8c46">👤</div>
           <div class="sec-meta">
-            <div class="sec-title" data-i18n="identityTitle">Identité & ménage</div>
+            <div class="sec-title" data-i18n="identityTitle">Profil &amp; identité</div>
             <div class="sec-sub" data-i18n="identitySub">Qui fait l'objet du plan et dans quelle province. Le strict minimum pour lancer une simulation.</div>
           </div>
           <div class="sec-status">
@@ -1402,181 +1413,6 @@ body[data-embed="1"] .simulate-fab { display: none; }
       </details>
 
       <!-- ─── Section: Business / CCPC ─── -->
-      <details class="section" id="sec-business">
-        <summary>
-          <div class="sec-ico" style="background:#8468c022;color:#8468c0">🏢</div>
-          <div class="sec-meta">
-            <div class="sec-title" data-i18n="bizTitle">Entreprise (SPCC / incorporée)</div>
-            <div class="sec-sub" data-i18n="bizSub">Pour les propriétaires d'une société privée sous contrôle canadien (SPCC). Ignorez si vous êtes salarié seulement.</div>
-          </div>
-          <div class="sec-status">
-            <span class="count" data-count="biz">0</span>
-            <span class="stamp" data-i18n="notReviewed">non revue</span>
-          </div>
-          <span class="sec-chev">▸</span>
-        </summary>
-        <div class="sec-body">
-          <label class="check-row">
-            <input type="checkbox" id="bizOn">
-            <div><div class="check-label" data-i18n="bizOnLabel">J'ai une entreprise incorporée</div>
-            <div class="check-help" data-i18n="bizOnHelp">Active la modélisation de l'extraction de revenus (salaire/dividendes), de la vente éventuelle et de l'exonération LCGE.</div></div>
-          </label>
-          <div class="spacer-md"></div>
-          <div id="biz-fields" hidden>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizStructHead">Structure & revenus</div>
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-head"><label class="field-label" for="bizType" data-i18n="bizType">Type</label></div>
-                  <select id="bizType" class="field-input"><option value="ccpc">SPCC (CCPC)</option><option value="sole">Travailleur autonome</option></select>
-                </div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizRevenue" data-i18n="bizRevenue">Revenus annuels <span class="field-unit">$</span></label></div><input id="bizRevenue" type="number" class="field-input" placeholder="200 000" min="0" step="10000"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizExpenses" data-i18n="bizExpenses">Dépenses annuelles <span class="field-unit">$</span></label></div><input id="bizExpenses" type="number" class="field-input" placeholder="50 000" min="0" step="5000"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizGrowth" data-i18n="bizGrowth">Croissance /an <span class="field-unit">%</span></label></div><input id="bizGrowth" type="number" class="field-input" placeholder="0" min="-10" max="20" step="0.5"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizVolatility" data-i18n="bizVol">Volatilité des revenus <span class="field-unit">%</span></label></div><input id="bizVolatility" type="number" class="field-input" placeholder="0" min="0" max="50" step="1"></div>
-              </div>
-            </div>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizCompHead">Compensation</div>
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-head"><label class="field-label" for="bizRemun" data-i18n="bizRemun">Mode de rémunération</label></div>
-                  <select id="bizRemun" class="field-input"><option value="salary">Salaire seulement</option><option value="dividend">Dividendes seulement</option><option value="mix">Mixte salaire + dividendes</option></select>
-                </div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizSalaryPct" data-i18n="bizSalaryPct">% en salaire (si mixte) <span class="field-unit">%</span></label></div><input id="bizSalaryPct" type="number" class="field-input" placeholder="100" min="0" max="100" step="5"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizRetainedEarnings" data-i18n="bizRetEarn">Bénéfices non répartis <span class="field-unit">$</span></label></div><input id="bizRetainedEarnings" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizInvAlloc" data-i18n="bizInvAlloc">% actions dans société <span class="field-unit">%</span></label></div><input id="bizInvAlloc" type="number" class="field-input" placeholder="40" min="0" max="100" step="5"></div>
-              </div>
-            </div>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizExtractHead">Extraction à la retraite</div>
-              <div class="subsec-intro" data-i18n="bizExtractIntro">Comment vider le compte corporatif après la retraite.</div>
-              <div class="field-grid">
-                <div class="field">
-                  <div class="field-head"><label class="field-label" for="bizExtractMode" data-i18n="bizExtractMode">Mode d'extraction</label></div>
-                  <select id="bizExtractMode" class="field-input"><option value="dividend">Dividendes</option><option value="salary">Salaire minimum pour RRQ</option><option value="mix">Mixte</option></select>
-                </div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizExtractYrs" data-i18n="bizExtractYrs">Durée extraction <span class="field-unit">ans</span></label></div><input id="bizExtractYrs" type="number" class="field-input" placeholder="10" min="1" max="30" step="1"></div>
-                <div class="field">
-                  <label class="check-row"><input type="checkbox" id="bizOasOptim">
-                    <div><div class="check-label" data-i18n="bizOasOptimLabel">Optimiser pour éviter la récupération PSV</div><div class="check-help" data-i18n="bizOasOptimHelp">Garde le revenu imposable sous le seuil de récupération (~95 K$).</div></div>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizSaleHead">Vente éventuelle</div>
-              <div class="field-grid">
-                <div class="field"><div class="field-head"><label class="field-label" for="bizSaleAge" data-i18n="bizSaleAge">Âge de vente (0=jamais)</label></div><input id="bizSaleAge" type="number" class="field-input" placeholder="0" min="0" max="85" step="1"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizSalePrice" data-i18n="bizSalePrice">Prix de vente anticipé <span class="field-unit">$</span></label></div><input id="bizSalePrice" type="number" class="field-input" placeholder="0" min="0" step="50000"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizSaleACB" data-i18n="bizSaleACB">Coût de base des actions <span class="field-unit">$</span></label></div><input id="bizSaleACB" type="number" class="field-input" placeholder="100" min="0" step="10000"></div>
-                <div class="field">
-                  <label class="check-row"><input type="checkbox" id="bizLCGE" checked>
-                    <div><div class="check-label" data-i18n="bizLCGELabel">Éligible LCGE (exonération cumulative ~1,25 M$)</div><div class="check-help" data-i18n="bizLCGEHelp">Applicable aux actions admissibles de petite entreprise (AAPE).</div></div>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizDebtHead">Dette corporative</div>
-              <div class="field-grid">
-                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtBal" data-i18n="bizDebtBal">Solde dette corporative <span class="field-unit">$</span></label></div><input id="bizDebtBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtRate" data-i18n="bizDebtRate">Taux <span class="field-unit">%</span></label></div><input id="bizDebtRate" type="number" class="field-input" placeholder="6.0" min="0" max="15" step="0.1"></div>
-                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtAmort" data-i18n="bizDebtAmort">Amortissement <span class="field-unit">ans</span></label></div><input id="bizDebtAmort" type="number" class="field-input" placeholder="10" min="1" max="30" step="1"></div>
-              </div>
-            </div>
-            <div class="subsec">
-              <div class="subsec-head" data-i18n="bizIppHead">Régime de retraite individuel (RRI / IPP)</div>
-              <label class="check-row">
-                <input type="checkbox" id="ippOn">
-                <div><div class="check-label" data-i18n="ippOnLabel">J'ai un régime RRI / IPP</div><div class="check-help" data-i18n="ippOnHelp">Régime de retraite individuel pour propriétaires de SPCC âgés de 40 ans ou plus.</div></div>
-              </label>
-              <div class="field-grid" id="ipp-fields" hidden>
-                <div class="field"><div class="field-head"><label class="field-label" for="ippBal2" data-i18n="ippBal">Solde RRI <span class="field-unit">$</span></label></div><input id="ippBal2" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <!-- ─── Section: Alternative investments (PE / PM) ─── -->
-      <details class="section" id="sec-alt">
-        <summary>
-          <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">🧩</div>
-          <div class="sec-meta">
-            <div class="sec-title" data-i18n="altTitle">Placements alternatifs (PE / métaux précieux)</div>
-            <div class="sec-sub" data-i18n="altSub">Capital-investissement privé et métaux précieux (or, argent) — rendement, volatilité, stratégie de sortie.</div>
-          </div>
-          <div class="sec-status">
-            <span class="count" data-count="alt">0</span>
-            <span class="stamp" data-i18n="notReviewed">non revue</span>
-          </div>
-          <span class="sec-chev">▸</span>
-        </summary>
-        <div class="sec-body">
-          <div class="callout warn">
-            <span class="callout-ico">⚠️</span>
-            <span data-i18n="altDisclaimer"><strong>Placements de niche.</strong> PE : périodes d'illiquidité + frais élevés. Métaux précieux : aucun rendement intrinsèque, couverture contre l'inflation. Ignorer si vous investissez uniquement en FNB/fonds communs.</span>
-          </div>
-          <div class="subsec">
-            <div class="subsec-head" data-i18n="peHead">Capital-investissement privé (Private Equity)</div>
-            <div class="subsec-intro" data-i18n="peIntro">Parts dans une entreprise privée (fonds PE, investissement direct, LP). Horizon typique 5–10 ans, verrouillage initial, rendements supérieurs au marché côté en contrepartie de l'illiquidité.</div>
-            <div class="field-grid">
-              <div class="field"><div class="field-head"><label class="field-label" for="peBal" data-i18n="peBal">Solde PE <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peBalTip">Valeur marchande actuelle de votre portefeuille PE (NAV). Si vous avez engagé mais pas encore appelé, utilisez le capital déployé, pas l'engagement total.</span></span></div><input id="peBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peY" data-i18n="peY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peYTip">TRI net anticipé (après frais). Typiquement 10–15 %/an pour PE diversifié ; 8–12 % pour le PE immobilier ; 6–9 % pour la dette privée.</span></span></div><input id="peY" type="number" class="field-input" placeholder="12" min="0" max="30" step="0.5"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peV" data-i18n="peV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peVTip">Écart-type annualisé. Le PE affiche une volatilité réelle élevée (20–30 %) mais lissée par les évaluations trimestrielles. Utiliser ~25 % pour refléter le risque réel.</span></span></div><input id="peV" type="number" class="field-input" placeholder="25" min="0" max="80" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peFee" data-i18n="peFee">Frais annuels <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peFeeTip">Frais de gestion (management fee). Structure "2 et 20" typique : 2 % de gestion + 20 % de carried interest sur la performance. Les frais de performance ne sont PAS inclus ici (le rendement espéré est net).</span></span></div><input id="peFee" type="number" class="field-input" placeholder="2.0" min="0" max="5" step="0.1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peLock" data-i18n="peLock">Période de verrouillage <span class="field-unit">ans</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peLockTip">Durée pendant laquelle le capital ne peut être retiré. Typiquement 3–7 ans pour PE traditionnel, 1–3 ans pour fonds semi-liquides. Bloque les retraits MC pendant la période.</span></span></div><input id="peLock" type="number" class="field-input" placeholder="3" min="0" max="10" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peExit" data-i18n="peExit">Âge de sortie (0=conserver)</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitTip">Âge auquel vous prévoyez liquider. 0 = conserver jusqu'au décès. Typiquement aligné sur votre retraite ou 5–10 ans après pour lisser l'impôt.</span></span></div><input id="peExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
-              <div class="field">
-                <div class="field-head"><label class="field-label" for="peExitStrat" data-i18n="peExitStrat">Stratégie de sortie</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitStratTip">Comment convertir en liquidités. Bloc = vente unique à l'âge de sortie. Échelonnée = vente linéaire sur N années. % par an = retrait d'un pourcentage fixe.</span></span></div>
-                <select id="peExitStrat" class="field-input"><option value="lump">Vente en bloc</option><option value="gradual">Échelonnée</option><option value="pct">% par an</option></select>
-              </div>
-              <div class="field"><div class="field-head"><label class="field-label" for="peExitYrs" data-i18n="peExitYrs">Durée sortie <span class="field-unit">ans</span></label></div><input id="peExitYrs" type="number" class="field-input" placeholder="5" min="2" max="15" step="1"></div>
-            </div>
-          </div>
-          <div class="subsec">
-            <div class="subsec-head" data-i18n="pmHead">Métaux précieux (Precious Metals)</div>
-            <div class="subsec-intro" data-i18n="pmIntro">Or, argent, platine — lingots, FNB adossés, pièces. Pas de rendement intrinsèque (pas de dividende, pas d'intérêt) ; se comporte comme une couverture contre l'inflation et les chocs géopolitiques.</div>
-            <div class="field-grid">
-              <div class="field"><div class="field-head"><label class="field-label" for="pmBal" data-i18n="pmBal">Solde métaux <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmBalTip">Valeur marchande courante de vos avoirs en métaux précieux. Inclure physique + FNB (GLD, SLV, CGL.C, etc.).</span></span></div><input id="pmBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmY" data-i18n="pmY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmYTip">Rendement historique de l'or (~2–3 % réel long terme, zéro hors inflation). Les métaux précieux ne produisent pas de revenu ; toute plus-value vient uniquement du prix spot.</span></span></div><input id="pmY" type="number" class="field-input" placeholder="3" min="0" max="15" step="0.5"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmV" data-i18n="pmV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmVTip">Écart-type annualisé. Or ~15 %, argent ~25 %, platine ~22 %. Corrélation faible/négative avec les actions — d'où l'intérêt comme diversifiant.</span></span></div><input id="pmV" type="number" class="field-input" placeholder="15" min="0" max="40" step="1"></div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmExit" data-i18n="pmExit">Âge de sortie (0=conserver)</label></div><input id="pmExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
-              <div class="field">
-                <div class="field-head"><label class="field-label" for="pmExitStrat" data-i18n="pmExitStrat">Stratégie de sortie</label></div>
-                <select id="pmExitStrat" class="field-input"><option value="lump">Vente en bloc</option><option value="gradual">Échelonnée</option><option value="pct">% par an</option></select>
-              </div>
-              <div class="field"><div class="field-head"><label class="field-label" for="pmExitYrs" data-i18n="pmExitYrs">Durée sortie <span class="field-unit">ans</span></label></div><input id="pmExitYrs" type="number" class="field-input" placeholder="5" min="2" max="15" step="1"></div>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <!-- ─── Section: RSU grants ─── -->
-      <details class="section" id="sec-rsu">
-        <summary>
-          <div class="sec-ico" style="background:#c49a1a22;color:#c49a1a">📊</div>
-          <div class="sec-meta">
-            <div class="sec-title" data-i18n="rsuTitle">Actions restreintes (RSU / options d'achat)</div>
-            <div class="sec-sub" data-i18n="rsuSub">Parts d'actions reçues comme rémunération, avec acquisition étalée. Traitées comme revenu d'emploi imposable à la vesting.</div>
-          </div>
-          <div class="sec-status">
-            <span class="count" id="rsu-count">0 tranche</span>
-            <span class="stamp" data-i18n="notReviewed">non revue</span>
-          </div>
-          <span class="sec-chev">▸</span>
-        </summary>
-        <div class="sec-body">
-          <div class="subsec">
-            <div class="subsec-intro" data-i18n="rsuIntro">Ajoutez chaque tranche d'attribution. Pour chaque tranche : nombre d'actions, prix actuel, croissance attendue, période d'acquisition (vesting) et âge auquel vous prévoyez les exercer.</div>
-            <div id="rsu-list"></div>
-            <button class="btn btn-primary" onclick="addRsu()" style="margin-top:8px"><span>📊</span> <span data-i18n="addRsu">Ajouter une tranche RSU</span></button>
-          </div>
-        </div>
-      </details>
-
-      <!-- ─── Section: Pensions ─── -->
       <details class="section" id="sec-pensions">
         <summary>
           <div class="sec-ico" style="background:#2a8c4622;color:#2a8c46">🏛️</div>
@@ -1738,7 +1574,6 @@ body[data-embed="1"] .simulate-fab { display: none; }
         </div>
       </details>
 
-      <!-- ─── Section: Strategy ─── -->
       <details class="section" id="sec-strategy">
         <summary>
           <div class="sec-ico" style="background:#d4882022;color:#d48820">🧾</div>
@@ -1823,7 +1658,6 @@ body[data-embed="1"] .simulate-fab { display: none; }
         </div>
       </details>
 
-      <!-- ─── Section: Insurance ─── -->
       <details class="section" id="sec-insurance">
         <summary>
           <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">🛡️</div>
@@ -1911,6 +1745,181 @@ body[data-embed="1"] .simulate-fab { display: none; }
                 </div>
                 <input id="insColPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
               </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- v4 Phase 11 — Niche separator: sections below serve narrow audiences. -->
+      <div style="margin:32px 0 14px;padding:10px 16px;border-top:1px dashed var(--border);font-size:var(--fs-xs);font-weight:700;color:var(--text-muted);letter-spacing:0.14em;text-transform:uppercase" data-i18n="nicheSep">Sections spécifiques · niche</div>
+
+      <details class="section" id="sec-business">
+        <summary>
+          <div class="sec-ico" style="background:#8468c022;color:#8468c0">🏢</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="bizTitle">Entreprise (SPCC / incorporée)</div>
+            <div class="sec-sub" data-i18n="bizSub">Pour les propriétaires d'une société privée sous contrôle canadien (SPCC). Ignorez si vous êtes salarié seulement.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="biz">0</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <label class="check-row">
+            <input type="checkbox" id="bizOn">
+            <div><div class="check-label" data-i18n="bizOnLabel">J'ai une entreprise incorporée</div>
+            <div class="check-help" data-i18n="bizOnHelp">Active la modélisation de l'extraction de revenus (salaire/dividendes), de la vente éventuelle et de l'exonération LCGE.</div></div>
+          </label>
+          <div class="spacer-md"></div>
+          <div id="biz-fields" hidden>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizStructHead">Structure & revenus</div>
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-head"><label class="field-label" for="bizType" data-i18n="bizType">Type</label></div>
+                  <select id="bizType" class="field-input"><option value="ccpc">SPCC (CCPC)</option><option value="sole">Travailleur autonome</option></select>
+                </div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizRevenue" data-i18n="bizRevenue">Revenus annuels <span class="field-unit">$</span></label></div><input id="bizRevenue" type="number" class="field-input" placeholder="200 000" min="0" step="10000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizExpenses" data-i18n="bizExpenses">Dépenses annuelles <span class="field-unit">$</span></label></div><input id="bizExpenses" type="number" class="field-input" placeholder="50 000" min="0" step="5000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizGrowth" data-i18n="bizGrowth">Croissance /an <span class="field-unit">%</span></label></div><input id="bizGrowth" type="number" class="field-input" placeholder="0" min="-10" max="20" step="0.5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizVolatility" data-i18n="bizVol">Volatilité des revenus <span class="field-unit">%</span></label></div><input id="bizVolatility" type="number" class="field-input" placeholder="0" min="0" max="50" step="1"></div>
+              </div>
+            </div>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizCompHead">Compensation</div>
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-head"><label class="field-label" for="bizRemun" data-i18n="bizRemun">Mode de rémunération</label></div>
+                  <select id="bizRemun" class="field-input"><option value="salary">Salaire seulement</option><option value="dividend">Dividendes seulement</option><option value="mix">Mixte salaire + dividendes</option></select>
+                </div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSalaryPct" data-i18n="bizSalaryPct">% en salaire (si mixte) <span class="field-unit">%</span></label></div><input id="bizSalaryPct" type="number" class="field-input" placeholder="100" min="0" max="100" step="5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizRetainedEarnings" data-i18n="bizRetEarn">Bénéfices non répartis <span class="field-unit">$</span></label></div><input id="bizRetainedEarnings" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizInvAlloc" data-i18n="bizInvAlloc">% actions dans société <span class="field-unit">%</span></label></div><input id="bizInvAlloc" type="number" class="field-input" placeholder="40" min="0" max="100" step="5"></div>
+              </div>
+            </div>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizExtractHead">Extraction à la retraite</div>
+              <div class="subsec-intro" data-i18n="bizExtractIntro">Comment vider le compte corporatif après la retraite.</div>
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-head"><label class="field-label" for="bizExtractMode" data-i18n="bizExtractMode">Mode d'extraction</label></div>
+                  <select id="bizExtractMode" class="field-input"><option value="dividend">Dividendes</option><option value="salary">Salaire minimum pour RRQ</option><option value="mix">Mixte</option></select>
+                </div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizExtractYrs" data-i18n="bizExtractYrs">Durée extraction <span class="field-unit">ans</span></label></div><input id="bizExtractYrs" type="number" class="field-input" placeholder="10" min="1" max="30" step="1"></div>
+                <div class="field">
+                  <label class="check-row"><input type="checkbox" id="bizOasOptim">
+                    <div><div class="check-label" data-i18n="bizOasOptimLabel">Optimiser pour éviter la récupération PSV</div><div class="check-help" data-i18n="bizOasOptimHelp">Garde le revenu imposable sous le seuil de récupération (~95 K$).</div></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizSaleHead">Vente éventuelle</div>
+              <div class="field-grid">
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSaleAge" data-i18n="bizSaleAge">Âge de vente (0=jamais)</label></div><input id="bizSaleAge" type="number" class="field-input" placeholder="0" min="0" max="85" step="1"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSalePrice" data-i18n="bizSalePrice">Prix de vente anticipé <span class="field-unit">$</span></label></div><input id="bizSalePrice" type="number" class="field-input" placeholder="0" min="0" step="50000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSaleACB" data-i18n="bizSaleACB">Coût de base des actions <span class="field-unit">$</span></label></div><input id="bizSaleACB" type="number" class="field-input" placeholder="100" min="0" step="10000"></div>
+                <div class="field">
+                  <label class="check-row"><input type="checkbox" id="bizLCGE" checked>
+                    <div><div class="check-label" data-i18n="bizLCGELabel">Éligible LCGE (exonération cumulative ~1,25 M$)</div><div class="check-help" data-i18n="bizLCGEHelp">Applicable aux actions admissibles de petite entreprise (AAPE).</div></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizDebtHead">Dette corporative</div>
+              <div class="field-grid">
+                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtBal" data-i18n="bizDebtBal">Solde dette corporative <span class="field-unit">$</span></label></div><input id="bizDebtBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtRate" data-i18n="bizDebtRate">Taux <span class="field-unit">%</span></label></div><input id="bizDebtRate" type="number" class="field-input" placeholder="6.0" min="0" max="15" step="0.1"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizDebtAmort" data-i18n="bizDebtAmort">Amortissement <span class="field-unit">ans</span></label></div><input id="bizDebtAmort" type="number" class="field-input" placeholder="10" min="1" max="30" step="1"></div>
+              </div>
+            </div>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizIppHead">Régime de retraite individuel (RRI / IPP)</div>
+              <label class="check-row">
+                <input type="checkbox" id="ippOn">
+                <div><div class="check-label" data-i18n="ippOnLabel">J'ai un régime RRI / IPP</div><div class="check-help" data-i18n="ippOnHelp">Régime de retraite individuel pour propriétaires de SPCC âgés de 40 ans ou plus.</div></div>
+              </label>
+              <div class="field-grid" id="ipp-fields" hidden>
+                <div class="field"><div class="field-head"><label class="field-label" for="ippBal2" data-i18n="ippBal">Solde RRI <span class="field-unit">$</span></label></div><input id="ippBal2" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="section" id="sec-rsu">
+        <summary>
+          <div class="sec-ico" style="background:#c49a1a22;color:#c49a1a">📊</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="rsuTitle">Actions restreintes (RSU / options d'achat)</div>
+            <div class="sec-sub" data-i18n="rsuSub">Parts d'actions reçues comme rémunération, avec acquisition étalée. Traitées comme revenu d'emploi imposable à la vesting.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" id="rsu-count">0 tranche</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="subsec">
+            <div class="subsec-intro" data-i18n="rsuIntro">Ajoutez chaque tranche d'attribution. Pour chaque tranche : nombre d'actions, prix actuel, croissance attendue, période d'acquisition (vesting) et âge auquel vous prévoyez les exercer.</div>
+            <div id="rsu-list"></div>
+            <button class="btn btn-primary" onclick="addRsu()" style="margin-top:8px"><span>📊</span> <span data-i18n="addRsu">Ajouter une tranche RSU</span></button>
+          </div>
+        </div>
+      </details>
+
+      <details class="section" id="sec-alt">
+        <summary>
+          <div class="sec-ico" style="background:#48b8a822;color:#48b8a8">🧩</div>
+          <div class="sec-meta">
+            <div class="sec-title" data-i18n="altTitle">Placements alternatifs (PE / métaux précieux)</div>
+            <div class="sec-sub" data-i18n="altSub">Capital-investissement privé et métaux précieux (or, argent) — rendement, volatilité, stratégie de sortie.</div>
+          </div>
+          <div class="sec-status">
+            <span class="count" data-count="alt">0</span>
+            <span class="stamp" data-i18n="notReviewed">non revue</span>
+          </div>
+          <span class="sec-chev">▸</span>
+        </summary>
+        <div class="sec-body">
+          <div class="callout warn">
+            <span class="callout-ico">⚠️</span>
+            <span data-i18n="altDisclaimer"><strong>Placements de niche.</strong> PE : périodes d'illiquidité + frais élevés. Métaux précieux : aucun rendement intrinsèque, couverture contre l'inflation. Ignorer si vous investissez uniquement en FNB/fonds communs.</span>
+          </div>
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="peHead">Capital-investissement privé (Private Equity)</div>
+            <div class="subsec-intro" data-i18n="peIntro">Parts dans une entreprise privée (fonds PE, investissement direct, LP). Horizon typique 5–10 ans, verrouillage initial, rendements supérieurs au marché côté en contrepartie de l'illiquidité.</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="peBal" data-i18n="peBal">Solde PE <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peBalTip">Valeur marchande actuelle de votre portefeuille PE (NAV). Si vous avez engagé mais pas encore appelé, utilisez le capital déployé, pas l'engagement total.</span></span></div><input id="peBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peY" data-i18n="peY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peYTip">TRI net anticipé (après frais). Typiquement 10–15 %/an pour PE diversifié ; 8–12 % pour le PE immobilier ; 6–9 % pour la dette privée.</span></span></div><input id="peY" type="number" class="field-input" placeholder="12" min="0" max="30" step="0.5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peV" data-i18n="peV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peVTip">Écart-type annualisé. Le PE affiche une volatilité réelle élevée (20–30 %) mais lissée par les évaluations trimestrielles. Utiliser ~25 % pour refléter le risque réel.</span></span></div><input id="peV" type="number" class="field-input" placeholder="25" min="0" max="80" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peFee" data-i18n="peFee">Frais annuels <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peFeeTip">Frais de gestion (management fee). Structure "2 et 20" typique : 2 % de gestion + 20 % de carried interest sur la performance. Les frais de performance ne sont PAS inclus ici (le rendement espéré est net).</span></span></div><input id="peFee" type="number" class="field-input" placeholder="2.0" min="0" max="5" step="0.1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peLock" data-i18n="peLock">Période de verrouillage <span class="field-unit">ans</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peLockTip">Durée pendant laquelle le capital ne peut être retiré. Typiquement 3–7 ans pour PE traditionnel, 1–3 ans pour fonds semi-liquides. Bloque les retraits MC pendant la période.</span></span></div><input id="peLock" type="number" class="field-input" placeholder="3" min="0" max="10" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peExit" data-i18n="peExit">Âge de sortie (0=conserver)</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitTip">Âge auquel vous prévoyez liquider. 0 = conserver jusqu'au décès. Typiquement aligné sur votre retraite ou 5–10 ans après pour lisser l'impôt.</span></span></div><input id="peExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="peExitStrat" data-i18n="peExitStrat">Stratégie de sortie</label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="peExitStratTip">Comment convertir en liquidités. Bloc = vente unique à l'âge de sortie. Échelonnée = vente linéaire sur N années. % par an = retrait d'un pourcentage fixe.</span></span></div>
+                <select id="peExitStrat" class="field-input"><option value="lump">Vente en bloc</option><option value="gradual">Échelonnée</option><option value="pct">% par an</option></select>
+              </div>
+              <div class="field"><div class="field-head"><label class="field-label" for="peExitYrs" data-i18n="peExitYrs">Durée sortie <span class="field-unit">ans</span></label></div><input id="peExitYrs" type="number" class="field-input" placeholder="5" min="2" max="15" step="1"></div>
+            </div>
+          </div>
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="pmHead">Métaux précieux (Precious Metals)</div>
+            <div class="subsec-intro" data-i18n="pmIntro">Or, argent, platine — lingots, FNB adossés, pièces. Pas de rendement intrinsèque (pas de dividende, pas d'intérêt) ; se comporte comme une couverture contre l'inflation et les chocs géopolitiques.</div>
+            <div class="field-grid">
+              <div class="field"><div class="field-head"><label class="field-label" for="pmBal" data-i18n="pmBal">Solde métaux <span class="field-unit">$</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmBalTip">Valeur marchande courante de vos avoirs en métaux précieux. Inclure physique + FNB (GLD, SLV, CGL.C, etc.).</span></span></div><input id="pmBal" type="number" class="field-input" placeholder="0" min="0" step="10000"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmY" data-i18n="pmY">Rendement espéré <span class="field-unit">%/an</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmYTip">Rendement historique de l'or (~2–3 % réel long terme, zéro hors inflation). Les métaux précieux ne produisent pas de revenu ; toute plus-value vient uniquement du prix spot.</span></span></div><input id="pmY" type="number" class="field-input" placeholder="3" min="0" max="15" step="0.5"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmV" data-i18n="pmV">Volatilité <span class="field-unit">%</span></label><span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="pmVTip">Écart-type annualisé. Or ~15 %, argent ~25 %, platine ~22 %. Corrélation faible/négative avec les actions — d'où l'intérêt comme diversifiant.</span></span></div><input id="pmV" type="number" class="field-input" placeholder="15" min="0" max="40" step="1"></div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmExit" data-i18n="pmExit">Âge de sortie (0=conserver)</label></div><input id="pmExit" type="number" class="field-input" placeholder="0" min="0" max="90" step="1"></div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="pmExitStrat" data-i18n="pmExitStrat">Stratégie de sortie</label></div>
+                <select id="pmExitStrat" class="field-input"><option value="lump">Vente en bloc</option><option value="gradual">Échelonnée</option><option value="pct">% par an</option></select>
+              </div>
+              <div class="field"><div class="field-head"><label class="field-label" for="pmExitYrs" data-i18n="pmExitYrs">Durée sortie <span class="field-unit">ans</span></label></div><input id="pmExitYrs" type="number" class="field-input" placeholder="5" min="2" max="15" step="1"></div>
             </div>
           </div>
         </div>
@@ -3105,11 +3114,56 @@ function renderProps() {
 }
 
 function addDebt() {
-  _debts.push({ type: "other", bal: 0, rate: 0.08, term: 0, pay: 0, deductible: false, ownerSelf: 0.5, ownerSpouse: 0.5 });
+  _debts.push({ type: "other", bal: 0, rate: 0.08, term: 0, pay: 0, deductible: false, ownerSelf: 0.5, ownerSpouse: 0.5, _auto: null });
   renderDebts();
 }
 function removeDebt(i) { _debts.splice(i, 1); renderDebts(); }
-function updD(i, k, v) { _debts[i][k] = v; renderDebts(); }
+
+/* v4 Phase 11 — Auto-calc for amortizing debts (auto/student/other loans).
+   Given any 3 of {balance, rate, term, payment}, derive the 4th so users
+   don't have to do the math. Skips credit cards / HELOCs which have no
+   fixed term. Writes to d._auto = "pay" | "term" to mark which field was
+   auto-filled; a hint is shown in the card. User can override any auto
+   value by typing — once they type, _auto clears for that field. */
+function _autoCalcDebt(d) {
+  /* Only amortizing types have a fixed term that relates to payment. */
+  var isAmort = d.type === "auto" || d.type === "student" || d.type === "other";
+  if (!isAmort) { d._auto = null; return d; }
+  var B = +d.bal || 0, r = (+d.rate || 0) / 12, n = +d.term || 0, P = +d.pay || 0;
+  if (B <= 0) { d._auto = null; return d; }
+  /* Case A: bal + rate + term → derive payment. */
+  if (n > 0 && P <= 0) {
+    if (r > 0) d.pay = Math.round(B * r / (1 - Math.pow(1 + r, -n)));
+    else d.pay = Math.round(B / n);
+    d._auto = "pay";
+    return d;
+  }
+  /* Case B: bal + rate + payment → derive term (months). */
+  if (P > 0 && n <= 0) {
+    if (r > 0) {
+      /* payment must cover at least monthly interest; otherwise never amortizes. */
+      var intOnly = B * r;
+      if (P <= intOnly) { d._auto = null; return d; }
+      var months = -Math.log(1 - B * r / P) / Math.log(1 + r);
+      d.term = Math.ceil(months);
+    } else {
+      d.term = Math.ceil(B / P);
+    }
+    d._auto = "term";
+    return d;
+  }
+  d._auto = null;
+  return d;
+}
+
+function updD(i, k, v) {
+  _debts[i][k] = v;
+  /* If the user typed into a field we had auto-filled, release that field
+     from auto-calc so subsequent updates don't overwrite their value. */
+  if (_debts[i]._auto === k) _debts[i]._auto = null;
+  _autoCalcDebt(_debts[i]);
+  renderDebts();
+}
 
 function renderDebts() {
   var list = document.getElementById("debt-list"); if (!list) return;
@@ -3124,18 +3178,32 @@ function renderDebts() {
     var card = document.createElement("div");
     card.className = "editor-card";
     var opts = Object.keys(TYPES).map(function(k){return '<option value="'+k+'"'+(d.type===k?' selected':'')+'>'+TYPES[k]+'</option>';}).join("");
+    /* Auto-calc hint: explains which field was computed and why. */
+    var autoHint = "";
+    if (d._auto === "pay") {
+      autoHint = '<div class="bf-autocalc-hint"><span>🧮</span><span>' + (fr
+        ? "Paiement mensuel calculé automatiquement à partir du solde, du taux et du terme restant. Modifiez-le pour le surpasser."
+        : "Monthly payment computed from balance, rate and term remaining. Override by editing it.") + '</span></div>';
+    } else if (d._auto === "term") {
+      var yrs = d.term > 0 ? (d.term / 12).toFixed(1) : "–";
+      autoHint = '<div class="bf-autocalc-hint"><span>🧮</span><span>' + (fr
+        ? ("Terme calculé : " + d.term + " mois (~" + yrs + " ans) à partir du solde, du taux et du paiement. Modifiez-le pour le surpasser.")
+        : ("Term computed: " + d.term + " months (~" + yrs + " yrs) from balance, rate and payment. Override by editing it.")) + '</span></div>';
+    }
+    var isAmort = d.type === "auto" || d.type === "student" || d.type === "other";
     card.innerHTML = '<div class="editor-card-head">'
       + '<div style="flex:1"><div class="editor-card-title">💳 ' + (TYPES[d.type] || TYPES.other) + '</div>'
-      + '<div class="editor-card-meta">' + (fr ? "Solde · " : "Balance · ") + '$' + (d.bal || 0).toLocaleString() + ' · ' + (fr ? "Taux " : "Rate ") + (d.rate * 100).toFixed(2) + '%</div></div>'
+      + '<div class="editor-card-meta">' + (fr ? "Solde · " : "Balance · ") + '$' + (d.bal || 0).toLocaleString() + ' · ' + (fr ? "Taux " : "Rate ") + (d.rate * 100).toFixed(2) + '%' + (d.pay > 0 ? ' · ' + (fr ? "Paie " : "Pay ") + '$' + (d.pay || 0).toLocaleString() + (fr ? "/mois" : "/mo") : '') + '</div></div>'
       + '<button class="editor-card-remove" onclick="removeDebt(' + i + ')" aria-label="' + (fr ? "Retirer" : "Remove") + '">✕</button></div>'
       + '<div class="field-grid">'
       +   '<div class="field"><div class="field-head"><label class="field-label">' + (fr ? "Type" : "Type") + '</label></div>'
       +     '<select class="field-input" onchange="updD(' + i + ', \'type\', this.value)">' + opts + '</select></div>'
       +   _f("dbal-" + i, fr ? "Solde" : "Balance", "$", d.bal, function(v){updD(i,"bal",+v);})
       +   (d.bal > 0 ? _f("drate-" + i, fr ? "Taux" : "Rate", "%", (d.rate * 100).toFixed(2), function(v){updD(i,"rate",+v/100);}) : "")
-      +   (d.bal > 0 ? _f("dpay-" + i, fr ? "Paiement /mois" : "Payment /mo", "$", d.pay, function(v){updD(i,"pay",+v);}) : "")
-      +   (d.bal > 0 && (d.type === "auto" || d.type === "student" || d.type === "other") ? _f("dterm-" + i, fr ? "Terme (mois rest.)" : "Term (months left)", "", d.term, function(v){updD(i,"term",+v);}) : "")
+      +   (d.bal > 0 ? _f("dpay-" + i, (fr ? "Paiement /mois" : "Payment /mo") + (d._auto === "pay" ? (fr ? " (calculé)" : " (auto)") : ""), "$", d.pay, function(v){updD(i,"pay",+v);}) : "")
+      +   (d.bal > 0 && isAmort ? _f("dterm-" + i, (fr ? "Terme (mois rest.)" : "Term (months left)") + (d._auto === "term" ? (fr ? " (calculé)" : " (auto)") : ""), "", d.term, function(v){updD(i,"term",+v);}) : "")
       + '</div>'
+      + autoHint
       + (d.bal > 0 ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (d.deductible ? "checked" : "") + ' onchange="updD(' + i + ', \'deductible\', this.checked)">'
       +   '<div><div class="check-label">' + (fr ? "Intérêts déductibles d'impôt (Manœuvre de Smith)" : "Tax-deductible interest (Smith Manoeuvre)") + '</div>'
       +   '<div class="check-help">' + (fr ? "Prêt dont l'intérêt est déductible — ex : emprunt pour investir." : "Loan whose interest is deductible — e.g. borrowing to invest.") + '</div></div></label>' : "")
