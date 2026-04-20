@@ -4003,6 +4003,17 @@ function _BF_TO_UI(key, value) {
   }
   return value;
 }
+/* v3 builds its INIT_EMBED profile from React state names that don't always
+ * match the longform field IDs. Map the known aliases so preset profiles
+ * actually populate the corresponding inputs. Without this, keys like
+ * "eqRetS" from v3 silently drop because document.getElementById("eqRetS")
+ * returns null. */
+var _BF_V3_ALIASES = {
+  eqRetS: "eqRet", eqVolS: "eqVol",
+  bndRetS: "bndRet", bndVolS: "bndVol",
+  cDCBal: "cDCBal2" // v3 state stores spouse DC under cDCBal2, profile sends it as cDCBal
+};
+function _BF_ALIAS_KEY(k) { return _BF_V3_ALIASES[k] || k; }
 function loadProfile() {
   var inp = document.createElement("input");
   inp.type = "file"; inp.accept = "application/json";
@@ -4058,10 +4069,22 @@ function loadProfile() {
         }
         Object.keys(p).forEach(function (k) {
           if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
-          var el = document.getElementById(k); if (!el) return;
+          var uiKey = (typeof _BF_ALIAS_KEY === "function") ? _BF_ALIAS_KEY(k) : k;
+          var el = document.getElementById(uiKey); if (!el) return;
           if (el.type === "checkbox") el.checked = !!p[k];
-          else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+          else if (p[k] !== null && p[k] !== undefined) el.value = (typeof _BF_TO_UI === "function" ? _BF_TO_UI(k, p[k]) : p[k]);
         });
+        /* File-loaded profiles may come from v3 which stores allocations/
+           MERs/returns as fractions. Run the same sync/validator hooks as
+           the embed path so section counters + tooltips update correctly. */
+        if (typeof _syncPenFields === "function") _syncPenFields();
+        if (typeof _syncPen2Fields === "function") _syncPen2Fields();
+        if (typeof _syncInsLifeFields === "function") _syncInsLifeFields();
+        if (typeof _syncGA === "function") _syncGA();
+        if (typeof _syncOverride === "function") _syncOverride();
+        if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+        if (typeof updateSectionCounts === "function") updateSectionCounts();
+        if (typeof validateInputs === "function") validateInputs();
       } catch (e) { alert("Erreur de lecture du fichier"); }
     };
     rd.readAsText(f);
@@ -4295,7 +4318,8 @@ function _applyEmbedProfile(p) {
     }
     Object.keys(p).forEach(function (k) {
       if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
-      var el = document.getElementById(k); if (!el) return;
+      var uiKey = _BF_ALIAS_KEY(k);
+      var el = document.getElementById(uiKey); if (!el) return;
       if (el.type === "checkbox") el.checked = !!p[k];
       else if (p[k] !== null && p[k] !== undefined) el.value = _BF_TO_UI(k, p[k]);
     });
@@ -4401,7 +4425,8 @@ function runSimulation() {
     }
     Object.keys(p).forEach(function (k) {
       if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
-      var el = document.getElementById(k); if (!el) return;
+      var uiKey = _BF_ALIAS_KEY(k);
+      var el = document.getElementById(uiKey); if (!el) return;
       if (el.type === "checkbox") el.checked = !!p[k];
       else if (p[k] !== null && p[k] !== undefined) el.value = _BF_TO_UI(k, p[k]);
     });

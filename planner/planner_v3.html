@@ -9834,7 +9834,27 @@ function App() {
         // v4 iframe has loaded and is asking for the profile. Build same
         // payload as window._bfGoBlueprint (which used to redirect).
         try {
-          var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs };
+          // INIT_EMBED profile. Keys here map 1:1 to longform field IDs
+          // (the longform also defines _BF_V3_ALIASES for the few React
+          // state names that diverge — eqRetS→eqRet etc.). Keep renames
+          // in sync with _BF_V3_ALIASES when adding new fields.
+          var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs,
+            // Spouse balances + retirement income detail — previously missing
+            // from INIT_EMBED so presets with couple data silently dropped.
+            cDCBal2, cDC2Bal, cPen2Type, cPen2M, cPen2Idx, cPen2EE, cPen2ER,
+            cBridge, cBrAmt, cBrEnd, cPtM, cPtYrs, cPenEE, cPenER, cPenMER, cPenIdx,
+            cSyncPortfolio, cAllocR, cAllocT, cAllocN, cMerR, cMerT, cMerN,
+            cLifeInsBenefit, cLifeInsPremium,
+            // Detailed insurance — primary + spouse
+            insViePrime, insVieCov, insVieType, insVieDur,
+            insInvPrime, insInvCov, insMGPrime, insMGCov, insColPrime,
+            cInsVieType, cInsVieDur, cInsInvPrime, cInsInvCov, cInsMGPrime, cInsMGCov, cInsColPrime,
+            // Sole-prop business
+            bizSoleRev: bizSoleRev, bizSoleExp: bizSoleExp, bizSoleGrowth: bizSoleGrowth, bizSoleVol: bizSoleVol,
+            // Spouse events + incomes
+            cEv1Age, cEv1Amt, cEv1Name, cEv2Age, cEv2Amt, cEv2Name,
+            cInc1Age, cInc1Amt, cInc1Name, cInc2Age, cInc2Amt, cInc2Name, cInc3Age, cInc3Amt, cInc3Name
+          };
           var iframe = document.getElementById("bf-drawer-iframe");
           if (iframe && iframe.contentWindow) {
             iframe.contentWindow.postMessage({ _bf: "INIT_EMBED", profile: profile }, location.origin);
