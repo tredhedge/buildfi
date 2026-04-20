@@ -1288,12 +1288,43 @@
     setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
     wsTax.getCell(27, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
 
+    // ── Tax breakdown by income source (P4.6) ─────────────────
+    // Engine emits per-year tax-income components on medRevData:
+    //   tiQpp (QPP/CPP), tiOas, tiPen (pension), tiRrif, tiDraw (voluntary
+    //   RRSP), tiRe (rental net), tiOther (RSU + LIRA + PE/PM gains + etc.)
+    // Tax tab previously showed only the lumped `tax` column. Now the
+    // user can see which income stream drives their tax bill each year.
+    var taxSrcAnchor = 30;
+    addTitle(wsTax, taxSrcAnchor, 2, fr ? "REVENU IMPOSABLE PAR SOURCE (15 premi\u00e8res ann\u00e9es de retraite)" : "TAXABLE INCOME BY SOURCE (first 15 retirement years)", "", 13);
+    setRow(wsTax, taxSrcAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", "RRQ/QPP", "PSV/OAS", fr ? "Pension empl." : "Employer pen.", "FERR/RRIF", fr ? "REER vol." : "RRSP vol.", fr ? "Locatif net" : "Rental net", fr ? "Autres" : "Other", "Total", fr ? "Imp\u00f4t" : "Tax"]);
+    var taxSrcRows = revD.filter(function (r) { return r.age >= retAge && (toNum(r.tiQpp) + toNum(r.tiOas) + toNum(r.tiPen) + toNum(r.tiRrif) + toNum(r.tiDraw) + toNum(r.tiRe) + toNum(r.tiOther)) > 0; }).slice(0, 15);
+    var taxSrcStart = taxSrcAnchor + 3;
+    taxSrcRows.forEach(function (r, i) {
+      var rr = taxSrcStart + i;
+      set(wsTax, wsTax.getCell(rr, 2), y0 + (r.age - age));
+      set(wsTax, wsTax.getCell(rr, 3), r.age);
+      wsTax.getCell(rr, 4).value = toNum(r.tiQpp); wsTax.getCell(rr, 4).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 5).value = toNum(r.tiOas); wsTax.getCell(rr, 5).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 6).value = toNum(r.tiPen); wsTax.getCell(rr, 6).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 7).value = toNum(r.tiRrif); wsTax.getCell(rr, 7).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 8).value = toNum(r.tiDraw); wsTax.getCell(rr, 8).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 9).value = toNum(r.tiRe); wsTax.getCell(rr, 9).numFmt = FMT_MONEY;
+      wsTax.getCell(rr, 10).value = toNum(r.tiOther); wsTax.getCell(rr, 10).numFmt = FMT_MONEY;
+      // Total as formula so user can verify
+      setFormula(wsTax, wsTax.getCell(rr, 11), 'SUM(D' + rr + ':J' + rr + ')', FMT_MONEY,
+        toNum(r.tiQpp) + toNum(r.tiOas) + toNum(r.tiPen) + toNum(r.tiRrif) + toNum(r.tiDraw) + toNum(r.tiRe) + toNum(r.tiOther));
+      wsTax.getCell(rr, 12).value = toNum(r.tax); wsTax.getCell(rr, 12).numFmt = FMT_MONEY;
+    });
+    if (taxSrcRows.length > 0) {
+      styleTable(wsTax, { hr: taxSrcAnchor + 2, fr: taxSrcStart, to: taxSrcStart + taxSrcRows.length - 1, fc: 2, lc: 12 });
+    }
+
     // ── Bracket-fill efficiency (meltdown analysis) ─────────────
     // For users running meltdown (p.melt=true) the engine targets
     // p.meltTgt as the year-by-year taxable income. This block shows
     // how well the plan fills the bottom bracket ceiling each year and
     // whether the melt target leaves room on the table.
-    var bracketAnchor = 30;
+    var bracketAnchor = Math.max(50, taxSrcStart + taxSrcRows.length + 3);
     addPageBreak(wsTax, bracketAnchor);
     addTitle(wsTax, bracketAnchor, 2, fr ? "EFFICACIT\u00c9 DES TRANCHES FISCALES" : "TAX BRACKET FILL EFFICIENCY", "", 13);
     if (!p.melt) {
@@ -2022,6 +2053,54 @@
         biz++;
       });
       styleTable(wsB, { hr: 5, fr: 6, to: Math.max(6, biz - 1), fc: 2, lc: 13 });
+
+      // P4.2 — Salary vs Dividend vs Mix comparison (CCPC only)
+      // Re-run runMC at N=300 with bizRemun forced to each option so the
+      // user sees extracted cash-to-household and lifetime tax impact.
+      // Baseline row uses the user's current wStrat; comparison rows
+      // show the two alternatives. ~6s total export overhead.
+      var compAnchor = biz + 2;
+      if (typeof window !== "undefined" && typeof window.runMC === "function") {
+        addPageBreak(wsB, compAnchor);
+        addTitle(wsB, compAnchor, 2, fr ? "COMPARAISON R\u00c9MUN\u00c9RATION \u2014 SALAIRE / DIVIDENDE / MIXTE" : "COMPENSATION COMPARISON \u2014 SALARY / DIVIDEND / MIX", "", 13);
+        setRow(wsB, compAnchor + 2, 2, [fr ? "Mode" : "Mode", fr ? "Succ\u00e8s MC" : "MC success", fr ? "Patrimoine m\u00e9d." : "Median wealth", fr ? "H\u00e9ritage net m\u00e9d." : "Median net estate", fr ? "Imp\u00f4t total vie" : "Lifetime tax", fr ? "Extraction totale" : "Total extraction", "Notes"]);
+        var modes = [
+          { key: "salary",   label: fr ? "100% Salaire"  : "100% Salary",   note: fr ? "RRQ max, RER max, abri fiscal simple" : "Max QPP, max RRSP, simple shelter" },
+          { key: "dividend", label: fr ? "100% Dividende" : "100% Dividend", note: fr ? "Diff\u00e9r\u00e9 fiscal, pas de RRQ suppl." : "Tax deferral, no extra QPP" },
+          { key: "mix",      label: fr ? "Mixte " + Math.round((p.bizSalaryPct || 0.5) * 100) + "/" + (100 - Math.round((p.bizSalaryPct || 0.5) * 100)) : "Mix " + Math.round((p.bizSalaryPct || 0.5) * 100) + "/" + (100 - Math.round((p.bizSalaryPct || 0.5) * 100)), note: fr ? "\u00c9quilibre des deux approches" : "Balance between both" }
+        ];
+        var compRow = compAnchor + 3;
+        modes.forEach(function (mode) {
+          var mcRes = null;
+          try {
+            var stubbed = Object.assign({}, p, { bizRemun: mode.key, nSim: 300 });
+            mcRes = window.runMC(stubbed, 300);
+          } catch (_) { mcRes = null; }
+          set(wsB, wsB.getCell(compRow, 2), mode.label + (p.bizRemun === mode.key ? (fr ? "  \u00b7 actuel" : "  \u00b7 current") : ""));
+          if (mcRes) {
+            wsB.getCell(compRow, 3).value = toNum(mcRes.succ); wsB.getCell(compRow, 3).numFmt = "0%";
+            wsB.getCell(compRow, 4).value = toNum(mcRes.rMedF || mcRes.medF); wsB.getCell(compRow, 4).numFmt = FMT_MONEY;
+            wsB.getCell(compRow, 5).value = toNum(mcRes.medEstateNet); wsB.getCell(compRow, 5).numFmt = FMT_MONEY;
+            // Lifetime tax = sum of medRevData[].tax
+            var lifeTax = (mcRes.medRevData || []).reduce(function (s, r) { return s + toNum(r.tax); }, 0);
+            wsB.getCell(compRow, 6).value = lifeTax; wsB.getCell(compRow, 6).numFmt = FMT_MONEY;
+            // Total extraction = sum of corpExtract + corpSal
+            var tExtract = (mcRes.medRevData || []).reduce(function (s, r) { return s + toNum(r.corpExtract) + toNum(r.corpSal); }, 0);
+            wsB.getCell(compRow, 7).value = tExtract; wsB.getCell(compRow, 7).numFmt = FMT_MONEY;
+          } else {
+            set(wsB, wsB.getCell(compRow, 3), fr ? "N/D" : "N/A");
+          }
+          set(wsB, wsB.getCell(compRow, 8), mode.note);
+          // Highlight current-mode row
+          if (p.bizRemun === mode.key) {
+            for (var ccc = 2; ccc <= 8; ccc++) {
+              wsB.getCell(compRow, ccc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+            }
+          }
+          compRow++;
+        });
+        styleTable(wsB, { hr: compAnchor + 2, fr: compAnchor + 3, to: compRow - 1, fc: 2, lc: 8 });
+      }
     } else {
       // Non-applicable: show a clear explanation rather than a blank sheet.
       // Keeps the workbook's 14-tab structure uniform across clients and

@@ -121,13 +121,17 @@ user can see it's an approximation.
 
 ## P4 — Workbook intelligence (post-P3)
 
-- [ ] **P4.1 — Cross-sheet formula references**
+- [~] **P4.1 — Cross-sheet formula references** DEFERRED
+      Invasive restructure — every cell on Sommaire, Estate, MC Wealth,
+      and Tax that mirrors another sheet would need a `='Sheet'!Ref`
+      formula. Wrong call to rewrite that many sites without a concrete
+      user ask for live "what-if" editing.
       Sommaire values that mirror cells on Cash Flow / MC Wealth / Estate
       are currently hardcoded. Replace with `='Cash Flow'!K50` so edits
       propagate. Makes the workbook a live exploration tool instead of
       a frozen snapshot.
 
-- [ ] **P4.2 — CCPC salary vs dividend comparison table**
+- [x] **P4.2 — CCPC salary vs dividend comparison table** ✓ (commit pending)
       Engine runs MC; users can only compare strategies by re-running.
       Excel can surface a side-by-side table (total extracted after
       corporate + personal tax, year-by-year cash to household) using
@@ -145,12 +149,15 @@ user can see it's an approximation.
       pages when printed landscape-letter. Add pageBreaks at section
       boundaries so each block starts on a fresh page.
 
-- [ ] **P4.5 — Scenarios comparison (retire at 62/65/68)**
+- [~] **P4.5 — Scenarios comparison (retire at 62/65/68)** DEFERRED
+      Requires 3× runMC calls at export (~9s overhead even at N=300).
+      HTML already has this; Excel users can rerun with the alternate
+      retAge if they want the comparison. Cost/benefit unfavorable.
       HTML report has a "what if you retired 3 years earlier / later"
       scenario delta. Port via re-running runMC at N=300 each retAge
       option, display as a table on Summary.
 
-- [ ] **P4.6 — Tax breakdown by source**
+- [x] **P4.6 — Tax breakdown by source** ✓ (commit pending)
       Cash Flow shows lumped tax. Engine has tiQpp / tiOas / tiPen /
       tiRrif / tiDraw / tiRe / tiOther on revData. Tax sheet could
       show a 6-column income decomposition per year.
