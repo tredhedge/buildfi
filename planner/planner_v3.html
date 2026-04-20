@@ -295,6 +295,38 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 body[data-bf-cockpit="1"] .bf-t2 { display: none !important; }
 body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 
+/* v3 Phase 10.1 — Long form rail button CTA styling. Gold background,
+   stays visible as the primary entry to the full-form drawer. Sits
+   above the utility buttons (Dark/Guide/FR-EN) in the rail footer. */
+.bf-rail-btn.bf-rail-longform {
+  background: linear-gradient(180deg, rgba(196,154,26,0.22), rgba(196,154,26,0.12)) !important;
+  border-left: 3px solid var(--bf-accent, #c49a1a) !important;
+  border-radius: 0 8px 8px 0 !important;
+  margin: 4px 0 6px 0 !important;
+  padding: 8px 6px !important;
+  min-height: 52px;
+  transition: background .15s var(--bfx-ease, ease), box-shadow .15s var(--bfx-ease, ease);
+}
+.bf-rail-btn.bf-rail-longform .bf-rail-ico { font-size: 18px; color: var(--bf-accent, #c49a1a); }
+.bf-rail-btn.bf-rail-longform .bf-rail-label {
+  color: var(--bf-accent, #c49a1a) !important;
+  font-weight: 700 !important; letter-spacing: 0.02em;
+  opacity: 1 !important;
+}
+.bf-rail-btn.bf-rail-longform:hover {
+  background: linear-gradient(180deg, rgba(196,154,26,0.36), rgba(196,154,26,0.2)) !important;
+  box-shadow: inset -2px 0 0 var(--bf-accent, #c49a1a);
+}
+.bf-rail-btn.bf-rail-longform::before { content: none !important; }
+
+/* Pulsing hint for first-time users who haven't opened the long form yet.
+   Removed once they open it (class toggled off via JS). */
+@keyframes bf-longform-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,154,26,0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(196,154,26,0); }
+}
+.bf-rail-btn.bf-rail-longform.bf-longform-hint { animation: bf-longform-pulse 2.2s ease-in-out 1s 3; }
+
 /* v3 Phase 10 — Long form drawer. Fullscreen iframe overlay that slides in
    from the right; loads planner_v4.html?embed=1. Covers the whole app
    when open (z-index 9500, above the sidebar overlay's 8600). */
@@ -13327,11 +13359,16 @@ React.createElement("div", { className: "bf-rail" },
     return _items;
   })(),
   React.createElement("div", { className: "bf-rail-sep", style: { marginTop: 3, marginBottom: 3 } }),
-  // v3 Phase 10 — "Long form" rail button. Opens the drawer iframe over v3.
-  // Tooltip explains what the long form is for (setup vs weekly tweaking).
+  // v3 Phase 10.1 — "Long form" rail button as a prominent CTA. Gold
+  // background + accent border so it stands out from utility rail buttons.
+  // First-time users (localStorage bf_longform_opened != "1") get a
+  // pulsing hint animation to draw their eye to it.
   React.createElement("button", {
-    className: "bf-rail-btn",
-    onClick: function() { if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint(); },
+    className: "bf-rail-btn bf-rail-longform" + ((function() { try { return localStorage.getItem("bf_longform_opened") !== "1" ? " bf-longform-hint" : ""; } catch(e) { return ""; } })()),
+    onClick: function() {
+      if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint();
+      try { localStorage.setItem("bf_longform_opened", "1"); } catch(e) {}
+    },
     title: lang === "fr"
       ? "Formulaire complet — ouvre un panneau plein écran par-dessus le cockpit avec les ~190 variables du moteur, organisées en sections avec tooltips et valeurs par défaut. Utile pour : la saisie initiale, l'audit annuel, ou ajuster un champ avancé (DPA, Smith, Guyton-Klinger, allocation par compte, scénarios de stress, etc.). Fermez le panneau pour revenir au cockpit."
       : "Full form — opens a fullscreen panel over the cockpit with the ~190 engine variables, organized in sections with tooltips and defaults. Use for: initial setup, annual review, or tuning an advanced field (CCA, Smith Manoeuvre, Guyton-Klinger, per-account allocation, stress scenarios, etc.). Close the panel to return to the cockpit."
@@ -14010,10 +14047,24 @@ React.createElement("div", { style: sty.head },
         window._bfGoBlueprint = function () { setDrawerOpen(true); };
       })(),
       React.createElement("button", {
-        onClick: function () { window._bfGoBlueprint(); },
-        style: { padding: "6px 10px", background: CL.ac + "1a", color: CL.ac, border: "1px solid " + CL.ac + "60", borderRadius: RAD.sm, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer" },
-        title: lang === "fr" ? "Basculer vers la vue formulaire (v4) avec transfert automatique" : "Switch to form view (v4) with auto-transfer"
-      }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire" : "Form")),
+        onClick: function () { window._bfGoBlueprint(); try { localStorage.setItem("bf_longform_opened", "1"); } catch(e) {} },
+        style: {
+          padding: "8px 14px",
+          background: "linear-gradient(180deg, " + CL.ac + ", " + CL.ac + "d0)",
+          color: "#0e1420",
+          border: "1px solid " + CL.ac,
+          borderRadius: RAD.md,
+          fontSize: FS.md, fontWeight: 700, letterSpacing: -0.005,
+          cursor: "pointer",
+          boxShadow: "0 2px 8px rgba(196,154,26,0.28)",
+          transition: "transform .12s ease, box-shadow .12s ease"
+        },
+        onMouseEnter: function(e) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,154,26,0.4)"; },
+        onMouseLeave: function(e) { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(196,154,26,0.28)"; },
+        title: lang === "fr"
+          ? "Ouvre le formulaire complet (long form) en plein écran — les ~190 variables du moteur avec tooltips, valeurs par défaut et explications. Pour la saisie initiale ou un audit annuel."
+          : "Opens the full form in fullscreen — all ~190 engine variables with tooltips, defaults and explanations. For initial setup or annual review."
+      }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire complet" : "Full form")),
       React.createElement("button", { onClick: function() { setTab(9); }, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Rapport client":"Client report" }, "\ud83d\udcca"),
       mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: "6px 16px", borderBottom: "1px solid " + CL.bd, opacity: tab === 5 ? 0.35 : 1, maxHeight: tab === 5 ? 36 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", cursor: tab === 5 ? "pointer" : "default" }, onClick: tab === 5 ? function() { /* no-op, just visual hint */ } : undefined, title: tab === 5 ? (lang === "fr" ? "Ces indicateurs sont d\u00e9taill\u00e9s ci-dessous" : "These indicators are detailed below") : undefined }, React.createElement("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
 cOn && React.createElement("div", { style: { gridColumn: "1 / -1", textAlign: "center", fontSize: FS.sm, color: CL.tl, fontWeight: FW.medium, background: "rgba(72,184,168,0.06)", borderRadius: RAD.sm, padding: "3px 0", border: "1px solid rgba(72,184,168,0.15)" } }, "\ud83d\udc6a ", lang === "fr" ? "R\u00e9sultats Monte Carlo pour le m\u00e9nage (deux conjoints combin\u00e9s)" : "Monte Carlo results for the household (both spouses combined)"),
