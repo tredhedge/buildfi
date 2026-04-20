@@ -484,6 +484,22 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 .bf-modal-body  { display: flex; flex-direction: column; gap: 14px; }
 .bf-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
+/* ─────────────── Inline warnings (v4 Phase 12) ─────────────── */
+/* Warning chip rendered directly under an input when the value is
+   above a tax limit (TFSA/RRSP/FHSA) or an unusual outlier. Three
+   severities: .warn (orange, default), .err (red, hard limit), .info. */
+.bf-warn-inline {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin-top: 4px; padding: 5px 9px;
+  background: rgba(212,136,32,0.12);
+  border-left: 3px solid var(--orange);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs); color: var(--text); line-height: 1.4;
+}
+.bf-warn-inline.err { background: rgba(208,72,72,0.15); border-left-color: var(--red); }
+.bf-warn-inline.info { background: rgba(80,144,200,0.1); border-left-color: var(--blue); }
+.bf-warn-inline .ico { flex-shrink: 0; font-size: 13px; line-height: 1.2; }
+
 /* ─────────────── Auto-calc hint (debt cards) ─────────────── */
 .bf-autocalc-hint {
   display: flex; align-items: flex-start; gap: 10px;
@@ -1159,7 +1175,8 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   </span>
                 </div>
                 <input id="rrspC" type="number" class="field-input" placeholder="12 000" min="0" step="500">
-                <div class="field-hint"><span class="default-pill" data-i18n="max2026">plafond 2026</span> <span>33 810 $</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="max2026">plafond 2026</span> <span>18 % du salaire · max 33 810 $</span></div>
+                <div id="rrspC-warn" class="bf-warn-inline" hidden></div>
               </div>
             </div>
           </div>
@@ -1179,6 +1196,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                 </div>
                 <input id="tfsaC" type="number" class="field-input" placeholder="7 000" min="0" max="7000" step="500">
                 <div class="field-hint"><span class="default-pill" data-i18n="max2026">plafond 2026</span> <span>7 000 $</span></div>
+                <div id="tfsaC-warn" class="bf-warn-inline" hidden></div>
               </div>
             </div>
           </div>
@@ -3186,6 +3204,27 @@ function renderProps() {
       +   _f("pt-" + i, fr ? "Taxes foncières /an" : "Property tax /yr", "$", pr.pt, function(v){updP(i,"pt",+v);})
       +   _f("ins-" + i, fr ? "Assurance /an" : "Insurance /yr", "$", pr.ins, function(v){updP(i,"ins",+v);})
       + '</div>'
+      /* v4 Phase 12 — computed metrics chip: mortgage payment + rental cash flow */
+      + (pr.mb > 0 && pr.mr > 0 && pr.ma > 0 ? (function(){
+          var r = pr.mr / 12, n = pr.ma * 12;
+          var P = r > 0 ? pr.mb * r / (1 - Math.pow(1+r, -n)) : pr.mb / n;
+          var annualDebtSvc = P * 12;
+          var grossRent = (pr.rm || 0) * 12;
+          var operating = (pr.ox || 0) + (pr.pt || 0) + (pr.ins || 0);
+          var noi = grossRent - operating;
+          var cashFlow = noi - annualDebtSvc;
+          var capRate = pr.val > 0 ? (noi / pr.val * 100) : 0;
+          var out = '<div class="bf-autocalc-hint" style="margin-top:10px"><span>🧮</span><span>';
+          out += (fr ? "Paiement hypothécaire calculé : " : "Computed mortgage payment: ") + '<b>$' + Math.round(P).toLocaleString() + (fr ? "/mois" : "/mo") + '</b>';
+          if (!pr.pri && pr.rm > 0) {
+            out += '<br>' + (fr ? "Loyer net (NOI) : " : "Net rental (NOI): ") + '<b>$' + Math.round(noi).toLocaleString() + (fr ? "/an" : "/yr") + '</b>';
+            out += (capRate > 0 ? ' · ' + (fr ? "Cap rate " : "Cap rate ") + capRate.toFixed(1) + '%' : '');
+            out += '<br>' + (fr ? "Flux de trésorerie après service de dette : " : "Cash flow after debt service: ")
+              + '<b style="color:' + (cashFlow >= 0 ? 'var(--green)' : 'var(--red)') + '">$' + Math.round(cashFlow).toLocaleString() + (fr ? "/an" : "/yr") + '</b>';
+          }
+          out += '</span></div>';
+          return out;
+        })() : "")
       + (pr.val > 0 ? '<div class="spacer-md"></div>'
         + '<details class="bf-adv-drawer">'
         +   '<summary>▸ ' + (fr ? "Stratégies avancées" : "Advanced strategies") + '</summary>'
@@ -3524,6 +3563,86 @@ document.addEventListener("input", updateSectionCounts);
 document.addEventListener("change", updateSectionCounts);
 /* Run once on load so initial state is accurate (e.g. after handoff). */
 setTimeout(updateSectionCounts, 50);
+
+/* ─────────────── Inline validators (v4 Phase 12) ─────────────── */
+/* Surface tax-limit breaches and outliers directly beside the offending
+   field. Runs on every input event (delegated). 2026 limits baked in:
+     TFSA 7 000, FHSA 8 000/yr (40 000 life),
+     RRSP 18% of prior-year earned income capped at 33 810. */
+var _BF_LIMITS = { tfsaC: 7000, fhsaC: 8000, fhsaBal: 40000, rrspCMax: 33810 };
+function _setWarn(id, severity, msg) {
+  var el = document.getElementById(id); if (!el) return;
+  if (!msg) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.className = "bf-warn-inline" + (severity === "err" ? " err" : severity === "info" ? " info" : "");
+  el.innerHTML = '<span class="ico">' + (severity === "err" ? "⚠" : severity === "info" ? "ℹ" : "⚠") + '</span><span>' + msg + '</span>';
+}
+function validateInputs() {
+  var fr = _lang === "fr";
+  /* TFSA contribution */
+  var tfsaC = +document.getElementById("tfsaC").value || 0;
+  if (tfsaC > _BF_LIMITS.tfsaC) _setWarn("tfsaC-warn", "err", fr
+    ? "Dépasse le plafond 2026 (7 000 $). L'excédent est imposé à 1 %/mois par l'ARC."
+    : "Exceeds 2026 limit ($7,000). CRA taxes excess at 1%/month.");
+  else _setWarn("tfsaC-warn", null, "");
+  /* RRSP contribution vs 18% rule */
+  var sal = +document.getElementById("sal").value || 0;
+  var rrspC = +document.getElementById("rrspC").value || 0;
+  var rrspAllowed = Math.min(_BF_LIMITS.rrspCMax, Math.round(sal * 0.18));
+  if (rrspC > _BF_LIMITS.rrspCMax) _setWarn("rrspC-warn", "err", fr
+    ? ("Dépasse le plafond absolu 2026 (33 810 $). L'excédent > 2 000 $ est pénalisé à 1 %/mois.")
+    : ("Exceeds 2026 absolute limit ($33,810). Excess > $2,000 penalized at 1%/month."));
+  else if (rrspC > rrspAllowed && sal > 0) _setWarn("rrspC-warn", "warn", fr
+    ? ("Dépasse 18 % du salaire (" + Math.round(rrspAllowed).toLocaleString() + " $). Valide uniquement si vous avez des droits inutilisés reportés.")
+    : ("Exceeds 18% of salary ($" + Math.round(rrspAllowed).toLocaleString() + "). Only valid if you have unused room carried forward."));
+  else _setWarn("rrspC-warn", null, "");
+  /* FHSA */
+  var fhsaC = +document.getElementById("fhsaC").value || 0;
+  var fhsaBal = +document.getElementById("fhsaBal").value || 0;
+  var fhsaWrap = document.getElementById("fhsaC");
+  if (fhsaWrap) {
+    /* Attach warn next to fhsaC if missing */
+    var fhsaWarnEl = document.getElementById("fhsaC-warn");
+    if (!fhsaWarnEl) {
+      var d = document.createElement("div"); d.id = "fhsaC-warn"; d.className = "bf-warn-inline"; d.hidden = true;
+      fhsaWrap.parentNode.appendChild(d);
+    }
+    if (fhsaC > _BF_LIMITS.fhsaC) _setWarn("fhsaC-warn", "err", fr
+      ? "Dépasse le plafond annuel 2026 (8 000 $)."
+      : "Exceeds 2026 annual limit ($8,000).");
+    else _setWarn("fhsaC-warn", null, "");
+  }
+  var fhsaBalEl = document.getElementById("fhsaBal");
+  if (fhsaBalEl) {
+    var fhsaBalWarnEl = document.getElementById("fhsaBal-warn");
+    if (!fhsaBalWarnEl) {
+      var d2 = document.createElement("div"); d2.id = "fhsaBal-warn"; d2.className = "bf-warn-inline"; d2.hidden = true;
+      fhsaBalEl.parentNode.appendChild(d2);
+    }
+    if (fhsaBal > _BF_LIMITS.fhsaBal) _setWarn("fhsaBal-warn", "err", fr
+      ? "Dépasse le plafond à vie (40 000 $)."
+      : "Exceeds lifetime limit ($40,000).");
+    else _setWarn("fhsaBal-warn", null, "");
+  }
+  /* retSpM outlier */
+  var retSpM = +document.getElementById("retSpM").value || 0;
+  var retSpWarnEl = document.getElementById("retSpM-warn");
+  var retSpInput = document.getElementById("retSpM");
+  if (retSpInput && !retSpWarnEl) {
+    var d3 = document.createElement("div"); d3.id = "retSpM-warn"; d3.className = "bf-warn-inline"; d3.hidden = true;
+    retSpInput.parentNode.appendChild(d3);
+  }
+  if (retSpM > 20000) _setWarn("retSpM-warn", "warn", fr
+    ? "Dépense inhabituellement élevée (> 20 000 $/mois). Vérifiez que c'est intentionnel."
+    : "Unusually high spending (> $20,000/mo). Verify this is intentional.");
+  else if (retSpM > 0 && retSpM < 1500) _setWarn("retSpM-warn", "warn", fr
+    ? "Dépense très basse pour un ménage canadien (< 1 500 $/mois). Vérifiez."
+    : "Very low for a Canadian household (< $1,500/mo). Verify.");
+  else _setWarn("retSpM-warn", null, "");
+}
+document.addEventListener("input", validateInputs);
+document.addEventListener("change", validateInputs);
+setTimeout(validateInputs, 80);
 
 /* ─────────────── Embed mode (iframe drawer inside v3) ─────────────── */
 /* When loaded with ?embed=1, v4 runs inside an iframe owned by v3. It talks
