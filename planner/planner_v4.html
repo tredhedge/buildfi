@@ -77,6 +77,10 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* v4 Phase 12.1 — the native [hidden] attribute sets display:none, but any
+   CSS rule with explicit display (grid/flex on .field-grid, .field, .pill-group,
+   etc.) overrides it. Force hidden to actually hide everywhere. */
+[hidden] { display: none !important; }
 html, body {
   background:
     radial-gradient(ellipse 80% 50% at 10% -10%, rgba(196,154,26,0.04), transparent 60%),
