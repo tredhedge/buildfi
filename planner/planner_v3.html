@@ -328,7 +328,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 .bf-rail-btn.bf-rail-longform.bf-longform-hint { animation: bf-longform-pulse 2.2s ease-in-out 1s 3; }
 
 /* v3 Phase 10 — Long form drawer. Fullscreen iframe overlay that slides in
-   from the right; loads planner_v4.html?embed=1. Covers the whole app
+   from the right; loads planner_longform.html?embed=1. Covers the whole app
    when open (z-index 9500, above the sidebar overlay's 8600). */
 .bf-drawer-backdrop {
   position: fixed; inset: 0; background: rgba(10,15,26,0.55);
@@ -7941,7 +7941,7 @@ function App() {
 
   // v3 Phase 10 — Long form drawer. When the user clicks "Long form" (rail
   // button or in-module jump link), this state flips to true, rendering a
-  // fullscreen iframe overlay pointing at planner_v4.html?embed=1. The
+  // fullscreen iframe overlay pointing at planner_longform.html?embed=1. The
   // iframe posts READY → v3 posts INIT_EMBED with the current profile →
   // user edits in v4 → user clicks "Fermer et simuler" → v4 posts
   // CLOSE_EMBED with the latest profile → v3 unpacks into its hooks, closes
@@ -9140,9 +9140,15 @@ function App() {
           }
         } catch (e) { console.error("drawer INIT_EMBED failed:", e); }
       } else if (ev.data._bf === "CLOSE_EMBED") {
-        // v4 user clicked "✓ Fermer et simuler". Unpack profile, close.
+        // Longform user clicked "✓ Fermer et simuler". Unpack profile,
+        // close the drawer, THEN trigger the MC sim automatically so the
+        // button label ("Fermer et simuler") actually honors what it says.
         if (ev.data.profile) _applyProfileFromV4(ev.data.profile);
         setDrawerOpen(false);
+        setTimeout(function () {
+          var sb = document.querySelector("[data-sim-btn]");
+          if (sb) sb.click();
+        }, 150);
       }
     };
     window.addEventListener("message", onMsg);
@@ -13518,7 +13524,7 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
 ),
 
 // === LONG FORM DRAWER (Phase 10) ===
-// Fullscreen iframe overlay pointing at planner_v4.html?embed=1. v3 sends
+// Fullscreen iframe overlay pointing at planner_longform.html?embed=1. v3 sends
 // the current profile via postMessage once the iframe posts READY; when
 // the user clicks "Fermer et simuler" inside v4, v4 posts CLOSE_EMBED
 // with the latest profile which we unpack back into the React hooks.
@@ -13538,7 +13544,7 @@ React.createElement("div", { className: "bf-drawer" + (drawerOpen ? " open" : ""
   ),
   drawerOpen ? React.createElement("iframe", {
     id: "bf-drawer-iframe",
-    src: "planner_v4.html?embed=1&lang=" + lang + "&theme=" + (dark ? "dark" : "light"),
+    src: "planner_longform.html?embed=1&lang=" + lang + "&theme=" + (dark ? "dark" : "light"),
     title: lang === "fr" ? "Formulaire complet" : "Full form",
     onLoad: function() {
       var el = document.getElementById("bf-drawer-loading");
