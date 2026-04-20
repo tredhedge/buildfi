@@ -95,22 +95,22 @@ user can see it's an approximation.
 
 ## P3 — Polish + nice-to-haves
 
-- [ ] **P3.1 — Terminal wealth histogram data**
+- [x] **P3.1 — Terminal wealth histogram data** ✓ (commit pending)
       `mc.histogram` is emitted by the engine, unused by Excel.
       Target: a table (bin low / bin high / count / probability) so users
       can pivot-chart it themselves.
 
-- [ ] **P3.2 — Death vs ruin pairs**
+- [x] **P3.2 — Death vs ruin pairs** ✓ (commit pending)
       `mc.deathVsRuin` emitted. Unused.
       Target: scatter data table (sim #, death age, ruin age) for
       joint-distribution analysis.
 
-- [ ] **P3.3 — Composite resilience score**
+- [x] **P3.3 — Composite resilience score** ✓ (commit pending)
       HTML computes `succ × min(1, VaR5 / (5 × annual spending))`.
       Excel has succ and VaR5 separated.
       Target: single KPI cell on Sommaire with the composite, labeled.
 
-- [ ] **P3.4 — Bracket-fill efficiency (meltdown analysis)**
+- [x] **P3.4 — Bracket-fill efficiency (meltdown analysis)** ✓ (commit pending)
       For meltdown users, show which federal bracket was targeted each
       year and % filled.
       Sources: `mc.medRevData[].taxInc`, `params.meltTgt`.

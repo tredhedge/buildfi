@@ -469,6 +469,23 @@
     wsS.getCell(8, 12).numFmt = '#,##0" K$"';
     wsS.getCell(8, 12).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
 
+    // Composite resilience score: succ × min(1, VaR5 / (5 × annual spending))
+    // Same formula used in the HTML report. Captures both "what % of scenarios
+    // succeed" AND "even among successful scenarios, how much buffer is there"
+    // — single metric is harder to game by pushing succ up at the cost of
+    // margin. Surfaced as a row-10 sub-KPI so it has context next to the grade.
+    var _annualSpend = toNum(retSpM) * 12;
+    var _resCover = _annualSpend > 0 ? Math.min(1, toNum(mc.rVar5 || mc.var5 || 0) / (5 * _annualSpend)) : 0;
+    var resilience = toNum(mc.succ) * _resCover;
+    wsS.getRow(10).height = 14;
+    wsS.mergeCells(10, 2, 10, 5);
+    set(wsS, wsS.getCell(10, 2), fr ? "R\u00e9silience composite (succ\u00e8s \u00d7 marge VaR5) : " : "Composite resilience (success × VaR5 margin): ");
+    wsS.getCell(10, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.muted } };
+    wsS.mergeCells(10, 6, 10, 8);
+    wsS.getCell(10, 6).value = resilience;
+    wsS.getCell(10, 6).numFmt = "0%";
+    wsS.getCell(10, 6).font = { name: "Calibri", size: 14, bold: true, color: { argb: resilience >= 0.70 ? CL.green : resilience >= 0.50 ? CL.gold : CL.red } };
+
     // Confidence row
     var conf = [];
     if (covRatio >= 1) conf.push(fr ? "Forte couverture" : "Strong coverage");
@@ -1088,7 +1105,53 @@
       }
     });
     styleTable(wsMC, { hr: 5, fr: 6, to: Math.max(6, 5 + mcN), fc: 2, lc: 11 });
-    footer(wsMC, 5 + mcN + 3);
+
+    // ── Terminal-wealth histogram (mc.histogram) ─────────────────
+    // Engine emits histogram as [{lo, hi, count}]. Previously unused by
+    // the Excel export even though it's the most intuitive view of
+    // plan-wide uncertainty. Surface it as a data table — users can
+    // pivot-chart it themselves if they want a bar chart in Excel.
+    var histData = Array.isArray(mc.histogram) ? mc.histogram : [];
+    if (histData.length > 0) {
+      var hAnchor = 5 + mcN + 3;
+      addTitle(wsMC, hAnchor, 2, fr ? "DISTRIBUTION DU PATRIMOINE FINAL (HISTOGRAMME)" : "FINAL WEALTH DISTRIBUTION (HISTOGRAM)", "", 13);
+      setRow(wsMC, hAnchor + 2, 2, [fr ? "Bin #" : "Bin #", fr ? "Borne inf." : "Lower", fr ? "Borne sup." : "Upper", fr ? "Compte" : "Count", fr ? "% des sims" : "% of sims"]);
+      var totalSims = histData.reduce(function (s, b) { return s + toNum(b.count); }, 0) || 1;
+      histData.forEach(function (bin, i) {
+        var r = hAnchor + 3 + i;
+        set(wsMC, wsMC.getCell(r, 2), i + 1);
+        wsMC.getCell(r, 3).value = toNum(bin.lo); wsMC.getCell(r, 3).numFmt = FMT_MONEY;
+        wsMC.getCell(r, 4).value = toNum(bin.hi); wsMC.getCell(r, 4).numFmt = FMT_MONEY;
+        set(wsMC, wsMC.getCell(r, 5), toNum(bin.count));
+        wsMC.getCell(r, 6).value = toNum(bin.count) / totalSims; wsMC.getCell(r, 6).numFmt = FMT_PCT;
+      });
+      styleTable(wsMC, { hr: hAnchor + 2, fr: hAnchor + 3, to: hAnchor + 2 + histData.length, fc: 2, lc: 6 });
+      var dvrAnchor = hAnchor + 5 + histData.length;
+    } else {
+      var dvrAnchor = 5 + mcN + 3;
+    }
+
+    // ── Death age × ruin age (mc.deathVsRuin) ─────────────────
+    // Engine emits [{age, alive, ruin}] bucketed in 5-year bins. Pairs
+    // the two risks: are we ruined BEFORE dying? Unused by Excel until now.
+    var dvrData = Array.isArray(mc.deathVsRuin) ? mc.deathVsRuin : [];
+    if (dvrData.length > 0) {
+      addTitle(wsMC, dvrAnchor, 2, fr ? "AGES DE D\u00c9C\u00c8S VS RUINE (SEAUX DE 5 ANS)" : "DEATH vs RUIN AGE (5-YEAR BUCKETS)", "", 13);
+      setRow(wsMC, dvrAnchor + 2, 2, [fr ? "\u00c2ge" : "Age", fr ? "D\u00e9c\u00e8s (nb)" : "Deaths (n)", fr ? "Ruines (nb)" : "Ruins (n)", fr ? "Ratio ruine/d\u00e9c\u00e8s" : "Ruin/death ratio"]);
+      dvrData.forEach(function (bucket, i) {
+        var r = dvrAnchor + 3 + i;
+        set(wsMC, wsMC.getCell(r, 2), toNum(bucket.age));
+        set(wsMC, wsMC.getCell(r, 3), toNum(bucket.alive));
+        set(wsMC, wsMC.getCell(r, 4), toNum(bucket.ruin));
+        var ratio = toNum(bucket.alive) > 0 ? toNum(bucket.ruin) / toNum(bucket.alive) : 0;
+        setFormula(wsMC, wsMC.getCell(r, 5),
+          'IFERROR(D' + r + '/C' + r + ',0)', FMT_PCT, ratio);
+      });
+      styleTable(wsMC, { hr: dvrAnchor + 2, fr: dvrAnchor + 3, to: dvrAnchor + 2 + dvrData.length, fc: 2, lc: 5 });
+      footer(wsMC, dvrAnchor + 4 + dvrData.length);
+    } else {
+      footer(wsMC, dvrAnchor + 1);
+    }
 
     // ────────────────────────────────────────────────────────────
     // SHEET 6: RETRAITS DÉTAILLÉS (phase-structured)
@@ -1210,7 +1273,56 @@
     setRow(wsTax, 27, 2, [fr ? "Alpha fiscal total" : "Total tax alpha"]);
     setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
     wsTax.getCell(27, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
-    footer(wsTax, 31);
+
+    // ── Bracket-fill efficiency (meltdown analysis) ─────────────
+    // For users running meltdown (p.melt=true) the engine targets
+    // p.meltTgt as the year-by-year taxable income. This block shows
+    // how well the plan fills the bottom bracket ceiling each year and
+    // whether the melt target leaves room on the table.
+    var bracketAnchor = 30;
+    addTitle(wsTax, bracketAnchor, 2, fr ? "EFFICACIT\u00c9 DES TRANCHES FISCALES" : "TAX BRACKET FILL EFFICIENCY", "", 13);
+    if (!p.melt) {
+      wsTax.mergeCells(bracketAnchor + 2, 2, bracketAnchor + 2, 7);
+      set(wsTax, wsTax.getCell(bracketAnchor + 2, 2), fr ? "Le meltdown n'est pas activ\u00e9 pour ce plan. Avec la strat\u00e9gie de meltdown (retraits REER volontaires jusqu'\u00e0 un palier cible), le moteur essaie de remplir les tranches basses d'imp\u00f4t sans les d\u00e9passer. Activez l'option Meltdown pour voir l'analyse de remplissage de tranches ici." : "Meltdown is not enabled for this plan. With the meltdown strategy (voluntary RRSP withdrawals up to a target bracket), the engine tries to fill the low tax brackets without exceeding them. Enable the Meltdown option to see bracket-fill analysis here.");
+      wsTax.getCell(bracketAnchor + 2, 2).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
+      wsTax.getCell(bracketAnchor + 2, 2).alignment = { wrapText: true };
+      wsTax.getRow(bracketAnchor + 2).height = 48;
+      footer(wsTax, bracketAnchor + 6);
+    } else {
+      // Reference 2026 federal bracket ceilings (approx; indexed upward
+      // by inflation in projection. Values from PROV_TAX[prov].b are not
+      // directly exposed here — use hardcoded 2026 as rough anchor for
+      // the row, actual engine tax still sourced via calcTax below).
+      setRow(wsTax, bracketAnchor + 2, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "Revenu imposable" : "Taxable income", fr ? "Cible meltdown" : "Melt target", fr ? "\u00c9cart" : "Gap", fr ? "Taux marginal" : "Marg rate", fr ? "Palier" : "Bracket"]);
+      var meltTgt = toNum(p.meltTgt || 55000);
+      // Use medRevData to read year-by-year tax income from the engine.
+      var brRow = bracketAnchor + 3;
+      revD.filter(function (r) { return r.age >= retAge && r.age <= retAge + 15; }).slice(0, 15).forEach(function (r, i) {
+        var taxInc = toNum(r.taxInc);
+        var tgtYr = meltTgt * Math.pow(1 + inf, r.age - age); // inflation-indexed target
+        var gap = tgtYr - taxInc;
+        // Rough bracket label: 1st (<$58k), 2nd (<$117k), 3rd (<$180k), 4th (<$253k), 5th (>$253k)
+        var bracket = taxInc < 58523 ? "1re (15%)"
+                    : taxInc < 117250 ? "2e (20.5%)"
+                    : taxInc < 181766 ? "3e (26%)"
+                    : taxInc < 253414 ? "4e (29%)"
+                    : "5e (33%)";
+        set(wsTax, wsTax.getCell(brRow, 2), y0 + (r.age - age));
+        set(wsTax, wsTax.getCell(brRow, 3), r.age);
+        wsTax.getCell(brRow, 4).value = taxInc; wsTax.getCell(brRow, 4).numFmt = FMT_MONEY;
+        wsTax.getCell(brRow, 5).value = tgtYr; wsTax.getCell(brRow, 5).numFmt = FMT_MONEY;
+        wsTax.getCell(brRow, 6).value = gap; wsTax.getCell(brRow, 6).numFmt = FMT_DELTA;
+        if (gap > 5000) wsTax.getCell(brRow, 6).font = { name: "Calibri", size: 11, color: { argb: CL.green } };
+        else if (gap < -5000) wsTax.getCell(brRow, 6).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+        // Marginal rate: approximate from bracket ceilings (rough 2026 fed+QC combined)
+        var margRate = taxInc < 58523 ? 0.2753 : taxInc < 117250 ? 0.3712 : taxInc < 181766 ? 0.4146 : taxInc < 253414 ? 0.4736 : 0.5375;
+        wsTax.getCell(brRow, 7).value = margRate; wsTax.getCell(brRow, 7).numFmt = FMT_PCT;
+        set(wsTax, wsTax.getCell(brRow, 8), bracket);
+        brRow++;
+      });
+      styleTable(wsTax, { hr: bracketAnchor + 2, fr: bracketAnchor + 3, to: brRow - 1, fc: 2, lc: 8 });
+      footer(wsTax, brRow + 2);
+    }
 
     // ────────────────────────────────────────────────────────────
     // SHEET 8: SENSIBILITÉ & STRESS
