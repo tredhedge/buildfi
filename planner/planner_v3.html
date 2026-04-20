@@ -4079,6 +4079,24 @@ function runTestSuite() {
     T("MC-Couple-NR","Spouse NR tax>0 at least once", _cnrTaxYrs.length > 0 ? 1 : 0, 1, 0);
   }
 
+  // ─── Estate CG on rentals at death (audit P1-3) ───
+  // Pre-fix: p.props didn't carry origV so reDeathCG was always 0.
+  // Post-fix: iterate reVals (where origV is set on each sim).
+  var bpRentDeath = Object.assign({}, bp, {
+    age:55, retAge:65, deathAge:70,  // short horizon so death hits during sim
+    props:[{on:true, pri:false, val:500000, mb:0, mr:0, ma:25, rm:2000,
+            ox:3000, pt:3000, ins:1000, pa:35, sa:0, cg:0.5,
+            dsAge:0, dsVal:0, heloc:0, helocRate:0.065, helocMax:0.65,
+            smithOn:false, refiAge:0, refiAmt:0, dpaOn:false,
+            dpaRate:0.04, landPct:0.30}]
+  });
+  var mcRentDeath = safeMC(bpRentDeath, 3);
+  T("MC-Rental-Death","Runs", mcRentDeath?1:0, 1, 0);
+  if (mcRentDeath) {
+    T("MC-Rental-Death","Estate tax>0 with appreciated rental",
+      (mcRentDeath.medEstateTax || 0) > 0 ? 1 : 0, 1, 0);
+  }
+
   // ─── Detailed insurance premium drain ───
   var bpIns = Object.assign({}, bp, {
     insViePrime:50, insVieCov:300000, insVieType:"term", insVieDur:20,
@@ -7198,17 +7216,26 @@ function runMC(p, N, _progressCb) {
     var finalYrPension = fP.rr > 0 ? getRRIFMin(simDeath, fP.rr) : 0;
     var pRrsp = p.cOn ? (fP.rr + (fP.lira || 0) + (fP.dc || 0) + (fP.dc2 || 0)) : rrspAtDeath + (fP.dc || 0) + (fP.dc2 || 0);
     var cRrspEst = p.cOn ? ((fP.crr || 0) + (fP.cLira || 0)) : 0;
-    // Rental property deemed disposition at death
+    // Rental property deemed disposition at death.
+    // Previous code read rp.origV from p.props, but origV only lives on
+    // reVals (the per-sim projection). The loop therefore never fired,
+    // and estate CG on rentals was silently 0 regardless of appreciation.
+    // Now iterates reVals (with its projected v + stored origV) and uses
+    // p.props[i].pri for the primary-residence exemption check.
     var reDeathCG = 0;
-    if (p.props && p.props.length > 0) {
-      p.props.forEach(function(rp) {
-        if (rp.on && !rp.pri && rp.origV > 0) {
-          var propVal = (rp.v || 0) > 0 ? rp.v : rp.origV * Math.pow(1 + (rp.ri || 0.03), maxYrs);
-          var propCG = Math.max(0, propVal - rp.origV);
-          var cgThr4 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
-          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (propCG - cgThr4) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : propCG * (p.cgIncLo || C.CG_INCLUSION_LOW);
+    if (reVals && reVals.length > 0) {
+      for (var _rdi = 0; _rdi < reVals.length; _rdi++) {
+        var _rv = reVals[_rdi];
+        var _rp = (p.props || [])[_rdi] || {};
+        if (!_rp.pri && _rv && _rv.origV > 0) {
+          var _propVal = _rv.v > 0 ? _rv.v : _rv.origV * Math.pow(1 + (_rv.ri || 0.03), maxYrs);
+          var _propCG = Math.max(0, _propVal - _rv.origV);
+          var _cgThr4 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
+          reDeathCG += _propCG > _cgThr4
+            ? _cgThr4 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_propCG - _cgThr4) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+            : _propCG * (p.cgIncLo || C.CG_INCLUSION_LOW);
         }
-      });
+      }
     }
     var estateIncome = pRrsp + taxableGain + finalYrPension + reDeathCG;
     // CCPC: corporate liquidation at death ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§5.8
