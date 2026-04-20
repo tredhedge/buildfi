@@ -295,6 +295,50 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 body[data-bf-cockpit="1"] .bf-t2 { display: none !important; }
 body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 
+/* v3 Phase 10 — Long form drawer. Fullscreen iframe overlay that slides in
+   from the right; loads planner_v4.html?embed=1. Covers the whole app
+   when open (z-index 9500, above the sidebar overlay's 8600). */
+.bf-drawer-backdrop {
+  position: fixed; inset: 0; background: rgba(10,15,26,0.55);
+  z-index: 9400; opacity: 0; pointer-events: none;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  transition: opacity .28s cubic-bezier(.4,0,.2,1);
+}
+.bf-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+.bf-drawer {
+  position: fixed; top: 0; bottom: 0; right: 0;
+  width: 100vw; max-width: 1280px;
+  background: #0e1420; z-index: 9500;
+  transform: translateX(100%); opacity: 0; pointer-events: none;
+  transition: transform .32s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+  box-shadow: -12px 0 40px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column;
+}
+.bf-drawer.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+.bf-drawer iframe {
+  flex: 1; width: 100%; border: 0; background: #0e1420;
+}
+.bf-drawer-close {
+  position: absolute; top: 14px; right: 14px; z-index: 9600;
+  background: rgba(10,15,26,0.8); color: #e8ecf5;
+  border: 1px solid rgba(196,154,26,0.4); border-radius: 8px;
+  width: 36px; height: 36px; font-size: 18px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s, transform .15s;
+  backdrop-filter: blur(4px);
+}
+.bf-drawer-close:hover {
+  background: rgba(208,72,72,0.2); border-color: #d04848; color: #d04848;
+  transform: scale(1.05);
+}
+/* Loading shim while iframe boots */
+.bf-drawer-loading {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #b4becf; font-size: 13px; font-family: "JetBrains Mono", monospace;
+  pointer-events: none;
+}
+.bf-drawer-loading.hidden { display: none; }
+
 /* Mode toggle in the rail footer — compact pill group */
 .bf-mode-toggle {
   display: inline-flex; background: var(--bf-rail-bg);
@@ -7844,6 +7888,15 @@ function App() {
     } catch(e) {}
   }, []);
 
+  // v3 Phase 10 — Long form drawer. When the user clicks "Long form" (rail
+  // button or in-module jump link), this state flips to true, rendering a
+  // fullscreen iframe overlay pointing at planner_v4.html?embed=1. The
+  // iframe posts READY → v3 posts INIT_EMBED with the current profile →
+  // user edits in v4 → user clicks "Fermer et simuler" → v4 posts
+  // CLOSE_EMBED with the latest profile → v3 unpacks into its hooks, closes
+  // the drawer, and invalidates the MC so the user can re-run.
+  var _drawer = useState(false), drawerOpen = _drawer[0], setDrawerOpen = _drawer[1];
+
   var _showWiz = useState(!localStorage.getItem("bf_used")), showWizard = _showWiz[0], setShowWiz = _showWiz[1];
   var _wizStep = useState(0), wizStep = _wizStep[0], setWizStep = _wizStep[1];
   var _gSubS = useState(0), guideSub = _gSubS[0], setGuideSub = _gSubS[1];
@@ -8882,18 +8935,12 @@ function App() {
     if (tab === 19) setTab(27);
   }, [tab]);
 
-  // v3 ↔ v4 bidirectional handoff on mount.
-  // When v4 redirects here with sessionStorage `bf_mode_handoff` (from:v4),
-  // we apply the profile through all the relevant setters. Same-shape JSON
-  // as the regular save/load so no translation needed.
-  useEffect(function () {
+  // v3 ↔ v4 bidirectional handoff — profile applicator. Used by both the
+  // mount-time sessionStorage autoloader AND the Phase-10 drawer close
+  // handler (postMessage from the iframe). Same JSON shape in both paths.
+  var _applyProfileFromV4 = function (p3) {
+    if (!p3) return;
     try {
-      var raw = sessionStorage.getItem("bf_mode_handoff");
-      if (!raw) return;
-      var msg = JSON.parse(raw);
-      if (!msg || msg.from !== "v4" || !msg.profile) return;
-      sessionStorage.removeItem("bf_mode_handoff");
-      var p3 = msg.profile;
       if (p3.age != null) sAge(p3.age);
       if (p3.retAge != null) sRA(p3.retAge);
       if (p3.deathAge != null) sDA(p3.deathAge);
@@ -8996,11 +9043,64 @@ function App() {
       if (p3.cSpouseName != null) sCSN(p3.cSpouseName);
       if (p3.cSpouseLastName != null) sCSLN(p3.cSpouseLastName);
       window._mc = null; window._mcPending = false; window._mcProfileDirty = true;
+    } catch (e) { console.error("v4→v3 profile apply failed:", e); }
+  };
+
+  // Mount: if v4 redirected us here with sessionStorage 'bf_mode_handoff',
+  // unpack and apply. This path still exists as a fallback for users who
+  // use the Save/Load-file buttons in v4 or otherwise lose the iframe.
+  useEffect(function () {
+    try {
+      var raw = sessionStorage.getItem("bf_mode_handoff");
+      if (!raw) return;
+      var msg = JSON.parse(raw);
+      if (!msg || msg.from !== "v4" || !msg.profile) return;
+      sessionStorage.removeItem("bf_mode_handoff");
+      _applyProfileFromV4(msg.profile);
       setTimeout(function () {
         try { alert(lang === "fr" ? "✓ Profil importé de la vue formulaire. Cliquez Simuler pour calculer." : "✓ Profile imported from form view. Click Simulate to calculate."); } catch (e) {}
       }, 120);
     } catch (e) { console.error("v4→v3 handoff failed:", e); }
   }, []);
+
+  // v3 Phase 10 — Drawer iframe postMessage bridge.
+  // Listens for READY (from v4 embed) → pushes profile in; CLOSE_EMBED
+  // (from v4 on user action) → unpacks profile, closes drawer, invalidates
+  // MC so the user can re-run. Also exposes window._bfCloseDrawer() for
+  // the close button/backdrop click (which drops unsaved v4 edits — same
+  // behaviour as a "cancel" button).
+  useEffect(function () {
+    var onMsg = function (ev) {
+      if (!ev.data || typeof ev.data !== "object") return;
+      if (ev.origin !== location.origin) return;
+      if (ev.data._bf === "READY") {
+        // v4 iframe has loaded and is asking for the profile. Build same
+        // payload as window._bfGoBlueprint (which used to redirect).
+        try {
+          var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs };
+          var iframe = document.getElementById("bf-drawer-iframe");
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ _bf: "INIT_EMBED", profile: profile }, location.origin);
+          }
+        } catch (e) { console.error("drawer INIT_EMBED failed:", e); }
+      } else if (ev.data._bf === "CLOSE_EMBED") {
+        // v4 user clicked "✓ Fermer et simuler". Unpack profile, close.
+        if (ev.data.profile) _applyProfileFromV4(ev.data.profile);
+        setDrawerOpen(false);
+      }
+    };
+    window.addEventListener("message", onMsg);
+    // Expose close for the backdrop/X button. Drops unsaved v4 edits.
+    window._bfCloseDrawer = function () { setDrawerOpen(false); };
+    return function () { window.removeEventListener("message", onMsg); };
+  });
+
+  // ESC key closes the drawer.
+  useEffect(function () {
+    var onKey = function (e) { if (e.key === "Escape" && drawerOpen) setDrawerOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return function () { window.removeEventListener("keydown", onKey); };
+  }, [drawerOpen]);
 
   // === PHASE 0A: Bidirectional family sync ===
   useEffect(function() {
@@ -13227,13 +13327,14 @@ React.createElement("div", { className: "bf-rail" },
     return _items;
   })(),
   React.createElement("div", { className: "bf-rail-sep", style: { marginTop: 3, marginBottom: 3 } }),
-  // v3 Phase 9.2 — Dedicated "Long form" rail button. The Cockpit/Complet
-  // toggle is removed; only two modes exist (Cockpit here, Long form in v4).
-  // Clicking this rail button hands off the full profile to v4 in one click.
+  // v3 Phase 10 — "Long form" rail button. Opens the drawer iframe over v3.
+  // Tooltip explains what the long form is for (setup vs weekly tweaking).
   React.createElement("button", {
     className: "bf-rail-btn",
     onClick: function() { if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint(); },
-    title: lang === "fr" ? "Ouvrir le formulaire complet (long form) avec toutes les variables" : "Open the full form (long form) with every variable"
+    title: lang === "fr"
+      ? "Formulaire complet — ouvre un panneau plein écran par-dessus le cockpit avec les ~190 variables du moteur, organisées en sections avec tooltips et valeurs par défaut. Utile pour : la saisie initiale, l'audit annuel, ou ajuster un champ avancé (DPA, Smith, Guyton-Klinger, allocation par compte, scénarios de stress, etc.). Fermez le panneau pour revenir au cockpit."
+      : "Full form — opens a fullscreen panel over the cockpit with the ~190 engine variables, organized in sections with tooltips and defaults. Use for: initial setup, annual review, or tuning an advanced field (CCA, Smith Manoeuvre, Guyton-Klinger, per-account allocation, stress scenarios, etc.). Close the panel to return to the cockpit."
   },
     React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, "\ud83d\udccb"),
     React.createElement("span", { className: "bf-rail-label" }, lang === "fr" ? "Long form" : "Long form")
@@ -13323,9 +13424,8 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
       }, "\u2715")
     );
   })(),
-  // v3 Phase 9.1 — "Open the full form" link at top of every module panel.
-  // Visible in BOTH modes now: cockpit users need it to reach Tier-2 fields,
-  // and Complet users still benefit as a one-click exit to the polished form.
+  // v3 Phase 10 — Long form jump link at top of every module panel. Opens
+  // the drawer overlaying v4's form. Two-line copy: action + what's in it.
   React.createElement("a", {
     className: "bf-blueprint-jump",
     href: "#",
@@ -13334,13 +13434,50 @@ React.createElement("div", { className: "bf-side-overlay" + (pan ? " open" : "")
       e.preventDefault();
       if (typeof window._bfGoBlueprint === "function") window._bfGoBlueprint();
     },
-    title: lang === "fr" ? "Ouvre le formulaire complet (long form) avec toutes les variables" : "Opens the full form (long form) with every variable"
+    title: lang === "fr"
+      ? "Ouvre le formulaire complet : ~190 variables organisées en sections avec tooltips, valeurs par défaut et explications. Idéal pour la saisie initiale, l'audit annuel ou pour ajuster une variable avancée (DPA, Smith, Guyton-Klinger, allocation par compte, etc.)."
+      : "Opens the full form: ~190 variables in sections with tooltips, defaults and explanations. Best for initial setup, annual review, or tuning an advanced field (CCA, Smith, Guyton-Klinger, per-account allocation, etc.)."
   },
     React.createElement("span", { className: "bf-bpj-ico" }, "\ud83d\udccb"),
-    React.createElement("span", null, lang === "fr" ? "Ouvrir le formulaire complet (long form)" : "Open the full form (long form)"),
+    React.createElement("div", { style: { flex: 1, lineHeight: 1.35 } },
+      React.createElement("div", { style: { fontWeight: 700 } }, lang === "fr" ? "Formulaire complet" : "Full form"),
+      React.createElement("div", { style: { fontSize: 11, opacity: 0.75, marginTop: 1 } },
+        lang === "fr" ? "Tous les champs avec tooltips — idéal pour saisie/audit" : "All fields with tooltips — best for setup/audit"
+      )
+    ),
     React.createElement("span", { className: "bf-bpj-arrow" }, "\u2192")
   ),
   _sidebarContent
+),
+
+// === LONG FORM DRAWER (Phase 10) ===
+// Fullscreen iframe overlay pointing at planner_v4.html?embed=1. v3 sends
+// the current profile via postMessage once the iframe posts READY; when
+// the user clicks "Fermer et simuler" inside v4, v4 posts CLOSE_EMBED
+// with the latest profile which we unpack back into the React hooks.
+React.createElement("div", {
+  className: "bf-drawer-backdrop" + (drawerOpen ? " open" : ""),
+  onClick: function() { if (typeof window._bfCloseDrawer === "function") window._bfCloseDrawer(); }
+}),
+React.createElement("div", { className: "bf-drawer" + (drawerOpen ? " open" : "") },
+  React.createElement("button", {
+    className: "bf-drawer-close",
+    onClick: function() { if (typeof window._bfCloseDrawer === "function") window._bfCloseDrawer(); },
+    "aria-label": lang === "fr" ? "Fermer le formulaire complet" : "Close the full form",
+    title: lang === "fr" ? "Fermer sans sauvegarder les derniers changements" : "Close without saving the latest edits"
+  }, "\u2715"),
+  React.createElement("div", { className: "bf-drawer-loading" + (drawerOpen ? "" : " hidden"), id: "bf-drawer-loading" },
+    lang === "fr" ? "Chargement du formulaire complet\u2026" : "Loading full form\u2026"
+  ),
+  drawerOpen ? React.createElement("iframe", {
+    id: "bf-drawer-iframe",
+    src: "planner_v4.html?embed=1&lang=" + lang,
+    title: lang === "fr" ? "Formulaire complet" : "Full form",
+    onLoad: function() {
+      var el = document.getElementById("bf-drawer-loading");
+      if (el) el.classList.add("hidden");
+    }
+  }) : null
 ),
 
 // === MOBILE BOTTOM NAV ===
@@ -13865,18 +14002,12 @@ React.createElement("div", { style: sty.head },
   }, style: { display: "none" } }),
       React.createElement("button", { onClick: _saveToFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder profil (JSON)":"Save profile (JSON)" }, "\ud83d\udcbe"),
       React.createElement("button", { onClick: _loadFromFile, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Charger profil (JSON)":"Load profile (JSON)" }, "\ud83d\udcc2"),
-      /* v3 \u2192 v4 bidirectional switch. Same sessionStorage key as v4's
-         auto-loader; the entire profile transfers in memory, no file needed.
-         Extracted to window._bfGoBlueprint so the cockpit jump-link in each
-         module can trigger the same handoff without duplicating the payload. */
+      /* v3 Phase 10 — window._bfGoBlueprint now opens the iframe drawer
+         instead of redirecting. The drawer's iframe loads v4 with embed=1,
+         posts READY, and v3's message listener sends the profile via
+         postMessage. No URL change, charts stay live under the drawer. */
       (function() {
-        window._bfGoBlueprint = function () {
-          try {
-            var profile = { _schema: "v3.1-transitional", age, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, retSpM, inf, prov, qppAge, oasAge, avgE, qppYrs, allocR, allocT, allocN, multiAsset, globalAlloc, strs, wStrat, melt, meltTgt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cNR, cNRC, cSex, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, qppShare, split, splitP, penType, penM, dcBal, bridge, brAmt, brEnd, sex, contGr, dcY, fatT, stWhen, stAge, strs2, stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, ev1Age, ev1Amt, ev1Name, ev2Age, ev2Amt, ev2Name, inc1Age, inc1Amt, inc1Name, inc2Age, inc2Amt, inc2Name, inc3Age, inc3Amt, inc3Name, nSim, rrifTax, merR, merT, merN, nrTaxDrag, stochMort, stochInf, eqRetS, eqVolS, bndRetS, bndVolS, glide, glideSpd, penIdx, penEE, penER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, costBase, cgIncLo, cgIncHi, cgThresh, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, lifeInsBenefit, lifeInsPremium, liraBal, cLiraBal, rrspRoom, cvAnalysis, cvAmount, cvTransferMax, dbSurvivorPct, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, custStrs, custBd, custInf, props, debts: debts, goals: goals, rsuGrants: rsuGrants, firstName, lastName, cSpouseName, cSpouseLastName, bizOn, bizType, bizRevenue, bizExpenses, bizGrowth, bizVolatility, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal2: ippBal2, peBal, peY, peV, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, pmY, pmV, pmExit, pmExitStrat, pmExitYrs };
-            sessionStorage.setItem("bf_mode_handoff", JSON.stringify({ from: "v3", when: Date.now(), profile: profile }));
-            window.location.href = "planner_v4.html?from=v3";
-          } catch (e) { alert("Handoff failed: " + e.message); }
-        };
+        window._bfGoBlueprint = function () { setDrawerOpen(true); };
       })(),
       React.createElement("button", {
         onClick: function () { window._bfGoBlueprint(); },

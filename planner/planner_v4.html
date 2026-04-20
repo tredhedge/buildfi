@@ -455,6 +455,17 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 .row { display: flex; align-items: center; gap: 10px; }
 .muted { color: var(--text-dim); }
 
+/* ─────────────── Embed mode (iframe inside v3 drawer) ─────────────── */
+/* When body has data-embed="1", this form is running inside an iframe in v3.
+   Hide the standalone-only buttons (Load/Save/Compact) and reveal the embed
+   close button (Fermer et simuler). Drop the page top padding so the header
+   aligns with the drawer edge. */
+body[data-embed="1"] .hdr-standalone-only { display: none !important; }
+body[data-embed="1"] .hdr-embed-only { display: inline-flex !important; }
+body[data-embed="1"] .app { padding-top: 24px; padding-bottom: 120px; }
+body[data-embed="1"] .footer { display: none; }
+body[data-embed="1"] .simulate-fab { display: none; }
+
 /* ─────────────── Sticky top-of-form action bar ─────────────── */
 .form-toolbar {
   position: sticky; top: 0; z-index: 50;
@@ -484,9 +495,14 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
         <button id="lang-fr" class="on" aria-pressed="true" onclick="setLang('fr')">FR</button>
         <button id="lang-en" aria-pressed="false" onclick="setLang('en')">EN</button>
       </div>
-      <button class="btn btn-ghost" onclick="loadProfile()" data-i18n="load">📂 Charger</button>
-      <button class="btn" onclick="saveProfile()" data-i18n="save">💾 Sauvegarder</button>
-      <button class="btn btn-ghost" onclick="switchToPlanner()" title="Basculer vers la vue compacte (v3) avec transfert automatique des données" data-i18n="toSidebar">🧭 Vue compacte →</button>
+      <!-- Standalone-only buttons. In embed mode (drawer inside v3), these hide
+           via the body[data-embed="1"] CSS rule; the drawer close control lives
+           in v3 on the outside of the iframe. -->
+      <button class="btn btn-ghost hdr-standalone-only" onclick="loadProfile()" data-i18n="load">📂 Charger</button>
+      <button class="btn hdr-standalone-only" onclick="saveProfile()" data-i18n="save">💾 Sauvegarder</button>
+      <button class="btn btn-ghost hdr-standalone-only" onclick="switchToPlanner()" title="Basculer vers la vue compacte (v3) avec transfert automatique des données" data-i18n="toSidebar">🧭 Vue compacte →</button>
+      <!-- Embed-only: close the drawer and send state back to v3 via postMessage. -->
+      <button class="btn btn-primary hdr-embed-only" onclick="closeEmbed()" data-i18n="closeEmbed" style="display:none">✓ Fermer et simuler</button>
     </div>
   </header>
 
@@ -2270,6 +2286,7 @@ var I18N = {
     notReviewed: "non revue",
     suggested: "suggéré", median: "médiane QC", stoch: "stochastique", max2026: "plafond 2026", pag2025: "PAG 2025",
     load: "📂 Charger", save: "💾 Sauvegarder", toSidebar: "🧭 Vue compacte", simulate: "▶ Simuler mon plan",
+    closeEmbed: "✓ Fermer et simuler",
     toolbarHint: "Formulaire complet · ~190 variables · toutes les sections optionnelles sauf <strong>Identité</strong> et <strong>Revenus</strong>.",
     expandAll: "⤢ Tout ouvrir", collapseAll: "⤡ Tout fermer",
     female: "Femme", male: "Homme",
@@ -2366,6 +2383,7 @@ var I18N = {
     sections: "Sections", searchPh: "Search a field…", notReviewed: "not reviewed",
     suggested: "suggested", median: "QC median", stoch: "stochastic", max2026: "2026 limit", pag2025: "PAG 2025",
     load: "📂 Load", save: "💾 Save", toSidebar: "🧭 Compact view", simulate: "▶ Simulate my plan",
+    closeEmbed: "✓ Close and simulate",
     toolbarHint: "Full form · ~190 variables · all sections optional except <strong>Identity</strong> and <strong>Income</strong>.",
     expandAll: "⤢ Expand all", collapseAll: "⤡ Collapse all",
     female: "Female", male: "Male",
@@ -3153,6 +3171,117 @@ document.addEventListener("input", updateSectionCounts);
 document.addEventListener("change", updateSectionCounts);
 /* Run once on load so initial state is accurate (e.g. after handoff). */
 setTimeout(updateSectionCounts, 50);
+
+/* ─────────────── Embed mode (iframe drawer inside v3) ─────────────── */
+/* When loaded with ?embed=1, v4 runs inside an iframe owned by v3. It talks
+   to its parent window via postMessage with three event kinds:
+     • READY       — v4 → parent, once DOMContentLoaded, asking for profile
+     • INIT_EMBED  — parent → v4, carrying the full profile to unpack
+     • CLOSE_EMBED — v4 → parent, user clicked "Fermer et simuler", payload
+                     is the latest collectProfile()
+   Messages share an MSG_KIND envelope so unrelated postMessage traffic from
+   other libs/extensions is ignored. Origin is validated against the current
+   document's origin (same-origin iframe). */
+var _embedMode = false;
+(function _initEmbed() {
+  try {
+    var params = new URLSearchParams(location.search);
+    _embedMode = params.get("embed") === "1";
+    if (!_embedMode) return;
+    document.body.setAttribute("data-embed", "1");
+    /* Announce readiness so the parent can push us a profile. */
+    window.addEventListener("DOMContentLoaded", function () {
+      try { window.parent.postMessage({ _bf: "READY" }, location.origin); } catch (e) {}
+    });
+    /* DOMContentLoaded may already have fired when this IIFE runs. Fallback: */
+    if (document.readyState !== "loading") {
+      try { window.parent.postMessage({ _bf: "READY" }, location.origin); } catch (e) {}
+    }
+    /* Listen for INIT_EMBED (profile injection from v3). */
+    window.addEventListener("message", function (ev) {
+      if (!ev.data || typeof ev.data !== "object") return;
+      if (ev.origin !== location.origin) return;
+      if (ev.data._bf !== "INIT_EMBED") return;
+      var profile = ev.data.profile;
+      if (!profile || typeof profile !== "object") return;
+      _applyEmbedProfile(profile);
+    });
+  } catch (e) { console.error("embed init failed:", e); }
+})();
+
+/* Apply a profile received from the parent. Reuses the same logic as the
+   sessionStorage handoff autoloader, but without the banner. */
+function _applyEmbedProfile(p) {
+  try {
+    if (Array.isArray(p.props)) {
+      _props = p.props.map(function (pr) {
+        if (pr.rate != null && pr.mr == null) pr.mr = pr.rate;
+        if (pr.renewRate != null && pr.mr2 == null) pr.mr2 = pr.renewRate;
+        if (pr.amort != null && pr.ma == null) pr.ma = pr.amort;
+        if (pr.term != null && pr.mt1 == null) pr.mt1 = pr.term;
+        if (pr.rent != null && pr.rm == null) pr.rm = pr.rent;
+        if (pr.exp != null && pr.ox == null) pr.ox = pr.exp;
+        if (pr.tax != null && pr.pt == null) pr.pt = pr.tax;
+        return pr;
+      });
+      renderProps();
+    }
+    if (Array.isArray(p.debts)) { _debts = p.debts; renderDebts(); }
+    if (Array.isArray(p.goals)) { _goals = p.goals; renderGoals(); }
+    if (Array.isArray(p.rsuGrants)) { _rsuGrants = p.rsuGrants; renderRsu(); }
+    if (Array.isArray(p.custStrs)) _custStrs = p.custStrs.slice();
+    if (Array.isArray(p.custBd)) _custBd = p.custBd.slice();
+    if (Array.isArray(p.custInf)) _custInf = p.custInf.slice();
+    renderCustomStress();
+    if (p.globalAlloc && typeof p.globalAlloc === "object") {
+      var _gset = function (id, v) { var el = document.getElementById(id); if (el && v != null) el.value = Math.round(v * 100); };
+      _gset("ga_can", p.globalAlloc.can); _gset("ga_us", p.globalAlloc.us);
+      _gset("ga_intl", p.globalAlloc.intl); _gset("ga_em", p.globalAlloc.em);
+      _gset("ga_bnd", p.globalAlloc.bnd);
+    }
+    if (p.allocOverride && typeof p.allocOverride === "object") {
+      ["rrsp", "tfsa", "nr"].forEach(function (a) {
+        var row = p.allocOverride[a]; if (!row) return;
+        ["can", "us", "intl", "em", "bnd"].forEach(function (c) {
+          var el = document.getElementById("ov_" + a + "_" + c);
+          if (el && row[c] != null) el.value = Math.round(row[c] * 100);
+        });
+      });
+      var mpa = document.getElementById("maPerAcct");
+      if (mpa) { mpa.checked = true; var ovp = document.getElementById("allocOverride-panel"); if (ovp) ovp.hidden = false; }
+    }
+    Object.keys(p).forEach(function (k) {
+      if (k === "props" || k === "debts" || k === "goals" || k === "rsuGrants" || k === "globalAlloc" || k === "allocOverride" || k === "custStrs" || k === "custBd" || k === "custInf" || k === "_schema") return;
+      var el = document.getElementById(k); if (!el) return;
+      if (el.type === "checkbox") el.checked = !!p[k];
+      else if (p[k] !== null && p[k] !== undefined) el.value = p[k];
+    });
+    if (p.cOn) {
+      var couplePill = document.querySelectorAll(".pill-group .pill")[1];
+      if (couplePill) setPlanMode("couple", couplePill);
+    }
+    if (typeof _syncPenFields === "function") _syncPenFields();
+    if (typeof _syncPen2Fields === "function") _syncPen2Fields();
+    if (typeof _syncInsLifeFields === "function") _syncInsLifeFields();
+    if (typeof _syncGA === "function") _syncGA();
+    if (typeof _syncOverride === "function") _syncOverride();
+    if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+    updateSectionCounts();
+  } catch (e) { console.error("apply embed profile failed:", e); }
+}
+
+/* Close handler invoked by the header "✓ Fermer et simuler" button in embed
+   mode. Posts the latest profile back to v3, then v3 closes the drawer
+   and re-runs the MC. */
+function closeEmbed() {
+  try {
+    var p = collectProfile();
+    window.parent.postMessage({ _bf: "CLOSE_EMBED", profile: p }, location.origin);
+  } catch (e) {
+    console.error("close embed failed:", e);
+    alert(_lang === "fr" ? "Erreur lors de la fermeture. Utilisez le bouton X du drawer." : "Close failed. Use the drawer's X button.");
+  }
+}
 
 /* ─────────────── Mode switch + Simulate (v3 handoff) ─────────────── */
 /* One-click bidirectional switching. When v4 → v3, we pack the current
