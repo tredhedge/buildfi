@@ -3936,6 +3936,22 @@ function _ownerPillHTML(i, kind, os, sp) {
 }
 
 /* ─────────────── Save / Load (JSON) ─────────────── */
+/* Reverse of _BF_TO_UI: when shipping the profile back to v3 (or saving to
+ * disk for later v3 load), convert the longform's percent values back
+ * into the fractions the engine expects. Without this, clicking "Fermer
+ * et simuler" sends allocR=60 → v3 sanitizer clamps to 1 → the MC runs
+ * at 100% equity instead of 60/40, and merR=0.5 gets treated as 50% fee
+ * instead of 0.5%. */
+function _BF_TO_ENGINE(key, value) {
+  if (typeof _BF_PCT_KEYS !== "undefined" && _BF_PCT_KEYS[key]
+      && typeof value === "number" && value !== 0) {
+    // Detect: a percent value (>1 in absolute terms) gets divided by 100.
+    // Values already in fraction range stay untouched (robust against
+    // round-trips or mixed-provenance profiles).
+    if (Math.abs(value) > 1) return value / 100;
+  }
+  return value;
+}
 function collectProfile() {
   var p = { _schema: "v4.0", props: _props, debts: _debts, goals: _goals, rsuGrants: _rsuGrants };
   document.querySelectorAll("input, select").forEach(function (el) {
@@ -3943,7 +3959,10 @@ function collectProfile() {
     if (el.id.indexOf("ga_") === 0) return; // globalAlloc handled below as single object
     if (el.id.indexOf("ov_") === 0) return; // allocOverride handled below
     if (el.type === "checkbox") p[el.id] = el.checked;
-    else if (el.type === "number") p[el.id] = el.value === "" ? null : parseFloat(el.value);
+    else if (el.type === "number") {
+      var raw = el.value === "" ? null : parseFloat(el.value);
+      p[el.id] = raw == null ? null : _BF_TO_ENGINE(el.id, raw);
+    }
     else p[el.id] = el.value;
   });
   /* Pack globalAlloc into v3's shape: { can, us, intl, em, bnd } as 0..1 fractions. */
