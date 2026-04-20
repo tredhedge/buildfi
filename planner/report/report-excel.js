@@ -1401,7 +1401,85 @@
       _writeStressRow(21 + i, s.name || s.key || "", s.period || "\u2014", s.succ, deltaPts, s.medF || 0, s.var5 || 0, s.medRuin, res, s.desc || "");
     });
     styleTable(wsSS, { hr: 19, fr: 20, to: Math.max(20, 20 + st.length), fc: 2, lc: 10 });
-    footer(wsSS, 28);
+
+    // ── Year-by-year stress trajectory (worst scenario) ──────────
+    // P2.3 — stressResults[] carries aggregate metrics only (succ, medF,
+    // var5, medRuin), not the year-by-year path. To surface a trajectory
+    // we re-run the worst-impact scenario through runMC at N=500 just
+    // for its median pD. ~2-3s overhead, tolerable for a manual export.
+    // Falls back cleanly if runMC isn't reachable (Node test harness
+    // without engine, pre-engine-load browser state, etc.).
+    var trajAnchor = Math.max(28, 20 + st.length + 3);
+    var worstStress = null;
+    if (st.length > 0) {
+      // Pick by largest negative delta vs baseline succ.
+      worstStress = st.reduce(function (worst, s) {
+        return (worst === null || toNum(s.succ) < toNum(worst.succ)) ? s : worst;
+      }, null);
+    }
+    var trajRun = null;
+    if (worstStress && typeof window !== "undefined" && typeof window.runMC === "function" && worstStress.key) {
+      try {
+        // Apply the stress by setting strs on the base params. Keep the
+        // user's wStrat/melt/split choices so trajectory reflects how
+        // THEIR plan would behave under the shock, not a generic one.
+        var stressParams = Object.assign({}, p, { strs: worstStress.key, stWhen: "now", nSim: 500 });
+        var r = window.runMC(stressParams, 500);
+        if (r && r.pD && r.pD.length > 0) trajRun = r;
+      } catch (_e) { trajRun = null; }
+    }
+
+    addTitle(wsSS, trajAnchor, 2,
+      fr ? "TRAJECTOIRE ANN\u00c9E-PAR-ANN\u00c9E \u2014 PIRE SC\u00c9NARIO" : "YEAR-BY-YEAR TRAJECTORY \u2014 WORST SCENARIO", "", 13);
+
+    if (!worstStress) {
+      wsSS.mergeCells(trajAnchor + 2, 2, trajAnchor + 2, 10);
+      set(wsSS, wsSS.getCell(trajAnchor + 2, 2), fr ? "Aucun sc\u00e9nario de stress ex\u00e9cut\u00e9 pour ce plan. Lancez la comparaison des sc\u00e9narios dans l'onglet Sensibilit\u00e9/Stress du planificateur pour peupler cette section." : "No stress scenarios executed for this plan. Run scenario comparison in the planner's Sensitivity/Stress tab to populate this section.");
+      wsSS.getCell(trajAnchor + 2, 2).font = { name: "Calibri", size: 11, italic: true, color: { argb: CL.muted } };
+      wsSS.getCell(trajAnchor + 2, 2).alignment = { wrapText: true };
+      footer(wsSS, trajAnchor + 5);
+    } else if (!trajRun) {
+      // Engine not reachable at export time — show aggregate with a hint.
+      wsSS.mergeCells(trajAnchor + 2, 2, trajAnchor + 2, 10);
+      set(wsSS, wsSS.getCell(trajAnchor + 2, 2),
+        (fr ? "Sc\u00e9nario le plus impactant : " : "Most impactful scenario: ") + worstStress.name + " (" + Math.round(toNum(worstStress.succ) * 100) + "% " + (fr ? "succ\u00e8s" : "success") + "). " +
+        (fr ? "La trajectoire ann\u00e9e-par-ann\u00e9e n\u00e9cessite le moteur actif. Pour la voir, exportez depuis le navigateur apr\u00e8s avoir lanc\u00e9 une simulation compl\u00e8te." : "Year-by-year trajectory requires the live engine. To see it, export from the browser after running a full simulation."));
+      wsSS.getCell(trajAnchor + 2, 2).font = { name: "Calibri", size: 11, italic: true, color: { argb: CL.muted } };
+      wsSS.getCell(trajAnchor + 2, 2).alignment = { wrapText: true };
+      wsSS.getRow(trajAnchor + 2).height = 32;
+      footer(wsSS, trajAnchor + 5);
+    } else {
+      wsSS.mergeCells(trajAnchor + 2, 2, trajAnchor + 2, 10);
+      set(wsSS, wsSS.getCell(trajAnchor + 2, 2),
+        (fr ? "Sc\u00e9nario : " : "Scenario: ") + worstStress.name +
+        (fr ? "  \u2022  N = 500 simulations  \u2022  Patrimoine P5/P50/P95 ann\u00e9e par ann\u00e9e" : "  \u2022  N = 500 simulations  \u2022  Wealth P5/P50/P95 year-by-year"));
+      wsSS.getCell(trajAnchor + 2, 2).font = SUB_FONT;
+      setRow(wsSS, trajAnchor + 4, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "P5 (pire 5%)" : "P5 (worst 5%)", "P25", fr ? "P50 (m\u00e9diane)" : "P50 (median)", "P75", fr ? "P95 (meil. 5%)" : "P95 (best 5%)", fr ? "Fourch. P5-P95" : "Range P5-P95", fr ? "Delta vs base" : "Delta vs base"]);
+      var trajRow = trajAnchor + 5;
+      var maxYrs = Math.min(trajRun.pD.length, 40);
+      for (var ti = 0; ti < maxYrs; ti++) {
+        var sr = trajRun.pD[ti];
+        // Pair with baseline same-year row (mc.pD) for delta column
+        var baseRow = (mc.pD && mc.pD[ti]) ? mc.pD[ti] : null;
+        var stressed = toNum(sr.p50);
+        var baseMed = baseRow ? toNum(baseRow.p50) : 0;
+        set(wsSS, wsSS.getCell(trajRow, 2), y0 + ti);
+        set(wsSS, wsSS.getCell(trajRow, 3), (toNum(sr.age) || (age + ti)));
+        wsSS.getCell(trajRow, 4).value = toNum(sr.p5); wsSS.getCell(trajRow, 4).numFmt = FMT_MONEY;
+        wsSS.getCell(trajRow, 5).value = toNum(sr.p25); wsSS.getCell(trajRow, 5).numFmt = FMT_MONEY;
+        wsSS.getCell(trajRow, 6).value = stressed; wsSS.getCell(trajRow, 6).numFmt = FMT_MONEY;
+        wsSS.getCell(trajRow, 7).value = toNum(sr.p75); wsSS.getCell(trajRow, 7).numFmt = FMT_MONEY;
+        wsSS.getCell(trajRow, 8).value = toNum(sr.p95); wsSS.getCell(trajRow, 8).numFmt = FMT_MONEY;
+        setFormula(wsSS, wsSS.getCell(trajRow, 9), 'G' + trajRow + '-D' + trajRow, FMT_MONEY, toNum(sr.p95) - toNum(sr.p5));
+        if (baseRow) {
+          setFormula(wsSS, wsSS.getCell(trajRow, 10), String(stressed - baseMed), FMT_DELTA, stressed - baseMed);
+          if (stressed < baseMed) wsSS.getCell(trajRow, 10).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+        }
+        trajRow++;
+      }
+      styleTable(wsSS, { hr: trajAnchor + 4, fr: trajAnchor + 5, to: trajRow - 1, fc: 2, lc: 10 });
+      footer(wsSS, trajRow + 2);
+    }
 
     // ────────────────────────────────────────────────────────────
     // SHEET 9: SUCCESSION

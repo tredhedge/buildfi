@@ -125,7 +125,11 @@
   assert(typeof Ai.extractData === "function", "extractData");
   assert(Array.isArray(Ai.SLOTS), "SLOTS is array");
   assert(Ai.SLOTS.length >= 15, "15+ slots defined (" + Ai.SLOTS.length + ")");
-  assert(Ai.SLOTS[0].key === "overall_assessment", "first slot is overall_assessment");
+  // First slot is advisor_letter (updated in 2026-04 rewrite). We also
+  // assert the presence of the load-bearing slots regardless of ordering.
+  assert(Ai.SLOTS[0].key === "advisor_letter", "first slot is advisor_letter");
+  assert(Ai.SLOTS.some(function (s) { return s.key === "overall_assessment"; }), "overall_assessment slot present");
+  assert(Ai.SLOTS.some(function (s) { return s.key === "verdict"; }), "verdict slot present");
 
   // parseResponse with valid JSON (leaves markdown intact; AiBlock promotes it safely)
   var _testJson = '{"verdict": "Test **bold** text", "extra": "ignored"}';

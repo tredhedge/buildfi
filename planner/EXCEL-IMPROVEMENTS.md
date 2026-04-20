@@ -87,11 +87,10 @@ user can see it's an approximation.
       Target: "Diagnostic" tab with 3 columns (Strengths / Weaknesses /
       Actions), up to 5 rows each.
 
-- [~] **P2.3 — Year-by-year stress trajectory** DEFERRED
-      Current cached `stressResults[]` entries carry only aggregate fields
-      (name/succ/medF/var5/medRuin). Engine would need to retain per-sim
-      pD for each stress scenario, OR the export would need to re-run MC
-      at export time (expensive). Real work, skipping for this sprint.
+- [x] **P2.3 — Year-by-year stress trajectory** ✓ (commit pending)
+      Solved by re-running the worst-impact scenario at N=500 via
+      window.runMC at export time (~2-3s). Graceful fallback to a note
+      when runMC isn't reachable (Node test harness, pre-engine state).
 
 ## P3 — Polish + nice-to-haves
 
