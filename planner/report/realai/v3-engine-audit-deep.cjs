@@ -53,11 +53,14 @@ if (det) {
     const lastRow = det.schedule[det.schedule.length - 1];
     assert(lastRow.age === baseP.deathAge || lastRow.age === baseP.deathAge - 1,
       'schedule ends at deathAge (got ' + lastRow.age + ', expected ' + baseP.deathAge + ')');
-    // No NaN in critical fields
+    // No NaN in critical fields. The schedule row shape from optimizeDecum
+    // uses `tax` (annual tax) and `spending` (annual spend). The previous
+    // audit asserted r.spend which does not exist on the row — always
+    // failed, producing a false negative.
     let nanRows = 0;
     det.schedule.forEach(r => {
-      if (!isFinite(r.tax) || isNaN(r.tax)) nanRows++;
-      if (!isFinite(r.spend) || isNaN(r.spend)) nanRows++;
+      if (r.tax != null && (!isFinite(r.tax) || isNaN(r.tax))) nanRows++;
+      if (r.spending != null && (!isFinite(r.spending) || isNaN(r.spending))) nanRows++;
     });
     assert(nanRows === 0, 'no NaN in deterministic schedule (found ' + nanRows + ')');
     // Pre-retirement years should NOT have RRSP withdrawal
