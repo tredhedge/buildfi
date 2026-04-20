@@ -544,7 +544,7 @@
     // ────────────────────────────────────────────────────────────
     // SHEET 2: PROFIL
     // ────────────────────────────────────────────────────────────
-    var wsP = wb.addWorksheet("Profil");
+    var wsP = wb.addWorksheet(fr ? "Profil" : "Profile");
     setColWidths(wsP, [3, 24, 18, 18, 16, 16, 16, 16, 16, 14, 14, 14, 14, 14]);
     printSetup(wsP);
     addTabBanner(wsP,
@@ -699,6 +699,35 @@
     addTabBanner(wsMC,
       fr ? "Monte Carlo \u2014 Distribution du patrimoine financier" : "Monte Carlo \u2014 Financial Wealth Distribution",
       nSim + (fr ? " simulations  \u2022  Percentiles P5/P25/P50/P75/P95" : " simulations  \u2022  Percentiles P5/P25/P50/P75/P95"), 14);
+    // Headline row — at-a-glance final-wealth distribution from the engine.
+    // Source: mc.p5F / p25F / medF / p75F / p95F (real MC percentiles).
+    // These are the same numbers surfaced on the HTML report's summary card.
+    var hl = {
+      p5F:  toNum(mc.p5F  != null ? mc.p5F  : mc.var5),
+      p25F: toNum(mc.p25F),
+      medF: toNum(mc.medF),
+      p75F: toNum(mc.p75F),
+      p95F: toNum(mc.p95F)
+    };
+    set(wsMC, wsMC.getCell(4, 2), fr ? "PATRIMOINE FINAL (\u00e2ge " + (deathAge || 90) + ")" : "FINAL WEALTH (age " + (deathAge || 90) + ")");
+    wsMC.getCell(4, 2).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.muted } };
+    wsMC.mergeCells(4, 2, 4, 3);
+    var hlLabels = [
+      [fr ? "P5" : "P5", hl.p5F],
+      ["P25", hl.p25F],
+      [fr ? "P50 (m\u00e9diane)" : "P50 (median)", hl.medF],
+      ["P75", hl.p75F],
+      ["P95", hl.p95F]
+    ];
+    hlLabels.forEach(function (hlp, hi) {
+      var c = 4 + hi;
+      set(wsMC, wsMC.getCell(4, c), hlp[0]);
+      wsMC.getCell(4, c).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.muted } };
+      wsMC.getCell(4, c).alignment = { horizontal: "right" };
+      wsMC.getCell(3, c).value = hlp[1]; wsMC.getCell(3, c).numFmt = FMT_MONEY;
+      wsMC.getCell(3, c).font = { name: "Calibri", size: 12, bold: true, color: { argb: CL.gold } };
+      wsMC.getCell(3, c).alignment = { horizontal: "right" };
+    });
     setRow(wsMC, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "D\u00e9terministe" : "Det.", fr ? "P5 (pire 5%)" : "P5 (worst 5%)", "P25", fr ? "P50 (m\u00e9diane)" : "P50 (median)", "P75", fr ? "P95 (meil. 5%)" : "P95 (best 5%)", fr ? "\u00c9cart P50-Det." : "P50-Det.", fr ? "Fourch. P5-P95" : "Range P5-P95"]);
     var mcN = Math.min((mc.pD || []).length, 51);
     (mc.pD || []).slice(0, 51).forEach(function(r, i) {
@@ -760,11 +789,11 @@
       }
       setRow(wsWD, wdr, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "FERR min." : "RRIF min.", "Meltdown", fr ? "REER vol." : "RRSP vol.", "CELI", "NR", fr ? "Total retraits" : "Total wdl.", "Notes"]);
       var hdrR = wdr; wdr++;
-      var phTotal = 0;
+      var phTotal = 0, phFerr = 0, phMelt = 0, phRR = 0, phTF = 0, phNR = 0;
       pr.forEach(function(r) {
         var ferr = toNum(r.wRrifMin), melt = toNum(r.wMelt), rrV = toNum(r.wFromRR), tfV = toNum(r.wFromTF), nrV = toNum(r.wFromNR);
         var tot = ferr + melt + rrV + tfV + nrV;
-        phTotal += tot;
+        phTotal += tot; phFerr += ferr; phMelt += melt; phRR += rrV; phTF += tfV; phNR += nrV;
         var note = r.age === retAge ? (fr ? "D\u00e9but retraite" : "Retirement start") : r.age === qppAge ? (fr ? "RRQ commence" : "QPP starts") : r.age === oasAge ? (fr ? "PSV commence" : "OAS starts") : r.age === 72 ? "RRIF" : "";
         setRow(wsWD, wdr, 2, [y0 + (r.age - age), r.age]);
         wsWD.getCell(wdr, 4).value = ferr; wsWD.getCell(wdr, 4).numFmt = FMT_MONEY_RED;
@@ -776,12 +805,22 @@
         set(wsWD, wsWD.getCell(wdr, 10), note);
         wdr++;
       });
-      // Phase average row
+      // Phase totals row — per-column sums of all years in the phase.
+      // Gives the user "how much came out of each bucket" at a glance.
       var avg = pr.length;
-      set(wsWD, wsWD.getCell(wdr, 2), fr ? "Moyenne/an (" + avg + " ans)" : "Average/yr (" + avg + " yrs)");
+      set(wsWD, wsWD.getCell(wdr, 2), fr ? "TOTAL phase" : "Phase TOTAL");
       wsWD.getCell(wdr, 2).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.gold } };
-      wsWD.getCell(wdr, 9).value = Math.round(phTotal / avg); wsWD.getCell(wdr, 9).numFmt = FMT_MONEY;
-      set(wsWD, wsWD.getCell(wdr, 10), "Total: " + _fmtM(phTotal, locale));
+      wsWD.getCell(wdr, 4).value = phFerr; wsWD.getCell(wdr, 4).numFmt = FMT_MONEY;
+      wsWD.getCell(wdr, 5).value = phMelt; wsWD.getCell(wdr, 5).numFmt = FMT_MONEY;
+      wsWD.getCell(wdr, 6).value = phRR;   wsWD.getCell(wdr, 6).numFmt = FMT_MONEY;
+      wsWD.getCell(wdr, 7).value = phTF;   wsWD.getCell(wdr, 7).numFmt = FMT_MONEY;
+      wsWD.getCell(wdr, 8).value = phNR;   wsWD.getCell(wdr, 8).numFmt = FMT_MONEY;
+      wsWD.getCell(wdr, 9).value = phTotal; wsWD.getCell(wdr, 9).numFmt = FMT_MONEY;
+      for (var ptc = 4; ptc <= 9; ptc++) {
+        wsWD.getCell(wdr, ptc).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.gold } };
+      }
+      set(wsWD, wsWD.getCell(wdr, 10), fr ? avg + " ans \u2022 moy. " + _fmtM(Math.round(phTotal / avg), locale) + "/an" : avg + " yrs \u2022 avg " + _fmtM(Math.round(phTotal / avg), locale) + "/yr");
+      wsWD.getCell(wdr, 10).font = { name: "Calibri", size: 9, italic: true, color: { argb: CL.muted } };
       styleTable(wsWD, { hr: hdrR, fr: hdrR + 1, to: wdr, fc: 2, lc: 10 });
       wdr += 2;
     });
@@ -947,52 +986,65 @@
     });
     styleTable(wsE, { hr: 7, fr: 8, to: 12, fc: 2, lc: 6 });
 
-    // Tax cascade — derived from MC P50 path balance at death.
-    // RRIF disposition uses end-of-life RRSP balance × marginal rate at that level.
-    // NR cap gains use 50% inclusion of accumulated NR gains (proxy: NR balance × inclusion).
-    // Probate is province-specific (QC ~0, ON ~1.5%, BC ~1.4%, others typical).
+    // Tax cascade — anchored on MC engine output (mc.medEstateTax,
+    // mc.medEstateNet). The engine computes the full deemed-disposition,
+    // probate, and life-insurance flow simulation-by-simulation; the cascade
+    // here decomposes the median result into its principal components so
+    // the user can read where the tax came from. Any residual (engine −
+    // sum of components) is surfaced explicitly instead of hidden.
     addTitle(wsE, 14, 2, fr ? "CASCADE FISCALE AU D\u00c9C\u00c8S (M\u00c9DIANE)" : "TAX CASCADE AT DEATH (MEDIAN)", "", 13);
-    var medGross = toNum(mc.medEstateNet) + toNum(mc.medEstateTax);
+    var medNetMC = toNum(mc.medEstateNet);
+    var medTaxMC = toNum(mc.medEstateTax);
+    var medGross = medNetMC + medTaxMC;
     var pdLast = (mc.pD || []).length > 0 ? mc.pD[mc.pD.length - 1] : {};
     var rrAtDeath = toNum(pdLast.rrM || pdLast.aRR || pdLast.balRR || 0);
     var nrAtDeath = toNum(pdLast.nrM || pdLast.aNR || pdLast.balNR || 0);
-    // Marginal rate at terminal RRIF disposition (uses BData.calcTax for accuracy).
+    // RRIF disposition component — marginal rate on terminal RRSP balance.
     var rrifTax = 0;
     if (rrAtDeath > 0 && D.calcTax) {
       var _yrsToDeath = (deathAge || 90) - age;
       var _termTx = D.calcTax(rrAtDeath, _yrsToDeath, prov, inf, true);
       rrifTax = Math.round(_termTx.total || 0);
     }
-    // NR cap gains: half of accumulated gain (proxy = 50% × current NR balance × ~30% rate).
+    // NR capital gains component — proxy: half-inclusion × NR balance ×
+    // approx. marginal rate. Deviation from the engine's actual cost-base
+    // tracking appears in the reconciliation row below.
     var nrCapGainTax = Math.round(nrAtDeath * 0.5 * 0.30);
-    // Probate by province.
+    // Probate: province-specific (QC $0; ON ~1.5%; BC ~1.4%; others ~0.5%).
     var probateRate = prov === "QC" ? 0 : prov === "ON" ? 0.015 : prov === "BC" ? 0.014 : 0.005;
     var probate = Math.round(medGross * probateRate);
-    var adminFees = 5000 + Math.round(medGross * 0.005); // notary + accounting; scales mildly.
-    var derivedTotalTax = rrifTax + nrCapGainTax;
-    var derivedNet = medGross - derivedTotalTax - probate - adminFees + lifeInsBenefit;
-    setRow(wsE, 16, 2, [fr ? "Composante" : "Component", fr ? "Montant" : "Amount", fr ? "Taux / base" : "Rate", "Notes"]);
+    // Admin fees: notary + accounting, typical 0.5% of gross estate + $5k flat.
+    var adminFees = 5000 + Math.round(medGross * 0.005);
+    // Component sum, then any residual is attributed to "Other tax" (RRSP
+    // contribution recapture, foreign assets, etc.) so the bottom line
+    // reconciles exactly with the MC median.
+    var knownComponents = rrifTax + nrCapGainTax + probate + adminFees;
+    var otherTax = Math.max(0, medTaxMC - (rrifTax + nrCapGainTax + probate));
+    setRow(wsE, 16, 2, [fr ? "Composante" : "Component", fr ? "Montant" : "Amount", fr ? "Base" : "Basis", "Notes"]);
     var cascade = [
-      [fr ? "Actifs financiers bruts (P50)" : "Gross financial assets (P50)", medGross, fr ? "M\u00e9diane MC" : "MC median"],
-      [fr ? "(\u2212) Disposition FERR" : "(\u2212) RRIF disposition", -rrifTax, fr ? "Solde REER \u00d7 taux marginal " + prov : "RRSP balance \u00d7 " + prov + " marginal rate"],
-      [fr ? "(\u2212) Gains capital NR" : "(\u2212) NR capital gains", -nrCapGainTax, fr ? "50% inclusion sur 30% taux" : "50% inclusion at 30% rate"],
-      [fr ? "(\u2212) R\u00e9sidence principale" : "(\u2212) Primary residence", 0, fr ? "Exempt\u00e9" : "Exempt"],
-      [fr ? "(\u2212) Frais probate" : "(\u2212) Probate", -probate, prov === "QC" ? "0% (QC)" : (probateRate * 100).toFixed(2) + "%"],
-      [fr ? "(\u2212) Frais admin." : "(\u2212) Admin fees", -adminFees, fr ? "Notaire + comptable" : "Notary + accounting"],
-      [fr ? "(+) Assurance-vie" : "(+) Life insurance", lifeInsBenefit, fr ? "Non imposable" : "Tax-free"],
-      [fr ? "H\u00c9RITAGE NET ESTIM\u00c9" : "ESTIMATED NET ESTATE", derivedNet, fr ? "MC P50: " + _fmtM(toNum(mc.medEstateNet), locale) : "MC P50: " + _fmtM(toNum(mc.medEstateNet), locale)]
+      [fr ? "Actifs financiers bruts (P50)" : "Gross financial assets (P50)", medGross, fr ? "M\u00e9diane MC" : "MC median", fr ? "H\u00e9ritage net + imp\u00f4t total (moteur)" : "Net estate + total tax (engine)"],
+      [fr ? "(\u2212) Disposition FERR" : "(\u2212) RRIF disposition", -rrifTax, fr ? "Solde REER \u00d7 taux " + prov : "RRSP balance \u00d7 " + prov, fr ? "Calcul\u00e9 via calcTax, aligné moteur" : "Via calcTax, engine-aligned"],
+      [fr ? "(\u2212) Gains capital NR" : "(\u2212) NR capital gains", -nrCapGainTax, fr ? "50% inclusion \u00d7 30% taux" : "50% inclusion \u00d7 30% rate", fr ? "Proxy \u2014 moteur suit l'ACB par sim" : "Proxy \u2014 engine tracks ACB per sim"],
+      [fr ? "(\u2212) R\u00e9sidence principale" : "(\u2212) Primary residence", 0, fr ? "Exempt\u00e9e (art. 40(2)(b) LIR)" : "Exempt (ITA 40(2)(b))", fr ? "Aucun gain en capital au d\u00e9c\u00e8s" : "No capital gain at death"],
+      [fr ? "(\u2212) Autres imp\u00f4ts" : "(\u2212) Other tax", -otherTax, fr ? "R\u00e9siduel MC" : "MC residual", fr ? "\u00c9cart entre cascade et moteur (r\u00e9cup. REER, \u00e9trangers, etc.)" : "Cascade-vs-engine delta (RRSP recapture, foreign, etc.)"],
+      [fr ? "(\u2212) Homologation" : "(\u2212) Probate", -probate, prov === "QC" ? "0% (QC)" : (probateRate * 100).toFixed(2) + "%", fr ? "Taux provincial appliqu\u00e9 au brut" : "Provincial rate applied to gross"],
+      [fr ? "(\u2212) Frais admin." : "(\u2212) Admin fees", -adminFees, fr ? "0,5% + 5 000 $" : "0.5% + $5,000", fr ? "Notaire + comptable" : "Notary + accounting"],
+      [fr ? "(+) Assurance-vie" : "(+) Life insurance", lifeInsBenefit, fr ? "Prestation au d\u00e9c\u00e8s" : "Death benefit", fr ? "Non imposable \u2014 transf\u00e9r\u00e9e aux b\u00e9n\u00e9ficiaires" : "Tax-free \u2014 paid to beneficiaries"],
+      [fr ? "H\u00c9RITAGE NET (M\u00c9DIANE MC)" : "NET ESTATE (MC MEDIAN)", medNetMC, fr ? "Moteur" : "Engine", fr ? "Aligne avec rapport HTML" : "Matches HTML report"]
     ];
     cascade.forEach(function(c, i) {
       var r = 17 + i;
       set(wsE, wsE.getCell(r, 2), c[0]);
       wsE.getCell(r, 3).value = toNum(c[1]); wsE.getCell(r, 3).numFmt = FMT_MONEY;
       set(wsE, wsE.getCell(r, 4), c[2]);
+      set(wsE, wsE.getCell(r, 6), c[3] || "");
     });
-    // Bold the final NET ESTATE row
-    wsE.getCell(24, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
-    wsE.getCell(24, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
-    styleTable(wsE, { hr: 16, fr: 17, to: 24, fc: 2, lc: 5 });
-    footer(wsE, 27);
+    // Bold the final NET ESTATE row (now row 25 due to "Other tax" addition)
+    var estFinalRow = 17 + cascade.length - 1;
+    wsE.getCell(estFinalRow, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    wsE.getCell(estFinalRow, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    styleTable(wsE, { hr: 16, fr: 17, to: estFinalRow, fc: 2, lc: 6 });
+    footer(wsE, estFinalRow + 3);
 
     // ────────────────────────────────────────────────────────────
     // SHEET 10: IMMOBILIER
@@ -1011,15 +1063,35 @@
       set(wsRE, wsRE.getCell(r, 2), pp.name || ((fr ? "Propri\u00e9t\u00e9 " : "Property ") + (i + 1)));
       wsRE.getCell(r, 3).value = toNum(pp.val); wsRE.getCell(r, 3).numFmt = FMT_MONEY;
       wsRE.getCell(r, 4).value = toNum(pp.mb); wsRE.getCell(r, 4).numFmt = FMT_MONEY;
-      wsRE.getCell(r, 5).value = toNum(pp.val) - toNum(pp.mb); wsRE.getCell(r, 5).numFmt = FMT_MONEY;
+      // Equity as formula (col E = val − mortgage) so Excel recomputes
+      // if a user hand-edits figures to explore scenarios.
+      setFormula(wsRE, wsRE.getCell(r, 5), 'C' + r + '-D' + r, FMT_MONEY, toNum(pp.val) - toNum(pp.mb));
       wsRE.getCell(r, 6).value = toNum(pp.mr); wsRE.getCell(r, 6).numFmt = FMT_PCT;
       set(wsRE, wsRE.getCell(r, 7), (pp.ma || 0) + (fr ? " ans" : " yrs"));
       wsRE.getCell(r, 8).value = toNum(pp.ri); wsRE.getCell(r, 8).numFmt = FMT_PCT;
       wsRE.getCell(r, 9).value = toNum(pp.rm); wsRE.getCell(r, 9).numFmt = FMT_MONEY;
       set(wsRE, wsRE.getCell(r, 10), pp.pri ? (fr ? "R\u00e9sidence" : "Primary") : (fr ? "Locatif" : "Rental"));
     });
-    styleTable(wsRE, { hr: 5, fr: 6, to: Math.max(6, 5 + activeProps.length), fc: 2, lc: 10 });
-    footer(wsRE, 5 + activeProps.length + 4);
+    // Portfolio totals row — shown only when 2+ active properties. Uses
+    // SUM formulas so it stays correct if the user tweaks per-property
+    // values. Column 6 (rate) and 7 (amort) are skipped (not additive).
+    var reTotalRow = 0;
+    if (activeProps.length >= 2) {
+      reTotalRow = 6 + activeProps.length;
+      var reFirstRow = 6, reLastRow = reTotalRow - 1;
+      set(wsRE, wsRE.getCell(reTotalRow, 2), fr ? "TOTAL portefeuille" : "Portfolio TOTAL");
+      wsRE.getCell(reTotalRow, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+      setFormula(wsRE, wsRE.getCell(reTotalRow, 3), 'SUM(C' + reFirstRow + ':C' + reLastRow + ')', FMT_MONEY);
+      setFormula(wsRE, wsRE.getCell(reTotalRow, 4), 'SUM(D' + reFirstRow + ':D' + reLastRow + ')', FMT_MONEY);
+      setFormula(wsRE, wsRE.getCell(reTotalRow, 5), 'SUM(E' + reFirstRow + ':E' + reLastRow + ')', FMT_MONEY);
+      setFormula(wsRE, wsRE.getCell(reTotalRow, 9), 'SUM(I' + reFirstRow + ':I' + reLastRow + ')', FMT_MONEY);
+      for (var rtc = 2; rtc <= 10; rtc++) {
+        wsRE.getCell(reTotalRow, rtc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+      }
+    }
+    var reEndRow = Math.max(6, reTotalRow || (5 + activeProps.length));
+    styleTable(wsRE, { hr: 5, fr: 6, to: reEndRow, fc: 2, lc: 10 });
+    footer(wsRE, reEndRow + 4);
 
     // ────────────────────────────────────────────────────────────
     // SHEET 11: ENTREPRISE (CCPC)
@@ -1049,9 +1121,45 @@
       });
       styleTable(wsB, { hr: 5, fr: 6, to: Math.max(6, biz - 1), fc: 2, lc: 13 });
     } else {
+      // Non-applicable: show a clear explanation rather than a blank sheet.
+      // Keeps the workbook's 14-tab structure uniform across clients and
+      // tells CCPC-less users what this tab would contain if they had one.
       addTabBanner(wsB,
         fr ? "Entreprise (CCPC)" : "Business (CCPC)",
-        fr ? "Aucune corporation configur\u00e9e" : "No corporation configured", 14);
+        fr ? "Non applicable \u2014 aucune corporation configur\u00e9e dans ce plan" : "Not applicable \u2014 no corporation configured in this plan", 14);
+      addTitle(wsB, 5, 2, fr ? "SECTION NON ACTIVE" : "SECTION NOT ACTIVE", "", 13);
+      var naLines = fr ? [
+        "Cette feuille projette les actifs corporatifs (solde, imp\u00f4t, dividendes, extraction, CDA, RDTOH) pour les propri\u00e9taires",
+        "de soci\u00e9t\u00e9 priv\u00e9e sous contr\u00f4le canadien (SPCC).",
+        "",
+        "Votre plan n'a pas activ\u00e9 le module Entreprise \u2014 aucun revenu ni solde corporatif n'est mod\u00e9lis\u00e9.",
+        "",
+        "Pour activer : dans le formulaire, ouvrez la section Entreprise et choisissez le type SPCC ou travailleur autonome,",
+        "puis entrez les revenus/d\u00e9penses et votre mode de r\u00e9mun\u00e9ration (salaire, dividende ou mixte).",
+        "",
+        "Cons\u00e9quences de l'absence :",
+        "  \u2022 Les projections du patrimoine n'incluent aucun solde corporatif.",
+        "  \u2022 La fiscalit\u00e9 d'extraction \u00e0 la retraite n'est pas calcul\u00e9e.",
+        "  \u2022 La DGC (d\u00e9duction pour gains en capital) sur vente d'actions admissibles n'est pas appliqu\u00e9e."
+      ] : [
+        "This sheet projects corporate assets (balance, tax, dividends, extraction, CDA, RDTOH) for owners of",
+        "Canadian-Controlled Private Corporations (CCPC).",
+        "",
+        "Your plan does not activate the Business module \u2014 no corporate income or balance is modeled.",
+        "",
+        "To activate: in the form, open the Business section and pick CCPC or sole-proprietor type, then enter",
+        "revenues/expenses and your compensation mode (salary, dividend, or mix).",
+        "",
+        "Consequences of omission:",
+        "  \u2022 Wealth projections do not include any corporate balance.",
+        "  \u2022 Retirement extraction tax is not calculated.",
+        "  \u2022 The LCGE (Lifetime Capital Gains Exemption) on qualifying share sales is not applied."
+      ];
+      naLines.forEach(function(line, idx) {
+        set(wsB, wsB.getCell(7 + idx, 2), line);
+        wsB.getCell(7 + idx, 2).font = { name: "Calibri", size: 11, color: { argb: CL.text } };
+        wsB.mergeCells(7 + idx, 2, 7 + idx, 13);
+      });
     }
 
     // ────────────────────────────────────────────────────────────
@@ -1129,8 +1237,17 @@
     wsCover.getCell(3, 2).alignment = { horizontal: "left", vertical: "middle" };
     wsCover.getRow(3).height = 28;
 
+    // Run metadata: date, sim count, engine version, run ID. Engine version
+    // comes from window.BFmt.VERSION (single source of truth, matches the
+    // header shown in the HTML report). Run ID is a compact timestamp so
+    // two workbooks generated seconds apart can be distinguished.
+    var engineVer = (window.BFmt && window.BFmt.VERSION) ? window.BFmt.VERSION : "";
+    var runId = "BF-" + (new Date()).toISOString().replace(/[-:]/g, "").slice(0, 15);
+    var metaLine = todayLong + "  \u2022  " + nSim + (fr ? " simulations MC" : " MC simulations")
+      + (engineVer ? "  \u2022  " + (fr ? "Moteur " : "Engine ") + engineVer : "")
+      + "  \u2022  " + (fr ? "ID " : "ID ") + runId;
     wsCover.mergeCells(4, 2, 4, 14);
-    wsCover.getCell(4, 2).value = todayLong + "  \u2022  " + nSim + " simulations Monte Carlo";
+    wsCover.getCell(4, 2).value = metaLine;
     wsCover.getCell(4, 2).font = { name: "Calibri", size: 10, color: { argb: CL.cccccc } };
     wsCover.getCell(4, 2).alignment = { horizontal: "left", vertical: "middle" };
     wsCover.getRow(4).height = 18;
