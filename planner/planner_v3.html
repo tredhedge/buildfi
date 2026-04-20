@@ -4985,6 +4985,16 @@ function optimizeDecum(p) {
     retTF = eqRet * allocT + bndRet * (1 - allocT) - (p.merT || 0);
     retNR = eqRet * allocN + bndRet * (1 - allocN) - (p.merN || 0);
   }
+  // Deterministic spouse effective returns — mirror MC path.
+  var detCRetRR = retRR, detCRetTF = retTF, detCRetNR = retNR;
+  if (p.cOn && p.cSyncPortfolio === false && !_detMA) {
+    var _dCAR = p.cAllocR != null ? p.cAllocR : 0.6;
+    var _dCAT = p.cAllocT != null ? p.cAllocT : 0.6;
+    var _dCAN = p.cAllocN != null ? p.cAllocN : 0.5;
+    detCRetRR = eqRet * _dCAR + bndRet * (1 - _dCAR) - (p.cMerR || 0.005);
+    detCRetTF = eqRet * _dCAT + bndRet * (1 - _dCAT) - (p.cMerT || 0.005);
+    detCRetNR = eqRet * _dCAN + bndRet * (1 - _dCAN) - (p.cMerN || 0.005);
+  }
 
   var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0;
   var cSimDeath = p.cOn ? (p.cDeath || 90) : 0;
@@ -5071,7 +5081,7 @@ function optimizeDecum(p) {
       tf = tf * (1 + retTF) + _tfsaActualC;
       tfsaRoom -= _tfsaActualC;
       if (_detMA) { var _dNrTax = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTax + (p.nrC || 0); } else { nr = nr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.nrC || 0); }
-      if (p.cOn && cAlive) { crr = crr * (1 + retRR) + (p.cRRSPC || 0); ctf = ctf * (1 + retTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov) + (p.cNRC || 0)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
+      if (p.cOn && cAlive) { crr = crr * (1 + detCRetRR) + (p.cRRSPC || 0); ctf = ctf * (1 + detCRetTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * detCRetNR - calcNRItemizedTax(cnr, detCRetNR, _detAllocNR, _detMargRate, bndRet, p.prov) + (p.cNRC || 0)) : (cnr * (1 + detCRetNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
       // RSU vesting income (deterministic)
       if (p.rsuGrants && p.rsuGrants.length > 0) {
         var _dRsuInc = 0;
@@ -5121,7 +5131,7 @@ function optimizeDecum(p) {
     // === RETIREMENT: OPTIMIZE WITHDRAWAL SOURCE ===
     rr *= (1 + retRR); tf *= (1 + retTF);
     if (_detMA) { var _dNrTaxR = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTaxR; } else { nr *= (1 + retNR - (p.nrTaxDrag || 0.009)); }
-    if (p.cOn && cAlive) { crr *= (1 + retRR); ctf *= (1 + retTF); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009))); }
+    if (p.cOn && cAlive) { crr *= (1 + detCRetRR); ctf *= (1 + detCRetTF); cnr = _detMA ? (cnr + cnr * detCRetNR - calcNRItemizedTax(cnr, detCRetNR, _detAllocNR, _detMargRate, bndRet, p.prov)) : (cnr * (1 + detCRetNR - (p.nrTaxDrag || 0.009))); }
     // TFSA room continues accumulating in retirement
     tfsaRoom += Math.round(7000 * Math.pow(1 + p.inf, y) / 500) * 500 + _tfsaLastYrWith;
     _tfsaLastYrWith = 0;
@@ -5944,15 +5954,42 @@ function runMC(p, N, _progressCb) {
       // Spouse effective returns — when cSyncPortfolio is off, apply
       // spouse-specific alloc (cAllocR/T/N) and MER (cMerR/T/N). When on,
       // mirror the household's retRR/retTF/retNR. Glide applies to both
-      // using the same gS spec.
+      // using the same gS spec. Multi-asset path: scale the household's
+      // allocation matrix to the spouse's equity ratio, preserving
+      // country/sector texture. Spouse NR margin rate approximated from
+      // cSal (pre-ret) or cRetSpM (post-ret) when sync is off.
       var cRetRR = retRR, cRetTF = retTF, cRetNR = retNR;
-      if (p.cOn && p.cSyncPortfolio === false && !_maOn) {
+      var _cMaMargRate = _maMargRate, _cMaAllocNR = _maAllocNR;
+      if (p.cOn && p.cSyncPortfolio === false) {
         var _cAR = Math.max(0.2, (p.cAllocR || 0.6) - gS * gYrs);
         var _cAT = Math.max(0.2, (p.cAllocT || 0.6) - gS * gYrs);
         var _cAN = Math.max(0.2, (p.cAllocN || 0.5) - gS * gYrs);
-        cRetRR = blendRet(eqR, bndR, _cAR) - (p.cMerR || 0.005);
-        cRetTF = blendRet(eqR, bndR, _cAT) - (p.cMerT || 0.005);
-        cRetNR = blendRet(eqR, bndR, _cAN) - (p.cMerN || 0.005);
+        if (_maOn) {
+          // Preserve primary's country/sector texture, re-scale equity
+          // portion to spouse's target, put the complement in bonds.
+          function _rescaleAlloc(baseAlloc, targetEq) {
+            var _eqBase = (baseAlloc.can||0) + (baseAlloc.us||0) + (baseAlloc.intl||0) + (baseAlloc.em||0);
+            var _s = _eqBase > 0 ? targetEq / _eqBase : 1;
+            return { can: (baseAlloc.can||0) * _s, us: (baseAlloc.us||0) * _s, intl: (baseAlloc.intl||0) * _s, em: (baseAlloc.em||0) * _s, bnd: 1 - targetEq };
+          }
+          var _cAlRR = _rescaleAlloc(_glideAlloc(_maAllocRR), _cAR);
+          var _cAlTF = _rescaleAlloc(_glideAlloc(_maAllocTF), _cAT);
+          var _cAlNR = _rescaleAlloc(_glideAlloc(_maAllocNR), _cAN);
+          cRetRR = blendMulti(_maRets, _cAlRR) - (p.cMerR || 0.005) - calcWHT(_cAlRR, 'rrsp');
+          cRetTF = blendMulti(_maRets, _cAlTF) - (p.cMerT || 0.005) - calcWHT(_cAlTF, 'tfsa');
+          cRetNR = blendMulti(_maRets, _cAlNR) - (p.cMerN || 0.005);
+          _cMaAllocNR = _cAlNR;
+          // Spouse marginal rate from cSal (pre-ret) or cRetSpM fallback (post-ret).
+          var _cMargBase = cRetired ? (p.cRetSpM || p.retSpM || 3000) * 12 : (p.cSal || 0) * infM;
+          if (_cMargBase > 0) {
+            var _cTaxEst = calcTax(_cMargBase, y, p.prov || 'QC', p.inf || 0.02, cRetired, null);
+            _cMaMargRate = _cTaxEst.marg || _maMargRate;
+          }
+        } else {
+          cRetRR = blendRet(eqR, bndR, _cAR) - (p.cMerR || 0.005);
+          cRetTF = blendRet(eqR, bndR, _cAT) - (p.cMerT || 0.005);
+          cRetNR = blendRet(eqR, bndR, _cAN) - (p.cMerN || 0.005);
+        }
       }
       var fxNoise = (p.fxVol || 0.08) * tRn(999);
       var retPE = (p.yPE || 0.12) + (p.vPE || 0.25) * zz[_maOn ? 6 : 3] + sEq * 0.8 + fxNoise;
@@ -6384,8 +6421,8 @@ function runMC(p, N, _progressCb) {
           crr = crr * (1 + cRetRR) + (p.cRRSPC || 0) * _cAdjGr;
           ctf = ctf * (1 + cRetTF) + cTfsaLim;
           if (_maOn) {
-            var _cnrTax = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
-            cnr = cnr + cnr * retNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
+            var _cnrTax = calcNRItemizedTax(cnr, cRetNR, _cMaAllocNR, _cMaMargRate, bndR, p.prov);
+            cnr = cnr + cnr * cRetNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
           } else {
             cnr = cnr * (1 + cRetNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
           }
@@ -6440,8 +6477,8 @@ function runMC(p, N, _progressCb) {
           crr *= 1 + cRetRR;
           ctf *= 1 + cRetTF;
           if (_maOn) {
-            var _cnrTaxRet = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
-            cnr = cnr + cnr * retNR - _cnrTaxRet;
+            var _cnrTaxRet = calcNRItemizedTax(cnr, cRetNR, _cMaAllocNR, _cMaMargRate, bndR, p.prov);
+            cnr = cnr + cnr * cRetNR - _cnrTaxRet;
           } else {
             cnr *= 1 + cRetNR - (p.nrTaxDrag || 9e-3);
           }
