@@ -215,7 +215,12 @@ details.section[open] .sec-ico { transform: scale(1.04); }
   color: var(--text); font-weight: 600; font-family: "JetBrains Mono";
   background: var(--bg); padding: 2px 8px; border-radius: 999px;
   border: 1px solid var(--border-soft); font-size: 10px;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
+/* v4 Phase 12 — completion state pills: ○ À faire, ⏱ Commencée, ✓ Complète */
+.sec-status .count.state-empty { color: var(--text-muted); border-color: var(--border-soft); }
+.sec-status .count.state-started { color: var(--orange); border-color: rgba(212,136,32,0.4); background: rgba(212,136,32,0.08); }
+.sec-status .count.state-complete { color: var(--green); border-color: rgba(42,140,70,0.4); background: rgba(42,140,70,0.12); }
 .sec-status .stamp { font-family: "JetBrains Mono"; font-size: 10px; opacity: 0.7; }
 .sec-chev { color: var(--text-dim); transition: transform var(--dur-med) var(--ease), color var(--dur-fast) var(--ease); font-size: 13px; flex-shrink: 0; width: 18px; text-align: center; }
 details[open] .sec-chev { transform: rotate(90deg); color: var(--accent); }
@@ -1200,42 +1205,64 @@ body[data-embed="1"] .simulate-fab { display: none; }
             </div>
           </div>
 
+          <!-- v4 Phase 12 — Special accounts now behind activation gates.
+               Each account type has an "I have one" checkbox; fields only
+               reveal when checked. Keeps the default form lean. -->
           <div class="subsec">
-            <div class="subsec-head" data-i18n="specialHead">Comptes spéciaux (optionnels)</div>
-            <div class="field-grid">
+            <div class="subsec-head" data-i18n="specialHead">Comptes spéciaux (cocher pour activer)</div>
+
+            <label class="check-row">
+              <input type="checkbox" id="fhsaOn" onchange="document.getElementById('fhsa-fields').hidden = !this.checked">
+              <div><div class="check-label" data-i18n="fhsaOnLabel">J'ai un CELIAPP (FHSA)</div>
+              <div class="check-help" data-i18n="fhsaOnHelp">Compte premier achat. Max 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables pour achat.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="fhsa-fields" hidden>
               <div class="field">
                 <div class="field-head">
-                  <label class="field-label" for="fhsaBal" data-i18n="fhsa">CELIAPP / FHSA solde <span class="field-unit">$</span></label>
-                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="fhsaTip">Compte d'épargne libre d'impôt pour l'achat d'une première propriété. Jusqu'à 8 000 $/an, 40 000 $ à vie. Cotisations déductibles + retraits non imposables.</span></span>
+                  <label class="field-label" for="fhsaBal" data-i18n="fhsa">Solde <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="fhsaTip">Plafond à vie : 40 000 $. Vérifiez votre avis de cotisation ARC pour le solde actuel.</span></span>
                 </div>
                 <input id="fhsaBal" type="number" class="field-input" placeholder="0" min="0" max="40000" step="1000">
               </div>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="fhsaC" data-i18n="fhsaC">CELIAPP cotis. /an <span class="field-unit">$/an</span></label></div>
+                <div class="field-head"><label class="field-label" for="fhsaC" data-i18n="fhsaC">Cotisation /an <span class="field-unit">$/an</span></label></div>
                 <input id="fhsaC" type="number" class="field-input" placeholder="8 000" min="0" max="8000" step="500">
               </div>
               <div class="field">
                 <label class="check-row"><input type="checkbox" id="fhsaForHome">
-                  <div><div class="check-label" data-i18n="fhsaForHomeLabel">Utiliser CELIAPP pour achat maison</div>
-                  <div class="check-help" data-i18n="fhsaForHomeHelp">Sinon, le CELIAPP est roulé vers le REER à l'expiration.</div></div>
+                  <div><div class="check-label" data-i18n="fhsaForHomeLabel">Utiliser pour achat maison</div>
+                  <div class="check-help" data-i18n="fhsaForHomeHelp">Sinon, roulé vers le REER à l'expiration (15 ans).</div></div>
                 </label>
               </div>
               <div class="field">
                 <div class="field-head"><label class="field-label" for="fhsaHomeAge" data-i18n="fhsaHomeAge">Âge achat maison <span class="field-unit">ans</span></label></div>
                 <input id="fhsaHomeAge" type="number" class="field-input" placeholder="0" min="0" max="60" step="1">
               </div>
+            </div>
+
+            <div class="spacer-md"></div>
+            <label class="check-row">
+              <input type="checkbox" id="liraOn" onchange="document.getElementById('lira-fields').hidden = !this.checked">
+              <div><div class="check-label" data-i18n="liraOnLabel">J'ai un CRI (LIRA)</div>
+              <div class="check-help" data-i18n="liraOnHelp">Compte immobilisé provenant d'un ancien régime de retraite employeur.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div class="field-grid" id="lira-fields" hidden>
               <div class="field">
-                <div class="field-head"><label class="field-label" for="liraBal" data-i18n="lira">CRI / LIRA solde <span class="field-unit">$</span></label>
-                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="liraTip">Compte de retraite immobilisé — provient d'un ancien fonds de pension d'employeur. Les retraits sont réglementés et commencent à un âge prescrit (55–71 selon la province).</span></span>
+                <div class="field-head"><label class="field-label" for="liraBal" data-i18n="lira">Solde <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="liraTip">Retraits réglementés, début à 55–71 ans selon la province.</span></span>
                 </div>
                 <input id="liraBal" type="number" class="field-input" placeholder="0" min="0" step="1000">
               </div>
-              <div class="field">
-                <div class="field-head"><label class="field-label" for="rrspRoom" data-i18n="rrspRoom">Droits de cotisation REER inutilisés <span class="field-unit">$</span></label>
-                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="rrspRoomTip">Cotisations inutilisées accumulées des années passées. Se trouve sur votre avis de cotisation de l'ARC.</span></span>
-                </div>
-                <input id="rrspRoom" type="number" class="field-input" placeholder="0" min="0" step="1000">
+            </div>
+
+            <div class="spacer-md"></div>
+            <div class="field">
+              <div class="field-head"><label class="field-label" for="rrspRoom" data-i18n="rrspRoom">Droits de cotisation REER inutilisés <span class="field-unit">$</span></label>
+                <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="rrspRoomTip">Cotisations inutilisées accumulées des années passées. Se trouve sur votre avis de cotisation de l'ARC. Laisser 0 si vous ne connaissez pas le montant.</span></span>
               </div>
+              <input id="rrspRoom" type="number" class="field-input" placeholder="0" min="0" step="1000" style="max-width:240px">
             </div>
           </div>
 
@@ -1243,12 +1270,12 @@ body[data-embed="1"] .simulate-fab { display: none; }
             <div class="subsec-head" data-i18n="respHead">REEE (régime enregistré d'épargne-études)</div>
             <div class="subsec-intro" data-i18n="respIntro">Subvention fédérale SCEE de 20 % (max 7 200 $/enfant à vie) + IQEE Québec de 10 % (max 3 600 $).</div>
             <label class="check-row">
-              <input type="checkbox" id="respOn">
+              <input type="checkbox" id="respOn" onchange="document.getElementById('resp-fields').hidden = !this.checked">
               <div><div class="check-label" data-i18n="respOnLabel">Activer un REEE</div>
               <div class="check-help" data-i18n="respOnHelp">Requiert au moins un enfant.</div></div>
             </label>
             <div class="spacer-sm"></div>
-            <div class="field-grid">
+            <div class="field-grid" id="resp-fields" hidden>
               <div class="field"><div class="field-head"><label class="field-label" for="respKids" data-i18n="respKids">Nombre d'enfants</label></div><input id="respKids" type="number" class="field-input" placeholder="1" min="0" max="6" step="1"></div>
               <div class="field"><div class="field-head"><label class="field-label" for="respAlready" data-i18n="respAlready">Capital déjà investi <span class="field-unit">$</span></label></div><input id="respAlready" type="number" class="field-input" placeholder="0" min="0" step="1000"></div>
               <div class="field"><div class="field-head"><label class="field-label" for="respContrib" data-i18n="respContrib">Cotisation /mois/enfant <span class="field-unit">$</span></label></div><input id="respContrib" type="number" class="field-input" placeholder="208" min="0" max="500" step="10"></div>
@@ -1261,12 +1288,12 @@ body[data-embed="1"] .simulate-fab { display: none; }
             <div class="subsec-head" data-i18n="ftqHead">FTQ / Fondaction</div>
             <div class="subsec-intro" data-i18n="ftqIntro">Crédits de 30 % (15 % fédéral + 15 % Québec) sur un max de 5 000 $/an de cotisations.</div>
             <label class="check-row">
-              <input type="checkbox" id="ftqOn">
+              <input type="checkbox" id="ftqOn" onchange="document.getElementById('ftq-fields').hidden = !this.checked">
               <div><div class="check-label" data-i18n="ftqOnLabel">Cotiser à un fonds de travailleurs</div>
               <div class="check-help" data-i18n="ftqOnHelp">FTQ ou Fondaction — crédit d'impôt 30 % sur les premiers 5 000 $.</div></div>
             </label>
             <div class="spacer-sm"></div>
-            <div class="field-grid">
+            <div class="field-grid" id="ftq-fields" hidden>
               <div class="field"><div class="field-head"><label class="field-label" for="ftqAmt" data-i18n="ftqAmt">Cotisation annuelle <span class="field-unit">$/an</span></label></div><input id="ftqAmt" type="number" class="field-input" placeholder="5 000" min="0" max="5000" step="500"></div>
             </div>
           </div>
@@ -1536,19 +1563,28 @@ body[data-embed="1"] .simulate-fab { display: none; }
             </div>
           </div>
 
+          <!-- v4 Phase 12 — Pension 2 behind manual activation gate. -->
           <div class="subsec">
-            <div class="subsec-head" data-i18n="pen2Head">Pension 2 (facultative)</div>
-            <div class="subsec-intro" data-i18n="pen2Intro">Si vous avez deux régimes de pension (ex : ancien employeur + nouveau).</div>
-            <div class="field-grid">
-              <div class="field">
-                <div class="field-head"><label class="field-label" for="pen2Type" data-i18n="pen2Type">Type de régime 2</label></div>
-                <select id="pen2Type" class="field-input"><option value="none">Aucun</option><option value="db">Prestation déterminée (PD)</option><option value="cd">Cotisations définies (CD)</option><option value="rpdb">RPDB</option></select>
+            <div class="subsec-head" data-i18n="pen2Head">Pension 2 (rare, cocher pour activer)</div>
+            <div class="subsec-intro" data-i18n="pen2Intro">Moins de 5 % des ménages ont deux régimes. Cochez uniquement si vous cumulez deux pensions employeur (ex : ancien + nouveau).</div>
+            <label class="check-row">
+              <input type="checkbox" id="pen2On" onchange="document.getElementById('pen2-container').hidden = !this.checked">
+              <div><div class="check-label" data-i18n="pen2OnLabel">J'ai une 2e pension employeur</div>
+              <div class="check-help" data-i18n="pen2OnHelp">Typiquement une pension d'un ancien employeur à ne pas confondre avec le RRQ/PSV.</div></div>
+            </label>
+            <div class="spacer-sm"></div>
+            <div id="pen2-container" hidden>
+              <div class="field-grid">
+                <div class="field">
+                  <div class="field-head"><label class="field-label" for="pen2Type" data-i18n="pen2Type">Type de régime 2</label></div>
+                  <select id="pen2Type" class="field-input"><option value="none">Aucun</option><option value="db">Prestation déterminée (PD)</option><option value="cd">Cotisations définies (CD)</option><option value="rpdb">RPDB</option></select>
+                </div>
+                <div class="field" id="pen2M-field" hidden><div class="field-head"><label class="field-label" for="pen2M" data-i18n="pen2M">Prestation mensuelle 2 <span class="field-unit">$/mois</span></label></div><input id="pen2M" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
+                <div class="field" id="pen2Idx-field" hidden><div class="field-head"><label class="field-label" for="pen2Idx" data-i18n="pen2Idx">Indexation pension 2</label></div><select id="pen2Idx" class="field-input"><option value="0">0 %</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select></div>
+                <div class="field" id="dc2Bal-field" hidden><div class="field-head"><label class="field-label" for="dc2Bal" data-i18n="dc2Bal">Solde pension 2 (CD) <span class="field-unit">$</span></label></div><input id="dc2Bal" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
+                <div class="field" id="pen2EE-field" hidden><div class="field-head"><label class="field-label" for="pen2EE" data-i18n="pen2EE">Cotis. employé 2 <span class="field-unit">$/an</span></label></div><input id="pen2EE" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
+                <div class="field" id="pen2ER-field" hidden><div class="field-head"><label class="field-label" for="pen2ER" data-i18n="pen2ER">Cotis. employeur 2 <span class="field-unit">$/an</span></label></div><input id="pen2ER" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
               </div>
-              <div class="field" id="pen2M-field" hidden><div class="field-head"><label class="field-label" for="pen2M" data-i18n="pen2M">Prestation mensuelle 2 <span class="field-unit">$/mois</span></label></div><input id="pen2M" type="number" class="field-input" placeholder="0" min="0" step="100"></div>
-              <div class="field" id="pen2Idx-field" hidden><div class="field-head"><label class="field-label" for="pen2Idx" data-i18n="pen2Idx">Indexation pension 2</label></div><select id="pen2Idx" class="field-input"><option value="0">0 %</option><option value="1">50 % IPC</option><option value="2">100 % IPC</option></select></div>
-              <div class="field" id="dc2Bal-field" hidden><div class="field-head"><label class="field-label" for="dc2Bal" data-i18n="dc2Bal">Solde pension 2 (CD) <span class="field-unit">$</span></label></div><input id="dc2Bal" type="number" class="field-input" placeholder="0" min="0" step="5000"></div>
-              <div class="field" id="pen2EE-field" hidden><div class="field-head"><label class="field-label" for="pen2EE" data-i18n="pen2EE">Cotis. employé 2 <span class="field-unit">$/an</span></label></div><input id="pen2EE" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
-              <div class="field" id="pen2ER-field" hidden><div class="field-head"><label class="field-label" for="pen2ER" data-i18n="pen2ER">Cotis. employeur 2 <span class="field-unit">$/an</span></label></div><input id="pen2ER" type="number" class="field-input" placeholder="0" min="0" step="500"></div>
             </div>
           </div>
 
@@ -1757,8 +1793,8 @@ body[data-embed="1"] .simulate-fab { display: none; }
         <summary>
           <div class="sec-ico" style="background:#8468c022;color:#8468c0">🏢</div>
           <div class="sec-meta">
-            <div class="sec-title" data-i18n="bizTitle">Entreprise (SPCC / incorporée)</div>
-            <div class="sec-sub" data-i18n="bizSub">Pour les propriétaires d'une société privée sous contrôle canadien (SPCC). Ignorez si vous êtes salarié seulement.</div>
+            <div class="sec-title" data-i18n="bizTitle">Entreprise</div>
+            <div class="sec-sub" data-i18n="bizSub">Sélectionnez votre structure. Les champs et règles fiscales diffèrent considérablement entre travailleur autonome (revenus sur T1) et SPCC incorporée (extraction salaire/dividende, LCGE, IPP).</div>
           </div>
           <div class="sec-status">
             <span class="count" data-count="biz">0</span>
@@ -1767,20 +1803,50 @@ body[data-embed="1"] .simulate-fab { display: none; }
           <span class="sec-chev">▸</span>
         </summary>
         <div class="sec-body">
-          <label class="check-row">
-            <input type="checkbox" id="bizOn">
-            <div><div class="check-label" data-i18n="bizOnLabel">J'ai une entreprise incorporée</div>
-            <div class="check-help" data-i18n="bizOnHelp">Active la modélisation de l'extraction de revenus (salaire/dividendes), de la vente éventuelle et de l'exonération LCGE.</div></div>
-          </label>
-          <div class="spacer-md"></div>
+          <!-- v4 Phase 12 — Entreprise structure chosen upfront as 3-pill.
+               Field set adapts: salarié (rien); autonome (revenus bruts, pas
+               d'extraction ni LCGE); SPCC (pleine suite). -->
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="bizKindHead">Structure de l'entreprise</div>
+            <div class="pill-group" role="radiogroup">
+              <button class="pill on" onclick="setBizKind('none', this)" role="radio" aria-checked="true" data-i18n="bizKindNone">
+                <span>👔 Salarié seulement</span>
+                <span class="pill-desc" data-i18n="bizKindNoneDesc">Aucune entreprise</span>
+              </button>
+              <button class="pill" onclick="setBizKind('sole', this)" role="radio" aria-checked="false" data-i18n="bizKindSole">
+                <span>🛠 Travailleur autonome</span>
+                <span class="pill-desc" data-i18n="bizKindSoleDesc">Pigiste, consultant (T1)</span>
+              </button>
+              <button class="pill" onclick="setBizKind('ccpc', this)" role="radio" aria-checked="false" data-i18n="bizKindCcpc">
+                <span>🏢 Entreprise incorporée (SPCC)</span>
+                <span class="pill-desc" data-i18n="bizKindCcpcDesc">CCPC · extraction, LCGE, IPP</span>
+              </button>
+            </div>
+            <!-- Hidden field mirrors the pill choice: "none" | "sole" | "ccpc" -->
+            <input type="hidden" id="bizKind" value="none">
+            <input type="hidden" id="bizOn" value="false">
+            <input type="hidden" id="bizType" value="ccpc">
+          </div>
+
+          <!-- Travailleur autonome: simple income stream, no extraction/LCGE. -->
+          <div id="biz-sole-fields" hidden>
+            <div class="subsec">
+              <div class="subsec-head" data-i18n="bizSoleHead">Revenus du travailleur autonome</div>
+              <div class="subsec-intro" data-i18n="bizSoleIntro">Vos revenus nets (après dépenses) s'ajoutent au revenu personnel imposable. Cotisations RRQ autonome à 12,8 % jusqu'au MGA (MaxPE).</div>
+              <div class="field-grid">
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSoleRev" data-i18n="bizSoleRev">Revenus bruts /an <span class="field-unit">$</span></label></div><input id="bizSoleRev" type="number" class="field-input" placeholder="80 000" min="0" step="5000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSoleExp" data-i18n="bizSoleExp">Dépenses déductibles /an <span class="field-unit">$</span></label></div><input id="bizSoleExp" type="number" class="field-input" placeholder="15 000" min="0" step="1000"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSoleGrowth" data-i18n="bizSoleGrowth">Croissance /an <span class="field-unit">%</span></label></div><input id="bizSoleGrowth" type="number" class="field-input" placeholder="2" min="-10" max="20" step="0.5"></div>
+                <div class="field"><div class="field-head"><label class="field-label" for="bizSoleVol" data-i18n="bizSoleVol">Volatilité /an <span class="field-unit">%</span></label></div><input id="bizSoleVol" type="number" class="field-input" placeholder="10" min="0" max="50" step="1"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SPCC incorporated: full CCPC modelling. Only rendered when ccpc picked. -->
           <div id="biz-fields" hidden>
             <div class="subsec">
               <div class="subsec-head" data-i18n="bizStructHead">Structure & revenus</div>
               <div class="field-grid">
-                <div class="field">
-                  <div class="field-head"><label class="field-label" for="bizType" data-i18n="bizType">Type</label></div>
-                  <select id="bizType" class="field-input"><option value="ccpc">SPCC (CCPC)</option><option value="sole">Travailleur autonome</option></select>
-                </div>
                 <div class="field"><div class="field-head"><label class="field-label" for="bizRevenue" data-i18n="bizRevenue">Revenus annuels <span class="field-unit">$</span></label></div><input id="bizRevenue" type="number" class="field-input" placeholder="200 000" min="0" step="10000"></div>
                 <div class="field"><div class="field-head"><label class="field-label" for="bizExpenses" data-i18n="bizExpenses">Dépenses annuelles <span class="field-unit">$</span></label></div><input id="bizExpenses" type="number" class="field-input" placeholder="50 000" min="0" step="5000"></div>
                 <div class="field"><div class="field-head"><label class="field-label" for="bizGrowth" data-i18n="bizGrowth">Croissance /an <span class="field-unit">%</span></label></div><input id="bizGrowth" type="number" class="field-input" placeholder="0" min="-10" max="20" step="0.5"></div>
@@ -2909,10 +2975,33 @@ function _syncGA() {
 /* ─────────────── Per-account override matrix (v3 key: allocOverride) ─────── */
 /* Stored as p.allocOverride = { rrsp: {can,us,intl,em,bnd}, tfsa: {...}, nr: {...} }
    where blanks mean "inherit globalAlloc". Each row must sum to 100 when any
-   cell is filled, otherwise engine falls back to globalAlloc. */
+   cell is filled, otherwise engine falls back to globalAlloc. On first
+   activation, pre-populates v4 Phase 12 tax-localization defaults so the
+   user has a starting point instead of a blank grid. */
+var BF_ALLOC_DEFAULTS = {
+  rrsp: { can: 20, us: 30, intl: 15, em: 5,  bnd: 30 }, // bonds go here (interest tax-sheltered)
+  tfsa: { can: 30, us: 35, intl: 20, em: 10, bnd: 5  }, // high-growth tax-free
+  nr:   { can: 40, us: 30, intl: 15, em: 5,  bnd: 10 }  // Cdn dividend credit prioritized
+};
 document.getElementById("maPerAcct") && document.getElementById("maPerAcct").addEventListener("change", function () {
   var panel = document.getElementById("allocOverride-panel");
   if (panel) panel.hidden = !this.checked;
+  /* Seed defaults on first activation if cells are empty. User edits
+     override immediately; un-check then re-check preserves their values. */
+  if (this.checked) {
+    ["rrsp","tfsa","nr"].forEach(function (a) {
+      var anyFilled = ["can","us","intl","em","bnd"].some(function (c) {
+        var el = document.getElementById("ov_" + a + "_" + c);
+        return el && el.value !== "";
+      });
+      if (anyFilled) return;
+      ["can","us","intl","em","bnd"].forEach(function (c) {
+        var el = document.getElementById("ov_" + a + "_" + c);
+        if (el) el.value = BF_ALLOC_DEFAULTS[a][c];
+      });
+    });
+    if (typeof _syncOverride === "function") _syncOverride();
+  }
 });
 function _syncOverride() {
   var accts = ["rrsp", "tfsa", "nr"];
@@ -2929,10 +3018,21 @@ function _syncOverride() {
   });
 }
 
-/* ─────────────── Business reveal ─────────────── */
-document.getElementById("bizOn") && document.getElementById("bizOn").addEventListener("change", function () {
-  document.getElementById("biz-fields").hidden = !this.checked;
-});
+/* ─────────────── Business reveal (3-pill: none / sole / ccpc) ─────────────── */
+/* v4 Phase 12 — structure chosen upfront. Hidden bizOn + bizType mirror the
+   pill state so the existing v3 engine (which consumes bizOn + bizType)
+   needs no changes. */
+function setBizKind(kind, btn) {
+  var pills = btn.parentElement.querySelectorAll(".pill");
+  pills.forEach(function (p) { p.classList.remove("on"); p.setAttribute("aria-checked", "false"); });
+  btn.classList.add("on"); btn.setAttribute("aria-checked", "true");
+  document.getElementById("bizKind").value = kind;
+  /* Legacy engine mirrors: bizOn=true for sole or ccpc, bizType picks path. */
+  document.getElementById("bizOn").value = (kind === "none") ? "false" : "true";
+  document.getElementById("bizType").value = (kind === "sole") ? "sole" : "ccpc";
+  document.getElementById("biz-sole-fields").hidden = kind !== "sole";
+  document.getElementById("biz-fields").hidden = kind !== "ccpc";
+}
 document.getElementById("ippOn") && document.getElementById("ippOn").addEventListener("change", function () {
   document.getElementById("ipp-fields").hidden = !this.checked;
 });
@@ -3397,10 +3497,26 @@ function updateSectionCounts() {
     var countEl = sec.querySelector(".count[data-count]");
     if (!countEl) return;
     var c = _countSection(sec);
-    if (c.total === 0) { countEl.textContent = "—"; return; }
-    countEl.textContent = c.filled + " / " + c.total;
-    /* Accent colour when the user has touched something in the section. */
-    countEl.style.color = c.filled > 0 ? "var(--accent)" : "var(--text-dim)";
+    /* v4 Phase 12 — 3-state pill: ○ À faire / ⏱ Commencée / ✓ Complète.
+       Threshold: "complete" when ≥ 80% of visible inputs have a value
+       (allows optional fields to remain empty). "started" when ≥ 1. */
+    countEl.classList.remove("state-empty", "state-started", "state-complete");
+    if (c.total === 0) {
+      countEl.textContent = "—";
+      countEl.classList.add("state-empty");
+      return;
+    }
+    var ratio = c.filled / c.total;
+    if (c.filled === 0) {
+      countEl.textContent = "○ " + c.filled + "/" + c.total;
+      countEl.classList.add("state-empty");
+    } else if (ratio >= 0.8) {
+      countEl.textContent = "✓ " + c.filled + "/" + c.total;
+      countEl.classList.add("state-complete");
+    } else {
+      countEl.textContent = "⏱ " + c.filled + "/" + c.total;
+      countEl.classList.add("state-started");
+    }
   });
 }
 /* Bind once: one listener for input + change events on the document. */
@@ -3617,6 +3733,59 @@ function runSimulation() {
     document.body.appendChild(banner);
     setTimeout(function () { banner.style.transition = "opacity 0.4s"; banner.style.opacity = "0"; setTimeout(function () { banner.remove(); }, 400); }, 2600);
   } catch (e) { console.error("handoff autoload failed:", e); }
+})();
+
+/* ─────────────── Auto-save (v4 Phase 12) ─────────────── */
+/* Every 15 seconds, write the current profile to localStorage under the
+   key 'bf_v4_autosave'. On page load (after the handoff autoloader has
+   had a chance to run), if an autosave exists and no profile was passed
+   via sessionStorage, offer to restore it via a banner. The autosave
+   stores its timestamp in the same payload so we can show "il y a X min". */
+var _BF_AUTOSAVE_KEY = "bf_v4_autosave";
+function _autoSave() {
+  try {
+    if (_embedMode) return; // Don't pollute localStorage when running as iframe inside v3
+    var p = collectProfile();
+    p._savedAt = Date.now();
+    localStorage.setItem(_BF_AUTOSAVE_KEY, JSON.stringify(p));
+  } catch (e) { console.warn("autosave failed:", e); }
+}
+setInterval(_autoSave, 15000);
+/* Also save on blur (user tabs away) so we don't miss recent edits. */
+window.addEventListener("blur", _autoSave);
+window.addEventListener("beforeunload", _autoSave);
+
+/* On load, check for an autosave and offer restoration. Runs after the
+   sessionStorage handoff so a fresh handoff takes precedence. */
+(function _offerAutoSaveRestore() {
+  try {
+    if (new URLSearchParams(location.search).get("embed") === "1") return;
+    if (sessionStorage.getItem("bf_mode_handoff")) return;
+    var raw = localStorage.getItem(_BF_AUTOSAVE_KEY);
+    if (!raw) return;
+    var data = JSON.parse(raw);
+    if (!data || !data._savedAt) return;
+    var ageMin = Math.max(1, Math.round((Date.now() - data._savedAt) / 60000));
+    var fr = (navigator.language || "").indexOf("fr") === 0;
+    var banner = document.createElement("div");
+    banner.style.cssText = "position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);padding:10px 16px;border-radius:999px;z-index:9999;box-shadow:var(--shadow-lg);font-size:13px;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 40px)";
+    banner.innerHTML = '<span>💾</span>'
+      + '<span>' + (fr ? "Sauvegarde automatique — il y a " + ageMin + " min" : "Autosave — " + ageMin + " min ago") + '</span>'
+      + '<button id="bf-restore-btn" class="btn btn-primary" style="padding:4px 12px;font-size:12px">' + (fr ? "Restaurer" : "Restore") + '</button>'
+      + '<button id="bf-dismiss-btn" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;color:var(--text-dim)">' + (fr ? "Ignorer" : "Dismiss") + '</button>';
+    document.body.appendChild(banner);
+    document.getElementById("bf-restore-btn").onclick = function () {
+      try {
+        _applyEmbedProfile(data); // reuses the embed profile applicator
+        banner.remove();
+      } catch (e) { alert("Restore failed: " + e.message); }
+    };
+    document.getElementById("bf-dismiss-btn").onclick = function () {
+      banner.remove();
+      try { localStorage.removeItem(_BF_AUTOSAVE_KEY); } catch (e) {}
+    };
+    setTimeout(function () { if (banner.parentNode) banner.style.opacity = "0.7"; }, 8000);
+  } catch (e) { console.warn("autosave restore offer failed:", e); }
 })();
 
 /* v4 Phase 11 — Goal modal close via backdrop click + ESC. */
