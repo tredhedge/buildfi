@@ -4060,6 +4060,25 @@ function runTestSuite() {
   // Conservative spouse alloc (30/70) should yield <= household spouse balance
   // than an aggressive match (not tested here — just checks path executes).
 
+  // ─── Spouse NR capital gains taxation (audit P0-2) ───
+  // Retired spouse with sizable cNR and low cRRSP must draw from cNR to
+  // fund shortfall. Pre-fix: cTaxableInc was 0 all years (NR gains ignored).
+  var bpCNrTax = Object.assign({}, bp, {
+    age:70, retAge:65, deathAge:88, sal:0, rrsp:0, tfsa:0, nr:0, retSpM:4000,
+    penType:"none", penM:0, qppAge:65, avgE:0, qppYrs:0,
+    cOn:true, cAge:70, cRetAge:65, cDeath:90, cSex:"F",
+    cRRSP:0, cTFSA:0, cNR:600000, cRRSPC:0, cTFSAC:0, cNRC:0,
+    cCostBase:200000, // large embedded gain so cNrIncl > 0
+    cPenType:"none", cPenM:0, cQppAge:65, cAvgE:0, cQppYrs:0, cOasAge:65,
+    cRetSpM:2000
+  });
+  var mcCNrTax = safeMC(bpCNrTax, 3);
+  T("MC-Couple-NR","Runs", mcCNrTax?1:0, 1, 0);
+  if (mcCNrTax && mcCNrTax.revData) {
+    var _cnrTaxYrs = mcCNrTax.revData.filter(function(r){ return (r.tax2||0) > 0; });
+    T("MC-Couple-NR","Spouse NR tax>0 at least once", _cnrTaxYrs.length > 0 ? 1 : 0, 1, 0);
+  }
+
   // ─── Detailed insurance premium drain ───
   var bpIns = Object.assign({}, bp, {
     insViePrime:50, insVieCov:300000, insVieType:"term", insVieDur:20,
@@ -5907,6 +5926,10 @@ function runMC(p, N, _progressCb) {
     var cInsColPrem = p.cOn ? (p.cInsColPrime || 0) * 12 : 0;
     var _mgPaidOut = false, _cMgPaidOut = false; // critical illness — 1 payout per lifetime
     var nrACB = p.costBase || p.nr || 0; // Track adjusted cost base
+    // Spouse NR ACB — parity with primary. Initializes to cNR (worst-case
+    // assumption: no pre-simulation gains baked in; user can override via
+    // a cCostBase field if added later). Incremented on every cNRC year.
+    var cNrACB = p.cOn ? (p.cCostBase || p.cNR || 0) : 0;
     // TFSA room: cumulative limits - conservative net contrib estimate
     var _mcTfsaYrs = Math.max(0, Math.min(p.age - 17, 18));
     var _mcTfsaCum = _mcTfsaYrs <= 0 ? 0 :
@@ -6564,6 +6587,7 @@ function runMC(p, N, _progressCb) {
           } else {
             cnr = cnr * (1 + cRetNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
           }
+          cNrACB += (p.cNRC || 0) * _cAdjGr; // cost base grows with contributions
         }
       } else {
         // Retirement: accounts grow, no new contributions
@@ -7010,6 +7034,16 @@ function runMC(p, N, _progressCb) {
             _ctiOther = (cLiraWith || 0);
             _ctiOther += _wFromCRR; // spouse RRSP voluntary withdrawals are taxable
             _ctiOther += cPtInc;    // part-time employment income
+            // Spouse NR capital gains on retirement withdrawals — parity
+            // with primary (_nrIncl). Only the gain portion of cNR is
+            // taxable, split across cgIncLo/cgIncHi at cgThresh.
+            var _cNrGainPct = (cnr + _wFromCNR) > 0 && cNrACB < (cnr + _wFromCNR) ? 1 - cNrACB / (cnr + _wFromCNR) : 0;
+            var _cNrTaxableGain = _wFromCNR * _cNrGainPct;
+            var _cCgThr = (p.cgThresh || C.CG_THRESHOLD) * infM;
+            var _cNrIncl = _cNrTaxableGain > _cCgThr
+              ? _cCgThr * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_cNrTaxableGain - _cCgThr) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+              : _cNrTaxableGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
+            _ctiOther += _cNrIncl;
             var _cActualInc = _ctiQpp + _ctiPen + _ctiRrif + _ctiOther;
             var cOasInc = cAge2 >= (p.cOasAge || 65) ? calcOAS(p.cOasAge || 65, _cActualInc, y, p.inf, cAge2) * 12 : 0;
             _ctiOas = cOasInc;
