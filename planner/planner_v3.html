@@ -2134,9 +2134,9 @@ var C = {
       penAmt: 2000
     }
   },
-  ON_SURTAX_THR1: 4991,
+  ON_SURTAX_THR1: 5710,   // 2026 ON Form 428 (was 4991 in 2024)
   ON_SURTAX_RATE1: 0.2,
-  ON_SURTAX_THR2: 6387,
+  ON_SURTAX_THR2: 7307,   // 2026 ON Form 428 (was 6387 in 2024)
   ON_SURTAX_RATE2: 0.36,
   CORP_RATES: {
     QC: { small: 0.122, general: 0.265, passive: 0.5017 },
@@ -7948,6 +7948,11 @@ function App() {
   // the drawer, and invalidates the MC so the user can re-run.
   var _drawer = useState(false), drawerOpen = _drawer[0], setDrawerOpen = _drawer[1];
 
+  // v3 Phase 12 — Goal modal (replaces native prompt() chain).
+  // kind ∈ { "education", "lumpsum" }. When open, renders the modal at the
+  // bottom of the React tree; on submit, pushes to the goals array.
+  var _goalM = useState(null), goalModal = _goalM[0], setGoalModal = _goalM[1];
+
   var _showWiz = useState(!localStorage.getItem("bf_used")), showWizard = _showWiz[0], setShowWiz = _showWiz[1];
   var _wizStep = useState(0), wizStep = _wizStep[0], setWizStep = _wizStep[1];
   var _gSubS = useState(0), guideSub = _gSubS[0], setGuideSub = _gSubS[1];
@@ -12351,23 +12356,11 @@ secVis("profil") && React.createElement(React.Fragment, null,
     );
   }),
   React.createElement("div", { style: { display: "flex", gap: 4, marginTop: 6, marginBottom: 6 } },
-    React.createElement("button", { onClick: function() {
-      var name = prompt(lang === "fr" ? "Nom (ex: Universit\u00e9 enfant 1):" : "Name (e.g. Child 1 university):", "");
-      if (!name) return;
-      var amt = parseFloat(prompt(lang === "fr" ? "Co\u00fbt annuel ($):" : "Annual cost ($):", "15000"));
-      var startAge = parseInt(prompt(lang === "fr" ? "Votre \u00e2ge au d\u00e9but:" : "Your age at start:", "50"));
-      var endAge = parseInt(prompt(lang === "fr" ? "Votre \u00e2ge \u00e0 la fin:" : "Your age at end:", "54"));
-      if (isNaN(amt) || isNaN(startAge)) return;
-      setGoals(goals.concat([{ id: "g_" + Date.now(), type: "education", name: name, nameEn: name, amount: amt, startAge: startAge, endAge: endAge || startAge + 4, inflation: true, icon: "\ud83c\udf93" }]));
-    }, style: { flex: 1, padding: "6px", background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.xs, cursor: "pointer" } }, "\ud83c\udf93 " + (lang === "fr" ? "\u00c9ducation" : "Education")),
-    React.createElement("button", { onClick: function() {
-      var name = prompt(lang === "fr" ? "Nom (ex: R\u00e9novation maison):" : "Name (e.g. Home renovation):", "");
-      if (!name) return;
-      var amt = parseFloat(prompt(lang === "fr" ? "Montant ($):" : "Amount ($):", "50000"));
-      var startAge = parseInt(prompt(lang === "fr" ? "Votre \u00e2ge \u00e0 la d\u00e9pense:" : "Your age at expense:", "55"));
-      if (isNaN(amt) || isNaN(startAge)) return;
-      setGoals(goals.concat([{ id: "g_" + Date.now(), type: "lumpsum", name: name, nameEn: name, amount: amt, startAge: startAge, endAge: startAge, inflation: true, icon: "\ud83d\udc8e" }]));
-    }, style: { flex: 1, padding: "6px", background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.xs, cursor: "pointer" } }, "\ud83d\udc8e " + (lang === "fr" ? "Ponctuel" : "Lump sum"))
+    /* v3 Phase 12 — opens the goal modal (state-driven) instead of chained prompt() dialogs. */
+    React.createElement("button", { onClick: function() { setGoalModal({ kind: "education", name: "", amt: 15000, startAge: 50, endAge: 54 }); },
+      style: { flex: 1, padding: "6px", background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.xs, cursor: "pointer" } }, "\ud83c\udf93 " + (lang === "fr" ? "\u00c9ducation" : "Education")),
+    React.createElement("button", { onClick: function() { setGoalModal({ kind: "lumpsum", name: "", amt: 50000, startAge: 55, endAge: 55 }); },
+      style: { flex: 1, padding: "6px", background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.xs, cursor: "pointer" } }, "\ud83d\udc8e " + (lang === "fr" ? "Ponctuel" : "Lump sum"))
   )),
   // --- AI narrative tone preferences (Tier-2: shapes report style, not plan math) ---
   React.createElement("div", { className: "bf-t2" },
@@ -12660,6 +12653,33 @@ cPtM > 0 && React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm,
     var calcPayFromTerm = (d.term > 0 && d.bal > 0 && mr > 0) ? d.bal * mr / (1 - Math.pow(1 + mr, -(d.term))) : (d.term > 0 && d.bal > 0 ? Math.round(d.bal / d.term) : 0);
     var calcTermFromPay = (d.pay > 0 && d.bal > 0 && mr > 0 && d.pay > d.bal * mr) ? Math.ceil(Math.log(d.pay / (d.pay - d.bal * mr)) / Math.log(1 + mr)) : (d.pay > 0 && d.bal > 0 ? Math.ceil(d.bal / d.pay) : 0);
     var payMismatch = hasTerm && d.term > 0 && d.pay > 0 && calcPayFromTerm > 0 && Math.abs(d.pay - calcPayFromTerm) > 10;
+    /* v3 Phase 12 — debt auto-calc helper: when 3 of 4 fields are set on
+       an amortizing debt, fills the 4th automatically. Mirrors v4's
+       _autoCalcDebt. _auto tracks which field was computed so user typing
+       releases the lock on that field. */
+    var _updDebtField = function(field, val) {
+      var nd = debts.slice();
+      var d2 = Object.assign({}, nd[i]);
+      d2[field] = val;
+      if (d2._auto === field) d2._auto = null;
+      if (hasTerm && d2.bal > 0) {
+        var r2 = (d2.rate || 0) / 12;
+        if (d2.term > 0 && (!d2.pay || d2._auto === "pay")) {
+          d2.pay = r2 > 0 ? Math.round(d2.bal * r2 / (1 - Math.pow(1+r2, -d2.term))) : Math.round(d2.bal / d2.term);
+          d2._auto = "pay";
+        } else if (d2.pay > 0 && (!d2.term || d2._auto === "term")) {
+          if (r2 > 0 && d2.pay > d2.bal * r2) {
+            d2.term = Math.ceil(-Math.log(1 - d2.bal * r2 / d2.pay) / Math.log(1+r2));
+            d2._auto = "term";
+          } else if (r2 === 0) {
+            d2.term = Math.ceil(d2.bal / d2.pay);
+            d2._auto = "term";
+          }
+        }
+      }
+      nd[i] = d2;
+      setDebts(nd);
+    };
     return React.createElement("div", { key: i, style: { padding: "6px", background: CL.cd, borderRadius: RAD.sm, marginBottom: 6, border: "1px solid " + CL.bd } },
     /* Type selector + delete */
     React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } }, React.createElement("select", { value: d.type || "other", onChange: function(e) {
@@ -12672,45 +12692,19 @@ cPtM > 0 && React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm,
       }));
     }, style: { background: "transparent", color: CL.rd, border: "none", fontSize: FS.sm, cursor: "pointer" } }, "\u2715")),
     /* Balance */
-    React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: d.bal || 0, set: function(v) {
-      var nd = debts.slice();
-      nd[i] = Object.assign({}, d, { bal: v });
-      setDebts(nd);
-    }, step: 1e3 })),
+    React.createElement(Field, { l: lang === "fr" ? "Solde" : "Balance" }, React.createElement(NumField, { v: d.bal || 0, set: function(v) { _updDebtField("bal", v); }, step: 1e3 })),
     /* Rate — only shown once a balance exists (progressive disclosure) */
-    (d.bal || 0) > 0 && React.createElement(Field, { l: lang === "fr" ? "Taux %" : "Rate %" }, React.createElement(Slider, { v: d.rate || 0, set: function(v) {
-      var nd = debts.slice();
-      nd[i] = Object.assign({}, d, { rate: v });
-      setDebts(nd);
-    }, mn: 0, mx: 0.3 })),
-    /* Term (conditional on debt type AND positive balance) */
-    hasTerm && (d.bal || 0) > 0 && !cockpitMode && React.createElement(Field, { l: lang === "fr" ? "\u00c9ch\u00e9ance (mois rest.)" : "Term (months left)", tip: TIP.debtTerm }, React.createElement(NumField, { v: d.term || 0, set: function(v) {
-      var nd = debts.slice();
-      nd[i] = Object.assign({}, d, { term: Math.max(0, Math.round(v)) });
-      setDebts(nd);
-    }, step: 1 })),
-    /* Auto-calc hint: if term set but no payment */
-    hasTerm && d.term > 0 && (d.pay || 0) === 0 && d.bal > 0 && React.createElement("div", { style: { fontSize: FS.base, padding: "3px 6px", background: "rgba(80,144,200,.12)", borderRadius: RAD.sm, marginBottom: 3, color: CL.bl } },
-      "", lang === "fr" ? "Paiement calcul\u00e9: " : "Calculated payment: ", React.createElement("b", null, f$(Math.round(calcPayFromTerm))), "/", lang === "fr" ? "m" : "mo", " ",
-      React.createElement("button", { onClick: function() {
-        var nd = debts.slice();
-        nd[i] = Object.assign({}, d, { pay: Math.round(calcPayFromTerm) });
-        setDebts(nd);
-      }, style: { background: CL.bl, color: CL.al, border: "none", borderRadius: RAD.sm, padding: "1px 6px", fontSize: FS.sm, cursor: "pointer" } }, lang === "fr" ? "Appliquer" : "Apply")),
-    /* Payment — only once balance > 0 */
-    (d.bal || 0) > 0 && React.createElement(Field, { l: lang === "fr" ? "Paiement/mois" : "Payment/mo" }, React.createElement(NumField, { v: d.pay || 0, set: function(v) {
-      var nd = debts.slice();
-      nd[i] = Object.assign({}, d, { pay: v });
-      setDebts(nd);
-    }, step: 50 })),
-    /* Auto-calc hint: if payment set but no term */
-    hasTerm && (d.term || 0) === 0 && d.pay > 0 && d.bal > 0 && calcTermFromPay > 0 && React.createElement("div", { style: { fontSize: FS.base, padding: "3px 6px", background: "rgba(80,144,200,.08)", borderRadius: RAD.sm, marginBottom: 3, color: CL.dm } },
-      lang === "fr" ? "\u00c9ch\u00e9ance implicite: " : "Implied term: ", React.createElement("b", { style: { color: CL.bl } }, calcTermFromPay, lang === "fr" ? " mois" : " mo"), " ",
-      React.createElement("button", { onClick: function() {
-        var nd = debts.slice();
-        nd[i] = Object.assign({}, d, { term: calcTermFromPay });
-        setDebts(nd);
-      }, style: { background: "transparent", color: CL.bl, border: "1px solid " + CL.bl, borderRadius: RAD.sm, padding: "1px 6px", fontSize: FS.sm, cursor: "pointer" } }, lang === "fr" ? "Saisir" : "Set")),
+    (d.bal || 0) > 0 && React.createElement(Field, { l: lang === "fr" ? "Taux %" : "Rate %" }, React.createElement(Slider, { v: d.rate || 0, set: function(v) { _updDebtField("rate", v); }, mn: 0, mx: 0.3 })),
+    /* Term — always visible on amortizing types (auto-calc'd from paiement
+       if user omits). Cockpit-mode gate removed since term is essential. */
+    hasTerm && (d.bal || 0) > 0 && React.createElement(Field, { l: (lang === "fr" ? "\u00c9ch\u00e9ance (mois rest.)" : "Term (months left)") + (d._auto === "term" ? (lang === "fr" ? " (calculé)" : " (auto)") : ""), tip: TIP.debtTerm }, React.createElement(NumField, { v: d.term || 0, set: function(v) { _updDebtField("term", Math.max(0, Math.round(v))); }, step: 1 })),
+    /* Auto-calc badge — replaces the old "Apply" button flow: the helper
+       auto-fills whichever field is missing from {bal, rate, term, pay}. */
+    hasTerm && d.bal > 0 && d._auto === "pay" && React.createElement("div", { style: { fontSize: FS.xs, padding: "4px 8px", background: "rgba(80,144,200,.12)", borderLeft: "2px solid " + CL.bl, borderRadius: RAD.sm, marginBottom: 3, color: TX.primary() } }, "🧮 ", lang === "fr" ? "Paiement calculé — solde + taux + terme. Modifiez pour surpasser." : "Payment computed — bal + rate + term. Override by editing."),
+    hasTerm && d.bal > 0 && d._auto === "term" && React.createElement("div", { style: { fontSize: FS.xs, padding: "4px 8px", background: "rgba(80,144,200,.12)", borderLeft: "2px solid " + CL.bl, borderRadius: RAD.sm, marginBottom: 3, color: TX.primary() } }, "🧮 ", lang === "fr" ? ("Terme calculé : " + d.term + " mois (~" + (d.term/12).toFixed(1) + " ans) — modifiez pour surpasser.") : ("Term computed: " + d.term + " months (~" + (d.term/12).toFixed(1) + " yrs) — override by editing.")),
+    /* Payment — only once balance > 0. Auto-calc helper picks up missing
+       term/pay automatically; no separate "Apply" button needed. */
+    (d.bal || 0) > 0 && React.createElement(Field, { l: (lang === "fr" ? "Paiement/mois" : "Payment/mo") + (d._auto === "pay" ? (lang === "fr" ? " (calculé)" : " (auto)") : "") }, React.createElement(NumField, { v: d.pay || 0, set: function(v) { _updDebtField("pay", v); }, step: 50 })),
     /* Mismatch warning */
     payMismatch && React.createElement("div", { style: { fontSize: FS.base, padding: "3px 6px", background: "rgba(208,72,72,.12)", borderRadius: RAD.sm, marginBottom: 3, color: CL.rd } },
       "\u26a0\ufe0f ", lang === "fr" ? "Incoh\u00e9rence: \u00e9ch\u00e9ance " + d.term + " mois implique " + f$(Math.round(calcPayFromTerm)) + "/m, mais vous payez " + f$(d.pay) + "/m." : "Mismatch: " + d.term + " month term implies " + f$(Math.round(calcPayFromTerm)) + "/mo, but you pay " + f$(d.pay) + "/mo.",
@@ -13551,6 +13545,75 @@ React.createElement("div", { className: "bf-drawer" + (drawerOpen ? " open" : ""
       if (el) el.classList.add("hidden");
     }
   }) : null
+),
+
+// v3 Phase 12 — Goal modal overlay. Renders when setGoalModal({kind,...})
+// is called. Submit pushes a new goal; ESC + backdrop click close it.
+goalModal && React.createElement("div", {
+  style: { position: "fixed", inset: 0, background: "rgba(10,15,26,0.72)", backdropFilter: "blur(6px)", zIndex: 9700, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
+  onClick: function(e) { if (e.target === e.currentTarget) setGoalModal(null); }
+},
+  React.createElement("div", {
+    style: { background: CL.bg, border: "1px solid " + CL.ac, borderRadius: 14, padding: "24px 26px", maxWidth: 520, width: "100%", boxShadow: "0 14px 40px rgba(0,0,0,0.5)" },
+    role: "dialog", "aria-modal": "true"
+  },
+    React.createElement("div", { style: { fontSize: FS.xl, fontWeight: 700, marginBottom: 6, color: CL.al } },
+      goalModal.kind === "education"
+        ? (lang === "fr" ? "🎓 Ajouter un objectif d'éducation" : "🎓 Add an education goal")
+        : (lang === "fr" ? "💎 Ajouter une dépense ponctuelle" : "💎 Add a lump-sum expense")),
+    React.createElement("div", { style: { fontSize: FS.sm, color: CL.dm, marginBottom: 18, lineHeight: 1.5 } },
+      goalModal.kind === "education"
+        ? (lang === "fr" ? "Études à financer sur plusieurs années. Le montant est indexé à l'inflation." : "Education over several years. Amount is inflation-indexed.")
+        : (lang === "fr" ? "Dépense unique à un âge donné. Indexée à l'inflation." : "One-time expense at a given age. Inflation-indexed.")),
+    React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } },
+      React.createElement("div", null,
+        React.createElement("label", { style: { fontSize: FS.sm, color: CL.al, fontWeight: 600, display: "block", marginBottom: 4 } }, lang === "fr" ? "Nom" : "Name"),
+        React.createElement("input", {
+          type: "text", value: goalModal.name || "",
+          onChange: function(e) { setGoalModal(Object.assign({}, goalModal, { name: e.target.value })); },
+          placeholder: goalModal.kind === "education" ? (lang === "fr" ? "Ex : Études Emma" : "E.g. Emma's studies") : (lang === "fr" ? "Ex : Rénovation maison" : "E.g. Home renovation"),
+          style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: 6, padding: "9px 11px", fontSize: FS.md, outline: "none" },
+          autoFocus: true
+        })),
+      React.createElement("div", null,
+        React.createElement("label", { style: { fontSize: FS.sm, color: CL.al, fontWeight: 600, display: "block", marginBottom: 4 } },
+          goalModal.kind === "education" ? (lang === "fr" ? "Coût annuel ($)" : "Annual cost ($)") : (lang === "fr" ? "Montant ($)" : "Amount ($)")),
+        React.createElement("input", {
+          type: "number", value: goalModal.amt || 0, min: 0, step: 1000,
+          onChange: function(e) { setGoalModal(Object.assign({}, goalModal, { amt: parseFloat(e.target.value) || 0 })); },
+          style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: 6, padding: "9px 11px", fontSize: FS.md, outline: "none" }
+        })),
+      React.createElement("div", null,
+        React.createElement("label", { style: { fontSize: FS.sm, color: CL.al, fontWeight: 600, display: "block", marginBottom: 4 } }, lang === "fr" ? "Âge au début" : "Age at start"),
+        React.createElement("input", {
+          type: "number", value: goalModal.startAge || 0, min: 0, max: 100, step: 1,
+          onChange: function(e) { setGoalModal(Object.assign({}, goalModal, { startAge: parseInt(e.target.value) || 0 })); },
+          style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: 6, padding: "9px 11px", fontSize: FS.md, outline: "none" }
+        })),
+      goalModal.kind === "education" && React.createElement("div", null,
+        React.createElement("label", { style: { fontSize: FS.sm, color: CL.al, fontWeight: 600, display: "block", marginBottom: 4 } }, lang === "fr" ? "Âge à la fin" : "Age at end"),
+        React.createElement("input", {
+          type: "number", value: goalModal.endAge || 0, min: 0, max: 100, step: 1,
+          onChange: function(e) { setGoalModal(Object.assign({}, goalModal, { endAge: parseInt(e.target.value) || 0 })); },
+          style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: 6, padding: "9px 11px", fontSize: FS.md, outline: "none" }
+        }))
+    ),
+    React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 } },
+      React.createElement("button", {
+        onClick: function() { setGoalModal(null); },
+        style: { padding: "8px 14px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: 8, fontSize: FS.md, cursor: "pointer" }
+      }, lang === "fr" ? "Annuler" : "Cancel"),
+      React.createElement("button", {
+        onClick: function() {
+          if (!goalModal.name || !goalModal.amt || !goalModal.startAge) { alert(lang === "fr" ? "Nom, montant et âge requis." : "Name, amount and age required."); return; }
+          var g = { id: "g_" + Date.now(), type: goalModal.kind, name: goalModal.name, nameEn: goalModal.name, amount: goalModal.amt, startAge: goalModal.startAge, endAge: goalModal.kind === "education" ? (goalModal.endAge || goalModal.startAge + 4) : goalModal.startAge, inflation: true, icon: goalModal.kind === "education" ? "🎓" : "💎" };
+          setGoals(goals.concat([g]));
+          setGoalModal(null);
+        },
+        style: { padding: "8px 14px", background: CL.ac, color: "#0e1420", border: "1px solid " + CL.ac, borderRadius: 8, fontSize: FS.md, fontWeight: 700, cursor: "pointer" }
+      }, lang === "fr" ? "Ajouter" : "Add")
+    )
+  )
 ),
 
 // === MOBILE BOTTOM NAV ===
