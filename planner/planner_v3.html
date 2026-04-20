@@ -6593,6 +6593,47 @@ function runMC(p, N, _progressCb) {
       var _bizDivInfo = null; // divInfo to pass to calcTax
       var _bizSaleCGtaxable = 0;
       _bizCorpTaxThisYr = 0; _bizDivThisYr = 0; _bizSalThisYr = 0; _bizExtractThisYr = 0;
+      var _bizSoleNetThisYr = 0, _bizSoleCppDeduct = 0;
+      if (p.bizOn && p.bizType === "sole") {
+        // Travailleur autonome (sole prop / T2125). Net self-employment
+        // income flows directly to personal taxable income. No corporation,
+        // no retained earnings, no dividends, no LCGE on goodwill sale.
+        // Self-employed CPP/QPP: contributor pays both halves (~11.9%);
+        // the "employer half" is deductible against net income.
+        if (!retired && alive) {
+          var _soleVolNoise = (p.bizSoleVol || 0) > 0 ? tRn(999) * (p.bizSoleVol || 0) : 0;
+          var _soleGrowthM = Math.pow(1 + (p.bizSoleGrowth || 0), y);
+          var _soleRev = (p.bizSoleRev || 0) * infM * _soleGrowthM * (1 + _soleVolNoise);
+          var _soleExp = (p.bizSoleExp || 0) * infM * _soleGrowthM;
+          var _soleDebtPay = _bizDebt > 0 ? _bizDebtPay : 0;
+          var _soleNet = Math.max(0, _soleRev - _soleExp - _soleDebtPay);
+          if (_bizDebt > 0) {
+            var _soleIntPay = _bizDebt * (p.bizDebtRate || 0);
+            var _solePrinPay = Math.max(0, _bizDebtPay - _soleIntPay);
+            _bizDebt = Math.max(0, _bizDebt - _solePrinPay);
+          }
+          // Self-employed CPP/QPP — employer half deductible (2026 YMPE/exempt
+          // indexed via infM). 5.95% is the 2026 base rate per half.
+          var _ympe = 68500 * infM;
+          var _basicExempt = 3500 * infM;
+          var _pensionable = Math.min(Math.max(0, _soleNet - _basicExempt), _ympe - _basicExempt);
+          _bizSoleCppDeduct = _pensionable * 0.0595;
+          _bizSoleNetThisYr = Math.max(0, _soleNet - _bizSoleCppDeduct);
+          _bizSalThisYr = _bizSoleNetThisYr; // surfaced as "biz salary-equivalent" for revData
+          _bizCumSalary += _bizSoleNetThisYr; _bizSalYrs += (_bizSoleNetThisYr > 0 ? 1 : 0);
+        }
+        // Business sale — sole prop assets/goodwill. No LCGE (only QSBC shares
+        // qualify). Full capital gain enters personal taxable income at
+        // inclusion rates. Proceeds flow to NR (no corp to deposit into).
+        if (p.bizSaleAge > 0 && age === p.bizSaleAge) {
+          var _soleGain = Math.max(0, (p.bizSalePrice || 0) * infM - (p.bizSaleACB || 0));
+          var _cgThrSole = (p.cgThresh || C.CG_THRESHOLD) * infM;
+          _bizSaleCGtaxable = _soleGain > _cgThrSole
+            ? _cgThrSole * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_soleGain - _cgThrSole) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+            : _soleGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
+          nr += (p.bizSalePrice || 0) * infM;
+        }
+      }
       if (p.bizOn && p.bizType === "ccpc") {
         if (!retired && alive) {
           // Pre-retirement: business income + compensation
@@ -6756,6 +6797,11 @@ function runMC(p, N, _progressCb) {
               taxableInc = 0; // pure dividend, no employment ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ no salary income
             }
           }
+          // Sole prop: net self-employment income adds to personal taxable
+          // income alongside any employment salary (owner can hold both).
+          if (p.bizOn && p.bizType === "sole" && _bizSoleNetThisYr > 0) {
+            taxableInc += _bizSoleNetThisYr;
+          }
           if (p.cOn && cAlive && !cRetired) cTaxableInc = (p.cSal || 0) * infM;
         }
         taxableInc = Math.max(0, taxableInc);
@@ -6805,6 +6851,9 @@ function runMC(p, N, _progressCb) {
         revData[y].corpSal = _bizSalThisYr; revData[y].corpTax = _bizCorpTaxThisYr;
         revData[y].corpCDA = corpCDA; revData[y].corpRDTOH = corpRDTOH;
         revData[y].corpExtract = _bizExtractThisYr; revData[y].bizDebt = _bizDebt;
+        // Sole-proprietorship observability
+        revData[y].bizSoleNet = _bizSoleNetThisYr;
+        revData[y].bizSoleCppDeduct = _bizSoleCppDeduct;
         revData[y].ippBal = _ippBal;
       }
       // FTQ: contribution deducted from NR; tax credit applied in si===0 block above
@@ -9063,6 +9112,12 @@ function App() {
   var _bizVol = useState(0), bizVolatility = _bizVol[0], setBizVolatility = _bizVol[1];
   var _bizGr = useState(0), bizGrowth = _bizGr[0], setBizGrowth = _bizGr[1];
   var _bizExp = useState(0), bizExpenses = _bizExp[0], setBizExpenses = _bizExp[1];
+  // Sole-proprietorship (travailleur autonome) — parallel track to CCPC
+  // fields. Engine branches on bizType === "sole" vs "ccpc".
+  var _bizSoleRev = useState(0), bizSoleRev = _bizSoleRev[0], setBizSoleRev = _bizSoleRev[1];
+  var _bizSoleExp = useState(0), bizSoleExp = _bizSoleExp[0], setBizSoleExp = _bizSoleExp[1];
+  var _bizSoleGrowth = useState(0), bizSoleGrowth = _bizSoleGrowth[0], setBizSoleGrowth = _bizSoleGrowth[1];
+  var _bizSoleVol = useState(0), bizSoleVol = _bizSoleVol[0], setBizSoleVol = _bizSoleVol[1];
   var _bizRemun = useState("salary"), bizRemun = _bizRemun[0], setBizRemun = _bizRemun[1];
   var _bizSalPct = useState(1.0), bizSalaryPct = _bizSalPct[0], setBizSalaryPct = _bizSalPct[1];
   var _bizRetEarn = useState(0), bizRetainedEarnings = _bizRetEarn[0], setBizRetainedEarnings = _bizRetEarn[1];
@@ -9369,6 +9424,11 @@ function App() {
       // was missing from the bridge.
       if (p3.cLifeInsBenefit != null) sCLifeIns(p3.cLifeInsBenefit);
       if (p3.cLifeInsPremium != null) sCLifeInsP(p3.cLifeInsPremium);
+      // Sole-proprietorship (travailleur autonome)
+      if (p3.bizSoleRev != null) setBizSoleRev(p3.bizSoleRev);
+      if (p3.bizSoleExp != null) setBizSoleExp(p3.bizSoleExp);
+      if (p3.bizSoleGrowth != null) setBizSoleGrowth(p3.bizSoleGrowth);
+      if (p3.bizSoleVol != null) setBizSoleVol(p3.bizSoleVol);
       window._mc = null; window._mcPending = false; window._mcProfileDirty = true;
     } catch (e) { console.error("v4→v3 profile apply failed:", e); }
   };
@@ -9956,7 +10016,7 @@ cInsVieType: (cSyncInsLife ? insVieType : cInsVieType),
 cInsVieDur: (cSyncInsLife ? insVieDur : cInsVieDur),
 cInsInvCov, cInsInvPrime, cInsMGCov, cInsMGPrime, cInsColPrime,
 cPenEE, cPenER, cPenMER,
-cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
+cRetSpM, cNR, cNRC, cSex, qppShare, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, multiAsset: multiAsset, assetAlloc: globalAlloc, allocOverride: allocOverride, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, liraBal, cLiraBal, lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal, cLifeInsBenefit, cLifeInsPremium, cEv1Age, cEv1Amt, cEv2Age, cEv2Amt, cInc1Age, cInc1Amt, fhsaBal, fhsaC, fhsaForHome, fhsaHomeAge, cFhsaBal, cFhsaC, ftqOn, ftqAmt, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, debts: debts, gkOn, gkCeil, gkFloor, gkCut, gkRaise, gkMaxCut, donAnn, salVol, disabProb, disabMo, bizOn, bizType, bizRevenue, bizVolatility, bizGrowth, bizExpenses, bizRemun, bizSalaryPct, bizRetainedEarnings, bizInvAlloc, bizExtractMode, bizExtractYrs, bizOasOptim, bizSaleAge, bizSalePrice, bizSaleACB, bizLCGE, bizDebtBal, bizDebtRate, bizDebtAmort, bizSoleRev, bizSoleExp, bizSoleGrowth, bizSoleVol, ippOn, ippBal: ippBal2, goals: goals, rsuGrants: rsuGrants };
   // R6-OPTION-B: No auto-launch MC from render body. Placeholder only.
   // MC runs exclusively via Simuler button (clicked by useEffect on mount + profile switch).
   // This eliminates the race condition where render-body MC captured stale React state.
