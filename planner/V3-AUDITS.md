@@ -869,3 +869,67 @@ Conjoint modules. Estimated visible-in-cockpit field count now ~30
 - `node --check` on extracted v3 main script: clean.
 - Toggle cockpit OFF → every guarded field reappears (no data loss —
   state lives in React hooks, CSS/guards only hide the UI).
+
+## Phase 8 — Sidebar outlay implementation (2026-04-19)
+
+Executes the proposal in `V4-SIDEBAR-PROPOSAL.md` end-to-end.
+
+### Rail
+
+- Biz + Ins drop from the rail in cockpit mode (previously shown in cockpit,
+  now gated behind `!cockpitMode`). Users reach Biz/Ins via the Formulaire
+  button → v4 `#sec-business`, `#sec-insurance`.
+- Alt + Model already gated in phase 7.1 — unchanged.
+- Fisc rail relabelled **Stratégie** with icon 🧾 (was 🧮). Module metadata
+  title updated to "Stratégie / Strategy" with a caption focused on the
+  withdrawal-mode choice.
+
+### Module content trim (cockpit-specific guards)
+
+- **Profil** — `deathAge` gated `!cockpitMode` (already moot when
+  `stochMort=true`, the default). Entire Goals block (header + retirement
+  goal card + non-retirement goals list + education/lump-sum add buttons)
+  wrapped in `<div class="bf-t2">`. Retirement goal implicit via `retSpM`;
+  education/lump-sum edit in form at `#sec-income`.
+- **Cashflow / dep** — "Événements ponctuels" subsection (ev1/ev2 age,
+  name, amount) wrapped in `<div class="bf-t2">`. `retSpM` stays visible
+  as the Tier-1 lever.
+- **Épargne** — entire Special Accounts Sec (RESP, LIRA, rrspRoom, life
+  insurance, contGr, FTQ, CELIAPP) gated `!cockpitMode`. RSU grants Sec
+  also gated `!cockpitMode`.
+- **Pension** — `indexation` select (DB case), `dcY` slider, `penPctMode`
+  check, `penEE/penER/penEEpct/penERpct`, `penMER` all gated `!cockpitMode`.
+  `penType`, `penM` (if DB), `dcBal` (if CD), `bridge`/`brAmt`/`brEnd`
+  stay as Tier-1 levers.
+- **Property card** — Tier-2 cockpit exclusions: `ri`, `mr`, `mt1`, `mr2`,
+  mortgage summary, `ma`, `ox`, `pt`, `ins`, `pa`, `sa`, `cg`, entire DPA
+  block, Advanced Strategies (HELOC, Smith, refi), Sale/Downsizing.
+  Tier-1 remains: `val`, `mb`, `rm`, `pri` checkbox + ownership pill.
+- **Debt card** — `d.term` gated `!cockpitMode`. Tier-1: type, balance,
+  rate, payment, deductible flag + ownership pill.
+
+### Field count (observed in cockpit mode, typical profile)
+
+| Module | Fields |
+|---|---|
+| Profil | 6 (firstName, lastName, age, retAge, sal, sex, prov, cName autoderived) |
+| Conjoint (cOn) | ~10 (identity + 5 sync toggles) |
+| Flux | 3 (retSpM; budget Sec already gated off; events gated off) |
+| Épargne | 6 (3 × balance+contrib) |
+| Immobilier (1 prop) | 4–5 per card |
+| Dettes (1 debt) | 4–5 per card |
+| Pension | 4–5 (qppAge, oasAge, penType, penM/dcBal, bridge) |
+| Stratégie | 3 (strategy radio, conditional meltTgt/brAmt/brEnd, split) |
+| **Total (single)** | ~30 |
+| **Total (couple, 1 prop, 1 debt)** | ~45 |
+
+Matches V4-SIDEBAR-PROPOSAL §7 targets.
+
+### Acceptance
+
+- `node --check` on extracted v3 main script: clean.
+- Toggle cockpit OFF (Complet) → every gated field reappears; Biz, Ins,
+  Alt, Model rails re-enter; Special Accounts Sec + Goals block +
+  pension detail fields + property/debt deep fields all visible.
+- Handoff to/from v4 unchanged (payload includes every variable
+  regardless of cockpit mode — guards only hide, don't null state).
