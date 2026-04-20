@@ -12222,47 +12222,52 @@ React.createElement("div", { style: { padding: "8px 10px", background: CL.tl + "
 ),
 
 // --- Sub-header: Identité / Identity ---
+// v3 Phase 8.1 — cockpit keeps only cAge + cSex from Identity. Unsynced
+// fields (cRetAge, cDeath) live in form. Whole Savings + Government +
+// Pension subsections also wrap Tier-2 below.
 React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Identité" : "Identity"),
 React.createElement("div", { className: "bf-sb-grid2" },
   React.createElement(Field, { l: lang === "fr" ? "Âge" : "Age" }, React.createElement(Slider, { v: cAge, set: sCAge, mn: 18, mx: 80 })),
   React.createElement(Field, { l: t.conjSex }, React.createElement("select", { value: cSex, onChange: function(e) { sCsex(e.target.value); }, style: selSty }, React.createElement("option", { value: "M" }, lang === "fr" ? "Homme" : "Male"), React.createElement("option", { value: "F" }, lang === "fr" ? "Femme" : "Female"))),
-  !cSyncRetAge && React.createElement(Field, { l: lang === "fr" ? "Âge de retraite" : "Retirement age", err: valErrors.cRetAge }, React.createElement(Slider, { v: cRetAge, set: sCRA, mn: 45, mx: 75 })),
-  !cUseStochMort && React.createElement(Field, { l: lang === "fr" ? "Horizon de vie" : "Life horizon", tip: TIP.conjSurvie }, React.createElement(Slider, { v: cDeath, set: sCDeath, mn: 70, mx: 100 }))
+  !cockpitMode && !cSyncRetAge && React.createElement(Field, { l: lang === "fr" ? "Âge de retraite" : "Retirement age", err: valErrors.cRetAge }, React.createElement(Slider, { v: cRetAge, set: sCRA, mn: 45, mx: 75 })),
+  !cockpitMode && !cUseStochMort && React.createElement(Field, { l: lang === "fr" ? "Horizon de vie" : "Life horizon", tip: TIP.conjSurvie }, React.createElement(Slider, { v: cDeath, set: sCDeath, mn: 70, mx: 100 }))
 ),
-React.createElement("div", { style: { height: 4 } }),
-// --- Sub-header: \u00c9pargne / Savings ---
-React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "\u00c9pargne" : "Savings"),
-React.createElement("div", { className: "bf-sb-grid2" },
-  React.createElement(Field, { l: "REER/RRSP" }, React.createElement(NumField, { v: cRRSP, set: sCRRSP, step: 5e3 })),
-  React.createElement(Field, { l: lang === "fr" ? "Cotis. REER/an" : "RRSP contrib./yr" }, React.createElement(NumField, { v: cRRSPC, set: sCRRSPC, step: 1e3 })),
-  React.createElement(Field, { l: "CÉLI/TFSA" }, React.createElement(NumField, { v: cTFSA, set: sCTFSA, step: 5e3 })),
-  React.createElement(Field, { l: lang === "fr" ? "Cotis. CÉLI/an" : "TFSA contrib./yr" }, React.createElement(NumField, { v: cTFSAC, set: sCTFSAC, step: 1e3 })),
-  React.createElement(Field, { l: t.conjNR }, React.createElement(NumField, { v: cNR, set: sCNR, step: 5e3 })),
-  React.createElement(Field, { l: t.conjNRC }, React.createElement(NumField, { v: cNRC, set: sCNRC, step: 1e3 }))
-),
-/* v3 Wave 1 — spouse allocation + MER (visible only when sync OFF) */
-!cSyncPortfolio && React.createElement("details", { className: "bf-adv-drawer", open: true, style: { marginTop: 6 } },
-  React.createElement("summary", null, lang === "fr" ? "Allocations & frais de gestion du conjoint" : "Spouse allocations & management fees"),
+/* Savings + Government + allocation drawer are Tier-2 in cockpit —
+   spouse's own balances/ages edit in the form at #sec-spouse. */
+!cockpitMode && React.createElement("div", { className: "bf-t2-inline" },
+  React.createElement("div", { style: { height: 4 } }),
+  React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "\u00c9pargne" : "Savings"),
   React.createElement("div", { className: "bf-sb-grid2" },
-    React.createElement(Field, { l: lang === "fr" ? "REER % actions" : "RRSP % equity" }, React.createElement(Slider, { v: cAllocR, set: sCAlR, mn: 0, mx: 1 })),
-    React.createElement(Field, { l: lang === "fr" ? "CÉLI % actions" : "TFSA % equity" }, React.createElement(Slider, { v: cAllocT, set: sCAlT, mn: 0, mx: 1 })),
-    React.createElement(Field, { l: lang === "fr" ? "NR % actions" : "NR % equity" }, React.createElement(Slider, { v: cAllocN, set: sCAlN, mn: 0, mx: 1 })),
-    React.createElement(Field, { l: lang === "fr" ? "Frais REER (MER %)" : "RRSP fees (MER %)" }, React.createElement(Slider, { v: cMerR, set: sCMerR, mn: 0, mx: 0.03 })),
-    React.createElement(Field, { l: lang === "fr" ? "Frais CÉLI (MER %)" : "TFSA fees (MER %)" }, React.createElement(Slider, { v: cMerT, set: sCMerT, mn: 0, mx: 0.03 })),
-    React.createElement(Field, { l: lang === "fr" ? "Frais NR (MER %)" : "Non-registered fees (MER %)" }, React.createElement(Slider, { v: cMerN, set: sCMerN, mn: 0, mx: 0.03 }))
+    React.createElement(Field, { l: "REER/RRSP" }, React.createElement(NumField, { v: cRRSP, set: sCRRSP, step: 5e3 })),
+    React.createElement(Field, { l: lang === "fr" ? "Cotis. REER/an" : "RRSP contrib./yr" }, React.createElement(NumField, { v: cRRSPC, set: sCRRSPC, step: 1e3 })),
+    React.createElement(Field, { l: "CÉLI/TFSA" }, React.createElement(NumField, { v: cTFSA, set: sCTFSA, step: 5e3 })),
+    React.createElement(Field, { l: lang === "fr" ? "Cotis. CÉLI/an" : "TFSA contrib./yr" }, React.createElement(NumField, { v: cTFSAC, set: sCTFSAC, step: 1e3 })),
+    React.createElement(Field, { l: t.conjNR }, React.createElement(NumField, { v: cNR, set: sCNR, step: 5e3 })),
+    React.createElement(Field, { l: t.conjNRC }, React.createElement(NumField, { v: cNRC, set: sCNRC, step: 1e3 }))
+  ),
+  /* v3 Wave 1 — spouse allocation + MER (visible only when sync OFF) */
+  !cSyncPortfolio && React.createElement("details", { className: "bf-adv-drawer", open: true, style: { marginTop: 6 } },
+    React.createElement("summary", null, lang === "fr" ? "Allocations & frais de gestion du conjoint" : "Spouse allocations & management fees"),
+    React.createElement("div", { className: "bf-sb-grid2" },
+      React.createElement(Field, { l: lang === "fr" ? "REER % actions" : "RRSP % equity" }, React.createElement(Slider, { v: cAllocR, set: sCAlR, mn: 0, mx: 1 })),
+      React.createElement(Field, { l: lang === "fr" ? "CÉLI % actions" : "TFSA % equity" }, React.createElement(Slider, { v: cAllocT, set: sCAlT, mn: 0, mx: 1 })),
+      React.createElement(Field, { l: lang === "fr" ? "NR % actions" : "NR % equity" }, React.createElement(Slider, { v: cAllocN, set: sCAlN, mn: 0, mx: 1 })),
+      React.createElement(Field, { l: lang === "fr" ? "Frais REER (MER %)" : "RRSP fees (MER %)" }, React.createElement(Slider, { v: cMerR, set: sCMerR, mn: 0, mx: 0.03 })),
+      React.createElement(Field, { l: lang === "fr" ? "Frais CÉLI (MER %)" : "TFSA fees (MER %)" }, React.createElement(Slider, { v: cMerT, set: sCMerT, mn: 0, mx: 0.03 })),
+      React.createElement(Field, { l: lang === "fr" ? "Frais NR (MER %)" : "Non-registered fees (MER %)" }, React.createElement(Slider, { v: cMerN, set: sCMerN, mn: 0, mx: 0.03 }))
+    )
+  ),
+  React.createElement("div", { style: { height: 4 } }),
+  React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Gouvernement" : "Government"),
+  React.createElement("div", { className: "bf-sb-grid2" },
+    !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début RRQ (60-72)" : "QPP start (60-72)", err: valErrors.cQppAge }, React.createElement(Slider, { v: cQppAge, set: sCQA, mn: 60, mx: 72 })),
+    !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Gains admissibles moyens RRQ" : "Avg QPP pensionable earnings" }, React.createElement(NumField, { v: cAvgE, set: sCAvgE, step: 5e3 })),
+    !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Années cotisées" : "Contribution years" }, React.createElement(Slider, { v: cQppYrs, set: sCQY, mn: 0, mx: 40 })),
+    !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début PSV" : "OAS start", err: valErrors.cOasAge }, React.createElement(Slider, { v: cOasAge, set: sCOA, mn: 65, mx: 72 }))
+  ),
+  (cSyncGovAges && cAvgEAuto) && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic", marginTop: -2, marginBottom: 6, paddingLeft: 6, borderLeft: "2px solid " + CL.tl + "50" } },
+    lang === "fr" ? "Âges RRQ/PSV et gains moyens dérivés automatiquement. Désactivez une hypothèse ci-dessus pour les saisir manuellement." : "QPP/OAS ages and average earnings are auto-derived. Uncheck an assumption above to enter them manually."
   )
-),
-React.createElement("div", { style: { height: 4 } }),
-// --- Sub-header: Gouvernement / Government ---
-React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight: FW.medium, marginBottom: 4, marginTop: 6, paddingLeft: 6, borderLeft: "3px solid " + CL.ac + "60" } }, lang === "fr" ? "Gouvernement" : "Government"),
-React.createElement("div", { className: "bf-sb-grid2" },
-  !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début RRQ (60-72)" : "QPP start (60-72)", err: valErrors.cQppAge }, React.createElement(Slider, { v: cQppAge, set: sCQA, mn: 60, mx: 72 })),
-  !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Gains admissibles moyens RRQ" : "Avg QPP pensionable earnings" }, React.createElement(NumField, { v: cAvgE, set: sCAvgE, step: 5e3 })),
-  !cAvgEAuto && React.createElement(Field, { l: lang === "fr" ? "Années cotisées" : "Contribution years" }, React.createElement(Slider, { v: cQppYrs, set: sCQY, mn: 0, mx: 40 })),
-  !cSyncGovAges && React.createElement(Field, { l: lang === "fr" ? "Début PSV" : "OAS start", err: valErrors.cOasAge }, React.createElement(Slider, { v: cOasAge, set: sCOA, mn: 65, mx: 72 }))
-),
-(cSyncGovAges && cAvgEAuto) && React.createElement("div", { style: { fontSize: FS.xxs, color: CL.dm, fontStyle: "italic", marginTop: -2, marginBottom: 6, paddingLeft: 6, borderLeft: "2px solid " + CL.tl + "50" } },
-  lang === "fr" ? "Âges RRQ/PSV et gains moyens dérivés automatiquement. Désactivez une hypothèse ci-dessus pour les saisir manuellement." : "QPP/OAS ages and average earnings are auto-derived. Uncheck an assumption above to enter them manually."
 ),
 React.createElement("div", { style: { height: 4 } }),
 // --- Sub-header: Pension & Emploi / Pension & Employment ---
@@ -12970,7 +12975,7 @@ React.createElement("div", { style: { fontSize: FS.sm, color: CL.ac, fontWeight:
         React.createElement(Field, { l: lang === "fr" ? "Montant pont ($/mois)" : "Bridge amount ($/mo)" }, React.createElement(NumField, { v: brAmt, set: sBA, step: 100 })),
         React.createElement(Field, { l: lang === "fr" ? "Fin du pont (\u00e2ge)" : "Bridge end age" }, React.createElement(NumField, { v: brEnd, set: sBE, step: 1, min: 60, max: 72 })))
     ),
-    React.createElement(Field, { l: t.wStrat, tip: TIP.wStratDesc }, React.createElement("select", { value: wStrat, onChange: function(e) { setWS(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } },
+    !cockpitMode && React.createElement(Field, { l: t.wStrat, tip: TIP.wStratDesc }, React.createElement("select", { value: wStrat, onChange: function(e) { setWS(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } },
       React.createElement("option", { value: "optimal" }, t.wOptimal),
       React.createElement("option", { value: "tfsa" }, t.wTFSAFirst),
       React.createElement("option", { value: "optimized" }, lang === "fr" ? "Optimis\u00e9 (min. imp\u00f4t)" : "Optimized (min. tax)"))),
