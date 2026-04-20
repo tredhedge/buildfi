@@ -5843,6 +5843,10 @@ function runMC(p, N, _progressCb) {
   var maxYrs = Math.floor(p.deathAge - p.age);
   if (maxYrs <= 0) return null;
   var all = [], fins = [], liqFins = [], ruinAges = [], deathAges = [], cDeathAges = [], estateTaxes = [], estateNets = [];
+  // finalsRaw preserves fins[] in its original push-order (1:1 with all[])
+  // so medSimIdx can be computed against the unsorted finals — matching the
+  // trajectory stored in all[]. fins itself is sorted later for percentiles.
+  var finalsRaw = [];
   var gkAllCuts = [], gkAllRaises = [], gkAllAvgSpend = [], gkAllMinSpend = [], gkAllMinFactor = [], gkAllAvgFactor = [], gkAllCutYrs = [], gkAllMaxStreak = [];
   var revData = [];
   for (var y0 = 0; y0 <= maxYrs; y0++) revData.push({ age: p.age + y0, rrq: 0, psv: 0, srg: 0, pen: 0, pt: 0, ret: 0, spend: 0, tax: 0, taxInc: 0 });
@@ -5871,7 +5875,8 @@ function runMC(p, N, _progressCb) {
     var cSimDeath = p.cOn ? p.stochMort ? stochDeath(p.cAge || p.age, p.cSex || "F") : p.cDeath || 90 : 0;
     var yrs = Math.floor(Math.min(simDeath - p.age, maxYrs));
     if (yrs <= 0) {
-      fins.push(p.rrsp + p.tfsa + p.nr);
+      var _zeroYrFin = p.rrsp + p.tfsa + p.nr;
+      fins.push(_zeroYrFin); finalsRaw.push(_zeroYrFin);
       ruinAges.push(999);
       deathAges.push(simDeath);
       if (p.cOn) cDeathAges.push(cSimDeath);
@@ -7222,7 +7227,7 @@ function runMC(p, N, _progressCb) {
     if (gkMinSpendR < Infinity) gkAllMinSpend.push(gkMinSpendR);
     estateTaxes.push(estTax);
     estateNets.push(estateNet);
-    fins.push(finalVal);
+    fins.push(finalVal); finalsRaw.push(finalVal);
     liqFins.push(liqFinal);
     ruinAges.push(ruinAge);
     deathAges.push(simDeath);
@@ -7242,44 +7247,58 @@ function runMC(p, N, _progressCb) {
   liqFins.sort(function(a, b) {
     return a - b;
   });
-  ruinAges.sort(function(a, b) {
-    return a - b;
-  });
-  var medFin = fins[Math.floor(N * 0.5)];
-  var liqMedF = liqFins[Math.floor(N * 0.5)];
-  var liqP5 = liqFins[Math.floor(N * 0.05)];
-  var liqP25 = liqFins[Math.floor(N * 0.25)];
-  var liqP75 = liqFins[Math.floor(N * 0.75)];
-  var liqP95 = liqFins[Math.floor(N * 0.95)];
+  // Post-filter sample sizes. N remains the total sim count (denominator for
+  // succ/ruin ratios). M/L are the denominators for percentile/mean stats
+  // computed on the surviving finite samples.
+  var M = fins.length, L = liqFins.length;
+  // Sorted copy of ruin ages for percentile/median use. The original
+  // ruinAges keeps its push-order so deathVsRuin pairs remain aligned
+  // and medSimIdx can read the sim's actual ruin age, not a sorted one.
+  var ruinAgesSorted = ruinAges.slice().sort(function(a, b) { return a - b; });
+  var medFin = fins[Math.floor(M * 0.5)];
+  var liqMedF = liqFins[Math.floor(L * 0.5)];
+  var liqP5 = liqFins[Math.floor(L * 0.05)];
+  var liqP25 = liqFins[Math.floor(L * 0.25)];
+  var liqP75 = liqFins[Math.floor(L * 0.75)];
+  var liqP95 = liqFins[Math.floor(L * 0.95)];
+  // medSimIdx now matches against the unsorted finalsRaw so medPath/Final/
+  // Ruin/Death/Estate all come from the SAME simulation — the one whose
+  // final wealth is closest to the sorted median.
   var medSimIdx = 0, medSimDist = Infinity;
   for (var mi = 0; mi < N; mi++) {
-    var d3 = Math.abs((all[mi][all[mi].length - 1] || { total: 0 }).total - medFin);
+    var _rawFin = finalsRaw[mi];
+    if (!isFinite(_rawFin)) continue;
+    var d3 = Math.abs(_rawFin - medFin);
     if (d3 < medSimDist) {
       medSimDist = d3;
       medSimIdx = mi;
     }
   }
   var medPath = all[medSimIdx];
-  var medSimFinal = fins[medSimIdx] || 0;
+  var medSimFinal = finalsRaw[medSimIdx] || 0;
   var medSimRuin = ruinAges[medSimIdx] || 999;
   var medSimDeath = deathAges[medSimIdx] || p.deathAge;
   var medSimEstateTax = estateTaxes[medSimIdx] || 0;
   var medSimEstateNet = estateNets[medSimIdx] || 0;
+  // succ/ruinPct use N (total sim count): numerator ruinAges is 1:1 with N.
   var succ = ruinAges.filter(function(a) {
     return a >= 999;
   }).length / N;
+  // mean/sd/percentiles use M (post-filter fins length) so NaN-dropped sims
+  // don't dilute the stats. v5i now indexes fins with its actual length.
   var mean = fins.reduce(function(a, b) {
     return a + b;
-  }, 0) / N;
+  }, 0) / M;
   var sd = Math.sqrt(fins.reduce(function(a, b) {
     return a + Math.pow(b - mean, 2);
-  }, 0) / N);
-  var v5i = Math.floor(N * 0.05), var5 = fins[v5i];
+  }, 0) / M);
+  var v5i = Math.floor(M * 0.05), var5 = fins[v5i];
   var cvar5 = v5i > 0 ? fins.slice(0, v5i).reduce(function(a, b) {
     return a + b;
   }, 0) / v5i : fins[0];
   var discFinal = Math.pow(1 + p.inf, maxYrs);
-  var medRuin = ruinAges[Math.floor(N * 0.5)];
+  // medRuin from the sorted copy to preserve pairing of the original.
+  var medRuin = ruinAgesSorted[Math.floor(N * 0.5)];
   var avgDeath = p.stochMort ? Math.round(deathAges.reduce(function(a, b) {
     return a + b;
   }, 0) / N) : p.deathAge;
@@ -7704,20 +7723,20 @@ function runMC(p, N, _progressCb) {
     deathAges: deathAges,
     cDeathAges: cDeathAges,
     ruinAges: ruinAges,
-    medF: fins[Math.floor(N * 0.5)],
+    medF: fins[Math.floor(M * 0.5)],
     p5F: var5,
-    p25F: fins[Math.floor(N * 0.25)],
-    p75F: fins[Math.floor(N * 0.75)],
-    p95F: fins[Math.floor(N * 0.95)],
+    p25F: fins[Math.floor(M * 0.25)],
+    p75F: fins[Math.floor(M * 0.75)],
+    p95F: fins[Math.floor(M * 0.95)],
     mean,
     sd,
     var5,
     cvar5,
-    rMedF: fins[Math.floor(N * 0.5)] / discFinal,
+    rMedF: fins[Math.floor(M * 0.5)] / discFinal,
     rP5F: var5 / discFinal,
-    rP25F: fins[Math.floor(N * 0.25)] / discFinal,
-    rP75F: fins[Math.floor(N * 0.75)] / discFinal,
-    rP95F: fins[Math.floor(N * 0.95)] / discFinal,
+    rP25F: fins[Math.floor(M * 0.25)] / discFinal,
+    rP75F: fins[Math.floor(M * 0.75)] / discFinal,
+    rP95F: fins[Math.floor(M * 0.95)] / discFinal,
     rMean: mean / discFinal,
     rSD: sd / discFinal,
     rVar5: var5 / discFinal,
@@ -7732,22 +7751,18 @@ function runMC(p, N, _progressCb) {
     rLiqP5: liqP5 / discFinal,
     hasRE: (p.props || []).some(function(pr){return pr.on;}),
     // Estate metrics
-    medEstateTax: estateTaxes.sort(function(a, b) {
-      return a - b;
-    })[Math.floor(N * 0.5)],
-    medEstateNet: estateNets.sort(function(a, b) {
-      return a - b;
-    })[Math.floor(N * 0.5)],
-    p5EstateNet: estateNets[Math.floor(N * 0.05)],
-    p10EstateNet: estateNets[Math.floor(N * 0.1)],
-    p25EstateNet: estateNets[Math.floor(N * 0.25)],
-    p75EstateNet: estateNets[Math.floor(N * 0.75)],
-    p90EstateNet: estateNets[Math.floor(N * 0.9)],
-    p95EstateNet: estateNets[Math.floor(N * 0.95)],
-    p5EstateTax: estateTaxes[Math.floor(N * 0.05)],
-    p25EstateTax: estateTaxes[Math.floor(N * 0.25)],
-    p75EstateTax: estateTaxes[Math.floor(N * 0.75)],
-    p95EstateTax: estateTaxes[Math.floor(N * 0.95)],
+    medEstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.5)]; })(),
+    medEstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.5)]; })(),
+    p5EstateNet:  (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.05)]; })(),
+    p10EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.1)]; })(),
+    p25EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.25)]; })(),
+    p75EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.75)]; })(),
+    p90EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.9)]; })(),
+    p95EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.95)]; })(),
+    p5EstateTax:  (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.05)]; })(),
+    p25EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.25)]; })(),
+    p75EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.75)]; })(),
+    p95EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.95)]; })(),
     avgEstateTax: estateTaxes.reduce(function(a, b) {
       return a + b;
     }, 0) / N
