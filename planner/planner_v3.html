@@ -5814,6 +5814,22 @@ function runMC(p, N, _progressCb) {
     var lira = p.liraBal || 0, cLira = p.cLiraBal || 0;
     var lifeIns = p.lifeInsBenefit || 0, lifeInsPrem = (p.lifeInsPremium || 0) * 12;
     var cLifeIns = p.cOn ? (p.cLifeInsBenefit || 0) : 0, cLifeInsPrem = p.cOn ? (p.cLifeInsPremium || 0) * 12 : 0;
+    // Detailed insurance (longform) — layered on top of the primary lifeIns
+    // entry. Four lines per person: life term (vie), disability (inv),
+    // critical illness (mg = maladies graves), group/collective (col).
+    // All premiums are monthly → ×12. Term life adds to the death benefit
+    // for the duration of insVieDur years; "perm"/"permanent" type runs
+    // indefinitely. Disability pays insInvCov $/month × disabMo on trigger.
+    // Critical illness pays insMGCov one-time on first trigger.
+    var insViePrem = (p.insViePrime || 0) * 12;
+    var insInvPrem = (p.insInvPrime || 0) * 12;
+    var insMGPrem  = (p.insMGPrime  || 0) * 12;
+    var insColPrem = (p.insColPrime || 0) * 12;
+    var cInsViePrem = p.cOn ? (p.cInsViePrime || 0) * 12 : 0;
+    var cInsInvPrem = p.cOn ? (p.cInsInvPrime || 0) * 12 : 0;
+    var cInsMGPrem  = p.cOn ? (p.cInsMGPrime  || 0) * 12 : 0;
+    var cInsColPrem = p.cOn ? (p.cInsColPrime || 0) * 12 : 0;
+    var _mgPaidOut = false, _cMgPaidOut = false; // critical illness — 1 payout per lifetime
     var nrACB = p.costBase || p.nr || 0; // Track adjusted cost base
     // TFSA room: cumulative limits - conservative net contrib estimate
     var _mcTfsaYrs = Math.max(0, Math.min(p.age - 17, 18));
@@ -6279,6 +6295,13 @@ function runMC(p, N, _progressCb) {
       }
       if (p.cOn && !cAlive && cAge2 > cSimDeath) {
           if (cLifeIns > 0) { nr += cLifeIns; cLifeIns = 0; }
+          // Spouse term/perm life insVie death benefit (if policy active at death)
+          if (p.cInsViePrime > 0 && (p.cInsVieCov || 0) > 0) {
+            var _cSimDeathYr = Math.max(0, cSimDeath - p.cAge);
+            if ((p.cInsVieType === "perm") || _cSimDeathYr < (p.cInsVieDur || 0)) {
+              nr += p.cInsVieCov;
+            }
+          }
         cInc += Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * C.QPP_SURVIVOR_FRACTION, C.QPP_SURVIVOR_CAP_MONTHLY) * 12 * infM;
       }
       var splitB = 0;
@@ -6394,9 +6417,43 @@ function runMC(p, N, _progressCb) {
             crr += cFhsa; cFhsa = 0;
           }
         }
-        // Life insurance premium deducted from NR
-        if (lifeInsPrem > 0 && nr >= lifeInsPrem) nr -= lifeInsPrem;
-        if (cLifeInsPrem > 0 && p.cOn && cAlive && cnr >= cLifeInsPrem) cnr -= cLifeInsPrem;
+        // Insurance premiums — all lines, monthly × 12, drained from NR.
+        // Term life (insVie) stops after insVieDur years from simulation start.
+        var _insVieActive = (p.insVieType === "perm") || (y < (p.insVieDur || 999));
+        var _cInsVieActive = (p.cInsVieType === "perm") || (y < (p.cInsVieDur || 999));
+        var _totPrim = lifeInsPrem
+          + (_insVieActive ? insViePrem : 0)
+          + (!retired ? insInvPrem : 0)  // disability coverage ceases at retirement
+          + insMGPrem + insColPrem;
+        if (_totPrim > 0 && nr >= _totPrim) nr -= _totPrim;
+        if (p.cOn && cAlive) {
+          var _cTotPrim = cLifeInsPrem
+            + (_cInsVieActive ? cInsViePrem : 0)
+            + (!cRetired ? cInsInvPrem : 0)
+            + cInsMGPrem + cInsColPrem;
+          if (_cTotPrim > 0 && cnr >= _cTotPrim) cnr -= _cTotPrim;
+        }
+        // Disability benefit: when the yearly disability event triggers
+        // pre-retirement, compensate lost salary via insInvCov $/month
+        // for the disabMo months of interruption (part of _salMul path).
+        // Engine already reduces sal via _salMul; we add the benefit to nr.
+        if (!retired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
+          nr += (p.insInvCov || 0) * (p.disabMo || 6);
+        }
+        if (p.cOn && cAlive && !cRetired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
+          cnr += (p.cInsInvCov || 0) * (p.disabMo || 6);
+        }
+        // Critical illness (maladies graves) — simplified trigger: ~1.5%/yr
+        // at age 55+, ~2.5%/yr at 70+. Pays insMGCov lump sum to NR once
+        // per lifetime when policy is in force.
+        var _mgProbAge = age >= 70 ? 0.025 : age >= 55 ? 0.015 : 0.005;
+        if (!_mgPaidOut && insMGPrem > 0 && (p.insMGCov || 0) > 0 && Math.random() < _mgProbAge) {
+          nr += p.insMGCov; _mgPaidOut = true;
+        }
+        if (p.cOn && cAlive && !_cMgPaidOut && cInsMGPrem > 0 && (p.cInsMGCov || 0) > 0) {
+          var _cMgProb = cAge2 >= 70 ? 0.025 : cAge2 >= 55 ? 0.015 : 0.005;
+          if (Math.random() < _cMgProb) { cnr += p.cInsMGCov; _cMgPaidOut = true; }
+        }
         // RESP: deduct annual contribution from NR (cash flow impact) \u00d7 number of kids
         if (p.respOn && y < (p.respYrsLeft || 0)) {
           var respAnnual = (p.respContrib || 0) * 12 * (p.respKids || 1);
@@ -7068,7 +7125,16 @@ function runMC(p, N, _progressCb) {
     else if (p.prov === "AB") probate = C.PROBATE.AB.flat;
     else if (p.prov === "QC") probate = C.PROBATE.QC.flat;
     else probate = Math.max(0, _estGross * 0.004);
-    var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0);
+    // Term/permanent life coverage layers (insVie). Term pays only if
+    // death occurs within insVieDur years of simulation start; permanent
+    // always pays. Additive to lifeIns/cLifeIns already carried forward.
+    var _pDeathYr = Math.max(0, simDeath - p.age);
+    var _insVieDeathBen = (p.insViePrime > 0 && (p.insVieCov || 0) > 0 &&
+      ((p.insVieType === "perm") || _pDeathYr < (p.insVieDur || 0))) ? (p.insVieCov || 0) : 0;
+    var _cDeathYr = p.cOn ? Math.max(0, (cSimDeath || p.cDeath || 0) - p.cAge) : 0;
+    var _cInsVieDeathBen = p.cOn && p.cInsViePrime > 0 && (p.cInsVieCov || 0) > 0 &&
+      ((p.cInsVieType === "perm") || _cDeathYr < (p.cInsVieDur || 0)) ? (p.cInsVieCov || 0) : 0;
+    var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0) + _insVieDeathBen + _cInsVieDeathBen;
     // GK per-sim stats
     gkAllCuts.push(gkCutCount); gkAllRaises.push(gkRaiseCount); gkAllCutYrs.push(gkCutYrs); gkAllMaxStreak.push(gkMaxCutStreak);
     gkAllMinFactor.push(gkMinFactor);
