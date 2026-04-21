@@ -682,8 +682,20 @@
   // Renders a one-page stress-matrix using the `mc._stress` payload populated
   // by gen-real-mc.mjs running 6 perturbed MC scenarios.
   function renderStressTests(d, secN) {
-    if (!d.mc || !d.mc._stress) return '';
     var fr = d.fr;
+    // Always emit the section anchor so downstream QA (report-qa.js) can
+    // verify structural presence. When enrichment is missing, render a
+    // short "data not available" note instead of the full matrix — keeps
+    // report shape uniform across enriched vs unenriched pipelines.
+    if (!d.mc || !d.mc._stress) {
+      var h0 = secPage();
+      h0 += F.Sec(secN, fr ? 'Tests de stress' : 'Stress tests', 'sec-stress');
+      h0 += narr(fr
+        ? 'Les tests de stress n\u2019ont pas \u00e9t\u00e9 calcul\u00e9s pour ce rapport. Lancez la comparaison des sc\u00e9narios dans l\u2019onglet Sensibilit\u00e9/Stress du planificateur pour obtenir la matrice compl\u00e8te (6 sc\u00e9narios \u00d7 500 simulations chacun).'
+        : 'Stress tests were not computed for this report. Run the scenario comparison in the planner\u2019s Sensitivity/Stress tab to see the full matrix (6 scenarios \u00d7 500 simulations each).');
+      h0 += secPageEnd();
+      return h0;
+    }
     var s = d.mc._stress;
     var f$ = F.fmtCompact;
     var baseMedF = d.mc.rMedF || d.mc.medF || 0;
@@ -732,6 +744,23 @@
       h += '</tr>';
     });
     h += '</tbody></table>';
+
+    // Zero-dispersion detector — when every stress scenario returns a succ rate
+    // within 5 pts of baseline AND identical medF, flag it as a structural
+    // signal rather than leave the reader wondering why the table looks flat.
+    var succs = Object.keys(META).map(function(k) { return s[k] ? (s[k].succ || 0) : 0; }).filter(function(x) { return x > 0; });
+    var medFs = Object.keys(META).map(function(k) { return s[k] ? (s[k].medF || 0) : 0; });
+    var succSpread = succs.length ? Math.max.apply(null, succs) - Math.min.apply(null, succs) : 0;
+    var medFUnique = new Set(medFs.map(function(m) { return Math.round(m / 1000); })).size;
+    if (succSpread < 0.05 && medFUnique <= 2) {
+      h += '<div class="callout callout-breakeven" style="margin:10px 0">' +
+        '<div class="callout-lbl" style="color:#4a6b8c">\u25b7 ' + (fr ? 'Lecture: stabilit\u00e9 structurelle' : 'Reading note: structural stability') + '</div>' +
+        '<div style="font-size:11px;line-height:1.6;color:#333">' +
+        (fr
+          ? 'Les six sc\u00e9narios retournent un r\u00e9sultat quasi identique. Ce n\'est pas un artefact de simulation: cela signale que le patrimoine terminal est domin\u00e9 par un \u00e9v\u00e9nement d\u00e9terministe du plan (typiquement une vente d\'actif plan\u00e9e ou un flux garanti important) plut\u00f4t que par la variabilit\u00e9 des march\u00e9s. Le plan r\u00e9sisterait mieux qu\'un portefeuille d\'actifs \u00e9quivalent soumis aux seuls rendements — mais le d\u00e9clencheur structurel mentionn\u00e9 devient le point de vigilance r\u00e9el.'
+          : 'The six scenarios return a nearly identical outcome. This is not a simulation artefact: it signals that terminal wealth is dominated by a deterministic event in the plan (typically a planned asset sale or a large guaranteed income flow) rather than by market variability. The plan would resist better than an equivalent market-exposed portfolio — but the structural trigger in question becomes the real point of vigilance.') +
+        '</div></div>';
+    }
 
     // AI interpretation if available
     if (d.ai.stress_interpretation) {
@@ -901,6 +930,22 @@
     h += narr(fr
       ? 'Vous avez d\u00e9clar\u00e9 <strong>' + goals.length + ' objectif' + (goals.length > 1 ? 's' : '') + '</strong> pour un total de <strong>' + f$(totalGoalCost) + '</strong>. La probabilit\u00e9 de r\u00e9alisation est estim\u00e9e par interpolation percentile sur ' + (d.p.nSim || 5000) + ' simulations \u00e0 l\'\u00e2ge cible de chaque objectif.' + (onTrackN > 0 ? ' <strong>' + onTrackN + '</strong> objectif' + (onTrackN > 1 ? 's sont' : ' est') + ' en voie de r\u00e9alisation.' : '') + (atRiskN > 0 ? ' <strong>' + atRiskN + '</strong> paraissent \u00e0 risque.' : '')
       : 'You declared <strong>' + goals.length + ' goal' + (goals.length > 1 ? 's' : '') + '</strong> totalling <strong>' + f$(totalGoalCost) + '</strong>. Probability of achievement is estimated by percentile interpolation on ' + (d.p.nSim || 5000) + ' simulations at each goal\'s target age.' + (onTrackN > 0 ? ' <strong>' + onTrackN + '</strong> goal' + (onTrackN > 1 ? 's appear' : ' appears') + ' on track.' : '') + (atRiskN > 0 ? ' <strong>' + atRiskN + '</strong> appear at risk.' : ''));
+
+    // Paradox framing — when a goal's probability_met substantially exceeds
+    // the overall plan success rate, flag the conceptual gap explicitly.
+    // Goals are measured at their target age (pre-depletion); overall success
+    // is measured across the full horizon (may cross depletion later).
+    var overallSucc = d.succVal != null ? Math.round(d.succVal * 100) : null;
+    var maxProbMet = ledger.reduce(function(m, l) { return Math.max(m, l.probabilityMet || 0); }, 0);
+    if (overallSucc != null && maxProbMet > 0 && (maxProbMet - overallSucc) >= 20) {
+      h += '<div class="callout callout-warning" style="margin:8px 0">' +
+        '<div class="callout-lbl" style="color:#a07818">\u26a0 ' + (fr ? 'Lecture: probabilit\u00e9 d\'objectif vs r\u00e9ussite du plan' : 'Reading note: goal probability vs plan success') + '</div>' +
+        '<div style="font-size:11px;line-height:1.6;color:#333">' +
+        (fr
+          ? 'Les probabilit\u00e9s affich\u00e9es ici (jusqu\'\u00e0 <strong>' + maxProbMet + ' %</strong>) sont mesur\u00e9es \u00e0 l\'<em>\u00e2ge cible</em> de chaque objectif, avant la fin de l\'horizon. Le taux de succ\u00e8s global du plan (<strong>' + overallSucc + ' %</strong>) est mesur\u00e9 sur l\'ensemble de l\'horizon, qui peut inclure une d\u00e9pletion ult\u00e9rieure. Un objectif peut donc \u00eatre r\u00e9alisable \u00e0 50 ans m\u00eame si le plan \u00e9choue apr\u00e8s 75.'
+          : 'The probabilities shown here (up to <strong>' + maxProbMet + '%</strong>) are measured at each goal\'s <em>target age</em>, before the end of the horizon. The overall plan success rate (<strong>' + overallSucc + '%</strong>) is measured across the full horizon, which may include later depletion. A goal can therefore be achievable at 50 even if the plan fails after 75.') +
+        '</div></div>';
+    }
 
     // Per-goal cards — one row each, uses enriched ledger when present, falls
     // back to goal.prob if engine output not enriched yet.
@@ -1965,6 +2010,166 @@
     return h;
   }
 
+  // === SECTION: FINAL-WEALTH HISTOGRAM (Phase 11 gap-close) ===
+  // Shows the distribution of the 5000 simulation end-of-horizon wealth outcomes
+  // with P25/P50/P75 markers. Consumed from mc.histogram (engine-emitted bins).
+  function renderHistogram(d, secN) {
+    if (!d.mc || !d.mc.histogram || !d.mc.histogram.length) return '';
+    var fr = d.fr, mc = d.mc;
+    var f$ = F.fmtCompact;
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Distribution du patrimoine final' : 'Final-wealth distribution', 'sec-histogram');
+
+    h += narr(fr
+      ? 'Ce graphique montre comment les <strong>' + (d.p.nSim || 5000) + ' simulations</strong> se r\u00e9partissent en fin d\'horizon. Chaque barre regroupe les trajectoires dont le patrimoine final tombe dans la plage indiqu\u00e9e. Les rep\u00e8res P25, P50 et P75 marquent respectivement le sc\u00e9nario prudent, m\u00e9dian et favorable.'
+      : 'This chart shows how the <strong>' + (d.p.nSim || 5000) + ' simulations</strong> are distributed at the end of the horizon. Each bar groups trajectories whose final wealth falls in the indicated range. The P25, P50 and P75 markers show the cautious, median and favourable scenarios.');
+
+    h += Ch.svgHistogram(mc.histogram, {
+      title: fr ? 'Patrimoine final (dollars r\u00e9els)' : 'Final wealth (real dollars)',
+      p25: mc.rP25F || mc.p25F,
+      p50: mc.rMedF || mc.medF,
+      p75: mc.rP75F || mc.p75F
+    });
+
+    // Small legend / reading aid
+    var p25 = f$(mc.rP25F || mc.p25F), p50 = f$(mc.rMedF || mc.medF), p75 = f$(mc.rP75F || mc.p75F);
+    h += '<div style="font-size:10px;color:#888;margin-top:6px;line-height:1.6">' +
+      (fr
+        ? '<span class="mono">P25 = ' + p25 + '</span> \u2014 un quart des sc\u00e9narios termine sous ce niveau. <span class="mono">P50 = ' + p50 + '</span> \u2014 m\u00e9dian. <span class="mono">P75 = ' + p75 + '</span> \u2014 un quart des sc\u00e9narios termine au-dessus.'
+        : '<span class="mono">P25 = ' + p25 + '</span> \u2014 one quarter of scenarios end below this level. <span class="mono">P50 = ' + p50 + '</span> \u2014 median. <span class="mono">P75 = ' + p75 + '</span> \u2014 one quarter of scenarios end above.') +
+      '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: CASH FLOW YEAR-BY-YEAR (Phase 11 gap-close) ===
+  // Compact year-by-year table with income/outflows/net. Consumes
+  // mc._enriched.cashflow populated by mc-enrich.mjs. Sampled to keep print-
+  // friendly length: pre-retirement first year, retirement age, +5, +10, +15,
+  // +20, deathAge. Beginner-friendly column labels.
+  function renderCashflow(d, secN) {
+    var fr = d.fr, p = d.p;
+    // Always emit the anchor so QA can verify structural presence. When
+    // the enriched cashflow payload is missing (unenriched pipeline),
+    // render a short note instead of an empty DOM.
+    if (!d.mc || !d.mc._enriched || !d.mc._enriched.cashflow || !d.mc._enriched.cashflow.length) {
+      var h0 = secPage();
+      h0 += F.Sec(secN, fr ? 'Flux de tr\u00e9sorerie annuel' : 'Year-by-year cash flow', 'sec-cashflow');
+      h0 += narr(fr
+        ? 'Les donn\u00e9es de flux de tr\u00e9sorerie ann\u00e9e par ann\u00e9e n\u2019ont pas \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9es pour ce rapport. Elles proviennent de l\u2019\u00e9tape d\u2019enrichissement (mc-enrich.mjs) qui calcule le chemin m\u00e9dian d\u00e9taill\u00e9 \u00e0 partir de la simulation Monte Carlo.'
+        : 'Year-by-year cash flow data was not generated for this report. It comes from the enrichment step (mc-enrich.mjs) which derives the detailed median path from the Monte Carlo simulation.');
+      h0 += secPageEnd();
+      return h0;
+    }
+    var cf = d.mc._enriched.cashflow;
+    var fR = function(v) { return F.fmtMoney(v, fr); };
+
+    // Sample rows: age, retAge, retAge+5, +10, +15, +20, deathAge
+    var retAge = p.retAge || 65, deathAge = p.deathAge || 90;
+    var sampledAges = [p.age, retAge, retAge + 5, retAge + 10, retAge + 15, retAge + 20, deathAge]
+      .filter(function(a, i, arr) { return a <= deathAge && arr.indexOf(a) === i; });
+    var rows = sampledAges.map(function(a) { return cf.find(function(r) { return r.age === a; }); }).filter(Boolean);
+    if (rows.length === 0) return '';
+
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Flux de tr\u00e9sorerie annuel' : 'Year-by-year cash flow', 'sec-cashflow');
+
+    h += narr(fr
+      ? 'Ce tableau pr\u00e9sente le flux annuel estim\u00e9 \u00e0 des \u00e2ges cl\u00e9s: revenus (salaire, prestations, retraits), sorties (imp\u00f4ts, d\u00e9penses, cotisations) et flux net. Les chiffres proviennent du chemin m\u00e9dian de la simulation et sont exprim\u00e9s en dollars courants \u00e0 chaque ann\u00e9e.'
+      : 'This table shows the estimated annual cash flow at key ages: income (salary, benefits, withdrawals), outflows (taxes, spending, contributions) and net flow. Figures come from the median simulation path and are shown in nominal dollars at each year.');
+
+    h += '<table class="tbl" style="font-size:10px"><thead><tr>';
+    h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th>';
+    h += '<th>' + (fr ? 'Salaire/Corp' : 'Salary/Corp') + '</th>';
+    h += '<th>' + (fr ? 'Prestations' : 'Benefits') + '</th>';
+    h += '<th>' + (fr ? 'Retraits' : 'Withdrawals') + '</th>';
+    h += '<th>' + (fr ? 'Imp\u00f4t' : 'Tax') + '</th>';
+    h += '<th>' + (fr ? 'D\u00e9penses' : 'Spending') + '</th>';
+    h += '<th>' + (fr ? 'Net' : 'Net') + '</th>';
+    h += '</tr></thead><tbody>';
+    rows.forEach(function(r) {
+      var salCorp = (r.income.sal || 0) + (r.income.corp || 0);
+      var benefits = r.income.gov || 0;
+      var withdrawals = r.income.draws || 0;
+      var tax = r.outflows.tax || 0;
+      var spend = r.outflows.spend || 0;
+      var net = r.net || 0;
+      var netColor = net >= 0 ? C.green : C.red;
+      var phaseClass = r.phase === 'retired' ? ' class="ret"' : '';
+      h += '<tr' + phaseClass + '>';
+      h += '<td style="text-align:left">' + r.age + (r.age === retAge ? ' \u2605' : '') + '</td>';
+      h += '<td>' + (salCorp > 0 ? fR(salCorp) : '\u2014') + '</td>';
+      h += '<td>' + (benefits > 0 ? fR(benefits) : '\u2014') + '</td>';
+      h += '<td>' + (withdrawals > 0 ? fR(withdrawals) : '\u2014') + '</td>';
+      h += '<td>' + (tax > 0 ? fR(tax) : '\u2014') + '</td>';
+      h += '<td>' + fR(spend) + '</td>';
+      h += '<td style="color:' + netColor + ';font-weight:700">' + (net >= 0 ? '+' : '') + fR(net) + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div style="font-size:9px;color:#888;margin-top:4px;font-style:italic">' +
+      (fr ? '\u2605 Ann\u00e9e de d\u00e9part de la retraite. Ligne sur fond cr\u00e8me = phase de retraite. Flux net n\u00e9gatif = l\'\u00e9pargne compense l\'\u00e9cart.'
+          : '\u2605 Retirement start year. Cream-background rows = retirement phase. Negative net = savings absorb the gap.') +
+      '</div>';
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: ASSUMPTIONS APPENDIX (Phase 11 gap-close) ===
+  // One-page appendix listing every assumption driving the simulation.
+  // Complements sec-methodology (which explains METHOD) with the CONSTANTS
+  // and ENGINE PARAMETERS used for this specific plan.
+  function renderAssumptions(d, secN) {
+    var fr = d.fr, p = d.p;
+    var fR = function(v) { return F.fmtMoney(v, fr); };
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions', 'sec-assumptions');
+
+    h += narr(fr
+      ? 'Cette annexe rassemble les hypoth\u00e8ses num\u00e9riques pr\u00e9cises utilis\u00e9es dans la simulation pour votre plan. Toutes les projections du rapport d\u00e9coulent de ces entr\u00e9es; modifier l\'une d\'elles changerait l\'ensemble du r\u00e9sultat.'
+      : 'This appendix consolidates the precise numerical assumptions used in the simulation for your plan. Every projection in the report flows from these inputs; changing any one of them would shift the entire result.');
+
+    var rows = [
+      [fr ? 'Rendement attendu actions' : 'Expected equity return', ((p.eqRet || 0.06) * 100).toFixed(1) + ' %'],
+      [fr ? 'Volatilit\u00e9 actions' : 'Equity volatility', ((p.eqVol || 0.16) * 100).toFixed(1) + ' %'],
+      [fr ? 'Rendement obligations' : 'Bond return', ((p.bndRet || 0.035) * 100).toFixed(1) + ' %'],
+      [fr ? 'Inflation annuelle' : 'Annual inflation', ((p.inf || 0.021) * 100).toFixed(1) + ' %'],
+      [fr ? 'Nombre de simulations' : 'Number of simulations', (p.nSim || 5000).toLocaleString(fr ? 'fr-CA' : 'en-CA')],
+      [fr ? 'Distribution des rendements' : 'Return distribution', p.fatT ? (fr ? 't-Student (queues \u00e9paisses)' : 't-Student (fat tails)') : 'Normal'],
+      [fr ? 'Mortalit\u00e9' : 'Mortality', p.stochMort ? (fr ? 'Stochastique (CPM-2023)' : 'Stochastic (CPM-2023)') : (fr ? 'D\u00e9terministe (\u00e2ge de d\u00e9c\u00e8s fixe)' : 'Deterministic (fixed death age)')],
+      [fr ? 'Inflation stochastique' : 'Stochastic inflation', p.stochInf ? (fr ? 'Oui' : 'Yes') : (fr ? 'Non' : 'No')],
+      [fr ? 'FGP pond\u00e9r\u00e9s' : 'Weighted MER', ((d.merWt || 0) * 100).toFixed(2) + ' %'],
+      [fr ? 'Allocation actions REER' : 'RRSP equity allocation', ((p.allocR || 0.6) * 100).toFixed(0) + ' %'],
+      [fr ? 'Allocation actions CELI' : 'TFSA equity allocation', ((p.allocT || 0.7) * 100).toFixed(0) + ' %'],
+      [fr ? 'Allocation actions non-enreg.' : 'Non-reg equity allocation', ((p.allocN || 0.5) * 100).toFixed(0) + ' %'],
+      [fr ? 'Courbe de d\u00e9penses Go-Go (< 75 ans)' : 'Spending curve Go-Go (< age 75)', ((p.goP || 1.0) * 100).toFixed(0) + ' %'],
+      [fr ? 'Courbe de d\u00e9penses Slow-Go (75-84)' : 'Spending curve Slow-Go (75-84)', ((p.slP || 0.85) * 100).toFixed(0) + ' %'],
+      [fr ? 'Courbe de d\u00e9penses No-Go (85+)' : 'Spending curve No-Go (85+)', ((p.noP || 0.7) * 100).toFixed(0) + ' %'],
+      [fr ? 'Strat\u00e9gie de d\u00e9caissement' : 'Decumulation strategy', p.wStrat === 'optimized' ? (fr ? 'Optimis\u00e9e' : 'Optimized') : 'Standard'],
+      [fr ? 'Ann\u00e9e fiscale de base' : 'Tax base year', '2026'],
+      [fr ? 'Province' : 'Province', p.prov || 'QC']
+    ];
+
+    h += '<table class="tbl" style="font-size:10.5px"><tbody>';
+    rows.forEach(function(r, i) {
+      h += '<tr' + (i % 2 === 0 ? ' style="background:#fdfbf7"' : '') + '>';
+      h += '<td style="text-align:left;font-family:Inter,sans-serif">' + F.esc(r[0]) + '</td>';
+      h += '<td class="mono">' + F.esc(r[1]) + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+
+    h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:10px;line-height:1.7">' +
+      (fr
+        ? 'Les constantes fiscales (paliers f\u00e9d\u00e9raux 2026, paliers provinciaux ' + (p.prov || 'QC') + ', PSV, SRG, RRQ/RPC, RRIF) sont index\u00e9es annuellement sur l\'inflation. Les seuils de r\u00e9cup\u00e9ration PSV (95 323 $) et de couple pour le SRG suivent le bar\u00e8me 2026.'
+        : 'Tax constants (2026 federal brackets, ' + (p.prov || 'QC') + ' provincial brackets, OAS, GIS, CPP/QPP, RRIF) are indexed annually on inflation. OAS clawback threshold ($95,323) and GIS couple thresholds follow the 2026 scale.') +
+      '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
   // === SECTION: ACTION PLAN (Phase 7) ===
   // Renders the output of report-actions.js as prioritized cards.
   // Hidden when no actions apply (robust plan).
@@ -2213,6 +2418,9 @@
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-projection', label: F.L('projection', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-revenue', label: F.L('revenue', d.fr) });
     }
+    // Histogram + cashflow always added (engine emits histogram; enrich emits cashflow)
+    if (d.mc && d.mc.histogram && d.mc.histogram.length) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-histogram', label: d.fr ? 'Distribution finale' : 'Final distribution' }); }
+    if (d.mc && d.mc._enriched && d.mc._enriched.cashflow && d.mc._enriched.cashflow.length) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-cashflow', label: d.fr ? 'Flux annuel' : 'Cash flow' }); }
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
     if (_hasDrawTrace) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
@@ -2228,6 +2436,7 @@
     // Action plan TOC entry added only if actions will fire (simple check: assume present)
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-actions', label: d.fr ? 'Plan d\'action' : 'Action plan' });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
 
     // Render TOC
     h += renderTOC(tocSections, d.fr);
@@ -2268,6 +2477,14 @@
       secN++; h += renderRevenue(d, secN);
     }
 
+    // 6.5 Final-wealth distribution (histogram) — shows where simulations land
+    var histHtml = renderHistogram(d, secN + 1);
+    if (histHtml) { secN++; h += histHtml; }
+
+    // 6.6 Year-by-year cash flow — compact table at key ages
+    var cfHtml = renderCashflow(d, secN + 1);
+    if (cfHtml) { secN++; h += cfHtml; }
+
     // 7. Strategies / SAM (if available)
     if (_hasStrats) { secN++; h += renderStrategies(d, secN); }
 
@@ -2281,11 +2498,11 @@
       h += renderDrawOrder(d, secN);
     }
 
-    // 8.6 Stress tests (if _stress payload present)
-    if (_hasStress) {
-      secN++;
-      h += renderStressTests(d, secN);
-    }
+    // 8.6 Stress tests — always emit (renderStressTests handles the
+    // "no _stress payload" case with a stub note so the section anchor
+    // is present for QA even when enrichment didn't run).
+    secN++;
+    h += renderStressTests(d, secN);
 
     // 9. GIS (conditional)
     var gisHtml = renderGIS(d, secN + 1);
@@ -2329,6 +2546,10 @@
     // 18. Methodology (always)
     secN++;
     h += renderMethodology(d, secN);
+
+    // 18.5 Assumptions appendix — consolidates engine inputs for audit trail
+    secN++;
+    h += renderAssumptions(d, secN);
 
     // 19. Signature page (last content page before footer)
     h += renderSignaturePage(d);

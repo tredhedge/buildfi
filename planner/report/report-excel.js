@@ -661,7 +661,10 @@
     //   - Gov income: calcQPP(cQppAge, cAvgE, cQppYrs) + calcOAS(cOasAge, ...)
     if (cOn) {
       var wsSp = wb.addWorksheet(fr ? "Conjoint(e)" : "Spouse");
-      setColWidths(wsSp, [3, 12, 8, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14]);
+      // Col 2 (label) widened from 12 → 30 so "Horizon de vie conjoint(e)",
+      // "D\u00e9penses perso. mensuelles" etc. don't truncate. Col 5-6 also
+      // widened for projection values + sync-status notes.
+      setColWidths(wsSp, [3, 30, 14, 18, 18, 18, 26, 14, 14, 14, 14, 14, 14, 14]);
       printSetup(wsSp);
       var _cFull = (p.cSpouseName || "").toString().trim();
       addTabBanner(wsSp,
@@ -788,7 +791,9 @@
     // Mirrors the HTML report's diagnostic section but derived here from
     // the same raw signals so numbers match.
     var wsDiag = wb.addWorksheet(fr ? "Diagnostic" : "Diagnostic");
-    setColWidths(wsDiag, [3, 6, 40, 6, 40, 6, 40, 14, 14, 14, 14, 14, 14, 14]);
+    // Diagnostic bullets wrap at col width; 40 truncated longer lines.
+    // Bumped to 48 so typical 120-char bullets fit in 2 lines at 11pt.
+    setColWidths(wsDiag, [3, 6, 48, 6, 48, 6, 48, 14, 14, 14, 14, 14, 14, 14]);
     printSetup(wsDiag);
     addTabBanner(wsDiag,
       fr ? "Diagnostic du plan" : "Plan Diagnostic",
@@ -985,7 +990,9 @@
     // SHEET 3: PROJECTION DÉTERMINISTE
     // ────────────────────────────────────────────────────────────
     var wsProj = wb.addWorksheet(fr ? "Projection d\u00e9terministe" : "Deterministic Projection");
-    setColWidths(wsProj, [3, 10, 8, 16, 16, 16, 16, 16, 16, 16, 16, 16, 14]);
+    // Projection: widened money cells to 17 (values reach 9M+ in growth
+    // scenarios). Phase col (last) widened for "Pr\u00e9-retraite" label.
+    setColWidths(wsProj, [3, 10, 8, 17, 17, 17, 17, 17, 17, 17, 17, 17, 18]);
     printSetup(wsProj);
     addTabBanner(wsProj,
       fr ? "Projection d\u00e9terministe \u2014 chemin unique" : "Deterministic projection \u2014 single path",
@@ -1024,7 +1031,9 @@
     // SHEET 4: FLUX DE TRÉSORERIE
     // ────────────────────────────────────────────────────────────
     var wsCF = wb.addWorksheet(fr ? "Flux de tr\u00e9sorerie" : "Cash Flow");
-    setColWidths(wsCF, [3, 10, 8, 14, 12, 12, 12, 12, 14, 14, 12, 10, 14]);
+    // Cash flow money cells were 12 wide — truncated 6-digit+ values with
+    // thousands separator. Bumped to 15 minimum for all dollar columns.
+    setColWidths(wsCF, [3, 10, 8, 16, 15, 15, 15, 15, 16, 16, 15, 12, 16]);
     printSetup(wsCF);
     addTabBanner(wsCF,
       fr ? "Flux de tr\u00e9sorerie annuel" : "Annual cash flow",
@@ -1171,7 +1180,9 @@
     // SHEET 6: RETRAITS DÉTAILLÉS (phase-structured)
     // ────────────────────────────────────────────────────────────
     var wsWD = wb.addWorksheet(fr ? "Retraits d\u00e9taill\u00e9s" : "Detailed Withdrawals");
-    setColWidths(wsWD, [3, 16, 8, 14, 14, 14, 14, 14, 16, 22, 14, 14, 14, 14]);
+    // Withdrawals: col 2 = 18 for phase header labels, money cols to 16
+    // (phase subtotals reach 8-digit in late-life scenarios).
+    setColWidths(wsWD, [3, 18, 8, 16, 16, 16, 16, 16, 16, 28, 14, 14, 14, 14]);
     printSetup(wsWD);
     addTabBanner(wsWD,
       fr ? "D\u00e9tail des retraits par source et par phase" : "Withdrawal detail by source and phase",
@@ -1630,7 +1641,9 @@
     var debts = p.debts || [];
     var activeDebts = debts.filter(function (d) { return toNum(d.bal) > 0; });
     var wsD = wb.addWorksheet(fr ? "Dettes" : "Debts");
-    setColWidths(wsD, [3, 22, 16, 14, 14, 14, 14, 14, 32, 14, 14, 14, 14, 14]);
+    // Debts: col 2 (name), col 3 (type) widened; money cols bumped;
+    // col 9 (notes on schedule) lifted to 18.
+    setColWidths(wsD, [3, 26, 18, 15, 12, 15, 20, 16, 18, 14, 14, 14, 14, 14]);
     printSetup(wsD);
     addTabBanner(wsD,
       fr ? "Dettes et \u00e9ch\u00e9ancier" : "Debts and Payoff Schedule",
@@ -1750,7 +1763,10 @@
     // one-time insMGCov lump sum. This sheet surfaces the full picture
     // that was previously invisible to users.
     var wsIns = wb.addWorksheet(fr ? "Assurance" : "Insurance");
-    setColWidths(wsIns, [3, 22, 16, 16, 16, 14, 14, 32, 14, 14, 14, 14, 14, 14]);
+    // Insurance: col 2 widened to 26 ("Vie \u2014 d\u00e9taill\u00e9e" / "Maladies
+    // graves"), col 7 (policy details) to 22 for "Temporaire 20 ans", col 8
+    // (notes) to 38 for the longer explanatory text.
+    setColWidths(wsIns, [3, 26, 16, 16, 16, 14, 22, 38, 14, 14, 14, 14, 14, 14]);
     printSetup(wsIns);
     addTabBanner(wsIns,
       fr ? "Protection d'assurance" : "Insurance Protection",
@@ -1976,7 +1992,9 @@
     // SHEET 11: ENTREPRISE (CCPC)
     // ────────────────────────────────────────────────────────────
     var wsB = wb.addWorksheet(fr ? "Entreprise (CCPC)" : "Business (CCPC)");
-    setColWidths(wsB, [3, 10, 8, 16, 14, 14, 14, 14, 12, 12, 14, 12, 14]);
+    // Business: col 2 was 10 → can't hold "TOTAL phase" / "Actif" labels.
+    // Money cols bumped to 15 for 7-digit corpBal values in long horizons.
+    setColWidths(wsB, [3, 18, 8, 16, 15, 15, 15, 15, 14, 14, 15, 14, 16]);
     printSetup(wsB);
     if (bizOn && p.bizType === "sole") {
       // Sole proprietor (travailleur autonome). Engine added the T2125 branch
