@@ -567,8 +567,47 @@
       set(wsS, wsS.getCell(28, 2), samResults[0].explain || "");
       wsS.getCell(28, 2).font = BODY_FONT;
     }
+    // ── Quick-nav hyperlinks to detail tabs ──
+    // Sommaire is the reader's entry point. Giving it clickable links
+    // straight to each detail sheet saves a manual tab click every time
+    // a KPI raises a question ("succ 78% — why? → click Projection").
+    var navAnchor = samResults.length > 0 ? 30 : 25;
+    addTitle(wsS, navAnchor, 2, fr ? "NAVIGATION RAPIDE" : "QUICK NAVIGATION", "", 13);
+    var navLinks = [
+      [fr ? "\u2192 Profil du client" : "\u2192 Client profile", (fr ? "Profil" : "Profile")],
+      [fr ? "\u2192 Projection d\u00e9terministe" : "\u2192 Deterministic projection", (fr ? "Projection d\u00e9terministe" : "Deterministic Projection")],
+      [fr ? "\u2192 Flux de tr\u00e9sorerie" : "\u2192 Cash flow", (fr ? "Flux de tr\u00e9sorerie" : "Cash Flow")],
+      [fr ? "\u2192 MC \u2014 Patrimoine" : "\u2192 MC \u2014 Wealth", (fr ? "MC \u2014 Patrimoine" : "MC \u2014 Wealth")],
+      [fr ? "\u2192 Fiscalit\u00e9" : "\u2192 Tax", (fr ? "Fiscalit\u00e9" : "Tax")],
+      [fr ? "\u2192 Succession" : "\u2192 Estate", (fr ? "Succession" : "Estate")],
+      [fr ? "\u2192 Diagnostic" : "\u2192 Diagnostic", "Diagnostic"],
+      [fr ? "\u2192 M\u00e9thodologie" : "\u2192 Methodology", (fr ? "M\u00e9thodologie" : "Methodology")]
+    ];
+    navLinks.forEach(function (nav, i) {
+      var col = 2 + (i % 4) * 3;  // 4 per row across cols 2, 5, 8, 11
+      var row = navAnchor + 2 + Math.floor(i / 4);
+      var cell = wsS.getCell(row, col);
+      // ExcelJS hyperlink cell: { text, hyperlink }. Internal ref uses
+      // "SheetName!A1" shape; ExcelJS serializes that as a location link.
+      cell.value = { text: nav[0], hyperlink: "#'" + nav[1].replace(/'/g, "''") + "'!A1" };
+      cell.font = { name: "Calibri", size: 11, color: { argb: CL.gold }, underline: true };
+      cell.alignment = { horizontal: "left", vertical: "middle" };
+      wsS.mergeCells(row, col, row, col + 2);
+    });
     wsS.views = [{ state: "frozen", ySplit: 5 }];
-    footer(wsS, 31);
+    footer(wsS, navAnchor + 5);
+
+    // ── Named ranges for top KPIs ──
+    // Let users write formulas like =SuccessRate*100 in their own tabs.
+    // Named ranges are workbook-scoped; refer to Sommaire cells directly.
+    try {
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$D$8", "SuccessRate");
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$F$8", "MedianWealth");
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$H$8", "GuaranteedIncomeMonthly");
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$J$8", "CoverageRatio");
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$L$8", "TaxAlpha");
+      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$F$10", "ResilienceScore");
+    } catch (_) { /* older ExcelJS may not support definedNames.add */ }
 
     // ────────────────────────────────────────────────────────────
     // SHEET 2: PROFIL
@@ -1127,7 +1166,19 @@
     });
     styleTable(wsMC, { hr: 5, fr: 6, to: Math.max(6, 5 + mcN), fc: 2, lc: 11 });
 
-    // ── Terminal-wealth histogram (mc.histogram) ─────────────────
+    // Conditional formatting on the P50-Det delta column (col J) and the
+    // Range P5-P95 (col K): red-to-green gradient so the user eyeballs
+    // where simulations diverge most from the deterministic path.
+    try {
+      wsMC.addConditionalFormatting({
+        ref: 'J6:J' + (5 + mcN),
+        rules: [{
+          type: 'colorScale', priority: 1,
+          cfvo: [{ type: 'min' }, { type: 'num', value: 0 }, { type: 'max' }],
+          color: [{ argb: 'FFE06666' }, { argb: 'FFFFFFFF' }, { argb: 'FF6AA84F' }]
+        }]
+      });
+    } catch (_) { /* older ExcelJS: CF API may differ */ }
     // Engine emits histogram as [{lo, hi, count}]. Previously unused by
     // the Excel export even though it's the most intuitive view of
     // plan-wide uncertainty. Surface it as a data table — users can
@@ -1458,6 +1509,20 @@
       _writeStressRow(21 + i, s.name || s.key || "", s.period || "\u2014", s.succ, deltaPts, s.medF || 0, s.var5 || 0, s.medRuin, res, s.desc || "");
     });
     styleTable(wsSS, { hr: 19, fr: 20, to: Math.max(20, 20 + st.length), fc: 2, lc: 10 });
+    // CF on stress delta column (col E, row 21..21+st.length): red when
+    // success drops, green when improves vs baseline.
+    if (st.length > 0) {
+      try {
+        wsSS.addConditionalFormatting({
+          ref: 'E21:E' + (20 + st.length),
+          rules: [{
+            type: 'colorScale', priority: 1,
+            cfvo: [{ type: 'min' }, { type: 'num', value: 0 }, { type: 'max' }],
+            color: [{ argb: 'FFE06666' }, { argb: 'FFFFFFFF' }, { argb: 'FF6AA84F' }]
+          }]
+        });
+      } catch (_) {}
+    }
 
     // ── Year-by-year stress trajectory (worst scenario) ──────────
     // P2.3 — stressResults[] carries aggregate metrics only (succ, medF,
