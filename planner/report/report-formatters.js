@@ -128,7 +128,7 @@
     red:      "#cc4444",
     amber:    "#b89830",
     blue:     "#4680c0",
-    purple:   "#7c60b8",
+    purple:   "#4a4858",
     teal:     "#2aa198",
     text:     "#1a1a1a",
     muted:    "#888",

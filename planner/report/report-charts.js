@@ -103,7 +103,7 @@
     }
 
     // Axis title
-    if (opts.yLabel) svg += '<text x="12" y="' + (mt + h2/2) + '" fill="#aaa" font-size="9" text-anchor="middle" font-family="DM Sans,sans-serif" transform="rotate(-90,12,' + (mt + h2/2) + ')">' + opts.yLabel + '</text>';
+    if (opts.yLabel) svg += '<text x="12" y="' + (mt + h2/2) + '" fill="#aaa" font-size="9" text-anchor="middle" font-family="Inter,sans-serif" transform="rotate(-90,12,' + (mt + h2/2) + ')">' + opts.yLabel + '</text>';
 
     svg += '</svg>';
 
@@ -207,7 +207,7 @@
     }
 
     // Axis title
-    if (opts.yLabel) svg += '<text x="12" y="' + (mt + h2/2) + '" fill="#aaa" font-size="9" text-anchor="middle" font-family="DM Sans,sans-serif" transform="rotate(-90,12,' + (mt + h2/2) + ')">' + opts.yLabel + '</text>';
+    if (opts.yLabel) svg += '<text x="12" y="' + (mt + h2/2) + '" fill="#aaa" font-size="9" text-anchor="middle" font-family="Inter,sans-serif" transform="rotate(-90,12,' + (mt + h2/2) + ')">' + opts.yLabel + '</text>';
 
     svg += '</svg>';
 
@@ -245,7 +245,7 @@
       var yPos = 25 + i * 30;
       var xLo = _tScale(s.lo);
       var xHi = _tScale(s.hi);
-      html += '<text x="10" y="' + (yPos + 5) + '" font-size="10" fill="#555" font-family="DM Sans,sans-serif">' + s.label + '</text>';
+      html += '<text x="10" y="' + (yPos + 5) + '" font-size="10" fill="#555" font-family="Inter,sans-serif">' + s.label + '</text>';
       if (s.lo < 0) html += '<rect x="' + Math.min(250, xLo) + '" y="' + (yPos - 8) + '" width="' + Math.abs(250 - xLo) + '" height="16" fill="' + C.red + '" rx="2" opacity=".7"/>';
       if (s.hi > 0) html += '<rect x="250" y="' + (yPos - 8) + '" width="' + Math.abs(xHi - 250) + '" height="16" fill="' + C.green + '" rx="2" opacity=".7"/>';
       html += '<text x="' + (xLo - 4) + '" y="' + (yPos + 4) + '" font-size="8" fill="' + C.red + '" text-anchor="end" font-family="JetBrains Mono,monospace">' + (s.lo < 0 ? f$(Math.round(s.lo)) : '') + '</text>';

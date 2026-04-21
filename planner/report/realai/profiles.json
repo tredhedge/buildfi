@@ -1,0 +1,170 @@
+{
+  "_schema": "BuildFi realai profile spec v1 — single source consumed by gen-real-mc.mjs AND build-realai-reports.js",
+  "_fields": {
+    "id":            "string — profile key, used in output filenames",
+    "lang":          "'fr' | 'en' — narration language",
+    "mode":          "'standard' | 'expert' — report mode, affects sections shown",
+    "nSim":          "integer — Monte Carlo simulation count (gen-real-mc.mjs)",
+    "finLiteracy":   "'beginner' | 'intermediate' | 'advanced' — AI calibration",
+    "stressLevel":   "'low' | 'moderate' | 'high' — AI tone",
+    "detailPref":    "'concise' | 'balanced' | 'detailed' — AI verbosity",
+    "client":        "object — name, firstName, spouseFirstName, email (for personalization)",
+    "params":        "object — ALL engine inputs (consumed by runMC); must be complete"
+  },
+  "profiles": [
+    {
+      "id": "hnw_couple",
+      "lang": "fr",
+      "mode": "expert",
+      "nSim": 2000,
+      "finLiteracy": "advanced",
+      "stressLevel": "low",
+      "detailPref": "detailed",
+      "client": {
+        "name": "Francois Dubois",
+        "firstName": "Francois",
+        "spouseFirstName": "Isabelle",
+        "email": "francois@example.com"
+      },
+      "params": {
+        "age": 58, "retAge": 63, "deathAge": 92, "sex": "M", "prov": "QC",
+        "sal": 165000, "rrsp": 820000, "tfsa": 215000, "nr": 320000,
+        "cOn": true, "cAge": 52, "cRetAge": 62, "cSex": "F",
+        "cSal": 142000, "cRRSP": 410000, "cTFSA": 145000, "cNR": 95000,
+        "retSpM": 9500, "cRetSpM": 0,
+        "qppAge": 65, "oasAge": 65, "cQppAge": 65, "cOasAge": 65,
+        "avgE": 165000, "qppYrs": 35, "cAvgE": 142000, "cQppYrs": 28,
+        "penType": "db", "penM": 1800, "penIdx": true,
+        "melt": true, "meltTgt": 65000, "split": true, "splitP": 0.5,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.16, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.005, "merT": 0.0035, "merN": 0.004,
+        "allocR": 0.6, "allocT": 0.7, "allocN": 0.5,
+        "goals": [
+          { "desc": "Voyages annuels en Europe", "amount": 25000, "age": 65 },
+          { "desc": "Aide aux deux enfants pour mises de fonds", "amount": 100000, "age": 67 }
+        ]
+      }
+    },
+    {
+      "id": "ccpc_owner",
+      "lang": "en",
+      "mode": "expert",
+      "nSim": 2000,
+      "finLiteracy": "advanced",
+      "stressLevel": "moderate",
+      "detailPref": "detailed",
+      "client": {
+        "name": "David Chen",
+        "firstName": "David",
+        "email": "david@example.com"
+      },
+      "params": {
+        "age": 50, "retAge": 60, "deathAge": 90, "sex": "M", "prov": "ON",
+        "sal": 95000, "rrsp": 180000, "tfsa": 95000, "nr": 70000,
+        "retSpM": 7500,
+        "qppAge": 65, "oasAge": 65, "avgE": 95000, "qppYrs": 25,
+        "bizOn": true, "bizRevenue": 250000, "bizRetainedEarnings": 480000, "bizSaleAge": 65,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.16, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.011, "merT": 0.008, "merN": 0.009,
+        "allocR": 0.65, "allocT": 0.75, "allocN": 0.6
+      }
+    },
+    {
+      "id": "fire_seeker",
+      "lang": "fr",
+      "mode": "standard",
+      "nSim": 2000,
+      "finLiteracy": "advanced",
+      "stressLevel": "low",
+      "detailPref": "detailed",
+      "client": {
+        "name": "Sophie Lavoie",
+        "firstName": "Sophie",
+        "email": "sophie@example.com"
+      },
+      "params": {
+        "age": 35, "retAge": 45, "deathAge": 95, "sex": "F", "prov": "QC",
+        "sal": 145000, "rrsp": 285000, "tfsa": 165000, "nr": 380000,
+        "rrspC": 27000, "tfsaC": 7000, "nrC": 35000,
+        "retSpM": 5500,
+        "qppAge": 65, "oasAge": 65, "avgE": 145000, "qppYrs": 13,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.90, "noP": 0.75,
+        "eqRet": 0.07, "eqVol": 0.18, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.0025, "merT": 0.0025, "merN": 0.0025,
+        "allocR": 0.85, "allocT": 0.85, "allocN": 0.80,
+        "goals": [
+          { "desc": "Année sabbatique de voyage", "amount": 60000, "age": 47 },
+          { "desc": "Achat propriété secondaire", "amount": 350000, "age": 55 }
+        ]
+      }
+    },
+    {
+      "id": "low_income_gis",
+      "lang": "en",
+      "mode": "standard",
+      "nSim": 2000,
+      "finLiteracy": "beginner",
+      "stressLevel": "moderate",
+      "detailPref": "concise",
+      "client": {
+        "name": "Linda Smith",
+        "firstName": "Linda",
+        "email": "linda@example.com"
+      },
+      "params": {
+        "age": 62, "retAge": 65, "deathAge": 88, "sex": "F", "prov": "ON",
+        "sal": 28000, "rrsp": 18000, "tfsa": 32000, "nr": 4000,
+        "rrspC": 0, "tfsaC": 2000, "nrC": 0,
+        "retSpM": 2400,
+        "qppAge": 65, "oasAge": 65, "avgE": 35000, "qppYrs": 30,
+        "gis": true,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.05, "eqVol": 0.12, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.012, "merT": 0.012, "merN": 0.012,
+        "allocR": 0.4, "allocT": 0.5, "allocN": 0.4
+      }
+    },
+    {
+      "id": "debt_young",
+      "lang": "fr",
+      "mode": "standard",
+      "nSim": 2000,
+      "finLiteracy": "beginner",
+      "stressLevel": "high",
+      "detailPref": "concise",
+      "client": {
+        "name": "Karim Benali",
+        "firstName": "Karim",
+        "email": "karim@example.com"
+      },
+      "params": {
+        "age": 32, "retAge": 65, "deathAge": 90, "sex": "M", "prov": "QC",
+        "sal": 72000, "rrsp": 15000, "tfsa": 8000, "nr": 3000,
+        "rrspC": 4500, "tfsaC": 3000, "nrC": 0,
+        "retSpM": 4500,
+        "qppAge": 65, "oasAge": 65, "avgE": 72000, "qppYrs": 10,
+        "debts": [
+          { "name": "Ligne de crédit", "balance": 28000, "rate": 0.089 },
+          { "name": "Carte de crédit", "balance": 7500, "rate": 0.199 },
+          { "name": "Hypothèque", "balance": 312000, "rate": 0.054 }
+        ],
+        "wStrat": "standard",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.16, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.015, "merT": 0.015, "merN": 0.015,
+        "allocR": 0.7, "allocT": 0.7, "allocN": 0.6
+      }
+    }
+  ]
+}

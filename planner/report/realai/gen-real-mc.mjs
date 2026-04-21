@@ -1,16 +1,31 @@
 #!/usr/bin/env node
-// gen-real-mc.mjs — Run the REAL Monte Carlo engine (lib/engine/index.js,
-// extracted from planner_v2.html) for the 5 realai profiles and dump the
-// full mc payload to realai/mc/{profile}_{lang}.json.
+// gen-real-mc.mjs — Run the Monte Carlo engine for the realai profiles.
 //
-// build-realai-reports.js (render mode) loads these payloads instead of the
-// synthetic genPD/genRevData generators it carried previously. That gives us:
-//   numbers/charts/tables  →  real engine
-//   AI prose                →  Opus 4.7 responses written to realai/responses
+// ENGINE SOURCE (authoritative, read before editing):
+//   Uses `lib/engine/index.js` — the planner_v2.html mirror (validated, 453 tests).
+//   NOT `report/realai/v3-engine.cjs` (extract of planner_v3.html).
 //
+// Why v2 and not v3:
+//   v3 has documented P0 correctness bugs confirmed by direct repro:
+//     - percentile filtering biased → p25F ≈ $7K with medF ≈ $1.4M (nonsense)
+//     - medPath / medSimFinal selection logic known inconsistent (see audit §3)
+//   Migration to v3 is blocked on those fixes. See V3-ENGINE-AUDIT-REPORT.md.
+//
+// Profiles: read from profiles.json (single source, shared with build-realai-reports.js)
+//
+// For each profile this script runs:
+//   1. Baseline MC (base params, full nSim)
+//   2. Naive comparator MC (wStrat='standard', reduced nSim) → `_naive`
+//   3. Four sensitivity sweeps (returns ±1%, inflation ±1%) → `_sweeps`
+//   4. Six named stress scenarios (GFC-like, stagflation, longevity, etc.) → `_stress`
+//   5. Enrichment post-processing via mc-enrich.mjs → `_enriched`
+//        (cashflow, drawTrace, estateWaterfall, goalsLedger, allocation)
+//
+// Output: realai/mc/{profile}_{lang}.json  (consumed by build-realai-reports.js)
 // Run: node report/realai/gen-real-mc.mjs
 
 import { runMC } from '../../../lib/engine/index.js';
+import { enrichMC } from './mc-enrich.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,107 +33,18 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const mcDir = path.join(__dirname, 'mc');
+const profilesPath = path.join(__dirname, 'profiles.json');
 
-// 5 profiles — same as build-realai-reports.js but enriched with the engine's
-// expected params (eqVol/bndVol/stochMort/penIdx default-on so MC is realistic).
-const PROFILES = [
-  {
-    id: 'hnw_couple', lang: 'fr', mode: 'expert',
-    params: {
-      age: 58, retAge: 63, deathAge: 92, sex: 'M', prov: 'QC',
-      sal: 165000, rrsp: 820000, tfsa: 215000, nr: 320000,
-      cOn: true, cAge: 52, cRetAge: 62, cSex: 'F', cSal: 142000, cRRSP: 410000, cTFSA: 145000, cNR: 95000,
-      retSpM: 9500, cRetSpM: 0,
-      qppAge: 65, oasAge: 65, cQppAge: 65, cOasAge: 65,
-      avgE: 165000, qppYrs: 35, cAvgE: 142000, cQppYrs: 28,
-      penType: 'db', penM: 1800, penIdx: true,
-      melt: true, meltTgt: 65000, split: true, splitP: 0.5,
-      wStrat: 'optimized',
-      goP: 1.0, slP: 0.85, noP: 0.7,
-      eqRet: 0.06, eqVol: 0.16, bndRet: 0.035, bndVol: 0.06,
-      inf: 0.021, fatT: true, stochInf: true, stochMort: false,
-      merR: 0.005, merT: 0.0035, merN: 0.004,
-      allocR: 0.6, allocT: 0.7, allocN: 0.5
-    },
-    nSim: 2000
-  },
-  {
-    id: 'ccpc_owner', lang: 'en', mode: 'expert',
-    params: {
-      age: 50, retAge: 60, deathAge: 90, sex: 'M', prov: 'ON',
-      sal: 95000, rrsp: 180000, tfsa: 95000, nr: 70000,
-      retSpM: 7500,
-      qppAge: 65, oasAge: 65, avgE: 95000, qppYrs: 25,
-      bizOn: true, bizRevenue: 250000, bizRetainedEarnings: 480000, bizSaleAge: 65,
-      wStrat: 'optimized',
-      goP: 1.0, slP: 0.85, noP: 0.7,
-      eqRet: 0.06, eqVol: 0.16, bndRet: 0.035, bndVol: 0.06,
-      inf: 0.021, fatT: true, stochInf: true, stochMort: false,
-      merR: 0.011, merT: 0.008, merN: 0.009,
-      allocR: 0.65, allocT: 0.75, allocN: 0.6
-    },
-    nSim: 2000
-  },
-  {
-    id: 'fire_seeker', lang: 'fr',
-    params: {
-      age: 35, retAge: 45, deathAge: 95, sex: 'F', prov: 'QC',
-      sal: 145000, rrsp: 285000, tfsa: 165000, nr: 380000,
-      rrspC: 27000, tfsaC: 7000, nrC: 35000,
-      retSpM: 5500,
-      qppAge: 65, oasAge: 65, avgE: 145000, qppYrs: 13,
-      wStrat: 'optimized',
-      goP: 1.0, slP: 0.90, noP: 0.75,
-      eqRet: 0.07, eqVol: 0.18, bndRet: 0.035, bndVol: 0.06,
-      inf: 0.021, fatT: true, stochInf: true, stochMort: false,
-      merR: 0.0025, merT: 0.0025, merN: 0.0025,
-      allocR: 0.85, allocT: 0.85, allocN: 0.80
-    },
-    nSim: 2000
-  },
-  {
-    id: 'low_income_gis', lang: 'en',
-    params: {
-      age: 62, retAge: 65, deathAge: 88, sex: 'F', prov: 'ON',
-      sal: 28000, rrsp: 18000, tfsa: 32000, nr: 4000,
-      rrspC: 0, tfsaC: 2000, nrC: 0,
-      retSpM: 2400,
-      qppAge: 65, oasAge: 65, avgE: 35000, qppYrs: 30,
-      wStrat: 'optimized',
-      goP: 1.0, slP: 0.85, noP: 0.7,
-      eqRet: 0.05, eqVol: 0.12, bndRet: 0.035, bndVol: 0.06,
-      inf: 0.021, fatT: true, stochInf: true, stochMort: false,
-      merR: 0.012, merT: 0.012, merN: 0.012,
-      allocR: 0.4, allocT: 0.5, allocN: 0.4
-    },
-    nSim: 2000
-  },
-  {
-    id: 'debt_young', lang: 'fr',
-    params: {
-      age: 32, retAge: 65, deathAge: 90, sex: 'M', prov: 'QC',
-      sal: 72000, rrsp: 15000, tfsa: 8000, nr: 3000,
-      rrspC: 4500, tfsaC: 3000, nrC: 0,
-      retSpM: 4500,
-      qppAge: 65, oasAge: 65, avgE: 72000, qppYrs: 10,
-      debts: [
-        { name: 'Ligne de crédit', balance: 28000, rate: 0.089 },
-        { name: 'Carte de crédit', balance: 7500, rate: 0.199 },
-        { name: 'Hypothèque', balance: 312000, rate: 0.054 }
-      ],
-      wStrat: 'standard',
-      goP: 1.0, slP: 0.85, noP: 0.7,
-      eqRet: 0.06, eqVol: 0.16, bndRet: 0.035, bndVol: 0.06,
-      inf: 0.021, fatT: true, stochInf: true, stochMort: false,
-      merR: 0.015, merT: 0.015, merN: 0.015,
-      allocR: 0.7, allocT: 0.7, allocN: 0.6
-    },
-    nSim: 2000
-  }
-];
+const PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8')).profiles;
 
-// Strip undefined/Infinity/circular before JSON.stringify (some MC fields contain
-// Infinity for "never depleted" sentinels which JSON.stringify renders as null).
+// Sweep + stress sims use reduced count for speed — percentile stability less
+// critical when comparing deltas vs baseline. 500 sims is the floor below which
+// t-Student tail estimates get noisy.
+const SWEEP_SIMS = 500;
+const STRESS_SIMS = 500;
+const NAIVE_SIMS = 1000;
+
+// Safe JSON — Infinity sentinels are converted to 999, NaN to null.
 function safeJSON(obj) {
   return JSON.stringify(obj, (k, v) => {
     if (v === Infinity) return 999;
@@ -128,32 +54,98 @@ function safeJSON(obj) {
   }, 2);
 }
 
+// Compact MC summary — keep only the fields downstream consumers need.
+// Drops per-percentile pD (kept in baseline only) and raw fins to save space.
+function compactMC(mc) {
+  return {
+    succ: mc.succ,
+    medF: mc.medF, rMedF: mc.rMedF,
+    p25F: mc.p25F, p75F: mc.p75F, p5F: mc.p5F, p95F: mc.p95F,
+    rP25F: mc.rP25F, rP75F: mc.rP75F, rP5F: mc.rP5F, rP95F: mc.rP95F,
+    mean: mc.mean, sd: mc.sd,
+    medEstateNet: mc.medEstateNet, medEstateTax: mc.medEstateTax,
+    p5Ruin: mc.p5Ruin, medRuin: mc.medRuin, ruinPct: mc.ruinPct
+  };
+}
+
+// Run baseline MC for a profile, with all enrichments.
+async function runProfile(prof) {
+  const base = prof.params;
+  const nSim = prof.nSim || 2000;
+  const t0 = Date.now();
+
+  // 1. Baseline
+  const baseline = runMC(base, nSim);
+  if (!baseline) throw new Error('baseline runMC returned null');
+
+  // 2. Naive comparator — same params but wStrat='standard' (non-optimized order)
+  const naive = runMC(Object.assign({}, base, { wStrat: 'standard' }), NAIVE_SIMS);
+
+  // 3. Four sensitivity sweeps
+  const sweeps = {
+    returnsUp:   runMC(Object.assign({}, base, { eqRet: (base.eqRet || 0.06) + 0.01 }), SWEEP_SIMS),
+    returnsDown: runMC(Object.assign({}, base, { eqRet: (base.eqRet || 0.06) - 0.01 }), SWEEP_SIMS),
+    infUp:       runMC(Object.assign({}, base, { inf:   (base.inf   || 0.021) + 0.01 }), SWEEP_SIMS),
+    infDown:     runMC(Object.assign({}, base, { inf:   (base.inf   || 0.021) - 0.01 }), SWEEP_SIMS)
+  };
+
+  // 4. Six named stress scenarios
+  const stress = {
+    gfc2008:       runMC(Object.assign({}, base, { eqRet: (base.eqRet || 0.06) - 0.015, eqVol: (base.eqVol || 0.16) + 0.04 }), STRESS_SIMS),
+    stagflation73: runMC(Object.assign({}, base, { eqRet: (base.eqRet || 0.06) - 0.02,  inf: 0.04 }), STRESS_SIMS),
+    longevityPlus5: runMC(Object.assign({}, base, { deathAge: (base.deathAge || 90) + 5 }), STRESS_SIMS),
+    lostDecade:    runMC(Object.assign({}, base, { eqRet: (base.eqRet || 0.06) - 0.025 }), STRESS_SIMS),
+    persistentInf: runMC(Object.assign({}, base, { inf: 0.04 }), STRESS_SIMS),
+    spendingUp15:  runMC(Object.assign({}, base, { retSpM: (base.retSpM || 3000) * 1.15 }), STRESS_SIMS)
+  };
+
+  // Strip heavy fields from baseline before persistence (pD/medRevData kept).
+  if (baseline.all) delete baseline.all;
+  if (baseline.fins) delete baseline.fins;
+
+  // Attach supplementary runs (compacted).
+  // Named `_naiveMC` for compatibility with existing report-data.js consumer
+  // (previously a fabricated field; now real second-run MC with wStrat='standard').
+  baseline._naiveMC = compactMC(naive);
+  baseline._naiveMC.medRevData = naive.medRevData; // needed for real taxAlpha delta
+
+  baseline._sweeps = {
+    returns: { up: compactMC(sweeps.returnsUp),   down: compactMC(sweeps.returnsDown) },
+    inflation: { up: compactMC(sweeps.infUp),     down: compactMC(sweeps.infDown) }
+  };
+
+  baseline._stress = Object.keys(stress).reduce((acc, k) => {
+    acc[k] = compactMC(stress[k]);
+    return acc;
+  }, {});
+
+  // 5. Enrichment (cashflow, drawTrace, estateWaterfall, goalsLedger, allocation)
+  const enriched = enrichMC(baseline, base);
+
+  const dt = Date.now() - t0;
+  return { mc: enriched, dt };
+}
+
 async function main() {
-  console.log('Running real engine MC for ' + PROFILES.length + ' profiles...\n');
+  console.log('Running MC pipeline for ' + PROFILES.length + ' profiles...');
+  console.log('  Per profile: baseline + naive + 4 sweeps + 6 stress + enrichment\n');
+
   for (const prof of PROFILES) {
-    const t0 = Date.now();
-    process.stdout.write('  ' + prof.id + '_' + prof.lang + ' (N=' + prof.nSim + ')... ');
-    let mc;
+    process.stdout.write('  ' + prof.id + '_' + prof.lang + '... ');
     try {
-      mc = runMC(prof.params, prof.nSim);
-      if (!mc) { console.log('runMC returned null'); continue; }
+      const { mc, dt } = await runProfile(prof);
+      const fname = prof.id + '_' + prof.lang + '.json';
+      fs.writeFileSync(path.join(mcDir, fname), safeJSON(mc));
+      const sz = Math.round(fs.statSync(path.join(mcDir, fname)).size / 1024);
+      const succ = mc.succ != null ? Math.round(mc.succ * 100) + '%' : 'n/a';
+      const naiveSucc = mc._naiveMC && mc._naiveMC.succ != null ? Math.round(mc._naiveMC.succ * 100) + '%' : 'n/a';
+      const goalsN = mc._enriched && mc._enriched.goalsLedger ? mc._enriched.goalsLedger.length : 0;
+      console.log('succ=' + succ + ' (naive=' + naiveSucc + ')  goals=' + goalsN + '  ' + sz + 'KB  (' + Math.round(dt / 1000) + 's)');
     } catch (e) {
       console.log('ERROR: ' + e.message);
-      continue;
     }
-    const dt = Date.now() - t0;
-    // Drop the per-sim raw matrix (mc.all) to keep JSON small — renderer doesn't use it.
-    if (mc.all) delete mc.all;
-    if (mc.fins) delete mc.fins; // raw fin distribution (per-sim) — large array
-    const fname = prof.id + '_' + prof.lang + '.json';
-    fs.writeFileSync(path.join(mcDir, fname), safeJSON(mc));
-    const sz = Math.round(fs.statSync(path.join(mcDir, fname)).size / 1024);
-    console.log('succ=' + (mc.succ != null ? Math.round(mc.succ * 100) + '%' : 'n/a')
-      + '  medF=' + (mc.medF != null ? '$' + Math.round(mc.medF / 1000) + 'K' : 'n/a')
-      + '  pD=' + (mc.pD ? mc.pD.length : 0) + '  rev=' + (mc.medRevData ? mc.medRevData.length : 0)
-      + '  ' + sz + 'KB  (' + dt + 'ms)');
   }
-  console.log('\nNext: node report/realai/build-realai-reports.js render');
+  console.log('\nNext: node report/realai/build-realai-reports.js dump → send to Claude → render');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

@@ -33,22 +33,20 @@
     { id: "sec-profile",     label: "Client profile",           fr: "Profil",           en: "Profile" },
     { id: "sec-projection",  label: "Projection fan chart",     fr: "Projection",       en: "Projection" },
     { id: "sec-revenue",     label: "Retirement income",        fr: "Revenus",          en: "Income" },
+    { id: "sec-histogram",   label: "Final-wealth histogram",   fr: "Distribution",     en: "distribution" },
+    { id: "sec-cashflow",    label: "Year-by-year cash flow",   fr: "Flux",             en: "cash flow" },
     { id: "sec-tax",         label: "Tax strategy",             fr: "Fiscalit",         en: "Tax" },
+    { id: "sec-stress",      label: "Stress-test scenarios",    fr: "stress",           en: "Stress" },
     { id: "sec-actions",     label: "Action plan",              fr: "Plan d'action",    en: "Action plan" },
-    { id: "sec-methodology", label: "Methodology + assumptions", fr: "Méthodologie",    en: "Methodology" },
+    { id: "sec-methodology", label: "Methodology",              fr: "Méthodologie",     en: "Methodology" },
+    { id: "sec-assumptions", label: "Assumptions appendix",     fr: "Hypoth\u00e8ses",  en: "Assumptions" },
     { id: "sec-signature",   label: "Signature page",           fr: "Accus\u00e9",       en: "Acknowledgment" }
   ];
 
-  /* Planned sections — not yet implemented. Their absence is a WARNING only,
-   * so QA stays green while the 18-22 page rewrite progresses phase by phase.
-   * draw-order heatmap (sec-draworder) lands when enriched payload carries
-   * drawTrace — not a strict requirement since it's a differentiator bonus. */
-  var RECOMMENDED_SECTIONS = [
-    { id: "sec-stress",      label: "Stress-test scenarios" },
-    { id: "sec-histogram",   label: "Final-wealth histogram" },
-    { id: "sec-cashflow",    label: "Year-by-year cash flow statement" },
-    { id: "sec-assumptions", label: "Assumptions appendix" }
-  ];
+  /* RECOMMENDED list is now empty — all previously-warned sections (stress,
+   * histogram, cashflow, assumptions) landed and were promoted to REQUIRED.
+   * Kept as a hook for future planned-but-not-built sections. */
+  var RECOMMENDED_SECTIONS = [];
 
   /* AMF prescriptive-language blacklist. Every occurrence in the rendered
    * HTML is BLOCKING under AMF/OSFI observational-only compliance rules.

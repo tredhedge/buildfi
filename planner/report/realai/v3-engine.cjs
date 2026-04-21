@@ -1,6 +1,6 @@
 // AUTO-GENERATED from planner_v3.html — DO NOT EDIT
 // Source: planner_v3.html (BuildFi Laboratoire v12.0.0)
-// Generated: 2026-04-20T04:29:31.889Z
+// Generated: 2026-04-20T16:19:23.466Z
 'use strict';
 
 // ── Browser stubs ──────────────────────────────────────────────
@@ -2070,6 +2070,114 @@ function runTestSuite() {
   // bizSaleACB exists
   T("MC-CCPC","bizSaleACB state exists",html.indexOf("bizSaleACB")>-1?1:0,1,0);
 
+  // ─── Sole-proprietorship (travailleur autonome) ───
+  var bpSole = Object.assign({}, bp, { bizOn:true, bizType:"sole",
+    bizSoleRev:120000, bizSoleExp:20000, bizSoleGrowth:0, bizSoleVol:0,
+    bizDebtBal:0, bizDebtRate:0, bizDebtAmort:10, sal:0 });
+  var mcSole = null, mcSoleOk = false;
+  try {
+    var _origRS = Math.random; var _sS = 42, _aS = 1664525, _cS = 1013904223, _mS = Math.pow(2,32);
+    Math.random = function(){ _sS=(_aS*_sS+_cS)%_mS; return _sS/_mS; };
+    mcSole = runMC(bpSole, 20); Math.random = _origRS; mcSoleOk = true;
+  } catch (e) { try { Math.random = _origRS; } catch(e_){} }
+  T("MC-Sole","Runs", mcSoleOk?1:0, 1, 0);
+  if (mcSoleOk && mcSole) {
+    T("MC-Sole","Succ 0-1", mcSole.succ>=0&&mcSole.succ<=1?1:0, 1, 0);
+    var _rdSole = mcSole.revData || mcSole.medRevData || [];
+    var _preRetSole = _rdSole.filter(function(r){ return r.age < 60; });
+    var _soleNetSum = _preRetSole.reduce(function(s,r){ return s+(r.bizSoleNet||0); }, 0);
+    T("MC-Sole","bizSoleNet>0 pre-ret", _soleNetSum>0?1:0, 1, 0);
+    // No corp fields on sole
+    var _soleCorpSum = _preRetSole.reduce(function(s,r){ return s+(r.corpTax||0)+(r.corpDiv||0); }, 0);
+    T("MC-Sole","No corp tax/div on sole", _soleCorpSum===0?1:0, 1, 0);
+    // CPP/QPP deduct >0 when net income positive
+    var _soleCppSum = _preRetSole.reduce(function(s,r){ return s+(r.bizSoleCppDeduct||0); }, 0);
+    T("MC-Sole","Self-emp CPP deduct>0", _soleCppSum>0?1:0, 1, 0);
+  }
+
+  // ─── Detailed spouse (bridge + pen2 + part-time) ───
+  var bpSpouse = Object.assign({}, bp, { cOn:true, cAge:55, cRetAge:58, cDeath:90, cSex:"F",
+    cRRSP:200000, cTFSA:80000, cNR:40000, cRRSPC:0, cTFSAC:0, cNRC:0,
+    cPenType:"db", cPenM:2500, cPenIdx:1,
+    cPen2Type:"cd", cPen2M:0, cDC2Bal:50000, cPen2EE:0, cPen2ER:0,
+    cBridge:true, cBrAmt:800, cBrEnd:65,
+    cPtM:1500, cPtYrs:3,
+    cQppAge:65, cAvgE:55000, cQppYrs:30, cOasAge:65,
+    cSyncPortfolio:true });
+  var mcSpouse = null, mcSpouseOk = false;
+  try {
+    var _origRSp = Math.random; var _sSp = 42;
+    Math.random = function(){ _sSp=(_aS*_sSp+_cS)%_mS; return _sSp/_mS; };
+    mcSpouse = runMC(bpSpouse, 20); Math.random = _origRSp; mcSpouseOk = true;
+  } catch (e) { try { Math.random = _origRSp; } catch(e_){} }
+  T("MC-Spouse","Runs", mcSpouseOk?1:0, 1, 0);
+
+  // ─── Independent spouse portfolio ───
+  var bpSyncOff = Object.assign({}, bpSpouse, { cSyncPortfolio:false,
+    cAllocR:0.3, cAllocT:0.3, cAllocN:0.2, cMerR:0.005, cMerT:0.005, cMerN:0.005 });
+  var mcSyncOff = null, mcSyncOffOk = false;
+  try {
+    var _origRSo = Math.random; var _sSo = 42;
+    Math.random = function(){ _sSo=(_aS*_sSo+_cS)%_mS; return _sSo/_mS; };
+    mcSyncOff = runMC(bpSyncOff, 20); Math.random = _origRSo; mcSyncOffOk = true;
+  } catch (e) { try { Math.random = _origRSo; } catch(e_){} }
+  T("MC-Spouse","SyncOff runs", mcSyncOffOk?1:0, 1, 0);
+  // Conservative spouse alloc (30/70) should yield <= household spouse balance
+  // than an aggressive match (not tested here — just checks path executes).
+
+  // ─── Spouse NR capital gains taxation (audit P0-2) ───
+  // Retired spouse with sizable cNR and low cRRSP must draw from cNR to
+  // fund shortfall. Pre-fix: cTaxableInc was 0 all years (NR gains ignored).
+  var bpCNrTax = Object.assign({}, bp, {
+    age:70, retAge:65, deathAge:88, sal:0, rrsp:0, tfsa:0, nr:0, retSpM:4000,
+    penType:"none", penM:0, qppAge:65, avgE:0, qppYrs:0,
+    cOn:true, cAge:70, cRetAge:65, cDeath:90, cSex:"F",
+    cRRSP:0, cTFSA:0, cNR:600000, cRRSPC:0, cTFSAC:0, cNRC:0,
+    cCostBase:200000, // large embedded gain so cNrIncl > 0
+    cPenType:"none", cPenM:0, cQppAge:65, cAvgE:0, cQppYrs:0, cOasAge:65,
+    cRetSpM:2000
+  });
+  var mcCNrTax = safeMC(bpCNrTax, 3);
+  T("MC-Couple-NR","Runs", mcCNrTax?1:0, 1, 0);
+  if (mcCNrTax && mcCNrTax.revData) {
+    var _cnrTaxYrs = mcCNrTax.revData.filter(function(r){ return (r.tax2||0) > 0; });
+    T("MC-Couple-NR","Spouse NR tax>0 at least once", _cnrTaxYrs.length > 0 ? 1 : 0, 1, 0);
+  }
+
+  // ─── Estate CG on rentals at death (audit P1-3) ───
+  // Pre-fix: p.props didn't carry origV so reDeathCG was always 0.
+  // Post-fix: iterate reVals (where origV is set on each sim).
+  var bpRentDeath = Object.assign({}, bp, {
+    age:55, retAge:65, deathAge:70,  // short horizon so death hits during sim
+    props:[{on:true, pri:false, val:500000, mb:0, mr:0, ma:25, rm:2000,
+            ox:3000, pt:3000, ins:1000, pa:35, sa:0, cg:0.5,
+            dsAge:0, dsVal:0, heloc:0, helocRate:0.065, helocMax:0.65,
+            smithOn:false, refiAge:0, refiAmt:0, dpaOn:false,
+            dpaRate:0.04, landPct:0.30}]
+  });
+  var mcRentDeath = safeMC(bpRentDeath, 3);
+  T("MC-Rental-Death","Runs", mcRentDeath?1:0, 1, 0);
+  if (mcRentDeath) {
+    T("MC-Rental-Death","Estate tax>0 with appreciated rental",
+      (mcRentDeath.medEstateTax || 0) > 0 ? 1 : 0, 1, 0);
+  }
+
+  // ─── Detailed insurance premium drain ───
+  var bpIns = Object.assign({}, bp, {
+    insViePrime:50, insVieCov:300000, insVieType:"term", insVieDur:20,
+    insInvPrime:80, insInvCov:3000,
+    insMGPrime:40, insMGCov:100000,
+    insColPrime:25, nr:200000 });
+  var bpNoIns = Object.assign({}, bp, { nr:200000 });
+  var mcIns2 = safeMC(bpIns, 5), mcNoIns = safeMC(bpNoIns, 5);
+  T("MC-Insurance","Drain runs", mcIns2?1:0, 1, 0);
+  if (mcIns2 && mcNoIns && mcIns2.medF !== undefined && mcNoIns.medF !== undefined) {
+    // With insurance premiums, working-years NR slightly lower than without.
+    // Estate can swing either way depending on when death occurs so we only
+    // check the simulation completes and does not explode.
+    T("MC-Insurance","medF finite", isFinite(mcIns2.medF)?1:0, 1, 0);
+  }
+
   // ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â INTEGRATION TESTS (R4) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â catch multi-year simulation bugs ÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚ÂÃƒÂ¢Ã¢â‚¬Â¢Ã‚Â
 
   // DC pension balance should show pension income in retirement
@@ -3050,8 +3158,18 @@ function optimizeDecum(p) {
     retTF = eqRet * allocT + bndRet * (1 - allocT) - (p.merT || 0);
     retNR = eqRet * allocN + bndRet * (1 - allocN) - (p.merN || 0);
   }
+  // Deterministic spouse effective returns — mirror MC path.
+  var detCRetRR = retRR, detCRetTF = retTF, detCRetNR = retNR;
+  if (p.cOn && p.cSyncPortfolio === false && !_detMA) {
+    var _dCAR = p.cAllocR != null ? p.cAllocR : 0.6;
+    var _dCAT = p.cAllocT != null ? p.cAllocT : 0.6;
+    var _dCAN = p.cAllocN != null ? p.cAllocN : 0.5;
+    detCRetRR = eqRet * _dCAR + bndRet * (1 - _dCAR) - (p.cMerR || 0.005);
+    detCRetTF = eqRet * _dCAT + bndRet * (1 - _dCAT) - (p.cMerT || 0.005);
+    detCRetNR = eqRet * _dCAN + bndRet * (1 - _dCAN) - (p.cMerN || 0.005);
+  }
 
-  var cFhsa = p.cOn ? (p.cFhsaBal || 0) : 0;
+  // cFhsa already declared at line 5073 with its contrib counter.
   var cSimDeath = p.cOn ? (p.cDeath || 90) : 0;
 
   for (var y = 0; y <= maxYrs; y++) {
@@ -3063,7 +3181,7 @@ function optimizeDecum(p) {
     var cAlive = p.cOn && cAge2 <= cSimDeath;
 
     // Survivor rollover: when spouse dies, roll their accounts to person
-    if (p.cOn && !cAlive && cAge2 === cSimDeath + 1) {
+    if (p.cOn && cAge2 === Math.floor(cSimDeath) && y > 0) {
       // RRSPÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢RRSP, TFSAÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢TFSA (tax-free spousal rollover), NRÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢NR
       rr += crr; tf += ctf; nr += cnr;
       crr = 0; ctf = 0; cnr = 0;
@@ -3136,7 +3254,7 @@ function optimizeDecum(p) {
       tf = tf * (1 + retTF) + _tfsaActualC;
       tfsaRoom -= _tfsaActualC;
       if (_detMA) { var _dNrTax = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTax + (p.nrC || 0); } else { nr = nr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.nrC || 0); }
-      if (p.cOn && cAlive) { crr = crr * (1 + retRR) + (p.cRRSPC || 0); ctf = ctf * (1 + retTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov) + (p.cNRC || 0)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
+      if (p.cOn && cAlive) { crr = crr * (1 + detCRetRR) + (p.cRRSPC || 0); ctf = ctf * (1 + detCRetTF) + (p.cTFSAC || 7000); cnr = _detMA ? (cnr + cnr * detCRetNR - calcNRItemizedTax(cnr, detCRetNR, _detAllocNR, _detMargRate, bndRet, p.prov) + (p.cNRC || 0)) : (cnr * (1 + detCRetNR - (p.nrTaxDrag || 0.009)) + (p.cNRC || 0)); }
       // RSU vesting income (deterministic)
       if (p.rsuGrants && p.rsuGrants.length > 0) {
         var _dRsuInc = 0;
@@ -3186,7 +3304,7 @@ function optimizeDecum(p) {
     // === RETIREMENT: OPTIMIZE WITHDRAWAL SOURCE ===
     rr *= (1 + retRR); tf *= (1 + retTF);
     if (_detMA) { var _dNrTaxR = calcNRItemizedTax(nr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov); nr = nr + nr * retNR - _dNrTaxR; } else { nr *= (1 + retNR - (p.nrTaxDrag || 0.009)); }
-    if (p.cOn && cAlive) { crr *= (1 + retRR); ctf *= (1 + retTF); cnr = _detMA ? (cnr + cnr * retNR - calcNRItemizedTax(cnr, retNR, _detAllocNR, _detMargRate, bndRet, p.prov)) : (cnr * (1 + retNR - (p.nrTaxDrag || 0.009))); }
+    if (p.cOn && cAlive) { crr *= (1 + detCRetRR); ctf *= (1 + detCRetTF); cnr = _detMA ? (cnr + cnr * detCRetNR - calcNRItemizedTax(cnr, detCRetNR, _detAllocNR, _detMargRate, bndRet, p.prov)) : (cnr * (1 + detCRetNR - (p.nrTaxDrag || 0.009))); }
     // TFSA room continues accumulating in retirement
     tfsaRoom += Math.round(7000 * Math.pow(1 + p.inf, y) / 500) * 500 + _tfsaLastYrWith;
     _tfsaLastYrWith = 0;
@@ -3735,7 +3853,7 @@ function calcWHT(alloc, acctType) {
   }
   return 0; // NR handled via itemized tax
 }
-// === PAYROLL DEDUCTIONS (employee portion, 2025 rates) ===
+// === PAYROLL DEDUCTIONS (employee portion, 2026 rates) ===
 function calcPayroll(sal, prov, yr, infR) {
   if (sal <= 0) return 0;
   var inf = Math.pow(1 + (infR || 0.02), yr || 0);
@@ -3762,7 +3880,12 @@ function calcPayroll(sal, prov, yr, infR) {
   return Math.round(qpp + qpp2 + ei + rqap);
 }
 // === END PAYROLL DEDUCTIONS ===
-function runMC(p, N, _progressCb) {
+function runMC(pInput, N, _progressCb) {
+  // Defensive clone so runMC's in-place sanitization does not mutate the
+  // caller's object. Shallow is enough — only scalars are rewritten;
+  // assetAlloc (the only sub-object rebuilt) is cloned on the next line.
+  var p = Object.assign({}, pInput || {});
+  if (pInput && pInput.assetAlloc) p.assetAlloc = Object.assign({}, pInput.assetAlloc);
   // === PARAM SANITIZATION ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â engine-level safety net ===
   // Rates: clamp to physically possible ranges (prevents typo-level bugs)
     // Default deathAge if missing — prevents NaN propagation through entire simulation.
@@ -3827,6 +3950,10 @@ function runMC(p, N, _progressCb) {
   var maxYrs = Math.floor(p.deathAge - p.age);
   if (maxYrs <= 0) return null;
   var all = [], fins = [], liqFins = [], ruinAges = [], deathAges = [], cDeathAges = [], estateTaxes = [], estateNets = [];
+  // finalsRaw preserves fins[] in its original push-order (1:1 with all[])
+  // so medSimIdx can be computed against the unsorted finals — matching the
+  // trajectory stored in all[]. fins itself is sorted later for percentiles.
+  var finalsRaw = [];
   var gkAllCuts = [], gkAllRaises = [], gkAllAvgSpend = [], gkAllMinSpend = [], gkAllMinFactor = [], gkAllAvgFactor = [], gkAllCutYrs = [], gkAllMaxStreak = [];
   var revData = [];
   for (var y0 = 0; y0 <= maxYrs; y0++) revData.push({ age: p.age + y0, rrq: 0, psv: 0, srg: 0, pen: 0, pt: 0, ret: 0, spend: 0, tax: 0, taxInc: 0 });
@@ -3855,7 +3982,8 @@ function runMC(p, N, _progressCb) {
     var cSimDeath = p.cOn ? p.stochMort ? stochDeath(p.cAge || p.age, p.cSex || "F") : p.cDeath || 90 : 0;
     var yrs = Math.floor(Math.min(simDeath - p.age, maxYrs));
     if (yrs <= 0) {
-      fins.push(p.rrsp + p.tfsa + p.nr);
+      var _zeroYrFin = p.rrsp + p.tfsa + p.nr;
+      fins.push(_zeroYrFin); finalsRaw.push(_zeroYrFin);
       ruinAges.push(999);
       deathAges.push(simDeath);
       if (p.cOn) cDeathAges.push(cSimDeath);
@@ -3863,10 +3991,33 @@ function runMC(p, N, _progressCb) {
       continue;
     }
     var rr = p.rrsp, tf = p.tfsa, nr = p.nr, pe = p.peBal || 0, pm = p.pmBal || 0, dc = p.dcBal || 0, dc2 = p.dc2Bal || 0;
+    // Spouse DC balances — mutable across the simulation years so pre-ret
+    // contributions (cPenEE + cPenER) compound at retDC net of cPenMER.
+    var cdc = p.cDCBal || 0, cdc2 = p.cDC2Bal || 0;
     var lira = p.liraBal || 0, cLira = p.cLiraBal || 0;
     var lifeIns = p.lifeInsBenefit || 0, lifeInsPrem = (p.lifeInsPremium || 0) * 12;
     var cLifeIns = p.cOn ? (p.cLifeInsBenefit || 0) : 0, cLifeInsPrem = p.cOn ? (p.cLifeInsPremium || 0) * 12 : 0;
+    // Detailed insurance (longform) — layered on top of the primary lifeIns
+    // entry. Four lines per person: life term (vie), disability (inv),
+    // critical illness (mg = maladies graves), group/collective (col).
+    // All premiums are monthly → ×12. Term life adds to the death benefit
+    // for the duration of insVieDur years; "perm"/"permanent" type runs
+    // indefinitely. Disability pays insInvCov $/month × disabMo on trigger.
+    // Critical illness pays insMGCov one-time on first trigger.
+    var insViePrem = (p.insViePrime || 0) * 12;
+    var insInvPrem = (p.insInvPrime || 0) * 12;
+    var insMGPrem  = (p.insMGPrime  || 0) * 12;
+    var insColPrem = (p.insColPrime || 0) * 12;
+    var cInsViePrem = p.cOn ? (p.cInsViePrime || 0) * 12 : 0;
+    var cInsInvPrem = p.cOn ? (p.cInsInvPrime || 0) * 12 : 0;
+    var cInsMGPrem  = p.cOn ? (p.cInsMGPrime  || 0) * 12 : 0;
+    var cInsColPrem = p.cOn ? (p.cInsColPrime || 0) * 12 : 0;
+    var _mgPaidOut = false, _cMgPaidOut = false; // critical illness — 1 payout per lifetime
     var nrACB = p.costBase || p.nr || 0; // Track adjusted cost base
+    // Spouse NR ACB — parity with primary. Initializes to cNR (worst-case
+    // assumption: no pre-simulation gains baked in; user can override via
+    // a cCostBase field if added later). Incremented on every cNRC year.
+    var cNrACB = p.cOn ? (p.cCostBase || p.cNR || 0) : 0;
     // TFSA room: cumulative limits - conservative net contrib estimate
     var _mcTfsaYrs = Math.max(0, Math.min(p.age - 17, 18));
     var _mcTfsaCum = _mcTfsaYrs <= 0 ? 0 :
@@ -4002,6 +4153,49 @@ function runMC(p, N, _progressCb) {
         retRR = blendRet(eqR, bndR, aR) - (p.merR || 0);
         retTF = blendRet(eqR, bndR, aT) - (p.merT || 0);
         retNR = blendRet(eqR, bndR, aN) - (p.merN || 0);
+      }
+      // Spouse effective returns — when cSyncPortfolio is off, apply
+      // spouse-specific alloc (cAllocR/T/N) and MER (cMerR/T/N). When on,
+      // mirror the household's retRR/retTF/retNR. Glide applies to both
+      // using the same gS spec. Multi-asset path: scale the household's
+      // allocation matrix to the spouse's equity ratio, preserving
+      // country/sector texture. Spouse NR margin rate approximated from
+      // cSal (pre-ret) or cRetSpM (post-ret) when sync is off.
+      var cRetRR = retRR, cRetTF = retTF, cRetNR = retNR;
+      var _cMaMargRate = _maMargRate, _cMaAllocNR = _maAllocNR;
+      if (p.cOn && p.cSyncPortfolio === false) {
+        var _cAR = Math.max(0.2, (p.cAllocR || 0.6) - gS * gYrs);
+        var _cAT = Math.max(0.2, (p.cAllocT || 0.6) - gS * gYrs);
+        var _cAN = Math.max(0.2, (p.cAllocN || 0.5) - gS * gYrs);
+        if (_maOn) {
+          // Preserve primary's country/sector texture, re-scale equity
+          // portion to spouse's target, put the complement in bonds.
+          function _rescaleAlloc(baseAlloc, targetEq) {
+            // Clamp targetEq to [0,1] to protect against bad user input
+            // (would otherwise produce negative bond allocation).
+            var _te = Math.min(1, Math.max(0, targetEq));
+            var _eqBase = (baseAlloc.can||0) + (baseAlloc.us||0) + (baseAlloc.intl||0) + (baseAlloc.em||0);
+            var _s = _eqBase > 0 ? _te / _eqBase : 1;
+            return { can: (baseAlloc.can||0) * _s, us: (baseAlloc.us||0) * _s, intl: (baseAlloc.intl||0) * _s, em: (baseAlloc.em||0) * _s, bnd: 1 - _te };
+          }
+          var _cAlRR = _rescaleAlloc(_glideAlloc(_maAllocRR), _cAR);
+          var _cAlTF = _rescaleAlloc(_glideAlloc(_maAllocTF), _cAT);
+          var _cAlNR = _rescaleAlloc(_glideAlloc(_maAllocNR), _cAN);
+          cRetRR = blendMulti(_maRets, _cAlRR) - (p.cMerR || 0.005) - calcWHT(_cAlRR, 'rrsp');
+          cRetTF = blendMulti(_maRets, _cAlTF) - (p.cMerT || 0.005) - calcWHT(_cAlTF, 'tfsa');
+          cRetNR = blendMulti(_maRets, _cAlNR) - (p.cMerN || 0.005);
+          _cMaAllocNR = _cAlNR;
+          // Spouse marginal rate from cSal (pre-ret) or cRetSpM fallback (post-ret).
+          var _cMargBase = cRetired ? (p.cRetSpM || p.retSpM || 3000) * 12 : (p.cSal || 0) * infM;
+          if (_cMargBase > 0) {
+            var _cTaxEst = calcTax(_cMargBase, y, p.prov || 'QC', p.inf || 0.02, cRetired, null);
+            _cMaMargRate = _cTaxEst.marg || _maMargRate;
+          }
+        } else {
+          cRetRR = blendRet(eqR, bndR, _cAR) - (p.cMerR || 0.005);
+          cRetTF = blendRet(eqR, bndR, _cAT) - (p.cMerT || 0.005);
+          cRetNR = blendRet(eqR, bndR, _cAN) - (p.cMerN || 0.005);
+        }
       }
       var fxNoise = (p.fxVol || 0.08) * tRn(999);
       var retPE = (p.yPE || 0.12) + (p.vPE || 0.25) * zz[_maOn ? 6 : 3] + sEq * 0.8 + fxNoise;
@@ -4260,13 +4454,44 @@ function runMC(p, N, _progressCb) {
       var cQppY = 0, cOasY = 0, cPenY = 0, cGisY = 0;
       if (cAlive) {
         if (cRetired && cAge2 >= (p.cQppAge || 65)) { cQppY = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM; cInc += cQppY; }
-        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? (p.cDCBal || 0) * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
+        if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? cdc * 0.04 : 0) + (p.cPen2Type === 'db' ? (p.cPen2M || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPen2Type) >= 0 ? cdc2 * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
         if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
         if (p.cPenType === "db" && cRetired) { cPenY = (p.cPenM || 0) * 12; cInc += cPenY; }
-        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = (p.cDCBal || 0) * 0.04; cPenY += _cdcY; cInc += _cdcY; }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = cdc * 0.04; cPenY += _cdcY; cInc += _cdcY; }
+        // Secondary spouse pension — income pass (pre-retirement handled below)
+        if (p.cPen2Type === "db" && cRetired) { cPenY += (p.cPen2M || 0) * 12; cInc += (p.cPen2M || 0) * 12; }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0 && cRetired) { var _cdc2Y = cdc2 * 0.04; cPenY += _cdc2Y; cInc += _cdc2Y; }
+      }
+      // Spouse DC/DC2 accumulation — only pre-retirement, only when cOn and
+      // alive. Employer + employee contributions at the annual flat amount
+      // (cPenEE/cPenER) compound at retDC net of cPenMER (MER). In retirement,
+      // a conservative 4%/yr draw is applied (mirrors primary dc block).
+      if (p.cOn && cAlive) {
+        var cMerEff = p.cPenMER || 0.01;
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0) {
+          cdc = cdc * (1 + retDC - cMerEff) + (cRetired ? 0 : (p.cPenEE || 0) + (p.cPenER || 0));
+          if (cRetired) {
+            var _cdcDraw = (cAge2 >= 72 ? getRRIFMin(cAge2, cdc) : cdc * 0.04);
+            cdc = Math.max(0, cdc - _cdcDraw);
+          }
+        }
+        if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) {
+          cdc2 = cdc2 * (1 + retDC - cMerEff) + (cRetired ? 0 : (p.cPen2EE || 0) + (p.cPen2ER || 0));
+          if (cRetired) {
+            var _cdc2Draw = (cAge2 >= 72 ? getRRIFMin(cAge2, cdc2) : cdc2 * 0.04);
+            cdc2 = Math.max(0, cdc2 - _cdc2Draw);
+          }
+        }
       }
       if (p.cOn && !cAlive && cAge2 > cSimDeath) {
           if (cLifeIns > 0) { nr += cLifeIns; cLifeIns = 0; }
+          // Spouse term/perm life insVie death benefit (if policy active at death)
+          if (p.cInsViePrime > 0 && (p.cInsVieCov || 0) > 0) {
+            var _cSimDeathYr = Math.max(0, cSimDeath - p.cAge);
+            if ((p.cInsVieType === "perm") || _cSimDeathYr < (p.cInsVieDur || 0)) {
+              nr += p.cInsVieCov;
+            }
+          }
         cInc += Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * C.QPP_SURVIVOR_FRACTION, C.QPP_SURVIVOR_CAP_MONTHLY) * 12 * infM;
       }
       var splitB = 0;
@@ -4331,10 +4556,14 @@ function runMC(p, N, _progressCb) {
         // Salary volatility (Expert): stochastic multiplier on contributions
         var _salMul = 1;
         if ((p.salVol || 0) > 0) { _salMul = Math.max(0.2, 1 + (p.salVol || 0) * (2 * Math.random() - 1)); }
-        // Disability interruption (Expert): probability of losing income for X months
-        if ((p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) {
+        // Disability interruption (Expert): probability of losing income for X months.
+        // Single roll drives both the salary reduction and any insurance benefit.
+        var _disabTrig = (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0);
+        if (_disabTrig) {
           _salMul *= Math.max(0, 1 - (p.disabMo || 6) / 12);
         }
+        // Spouse disability — independent roll (different person)
+        var _cDisabTrig = p.cOn && cAlive && !cRetired && (p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0);
         var _adjGr = cGr * _salMul;
         // TFSA: custom = fixed annual, default = CPI-indexed rounded to $500
         var tfsaLim = p.tfsaC != null ? p.tfsaC : Math.round(7e3 * Math.pow(1 + p.inf, y) / 500) * 500;
@@ -4382,9 +4611,41 @@ function runMC(p, N, _progressCb) {
             crr += cFhsa; cFhsa = 0;
           }
         }
-        // Life insurance premium deducted from NR
-        if (lifeInsPrem > 0 && nr >= lifeInsPrem) nr -= lifeInsPrem;
-        if (cLifeInsPrem > 0 && p.cOn && cAlive && cnr >= cLifeInsPrem) cnr -= cLifeInsPrem;
+        // Insurance premiums — all lines, monthly × 12, drained from NR.
+        // Term life (insVie) stops after insVieDur years from simulation start.
+        // When insVieDur is 0 or missing on a term policy we treat it as
+        // 20-year term (industry norm) to avoid silently zeroing the cover.
+        var _dur = p.insVieDur > 0 ? p.insVieDur : 20;
+        var _cDur = p.cInsVieDur > 0 ? p.cInsVieDur : 20;
+        var _insVieActive = (p.insVieType === "perm") || (y < _dur);
+        var _cInsVieActive = (p.cInsVieType === "perm") || (y < _cDur);
+        var _totPrim = lifeInsPrem
+          + (_insVieActive ? insViePrem : 0)
+          + (!retired ? insInvPrem : 0)  // disability coverage ceases at retirement
+          + insMGPrem + insColPrem;
+        if (_totPrim > 0 && nr >= _totPrim) nr -= _totPrim;
+        if (p.cOn && cAlive) {
+          var _cTotPrim = cLifeInsPrem
+            + (_cInsVieActive ? cInsViePrem : 0)
+            + (!cRetired ? cInsInvPrem : 0)
+            + cInsMGPrem + cInsColPrem;
+          if (_cTotPrim > 0 && cnr >= _cTotPrim) cnr -= _cTotPrim;
+        }
+        // Disability benefit: same trigger flag as the salary reduction so
+        // benefit and loss are perfectly correlated (fixes earlier double-roll).
+        if (_disabTrig && !retired) nr += (p.insInvCov || 0) * (p.disabMo || 6);
+        if (_cDisabTrig) cnr += (p.cInsInvCov || 0) * (p.disabMo || 6);
+        // Critical illness (maladies graves) — simplified trigger: ~1.5%/yr
+        // at age 55+, ~2.5%/yr at 70+. Pays insMGCov lump sum to NR once
+        // per lifetime when policy is in force.
+        var _mgProbAge = age >= 70 ? 0.025 : age >= 55 ? 0.015 : 0.005;
+        if (!_mgPaidOut && insMGPrem > 0 && (p.insMGCov || 0) > 0 && Math.random() < _mgProbAge) {
+          nr += p.insMGCov; _mgPaidOut = true;
+        }
+        if (p.cOn && cAlive && !_cMgPaidOut && cInsMGPrem > 0 && (p.cInsMGCov || 0) > 0) {
+          var _cMgProb = cAge2 >= 70 ? 0.025 : cAge2 >= 55 ? 0.015 : 0.005;
+          if (Math.random() < _cMgProb) { cnr += p.cInsMGCov; _cMgPaidOut = true; }
+        }
         // RESP: deduct annual contribution from NR (cash flow impact) \u00d7 number of kids
         if (p.respOn && y < (p.respYrsLeft || 0)) {
           var respAnnual = (p.respContrib || 0) * 12 * (p.respKids || 1);
@@ -4403,17 +4664,18 @@ function runMC(p, N, _progressCb) {
         if (p.cOn && cAlive && !cRetired) {
           var _cSalMul = 1;
           if ((p.salVol || 0) > 0) { _cSalMul = Math.max(0.2, 1 + (p.salVol || 0) * (2 * Math.random() - 1)); }
-          if ((p.disabProb || 0) > 0 && Math.random() < (p.disabProb || 0)) { _cSalMul *= Math.max(0, 1 - (p.disabMo || 6) / 12); }
+          if (_cDisabTrig) { _cSalMul *= Math.max(0, 1 - (p.disabMo || 6) / 12); }
           var _cAdjGr = cGr * _cSalMul;
           var cTfsaLim = p.cTFSAC != null ? p.cTFSAC : Math.round(7e3 * Math.pow(1 + p.inf, y) / 500) * 500;
-          crr = crr * (1 + retRR) + (p.cRRSPC || 0) * _cAdjGr;
-          ctf = ctf * (1 + retTF) + cTfsaLim;
+          crr = crr * (1 + cRetRR) + (p.cRRSPC || 0) * _cAdjGr;
+          ctf = ctf * (1 + cRetTF) + cTfsaLim;
           if (_maOn) {
-            var _cnrTax = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
-            cnr = cnr + cnr * retNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
+            var _cnrTax = calcNRItemizedTax(cnr, cRetNR, _cMaAllocNR, _cMaMargRate, bndR, p.prov);
+            cnr = cnr + cnr * cRetNR - _cnrTax + (p.cNRC || 0) * _cAdjGr;
           } else {
-            cnr = cnr * (1 + retNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
+            cnr = cnr * (1 + cRetNR - (p.nrTaxDrag || 9e-3)) + (p.cNRC || 0) * _cAdjGr;
           }
+          cNrACB += (p.cNRC || 0) * _cAdjGr; // cost base grows with contributions
         }
       } else {
         // Retirement: accounts grow, no new contributions
@@ -4462,13 +4724,13 @@ function runMC(p, N, _progressCb) {
           nr = Math.max(0, nr - respAnnual);
         }
         if (p.cOn && cAlive) {
-          crr *= 1 + retRR;
-          ctf *= 1 + retTF;
+          crr *= 1 + cRetRR;
+          ctf *= 1 + cRetTF;
           if (_maOn) {
-            var _cnrTaxRet = calcNRItemizedTax(cnr, retNR, _glideAlloc(_maAllocNR), _maMargRate, bndR, p.prov);
-            cnr = cnr + cnr * retNR - _cnrTaxRet;
+            var _cnrTaxRet = calcNRItemizedTax(cnr, cRetNR, _cMaAllocNR, _cMaMargRate, bndR, p.prov);
+            cnr = cnr + cnr * cRetNR - _cnrTaxRet;
           } else {
-            cnr *= 1 + retNR - (p.nrTaxDrag || 9e-3);
+            cnr *= 1 + cRetNR - (p.nrTaxDrag || 9e-3);
           }
         }
         var rrifMin = getRRIFMin(age, rr), cRrifMin = p.cOn && cAlive ? getRRIFMin(cAge2, crr) : 0;
@@ -4485,13 +4747,20 @@ function runMC(p, N, _progressCb) {
         }
         var need = Math.max(0, spending - govInc - rrifMin - cRrifMin - meltAmt);
         if (p.cOn && cAge2 === Math.floor(cSimDeath) && y > 0) {
+          // Canonical survivor rollover — harmonized with optimizeDecum
+          // path. Spousal rollover is tax-free for registered plans; NR
+          // transfers at ACB (combined under primary's cost base).
           rr += crr;
           tf += ctf;
-          nr += cnr;
-          lira += cLira; // LOG-07: transfer spouse LIRA
+          nr += cnr; nrACB += cNrACB; // inherit spouse's cost basis
+          lira += cLira;
+          if (typeof cdc === "number") { dc += cdc; cdc = 0; }
+          if (typeof cdc2 === "number") { dc2 += cdc2; cdc2 = 0; }
+          if (typeof cFhsa === "number") { fhsa += cFhsa; cFhsa = 0; }
           crr = 0;
           ctf = 0;
           cnr = 0;
+          cNrACB = 0;
           cLira = 0;
         }
         var _wFromRR = 0, _wFromTF = 0, _wFromNR = 0, _wFromCRR = 0, _wFromCTF = 0, _wFromCNR = 0;
@@ -4658,6 +4927,48 @@ function runMC(p, N, _progressCb) {
       var _bizDivInfo = null; // divInfo to pass to calcTax
       var _bizSaleCGtaxable = 0;
       _bizCorpTaxThisYr = 0; _bizDivThisYr = 0; _bizSalThisYr = 0; _bizExtractThisYr = 0;
+      var _bizSoleNetThisYr = 0, _bizSoleCppDeduct = 0;
+      if (p.bizOn && p.bizType === "sole") {
+        // Travailleur autonome (sole prop / T2125). Net self-employment
+        // income flows directly to personal taxable income. No corporation,
+        // no retained earnings, no dividends, no LCGE on goodwill sale.
+        // Self-employed CPP/QPP: contributor pays both halves (~11.9%);
+        // the "employer half" is deductible against net income.
+        if (!retired && alive) {
+          var _soleVolNoise = (p.bizSoleVol || 0) > 0 ? tRn(999) * (p.bizSoleVol || 0) : 0;
+          var _soleGrowthM = Math.pow(1 + (p.bizSoleGrowth || 0), y);
+          var _soleRev = (p.bizSoleRev || 0) * infM * _soleGrowthM * (1 + _soleVolNoise);
+          var _soleExp = (p.bizSoleExp || 0) * infM * _soleGrowthM;
+          var _soleDebtPay = _bizDebt > 0 ? _bizDebtPay : 0;
+          var _soleNet = Math.max(0, _soleRev - _soleExp - _soleDebtPay);
+          if (_bizDebt > 0) {
+            var _soleIntPay = _bizDebt * (p.bizDebtRate || 0);
+            var _solePrinPay = Math.max(0, _bizDebtPay - _soleIntPay);
+            _bizDebt = Math.max(0, _bizDebt - _solePrinPay);
+          }
+          // Self-employed CPP/QPP — employer half deductible. Uses the
+          // fiscal-constants YMPE (C.QPP_MGA, already 2026-indexed) so the
+          // test suite's constants-alignment check picks up future updates.
+          var _ympe = (typeof C !== "undefined" && C.QPP_MGA ? C.QPP_MGA : 68500) * infM;
+          var _basicExempt = (typeof C !== "undefined" && C.QPP_BASIC_EXEMPT ? C.QPP_BASIC_EXEMPT : 3500) * infM;
+          var _pensionable = Math.min(Math.max(0, _soleNet - _basicExempt), _ympe - _basicExempt);
+          _bizSoleCppDeduct = _pensionable * 0.0595;
+          _bizSoleNetThisYr = Math.max(0, _soleNet - _bizSoleCppDeduct);
+          _bizSalThisYr = _bizSoleNetThisYr; // surfaced as "biz salary-equivalent" for revData
+          _bizCumSalary += _bizSoleNetThisYr; _bizSalYrs += (_bizSoleNetThisYr > 0 ? 1 : 0);
+        }
+        // Business sale — sole prop assets/goodwill. No LCGE (only QSBC shares
+        // qualify). Full capital gain enters personal taxable income at
+        // inclusion rates. Proceeds flow to NR (no corp to deposit into).
+        if (p.bizSaleAge > 0 && age === p.bizSaleAge) {
+          var _soleGain = Math.max(0, (p.bizSalePrice || 0) * infM - (p.bizSaleACB || 0));
+          var _cgThrSole = (p.cgThresh || C.CG_THRESHOLD) * infM;
+          _bizSaleCGtaxable = _soleGain > _cgThrSole
+            ? _cgThrSole * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_soleGain - _cgThrSole) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+            : _soleGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
+          nr += (p.bizSalePrice || 0) * infM;
+        }
+      }
       if (p.bizOn && p.bizType === "ccpc") {
         if (!retired && alive) {
           // Pre-retirement: business income + compensation
@@ -4791,12 +5102,43 @@ function runMC(p, N, _progressCb) {
           if (p.cOn && cAlive) {
             var cQppInc = cAge2 >= (p.cQppAge || 65) ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM : 0;
             var cPenInc = 0;
-            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12;
-            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = (p.cDCBal || 0) * 0.04;
+            // Primary spouse pension (monthly → annual, DB vs DC/RPDB/RRS/RVER)
+            if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12 * ((+p.cPenIdx || 0) ? infM : 1);
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) cPenInc = cdc * 0.04;
+            // Secondary spouse pension (DB or CD — e.g. ex-employer plan)
+            if (cRetired) {
+              if (p.cPen2Type === "db") cPenInc += (p.cPen2M || 0) * 12 * ((+p.cPen2Idx || 0) ? infM : 1);
+              if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) cPenInc += cdc2 * 0.04;
+            }
+            // Spouse bridge benefit (DB supplement between retAge and age cBrEnd,
+            // typically 65 when QPP kicks in full-force). Flat monthly, not indexed.
+            var cBridgeInc = 0;
+            if (cRetired && p.cBridge && p.cBrEnd > 0 && cAge2 < p.cBrEnd) {
+              cBridgeInc = (p.cBrAmt || 0) * 12;
+              cPenInc += cBridgeInc;
+            }
+            // Spouse part-time income in retirement (flat monthly, for cPtYrs years
+            // starting from spouse retirement age).
+            var cPtInc = 0;
+            if (cRetired && p.cPtM > 0 && p.cPtYrs > 0) {
+              var _cYrsInRet = Math.max(0, cAge2 - (p.cRetAge || 65));
+              if (_cYrsInRet < p.cPtYrs) cPtInc = (p.cPtM || 0) * 12 * infM;
+            }
             _ctiQpp = cQppInc; _ctiPen = cPenInc;
             _ctiRrif = cEstRrifMin || 0;
             _ctiOther = (cLiraWith || 0);
             _ctiOther += _wFromCRR; // spouse RRSP voluntary withdrawals are taxable
+            _ctiOther += cPtInc;    // part-time employment income
+            // Spouse NR capital gains on retirement withdrawals — parity
+            // with primary (_nrIncl). Only the gain portion of cNR is
+            // taxable, split across cgIncLo/cgIncHi at cgThresh.
+            var _cNrGainPct = (cnr + _wFromCNR) > 0 && cNrACB < (cnr + _wFromCNR) ? 1 - cNrACB / (cnr + _wFromCNR) : 0;
+            var _cNrTaxableGain = _wFromCNR * _cNrGainPct;
+            var _cCgThr = (p.cgThresh || C.CG_THRESHOLD) * infM;
+            var _cNrIncl = _cNrTaxableGain > _cCgThr
+              ? _cCgThr * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_cNrTaxableGain - _cCgThr) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+              : _cNrTaxableGain * (p.cgIncLo || C.CG_INCLUSION_LOW);
+            _ctiOther += _cNrIncl;
             var _cActualInc = _ctiQpp + _ctiPen + _ctiRrif + _ctiOther;
             var cOasInc = cAge2 >= (p.cOasAge || 65) ? calcOAS(p.cOasAge || 65, _cActualInc, y, p.inf, cAge2) * 12 : 0;
             _ctiOas = cOasInc;
@@ -4821,7 +5163,21 @@ function runMC(p, N, _progressCb) {
               taxableInc = 0; // pure dividend, no employment ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ no salary income
             }
           }
-          if (p.cOn && cAlive && !cRetired) cTaxableInc = (p.cSal || 0) * infM;
+          // Sole prop: net self-employment income adds to personal taxable
+          // income alongside any employment salary (owner can hold both).
+          if (p.bizOn && p.bizType === "sole" && _bizSoleNetThisYr > 0) {
+            taxableInc += _bizSoleNetThisYr;
+          }
+          if (p.cOn && cAlive && !cRetired) {
+            cTaxableInc = (p.cSal || 0) * infM;
+            // Spouse RPA employee contribution is tax-deductible (CD/RPDB/RRS/RVER)
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0) {
+              cTaxableInc = Math.max(0, cTaxableInc - (p.cPenEE || 0));
+            }
+            if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPen2Type) >= 0) {
+              cTaxableInc = Math.max(0, cTaxableInc - (p.cPen2EE || 0));
+            }
+          }
         }
         taxableInc = Math.max(0, taxableInc);
         // CCPC: add business sale capital gain if applicable
@@ -4870,6 +5226,9 @@ function runMC(p, N, _progressCb) {
         revData[y].corpSal = _bizSalThisYr; revData[y].corpTax = _bizCorpTaxThisYr;
         revData[y].corpCDA = corpCDA; revData[y].corpRDTOH = corpRDTOH;
         revData[y].corpExtract = _bizExtractThisYr; revData[y].bizDebt = _bizDebt;
+        // Sole-proprietorship observability
+        revData[y].bizSoleNet = _bizSoleNetThisYr;
+        revData[y].bizSoleCppDeduct = _bizSoleCppDeduct;
         revData[y].ippBal = _ippBal;
       }
       // FTQ: contribution deducted from NR; tax credit applied in si===0 block above
@@ -4934,17 +5293,26 @@ function runMC(p, N, _progressCb) {
     var finalYrPension = fP.rr > 0 ? getRRIFMin(simDeath, fP.rr) : 0;
     var pRrsp = p.cOn ? (fP.rr + (fP.lira || 0) + (fP.dc || 0) + (fP.dc2 || 0)) : rrspAtDeath + (fP.dc || 0) + (fP.dc2 || 0);
     var cRrspEst = p.cOn ? ((fP.crr || 0) + (fP.cLira || 0)) : 0;
-    // Rental property deemed disposition at death
+    // Rental property deemed disposition at death.
+    // Previous code read rp.origV from p.props, but origV only lives on
+    // reVals (the per-sim projection). The loop therefore never fired,
+    // and estate CG on rentals was silently 0 regardless of appreciation.
+    // Now iterates reVals (with its projected v + stored origV) and uses
+    // p.props[i].pri for the primary-residence exemption check.
     var reDeathCG = 0;
-    if (p.props && p.props.length > 0) {
-      p.props.forEach(function(rp) {
-        if (rp.on && !rp.pri && rp.origV > 0) {
-          var propVal = (rp.v || 0) > 0 ? rp.v : rp.origV * Math.pow(1 + (rp.ri || 0.03), maxYrs);
-          var propCG = Math.max(0, propVal - rp.origV);
-          var cgThr4 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
-          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (propCG - cgThr4) * (p.cgIncHi || C.CG_INCLUSION_HIGH) : propCG * (p.cgIncLo || C.CG_INCLUSION_LOW);
+    if (reVals && reVals.length > 0) {
+      for (var _rdi = 0; _rdi < reVals.length; _rdi++) {
+        var _rv = reVals[_rdi];
+        var _rp = (p.props || [])[_rdi] || {};
+        if (!_rp.pri && _rv && _rv.origV > 0) {
+          var _propVal = _rv.v > 0 ? _rv.v : _rv.origV * Math.pow(1 + (_rv.ri || 0.03), maxYrs);
+          var _propCG = Math.max(0, _propVal - _rv.origV);
+          var _cgThr4 = (p.cgThresh || C.CG_THRESHOLD) * Math.pow(1 + p.inf, maxYrs);
+          reDeathCG += _propCG > _cgThr4
+            ? _cgThr4 * (p.cgIncLo || C.CG_INCLUSION_LOW) + (_propCG - _cgThr4) * (p.cgIncHi || C.CG_INCLUSION_HIGH)
+            : _propCG * (p.cgIncLo || C.CG_INCLUSION_LOW);
         }
-      });
+      }
     }
     var estateIncome = pRrsp + taxableGain + finalYrPension + reDeathCG;
     // CCPC: corporate liquidation at death ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Ãƒâ€šÃ‚Â§5.8
@@ -4977,7 +5345,18 @@ function runMC(p, N, _progressCb) {
     else if (p.prov === "AB") probate = C.PROBATE.AB.flat;
     else if (p.prov === "QC") probate = C.PROBATE.QC.flat;
     else probate = Math.max(0, _estGross * 0.004);
-    var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0);
+    // Term/permanent life coverage layers (insVie). Term pays only if
+    // death occurs within insVieDur years of simulation start; permanent
+    // always pays. Additive to lifeIns/cLifeIns already carried forward.
+    var _pDeathYr = Math.max(0, simDeath - p.age);
+    var _insVieDurEff = p.insVieDur > 0 ? p.insVieDur : 20;
+    var _cInsVieDurEff = p.cInsVieDur > 0 ? p.cInsVieDur : 20;
+    var _insVieDeathBen = (p.insViePrime > 0 && (p.insVieCov || 0) > 0 &&
+      ((p.insVieType === "perm") || _pDeathYr < _insVieDurEff)) ? (p.insVieCov || 0) : 0;
+    var _cDeathYr = p.cOn ? Math.max(0, (cSimDeath || p.cDeath || 0) - p.cAge) : 0;
+    var _cInsVieDeathBen = p.cOn && p.cInsViePrime > 0 && (p.cInsVieCov || 0) > 0 &&
+      ((p.cInsVieType === "perm") || _cDeathYr < _cInsVieDurEff) ? (p.cInsVieCov || 0) : 0;
+    var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0) + _insVieDeathBen + _cInsVieDeathBen;
     // GK per-sim stats
     gkAllCuts.push(gkCutCount); gkAllRaises.push(gkRaiseCount); gkAllCutYrs.push(gkCutYrs); gkAllMaxStreak.push(gkMaxCutStreak);
     gkAllMinFactor.push(gkMinFactor);
@@ -4986,7 +5365,7 @@ function runMC(p, N, _progressCb) {
     if (gkMinSpendR < Infinity) gkAllMinSpend.push(gkMinSpendR);
     estateTaxes.push(estTax);
     estateNets.push(estateNet);
-    fins.push(finalVal);
+    fins.push(finalVal); finalsRaw.push(finalVal);
     liqFins.push(liqFinal);
     ruinAges.push(ruinAge);
     deathAges.push(simDeath);
@@ -5006,44 +5385,58 @@ function runMC(p, N, _progressCb) {
   liqFins.sort(function(a, b) {
     return a - b;
   });
-  ruinAges.sort(function(a, b) {
-    return a - b;
-  });
-  var medFin = fins[Math.floor(N * 0.5)];
-  var liqMedF = liqFins[Math.floor(N * 0.5)];
-  var liqP5 = liqFins[Math.floor(N * 0.05)];
-  var liqP25 = liqFins[Math.floor(N * 0.25)];
-  var liqP75 = liqFins[Math.floor(N * 0.75)];
-  var liqP95 = liqFins[Math.floor(N * 0.95)];
+  // Post-filter sample sizes. N remains the total sim count (denominator for
+  // succ/ruin ratios). M/L are the denominators for percentile/mean stats
+  // computed on the surviving finite samples.
+  var M = fins.length, L = liqFins.length;
+  // Sorted copy of ruin ages for percentile/median use. The original
+  // ruinAges keeps its push-order so deathVsRuin pairs remain aligned
+  // and medSimIdx can read the sim's actual ruin age, not a sorted one.
+  var ruinAgesSorted = ruinAges.slice().sort(function(a, b) { return a - b; });
+  var medFin = fins[Math.floor(M * 0.5)];
+  var liqMedF = liqFins[Math.floor(L * 0.5)];
+  var liqP5 = liqFins[Math.floor(L * 0.05)];
+  var liqP25 = liqFins[Math.floor(L * 0.25)];
+  var liqP75 = liqFins[Math.floor(L * 0.75)];
+  var liqP95 = liqFins[Math.floor(L * 0.95)];
+  // medSimIdx now matches against the unsorted finalsRaw so medPath/Final/
+  // Ruin/Death/Estate all come from the SAME simulation — the one whose
+  // final wealth is closest to the sorted median.
   var medSimIdx = 0, medSimDist = Infinity;
   for (var mi = 0; mi < N; mi++) {
-    var d3 = Math.abs((all[mi][all[mi].length - 1] || { total: 0 }).total - medFin);
+    var _rawFin = finalsRaw[mi];
+    if (!isFinite(_rawFin)) continue;
+    var d3 = Math.abs(_rawFin - medFin);
     if (d3 < medSimDist) {
       medSimDist = d3;
       medSimIdx = mi;
     }
   }
   var medPath = all[medSimIdx];
-  var medSimFinal = fins[medSimIdx] || 0;
+  var medSimFinal = finalsRaw[medSimIdx] || 0;
   var medSimRuin = ruinAges[medSimIdx] || 999;
   var medSimDeath = deathAges[medSimIdx] || p.deathAge;
   var medSimEstateTax = estateTaxes[medSimIdx] || 0;
   var medSimEstateNet = estateNets[medSimIdx] || 0;
+  // succ/ruinPct use N (total sim count): numerator ruinAges is 1:1 with N.
   var succ = ruinAges.filter(function(a) {
     return a >= 999;
   }).length / N;
+  // mean/sd/percentiles use M (post-filter fins length) so NaN-dropped sims
+  // don't dilute the stats. v5i now indexes fins with its actual length.
   var mean = fins.reduce(function(a, b) {
     return a + b;
-  }, 0) / N;
+  }, 0) / M;
   var sd = Math.sqrt(fins.reduce(function(a, b) {
     return a + Math.pow(b - mean, 2);
-  }, 0) / N);
-  var v5i = Math.floor(N * 0.05), var5 = fins[v5i];
+  }, 0) / M);
+  var v5i = Math.floor(M * 0.05), var5 = fins[v5i];
   var cvar5 = v5i > 0 ? fins.slice(0, v5i).reduce(function(a, b) {
     return a + b;
   }, 0) / v5i : fins[0];
   var discFinal = Math.pow(1 + p.inf, maxYrs);
-  var medRuin = ruinAges[Math.floor(N * 0.5)];
+  // medRuin from the sorted copy to preserve pairing of the original.
+  var medRuin = ruinAgesSorted[Math.floor(N * 0.5)];
   var avgDeath = p.stochMort ? Math.round(deathAges.reduce(function(a, b) {
     return a + b;
   }, 0) / N) : p.deathAge;
@@ -5468,20 +5861,20 @@ function runMC(p, N, _progressCb) {
     deathAges: deathAges,
     cDeathAges: cDeathAges,
     ruinAges: ruinAges,
-    medF: fins[Math.floor(N * 0.5)],
+    medF: fins[Math.floor(M * 0.5)],
     p5F: var5,
-    p25F: fins[Math.floor(N * 0.25)],
-    p75F: fins[Math.floor(N * 0.75)],
-    p95F: fins[Math.floor(N * 0.95)],
+    p25F: fins[Math.floor(M * 0.25)],
+    p75F: fins[Math.floor(M * 0.75)],
+    p95F: fins[Math.floor(M * 0.95)],
     mean,
     sd,
     var5,
     cvar5,
-    rMedF: fins[Math.floor(N * 0.5)] / discFinal,
+    rMedF: fins[Math.floor(M * 0.5)] / discFinal,
     rP5F: var5 / discFinal,
-    rP25F: fins[Math.floor(N * 0.25)] / discFinal,
-    rP75F: fins[Math.floor(N * 0.75)] / discFinal,
-    rP95F: fins[Math.floor(N * 0.95)] / discFinal,
+    rP25F: fins[Math.floor(M * 0.25)] / discFinal,
+    rP75F: fins[Math.floor(M * 0.75)] / discFinal,
+    rP95F: fins[Math.floor(M * 0.95)] / discFinal,
     rMean: mean / discFinal,
     rSD: sd / discFinal,
     rVar5: var5 / discFinal,
@@ -5496,22 +5889,18 @@ function runMC(p, N, _progressCb) {
     rLiqP5: liqP5 / discFinal,
     hasRE: (p.props || []).some(function(pr){return pr.on;}),
     // Estate metrics
-    medEstateTax: estateTaxes.sort(function(a, b) {
-      return a - b;
-    })[Math.floor(N * 0.5)],
-    medEstateNet: estateNets.sort(function(a, b) {
-      return a - b;
-    })[Math.floor(N * 0.5)],
-    p5EstateNet: estateNets[Math.floor(N * 0.05)],
-    p10EstateNet: estateNets[Math.floor(N * 0.1)],
-    p25EstateNet: estateNets[Math.floor(N * 0.25)],
-    p75EstateNet: estateNets[Math.floor(N * 0.75)],
-    p90EstateNet: estateNets[Math.floor(N * 0.9)],
-    p95EstateNet: estateNets[Math.floor(N * 0.95)],
-    p5EstateTax: estateTaxes[Math.floor(N * 0.05)],
-    p25EstateTax: estateTaxes[Math.floor(N * 0.25)],
-    p75EstateTax: estateTaxes[Math.floor(N * 0.75)],
-    p95EstateTax: estateTaxes[Math.floor(N * 0.95)],
+    medEstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.5)]; })(),
+    medEstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.5)]; })(),
+    p5EstateNet:  (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.05)]; })(),
+    p10EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.1)]; })(),
+    p25EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.25)]; })(),
+    p75EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.75)]; })(),
+    p90EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.9)]; })(),
+    p95EstateNet: (function(){ var s=estateNets.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.95)]; })(),
+    p5EstateTax:  (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.05)]; })(),
+    p25EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.25)]; })(),
+    p75EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.75)]; })(),
+    p95EstateTax: (function(){ var s=estateTaxes.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length*0.95)]; })(),
     avgEstateTax: estateTaxes.reduce(function(a, b) {
       return a + b;
     }, 0) / N

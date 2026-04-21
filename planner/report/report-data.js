@@ -389,12 +389,26 @@
     // Profile detection
     var R = window.BFmt.detectProfile(p, mc);
 
-    // Sensitivity data
+    // Sensitivity data — Phase 2 pipeline populates `mc._sweeps` with real
+    // perturbed MC runs (returns ±1%, inflation ±1%). Each row is {label, lo, hi}
+    // where lo/hi are deltas vs baseline medF. The legacy `_sensReturn` et al.
+    // fields (closed-form) are never emitted by the v2 engine — we only read sweeps.
     var sensData = [];
-    if (mc._sensReturn) sensData.push({ label: fr ? "Rendements" : "Returns", lo: mc._sensReturn.lo || 0, hi: mc._sensReturn.hi || 0 });
-    if (mc._sensInflation) sensData.push({ label: "Inflation", lo: mc._sensInflation.lo || 0, hi: mc._sensInflation.hi || 0 });
-    if (mc._sensSpending) sensData.push({ label: fr ? "D\u00e9penses" : "Spending", lo: mc._sensSpending.lo || 0, hi: mc._sensSpending.hi || 0 });
-    if (mc._sensMortality) sensData.push({ label: fr ? "Long\u00e9vit\u00e9" : "Longevity", lo: mc._sensMortality.lo || 0, hi: mc._sensMortality.hi || 0 });
+    var _baseMedF = (mc && (mc.rMedF != null ? mc.rMedF : mc.medF)) || 0;
+    if (mc && mc._sweeps && mc._sweeps.returns && mc._sweeps.returns.up && mc._sweeps.returns.down) {
+      sensData.push({
+        label: fr ? "Rendements \u00b1 1 %" : "Returns \u00b1 1%",
+        lo: (mc._sweeps.returns.down.medF || 0) - _baseMedF,
+        hi: (mc._sweeps.returns.up.medF || 0) - _baseMedF
+      });
+    }
+    if (mc && mc._sweeps && mc._sweeps.inflation && mc._sweeps.inflation.up && mc._sweeps.inflation.down) {
+      sensData.push({
+        label: fr ? "Inflation \u00b1 1 %" : "Inflation \u00b1 1%",
+        lo: (mc._sweeps.inflation.down.medF || 0) - _baseMedF,
+        hi: (mc._sweeps.inflation.up.medF || 0) - _baseMedF
+      });
+    }
 
     // Extract first names for narrative personalization
     var _fn = (client.firstName || (client.name || '').split(/\s+/)[0] || '').trim();

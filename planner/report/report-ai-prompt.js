@@ -11,8 +11,10 @@
   // ══════════════════════════════════════════════════════════════
 
   var SLOTS = [
+    { key: 'advisor_letter', label: 'Advisor Letter',
+      hint: '180-220 words. Warm, personal opening letter from the advisor to the client. Address them by first name. Reflect what they are likely worried about given their phase (accum/transition/decum), couple status, and any declared goals. Set expectations for what the report contains. End with "Consult a certified financial planner" if any action is hinted at. Tone: professional-human, not corporate. No numbers yet.' },
     { key: 'overall_assessment', label: 'Overall Assessment',
-      hint: 'Synthesize the full picture in 4-6 sentences. Cover success rate, key strengths, main risk, and one actionable observation. This is the first thing the reader sees.' },
+      hint: 'Synthesize the full picture in 4-6 sentences. Cover success rate, key strengths, main risk, and one actionable observation. This is the first thing the reader sees after the advisor letter.' },
     { key: 'verdict', label: 'Verdict',
       hint: '2-3 sentences interpreting the success rate and grade. Reference the P50/P25 wealth values and what they mean for the client.' },
     { key: 'page_zero_verdict', label: 'Mirror Block',
@@ -46,7 +48,9 @@
     { key: 'family_insight', label: 'Family', conditional: 'family',
       hint: '2 sentences on family context and how dependents affect the plan.' },
     { key: 'goals_insight', label: 'Goals', conditional: 'goals',
-      hint: '2 sentences on goal feasibility based on the projections.' }
+      hint: '2 sentences on goal feasibility based on the projections. Reference specific goals by their declared description (verbatim) and their computed probability_met from the goals_ledger.' },
+    { key: 'stress_interpretation', label: 'Stress Test Interpretation', conditional: 'stress',
+      hint: '2-3 sentences reading the stress_scenarios results. Identify which scenario the plan is most vulnerable to, which it handles well, and what the pattern indicates about the plan\'s robustness. Reference the specific Δ success rate deltas.' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -57,25 +61,39 @@
     'You are a Canadian retirement planning analyst for BuildFi. ' +
     'You write clear, data-driven observations about retirement projections.\n\n' +
     '## COMPLIANCE RULES (AMF/OSFI)\n' +
-    '- Use CONDITIONAL language only: could, would, might, may, appears to, suggests, indicates.\n' +
-    '- NEVER use prescriptive language: should, must, recommend, advise, il faut, devriez.\n' +
+    '- Use CONDITIONAL language only: could, would, might, may, appears to, suggests, indicates, pourrait, serait.\n' +
+    '- NEVER use prescriptive language: should, must, recommend, advise, il faut, faudrait, doit, devra, devrait, devriez.\n' +
+    '- NEVER use "il faudrait" or equivalent passive constructions that imply duty.\n' +
     '- You OBSERVE and ANALYZE. You do NOT advise or prescribe.\n' +
     '- End with "Consult a certified financial planner" if mentioning any specific action.\n\n' +
-    '## DATA INTEGRITY\n' +
-    '- ONLY reference numbers that appear in the DATA section below.\n' +
-    '- NEVER invent, estimate, or round numbers differently than provided.\n' +
-    '- If a number is $145,230, say $145,230 or $145K — never $150K or $145,000.\n' +
+    '## DATA INTEGRITY — STRICT\n' +
+    '- ONLY use numbers that appear LITERALLY in the DATA section below.\n' +
+    '- Do NOT derive, sum, ratio, multiply, or recompute numbers in the narrative.\n' +
+    '- If the DATA shows "p25Wealth: 435K$", write **435K$**, not **$435,000** and not "around $440K".\n' +
+    '- If a value is null or absent, OMIT it from the narrative — do not infer it.\n' +
+    '- The only allowed transformations are: copy verbatim, round already-rounded values differently is forbidden.\n' +
     '- If data is missing for a slot, write "Data insufficient for analysis." in that slot.\n\n' +
+    '## CALIBRATION BY finLiteracy\n' +
+    '- "beginner": NEVER use P25/P50/P75, percentiles, stochastic, volatility, alpha, MER, FERR/RRIF jargon. Translate to plain language.\n' +
+    '  - P50 → "typical scenario" / "scenario typique"\n' +
+    '  - P25 → "cautious scenario" / "scenario prudent"\n' +
+    '  - P75 → "favourable scenario" / "scenario favorable"\n' +
+    '  - Monte Carlo → "5000 simulated futures" / "5000 avenirs simules"\n' +
+    '- "intermediate": technical terms OK but with brief context on first use.\n' +
+    '- "advanced": full technical vocabulary acceptable.\n\n' +
+    '## CALIBRATION BY detailPreference\n' +
+    '- "concise": MAX 2 sentences per slot. Strip qualifying clauses. Use short sentences.\n' +
+    '- "balanced": 2-3 sentences per slot.\n' +
+    '- "detailed": 2-4 sentences per slot (max 5 for overall_assessment).\n\n' +
     '## STYLE\n' +
     '- Professional but warm. Not robotic.\n' +
-    '- 2-3 sentences per slot (max 4 for overall_assessment).\n' +
-    '- Use bold (**text**) for key numbers.\n' +
-    '- Bilingual: respond in the language specified in the DATA section.\n\n' +
+    '- Use bold (**text**) for key numbers — and only for numbers that appear in DATA verbatim.\n' +
+    '- Bilingual: respond in the language specified in the DATA section.\n' +
+    '- Use client first name and goal descriptions verbatim when relevant.\n\n' +
     '## CROSS-SECTION SYNTHESIS\n' +
     '- An "adjacent_findings" object provides numbers from neighboring sections.\n' +
     '- For each slot, weave in ONE relevant adjacent finding (not all of them).\n' +
-    '- Example: a tax slot can reference the income gap; an income slot can reference the lifetime tax.\n' +
-    '- The goal is one continuous analysis — not 8 isolated paragraphs.\n\n' +
+    '- The goal is one continuous analysis — not isolated paragraphs.\n\n' +
     '## OUTPUT FORMAT\n' +
     'Return a JSON object with slot keys as properties. Each value is a string (plain text with **bold** for emphasis).\n' +
     'Only include slots listed in the REQUESTED SLOTS section.\n' +
@@ -182,40 +200,11 @@
       missingCoreFields: _missingCore
     };
 
-    // Adjacent-section findings — let each slot synthesize across the report.
-    // The AI is encouraged to reference 1 adjacent finding per slot (not all of them)
-    // so the document feels like one analysis instead of 8 disconnected sections.
-    data.adjacent_findings = {
-      income: {
-        coverage: data.govCoverageRatio,
-        gap_monthly: data.monthlyGap,
-        dominant_source: (function() {
-          var q = _fin(d.qppM) || 0, o = _fin(d.oasM) || 0, pen = (p.penM || 0);
-          var top = Math.max(q, o, pen);
-          if (top === 0) return null;
-          return top === q ? (fr ? 'RRQ/RPC' : 'QPP/CPP') : (top === o ? 'PSV/OAS' : (fr ? 'pension' : 'pension'));
-        })()
-      },
-      tax: {
-        lifetime: data.lifetimeTax,
-        effective_rate: data.avgEffectiveRate,
-        clawback_years: data.oasClawbackYears,
-        alpha: data.taxAlpha
-      },
-      estate: {
-        net: data.netEstate,
-        tax_at_death: data.taxAtDeath
-      },
-      risk: {
-        p25: data.p25Wealth,
-        p75: data.p75Wealth,
-        durability: data.savingsDurability
-      },
-      corp: data.corp || null,
-      gis: data.gis || null,
-      debt: data.debts || null,
-      meltdown: data.meltdown || null
-    };
+    // NOTE: `adjacent_findings` is built AFTER the conditional blocks below
+    // (couple/meltdown/realEstate/corp/debt/rsu/gis/family/goals/strategies).
+    // A prior version built it here, at which point data.corp/gis/debts/meltdown
+    // were all undefined → the AI received nulls for cross-section synthesis.
+    // See the end of extractData for the actual assembly.
 
     // Couple data
     if (d.R.couple) {
@@ -311,6 +300,106 @@
       data.strategies = sams.slice(0, 5).map(function(s) { return { name: s.title || s.name || '', impact: f$(Math.round(s.score || 0)) }; });
     }
 
+    // Adjacent-section findings — assembled LAST so conditional blocks above
+    // (corp/gis/debts/meltdown/realEstate/rsu) have populated their data.
+    // The AI is encouraged to reference 1 adjacent finding per slot so the
+    // document reads as one continuous analysis, not N disconnected sections.
+    data.adjacent_findings = {
+      income: {
+        coverage: data.govCoverageRatio,
+        gap_monthly: data.monthlyGap,
+        dominant_source: (function() {
+          var q = _fin(d.qppM) || 0, o = _fin(d.oasM) || 0, pen = (p.penM || 0);
+          var top = Math.max(q, o, pen);
+          if (top === 0) return null;
+          return top === q ? (fr ? 'RRQ/RPC' : 'QPP/CPP') : (top === o ? 'PSV/OAS' : (fr ? 'pension' : 'pension'));
+        })()
+      },
+      tax: {
+        lifetime: data.lifetimeTax,
+        effective_rate: data.avgEffectiveRate,
+        clawback_years: data.oasClawbackYears,
+        alpha: data.taxAlpha
+      },
+      estate: {
+        net: data.netEstate,
+        tax_at_death: data.taxAtDeath
+      },
+      risk: {
+        p25: data.p25Wealth,
+        p75: data.p75Wealth,
+        durability: data.savingsDurability
+      },
+      corp: data.corp || null,
+      gis: data.gis || null,
+      debt: data.debts || null,
+      meltdown: data.meltdown || null,
+      realEstate: data.realEstate || null,
+      rsu: data.rsu || null
+    };
+
+    // Enriched engine data (Phase 2) — surfaces real goals ledger, estate
+    // waterfall decomposition, stress-test succession, and allocation view
+    // so the AI has concrete numbers to weave into each section without
+    // fabricating. Only populated when gen-real-mc.mjs has written them.
+    var enr = mc && mc._enriched ? mc._enriched : null;
+    if (enr) {
+      if (enr.goalsLedger && enr.goalsLedger.length) {
+        data.goals_ledger = enr.goalsLedger.map(function(g) {
+          return {
+            desc: g.desc,
+            amount: f$(g.amount),
+            age: g.targetAge,
+            probability_met: g.probabilityMet + '%',
+            status: g.status,
+            median_available: f$(g.medianAvailable)
+          };
+        });
+      }
+      if (enr.estateWaterfall) {
+        var ew = enr.estateWaterfall;
+        data.estate_waterfall = {
+          gross: f$(ew.grossEstate),
+          rrsp_tax: f$(ew.deductions.rrspTax),
+          cg_tax: f$(ew.deductions.cgTax),
+          probate: f$(ew.deductions.probate),
+          probate_note: ew.probateConfig ? ew.probateConfig.note : null,
+          net: f$(ew.net),
+          p25_net: ew.p25Net != null ? f$(ew.p25Net) : null
+        };
+      }
+      if (enr.allocation) {
+        data.allocation = {
+          equity_pct: enr.allocation.blended.equityPct + '%',
+          bond_pct: enr.allocation.blended.bondPct + '%',
+          total: f$(enr.allocation.totalWealth)
+        };
+      }
+    }
+
+    // Stress scenarios — per-scenario success rate + medF for AI to reference.
+    if (mc && mc._stress) {
+      data.stress_scenarios = Object.keys(mc._stress).map(function(k) {
+        var s = mc._stress[k];
+        return {
+          scenario: k,
+          success_rate: s.succ != null ? Math.round(s.succ * 100) + '%' : null,
+          medF: s.medF != null ? f$(s.medF) : null,
+          p25: s.p25F != null ? f$(s.p25F) : null
+        };
+      });
+    }
+
+    // Sweeps — paired up/down deltas vs baseline. AI can quote "returns -1% → medF drops X".
+    if (mc && mc._sweeps) {
+      data.sensitivity_sweeps = {
+        returns_up_medF: mc._sweeps.returns && mc._sweeps.returns.up ? f$(mc._sweeps.returns.up.medF) : null,
+        returns_down_medF: mc._sweeps.returns && mc._sweeps.returns.down ? f$(mc._sweeps.returns.down.medF) : null,
+        inflation_up_medF: mc._sweeps.inflation && mc._sweeps.inflation.up ? f$(mc._sweeps.inflation.up.medF) : null,
+        inflation_down_medF: mc._sweeps.inflation && mc._sweeps.inflation.down ? f$(mc._sweeps.inflation.down.medF) : null
+      };
+    }
+
     return data;
   }
 
@@ -335,6 +424,7 @@
       if (s.conditional === 'expert') return d.exp;
       if (s.conditional === 'family') return d.R.hasFamily;
       if (s.conditional === 'goals') return d.R.hasGoals;
+      if (s.conditional === 'stress') return !!(data.stress_scenarios && data.stress_scenarios.length);
       return true;
     });
 
