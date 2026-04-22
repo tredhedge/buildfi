@@ -17,20 +17,33 @@ const b64urlDecode = (str) => {
 
 // ═══════════════════════════════════════════════════════════════════
 // BuildFi — Outil interactif de gestion de dettes / Debt Management Tool
-// Standalone bonus for Essentiel + Intermédiaire tiers
+// Free standalone SEO surface — complements Bilan 360 $29.99
 // ═══════════════════════════════════════════════════════════════════
 
-// ── Palette aligned with BuildFi planner (warm earth tones) ──
-const DK = {
-  bg: "#242018", card: "#2c2820", s2: "#353028",
-  border: "#443e34", borderLight: "#5a5348",
-  tx: "#d4cec4", txDim: "#9a8e80", txMuted: "#6e6458",
-  accent: "#c49a1a", accentBg: "rgba(196,154,26,.1)",
-  red: "#c45050", redBg: "rgba(196,80,80,.08)",
-  green: "#3d9a5e", greenBg: "rgba(61,154,94,.08)",
-  blue: "#5a94c4", blueBg: "rgba(90,148,196,.08)",
-  orange: "#c48a40", orangeBg: "rgba(196,138,64,.08)",
+// ── Palette aligned with planner_v3 (cool slate/navy, gold accent) ──
+// DARK palette (default) + LIGHT palette. Toggle persisted in localStorage.
+const PAL_DARK = {
+  bg: "#252d39", card: "#2d3748", s2: "#344155",
+  border: "#4d5d75", borderLight: "#677b98",
+  tx: "#d7e2ef", txDim: "#bccbe0", txMuted: "#8fa2ba",
+  accent: "#d2a764", accentBg: "rgba(210,167,100,.12)",
+  red: "#cf6060", redBg: "rgba(207,96,96,.10)",
+  green: "#48a66d", greenBg: "rgba(72,166,109,.10)",
+  blue: "#6aa6de", blueBg: "rgba(106,166,222,.10)",
+  orange: "#cf9850", orangeBg: "rgba(207,152,80,.10)",
 };
+const PAL_LIGHT = {
+  bg: "#f5f8fc", card: "#fcfdff", s2: "#eef3f9",
+  border: "#d6e0ec", borderLight: "#c2cfde",
+  tx: "#2a3442", txDim: "#5d7085", txMuted: "#85919f",
+  accent: "#8f6d2f", accentBg: "rgba(143,109,47,.10)",
+  red: "#b93f43", redBg: "rgba(185,63,67,.08)",
+  green: "#2f8a4a", greenBg: "rgba(47,138,74,.08)",
+  blue: "#3b79b6", blueBg: "rgba(59,121,182,.08)",
+  orange: "#b5772f", orangeBg: "rgba(181,119,47,.08)",
+};
+// `DK` exported below inside component as dynamic alias for current theme.
+let DK = PAL_DARK;
 
 // ── Province tax data — ESTIMATED 2026 combined fed+prov marginal brackets ──
 // Source: CRA + Revenu Québec / provincial finance ministry published rates
@@ -259,7 +272,20 @@ function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", sty
 export default function DebtTool() {
   const [lang, setLang] = useState("fr");
   const [activeTab, setActiveTab] = useState(0);
+  const [theme, setTheme] = useState("light");
+  const [mounted, setMounted] = useState(false);
+  // Mutate module-level DK each render so helpers (defined outside) read the current theme palette.
+  // Server-render always uses PAL_LIGHT (mounted=false + default "light") to match landing + legal pages.
+  DK = mounted && theme === "dark" ? PAL_DARK : PAL_LIGHT;
   const fr = lang === "fr";
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const saved = localStorage.getItem("buildfi_theme");
+      if (saved === "dark" || saved === "light") setTheme(saved);
+    } catch {}
+  }, []);
+  useEffect(() => { try { localStorage.setItem("buildfi_theme", theme); } catch {} }, [theme]);
 
   // ── Debts state ──
   const [debts, setDebts] = useState([]);
@@ -1611,7 +1637,7 @@ export default function DebtTool() {
   // MAIN LAYOUT
   // ══════════════════════════════════════════════════════════
   return (
-    <div style={{ minHeight: "100vh", background: DK.bg, color: DK.tx, fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
+    <div suppressHydrationWarning style={{ minHeight: "100vh", background: DK.bg, color: DK.tx, fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
       {/* Google Fonts — @import in <style> is intentional for standalone JSX artifact portability.
           In production build, these would be <link> tags in the HTML shell. */}
       <style>{`
@@ -1678,6 +1704,13 @@ export default function DebtTool() {
             title={fr ? "Conformit\u00e9, hypoth\u00e8ses et confidentialit\u00e9" : "Compliance, assumptions, and privacy"}
             style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
             Info
+          </button>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            title={fr ? "Changer le thème" : "Toggle theme"}
+            aria-label={fr ? "Changer le thème" : "Toggle theme"}
+            style={{ fontSize: 14, padding: "5px 10px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer", fontWeight: 700 }}>
+            {theme === "dark" ? "☀" : "☾"}
           </button>
           <button onClick={() => setLang(lang === "fr" ? "en" : "fr")}
             style={{ fontSize: 12, padding: "5px 12px", background: DK.accentBg, color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
@@ -1767,22 +1800,22 @@ export default function DebtTool() {
               : "Debt is one piece of the plan. BuildFi simulates 5,000 Canadian retirement scenarios — taxes, CPP/OAS, inflation, markets — to see if your money lasts."}
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            {(coupleOn || mortgages.length > 0) ? (
+            {true ? (
               <a href={`/bilan-360?lang=${lang}`} style={{
                 display: "inline-block", padding: "10px 20px", fontSize: 14, fontWeight: 700,
                 background: DK.accent, color: "#1a1714", borderRadius: 8, textDecoration: "none",
                 transition: "opacity .2s"
               }}>
-                {fr ? "Bilan 360 — couples et propriétaires" : "Snapshot 360 — couples & homeowners"}
+                {fr ? "Bilan 360 — 29,99 $" : "Bilan 360 — $29.99"}
                 <span style={{ marginLeft: 6 }} aria-hidden="true">→</span>
               </a>
             ) : (
-              <a href={`/bilan?lang=${lang}`} style={{
+              <a href={`/bilan-360?lang=${lang}`} style={{
                 display: "inline-block", padding: "10px 20px", fontSize: 14, fontWeight: 700,
                 background: DK.accent, color: "#1a1714", borderRadius: 8, textDecoration: "none",
                 transition: "opacity .2s"
               }}>
-                {fr ? "Bilan — votre portrait financier" : "Snapshot — your financial portrait"}
+                {fr ? "Bilan 360" : "Bilan 360"}
                 <span style={{ marginLeft: 6 }} aria-hidden="true">→</span>
               </a>
             )}

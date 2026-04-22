@@ -12,11 +12,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --navy:#1a2744;--gold:#c49a1a;--gold-light:#d4af37;
-  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
-  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
-  --border:#e8e0d4;--border-light:#f0ece4;
-  --danger:#b91c1c;
+  /* Aligned with landing CL_LIGHT palette (planner_v3) */
+  --navy:#172332;--gold:#8f6d2f;--gold-light:#b08a3f;
+  --cream:#f5f8fc;--sand:#eef3f9;--card:#fcfdff;
+  --text-primary:#2a3442;--text-secondary:#5d7085;--text-muted:#85919f;
+  --border:#d6e0ec;--border-light:#eef3f9;
+  --danger:#b93f43;
   --font-display:'Newsreader',Georgia,serif;
   --font-body:'DM Sans',-apple-system,sans-serif;
   --max-narrow:720px;--radius-md:14px;
@@ -78,10 +79,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
     <ul class="nav-links">
-      <li><a href="/bilan">Bilan</a></li>
-      <li><a href="/bilan-360">Bilan 360</a></li>
-      <li><a href="/horizon">Horizon</a></li>
-      <li><a href="/expert/landing">Simulateur</a></li>
+      <li><a href="/#tools">Outils gratuits</a></li>
+      <li><a href="/#pricing">Prix</a></li>
       <li><a href="/#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
@@ -94,10 +93,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   </div>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="/bilan">Bilan</a>
-  <a href="/bilan-360">Bilan 360</a>
-  <a href="/horizon">Horizon</a>
-  <a href="/expert/landing">Simulateur</a>
+  <a href="/#tools">Outils gratuits</a>
+  <a href="/#pricing">Prix</a>
   <a href="/#faq">FAQ</a>
   <a href="/#products" class="nav-cta">Commencer</a>
 </div>
@@ -129,14 +126,29 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <h2 id="h4">Moteur et méthodologie</h2>
   <p id="p4">Le moteur de simulation est validé par plus de 1 000 tests automatisés, dont 453 tests couvrant 54 catégories du moteur de calcul. La fiscalité est modélisée pour les 13 provinces et territoires canadiens. Les constantes (seuils d'imposition, taux de cotisation, prestations maximales) sont mises à jour annuellement. La méthodologie complète est disponible dans les bilans générés.</p>
 
-  <h2 id="h5">Intelligence artificielle</h2>
-  <p id="p5">Les bilans peuvent inclure des sections générées par intelligence artificielle (Anthropic Claude). Ces textes sont produits à partir des résultats numériques de la simulation et ne constituent pas un avis professionnel. En cas d'indisponibilité de l'IA, le bilan est livré avec les données numériques sans narration.</p>
+  <h2 id="h5">Intelligence artificielle et risque d'erreur</h2>
+  <p id="p5">Les bilans peuvent inclure des sections générées par intelligence artificielle (Anthropic Claude). Ces textes sont produits automatiquement à partir des résultats numériques de la simulation. Malgré nos précautions, les grands modèles de langage peuvent produire des erreurs factuelles, des imprécisions, des interprétations biaisées ou des incohérences — un phénomène connu sous le nom d'« hallucination ». <strong>Les textes générés par IA ne constituent pas un avis professionnel et ne doivent pas être traités comme une source faisant autorité.</strong> L'utilisateur doit vérifier toute information importante auprès d'un professionnel qualifié avant d'agir. En cas d'indisponibilité de l'IA, le bilan est livré avec les données numériques sans narration.</p>
+
+  <h2 id="h5c">Exactitude des données saisies</h2>
+  <p id="p5c">La qualité des projections dépend entièrement de l'exactitude des données saisies par l'utilisateur. BuildFi ne vérifie pas l'authenticité des informations saisies (âge, revenu, épargne, statut fiscal, etc.). L'utilisateur est seul responsable de la véracité de ses données et des conséquences d'une saisie inexacte, incomplète ou trompeuse sur les projections générées.</p>
+
+  <h2 id="h5d">Absence de relation fiduciaire ou professionnelle</h2>
+  <p id="p5d">L'utilisation du service ne crée aucune relation fiduciaire, de mandat, de représentation, de planification financière ou de conseil professionnel entre l'utilisateur et BuildFi. Aucun dispositif du service (score, observation, suggestion, narration IA, graphique, simulation) ne doit être interprété comme un avis ou une recommandation personnalisée.</p>
 
   <h2 id="h5b">Programmes gouvernementaux</h2>
   <p id="p5b">Les estimations de RRQ/RPC, PSV/OAS et SRG sont basées sur les règles en vigueur en 2026. Ces programmes peuvent être modifiés par les gouvernements fédéral et provinciaux. Les projections ne reflètent pas les changements législatifs futurs.</p>
 
-  <h2 id="h6">Responsabilité</h2>
-  <p id="p6">Dans toute la mesure permise par la loi applicable, la responsabilité de BuildFi Technologies inc. est limitée au montant payé pour le service. BuildFi n'est pas responsable des décisions financières prises sur la base des projections générées par l'outil. La performance passée ne garantit pas les résultats futurs.</p>
+  <h2 id="h6">Responsabilité et absence de garantie</h2>
+  <p id="p6"><strong>Le service est fourni « tel quel » et « selon la disponibilité », sans aucune garantie expresse ou implicite.</strong> Dans la mesure maximale permise par la loi applicable, BuildFi exclut toute garantie de qualité marchande, d'adéquation à un usage particulier, de non-contrefaçon, d'exactitude ou de disponibilité ininterrompue. La responsabilité cumulée de BuildFi Technologies inc. envers un utilisateur pour toute cause d'action n'excédera pas le montant payé par cet utilisateur pour le service en cause au cours des douze (12) derniers mois. BuildFi n'est pas responsable des dommages indirects, accessoires, spéciaux ou consécutifs, incluant perte de profit, de revenu, d'opportunité, de réputation ou de données. La performance passée ne garantit pas les résultats futurs.</p>
+
+  <h2 id="h6b">Indemnisation par l'utilisateur</h2>
+  <p id="p6b">L'utilisateur s'engage à indemniser et à dégager de toute responsabilité BuildFi Technologies inc., ses administrateurs, employés et fournisseurs contre toute réclamation, perte ou dommage — incluant les honoraires juridiques raisonnables — découlant de sa violation des conditions d'utilisation, de données saisies inexactes, ou de décisions financières prises sur la base des projections.</p>
+
+  <h2 id="h6c">Force majeure et tiers</h2>
+  <p id="p6c">BuildFi n'est pas responsable des défaillances ou interruptions causées par des tiers (Stripe, Vercel, Anthropic, Resend, PostHog) ou par des événements hors de son contrôle raisonnable : cyberattaques, changements législatifs, catastrophes, décisions gouvernementales.</p>
+
+  <h2 id="h6d">Divisibilité</h2>
+  <p id="p6d">Si une clause du présent avis est déclarée invalide ou inapplicable par un tribunal, les autres clauses demeurent pleinement en vigueur.</p>
 
   <h2 id="h7">Renvoi professionnel</h2>
   <p id="p7">Pour toute décision financière importante — planification de retraite, optimisation fiscale, stratégies de décaissement, assurances, succession — consultez un professionnel certifié : planificateur financier (Pl. Fin.), comptable professionnel agréé (CPA), fiscaliste, notaire ou conseiller juridique.</p>
@@ -154,10 +166,10 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footProducts">Produits</div>
-        <a href="/bilan" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan</a>
-        <a href="/bilan-360" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
-        <a href="/horizon" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Horizon</a>
-        <a href="/expert/landing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Laboratoire</a>
+        <a href="/#pricing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
+        <a href="/acheter-planner" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Planner + Rapports</a>
+        <a href="/guides/101" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Guides gratuits</a>
+        <a href="/outils/dettes" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Outils gratuits</a>
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footResources">Ressources</div>

@@ -1,82 +1,84 @@
 // /lib/rate-limit.ts
-// Sliding-window rate limiting backed by Upstash Redis
-// Limits: exports 20/day + 2min cooldown, recalcs 100/day
+// Token-based sliding-window rate limiter for Planner API routes.
+// Redis-backed (Upstash KV). Separate quotas per operation type.
+//
+// Quotas (per 10-minute window, per token):
+//   "export"  — 3  (AI report regeneration — expensive; matches /api/regenerate-report internal limit)
+//   "recalc"  — 60 (quick MC reruns from Planner — cheap but rate-limit to prevent abuse)
 
-import { redis, KEYS } from "@/lib/kv";
+import { Redis } from "@upstash/redis";
 
-interface RateLimitResult {
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
+
+const QUOTAS: Record<string, { max: number; windowSec: number }> = {
+  export: { max: 3, windowSec: 10 * 60 },
+  recalc: { max: 60, windowSec: 10 * 60 },
+};
+
+export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   retryAfterMs?: number;
   reason?: string;
 }
 
-const LIMITS = {
-  export: { perDay: 20, cooldownMs: 2 * 60 * 1000 },
-  recalc: { perDay: 100 },
-} as const;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
+/**
+ * Sliding-window rate check against a token and operation type.
+ * Stores recent request timestamps in Redis with TTL matching the window.
+ */
 export async function checkRateLimit(
   token: string,
   type: "export" | "recalc"
 ): Promise<RateLimitResult> {
-  const key = KEYS.rateLimit(type, token);
-  const lockKey = `${key}:lock`;
-  const maxPerDay = type === "export" ? LIMITS.export.perDay : LIMITS.recalc.perDay;
-
-  // Acquire short-lived lock (2s) to prevent concurrent read-check-write races
-  const lockAcquired = await redis.set(lockKey, "1", { nx: true, ex: 2 });
-  if (lockAcquired !== "OK") {
-    // Another request is in-flight — reject with cooldown
-    return {
-      allowed: false,
-      remaining: maxPerDay,
-      retryAfterMs: 2000,
-      reason: `Concurrent ${type} request in progress`,
-    };
+  if (!token) {
+    return { allowed: false, remaining: 0, reason: "Missing token for rate limit" };
   }
+  const quota = QUOTAS[type];
+  if (!quota) {
+    return { allowed: true, remaining: 999 };
+  }
+  const key = `ratelimit:${type}:${token}`;
+  const now = Date.now();
+  const windowMs = quota.windowSec * 1000;
 
   try {
-    const now = Date.now();
+    const raw = (await redis.get<number[]>(key)) || [];
+    const recent = raw.filter((t) => now - t < windowMs);
 
-    // Get existing timestamps, prune older than 24h
-    const timestamps: number[] = (await redis.get<number[]>(key)) || [];
-    const recent = timestamps.filter((t) => now - t < DAY_MS);
-
-    // Check daily limit
-    if (recent.length >= maxPerDay) {
-      const oldest = Math.min(...recent);
+    if (recent.length >= quota.max) {
+      // Oldest timestamp in the window dictates when next slot opens
+      const oldest = recent[0];
+      const retryAfterMs = Math.max(0, windowMs - (now - oldest));
       return {
         allowed: false,
         remaining: 0,
-        retryAfterMs: oldest + DAY_MS - now,
-        reason: `Daily limit of ${maxPerDay} ${type}s reached`,
+        retryAfterMs,
+        reason: `Rate limit exceeded: max ${quota.max} per ${Math.round(quota.windowSec / 60)} min`,
       };
     }
 
-    // Check cooldown (export only: 1 per 2 min)
-    if (type === "export" && recent.length > 0) {
-      const last = Math.max(...recent);
-      const elapsed = now - last;
-      if (elapsed < LIMITS.export.cooldownMs) {
-        return {
-          allowed: false,
-          remaining: maxPerDay - recent.length,
-          retryAfterMs: LIMITS.export.cooldownMs - elapsed,
-          reason: `Export cooldown: wait ${Math.ceil((LIMITS.export.cooldownMs - elapsed) / 1000)}s`,
-        };
-      }
-    }
-
-    // Allow: record timestamp before releasing lock
     recent.push(now);
-    await redis.set(key, recent, { ex: 86400 }); // TTL 24h auto-cleanup
+    // Reset TTL on every successful request so the window slides
+    await redis.set(key, recent, { ex: quota.windowSec });
 
-    return { allowed: true, remaining: maxPerDay - recent.length };
-  } finally {
-    // Release lock
-    await redis.del(lockKey).catch(() => {});
+    return {
+      allowed: true,
+      remaining: quota.max - recent.length,
+    };
+  } catch (err) {
+    // Fail-open on KV outage so user-facing paths don't break — log loudly.
+    console.error("[rate-limit] Redis error, failing open:", err);
+    return { allowed: true, remaining: quota.max };
   }
+}
+
+/**
+ * Reset a rate-limit bucket. Admin/testing only.
+ */
+export async function resetRateLimit(token: string, type: "export" | "recalc"): Promise<void> {
+  const key = `ratelimit:${type}:${token}`;
+  await redis.del(key);
 }

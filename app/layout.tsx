@@ -14,8 +14,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BuildFi — Planification financière accessible",
-  description: "Simulateur de retraite Monte Carlo bilingue FR/EN. Bilan personnalisé basé sur 5 000 scénarios.",
+  title: "BuildFi — Planification retraite canadienne bilingue | 29,99 $",
+  description:
+    "Plan de retraite testé contre krach, inflation et longévité. Fiscalité 2026 fédéral + 13 provinces et territoires. Bilingue FR/EN. CPP/RRQ, PSV, meltdown REER, CCPC, fractionnement. Bilan dès 29,99 $, Planner 69,99 $.",
+  keywords: [
+    "planification retraite Canada",
+    "bilan retraite Québec",
+    "calculateur retraite bilingue",
+    "récupération PSV",
+    "meltdown REER",
+    "RRQ 60 65 70",
+    "CCPC retraite",
+    "retirement planning Canada",
+    "bilingual retirement calculator",
+  ],
+  openGraph: {
+    title: "BuildFi — Planification retraite canadienne bilingue",
+    description:
+      "Plan testé contre krach, inflation, longévité. Fiscalité Canada 2026 — 13 provinces et territoires. Bilingue FR/EN. Bilan 29,99 $ · Planner 69,99 $. AMF-compliant.",
+    url: "https://buildfi.ca",
+    type: "website",
+    locale: "fr_CA",
+    siteName: "BuildFi",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BuildFi — Planification retraite canadienne",
+    description: "Plan testé contre l'adversité. Bilan 29,99 $. 13 provinces. Bilingue FR/EN.",
+  },
+  alternates: {
+    canonical: "https://buildfi.ca",
+    languages: { "fr-CA": "https://buildfi.ca", "en-CA": "https://buildfi.ca?lang=en" },
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

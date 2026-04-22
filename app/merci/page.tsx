@@ -27,9 +27,9 @@ const STEPS_REPORT: Step[] = [
 ];
 
 const STEPS_EXPERT: Step[] = [
-  { fr: "Profil Laboratoire créé", en: "Lab profile created", durationMs: 2000 },
+  { fr: "Profil Planner créé", en: "Planner profile created", durationMs: 2000 },
   { fr: "5 000 scénarios en cours...", en: "Running 5,000 scenarios...", durationMs: 3000 },
-  { fr: "Narration Laboratoire (4 lots parallèles)...", en: "Lab narration (4 parallel batches)...", durationMs: 5000 },
+  { fr: "Narration Planner (4 lots parallèles)...", en: "Planner narration (4 parallel batches)...", durationMs: 5000 },
   { fr: "Bilan initial généré", en: "Initial assessment generated", durationMs: 2000 },
   { fr: "Lien magique envoyé", en: "Magic link sent", durationMs: 1500 },
 ];
@@ -212,7 +212,7 @@ function ConfirmationContent() {
         <p style={{ fontSize: 15, color: "#555", lineHeight: 1.7, marginBottom: 32 }}>
           {done
             ? (isExpert
-              ? (fr ? "Votre simulateur est prêt. Un lien magique a été envoyé à votre courriel — cliquez pour accéder au Laboratoire."
+              ? (fr ? "Votre simulateur est prêt. Un lien magique a été envoyé à votre courriel — cliquez pour accéder au Planner."
                     : "Your simulator is ready. A magic link has been sent to your email — click to access the Lab.")
               : (fr ? "Votre bilan personnalisé est en route. Vérifiez votre boîte de réception dans les prochaines minutes."
                     : "Your personalized assessment is on its way. Check your inbox in the next few minutes."))
@@ -277,7 +277,7 @@ function ConfirmationContent() {
               <div style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }}>
                 {isExpert
                   ? (fr
-                    ? "Vous recevrez un lien magique et votre bilan initial par courriel (rapport@buildfi.ca). Le lien magique vous donne accès au Laboratoire illimité."
+                    ? "Vous recevrez un lien magique et votre bilan initial par courriel (rapport@buildfi.ca). Le lien magique vous donne accès au Planner illimité."
                     : "You'll receive a magic link and your initial assessment by email (rapport@buildfi.ca). The magic link gives you access to the unlimited Lab.")
                   : (fr
                     ? "Si vous ne voyez pas le courriel dans 5 minutes, vérifiez votre dossier indésirables (spam). Le bilan est envoyé par rapport@buildfi.ca."

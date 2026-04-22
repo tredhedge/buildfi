@@ -250,7 +250,7 @@ function buildEmailHTML(params: {
                       <tr>
                         <td style="font-family:${FONT};font-size:12px;color:${GRAY};line-height:2;">
                           &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-101-les-bases-de-vos-finances.pdf" : "guide-101-your-financial-basics.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 101 : Les bases de vos finances" : "Guide 101: Your Financial Basics"}</a> (PDF)<br>
-                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-planification-avancee.pdf" : "guide-201-advanced-planning.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Planification avanc\u00e9e" : "Guide 201: Advanced Planning"}</a> (PDF)${tier === "expert" ? "<br>" : ""}
+                          &#8226;&nbsp;<a href="https://www.buildfi.ca/${fr ? "guide-201-optimiser-votre-retraite.pdf" : "guide-201-optimize-your-retirement.pdf"}" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Guide 201 : Optimiser votre retraite" : "Guide 201: Optimize Your Retirement"}</a> (PDF)${tier === "expert" ? "<br>" : ""}
                           ${tier === "expert" ? `&#8226;&nbsp;<a href="https://www.buildfi.ca/outils/dettes" style="color:${GOLD};text-decoration:none;font-weight:600;">${fr ? "Outil d\u2019analyse des dettes" : "Debt analysis tool"}</a> \u2014 ${fr ? "interactif, z\u00e9ro frais" : "interactive, zero cost"}` : ""}
                         </td>
                       </tr>

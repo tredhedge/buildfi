@@ -1,18 +1,18 @@
 "use client";
-// /app/expert/page.tsx — Laboratoire Portal dashboard
-// Shows: credits, reports history, saved profiles, referral, quick actions
-// Auth: token from query param, same pattern as /simulateur
+// /app/expert/page.tsx — Planner Portal dashboard
+// Shows: AI credits, reports history, saved scenarios, referral, quick actions
+// Auth: magic-link token from query param, same pattern as /simulateur
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 
-// ── Expert Kit colors ──────────────────────────────────────────────
+// ── Planner palette (aligned with landing CL_LIGHT planner_v3) ────────
 const EK = {
-  bg: "#faf8f4", card: "#ffffff", sable: "#e8e4db",
-  border: "#d4cec4", marine: "#1a2744", gold: "#c49a1a",
-  tx: "#1a1208", txDim: "#666", txMuted: "#999",
-  green: "#1a7a4c", red: "#b91c1c", cream: "#faf8f4",
+  bg: "#f5f8fc", card: "#fcfdff", sable: "#eef3f9",
+  border: "#d6e0ec", marine: "#172332", gold: "#8f6d2f",
+  tx: "#2a3442", txDim: "#5d7085", txMuted: "#85919f",
+  green: "#2f8a4a", red: "#b93f43", cream: "#f5f8fc",
 };
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
         {/* Logo + lang toggle */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, color: EK.marine }}>
-            buildfi.ca <span style={{ fontSize: 11, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Laboratoire</span>
+            buildfi.ca <span style={{ fontSize: 11, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Planner</span>
           </div>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "4px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
             {fr ? "EN" : "FR"}
@@ -112,7 +112,7 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
         </div>
 
         <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
-          {t("Le Laboratoire est réservé aux membres.", "The Lab is for members only.")}
+          {t("Le Planner est réservé aux membres.", "The Planner is for members only.")}
         </div>
         <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
           {t(
@@ -122,8 +122,8 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
         </div>
 
         {/* Primary CTA → landing */}
-        <a href="/expert/landing" style={{ display: "block", background: EK.marine, color: "#fff", padding: "14px 28px", borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: "none", marginBottom: 20 }}>
-          {t("Découvrir le Laboratoire", "Discover the Lab")}
+        <a href="/acheter-planner" style={{ display: "block", background: EK.marine, color: "#fff", padding: "14px 28px", borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: "none", marginBottom: 20 }}>
+          {t("Obtenir le Planner — 69,99 $", "Get the Planner — $69.99")}
         </a>
 
         {/* Resend magic link form */}
@@ -382,7 +382,7 @@ function PortalContent() {
       <header style={{ background: EK.marine, padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, color: "#fff" }}>
           buildfi.ca
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>Laboratoire</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>Planner</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <a href={`/simulateur?token=${tokenRef.current}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
@@ -401,7 +401,7 @@ function PortalContent() {
         {/* Welcome */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 28, fontWeight: 700, color: EK.marine, marginBottom: 6 }}>
-            {t("Votre Laboratoire", "Your Lab Portal")}
+            {t("Votre Planner", "Your Planner Portal")}
           </h1>
           <p style={{ fontSize: 14, color: EK.txDim }}>
             {t("Gérez vos bilans, vos profils et vos crédits.", "Manage your assessments, profiles, and credits.")}
@@ -453,7 +453,7 @@ function PortalContent() {
             }}>
               <span style={{ fontSize: 24 }}>&#128196;</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Générer un bilan Laboratoire", "Generate Lab Assessment")}</div>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{t("Générer un bilan Planner", "Generate Lab Assessment")}</div>
                 <div style={{ fontSize: 12, color: "rgba(0,0,0,0.5)" }}>{profile.exportsAI} {t("credit(s) restant(s)", "credit(s) remaining")}</div>
               </div>
             </a>
@@ -495,7 +495,7 @@ function PortalContent() {
           </h2>
           {reports.length === 0 ? (
             <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: 24, textAlign: "center", color: EK.txDim, fontSize: 14 }}>
-              {t("Aucun bilan généré pour le moment. Utilisez le simulateur pour générer votre premier bilan Laboratoire.",
+              {t("Aucun bilan généré pour le moment. Utilisez le simulateur pour générer votre premier bilan Planner.",
                 "No assessments generated yet. Use the simulator to generate your first Lab assessment.")}
             </div>
           ) : (
@@ -516,7 +516,7 @@ function PortalContent() {
                     </div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: EK.tx }}>
-                        {r.type === "bilan" ? t("Bilan Annuel", "Annual Assessment") : t("Bilan Laboratoire", "Lab Assessment")}
+                        {r.type === "bilan" ? t("Bilan Annuel", "Annual Assessment") : t("Bilan Planner", "Lab Assessment")}
                       </div>
                       <div style={{ fontSize: 12, color: EK.txMuted }}>
                         {fDate(r.date, fr)} &middot; {r.sections.length} sections &middot;
@@ -686,7 +686,7 @@ function PortalContent() {
             </div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 16 }}>
               {t(
-                "Chaque referral qui souscrit au Laboratoire vous offre un 2e bilan à 50%. 3 referrals = 1 an gratuit.",
+                "Chaque referral qui souscrit au Planner vous offre un 2e bilan à 50%. 3 referrals = 1 an gratuit.",
                 "Each Lab referral gives you a second assessment at 50%. 3 referrals = 1 free year."
               )}
             </div>

@@ -12,10 +12,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --navy:#1a2744;--gold:#c49a1a;--gold-light:#d4af37;
-  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
-  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
-  --border:#e8e0d4;--border-light:#f0ece4;
+  /* Aligned with landing CL_LIGHT palette (planner_v3) */
+  --navy:#172332;--gold:#8f6d2f;--gold-light:#b08a3f;
+  --cream:#f5f8fc;--sand:#eef3f9;--card:#fcfdff;
+  --text-primary:#2a3442;--text-secondary:#5d7085;--text-muted:#85919f;
+  --border:#d6e0ec;--border-light:#eef3f9;
+  --danger:#b93f43;
   --font-display:'Newsreader',Georgia,serif;
   --font-body:'DM Sans',-apple-system,sans-serif;
   --max-narrow:720px;--radius-md:14px;
@@ -74,10 +76,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
     <ul class="nav-links">
-      <li><a href="/bilan">Bilan</a></li>
-      <li><a href="/bilan-360">Bilan 360</a></li>
-      <li><a href="/horizon">Horizon</a></li>
-      <li><a href="/expert/landing">Laboratoire</a></li>
+      <li><a href="/#tools">Outils gratuits</a></li>
+      <li><a href="/#pricing">Prix</a></li>
       <li><a href="/#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
@@ -90,10 +90,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   </div>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="/bilan">Bilan</a>
-  <a href="/bilan-360">Bilan 360</a>
-  <a href="/horizon">Horizon</a>
-  <a href="/expert/landing">Laboratoire</a>
+  <a href="/#tools">Outils gratuits</a>
+  <a href="/#pricing">Prix</a>
   <a href="/#faq">FAQ</a>
   <a href="/#products" class="nav-cta">Commencer</a>
 </div>
@@ -114,18 +112,15 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <h2 id="h4">4. Tarification et paiement</h2>
   <p id="p4a">Les prix affichés sur le Site sont en dollars canadiens (CAD), avant taxes applicables. Les taxes (TPS/TVQ ou TPS/TVH) sont calculées et ajoutées lors du paiement sur Stripe. Les produits disponibles sont :</p>
   <ul>
-    <li id="p4b"><strong>Bilan</strong> : 29 $ — paiement unique, 1 bilan (lancement : 14,50 $)</li>
-    <li id="p4c"><strong>Bilan 360</strong> : 59 $ — paiement unique, 1 bilan (lancement : 29,50 $)</li>
-    <li id="p4cd"><strong>Horizon</strong> : 59 $ — paiement unique, 1 bilan (lancement : 29,50 $)</li>
-    <li id="p4d"><strong>Laboratoire</strong> : 129 $ — paiement unique, simulateur illimité + 5 exports AI (lancement : 64,50 $)</li>
-    <li id="p4e"><strong>Renouvellement Laboratoire</strong> : 29 $/an — simulateur + 3 exports + Bilan Annuel</li>
-    <li id="p4f"><strong>Export AI additionnel</strong> : 14,99 $ par unité</li>
+    <li id="p4b"><strong>Bilan 360</strong> : 29,99 $ — paiement unique, 1 rapport IA généré à partir des données saisies</li>
+    <li id="p4d"><strong>Planner + Rapports</strong> : 69,99 $ — paiement unique, accès à vie au simulateur + 5 générations de rapport IA</li>
+    <li id="p4f"><strong>Pack additionnel</strong> : 19,99 $ — ajoute 4 générations IA au compte Planner existant</li>
   </ul>
-  <p id="p4g">Les prix de lancement sont des tarifs promotionnels temporaires. BuildFi se réserve le droit de les modifier à tout moment.</p>
-  <p id="p4h">Les paiements sont traités par Stripe, certifié PCI DSS niveau 1. buildfi.ca ne voit jamais et ne conserve jamais les informations de carte de crédit.</p>
+  <p id="p4g">Les tarifs promotionnels ponctuels (coupons, rabais de référencement) sont des offres temporaires. BuildFi se réserve le droit de les modifier ou d'y mettre fin à tout moment sans préavis.</p>
+  <p id="p4h">Les paiements sont traités par Stripe (certifié PCI DSS niveau 1). buildfi.ca ne voit jamais et ne conserve jamais les informations de carte de crédit. En cas de tentative de fraude ou de rétrofacturation abusive, buildfi.ca se réserve le droit de suspendre ou fermer le compte concerné.</p>
 
   <h2 id="h5">5. Politique de remboursement</h2>
-  <p id="p5">Aucun remboursement n'est offert après la livraison du bilan ou l'activation du simulateur. En cas de problème technique empêchant la livraison, contactez support@buildfi.ca dans les 7 jours suivant l'achat.</p>
+  <p id="p5">Les produits numériques sont livrés immédiatement après le paiement. <strong>Aucun remboursement n'est offert une fois le rapport généré ou l'accès au Planner activé.</strong> En cas de défaillance technique empêchant la livraison du rapport, écrivez à support@buildfi.ca dans les 7 jours suivant l'achat — nous ferons un second essai de livraison ou, à notre seule discrétion, un remboursement. Cette politique n'écarte pas les droits statutaires des consommateurs québécois prévus par la Loi sur la protection du consommateur.</p>
 
   <h2 id="h6">6. Crédit de mise à niveau</h2>
   <p id="p6">Si vous achetez un tier supérieur (ex. : Bilan vers Laboratoire), le montant de votre achat initial est crédité sur le prix du tier supérieur. Ce crédit est appliqué automatiquement lors du paiement.</p>
@@ -139,8 +134,30 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <h2 id="h8b">8b. Âge minimum</h2>
   <p id="p8b">L'utilisation du service est réservée aux personnes âgées de 18 ans et plus.</p>
 
-  <h2 id="h9">9. Limites de responsabilité</h2>
+  <h2 id="h8c">8c. Usage acceptable et conduites interdites</h2>
+  <p id="p8c1">L'utilisateur s'engage à ne pas :</p>
+  <ul>
+    <li id="p8c2">Utiliser le Site à des fins illégales, frauduleuses ou en violation d'une obligation contractuelle envers un tiers</li>
+    <li id="p8c3">Saisir volontairement des données fausses, trompeuses ou appartenant à autrui sans autorisation</li>
+    <li id="p8c4">Revendre, redistribuer ou exploiter commercialement les rapports, bilans, narrations IA ou données générées</li>
+    <li id="p8c5">Contourner les contrôles d'accès, les compteurs de crédits IA ou les mesures de sécurité</li>
+    <li id="p8c6">Utiliser des robots, « scrapers », systèmes automatisés ou intelligence artificielle tierce pour extraire le contenu du Site</li>
+    <li id="p8c7">Décompiler, désassembler ou reconstruire par ingénierie inverse le moteur de simulation ou toute partie du logiciel</li>
+    <li id="p8c8">Tester, mesurer ou publier les performances du service à des fins compétitives sans autorisation écrite</li>
+    <li id="p8c9">Transmettre des virus, logiciels malveillants ou tout contenu susceptible de nuire au Site ou à ses utilisateurs</li>
+  </ul>
+  <p id="p8c10">Toute violation autorise buildfi.ca à suspendre ou terminer immédiatement l'accès, sans remboursement ni préavis.</p>
+
+  <h2 id="h8d">8d. Indemnisation</h2>
+  <p id="p8d">L'utilisateur accepte d'indemniser, défendre et dégager de toute responsabilité BuildFi Technologies inc., ses administrateurs, employés et fournisseurs contre toute réclamation, perte, dommage, responsabilité, coût ou frais (incluant des honoraires juridiques raisonnables) découlant de : (i) son utilisation du service ; (ii) sa violation des présentes conditions ; (iii) sa violation de tout droit d'un tiers ; ou (iv) toute décision financière qu'il a prise à la suite de l'utilisation des projections.</p>
+
+  <h2 id="h9">9. Limites de responsabilité et absence de garantie</h2>
   <p id="p9">Les projections générées par buildfi.ca sont des estimations statistiques basées sur des hypothèses qui peuvent ne pas se réaliser. buildfi.ca ne garantit aucun résultat financier. L'utilisateur est seul responsable de ses décisions financières. Consultez un planificateur financier certifié (Pl. Fin.) ou un conseiller autorisé avant de prendre toute décision financière importante.</p>
+  <p id="p9b"><strong>Le service est fourni « tel quel » et « selon la disponibilité ».</strong> Dans la mesure maximale permise par la loi applicable, BuildFi exclut toute garantie expresse ou implicite, notamment les garanties implicites de qualité marchande, d'adéquation à un usage particulier, de non-contrefaçon et d'exactitude. BuildFi ne garantit pas que le service sera ininterrompu, sans erreur, sécuritaire ou exempt de virus.</p>
+  <p id="p9c"><strong>Limitation de dommages.</strong> Dans la mesure maximale permise par la loi applicable, la responsabilité totale cumulée de BuildFi envers un utilisateur pour toute cause d'action (contractuelle, délictuelle ou autre) n'excédera pas le montant total payé par cet utilisateur au cours des douze (12) derniers mois pour le service en cause. En aucun cas BuildFi ne sera tenue responsable de dommages indirects, accessoires, spéciaux, consécutifs, exemplaires ou punitifs — incluant perte de profit, perte d'économies, perte de revenu, perte de données, atteinte à la réputation ou perte d'opportunités — même si BuildFi a été avisée de la possibilité de tels dommages. Les présentes limitations s'appliquent nonobstant tout échec de l'objet essentiel de tout recours limité.</p>
+
+  <h2 id="h9d">9d. Acceptation des risques liés à l'IA</h2>
+  <p id="p9d">L'utilisateur reconnaît que les sections générées par intelligence artificielle (narration Opus) peuvent contenir des erreurs factuelles, des imprécisions ou des incohérences (phénomène d'« hallucination »). Ces textes ne doivent jamais être traités comme une source faisant autorité et ne remplacent pas la consultation d'un professionnel qualifié. BuildFi n'est pas responsable du contenu généré par IA, même lorsque celui-ci est livré dans un rapport payant.</p>
 
   <h2 id="h10">10. Disponibilité du service</h2>
   <p id="p10">buildfi.ca s'efforce de maintenir le service disponible en tout temps, mais ne garantit pas un accès ininterrompu. Des interruptions pour maintenance ou mises à jour peuvent survenir sans préavis.</p>
@@ -148,8 +165,20 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <h2 id="h11">11. Modification des conditions</h2>
   <p id="p11">buildfi.ca se réserve le droit de modifier les présentes conditions à tout moment. La date de dernière mise à jour est indiquée en haut de cette page. L'utilisation continue du service après une modification constitue une acceptation des nouvelles conditions.</p>
 
-  <h2 id="h12">12. Droit applicable</h2>
-  <p id="p12">Les présentes conditions sont régies par les lois du Québec et du Canada. Tout litige sera soumis aux tribunaux compétents de la province de Québec.</p>
+  <h2 id="h11b">11b. Résiliation par BuildFi</h2>
+  <p id="p11b">BuildFi peut suspendre ou terminer l'accès d'un utilisateur, avec ou sans préavis, en cas de violation des présentes conditions, d'activité frauduleuse, de rétrofacturation abusive ou pour tout motif raisonnable de protection de ses intérêts ou de ceux de ses autres utilisateurs. En cas de résiliation pour violation, aucun remboursement n'est dû.</p>
+
+  <h2 id="h11c">11c. Force majeure</h2>
+  <p id="p11c">BuildFi ne sera pas tenue responsable de tout défaut d'exécution résultant d'événements hors de son contrôle raisonnable, notamment : pannes d'infrastructure tierce (Stripe, Vercel, Anthropic, Resend), actes de cybercriminalité, changements législatifs, guerres, pandémies, catastrophes naturelles ou décisions gouvernementales.</p>
+
+  <h2 id="h11d">11d. Divisibilité et renonciation</h2>
+  <p id="p11d">Si une disposition des présentes conditions est jugée invalide ou inapplicable par un tribunal compétent, les autres dispositions demeurent pleinement en vigueur. Le défaut de BuildFi de faire valoir un droit ne constitue pas une renonciation à ce droit ou à tout autre droit.</p>
+
+  <h2 id="h11e">11e. Intégralité de l'entente</h2>
+  <p id="p11e">Les présentes conditions, la politique de confidentialité et l'avis légal constituent l'entente complète entre l'utilisateur et BuildFi concernant le service et remplacent toute entente ou communication antérieure.</p>
+
+  <h2 id="h12">12. Droit applicable et juridiction</h2>
+  <p id="p12">Les présentes conditions sont régies par les lois applicables dans la province de Québec et les lois fédérales du Canada qui s'y appliquent, sans égard aux conflits de lois. Sous réserve des droits statutaires des consommateurs québécois (notamment la Loi sur la protection du consommateur, RLRQ c. P-40.1), tout litige découlant des présentes conditions ou de l'utilisation du service sera soumis à la compétence exclusive des tribunaux du district judiciaire de Montréal, Québec, Canada. L'utilisateur renonce à toute objection fondée sur l'incompétence territoriale ou le forum non conveniens.</p>
 
   <h2 id="h13">13. Contact</h2>
   <p id="p13">Pour toute question : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a></p>
@@ -164,10 +193,10 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footProducts">Produits</div>
-        <a href="/bilan" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan</a>
-        <a href="/bilan-360" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
-        <a href="/horizon" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Horizon</a>
-        <a href="/expert/landing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Simulateur</a>
+        <a href="/#pricing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
+        <a href="/acheter-planner" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Planner + Rapports</a>
+        <a href="/guides/101" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Guides gratuits</a>
+        <a href="/outils/dettes" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Outils gratuits</a>
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footResources">Ressources</div>

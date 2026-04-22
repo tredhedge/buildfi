@@ -1,8 +1,15 @@
 // /app/api/checkout/route.ts
-// Creates a Stripe Checkout Session — supports 3 checkout types:
-//   type=report (default): Bilan 360 / Expert report purchase with quiz data
-//   type=addon: Expert AI export addon ($14.99)
-//   type=second: 2nd report at 50% off (SECOND50 coupon, Bilan 360)
+// Creates a Stripe Checkout Session — supported checkout types:
+//   type=report (default): Bilan 360 ($29.99) or Planner+Reports ($69.99)
+//                          Bilan needs quizAnswers. Planner is direct checkout (Wizard inside).
+//   type=addon: Expert AI export addon ($14.99) — legacy, kept for backward compat
+//   type=second: 2nd Bilan 360 at 50% off (SECOND50 coupon)
+//   type=report-pack: +4 AI report generations for $19.99 (existing Planner customers only)
+//
+// TIER KEYS (2026-04-22 2-SKU final):
+//   bilan360 → $29.99  (STRIPE_PRICE_BILAN360)           — 1 AI report, needs quiz
+//   planner  → $69.99  (STRIPE_PRICE_PLANNER)            — Simulator + 5 AI reports, no quiz
+//   expert   → legacy, accepts STRIPE_PRICE_EXPERT fallback for backward compat
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -42,11 +49,17 @@ function splitMetadata(json: string): Record<string, string> {
 function normalizeTier(rawTier?: string): string {
   const tier = (rawTier || "").toLowerCase().trim();
   if (!tier) return "bilan360";
+  // Legacy aliases → bilan360
   if (tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") {
     return "bilan360";
   }
+  // Legacy alias: old "bilan360Plus" bundle concept → merged into planner
+  if (tier === "bilan360plus") return "planner";
   return tier;
 }
+
+// Tiers that skip the quiz entry path — user goes straight to Stripe, data entry is inside the product
+const DIRECT_CHECKOUT_TIERS = new Set(["planner"]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -173,19 +186,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: session.url });
     }
 
-    // ── Standard report checkout (Ess/Inter/Expert) ─────
-    const { quizAnswers, lang, tier, referralCode } = body;
-
-    if (!quizAnswers) {
-      return NextResponse.json(
-        { error: "Missing required field: quizAnswers" },
-        { status: 400 }
-      );
+    // ── Report-pack upsell (+4 AI generations for $19.99, Planner customers only) ──
+    if (checkoutType === "report-pack") {
+      const priceId = process.env.STRIPE_PRICE_REPORT_PACK;
+      if (!priceId) {
+        return NextResponse.json({ error: "Report pack not configured" }, { status: 500 });
+      }
+      // Must be an existing Planner customer to buy more credits
+      const profile = await getExpertProfile(email);
+      if (!profile) {
+        return NextResponse.json(
+          { error: "report_pack_requires_planner", message: "Le pack de rapports est réservé aux clients Planner. / Report pack is for Planner customers only." },
+          { status: 403 }
+        );
+      }
+      const session = await stripe.checkout.sessions.create({
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: "payment",
+        customer_email: email,
+        metadata: { type: "report-pack", email, tier: "planner", creditsToAdd: "4" },
+        success_url: `${BASE_URL}/expert?pack=ok&lang=${body.lang || "fr"}`,
+        cancel_url: `${BASE_URL}/expert`,
+      });
+      return NextResponse.json({ url: session.url });
     }
+
+    // ── Standard report checkout (Bilan or Planner) ─────
+    const { quizAnswers, lang, tier, referralCode } = body;
 
     const validTiers: Record<string, string | undefined> = {
       bilan360: process.env.STRIPE_PRICE_BILAN360 || process.env.STRIPE_PRICE_INTERMEDIAIRE,
-      expert: process.env.STRIPE_PRICE_EXPERT,
+      planner: process.env.STRIPE_PRICE_PLANNER || process.env.STRIPE_PRICE_EXPERT,
+      expert: process.env.STRIPE_PRICE_EXPERT, // legacy alias
     };
 
     const selectedTier = normalizeTier(tier);
@@ -197,16 +229,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const quizJSON = JSON.stringify(quizAnswers);
+    const isDirectCheckout = DIRECT_CHECKOUT_TIERS.has(selectedTier);
+
+    // Bilan and other quiz-based tiers require quiz data. Planner is direct-checkout (Wizard inside the tool).
+    if (!isDirectCheckout && !quizAnswers) {
+      return NextResponse.json(
+        { error: "Missing required field: quizAnswers" },
+        { status: 400 }
+      );
+    }
+
     const userRefCode = generateReferralCode();
     const metadata: Record<string, string> = {
-      ...splitMetadata(quizJSON),
       lang: lang || "fr",
       email,
       tier: selectedTier,
       type: "report",
       userRefCode,
     };
+
+    // Attach quiz data only when present (Bilan path)
+    if (quizAnswers) {
+      const quizJSON = JSON.stringify(quizAnswers);
+      Object.assign(metadata, splitMetadata(quizJSON));
+    }
+
+    // Planner purchases init 5 AI report credits (webhook reads this)
+    if (selectedTier === "planner") {
+      metadata.aiCreditsInit = "5";
+    }
 
     // Referral code tracking (the referrer's code, not this user's own code)
     if (referralCode && typeof referralCode === "string") {
@@ -220,12 +271,14 @@ export async function POST(req: NextRequest) {
 
     // Build checkout params
     const checkoutLang = lang || "fr";
+    // Planner buyers land on /expert (their portal with Wizard). Bilan buyers land on /merci (report delivery).
+    const successPath = selectedTier === "planner" ? "/expert" : "/merci";
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       customer_email: email,
       metadata,
-      success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${selectedTier}&lang=${checkoutLang}&ref=${userRefCode}`,
+      success_url: `${BASE_URL}${successPath}?session_id={CHECKOUT_SESSION_ID}&tier=${selectedTier}&lang=${checkoutLang}&ref=${userRefCode}`,
       cancel_url: `${BASE_URL}/`,
     };
 

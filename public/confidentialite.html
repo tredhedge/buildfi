@@ -12,10 +12,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --navy:#1a2744;--gold:#c49a1a;--gold-light:#d4af37;
-  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
-  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
-  --border:#e8e0d4;--border-light:#f0ece4;
+  /* Aligned with landing CL_LIGHT palette (planner_v3) */
+  --navy:#172332;--gold:#8f6d2f;--gold-light:#b08a3f;
+  --cream:#f5f8fc;--sand:#eef3f9;--card:#fcfdff;
+  --text-primary:#2a3442;--text-secondary:#5d7085;--text-muted:#85919f;
+  --border:#d6e0ec;--border-light:#eef3f9;
+  --danger:#b93f43;
   --font-display:'Newsreader',Georgia,serif;
   --font-body:'DM Sans',-apple-system,sans-serif;
   --max-narrow:720px;--radius-md:14px;
@@ -74,10 +76,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
     <ul class="nav-links">
-      <li><a href="/bilan">Bilan</a></li>
-      <li><a href="/bilan-360">Bilan 360</a></li>
-      <li><a href="/horizon">Horizon</a></li>
-      <li><a href="/expert/landing">Simulateur</a></li>
+      <li><a href="/#tools">Outils gratuits</a></li>
+      <li><a href="/#pricing">Prix</a></li>
       <li><a href="/#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
@@ -90,10 +90,8 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   </div>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="/bilan">Bilan</a>
-  <a href="/bilan-360">Bilan 360</a>
-  <a href="/horizon">Horizon</a>
-  <a href="/expert/landing">Simulateur</a>
+  <a href="/#tools">Outils gratuits</a>
+  <a href="/#pricing">Prix</a>
   <a href="/#faq">FAQ</a>
   <a href="/#products" class="nav-cta">Commencer</a>
 </div>
@@ -129,12 +127,14 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   </ul>
 
   <h2 id="h6">6. Rétention des données</h2>
-  <p id="p6a">Les données sont conservées selon les durées suivantes :</p>
+  <p id="p6a">Les données sont conservées uniquement le temps nécessaire à la finalité poursuivie, puis supprimées ou anonymisées. Durées de conservation :</p>
   <ul>
-    <li id="p6b"><strong>Bilans Bilan/Bilan 360/Horizon</strong> : 12 mois après génération</li>
-    <li id="p6c"><strong>Profils Laboratoire</strong> : 12 mois après expiration de l'abonnement</li>
-    <li id="p6d"><strong>Données de paiement</strong> : selon les politiques de rétention de Stripe</li>
-    <li id="p6e"><strong>Données analytiques</strong> : 12 mois (PostHog), anonymisées</li>
+    <li id="p6b"><strong>Rapports Bilan 360</strong> : le rapport (HTML) est stocké 12 mois après la génération pour permettre votre accès. Après 12 mois, le rapport est supprimé. Les données du quiz ayant servi à le générer sont purgées dans les 30 jours suivant la livraison.</li>
+    <li id="p6c"><strong>Comptes Planner</strong> : vos paramètres, scénarios sauvegardés et historique de crédits IA sont conservés tant que votre compte est actif. Sur suppression de compte, suppression dans les 30 jours (sauf obligations légales de rétention comptable/fiscale).</li>
+    <li id="p6d"><strong>Données de paiement</strong> : conservées par Stripe selon leurs politiques (généralement 7 ans pour obligations fiscales). buildfi.ca conserve uniquement l'identifiant de transaction Stripe et le montant, pas les données de carte.</li>
+    <li id="p6e"><strong>Courriels transactionnels</strong> : journaux de livraison conservés 6 mois chez Resend, puis purgés.</li>
+    <li id="p6f"><strong>Données analytiques</strong> : PostHog, anonymisées, conservées 12 mois.</li>
+    <li id="p6g"><strong>Obligations légales</strong> : certaines données (factures, preuves de consentement) peuvent être conservées plus longtemps conformément aux lois fiscales et à la Loi sur la protection du consommateur.</li>
   </ul>
 
   <h2 id="h7">7. Partage et vente de données</h2>
@@ -164,14 +164,23 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <h2 id="h10">10. Transfert international</h2>
   <p id="p10">Certains sous-traitants (Stripe, Vercel, Anthropic) peuvent traiter des données aux États-Unis. Ces transferts sont encadrés par des clauses contractuelles adéquates et des certifications de sécurité.</p>
 
-  <h2 id="h11">11. Incident de confidentialité</h2>
-  <p id="p11">En cas d'incident de confidentialité présentant un risque sérieux de préjudice, buildfi.ca avisera les personnes concernées et la Commission d'accès à l'information du Québec dans les meilleurs délais, conformément à la Loi 25.</p>
+  <h2 id="h10b">10b. Décisions automatisées et narration IA</h2>
+  <p id="p10b">Conformément à l'article 12.1 de la Loi 25, nous vous informons que : (i) votre rapport inclut un <strong>score de préparation</strong> calculé automatiquement à partir des résultats de la simulation Monte Carlo ; (ii) la <strong>narration textuelle</strong> du rapport est générée par un modèle d'intelligence artificielle (Anthropic Claude) à partir des résultats numériques. Ces éléments sont <strong>des observations informatives, pas des décisions</strong> qui produisent des effets juridiques ou vous affectent de manière significative au sens de la loi. Aucune décision d'approbation, de refus, de tarification ou de profilage n'est prise automatiquement à votre égard. Vous pouvez néanmoins demander plus d'information sur la logique utilisée en écrivant à <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>.</p>
 
-  <h2 id="h12">12. Responsable de la protection des renseignements</h2>
-  <p id="p12">Responsable : Le dirigeant de BuildFi Technologies inc. — <a href="mailto:support@buildfi.ca">support@buildfi.ca</a></p>
+  <h2 id="h10c">10c. Renseignements sensibles et données de mineurs</h2>
+  <p id="p10c">Le service n'est pas destiné aux personnes de moins de 18 ans et nous ne sollicitons ni ne collectons sciemment de données relatives à des mineurs. Si vous constatez qu'un mineur a fourni des données, écrivez à support@buildfi.ca pour suppression. Les données financières saisies (revenus, épargne) peuvent être considérées comme sensibles ; elles sont traitées avec les mesures de sécurité appropriées (chiffrement en transit et au repos, accès restreint).</p>
+
+  <h2 id="h11">11. Incident de confidentialité</h2>
+  <p id="p11">Conformément à la Loi 25, en cas d'incident de confidentialité présentant un risque de préjudice sérieux, buildfi.ca : (i) prendra les mesures raisonnables pour en diminuer le risque et éviter qu'il ne se reproduise ; (ii) avisera les personnes concernées et la Commission d'accès à l'information du Québec dans les meilleurs délais ; (iii) tiendra un registre des incidents disponible sur demande de la Commission. Les coordonnées pour signaler un incident vous concernant : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>.</p>
+
+  <h2 id="h12">12. Responsable de la protection des renseignements personnels</h2>
+  <p id="p12">Conformément à la Loi 25, le responsable de la protection des renseignements personnels au sein de BuildFi Technologies inc. traite toutes les demandes d'accès, de rectification, de suppression, de retrait de consentement et toute question relative à vos droits. Coordonnées : <a href="mailto:support@buildfi.ca">support@buildfi.ca</a>. Toute demande reçoit une réponse dans un délai maximal de 30 jours. En cas de désaccord, vous pouvez déposer une plainte auprès de la Commission d'accès à l'information du Québec (cai.gouv.qc.ca) ou du Commissariat à la protection de la vie privée du Canada (priv.gc.ca).</p>
+
+  <h2 id="h12b">12b. Évaluation des facteurs relatifs à la vie privée</h2>
+  <p id="p12b">Avant la mise en œuvre de tout projet comportant des risques pour les renseignements personnels, BuildFi procède à une évaluation des facteurs relatifs à la vie privée (EFVP) conformément à l'article 3.3 de la Loi 25. L'utilisation de services tiers (Stripe, Anthropic, Vercel, Resend, PostHog) a été évaluée et documentée.</p>
 
   <h2 id="h13">13. Modification de la politique</h2>
-  <p id="p13">Cette politique peut être mise à jour périodiquement. La date de dernière mise à jour est indiquée en haut de cette page.</p>
+  <p id="p13">Cette politique peut être mise à jour pour refléter les évolutions légales, techniques ou opérationnelles. La date de dernière mise à jour est indiquée en haut de cette page. Pour tout changement important, nous vous aviserons par courriel ou par une notification bien en vue sur le Site avant son entrée en vigueur.</p>
 </div>
 
 <footer style="background:#111b2e;color:rgba(255,255,255,.7);padding:48px 0 24px;margin-top:64px">
@@ -183,10 +192,10 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footProducts">Produits</div>
-        <a href="/bilan" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan</a>
-        <a href="/bilan-360" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
-        <a href="/horizon" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Horizon</a>
-        <a href="/expert/landing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Laboratoire</a>
+        <a href="/#pricing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
+        <a href="/acheter-planner" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Planner + Rapports</a>
+        <a href="/guides/101" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Guides gratuits</a>
+        <a href="/outils/dettes" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Outils gratuits</a>
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footResources">Ressources</div>

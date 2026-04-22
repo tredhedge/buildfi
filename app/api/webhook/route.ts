@@ -106,9 +106,13 @@ function reassembleQuizAnswers(
 function normalizeReportTier(rawTier?: string): string {
   const tier = (rawTier || "").toLowerCase().trim();
   if (!tier) return "bilan360";
-  // Legacy tiers all route to bilan360
+  // Legacy tiers → bilan360 (quiz-based single-report product)
   if (tier === "essentiel" || tier === "intermediaire" || tier === "decaissement") {
     return "bilan360";
+  }
+  // Legacy aliases → planner (simulator + 5 AI reports, one-time $69.99)
+  if (tier === "expert" || tier === "bilan360plus" || tier === "laboratoire") {
+    return "planner";
   }
   return tier;
 }
@@ -182,11 +186,12 @@ async function handleCheckoutCompleted(
   }
 
   // Route by checkout type
-  if (type === "addon") {
+  if (type === "addon" || type === "report-pack") {
     return handleExportAddon(email, session.id);
   }
 
-  if (tier === "expert" && type === "report") {
+  // Planner SKU (new primary) — reuses Expert profile infra but with known 5-credit init
+  if (tier === "planner" && type === "report") {
     return handleExpertPurchase(email, metadata, session.id);
   }
 
@@ -410,6 +415,21 @@ async function handleExpertPurchase(
     });
 
     console.log(`[webhook] Expert profile created for ${maskEmail(email)}, magic link sent`);
+
+    // Planner direct-checkout: no quiz data yet — user will fill Wizard inside the app.
+    // Skip initial report generation; they'll trigger reports manually from the Planner.
+    const hasQuizData = quizAnswers && Object.keys(quizAnswers).length > 0;
+    if (!hasQuizData) {
+      console.log(`[webhook] Planner direct-checkout — skipping initial report (no quiz data yet)`);
+      return NextResponse.json({
+        received: true,
+        email,
+        tier: "planner",
+        magicLinkSent: true,
+        creditsInit: 5,
+        referralCode: profile.referralCode,
+      });
+    }
 
     // Generate initial Expert report (S6 pipeline)
     try {

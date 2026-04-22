@@ -19,10 +19,6 @@
     {
       "path": "/api/cron/purge",
       "schedule": "0 17 * * *"
-    },
-    {
-      "path": "/api/cron/ba-reminder",
-      "schedule": "0 13 1 * *"
     }
   ]
 }

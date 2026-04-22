@@ -1,74 +1,65 @@
 // /lib/auth.ts
-// Magic link token verification — reusable across all authenticated routes
-// Supports ?token= query param (magic links) and Authorization: Bearer (API calls)
+// Magic-link auth helpers for Planner portal + protected API routes.
+//
+// Pattern: user arrives with ?token=uuid (or Authorization: Bearer uuid).
+// We verify against KV (token:{uuid} → email, 366-day TTL).
+// Rate limit + credit checks are applied in api-helpers.authenticateAndRateLimit.
 
 import { NextRequest } from "next/server";
-import { getExpertProfileByToken, type ExpertProfile } from "@/lib/kv";
+import { getExpertProfileByToken } from "@/lib/kv";
 
 export interface AuthResult {
   authenticated: boolean;
   email?: string;
-  profile?: ExpertProfile;
+  token?: string;
   error?: string;
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/** Mask email for logs: "alice@example.com" → "al***@ex***.com" */
-export function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const [dname, ...drest] = domain.split(".");
-  return `${local.slice(0, 2)}***@${dname.slice(0, 2)}***.${drest.join(".")}`;
-}
-
+/**
+ * Extracts the magic-link token from the request (header or query param),
+ * looks it up in KV, and returns the associated email.
+ */
 export async function verifyToken(req: NextRequest): Promise<AuthResult> {
-  // Extract token from query param or Authorization header
-  const url = new URL(req.url);
-  const tokenFromQuery = url.searchParams.get("token");
+  // Authorization: Bearer <token>  OR  ?token=<token>
   const authHeader = req.headers.get("authorization");
-  const tokenFromHeader = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : null;
+  const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  const queryToken = new URL(req.url).searchParams.get("token")?.trim() || "";
+  const token = bearer || queryToken;
 
-  const token = tokenFromQuery || tokenFromHeader;
-
-  if (!token) {
-    console.log("[auth] No token provided in query or header");
-    return { authenticated: false, error: "No token provided" };
-  }
-
-  if (!UUID_RE.test(token)) {
-    console.log(`[auth] Invalid token format: ${token.slice(0, 8)}...`);
-    return { authenticated: false, error: "Invalid token format" };
+  if (!token || token.length < 10) {
+    return { authenticated: false, error: "Missing token" };
   }
 
   try {
     const result = await getExpertProfileByToken(token);
     if (!result) {
-      console.log(`[auth] Token not found in KV: ${token.slice(0, 8)}...`);
-      return { authenticated: false, error: "Token not found" };
+      return { authenticated: false, error: "Invalid or expired token" };
     }
-
-    const { email, profile } = result;
-
-    if (new Date(profile.expiry) < new Date()) {
-      console.log(`[auth] Token expired for ${maskEmail(email)}, expiry: ${profile.expiry}`);
-      return { authenticated: false, error: "Token expired" };
-    }
-
-    console.log(`[auth] Token verified for ${maskEmail(email)}`);
-    return { authenticated: true, email, profile };
+    return { authenticated: true, email: result.email, token };
   } catch (err) {
-    console.error("[auth] KV lookup error:", err);
-    return { authenticated: false, error: "KV lookup failed" };
+    console.error("[auth] verifyToken error:", err);
+    return { authenticated: false, error: "Auth service unavailable" };
   }
 }
 
+/**
+ * Build the portal URL the user can click to open their Planner session.
+ * Used in transactional emails (purchase confirmation, renewal, etc.).
+ */
 export function buildMagicLinkUrl(token: string): string {
-  let base = process.env.NEXT_PUBLIC_BASE_URL || "https://www.buildfi.ca";
-  // Ensure www — buildfi.ca 307-redirects to www and strips query params
-  base = base.replace("https://buildfi.ca", "https://www.buildfi.ca");
-  return `${base}/simulateur?token=${token}`;
+  const base = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || "https://www.buildfi.ca";
+  return `${base}/expert?token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Redact an email address for logs: `ma***@example.ca`.
+ * Keeps enough context to distinguish users while protecting PII.
+ */
+export function maskEmail(email: string | undefined | null): string {
+  if (!email) return "(no email)";
+  const parts = email.split("@");
+  if (parts.length !== 2) return "(invalid)";
+  const [local, domain] = parts;
+  const visible = local.slice(0, Math.min(2, local.length));
+  return `${visible}${local.length > 2 ? "***" : ""}@${domain}`;
 }
