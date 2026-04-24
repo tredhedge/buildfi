@@ -1,4 +1,7 @@
 /* Article SEO — RRQ à 60, 65 ou 70 ans. Server-rendered page, FR only. */
+/* eslint-disable react/no-unescaped-entities */
+
+import Link from "next/link";
 
 const CL = { bg: "#f5f8fc", card: "#fcfdff", line: "#d6e0ec", ink: "#172332", text: "#2a3442", dim: "#4a5a6e", gold: "#8f6d2f", green: "#2f8a4a", red: "#b93f43", blue: "#3b79b6", s2: "#eef3f9" };
 
@@ -8,7 +11,7 @@ export default function RRQArticle() {
       {/* Nav link back */}
       <header style={{ background: CL.card, borderBottom: `1px solid ${CL.line}`, padding: "14px 20px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <a href="/" style={{ color: CL.gold, fontWeight: 900, fontSize: 20, textDecoration: "none", letterSpacing: -0.5 }}>BuildFi</a>
+          <Link href="/" style={{ color: CL.gold, fontWeight: 900, fontSize: 20, textDecoration: "none", letterSpacing: -0.5 }}>BuildFi</Link>
         </div>
       </header>
 

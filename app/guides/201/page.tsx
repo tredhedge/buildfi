@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 /* ═══════════════════════════════════════════════════════
    Design tokens — same palette as Guide 101
@@ -19,9 +20,6 @@ const CL = {
 const fCAD = (v: number, fr: boolean) =>
   new Intl.NumberFormat(fr ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 })
     .format(Math.round(v)).replace(/[\u00A0\u202F]/g, " ");
-const fPct = (v: number, fr: boolean) =>
-  new Intl.NumberFormat(fr ? "fr-CA" : "en-CA", { style: "percent", maximumFractionDigits: 1 }).format(v);
-
 /* ═══════════════════════════════════════════════════════
    Combined federal + provincial marginal rates (2026 est.)
    Derived from PROV_TAX in /app/outils/dettes/page.jsx
@@ -1023,11 +1021,10 @@ function Callout({ color, children }: { color: "red" | "green" | "gold" | "blue"
    ═══════════════════════════════════════════════════════ */
 function Guide201Inner() {
   const params = useSearchParams();
-  const [lang, setLang] = useState<"fr" | "en">("fr");
-  useEffect(() => {
+  const [lang, setLang] = useState<"fr" | "en">(() => {
     const p = params?.get("lang");
-    if (p === "en" || p === "fr") setLang(p);
-  }, [params]);
+    return p === "en" ? "en" : "fr";
+  });
   const fr = lang === "fr";
   const t = fr ? COPY.fr : COPY.en;
   const toggleLang = () => setLang(fr ? "en" : "fr");
@@ -1312,7 +1309,7 @@ function Guide201Inner() {
         <footer style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 26, padding: "0 20px", lineHeight: 1.6 }}>
           <div style={{ marginBottom: 10 }}>{t.sources}</div>
           <div style={{ marginBottom: 10 }}>{t.disclaimer}</div>
-          <div>© 2026 BuildFi · <a href="/" style={{ color: CL.muted }}>buildfi.ca</a></div>
+          <div>© 2026 BuildFi · <Link href="/" style={{ color: CL.muted }}>buildfi.ca</Link></div>
         </footer>
       </main>
     </div>

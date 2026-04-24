@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 /* ═══════════════════════════════════════════════════════
    Design tokens — aligned with BuildFi brand
@@ -838,11 +839,10 @@ function ToolCard({ title, children }: { title: string; children: React.ReactNod
    ═══════════════════════════════════════════════════════ */
 function Guide101Inner() {
   const params = useSearchParams();
-  const [lang, setLang] = useState<"fr" | "en">("fr");
-  useEffect(() => {
+  const [lang, setLang] = useState<"fr" | "en">(() => {
     const p = params?.get("lang");
-    if (p === "en" || p === "fr") setLang(p);
-  }, [params]);
+    return p === "en" ? "en" : "fr";
+  });
   const fr = lang === "fr";
   const t = fr ? COPY.fr : COPY.en;
   const toggleLang = () => setLang(fr ? "en" : "fr");
@@ -1131,7 +1131,7 @@ function Guide101Inner() {
         <footer style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 26, padding: "0 20px", lineHeight: 1.6 }}>
           <div style={{ marginBottom: 10 }}>{t.sources}</div>
           <div style={{ marginBottom: 10 }}>{t.disclaimer}</div>
-          <div>© 2026 BuildFi · <a href="/" style={{ color: CL.muted }}>buildfi.ca</a></div>
+          <div>© 2026 BuildFi · <Link href="/" style={{ color: CL.muted }}>buildfi.ca</Link></div>
         </footer>
       </main>
     </div>
