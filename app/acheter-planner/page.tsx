@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { trackEvent, EVENTS } from "@/lib/tracking";
 
 /* Palette aligned with landing + planner_v3 */
 const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", gn: "#48a66d", rd: "#cf6060" };
@@ -94,6 +95,7 @@ function PageInner() {
     if (!emailOK) { setError(t.errorEmail); return; }
     if (!terms) { setError(t.errorTerms); return; }
     setSubmitting(true);
+    trackEvent(EVENTS.PLANNER_CHECKOUT_STARTED, { tier: "planner" });
     try {
       const resp = await fetch("/api/checkout", {
         method: "POST",

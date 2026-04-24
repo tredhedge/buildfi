@@ -115,11 +115,13 @@ export const MODE1_QUESTIONS: Mode1Question[] = [
     type: "choice",
     labelFr: "Avez-vous des propriétés à revenus ?",
     labelEn: "Do you own rental properties?",
+    helpFr: "Pour 4 propriétés ou plus, le Planner est recommandé (modélisation détaillée illimitée).",
+    helpEn: "For 4+ properties, the Planner is recommended (unlimited detailed modeling).",
     options: [
       { value: 0, labelFr: "Aucune", labelEn: "None" },
       { value: 1, labelFr: "Une propriété", labelEn: "One property" },
       { value: 2, labelFr: "Deux propriétés", labelEn: "Two properties" },
-      { value: 3, labelFr: "Trois ou plus", labelEn: "Three or more" },
+      { value: 3, labelFr: "Trois propriétés", labelEn: "Three properties" },
     ],
   },
   {
@@ -407,15 +409,16 @@ export const BLOCKS: WizardBlock[] = [
   },
   {
     id: "rentals-3",
-    titleFr: "Propriété à revenus #3+",
-    titleEn: "Rental property #3+",
-    descFr: "Pour 3 propriétés ou plus, nous recommandons le Planner ($69,99) — modélisation détaillée illimitée.",
-    descEn: "For 3+ properties, we recommend the Planner ($69.99) — unlimited detailed modeling.",
+    titleFr: "Propriété à revenus #3",
+    titleEn: "Rental property #3",
     showIf: (p) => p.rentalCount >= 3,
     fields: [
-      { id: "rentalValue3", type: "currency", labelFr: "Valeur totale propriétés #3+", labelEn: "Total value of properties #3+" },
-      { id: "rentalIncome3", type: "currency", labelFr: "Revenu net annuel total #3+", labelEn: "Total net annual income #3+" },
-      { id: "rentalMortgage3", type: "currency", labelFr: "Solde hypothécaire total #3+", labelEn: "Total mortgage balance #3+" },
+      { id: "rentalValue3", type: "currency", labelFr: "Valeur de marché", labelEn: "Market value", required: true, step: 5000 },
+      { id: "rentalIncome3", type: "currency", labelFr: "Revenu net annuel", labelEn: "Net annual income", required: true, step: 500 },
+      { id: "rentalMortgage3", type: "currency", labelFr: "Solde hypothécaire", labelEn: "Mortgage balance", min: 0, step: 1000 },
+      { id: "rentalMortgageRate3", type: "percent", labelFr: "Taux hypothécaire", labelEn: "Mortgage rate", step: 0.05, min: 0, max: 15 },
+      { id: "rentalCost3", type: "currency", labelFr: "Coût d'acquisition (FNACC)", labelEn: "Adjusted cost base (ACB)", min: 0, step: 1000 },
+      { id: "rentalSell3", type: "age", labelFr: "Âge prévu de vente", labelEn: "Planned age of sale", min: 0, max: 100 },
     ],
   },
   {

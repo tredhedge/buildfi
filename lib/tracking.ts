@@ -72,6 +72,17 @@ export const EVENTS = {
   LAB_SUMMARY_OPENED: "lab_summary_opened",     // {}
   LAB_EXPORT_STARTED: "lab_export_started",     // { creditsRemaining: number }
   LAB_PLANNER_OPENED: "lab_planner_opened",     // { source: "mode_switch"|"auto" }
+  // ── 2-SKU funnel (2026-04) ────────────────────────────────────────
+  LANDING_CTA_CLICKED: "landing_cta_clicked",            // { cta: "bilan"|"planner"|"tools"|"sticky"|"hero-primary"|"hero-secondary" }
+  WIZARD_STARTED: "wizard_started",                      // lands on /wizard (mode1 shown)
+  WIZARD_MODE1_COMPLETED: "wizard_mode1_completed",      // { profile: Mode1Profile }
+  WIZARD_MODE2_FIELDS: "wizard_mode2_fields",            // { totalFields: number } — on Mode2 mount
+  WIZARD_REVIEW_REACHED: "wizard_review_reached",        // { totalFields: number }
+  WIZARD_VALIDATION_ERROR: "wizard_validation_error",    // { fieldId, reason }
+  PLANNER_CHECKOUT_STARTED: "planner_checkout_started",  // direct checkout from /acheter-planner
+  REPORT_REGENERATED: "report_regenerated",              // { creditsRemaining: number }
+  REPORT_PACK_STARTED: "report_pack_started",            // click "Buy +4 reports" in /expert
+  PRICING_VIEWED: "pricing_viewed",                      // landing #pricing section in view
 } as const;
 
 // ---------------------------------------------------------------------------

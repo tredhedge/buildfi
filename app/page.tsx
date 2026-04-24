@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { trackEvent, EVENTS } from "@/lib/tracking";
 
 /* ═══════════════════════════════════════════════════════════
    Palette — planner_v3 verbatim
@@ -519,7 +520,7 @@ function PricingSection({ cl, theme, t, lang }: any) {
             <ul style={{ padding: 0, margin: "0 0 20px", listStyle: "none", flex: 1 }}>
               {t.pricingBilanFeatures.map(bullet)}
             </ul>
-            <a href={`/wizard${lang === "en" ? "?lang=en" : ""}`} style={{ display: "block", textAlign: "center", background: "transparent", color: cl.ac, border: `1.5px solid ${cl.ac}`, padding: "13px 18px", borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{t.pricingBilanCta} →</a>
+            <a href={`/wizard${lang === "en" ? "?lang=en" : ""}`} onClick={() => trackEvent(EVENTS.LANDING_CTA_CLICKED, { cta: "bilan" })} style={{ display: "block", textAlign: "center", background: "transparent", color: cl.ac, border: `1.5px solid ${cl.ac}`, padding: "13px 18px", borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{t.pricingBilanCta} →</a>
           </div>
           {/* Planner (featured) */}
           <div style={{ ...CardBase, border: `2px solid ${cl.ac}`, background: theme === "dark" ? `linear-gradient(180deg, ${cl.cd}, ${cl.s2})` : cl.cd, boxShadow: `0 12px 40px ${cl.ac}20` }}>
@@ -533,7 +534,7 @@ function PricingSection({ cl, theme, t, lang }: any) {
             <ul style={{ padding: 0, margin: "0 0 20px", listStyle: "none", flex: 1 }}>
               {t.pricingPlannerFeatures.map(bullet)}
             </ul>
-            <a href={`/acheter-planner${lang === "en" ? "?lang=en" : ""}`} style={{ display: "block", textAlign: "center", background: cl.ac, color: theme === "dark" ? cl.bg : "#fff", padding: "14px 20px", borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: "none", boxShadow: `0 4px 16px ${cl.ac}40` }}>{t.pricingPlannerCta} →</a>
+            <a href={`/acheter-planner${lang === "en" ? "?lang=en" : ""}`} onClick={() => trackEvent(EVENTS.LANDING_CTA_CLICKED, { cta: "planner" })} style={{ display: "block", textAlign: "center", background: cl.ac, color: theme === "dark" ? cl.bg : "#fff", padding: "14px 20px", borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: "none", boxShadow: `0 4px 16px ${cl.ac}40` }}>{t.pricingPlannerCta} →</a>
           </div>
         </div>
         <div style={{ textAlign: "center", fontSize: 12, color: cl.dm, marginTop: 20, opacity: 0.8 }}>{t.pricingFootnote}</div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { trackEvent, EVENTS } from "@/lib/tracking";
 import {
   MODE1_QUESTIONS,
   MODE1_DEFAULT,
@@ -166,7 +167,108 @@ function Mode1Step({ cl, lang, profile, setProfile, onNext }: any) {
   );
 }
 
-function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onSubmit, submitting, error, errorFieldId }: any) {
+function ProgressBar({ cl, step, lang }: any) {
+  const steps = [
+    { id: "mode1", labelFr: "Ciblage", labelEn: "Target" },
+    { id: "mode2", labelFr: "Vos réponses", labelEn: "Your answers" },
+    { id: "review", labelFr: "Vérifier", labelEn: "Review" },
+  ];
+  const idx = steps.findIndex((s) => s.id === step);
+  const pct = ((idx + 1) / steps.length) * 100;
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
+        {steps.map((s, i) => (
+          <span key={s.id} style={{ color: i <= idx ? cl.ac : cl.dm }}>
+            {i + 1}. {lang === "fr" ? s.labelFr : s.labelEn}
+          </span>
+        ))}
+      </div>
+      <div style={{ height: 6, background: cl.bd, borderRadius: 999, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: cl.ac, transition: "width .3s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function ReviewStep({ cl, lang, theme, profile, answers, blocks, onBack, onSubmit, submitting, error }: any) {
+  const fmt = (v: any, f: any) => {
+    if (v == null || v === "") return "—";
+    if (f.type === "currency") return new Intl.NumberFormat(lang === "fr" ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v);
+    if (f.type === "percent") return `${v} %`;
+    if (f.type === "bool") return v ? (lang === "fr" ? "Oui" : "Yes") : (lang === "fr" ? "Non" : "No");
+    if (f.type === "choice") {
+      const opt = f.options?.find((o: any) => String(o.value) === String(v));
+      return opt ? (lang === "fr" ? opt.labelFr : opt.labelEn) : String(v);
+    }
+    return String(v);
+  };
+  const totalFields = blocks.reduce((s: number, b: any) => s + b.fields.length, 0);
+  return (
+    <section>
+      <button onClick={onBack} style={{ background: "transparent", border: "none", color: cl.dm, fontSize: 13, cursor: "pointer", padding: 0, marginBottom: 12 }}>
+        {lang === "fr" ? "← Modifier mes réponses" : "← Edit my answers"}
+      </button>
+      <h1 style={{ fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, color: cl.al, margin: "0 0 8px" }}>
+        {lang === "fr" ? "Dernière vérification avant le calcul" : "Final review before calculation"}
+      </h1>
+      <p style={{ fontSize: 14, color: cl.dm, marginBottom: 22 }}>
+        {lang === "fr"
+          ? `Vérifiez ces ${totalFields} réponses. Après paiement, votre rapport est généré en 30 secondes et livré par courriel.`
+          : `Review these ${totalFields} answers. After payment, your report is generated in 30 seconds and delivered by email.`}
+      </p>
+      <div style={{ display: "grid", gap: 14 }}>
+        {blocks.map((b: any) => (
+          <details key={b.id} open style={{ background: cl.cd, border: `1px solid ${cl.bd}`, borderRadius: 10, padding: "12px 16px" }}>
+            <summary style={{ fontSize: 14, fontWeight: 700, color: cl.al, cursor: "pointer", listStyle: "none" }}>
+              {lang === "fr" ? b.titleFr : b.titleEn}{" "}
+              <span style={{ fontSize: 11, color: cl.dm, fontWeight: 400 }}>({b.fields.length} {lang === "fr" ? "champs" : "fields"})</span>
+            </summary>
+            <table style={{ width: "100%", marginTop: 10, fontSize: 13, borderCollapse: "collapse" }}>
+              <tbody>
+                {b.fields.map((f: any) => (
+                  <tr key={f.id} style={{ borderBottom: `1px solid ${cl.bd}` }}>
+                    <td style={{ padding: "6px 8px 6px 0", color: cl.dm, width: "60%" }}>{lang === "fr" ? f.labelFr : f.labelEn}</td>
+                    <td style={{ padding: "6px 0", color: cl.tx, fontWeight: 600, textAlign: "right" }}>{fmt(answers[f.id], f)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        ))}
+      </div>
+      {error && (
+        <div style={{ background: cl.rd + "18", border: `1px solid ${cl.rd}`, color: cl.rd, padding: "10px 14px", borderRadius: 8, fontSize: 13, marginTop: 14 }}>
+          {error}
+        </div>
+      )}
+      <div style={{ marginTop: 20, padding: "16px 18px", background: cl.ac + "10", border: `1px solid ${cl.ac}`, borderRadius: 10, fontSize: 13, color: cl.tx, lineHeight: 1.5 }}>
+        <strong style={{ color: cl.al }}>{lang === "fr" ? "Ce que vous allez recevoir" : "What you'll receive"}</strong>
+        <ul style={{ margin: "8px 0 0 18px", padding: 0 }}>
+          <li>{lang === "fr" ? "1 rapport HTML interactif personnalisé" : "1 interactive personalized HTML report"}</li>
+          <li>{lang === "fr" ? "Narration IA Opus (analyse de vos chiffres)" : "Opus AI narration (analysis of your numbers)"}</li>
+          <li>{lang === "fr" ? "Plan testé contre krach, inflation, longévité extrême" : "Plan stress-tested against crash, inflation, extreme longevity"}</li>
+          <li>{lang === "fr" ? "Livré par courriel après paiement (~30 secondes)" : "Delivered by email after payment (~30 seconds)"}</li>
+        </ul>
+      </div>
+      <button
+        onClick={onSubmit}
+        disabled={submitting}
+        style={{
+          marginTop: 18, width: "100%", padding: "15px 24px",
+          background: cl.ac, color: "#fff", border: "none", borderRadius: 10,
+          fontSize: 15, fontWeight: 800, cursor: submitting ? "wait" : "pointer",
+          opacity: submitting ? 0.7 : 1, boxShadow: `0 4px 14px ${cl.ac}40`,
+        }}>
+        {submitting
+          ? (lang === "fr" ? "Redirection vers le paiement…" : "Redirecting to payment…")
+          : (lang === "fr" ? "Confirmer et payer 29,99 $ →" : "Confirm and pay $29.99 →")}
+      </button>
+    </section>
+  );
+}
+
+function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onSubmit, submitting, error, errorFieldId, submitLabel }: any) {
   const t = lang === "fr" ? COPY.fr : COPY.en;
   const focusField = (fieldId: string) => {
     const el = document.getElementById(`f-${fieldId}`);
@@ -320,7 +422,7 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
           fontSize: 15, fontWeight: 800, cursor: submitting ? "wait" : "pointer",
           opacity: submitting ? 0.7 : 1, boxShadow: `0 4px 14px ${cl.ac}40`,
         }}>
-        {submitting ? t.loading : t.mode2Submit + " →"}
+        {submitting ? t.loading : (submitLabel || t.mode2Submit + " →")}
       </button>
     </section>
   );
@@ -340,74 +442,76 @@ function WizardInner() {
       const p = params?.get("lang");
       if (p === "en" || p === "fr") setLang(p);
     } catch {}
+    trackEvent(EVENTS.WIZARD_STARTED, {});
   }, [params]);
   const cl = mounted && theme === "dark" ? CL_DARK : CL_LIGHT;
   const t = lang === "fr" ? COPY.fr : COPY.en;
 
-  const [step, setStep] = useState<"mode1" | "mode2">("mode1");
+  const [step, setStep] = useState<"mode1" | "mode2" | "review">("mode1");
   const [profile, setProfile] = useState<Mode1Profile>(MODE1_DEFAULT);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
 
-  // Save progress to sessionStorage
+  // Save progress to localStorage with 30-day TTL (user can resume up to 30 days later)
+  const WIZARD_KEY = "buildfi_wizard_v2";
+  const WIZARD_TTL_MS = 30 * 24 * 60 * 60 * 1000;
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem("buildfi_wizard");
+      const saved = localStorage.getItem(WIZARD_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.profile) setProfile(parsed.profile);
-        if (parsed.answers) setAnswers(parsed.answers);
-        if (parsed.step) setStep(parsed.step);
+        if (parsed.savedAt && Date.now() - parsed.savedAt < WIZARD_TTL_MS) {
+          if (parsed.profile) setProfile(parsed.profile);
+          if (parsed.answers) setAnswers(parsed.answers);
+          if (parsed.step) setStep(parsed.step);
+        } else {
+          // Expired — clear
+          localStorage.removeItem(WIZARD_KEY);
+        }
       }
     } catch {}
   }, []);
   useEffect(() => {
-    try { sessionStorage.setItem("buildfi_wizard", JSON.stringify({ profile, answers, step })); } catch {}
+    try {
+      localStorage.setItem(WIZARD_KEY, JSON.stringify({ profile, answers, step, savedAt: Date.now() }));
+    } catch {}
   }, [profile, answers, step]);
 
   const blocks = useMemo(() => filterBlocksForProfile(profile), [profile]);
 
-  const submit = async () => {
+  const validateMode2 = (): boolean => {
     setError("");
     setErrorFieldId(null);
     const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((answers.__email || "").trim());
-    if (!emailOK) { setError(t.errorEmail); setErrorFieldId("__email"); return; }
-    if (!answers.__terms) { setError(t.errorTerms); return; }
-    // Check required fields + range validation
+    if (!emailOK) { setError(t.errorEmail); setErrorFieldId("__email"); return false; }
+    if (!answers.__terms) { setError(t.errorTerms); return false; }
     for (const b of blocks) {
       for (const f of b.fields) {
         const v = answers[f.id];
         if (f.required && (v === "" || v == null)) {
           setError(`${t.errorRequired} (${lang === "fr" ? b.titleFr : b.titleEn}: ${lang === "fr" ? f.labelFr : f.labelEn})`);
           setErrorFieldId(f.id);
-          return;
+          return false;
         }
-        // Range validation for numeric fields when a value is present
         if (v !== "" && v != null && (f.type === "number" || f.type === "age" || f.type === "currency" || f.type === "percent")) {
           const n = Number(v);
-          if (!Number.isFinite(n)) {
-            setError((lang === "fr" ? "Valeur invalide : " : "Invalid value: ") + (lang === "fr" ? f.labelFr : f.labelEn));
-            setErrorFieldId(f.id);
-            return;
-          }
-          if (f.min != null && n < f.min) {
-            setError((lang === "fr" ? `Minimum ${f.min} : ` : `Minimum ${f.min}: `) + (lang === "fr" ? f.labelFr : f.labelEn));
-            setErrorFieldId(f.id);
-            return;
-          }
-          if (f.max != null && n > f.max) {
-            setError((lang === "fr" ? `Maximum ${f.max} : ` : `Maximum ${f.max}: `) + (lang === "fr" ? f.labelFr : f.labelEn));
-            setErrorFieldId(f.id);
-            return;
-          }
+          if (!Number.isFinite(n)) { setError((lang === "fr" ? "Valeur invalide : " : "Invalid value: ") + (lang === "fr" ? f.labelFr : f.labelEn)); setErrorFieldId(f.id); return false; }
+          if (f.min != null && n < f.min) { setError((lang === "fr" ? `Minimum ${f.min} : ` : `Minimum ${f.min}: `) + (lang === "fr" ? f.labelFr : f.labelEn)); setErrorFieldId(f.id); return false; }
+          if (f.max != null && n > f.max) { setError((lang === "fr" ? `Maximum ${f.max} : ` : `Maximum ${f.max}: `) + (lang === "fr" ? f.labelFr : f.labelEn)); setErrorFieldId(f.id); return false; }
         }
       }
     }
-    // Strip answers from hidden blocks (user could have entered values then changed Mode 1)
+    return true;
+  };
+
+  const submit = async () => {
+    // Re-validate defensively (Mode2 already validated before navigating to Review)
+    if (!validateMode2()) return;
     const activeIds = new Set<string>();
     for (const b of blocks) for (const f of b.fields) activeIds.add(f.id);
+    trackEvent(EVENTS.CHECKOUT_INITIATED, { tier: "bilan360", fieldCount: activeIds.size });
     setSubmitting(true);
     try {
       // Only keep values for fields present in the current set of active blocks,
@@ -435,7 +539,7 @@ function WizardInner() {
         setSubmitting(false);
         return;
       }
-      sessionStorage.removeItem("buildfi_wizard");
+      localStorage.removeItem(WIZARD_KEY);
       window.location.href = data.url;
     } catch (e) {
       setError(t.errorGeneric);
@@ -466,10 +570,25 @@ function WizardInner() {
       </header>
 
       <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px 80px" }}>
+        {/* Visual progress bar */}
+        <ProgressBar cl={cl} step={step} lang={lang} />
+
         {step === "mode1" ? (
-          <Mode1Step cl={cl} lang={lang} profile={profile} setProfile={setProfile} onNext={() => setStep("mode2")} />
+          <Mode1Step cl={cl} lang={lang} profile={profile} setProfile={setProfile} onNext={() => {
+            trackEvent(EVENTS.WIZARD_MODE1_COMPLETED, { profile });
+            setStep("mode2");
+          }} />
+        ) : step === "mode2" ? (
+          <Mode2Step cl={cl} lang={lang} profile={profile} answers={answers} setAnswers={setAnswers} blocks={blocks} onBack={() => setStep("mode1")} onSubmit={() => {
+            if (validateMode2()) {
+              trackEvent(EVENTS.WIZARD_REVIEW_REACHED, { totalFields: blocks.reduce((s: number, b: WizardBlock) => s + b.fields.length, 0) });
+              setStep("review");
+            } else {
+              trackEvent(EVENTS.WIZARD_VALIDATION_ERROR, { fieldId: errorFieldId });
+            }
+          }} submitting={false} error={error} errorFieldId={errorFieldId} submitLabel={lang === "fr" ? "Vérifier mes réponses →" : "Review my answers →"} />
         ) : (
-          <Mode2Step cl={cl} lang={lang} profile={profile} answers={answers} setAnswers={setAnswers} blocks={blocks} onBack={() => setStep("mode1")} onSubmit={submit} submitting={submitting} error={error} errorFieldId={errorFieldId} />
+          <ReviewStep cl={cl} lang={lang} theme={theme} profile={profile} answers={answers} blocks={blocks} onBack={() => setStep("mode2")} onSubmit={submit} submitting={submitting} error={error} />
         )}
       </main>
     </div>
