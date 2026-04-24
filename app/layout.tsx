@@ -36,11 +36,20 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_CA",
     siteName: "BuildFi",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "BuildFi — Planification retraite canadienne" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "BuildFi — Planification retraite canadienne",
     description: "Plan testé contre l'adversité. Bilan 29,99 $. 13 provinces. Bilingue FR/EN.",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon512.png", sizes: "512x512", type: "image/png" },
+    ],
   },
   alternates: {
     canonical: "https://buildfi.ca",

@@ -13,7 +13,7 @@ import {
 } from "@/lib/wizard/blocks";
 
 /* Palette aligned with landing (CL_LIGHT planner_v3) */
-const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", tx: "#2a3442", al: "#172332", dm: "#5d7085", ac: "#8f6d2f", gn: "#2f8a4a", rd: "#b93f43" };
+const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", tx: "#2a3442", al: "#172332", dm: "#4a5a6e", ac: "#8f6d2f", gn: "#2f8a4a", rd: "#b93f43" };
 const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", gn: "#48a66d", rd: "#cf6060" };
 
 const COPY = {
@@ -25,7 +25,7 @@ const COPY = {
     mode1Continue: "Continuer →",
     mode1Progress: "Étape 1 sur 3 — Ciblage",
     mode2Title: "Vos informations",
-    mode2Sub: "Basé sur vos réponses précédentes, voici {count} questions personnalisées (au lieu de 65 pour un profil complet).",
+    mode2Sub: "Basé sur vos réponses, voici {count} questions pertinentes à votre situation. Les sections non applicables sont masquées.",
     mode2Back: "← Modifier mes réponses",
     mode2Submit: "Générer mon rapport — 29,99 $",
     mode3Title: "Prêt à générer",
@@ -54,7 +54,7 @@ const COPY = {
     mode1Continue: "Continue →",
     mode1Progress: "Step 1 of 3 — Targeting",
     mode2Title: "Your information",
-    mode2Sub: "Based on your previous answers, here are {count} tailored questions (instead of 65 for a full profile).",
+    mode2Sub: "Based on your answers, here are {count} questions relevant to your situation. Sections that don't apply are hidden.",
     mode2Back: "← Edit my answers",
     mode2Submit: "Generate my report — $29.99",
     mode3Title: "Ready to generate",
@@ -166,8 +166,14 @@ function Mode1Step({ cl, lang, profile, setProfile, onNext }: any) {
   );
 }
 
-function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onSubmit, submitting, error }: any) {
+function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onSubmit, submitting, error, errorFieldId }: any) {
   const t = lang === "fr" ? COPY.fr : COPY.en;
+  const focusField = (fieldId: string) => {
+    const el = document.getElementById(`f-${fieldId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => (el as HTMLElement).focus({ preventScroll: true }), 300);
+  };
   const totalFields = blocks.reduce((s: number, b: WizardBlock) => s + b.fields.length, 0);
   const [email, setEmail] = useState(answers.__email || "");
   const [terms, setTerms] = useState(answers.__terms || false);
@@ -209,14 +215,22 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
         </div>
       );
     }
-    // currency, percent, number, age
+    // currency, percent, number, age — smart default step so arrow-up/down makes sense
+    // Currency fields usually carry $1K-$1M balances → step 1000 (override via f.step)
+    // Percent fields → step 0.25 (default)
+    // Age/number → step 1
+    const smartStep = f.step ?? (
+      f.type === "currency" ? 1000 :
+      f.type === "percent" ? 0.25 :
+      1
+    );
     return (
       <div style={{ display: "flex", alignItems: "stretch", background: cl.s2, border: `1px solid ${cl.bd}`, borderRadius: 8, overflow: "hidden" }}>
         {f.type === "currency" && <span style={{ padding: "9px 10px", background: cl.bg, color: cl.dm, fontSize: 12, fontWeight: 700 }}>$</span>}
         <input
           id={`f-${f.id}`}
           type="number"
-          step={f.step || (f.type === "percent" ? 0.1 : 1)}
+          step={smartStep}
           min={f.min}
           max={f.max}
           value={val === "" ? "" : val}
@@ -262,10 +276,10 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
 
       {/* Email + Terms */}
       <div style={{ background: cl.cd, border: `1px solid ${cl.bd}`, borderRadius: 12, padding: "18px 20px", marginTop: 18 }}>
-        <label htmlFor="wiz-email" style={{ display: "block", fontSize: 12, fontWeight: 700, color: cl.dm, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+        <label htmlFor="f-__email" style={{ display: "block", fontSize: 12, fontWeight: 700, color: cl.dm, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
           {t.emailLabel} <span style={{ color: cl.rd }}>*</span>
         </label>
-        <input id="wiz-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.emailPlaceholder}
+        <input id="f-__email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.emailPlaceholder}
           style={{ width: "100%", padding: "11px 13px", background: cl.s2, border: `1px solid ${cl.bd}`, borderRadius: 8, color: cl.tx, outline: "none", fontSize: 14 }} />
         <div style={{ fontSize: 11, color: cl.dm, marginTop: 4, marginBottom: 14 }}>{t.emailNote}</div>
 
@@ -279,9 +293,22 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
       </div>
 
       {error && (
-        <div style={{ background: cl.rd + "18", border: `1px solid ${cl.rd}`, color: cl.rd, padding: "10px 14px", borderRadius: 8, fontSize: 13, marginTop: 14 }}>
-          {error}
-        </div>
+        errorFieldId ? (
+          <button
+            type="button"
+            onClick={() => focusField(errorFieldId)}
+            style={{ display: "block", width: "100%", textAlign: "left", background: cl.rd + "18", border: `1px solid ${cl.rd}`, color: cl.rd, padding: "10px 14px", borderRadius: 8, fontSize: 13, marginTop: 14, cursor: "pointer", fontWeight: 600 }}
+            title={lang === "fr" ? "Cliquez pour aller au champ" : "Click to jump to the field"}
+          >
+            ⚠️ {error} <span style={{ color: cl.dm, fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
+              {lang === "fr" ? "(cliquer pour y aller →)" : "(click to jump →)"}
+            </span>
+          </button>
+        ) : (
+          <div style={{ background: cl.rd + "18", border: `1px solid ${cl.rd}`, color: cl.rd, padding: "10px 14px", borderRadius: 8, fontSize: 13, marginTop: 14 }}>
+            {error}
+          </div>
+        )
       )}
 
       <button
@@ -322,6 +349,7 @@ function WizardInner() {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
 
   // Save progress to sessionStorage
   useEffect(() => {
@@ -343,23 +371,52 @@ function WizardInner() {
 
   const submit = async () => {
     setError("");
+    setErrorFieldId(null);
     const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((answers.__email || "").trim());
-    if (!emailOK) { setError(t.errorEmail); return; }
+    if (!emailOK) { setError(t.errorEmail); setErrorFieldId("__email"); return; }
     if (!answers.__terms) { setError(t.errorTerms); return; }
-    // Check required fields
+    // Check required fields + range validation
     for (const b of blocks) {
       for (const f of b.fields) {
-        if (f.required && (answers[f.id] === "" || answers[f.id] == null)) {
+        const v = answers[f.id];
+        if (f.required && (v === "" || v == null)) {
           setError(`${t.errorRequired} (${lang === "fr" ? b.titleFr : b.titleEn}: ${lang === "fr" ? f.labelFr : f.labelEn})`);
+          setErrorFieldId(f.id);
           return;
+        }
+        // Range validation for numeric fields when a value is present
+        if (v !== "" && v != null && (f.type === "number" || f.type === "age" || f.type === "currency" || f.type === "percent")) {
+          const n = Number(v);
+          if (!Number.isFinite(n)) {
+            setError((lang === "fr" ? "Valeur invalide : " : "Invalid value: ") + (lang === "fr" ? f.labelFr : f.labelEn));
+            setErrorFieldId(f.id);
+            return;
+          }
+          if (f.min != null && n < f.min) {
+            setError((lang === "fr" ? `Minimum ${f.min} : ` : `Minimum ${f.min}: `) + (lang === "fr" ? f.labelFr : f.labelEn));
+            setErrorFieldId(f.id);
+            return;
+          }
+          if (f.max != null && n > f.max) {
+            setError((lang === "fr" ? `Maximum ${f.max} : ` : `Maximum ${f.max}: `) + (lang === "fr" ? f.labelFr : f.labelEn));
+            setErrorFieldId(f.id);
+            return;
+          }
         }
       }
     }
+    // Strip answers from hidden blocks (user could have entered values then changed Mode 1)
+    const activeIds = new Set<string>();
+    for (const b of blocks) for (const f of b.fields) activeIds.add(f.id);
     setSubmitting(true);
     try {
-      const wizardAnswers = { ...answers, __profile: profile };
-      delete wizardAnswers.__email;
-      delete wizardAnswers.__terms;
+      // Only keep values for fields present in the current set of active blocks,
+      // plus the classifier profile. Prevents leaking stale answers from hidden blocks.
+      const wizardAnswers: Record<string, unknown> = { __profile: profile };
+      for (const key of Object.keys(answers)) {
+        if (key.startsWith("__")) continue; // internal (email, terms)
+        if (activeIds.has(key)) wizardAnswers[key] = answers[key];
+      }
       const resp = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -412,7 +469,7 @@ function WizardInner() {
         {step === "mode1" ? (
           <Mode1Step cl={cl} lang={lang} profile={profile} setProfile={setProfile} onNext={() => setStep("mode2")} />
         ) : (
-          <Mode2Step cl={cl} lang={lang} profile={profile} answers={answers} setAnswers={setAnswers} blocks={blocks} onBack={() => setStep("mode1")} onSubmit={submit} submitting={submitting} error={error} />
+          <Mode2Step cl={cl} lang={lang} profile={profile} answers={answers} setAnswers={setAnswers} blocks={blocks} onBack={() => setStep("mode1")} onSubmit={submit} submitting={submitting} error={error} errorFieldId={errorFieldId} />
         )}
       </main>
     </div>

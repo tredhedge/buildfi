@@ -472,15 +472,16 @@ function PortalContent() {
                         const res = await fetch("/api/checkout", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: profile.email, type: "addon" }),
+                          body: JSON.stringify({ email: profile.email, type: "report-pack", lang }),
                         });
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;
+                        else if (d.error) alert(d.message || d.error);
                       } catch {}
                     }}
                     style={{ background: "none", border: "none", color: EK.gold, textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0, fontFamily: "'DM Sans', sans-serif" }}
                   >
-                    {t("Acheter un export (14,99 $)", "Purchase export ($14.99)")}
+                    {t("Acheter 4 rapports supplémentaires (19,99 $)", "Buy 4 extra reports ($19.99)")}
                   </button>
                 </div>
               </div>

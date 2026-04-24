@@ -35,7 +35,7 @@ const PAL_DARK = {
 const PAL_LIGHT = {
   bg: "#f5f8fc", card: "#fcfdff", s2: "#eef3f9",
   border: "#d6e0ec", borderLight: "#c2cfde",
-  tx: "#2a3442", txDim: "#5d7085", txMuted: "#85919f",
+  tx: "#2a3442", txDim: "#4a5a6e", txMuted: "#6e7a8a",
   accent: "#8f6d2f", accentBg: "rgba(143,109,47,.10)",
   red: "#b93f43", redBg: "rgba(185,63,67,.08)",
   green: "#2f8a4a", greenBg: "rgba(47,138,74,.08)",
