@@ -487,7 +487,7 @@ function StatsBar({ cl, t }: any) {
   );
 }
 
-function PricingSection({ cl, theme, t, lang }: any) {
+function PricingSection({ cl, theme, t, lang, children }: any) {
   const CardBase: React.CSSProperties = {
     background: cl.cd,
     border: `1px solid ${cl.bd}`,
@@ -538,6 +538,7 @@ function PricingSection({ cl, theme, t, lang }: any) {
           </div>
         </div>
         <div style={{ textAlign: "center", fontSize: 12, color: cl.dm, marginTop: 20, opacity: 0.8 }}>{t.pricingFootnote}</div>
+        {children}
       </div>
     </section>
   );
@@ -552,10 +553,8 @@ function ComparisonTable({ cl, t }: any) {
     return <span style={{ fontSize: 12, color: cl.tx, fontStyle: "italic" }}>{v}</span>;
   };
   return (
-    <section style={{ background: cl.bg, padding: "60px 20px" }}>
-      <div style={{ maxWidth: 840, margin: "0 auto" }}>
-        <h2 style={{ fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 800, color: cl.al, margin: "0 0 24px", textAlign: "center", letterSpacing: -0.4 }}>{t.compareTitle}</h2>
-        <div style={{ overflowX: "auto", border: `1px solid ${cl.bd}`, borderRadius: 14, background: cl.cd }}>
+    <div>
+      <div style={{ overflowX: "auto", borderRadius: 10 }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520, fontSize: 13 }}>
             <thead>
               <tr style={{ background: cl.s2, borderBottom: `1px solid ${cl.bd}` }}>
@@ -580,7 +579,6 @@ function ComparisonTable({ cl, t }: any) {
           </table>
         </div>
       </div>
-    </section>
   );
 }
 
@@ -880,12 +878,18 @@ function HomeInner() {
       <StatsBar cl={cl} t={t} />
       <FreeTools cl={cl} t={t} />
       <SamplePreview cl={cl} theme={theme} t={t} lang={lang} />
-      <PricingSection cl={cl} theme={theme} t={t} lang={lang} />
-      <ComparisonTable cl={cl} t={t} />
+      <PricingSection cl={cl} theme={theme} t={t} lang={lang}>
+        <details style={{ maxWidth: 880, margin: "20px auto 0", background: cl.cd, border: `1px solid ${cl.bd}`, borderRadius: 12 }}>
+          <summary style={{ cursor: "pointer", padding: "14px 20px", fontSize: 13, fontWeight: 700, color: cl.ac, listStyle: "none", textAlign: "center" }}>
+            {t.compareTitle} ▾
+          </summary>
+          <div style={{ padding: "0 12px 16px" }}>
+            <ComparisonTable cl={cl} t={t} />
+          </div>
+        </details>
+      </PricingSection>
       <PillarsSection cl={cl} t={t} />
-      <QuebecCallout cl={cl} t={t} />
       <HowItWorks cl={cl} t={t} />
-      <WhyBuildFi cl={cl} t={t} />
       <FAQ cl={cl} t={t} />
       <CTABottom cl={cl} theme={theme} t={t} lang={lang} />
       <Footer cl={cl} lang={lang} t={t} />
