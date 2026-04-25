@@ -372,6 +372,13 @@
     var naiveSucc = hasNaive ? toNum(mc._naiveMC.succ) : null;
     var succDelta = hasNaive ? (toNum(mc.succ) - naiveSucc) * 100 : null;
     var medDelta = hasNaive ? (toNum(mc.rMedF || mc.medF) - toNum(mc._naiveMC.rMedF || mc._naiveMC.medF)) : null;
+    // OAS clawback threshold indexed to a given simulation year. `yr` is years
+    // elapsed from today (y0), derived from the row's primary age minus the
+    // primary's starting age. IMPORTANT: `r.taxInc` on medRevData is the
+    // HOUSEHOLD-COMBINED taxable income (engine merges primary+spouse at
+    // lib/engine/index.js:592 before persisting), so the count below is an
+    // upper bound when couples are modeled. Per-spouse deterministic detail
+    // lives on the Tax tab for honest individual clawback attribution.
     function _oasThrFor(rowAge) {
       var yr = Math.max(0, toNum(rowAge) - age);
       return OAS_CLAWBACK_THR * Math.pow(1 + inf, yr);
@@ -550,8 +557,14 @@
     setNum(wsS, wsS.getCell(21, 3), mc.medEstateNet || 0, FMT_MONEY);
     if (hasNaive) setNum(wsS, wsS.getCell(21, 4), mc._naiveMC.medEstateNet || 0, FMT_MONEY);
 
-    setRow(wsS, 22, 2, [fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs"]);
+    // Couple label reflects household-combined basis of r.taxInc; the Tax tab
+    // exposes a per-spouse deterministic breakdown for individual attribution.
+    var _oasLabelS = cOn
+      ? (fr ? "Ann\u00e9es r\u00e9cup. PSV (m\u00e9nage, max.)" : "OAS clawback yrs (household, max)")
+      : (fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs");
+    setRow(wsS, 22, 2, [_oasLabelS]);
     set(wsS, wsS.getCell(22, 3), oasYears); if (oasYearsN != null) set(wsS, wsS.getCell(22, 4), oasYearsN);
+    if (cOn) set(wsS, wsS.getCell(22, 6), fr ? "D\u00e9tail par conjoint \u2192 Fiscalit\u00e9" : "Per-spouse detail \u2192 Tax tab");
 
     setRow(wsS, 23, 2, [fr ? "Taux effectif moyen" : "Avg effective rate"]);
     setNum(wsS, wsS.getCell(23, 3), avgEffOpt, FMT_PCT);
@@ -819,7 +832,47 @@
           toNum(r.taxInc2) > 0 ? toNum(r.tax2) / toNum(r.taxInc2) : 0);
       });
       styleTable(wsSp, { hr: 39, fr: 40, to: 40 + cYrsShown - 1, fc: 2, lc: 6 });
-      footer(wsSp, 40 + cYrsShown + 2);
+
+      // ── Spouse balance trajectory (year-by-year) ─────────────────
+      // Engine emits aCRR/aCTF/aCNR/aCLIRA per spouse on EVERY medRevData row
+      // (engine:2020) — not just at retirement + end. The tab already showed
+      // snapshots at those two moments; the full trajectory lets advisors see
+      // when each account inflects (DB pension starts, RRIF min kicks in at
+      // cAge 72, meltdown ramps, etc.) which is the whole point of exporting
+      // to Excel vs reading a PDF narrative.
+      var spBalAnchor = 40 + cYrsShown + 3;
+      addPageBreak(wsSp, spBalAnchor);
+      addTitle(wsSp, spBalAnchor, 2,
+        fr ? "TRAJECTOIRE DES ACTIFS DU CONJOINT(E) \u2014 M\u00c9DIANE MC" : "SPOUSE ASSET TRAJECTORY \u2014 MC MEDIAN",
+        fr ? "Soldes par compte, ann\u00e9e par ann\u00e9e, m\u00e9diane MC" : "Per-account balances year-by-year, MC median", 13);
+      setRow(wsSp, spBalAnchor + 2, 2, [
+        fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age",
+        fr ? "REER conjoint" : "Spouse RRSP",
+        fr ? "CELI conjoint" : "Spouse TFSA",
+        fr ? "NR conjoint" : "Spouse NR",
+        fr ? "CRI/LIRA conjoint" : "Spouse LIRA",
+        fr ? "Total conjoint" : "Spouse total"
+      ]);
+      var spBalStart = spBalAnchor + 3;
+      revD.slice(0, 30).forEach(function (r, i) {
+        var cAgeY = (p.cAge || 0) + (toNum(r.age) - age);
+        var crr = toNum(r.aCRR), ctf = toNum(r.aCTF), cnr = toNum(r.aCNR), clira = toNum(r.aCLIRA);
+        var rr = spBalStart + i;
+        set(wsSp, wsSp.getCell(rr, 2), y0 + i);
+        set(wsSp, wsSp.getCell(rr, 3), cAgeY);
+        wsSp.getCell(rr, 4).value = crr; wsSp.getCell(rr, 4).numFmt = FMT_MONEY;
+        wsSp.getCell(rr, 5).value = ctf; wsSp.getCell(rr, 5).numFmt = FMT_MONEY;
+        wsSp.getCell(rr, 6).value = cnr; wsSp.getCell(rr, 6).numFmt = FMT_MONEY;
+        wsSp.getCell(rr, 7).value = clira; wsSp.getCell(rr, 7).numFmt = FMT_MONEY;
+        // Total as formula so the user can hand-edit any component and see
+        // the total recalc — supports scenario tinkering in the workbook.
+        setFormula(wsSp, wsSp.getCell(rr, 8),
+          'SUM(D' + rr + ':G' + rr + ')', FMT_MONEY,
+          crr + ctf + cnr + clira);
+      });
+      var spBalEnd = spBalStart + Math.min(revD.length, 30) - 1;
+      styleTable(wsSp, { hr: spBalAnchor + 2, fr: spBalStart, to: spBalEnd, fc: 2, lc: 8 });
+      footer(wsSp, spBalEnd + 3);
     }
 
     // ────────────────────────────────────────────────────────────
@@ -1106,6 +1159,11 @@
     // ────────────────────────────────────────────────────────────
     var wsMC = wb.addWorksheet(fr ? "MC \u2014 Patrimoine" : "MC \u2014 Wealth");
     applySheetTemplate(wsMC, 'grid');
+    // Override col 2 width for the depletion-age table: percentile labels
+    // like "P95 (best 5%)" + the summary row "% simulations never depleted"
+    // need ~30 chars. Year-by-year MC table only uses 4-char "Yr" — extra
+    // whitespace there is harmless.
+    wsMC.getColumn(2).width = 30;
     printSetup(wsMC);
     addTabBanner(wsMC,
       fr ? "Monte Carlo \u2014 Distribution du patrimoine financier" : "Monte Carlo \u2014 Financial Wealth Distribution",
@@ -1222,9 +1280,71 @@
           'IFERROR(D' + r + '/C' + r + ',0)', FMT_PCT, ratio);
       });
       styleTable(wsMC, { hr: dvrAnchor + 2, fr: dvrAnchor + 3, to: dvrAnchor + 2 + dvrData.length, fc: 2, lc: 5 });
-      footer(wsMC, dvrAnchor + 4 + dvrData.length);
+    }
+
+    // ── Ruin-age percentile summary ─────────────────────────────
+    // mc.ruinAges is the raw per-sim portfolio-depletion age (engine uses
+    // 999 as the sentinel for "never depleted"). The deathVsRuin buckets
+    // above compress this to 5-year bins; the percentile summary gives
+    // advisors the distribution shape at a glance without dumping N=5000
+    // rows. All values sourced from the engine (p5Ruin, p10Ruin, medRuin).
+    var rawRuinAges = Array.isArray(mc.ruinAges) ? mc.ruinAges : [];
+    var ruinAnchor = dvrData.length > 0 ? (dvrAnchor + 4 + dvrData.length) : (dvrAnchor + 1);
+    if (rawRuinAges.length > 0 || mc.medRuin != null) {
+      addPageBreak(wsMC, ruinAnchor);
+      addTitle(wsMC, ruinAnchor, 2,
+        fr ? "DISTRIBUTION DES \u00c2GES D'\u00c9PUISEMENT" : "DEPLETION-AGE DISTRIBUTION",
+        fr ? "Seuil \u00ab jamais \u00e9puis\u00e9 \u00bb = 999 (moteur). Percentiles sur " + rawRuinAges.length + " simulations."
+           : "Sentinel 'never depleted' = 999 (engine). Percentiles over " + rawRuinAges.length + " simulations.", 13);
+      setRow(wsMC, ruinAnchor + 2, 2, [fr ? "Percentile" : "Percentile", fr ? "\u00c2ge d'\u00e9puisement" : "Depletion age", fr ? "Interpr\u00e9tation" : "Interpretation"]);
+      // Merge interpretation header across cols 4-8 so the 30-50 char
+      // explanation strings have room without forcing every column on the
+      // tab to expand. Body rows below merge the same span per row.
+      wsMC.mergeCells(ruinAnchor + 2, 4, ruinAnchor + 2, 8);
+      // Prefer engine-computed percentiles when present; otherwise compute
+      // from the raw sorted array. Keeps the Excel row honest to the engine.
+      function _rq(pct) {
+        if (rawRuinAges.length === 0) return null;
+        var sorted = rawRuinAges.slice().sort(function (a, b) { return toNum(a) - toNum(b); });
+        return sorted[Math.max(0, Math.min(sorted.length - 1, Math.floor(sorted.length * pct)))];
+      }
+      var neverRuinCount = rawRuinAges.filter(function (a) { return toNum(a) >= 999; }).length;
+      var neverRuinPct = rawRuinAges.length > 0 ? neverRuinCount / rawRuinAges.length : 0;
+      var ruinRows = [
+        ["P5  (" + (fr ? "pire" : "worst") + " 5%)", toNum(mc.p5Ruin != null ? mc.p5Ruin : _rq(0.05)), fr ? "5 % des simulations \u00e9puisent avant cet \u00e2ge" : "5 % of simulations deplete before this age"],
+        ["P10", toNum(mc.p10Ruin != null ? mc.p10Ruin : _rq(0.10)), fr ? "10 % \u00e9puisent avant cet \u00e2ge" : "10 % deplete before this age"],
+        ["P25", toNum(_rq(0.25)), fr ? "Quart inf\u00e9rieur" : "Lower quartile"],
+        ["P50 " + (fr ? "(m\u00e9diane)" : "(median)"), toNum(mc.medRuin != null ? mc.medRuin : _rq(0.50)), fr ? "\u00c2ge m\u00e9dian d'\u00e9puisement (999 = jamais)" : "Median depletion age (999 = never)"],
+        ["P75", toNum(_rq(0.75)), fr ? "Quart sup\u00e9rieur" : "Upper quartile"],
+        ["P95 (" + (fr ? "meilleur" : "best") + " 5%)", toNum(_rq(0.95)), fr ? "95 % \u00e9puisent avant cet \u00e2ge (ou jamais)" : "95 % deplete before this age (or never)"]
+      ];
+      ruinRows.forEach(function (rr, i) {
+        var r = ruinAnchor + 3 + i;
+        set(wsMC, wsMC.getCell(r, 2), rr[0]);
+        var ageVal = toNum(rr[1]);
+        if (ageVal >= 999) {
+          set(wsMC, wsMC.getCell(r, 3), fr ? "Jamais" : "Never");
+          wsMC.getCell(r, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.green } };
+        } else {
+          wsMC.getCell(r, 3).value = ageVal;
+        }
+        wsMC.mergeCells(r, 4, r, 8);
+        set(wsMC, wsMC.getCell(r, 4), rr[2]);
+        wsMC.getCell(r, 4).alignment = { horizontal: "left", vertical: "middle", wrapText: true };
+      });
+      // Summary row: count who never depleted (alignment with succ rate)
+      var ruinSumRow = ruinAnchor + 3 + ruinRows.length + 1;
+      set(wsMC, wsMC.getCell(ruinSumRow, 2), fr ? "% simulations jamais \u00e9puis\u00e9es" : "% simulations never depleted");
+      wsMC.getCell(ruinSumRow, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.text } };
+      wsMC.getCell(ruinSumRow, 3).value = neverRuinPct; wsMC.getCell(ruinSumRow, 3).numFmt = FMT_PCT;
+      wsMC.getCell(ruinSumRow, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: neverRuinPct >= 0.9 ? CL.green : neverRuinPct >= 0.7 ? CL.gold : CL.red } };
+      wsMC.mergeCells(ruinSumRow, 4, ruinSumRow, 8);
+      set(wsMC, wsMC.getCell(ruinSumRow, 4), fr ? "Doit s'aligner avec Succ\u00e8s MC" : "Should match MC success rate");
+      wsMC.getCell(ruinSumRow, 4).alignment = { horizontal: "left", vertical: "middle" };
+      styleTable(wsMC, { hr: ruinAnchor + 2, fr: ruinAnchor + 3, to: ruinAnchor + 2 + ruinRows.length, fc: 2, lc: 8 });
+      footer(wsMC, ruinSumRow + 2);
     } else {
-      footer(wsMC, dvrAnchor + 1);
+      footer(wsMC, ruinAnchor);
     }
 
     // ────────────────────────────────────────────────────────────
@@ -1304,6 +1424,12 @@
     // ────────────────────────────────────────────────────────────
     var wsTax = wb.addWorksheet(fr ? "Fiscalit\u00e9" : "Tax");
     applySheetTemplate(wsTax, 'standard');
+    // Bump cols 8-10 from 14 to 18 so 7-digit money values ("1,234,567 $",
+    // 11 chars padded) on the per-spouse OAS clawback table and the tax-by-
+    // source breakdown render cleanly without truncation.
+    wsTax.getColumn(8).width = 18;
+    wsTax.getColumn(9).width = 16;
+    wsTax.getColumn(10).width = 16;
     printSetup(wsTax);
     addTabBanner(wsTax,
       fr ? "Analyse fiscale \u2014 " + prov : "Tax analysis \u2014 " + prov,
@@ -1343,8 +1469,12 @@
     wsTax.getCell(24, 3).value = avgEffOpt; wsTax.getCell(24, 3).numFmt = FMT_PCT;
     if (avgEffN != null) { wsTax.getCell(24, 4).value = avgEffN; wsTax.getCell(24, 4).numFmt = FMT_PCT; }
 
-    setRow(wsTax, 25, 2, [fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs"]);
+    var _oasLabelT = cOn
+      ? (fr ? "Ann\u00e9es r\u00e9cup. PSV (m\u00e9nage, max.)" : "OAS clawback yrs (household, max)")
+      : (fr ? "Ann\u00e9es r\u00e9cup. PSV" : "OAS clawback yrs");
+    setRow(wsTax, 25, 2, [_oasLabelT]);
     set(wsTax, wsTax.getCell(25, 3), oasYears); if (oasYearsN != null) set(wsTax, wsTax.getCell(25, 4), oasYearsN);
+    if (cOn) set(wsTax, wsTax.getCell(25, 6), fr ? "Base m\u00e9nage. D\u00e9tail par conjoint dans le bloc ci-dessous." : "Household basis. Per-spouse detail in block below.");
 
     setRow(wsTax, 27, 2, [fr ? "Alpha fiscal total" : "Total tax alpha"]);
     setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
@@ -1395,7 +1525,6 @@
       wsTax.getCell(bracketAnchor + 2, 2).font = { name: "Calibri", size: 10, italic: true, color: { argb: CL.muted } };
       wsTax.getCell(bracketAnchor + 2, 2).alignment = { wrapText: true };
       wsTax.getRow(bracketAnchor + 2).height = 48;
-      footer(wsTax, bracketAnchor + 6);
     } else {
       // Reference 2026 federal bracket ceilings (approx; indexed upward
       // by inflation in projection. Values from PROV_TAX[prov].b are not
@@ -1429,8 +1558,82 @@
         brRow++;
       });
       styleTable(wsTax, { hr: bracketAnchor + 2, fr: bracketAnchor + 3, to: brRow - 1, fc: 2, lc: 8 });
-      footer(wsTax, brRow + 2);
     }
+
+    // ── Per-spouse OAS clawback (deterministic) ─────────────────
+    // The household count above is an UPPER BOUND: r.taxInc on medRevData is
+    // primary+spouse combined (engine merges at lib/engine/index.js:592).
+    // Engine separately stores per-individual taxable income on deterministic
+    // revData (taxInc1 / taxInc2 at engine:1794-1799). OAS recovery tax =
+    // 15 % of (individual taxInc − indexed threshold), gated by each spouse's
+    // own oasAge. A couple with well-split income may have ZERO per-spouse
+    // clawback even when household taxInc sums above the threshold — that
+    // split is the value of this breakdown.
+    var _taxFooterRow = (p.melt && typeof brRow === "number") ? (brRow + 2) : (bracketAnchor + 6);
+    var _detRevD = mc.revData || revD;
+    if (cOn && _detRevD.length > 0 && _detRevD.some(function (r) { return r.taxInc1 != null || r.taxInc2 != null; })) {
+      var spAnchor = _taxFooterRow + 2;
+      addPageBreak(wsTax, spAnchor);
+      addTitle(wsTax, spAnchor, 2,
+        fr ? "R\u00c9CUP\u00c9RATION PSV PAR CONJOINT (D\u00c9TERMINISTE)" : "PER-SPOUSE OAS CLAWBACK (DETERMINISTIC)",
+        fr ? "Revenu imposable par individu vs seuil PSV index\u00e9 (15 % au-dessus)"
+           : "Individual taxable income vs indexed OAS threshold (15 % recovery above)", 13);
+      setRow(wsTax, spAnchor + 2, 2, [
+        fr ? "An" : "Yr",
+        fr ? "\u00c2ge P1" : "Age P1",
+        fr ? "Rev. imp. P1" : "Tax inc P1",
+        fr ? "Seuil" : "Threshold",
+        fr ? "R\u00e9cup. P1" : "Clawback P1",
+        fr ? "\u00c2ge P2" : "Age P2",
+        fr ? "Rev. imp. P2" : "Tax inc P2",
+        fr ? "R\u00e9cup. P2" : "Clawback P2",
+        fr ? "R\u00e9cup. totale" : "Total clawback"
+      ]);
+      var spRow = spAnchor + 3;
+      var cAge0 = toNum(p.cAge) || age;
+      var spRetRows = _detRevD.filter(function (r) { return toNum(r.age) >= retAge; }).slice(0, 20);
+      var spP1Years = 0, spP2Years = 0, spTotalP1 = 0, spTotalP2 = 0;
+      spRetRows.forEach(function (r) {
+        var primaryAge = toNum(r.age);
+        var spouseAge = cAge0 + (primaryAge - age);
+        var thr = _oasThrFor(primaryAge);
+        var ti1 = toNum(r.taxInc1), ti2 = toNum(r.taxInc2);
+        var p1Elig = primaryAge >= oasAge;
+        var p2Elig = spouseAge >= cOasAge;
+        var cb1 = p1Elig ? Math.max(0, (ti1 - thr) * 0.15) : 0;
+        var cb2 = p2Elig ? Math.max(0, (ti2 - thr) * 0.15) : 0;
+        if (cb1 > 0) spP1Years++;
+        if (cb2 > 0) spP2Years++;
+        spTotalP1 += cb1; spTotalP2 += cb2;
+        set(wsTax, wsTax.getCell(spRow, 2), y0 + (primaryAge - age));
+        set(wsTax, wsTax.getCell(spRow, 3), primaryAge);
+        wsTax.getCell(spRow, 4).value = Math.round(ti1); wsTax.getCell(spRow, 4).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow, 5).value = Math.round(thr); wsTax.getCell(spRow, 5).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow, 6).value = Math.round(cb1); wsTax.getCell(spRow, 6).numFmt = FMT_MONEY;
+        if (cb1 > 0) wsTax.getCell(spRow, 6).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+        set(wsTax, wsTax.getCell(spRow, 7), spouseAge);
+        wsTax.getCell(spRow, 8).value = Math.round(ti2); wsTax.getCell(spRow, 8).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow, 9).value = Math.round(cb2); wsTax.getCell(spRow, 9).numFmt = FMT_MONEY;
+        if (cb2 > 0) wsTax.getCell(spRow, 9).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+        setFormula(wsTax, wsTax.getCell(spRow, 10), 'F' + spRow + '+I' + spRow, FMT_MONEY, Math.round(cb1 + cb2));
+        spRow++;
+      });
+      if (spRetRows.length > 0) {
+        styleTable(wsTax, { hr: spAnchor + 2, fr: spAnchor + 3, to: spRow - 1, fc: 2, lc: 10 });
+        set(wsTax, wsTax.getCell(spRow + 1, 2), fr ? "Ann\u00e9es avec r\u00e9cup\u00e9ration" : "Years with clawback");
+        wsTax.getCell(spRow + 1, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.text } };
+        set(wsTax, wsTax.getCell(spRow + 1, 3), spP1Years + " (P1)");
+        set(wsTax, wsTax.getCell(spRow + 1, 6), spP2Years + " (P2)");
+        set(wsTax, wsTax.getCell(spRow + 2, 2), fr ? "R\u00e9cup\u00e9ration totale nominale" : "Total nominal clawback");
+        wsTax.getCell(spRow + 2, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.text } };
+        wsTax.getCell(spRow + 2, 3).value = Math.round(spTotalP1); wsTax.getCell(spRow + 2, 3).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow + 2, 6).value = Math.round(spTotalP2); wsTax.getCell(spRow + 2, 6).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow + 2, 9).value = Math.round(spTotalP1 + spTotalP2); wsTax.getCell(spRow + 2, 9).numFmt = FMT_MONEY;
+        wsTax.getCell(spRow + 2, 9).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+        _taxFooterRow = spRow + 5;
+      }
+    }
+    footer(wsTax, _taxFooterRow);
 
     // ────────────────────────────────────────────────────────────
     // SHEET 8: SENSIBILITÉ & STRESS
@@ -1680,17 +1883,23 @@
       [fr ? "(+) Assurance-vie" : "(+) Life insurance", lifeInsBenefit, fr ? "Prestation au d\u00e9c\u00e8s" : "Death benefit", fr ? "Non imposable \u2014 transf\u00e9r\u00e9e aux b\u00e9n\u00e9ficiaires" : "Tax-free \u2014 paid to beneficiaries"],
       [fr ? "H\u00c9RITAGE NET (M\u00c9DIANE MC)" : "NET ESTATE (MC MEDIAN)", medNetMC, fr ? "Moteur" : "Engine", fr ? "Aligne avec rapport HTML" : "Matches HTML report"]
     ];
+    // Negative cascade rows are outflows (RRIF tax, probate, admin, other).
+    // FMT_MONEY_RED renders them red-bracketed per accounting convention so
+    // the sign is visible at a glance instead of lost in a column of positives.
     cascade.forEach(function(c, i) {
       var r = 17 + i;
       set(wsE, wsE.getCell(r, 2), c[0]);
-      wsE.getCell(r, 3).value = toNum(c[1]); wsE.getCell(r, 3).numFmt = FMT_MONEY;
+      var _amt = toNum(c[1]);
+      wsE.getCell(r, 3).value = _amt;
+      wsE.getCell(r, 3).numFmt = _amt < 0 ? FMT_MONEY_RED : FMT_MONEY;
       set(wsE, wsE.getCell(r, 4), c[2]);
       set(wsE, wsE.getCell(r, 6), c[3] || "");
     });
-    // Bold the final NET ESTATE row (now row 25 due to "Other tax" addition)
+    // Bold the final NET ESTATE row; red if medNetMC flipped negative
+    // (liabilities > assets) so gold styling doesn't mask a bad outcome.
     var estFinalRow = 17 + cascade.length - 1;
     wsE.getCell(estFinalRow, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
-    wsE.getCell(estFinalRow, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    wsE.getCell(estFinalRow, 3).font = { name: "Calibri", size: 11, bold: true, color: { argb: medNetMC < 0 ? CL.red : CL.gold } };
     styleTable(wsE, { hr: 16, fr: 17, to: estFinalRow, fc: 2, lc: 6 });
     footer(wsE, estFinalRow + 3);
 
@@ -1951,17 +2160,29 @@
     footer(wsIns, insDiscRow + 2);
 
     // ────────────────────────────────────────────────────────────
-    // SHEET 10: IMMOBILIER
+    // SHEET 10: IMMOBILIER (skipped entirely if no active properties)
     // ────────────────────────────────────────────────────────────
+    // Hoisted before the addWorksheet call so the entire sheet creation can
+    // be gated. A user with no real estate has no use for an empty placeholder
+    // tab — dropping it keeps the workbook focused on what's actually modeled.
+    var activeProps = (props || []).filter(function(pp) { return pp.on; }).slice(0, 3);
+    if (activeProps.length > 0) {
     var wsRE = wb.addWorksheet(fr ? "Immobilier" : "Real Estate");
-    setColWidths(wsRE, [3, 24, 16, 16, 16, 12, 14, 12, 16, 14, 14, 14, 14, 14]);
+    // Col 11 (Renewal) needs to fit "5,50 % @ mois 60" (16 chars) — bumped
+    // from 14 to 18. Col 6 widened to 12 so the rate label "Taux init." reads
+    // cleanly with the new disambiguation.
+    setColWidths(wsRE, [3, 24, 16, 16, 16, 12, 14, 12, 16, 14, 18, 14, 14, 14]);
     printSetup(wsRE);
     addTabBanner(wsRE,
       fr ? "Analyse immobili\u00e8re" : "Real Estate Analysis",
       fr ? "Propri\u00e9t\u00e9s, hypoth\u00e8ques, trajectoire de l'avoir net" : "Properties, mortgages, equity trajectory", 14);
 
-    setRow(wsRE, 5, 2, [fr ? "Propri\u00e9t\u00e9" : "Property", fr ? "Valeur actuelle" : "Current value", fr ? "Hypoth\u00e8que" : "Mortgage", fr ? "Avoir net" : "Net equity", fr ? "Taux hyp." : "Mtg rate", fr ? "Amort." : "Amort.", fr ? "Appr\u00e9c." : "Apprec.", fr ? "Rev. locatif" : "Rental inc.", "Type"]);
-    var activeProps = props.filter(function(pp) { return pp.on; }).slice(0, 3);
+    // Col layout: B=Property, C=Value, D=Mortgage, E=Equity (formula),
+    // F=Init rate, G=Amort, H=Apprec, I=Rental inc, J=Type, K=Renewal.
+    // Renewal column exposes pp.mr2 (post-term rate) + pp.mt1 (initial term
+    // in months). Amort schedule below already flips rates at mt1; without
+    // this column the inventory row hid a planning-critical assumption.
+    setRow(wsRE, 5, 2, [fr ? "Propri\u00e9t\u00e9" : "Property", fr ? "Valeur actuelle" : "Current value", fr ? "Hypoth\u00e8que" : "Mortgage", fr ? "Avoir net" : "Net equity", fr ? "Taux init." : "Init. rate", fr ? "Amort." : "Amort.", fr ? "Appr\u00e9c." : "Apprec.", fr ? "Rev. locatif" : "Rental inc.", "Type", fr ? "Renouvellement" : "Renewal"]);
     activeProps.forEach(function(pp, i) {
       var r = 6 + i;
       set(wsRE, wsRE.getCell(r, 2), pp.name || ((fr ? "Propri\u00e9t\u00e9 " : "Property ") + (i + 1)));
@@ -1975,6 +2196,20 @@
       wsRE.getCell(r, 8).value = toNum(pp.ri); wsRE.getCell(r, 8).numFmt = FMT_PCT;
       wsRE.getCell(r, 9).value = toNum(pp.rm); wsRE.getCell(r, 9).numFmt = FMT_MONEY;
       set(wsRE, wsRE.getCell(r, 10), pp.pri ? (fr ? "R\u00e9sidence" : "Primary") : (fr ? "Locatif" : "Rental"));
+      // Renewal column: "5.50 % @ mo. 60" when renewal differs from initial,
+      // "Term 60 mo." when only an initial term is set, em-dash otherwise.
+      var _mr2 = toNum(pp.mr2), _mt1 = toNum(pp.mt1);
+      var _renew;
+      if (_mr2 > 0 && Math.abs(_mr2 - toNum(pp.mr)) > 1e-6) {
+        var _ml = _mt1 > 0 ? (fr ? " @ mois " : " @ mo. ") + _mt1 : "";
+        _renew = (_mr2 * 100).toFixed(2).replace(".", fr ? "," : ".") + " %" + _ml;
+      } else if (_mt1 > 0) {
+        _renew = (fr ? "Terme " : "Term ") + _mt1 + (fr ? " mois" : " mo.");
+      } else {
+        _renew = "\u2014";
+      }
+      set(wsRE, wsRE.getCell(r, 11), _renew);
+      wsRE.getCell(r, 11).alignment = { horizontal: "right", vertical: "middle" };
     });
     // Portfolio totals row — shown only when 2+ active properties. Uses
     // SUM formulas so it stays correct if the user tweaks per-property
@@ -1989,12 +2224,12 @@
       setFormula(wsRE, wsRE.getCell(reTotalRow, 4), 'SUM(D' + reFirstRow + ':D' + reLastRow + ')', FMT_MONEY);
       setFormula(wsRE, wsRE.getCell(reTotalRow, 5), 'SUM(E' + reFirstRow + ':E' + reLastRow + ')', FMT_MONEY);
       setFormula(wsRE, wsRE.getCell(reTotalRow, 9), 'SUM(I' + reFirstRow + ':I' + reLastRow + ')', FMT_MONEY);
-      for (var rtc = 2; rtc <= 10; rtc++) {
+      for (var rtc = 2; rtc <= 11; rtc++) {
         wsRE.getCell(reTotalRow, rtc).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
       }
     }
     var reEndRow = Math.max(6, reTotalRow || (5 + activeProps.length));
-    styleTable(wsRE, { hr: 5, fr: 6, to: reEndRow, fc: 2, lc: 10 });
+    styleTable(wsRE, { hr: 5, fr: 6, to: reEndRow, fc: 2, lc: 11 });
 
     // Per-property amortization schedules — one block per active property
     // with a mortgage. Standard annuity: monthly pay = B·r/(1−(1+r)^−n).
@@ -2052,10 +2287,15 @@
       reScheduleAnchor = propRow + 2;
     });
     footer(wsRE, reScheduleAnchor + 2);
+    } // end if (activeProps.length > 0)
 
     // ────────────────────────────────────────────────────────────
-    // SHEET 11: ENTREPRISE (CCPC)
+    // SHEET 11: ENTREPRISE (CCPC) — skipped if no business activated
     // ────────────────────────────────────────────────────────────
+    // Same rationale as Real Estate: dropping the placeholder tab keeps the
+    // workbook focused. bizOn is the master gate; sole-prop branch (bizType
+    // === "sole") still runs since both flow through bizOn.
+    if (bizOn) {
     var wsB = wb.addWorksheet(fr ? "Entreprise (CCPC)" : "Business (CCPC)");
     // Business: col 2 was 10 → can't hold "TOTAL phase" / "Actif" labels.
     // Money cols bumped to 15 for 7-digit corpBal values in long horizons.
@@ -2184,47 +2424,11 @@
         });
         styleTable(wsB, { hr: compAnchor + 2, fr: compAnchor + 3, to: compRow - 1, fc: 2, lc: 8 });
       }
-    } else {
-      // Non-applicable: show a clear explanation rather than a blank sheet.
-      // Keeps the workbook's 14-tab structure uniform across clients and
-      // tells CCPC-less users what this tab would contain if they had one.
-      addTabBanner(wsB,
-        fr ? "Entreprise (CCPC)" : "Business (CCPC)",
-        fr ? "Non applicable \u2014 aucune corporation configur\u00e9e dans ce plan" : "Not applicable \u2014 no corporation configured in this plan", 14);
-      addTitle(wsB, 5, 2, fr ? "SECTION NON ACTIVE" : "SECTION NOT ACTIVE", "", 13);
-      var naLines = fr ? [
-        "Cette feuille projette les actifs corporatifs (solde, imp\u00f4t, dividendes, extraction, CDA, RDTOH) pour les propri\u00e9taires",
-        "de soci\u00e9t\u00e9 priv\u00e9e sous contr\u00f4le canadien (SPCC).",
-        "",
-        "Votre plan n'a pas activ\u00e9 le module Entreprise \u2014 aucun revenu ni solde corporatif n'est mod\u00e9lis\u00e9.",
-        "",
-        "Pour activer : dans le formulaire, ouvrez la section Entreprise et choisissez le type SPCC ou travailleur autonome,",
-        "puis entrez les revenus/d\u00e9penses et votre mode de r\u00e9mun\u00e9ration (salaire, dividende ou mixte).",
-        "",
-        "Cons\u00e9quences de l'absence :",
-        "  \u2022 Les projections du patrimoine n'incluent aucun solde corporatif.",
-        "  \u2022 La fiscalit\u00e9 d'extraction \u00e0 la retraite n'est pas calcul\u00e9e.",
-        "  \u2022 La DGC (d\u00e9duction pour gains en capital) sur vente d'actions admissibles n'est pas appliqu\u00e9e."
-      ] : [
-        "This sheet projects corporate assets (balance, tax, dividends, extraction, CDA, RDTOH) for owners of",
-        "Canadian-Controlled Private Corporations (CCPC).",
-        "",
-        "Your plan does not activate the Business module \u2014 no corporate income or balance is modeled.",
-        "",
-        "To activate: in the form, open the Business section and pick CCPC or sole-proprietor type, then enter",
-        "revenues/expenses and your compensation mode (salary, dividend, or mix).",
-        "",
-        "Consequences of omission:",
-        "  \u2022 Wealth projections do not include any corporate balance.",
-        "  \u2022 Retirement extraction tax is not calculated.",
-        "  \u2022 The LCGE (Lifetime Capital Gains Exemption) on qualifying share sales is not applied."
-      ];
-      naLines.forEach(function(line, idx) {
-        set(wsB, wsB.getCell(7 + idx, 2), line);
-        wsB.getCell(7 + idx, 2).font = { name: "Calibri", size: 11, color: { argb: CL.text } };
-        wsB.mergeCells(7 + idx, 2, 7 + idx, 13);
-      });
     }
+    // Note: the !bizOn placeholder branch was removed — the outer
+    // `if (bizOn)` guard now skips sheet creation entirely for non-CCPC
+    // profiles, keeping the workbook focused on what's actually modeled.
+    } // end if (bizOn)
 
     // ────────────────────────────────────────────────────────────
     // SHEET 12: MÉTHODOLOGIE
