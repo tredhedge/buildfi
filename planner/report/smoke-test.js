@@ -78,7 +78,8 @@
   assert(F.fmtMoney(1234.56, true) !== "", "fmtMoney returns non-empty");
   assert(F.fmtPct(0.75, 1, true) !== "", "fmtPct returns non-empty");
   assert(F.grade(0.95, true).letter === "A+", "grade A+ for 95%");
-  assert(F.grade(0.6, false).letter === "C", "grade C for 60%");
+  assert(F.grade(0.6, false).letter === "B", "grade B for 60% (recalibrated)");
+  assert(F.grade(0.5, false).letter === "C", "grade C for 50% (recalibrated)");
   assert(F.succColor(0.9).length > 0, "succColor returns color");
   assert(F.qppLabel("QC", true) === "RRQ", "qppLabel QC/FR");
   assert(F.qppLabel("ON", false) === "CPP", "qppLabel ON/EN");

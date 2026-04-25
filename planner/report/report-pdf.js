@@ -26,16 +26,19 @@
     '.mono{font-family:"JetBrains Mono",monospace;font-weight:500;font-variant-numeric:tabular-nums}',
     'em{font-style:italic;color:#4a3f33}',
     // Cover — keeps dark luxurious feel, Playfair title.
-    '.cover{min-height:960px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#1a1610 0%,#2c2418 40%,#3a3020 100%);color:#f0ece4;text-align:center;position:relative;border-radius:8px;margin-bottom:24px;page-break-after:always}',
+    // Cover — BuildFi brand: marine #252d39 ground + gold #c49a1a accents
+    '.cover{min-height:960px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,#344155 0%,#252d39 55%,#1a1f2a 100%);color:#faf8f4;text-align:center;position:relative;border-radius:8px;margin-bottom:24px;page-break-after:always;overflow:hidden}',
+    '.cover::before{content:"";position:absolute;top:24px;left:24px;width:64px;height:64px;border-top:1px solid #c49a1a;border-left:1px solid #c49a1a;opacity:0.45}',
+    '.cover::after{content:"";position:absolute;bottom:24px;right:24px;width:64px;height:64px;border-bottom:1px solid #c49a1a;border-right:1px solid #c49a1a;opacity:0.45}',
     '.cover-divider{width:88px;height:1px;background:'+C.gold+';margin:24px auto;opacity:0.6}',
     '.cover-title{font-family:"Playfair Display",Georgia,serif;font-size:42px;font-weight:700;letter-spacing:0;color:'+C.gold+';line-height:1.05}',
-    '.cover-subtitle{font-family:"Inter",sans-serif;font-size:13px;font-weight:400;color:#a09890;margin-top:10px;letter-spacing:3px;text-transform:uppercase}',
-    '.cover-client{font-family:"Playfair Display",Georgia,serif;font-size:26px;font-weight:600;margin-top:48px;color:#f0ece4;letter-spacing:0.3px}',
-    '.cover-grade-circle{width:150px;height:150px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;margin:32px auto 0}',
+    '.cover-subtitle{font-family:"Inter",sans-serif;font-size:12px;font-weight:500;color:#bccbe0;margin-top:12px;letter-spacing:3.5px;text-transform:uppercase}',
+    '.cover-client{font-family:"Playfair Display",Georgia,serif;font-size:26px;font-weight:600;margin-top:44px;color:#faf8f4;letter-spacing:0.3px}',
+    '.cover-grade-circle{width:150px;height:150px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;margin:32px auto 0;background:rgba(250,248,244,0.04);box-shadow:0 0 0 1px rgba(196,154,26,0.15) inset, 0 8px 30px rgba(0,0,0,0.35)}',
     '.cover-grade-letter{font-size:36px;font-weight:700;font-family:"JetBrains Mono",monospace}',
-    '.cover-grade-pill{margin-top:14px;display:inline-block;padding:5px 20px;border-radius:16px;font-weight:700;font-size:11px;color:#fff;letter-spacing:1px;text-transform:uppercase}',
-    '.cover-date{font-size:12px;color:#888;margin-top:32px;letter-spacing:0.5px}',
-    '.cover-company{position:absolute;bottom:40px;font-size:10px;color:#706558;letter-spacing:1.5px;text-transform:uppercase}',
+    '.cover-grade-pill{margin-top:14px;display:inline-block;padding:5px 20px;border-radius:16px;font-weight:700;font-size:11px;color:#1a1f2a;letter-spacing:1px;text-transform:uppercase}',
+    '.cover-date{font-size:12px;color:#a8b8d0;margin-top:32px;letter-spacing:0.5px}',
+    '.cover-company{position:absolute;bottom:40px;font-size:10px;color:#7c8a9e;letter-spacing:1.5px;text-transform:uppercase}',
     // Headers — Playfair for display hierarchy; sec stays sans for snappiness.
     'h1{font-family:"Playfair Display",Georgia,serif;font-size:30px;color:'+C.gold+';font-weight:700;letter-spacing:-0.3px;line-height:1.15}',
     'h2{font-size:13px;color:#706558;font-weight:400;margin-top:4px;letter-spacing:0.2px}',
@@ -149,7 +152,9 @@
     '@media print{',
     '@page{',
       'margin:1.8cm 1.6cm 2cm 1.6cm;size:letter;',
-      '@top-center{content:"BuildFi \u2014 Plan de retraite";font-family:"Inter",sans-serif;font-size:9px;color:#a09080;letter-spacing:1px;text-transform:uppercase}',
+      // Page-running-head removed — was hardcoded "Plan de retraite" (FR)
+      // and leaked into EN reports. buildfi.ca + page counter already show
+      // in @bottom-left and @bottom-right. The decorative header was bilingual-broken.
       '@bottom-right{content:counter(page) " / " counter(pages);font-family:"JetBrains Mono",monospace;font-size:9px;color:#a09080}',
       '@bottom-left{content:"buildfi.ca";font-family:"Inter",sans-serif;font-size:9px;color:#a09080;letter-spacing:0.5px}',
     '}',
@@ -239,25 +244,190 @@
   // SECTION RENDERERS
   // ══════════════════════════════════════════════════════════════
 
+  // === EXECUTIVE SUMMARY (1-pager TL;DR after cover) ===
+  // Compresses the verdict, the 4 headline metrics, top strengths/risks onto
+  // one page. Designed for the reader who only flips through. Visual style
+  // echoes the cover (navy + gold).
+  // === UPSELL TEASER (Planner SKU — points back to the live tool) ===
+  // Planner customers already have a 190-variable simulator at /expert. The
+  // report is a clean snapshot, not a mini-tool. This block tells them where
+  // to go when they want to experiment, framing the absence of an embedded
+  // simulator as cleanliness rather than loss.
+  function _renderUpsellTeaser(d) {
+    if (!d.p || !d.mc) return '';
+    var fr = d.fr;
+    return '<div style="margin:14px 0;padding:14px 18px;background:linear-gradient(135deg,#252d39 0%,#344155 100%);border-radius:8px;border-left:4px solid #c49a1a;color:#faf8f4;display:flex;align-items:center;gap:14px;break-inside:avoid">' +
+      '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:#c49a1a;flex-shrink:0;line-height:1">⚙</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Ce rapport est un instantané — votre Planner reste votre outil de travail' : 'This report is a snapshot — your Planner remains your working tool') + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:11.5px;color:#e8e0d4;line-height:1.55">' +
+          (fr ? 'Pour explorer des scénarios, ajuster vos hypothèses et comparer plusieurs variantes, retournez à votre Planner (190+ paramètres, scénarios persistants). Ce rapport reste une photo nette d\'un scénario donné — utile pour archiver, partager ou imprimer.'
+              : 'To explore scenarios, adjust assumptions, and compare variants, return to your Planner (190+ parameters, persistent scenarios). This report stays a clean snapshot of one scenario — useful for archiving, sharing, or printing.') +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;text-align:right;line-height:1.5">' +
+        (fr ? 'Ouvrir le<br>Planner →' : 'Open the<br>Planner →') +
+      '</div>' +
+      '</div>';
+  }
+
+  // === WHAT-IF TEASER (early callout) ===
+  // Highlights the existence of the live simulator at the back of the report.
+  // Reader sees this near the diagnostic so they know to scroll if they want
+  // to test scenarios. Visible in print as a static callout.
+  function _renderWhatIfTeaser(d) {
+    if (!d.p || !d.mc) return '';
+    var fr = d.fr;
+    return '<a href="#bf-whatif" class="whatif-teaser-link" style="text-decoration:none;color:inherit;display:block">' +
+      '<div style="margin:14px 0;padding:14px 18px;background:linear-gradient(135deg,#252d39 0%,#344155 100%);border-radius:8px;border-left:4px solid #c49a1a;color:#faf8f4;display:flex;align-items:center;gap:14px;break-inside:avoid">' +
+      '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:#c49a1a;flex-shrink:0;line-height:1">⚡</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Simulateur What-If — disponible plus loin dans ce rapport' : 'What-If Simulator — available later in this report') + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:11.5px;color:#e8e0d4;line-height:1.55">' +
+          (fr ? 'Ajustez 12 paramètres (âge de retraite, dépenses, rendement, inflation, MER, allocation…) ou choisissez un scénario rapide (Récession 2008, FIRE, Stagflation…) pour voir comment votre plan réagit. Une nouvelle simulation Monte Carlo (500 scénarios) tourne en direct dans votre navigateur.'
+              : 'Adjust 12 parameters (retirement age, spending, return, inflation, MER, allocation…) or pick a quick scenario (2008 Recession, FIRE, Stagflation…) to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser.') +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;text-align:right;line-height:1.5">' +
+        (fr ? 'Voir le<br>simulateur →' : 'Go to<br>simulator →') +
+      '</div>' +
+      '</div></a>';
+  }
+
+  // === WHAT-IF SECTION MOUNT POINT ===
+  // report-whatif.js (loaded as inline script) reads the data-bf-whatif-params
+  // attribute and decorates the mount point with: presets bar, 12 grouped
+  // sliders, simulate/save/reset buttons, 12 KPI deltas, save & compare table.
+  // Print-hidden (no-print).
+  function _renderWhatIfMount(d) {
+    if (!d.p || !d.mc) return '';
+    var fr = d.fr;
+    var p = d.p;
+    var baselineParams = {
+      age: p.age, retAge: p.retAge, deathAge: p.deathAge, sex: p.sex || 'M', prov: p.prov || 'QC',
+      sal: p.sal, rrsp: p.rrsp, tfsa: p.tfsa, nr: p.nr,
+      cOn: p.cOn, cAge: p.cAge, cRetAge: p.cRetAge, cSex: p.cSex, cSal: p.cSal,
+      cRRSP: p.cRRSP, cTFSA: p.cTFSA, cNR: p.cNR, cRetSpM: p.cRetSpM,
+      retSpM: p.retSpM,
+      qppAge: p.qppAge || 65, oasAge: p.oasAge || 65,
+      cQppAge: p.cQppAge || 65, cOasAge: p.cOasAge || 65,
+      avgE: p.avgE, qppYrs: p.qppYrs, cAvgE: p.cAvgE, cQppYrs: p.cQppYrs,
+      rrspC: p.rrspC || 0, tfsaC: p.tfsaC || 0, nrC: p.nrC || 0,
+      penType: p.penType, penM: p.penM, penIdx: p.penIdx,
+      melt: p.melt, meltTgt: p.meltTgt || 0, split: p.split, splitP: p.splitP,
+      wStrat: p.wStrat || 'standard',
+      goP: p.goP || 1.0, slP: p.slP || 0.85, noP: p.noP || 0.7,
+      eqRet: p.eqRet || 0.06, eqVol: p.eqVol || 0.16,
+      bndRet: p.bndRet || 0.035, bndVol: p.bndVol || 0.06,
+      inf: p.inf || 0.021, fatT: !!p.fatT, stochInf: !!p.stochInf, stochMort: !!p.stochMort,
+      merR: p.merR || 0.01, merT: p.merT || 0.01, merN: p.merN || 0.01,
+      merWt: d.merWt || ((p.merR || 0) + (p.merT || 0) + (p.merN || 0)) / 3,
+      allocR: p.allocR || 0.6, allocT: p.allocT || 0.7, allocN: p.allocN || 0.5
+    };
+    var paramsJson = JSON.stringify(baselineParams).replace(/"/g, '&quot;');
+    var h = '<div class="sec-page no-print" id="bf-whatif" data-bf-whatif-params="' + paramsJson + '">';
+    h += F.Sec('?', fr ? 'Simulateur What-If' : 'What-If Simulator', 'sec-whatif');
+    h += '<div class="bf-whatif-banner">' +
+      '<strong>' + (fr ? 'Simulateur interactif.' : 'Interactive simulator.') + '</strong> ' +
+      (fr ? 'Ajustez les paramètres ou choisissez un scénario rapide pour voir comment votre plan réagit. Une nouvelle simulation Monte Carlo (500 scénarios) tourne en direct dans votre navigateur. La narration AI ne change pas — elle reste calibrée sur le plan de base.' : 'Adjust the parameters or pick a quick scenario to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser. AI narration does not change — it stays calibrated on the baseline plan.') +
+      '</div>';
+    h += '</div>';
+    return h;
+  }
+
+  function _renderExecSummary(d) {
+    var fr = d.fr, p = d.p, mc = d.mc;
+    var f$ = F.fmtCompact;
+    var g = F.grade(d.succVal, fr);
+    var sC = F.succColor(d.succVal);
+    var pct = d.succVal == null ? '—' : Math.round(d.succVal * 100) + '%';
+    var medW = mc && (mc.rMedF || mc.medF) ? f$(mc.rMedF || mc.medF) : '—';
+    var p25W = mc && (mc.rP25F || mc.p25F) ? f$(mc.rP25F || mc.p25F) : '—';
+    var depAge = (mc && mc.p5Ruin != null && mc.p5Ruin < 200) ? mc.p5Ruin : null;
+    var horizonYrs = (p.deathAge || 90) - (p.age || 35);
+    var verdictText;
+    if (d.succVal == null) verdictText = fr ? 'Plan en cours d\'analyse.' : 'Plan under analysis.';
+    else if (d.succVal >= 0.85) verdictText = fr ? 'Plan robuste — la trajectoire centrale tient et les zones de risque sont gérables.' : 'Robust plan — the central trajectory holds and risk zones are manageable.';
+    else if (d.succVal >= 0.65) verdictText = fr ? 'Plan viable — quelques ajustements ciblés rendraient la trajectoire plus confortable.' : 'Viable plan — a few targeted adjustments would make the trajectory more comfortable.';
+    else if (d.succVal >= 0.4) verdictText = fr ? 'Plan sous tension — des ajustements structurels gagneraient à être considérés.' : 'Plan under strain — structural adjustments would be worth considering.';
+    else verdictText = fr ? 'Plan fragile — une révision globale (épargne, dépenses, horizon) serait pertinente.' : 'Fragile plan — a global review (savings, spending, horizon) would be relevant.';
+
+    var h = '<div class="exec-summary" style="page-break-after:always;background:linear-gradient(180deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:8px;padding:32px 36px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:780px">';
+    h += '<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
+    h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+      '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Synthèse exécutive' : 'Executive summary') + '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;letter-spacing:0.5px">' + (fr ? 'En 30 secondes' : 'In 30 seconds') + '</div>' +
+    '</div>';
+    h += '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:22px;font-weight:600;line-height:1.35;color:#faf8f4;margin-bottom:8px">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:13px;color:#bccbe0;line-height:1.6;margin-bottom:24px">' + verdictText + '</div>';
+    // Headline metrics (4-up)
+    function _execKPI(label, value, color, sub) {
+      return '<div style="background:rgba(250,248,244,0.06);border:1px solid rgba(196,154,26,0.25);border-radius:6px;padding:14px 12px;text-align:center">' +
+        '<div style="font-size:9px;color:#bccbe0;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:6px">' + label + '</div>' +
+        '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:' + (color || '#c49a1a') + ';line-height:1">' + value + '</div>' +
+        (sub ? '<div style="font-size:9.5px;color:#8a9bb0;margin-top:6px">' + sub + '</div>' : '') +
+      '</div>';
+    }
+    h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">';
+    h += _execKPI(fr ? 'Taux de succès' : 'Success rate', pct, sC, g.label);
+    h += _execKPI(fr ? 'Patrimoine médian' : 'Median wealth', medW, '#c49a1a', fr ? 'scénario typique' : 'typical scenario');
+    h += _execKPI(fr ? 'Patrimoine prudent' : 'Cautious wealth', p25W, '#bccbe0', 'P25');
+    h += _execKPI(fr ? 'Épuisement épargne' : 'Savings depletion', depAge ? depAge + (fr ? ' ans' : ' yr') : (fr ? 'Aucun' : 'Never'), depAge ? '#cf6060' : '#48a66d', depAge ? (fr ? 'scénario prudent' : 'cautious scenario') : (fr ? 'sur l\'horizon' : 'over horizon'));
+    h += '</div>';
+    // Strengths / Risks
+    var strengths = [];
+    var risks = [];
+    if (d.succVal >= 0.7) strengths.push(fr ? 'Probabilité de succès élevée sur ' + horizonYrs + ' ans' : 'High success probability over ' + horizonYrs + ' years');
+    if (mc && mc.medEstateNet > 100000) strengths.push((fr ? 'Héritage médian projeté ' : 'Median projected estate ') + f$(mc.medEstateNet));
+    if (p.cOn) strengths.push(fr ? 'Plan de couple — fractionnement de revenus disponible' : 'Couple plan — pension splitting available');
+    if (p.tfsa > 50000) strengths.push((fr ? 'CELI bien capitalisé (' : 'Well-funded TFSA (') + f$(p.tfsa) + ')');
+    if ((p.rrsp || 0) + (p.tfsa || 0) > 500000) strengths.push(fr ? 'Capital de retraite supérieur à 500K$' : 'Retirement capital above $500K');
+    if (strengths.length === 0) strengths.push(fr ? 'Diagnostic en cours — voir sections détaillées' : 'Diagnostic in progress — see detailed sections');
+    if (d.succVal != null && d.succVal < 0.65) risks.push(fr ? 'Taux de succès sous 65 % — ajustements à considérer' : 'Success rate below 65% — adjustments to consider');
+    if (depAge) risks.push((fr ? 'Épuisement potentiel de l\'épargne vers ' : 'Potential savings depletion near age ') + depAge);
+    if (mc && mc.oasClbkYrs > 0) risks.push((fr ? 'Récupération PSV sur ' : 'OAS clawback over ') + mc.oasClbkYrs + (fr ? ' année(s)' : ' year(s)'));
+    if ((p.debts && p.debts.length > 0) || (d._debtTotal || 0) > 50000) risks.push(fr ? 'Dette à intégrer dans la stratégie' : 'Debt to integrate into strategy');
+    if (p.eqRet < 0.04) risks.push(fr ? 'Hypothèse de rendement basse — peu de marge' : 'Low return assumption — little margin');
+    if (risks.length === 0) risks.push(fr ? 'Aucune zone de risque majeure identifiée' : 'No major risk zone identified');
+    function _execList(title, items, accent) {
+      var html = '<div><div style="font-size:10px;color:' + accent + ';font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">' + title + '</div><ul style="list-style:none;padding:0;margin:0">';
+      items.slice(0, 4).forEach(function(it) {
+        html += '<li style="font-size:11.5px;color:#e8e0d4;line-height:1.55;margin-bottom:5px;padding-left:14px;position:relative"><span style="position:absolute;left:0;top:0;color:' + accent + ';font-weight:700">·</span>' + it + '</li>';
+      });
+      html += '</ul></div>';
+      return html;
+    }
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">';
+    h += _execList(fr ? 'Forces du plan' : 'Plan strengths', strengths, '#48a66d');
+    h += _execList(fr ? 'Zones à surveiller' : 'Risk zones', risks, '#cf9850');
+    h += '</div>';
+    h += '<div style="border-top:1px solid rgba(196,154,26,0.25);padding-top:14px;font-size:10.5px;color:#bccbe0;line-height:1.6">' +
+      '<strong style="color:#c49a1a;letter-spacing:0.3px">' + (fr ? 'Pour aller plus loin :' : 'Read further:') + '</strong> ' +
+      (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur What-If permet de tester vos propres hypothèses.' : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the What-If simulator lets you test your own assumptions.') +
+      '</div>';
+    h += '</div>';
+    return h;
+  }
+
   function renderCover(d) {
     var fr = d.fr, g = F.grade(d.succVal, fr), sC = F.succColor(d.succVal);
     var cName = (d.client.name || 'Client');
     var cSpouse = d.p.cOn ? (d.client.spouseName || d.p.cSpouseName || '') : '';
     var h = '<div class="cover">';
-    h += '<div style="margin-bottom:30px;opacity:0.9">' + logoSvg.replace(/fill="[^"]*"/g, 'fill="#f0ece4"').replace('fill="#f0ece4" opacity="0.6"', 'fill="#f0ece4" opacity="0.4"').replace('fill="#f0ece4" opacity="0.8"', 'fill="#f0ece4" opacity="0.6"') + '</div>';
+    h += '<div style="margin-bottom:30px;opacity:0.95">' + logoSvg.replace(/fill="[^"]*"/g, 'fill="#c49a1a"').replace('fill="#c49a1a" opacity="0.6"', 'fill="#c49a1a" opacity="0.5"').replace('fill="#c49a1a" opacity="0.8"', 'fill="#c49a1a" opacity="0.7"') + '</div>';
     h += '<div class="cover-divider"></div>';
     h += '<div class="cover-title">' + F.L('cover_title', fr) + '</div>';
     h += '<div class="cover-subtitle">' + F.L('cover_sub', fr) + '</div>';
     h += '<div class="cover-divider"></div>';
-    h += '<div style="font-size:13px;color:#a09890;margin-top:10px">' + F.L('prepared_for', fr) + '</div>';
+    h += '<div style="font-size:13px;color:#bccbe0;margin-top:10px;letter-spacing:0.4px">' + F.L('prepared_for', fr) + '</div>';
     h += '<div class="cover-client">' + F.esc(cName) + (cSpouse ? ' & ' + F.esc(cSpouse) : '') + '</div>';
     h += '<div class="cover-grade-circle" style="border-color:' + sC + ';color:' + sC + '">';
     h += '<div class="cover-grade-letter">' + (d.succVal == null ? '\u2014' : Math.round(d.succVal * 100) + '%') + '</div>';
     h += '</div>';
     h += '<div style="text-align:center;margin-top:14px"><span class="cover-grade-pill" style="background:' + sC + '">' + g.letter + ' \u2014 ' + g.label + '</span></div>';
     h += '<div class="cover-date">' + F.L('prepared_on', fr) + ' ' + F.fmtDate(null, fr) + '</div>';
-    if (d.client.advisor) h += '<div style="font-size:11px;color:#888;margin-top:6px">' + F.esc(d.client.advisor) + (d.client.firm ? ' \u00b7 ' + F.esc(d.client.firm) : '') + '</div>';
-    h += '<div style="font-size:9px;color:#a09080;margin-top:20px;line-height:1.5;max-width:400px">' +
+    if (d.client.advisor) h += '<div style="font-size:11px;color:#a8b8d0;margin-top:6px">' + F.esc(d.client.advisor) + (d.client.firm ? ' \u00b7 ' + F.esc(d.client.firm) : '') + '</div>';
+    h += '<div style="font-size:9px;color:#8a9bb0;margin-top:20px;line-height:1.55;max-width:420px">' +
       (fr ? 'Bas\u00e9 sur ' + (d.p.nSim || 5000) + ' sc\u00e9narios Monte Carlo \u00b7 Fiscalit\u00e9 2026 (13 provinces) \u00b7 Tables de mortalit\u00e9 CPM-2023 \u00b7 Rendements \u00e0 queues \u00e9paisses (t-Student)'
          : 'Based on ' + (d.p.nSim || 5000) + ' Monte Carlo scenarios \u00b7 2026 tax tables (13 provinces) \u00b7 CPM-2023 mortality tables \u00b7 Fat-tailed returns (t-Student)') + '</div>';
     h += '<div class="cover-company">BuildFi Technologies inc. \u00b7 buildfi.ca \u00b7 <span class="ver">' + F.VERSION + '</span></div>';
@@ -331,7 +501,7 @@
         var badge = ok
           ? '<span style="background:#e6f4e6;color:' + C.green + ';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px">' + (fr ? 'r\u00e9aliste' : 'on track') + '</span>'
           : '<span style="background:#fff0d6;color:' + C.amber + ';font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px">' + (fr ? 'tendu' : 'tight') + '</span>';
-        h += '<div style="margin-bottom:2px">' + badge + ' ' + F.esc(g2.desc || g2.name || '') + (g2.amount ? ' \u2014 ' + fM(g2.amount) : '') + (g2.age ? ' @ ' + g2.age + ' ans' : '') + '</div>';
+        h += '<div style="margin-bottom:2px">' + badge + ' ' + F.esc(g2.desc || g2.name || '') + (g2.amount ? ' \u2014 ' + fM(g2.amount) : '') + (g2.age ? (fr ? ' @ ' + g2.age + ' ans' : ' @ age ' + g2.age) : '') + '</div>';
       });
       h += '</div>';
     }
@@ -345,7 +515,7 @@
     var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     h += '<div class="g4" style="flex:1">';
     h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue);
-    h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Couverture gouv.' : 'Gov. coverage') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
+    h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Revenu garanti / dépenses' : 'Guaranteed income / spending') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green);
     h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', (fr ? 'H\u00e9ritage net' : 'Net estate') + _scopeAss, C.gold);
     h += '</div></div>';
@@ -843,7 +1013,7 @@
     var covPct = Math.round(d.covRatio * 100);
     var covClr = covPct >= 100 ? C.green : covPct >= 60 ? C.amber : C.red;
     h += '<div style="display:flex;align-items:center;gap:16px;margin-top:10px">';
-    h += '<div style="flex-shrink:0">' + Ch.svgDonut(d.covRatio, fr ? 'Couverture gov.' : 'Gov. coverage', covClr, 90) + '</div>';
+    h += '<div style="flex-shrink:0">' + Ch.svgDonut(d.covRatio, fr ? 'Rev. garanti / dépenses' : 'Guaranteed / spending', covClr, 90) + '</div>';
     // Tag KPIs as household totals when couple to avoid per-person confusion.
     var _scopeTag = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     h += '<div style="flex:1"><div class="g3">';
@@ -960,19 +1130,38 @@
            : (fr ? '\u00e0 risque' : 'at risk'))
         : '';
       var cushion = led && led.cushion != null ? led.cushion : null;
-      h += '<div style="padding:10px 4px;border-bottom:1px solid #f0ece4">';
-      h += '<div style="display:flex;align-items:baseline;gap:8px">';
+      var probPct = Math.max(0, Math.min(100, Math.round(prob * 100)));
+      h += '<div style="padding:12px 4px;border-bottom:1px solid #f0ece4">';
+      h += '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">';
       h += '<div style="flex:1"><strong style="font-size:12px">' + F.esc(g.desc || g.name || '') + '</strong>';
       h += '<span style="color:#888;font-size:10px;margin-left:8px">' + (led ? (fr ? '\u00e0 ' : 'at ') + led.targetAge + (fr ? ' ans' : ' yrs') : '') + ' \u2014 ' + fR(g.amount || 0) + '</span></div>';
-      h += '<div style="text-align:right"><span class="mono" style="font-size:15px;font-weight:700;color:' + clr + '">' + Math.round(prob * 100) + '%</span>';
+      h += '<div style="text-align:right"><span class="mono" style="font-size:15px;font-weight:700;color:' + clr + '">' + probPct + '%</span>';
       if (statusLabel) h += '<div style="font-size:9px;color:' + clr + ';text-transform:uppercase;letter-spacing:0.3px">' + statusLabel + '</div>';
       h += '</div></div>';
-      // Detail line: median wealth at goal age + cushion
+      // Progress bar — gradient fill at probPct%, threshold ticks at 50% and 80%
+      h += '<div style="position:relative;height:10px;background:#f0ece4;border-radius:5px;overflow:hidden">' +
+        '<div style="position:absolute;left:0;top:0;height:100%;width:' + probPct + '%;background:linear-gradient(90deg,' + clr + ' 0%,' + clr + 'dd 100%);border-radius:5px"></div>' +
+        '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#bbb"></div>' +
+        '<div style="position:absolute;left:80%;top:0;bottom:0;width:1px;background:#999"></div>' +
+        '</div>';
+      h += '<div style="display:flex;justify-content:space-between;font-size:8.5px;color:#999;margin-top:2px;font-family:\"JetBrains Mono\",monospace">' +
+        '<span>0%</span><span>' + (fr ? 'serré' : 'tight') + ' 50%</span><span>' + (fr ? 'en voie' : 'on-track') + ' 80%</span><span>100%</span>' +
+        '</div>';
+      // Detail line: median wealth at goal age + cushion ratio bar
       if (led) {
         var cushionLbl = cushion >= 0
-          ? (fr ? 'coussin m\u00e9dian ' : 'median cushion ') + f$(cushion)
-          : (fr ? 'manque m\u00e9dian ' : 'median shortfall ') + f$(-cushion);
-        h += '<div style="font-size:10px;color:#888;margin-top:3px">' + (fr ? 'Patrimoine m\u00e9dian \u00e0 l\'\u00e2ge cible: ' : 'Median wealth at target age: ') + '<span class="mono">' + f$(led.medianAvailable) + '</span> \u2014 ' + cushionLbl + '</div>';
+          ? '<span style="color:' + C.green + '">+' + f$(cushion) + ' ' + (fr ? 'coussin' : 'cushion') + '</span>'
+          : '<span style="color:' + C.red + '">−' + f$(-cushion) + ' ' + (fr ? 'manque' : 'shortfall') + '</span>';
+        var ratio = led.medianAvailable > 0 ? Math.min(2, led.medianAvailable / Math.max(1, g.amount || 1)) : 0;
+        var ratioPct = ratio * 50;
+        var ratioCol = ratio >= 1 ? C.green : ratio >= 0.7 ? C.amber : C.red;
+        h += '<div style="font-size:10px;color:#666;margin-top:8px">' +
+          (fr ? 'Disponible ' : 'Available ') + '<span class="mono" style="color:#1a1610;font-weight:600">' + f$(led.medianAvailable) + '</span> ' +
+          '<span style="color:#999">vs ' + (fr ? 'cible' : 'target') + ' ' + f$(g.amount) + '</span> \u2014 ' + cushionLbl + '</div>';
+        h += '<div style="position:relative;height:5px;background:#f0ece4;border-radius:3px;overflow:hidden;margin-top:4px">' +
+          '<div style="position:absolute;left:0;top:0;height:100%;width:' + Math.min(100, ratioPct) + '%;background:' + ratioCol + ';opacity:0.7;border-radius:3px"></div>' +
+          '<div style="position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#333"></div>' +
+          '</div>';
       }
       h += '</div>';
     });
@@ -1041,32 +1230,10 @@
       });
     }
 
-    // Histogram — approximate distribution from percentiles
-    if (mc.pD && mc.pD.length > 0) {
-      var _hEnd = mc.pD[mc.pD.length - 1];
-      var _hP25 = _hEnd ? (_hEnd.p25 || _hEnd.p5 || 0) : 0;
-      var _hP75 = _hEnd ? (_hEnd.p75 || _hEnd.p95 || 0) : 0;
-      if (_hEnd && _hP25 != null && _hP75 > 0) {
-        var _hP5 = _hEnd.p5 || _hP25, _hP95 = _hEnd.p95 || _hP75, _hP50 = _hEnd.p50 || (_hP25 + _hP75) / 2;
-        var _hRange = _hP95 - _hP5;
-        if (_hRange > 0) {
-          var _nBins = 20, _binW = _hRange * 1.3 / _nBins, _hBase = _hP5 - _hRange * 0.15;
-          var _hBins = [];
-          var _p50Rel = (_hP50 - _hBase) / (_hRange * 1.3);
-          for (var _bi = 0; _bi < _nBins; _bi++) {
-            var _bMidRel = (_bi + 0.5) / _nBins;
-            var _dist = Math.abs(_bMidRel - _p50Rel);
-            _hBins.push({ lo: _hBase + _bi * _binW, hi: _hBase + (_bi + 1) * _binW, count: Math.max(1, Math.round(100 * Math.exp(-5 * _dist * _dist))) });
-          }
-          h += Ch.svgHistogram(_hBins, {
-            title: fr ? 'Distribution du patrimoine final (approximation)' : 'Final Wealth Distribution (approximate)',
-            fr: fr,
-            p25: _hP25, p50: _hP50, p75: _hP75,
-            detValue: _hEnd.mp_total || _hEnd.rmp_total || 0
-          });
-        }
-      }
-    }
+    // V1 BAN per REPORT-SHIP-RULES.md: this histogram was synthesized from
+    // percentiles (not real engine output), and labeled "(approximation)" in
+    // its title. Removed in V1 to avoid presenting an approximation with the
+    // visual authority of a real chart.
 
     // Post-chart narrative — AI supersedes deterministic trajectory interpretation
     var _depAge = (mc.p5Ruin || 999) >= 200 ? null : mc.p5Ruin;
@@ -1123,12 +1290,18 @@
     var h = secPage();
     h += F.Sec(secN, F.L('revenue', fr), 'sec-revenue');
 
-    // Intro narrative — how income sources compose (focus on structure, not repeating coverage)
-    var govPct = d.totalSpM > 0 ? Math.round(d.govM / d.totalSpM * 100) : 0;
-    var wdPct = d.totalSpM > 0 ? Math.max(0, 100 - govPct) : 0;
+    // CANONICAL coverage — the single value used everywhere in this section.
+    // d.covRatio = (CPP + OAS + pension) / spend, averaged over retirement
+    // years. Label it explicitly as "guaranteed income (public + pension)" so
+    // the reader knows what's included. Previously this section computed a
+    // separate `govPct = d.govM / d.totalSpM` that drifted from the KPI's
+    // `covRatio`, producing the 41 vs 27, 48 vs 33, 110 vs 84 contradictions
+    // codex flagged.
+    var guarPct = Math.round(d.covRatio * 100);
+    var wdPct = Math.max(0, 100 - guarPct);
     h += narr(fr
-      ? 'Cette section d\u00e9taille la composition des revenus de retraite et leur \u00e9volution dans le temps. Les revenus gouvernementaux repr\u00e9sentent <strong>' + govPct + '%</strong> des besoins.' + (wdPct > 0 ? ' Les <strong>' + wdPct + '%</strong> restants proviendraient de retraits d\u2019\u00e9pargne.' : ' Les revenus garantis couvrent l\u2019int\u00e9gralit\u00e9 des d\u00e9penses.')
-      : 'This section details the composition of retirement income and how it evolves over time. Government income represents <strong>' + govPct + '%</strong> of needs.' + (wdPct > 0 ? ' The remaining <strong>' + wdPct + '%</strong> would come from savings withdrawals.' : ' Guaranteed income covers all expenses.'));
+      ? 'Cette section d\u00e9taille la composition des revenus de retraite. Le <strong>revenu garanti combin\u00e9</strong> (RRQ + PSV + pension d\'employeur) couvre <strong>' + guarPct + ' %</strong> des d\u00e9penses cibles.' + (wdPct > 0 ? ' Les <strong>' + wdPct + ' %</strong> restants proviennent de retraits du portefeuille.' : ' Les retraits du portefeuille ne sont pas requis pour couvrir les d\u00e9penses cibles.')
+      : 'This section details the composition of retirement income. <strong>Combined guaranteed income</strong> (CPP + OAS + employer pension) covers <strong>' + guarPct + ' %</strong> of target spending.' + (wdPct > 0 ? ' The remaining <strong>' + wdPct + ' %</strong> comes from portfolio withdrawals.' : ' Portfolio withdrawals are not needed to cover target spending.'));
 
     // Annual income waterfall
     var _wfItems = [
@@ -1376,30 +1549,117 @@
       }
     }
 
-    // Fee impact
+    // Fee impact KPIs — only when MER was actually entered (user input).
     if (d.merWt > 0.003) {
       h += '<div class="g3" style="margin-top:8px">';
-      h += F.KPI('<span class="mono">' + (d.merWt * 100).toFixed(2) + '%</span>', 'MER ' + (fr ? 'moyen' : 'avg'), d.merWt > 0.01 ? C.red : C.green);
+      h += F.KPI('<span class="mono">' + (d.merWt * 100).toFixed(2) + '%</span>', _term('mer', 'MER') + ' ' + (fr ? 'moyen pondéré (saisi)' : 'weighted avg (entered)'), d.merWt > 0.01 ? C.red : C.green);
       h += F.KPI('<span class="mono">' + f$(Math.round(d.feeCost)) + '</span>', fr ? 'Co\u00fbt total frais' : 'Total fee cost', C.amber);
       h += F.KPI('<span class="mono">' + Math.round(d.horizon) + (fr ? ' ans' : ' yrs') + '</span>', fr ? 'Horizon' : 'Horizon', C.blue);
       h += '</div>';
     }
+    // MER impact comparison table — always shown so the reader can place
+    // themselves on the spectrum of placement types. Hypotheses explicit.
+    h += _renderMERImpactTable(d, fr, f$);
 
     h += narrAi(_taxDet, d.ai.taxInsight, fr, fr ? 'Fiscalit\u00e9 \u2014 Analyse IA' : 'Tax \u2014 AI Analysis');
     h += secPageEnd();
     return h;
   }
 
+  // === MER IMPACT COMPARISON TABLE ===
+  // Educational: places the reader on the spectrum of placement types with
+  // explicit hypotheses (capital base, gross return, horizon). Highlights the
+  // row matching the user's actual MER if available.
+  function _renderMERImpactTable(d, fr, f$) {
+    var p = d.p;
+    var capBase = Math.max(50000, Math.round(((p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0) + (p.lira || 0)) / 1000) * 1000);
+    if (capBase < 100000) capBase = 100000;
+    var grossR = Math.max(0.04, Math.min(0.08, p.eqRet || p.eqRetS || 0.06));
+    var horizon = Math.max(10, Math.min(40, Math.round((p.deathAge || 90) - (p.age || 35))));
+    function feeDrag(merPct) {
+      var mer = merPct / 100;
+      var fvGross = capBase * Math.pow(1 + grossR, horizon);
+      var fvNet = capBase * Math.pow(1 + (grossR - mer), horizon);
+      return Math.max(0, fvGross - fvNet);
+    }
+    var rows = [
+      { label: fr ? 'FNB indiciels (XEQT, VEQT, etc.)' : 'Index ETFs (XEQT, VEQT, etc.)', mer: 0.20, note: fr ? 'Gestion passive — frais minimaux' : 'Passive management — minimal fees' },
+      { label: fr ? 'Robo-conseiller (Wealthsimple, Questwealth)' : 'Robo-advisor (Wealthsimple, Questwealth)', mer: 0.50, note: fr ? 'Allocation automatisée + rééquilibrage' : 'Automated allocation + rebalancing' },
+      { label: fr ? 'Gestion privée (haut de gamme)' : 'Private wealth management (high-end)', mer: 1.00, note: fr ? 'Conseil personnalisé, seuil souvent 500K$+' : 'Personalized advice, typical threshold $500K+' },
+      { label: fr ? 'Fonds communs (banque, courtier traditionnel)' : 'Mutual funds (bank, traditional broker)', mer: 2.00, note: fr ? 'Frais courants au Canada — souvent par défaut' : 'Common in Canada — often the default' },
+      { label: fr ? 'Fonds communs avec frais de souscription (DSC)' : 'Mutual funds with deferred sales charge (DSC)', mer: 2.50, note: fr ? 'Anciens fonds avec pénalité de retrait' : 'Legacy funds with redemption penalty' }
+    ];
+    var userMer = (d.merWt > 0.003) ? d.merWt * 100 : null;
+    var fvGrossFinal = capBase * Math.pow(1 + grossR, horizon);
+    var h = '';
+    h += '<div style="margin:14px 0 6px"><div style="font-size:11px;font-weight:700;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px">' + (fr ? 'Impact des frais de gestion (MER) selon le type de placement' : 'Management fee (MER) impact by placement type') + '</div></div>';
+    h += '<div style="font-size:10px;color:#666;margin:4px 0 8px;background:#f5f8fc;border-left:3px solid ' + C.blue + ';padding:6px 10px;line-height:1.55">' +
+      '<strong>' + (fr ? 'Hypothèses :' : 'Assumptions:') + '</strong> ' +
+      (fr ? 'capital de base ' : 'starting capital ') + '<span class="mono">' + f$(capBase) + '</span> · ' +
+      (fr ? 'rendement brut ' : 'gross return ') + '<span class="mono">' + (grossR * 100).toFixed(1) + '\u00a0%</span> ' +
+      (fr ? 'avant frais ' : 'before fees ') + '· ' +
+      (fr ? 'horizon ' : 'horizon ') + '<span class="mono">' + horizon + (fr ? ' ans' : ' yrs') + '</span> · ' +
+      (fr ? 'composition annuelle, aucun retrait, aucun ajout. Les frais réels varient selon la série de fonds, le conseiller et la province.' : 'annual compounding, no withdrawals, no contributions. Actual fees vary by fund series, advisor, and province.') +
+      '</div>';
+    h += '<table class="tbl"><thead><tr>';
+    h += '<th style="text-align:left">' + (fr ? 'Type de placement' : 'Placement type') + '</th>';
+    h += '<th style="text-align:right">MER</th>';
+    h += '<th style="text-align:right">' + (fr ? 'Coût cumulé sur ' : 'Cumulative cost over ') + horizon + (fr ? ' ans' : ' yrs') + '</th>';
+    h += '<th style="text-align:right">' + (fr ? '% du capital final' : '% of final capital') + '</th>';
+    h += '<th style="text-align:left;font-size:9.5px">' + (fr ? 'Note' : 'Note') + '</th>';
+    h += '</tr></thead><tbody>';
+    rows.forEach(function(r) {
+      var drag = feeDrag(r.mer);
+      var pctOfFinal = (drag / fvGrossFinal) * 100;
+      var col = r.mer < 0.5 ? C.green : r.mer < 1.5 ? C.amber : C.red;
+      var isUser = userMer != null && Math.abs(userMer - r.mer) < 0.25;
+      h += '<tr' + (isUser ? ' style="background:#fffbe8"' : '') + '>';
+      h += '<td>' + (isUser ? '<strong>\u25ba ' : '') + r.label + (isUser ? ' — ' + (fr ? 'votre situation estimée' : 'your estimated situation') + '</strong>' : '') + '</td>';
+      h += '<td style="text-align:right;font-weight:600;color:' + col + '" class="mono">' + r.mer.toFixed(2) + '\u00a0%</td>';
+      h += '<td style="text-align:right" class="mono">' + f$(Math.round(drag)) + '</td>';
+      h += '<td style="text-align:right;color:' + col + '" class="mono">' + pctOfFinal.toFixed(1) + '\u00a0%</td>';
+      h += '<td style="font-size:9.5px;color:#666">' + r.note + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div style="font-size:9.5px;color:#888;margin-top:6px;line-height:1.5">' +
+      (fr ? 'Lecture : un MER de 2\u00a0% applique environ 2\u00a0% du solde par année. Sur un horizon long, la composition transforme cette différence en montants importants. Ce tableau est éducatif et ne constitue pas une recommandation.'
+          : 'Reading note: a 2% MER deducts roughly 2% of the balance each year. Over a long horizon, compounding turns that gap into substantial amounts. This table is educational and not a recommendation.') +
+      '</div>';
+    return h;
+  }
+
   // === SECTION: GIS ===
   function renderGIS(d, secN) {
-    var fr = d.fr, revData = d.revData, exp = d.exp;
+    var fr = d.fr, revData = d.revData, exp = d.exp, p = d.p;
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
-    var _gisYrs = revData.filter(function(r) { return r.age >= 65 && (r.srg || r.gis || 0) > 0; });
+    // PLAUSIBILITY GATE — engine sometimes emits GIS values for years where
+    // taxable income (excluding OAS) plainly exceeds the eligibility ceiling.
+    // Filter at the section level: keep only years where non-OAS taxable
+    // income is below a defensible 2026 ceiling (~$22K single, ~$30K each in
+    // a couple). Anything above is engine noise from edge-case branches and
+    // would be clawed back to zero in reality.
+    var gisCap = p.cOn ? 30000 : 22000;
+    var _gisYrs = revData.filter(function(r) {
+      if (r.age < 65) return false;
+      var raw = r.srg || r.gis || 0;
+      if (raw <= 0) return false;
+      var nonOasIncome = (r.taxInc || 0) - (r.psv || 0);
+      return nonOasIncome >= 0 && nonOasIncome < gisCap;
+    });
     if (_gisYrs.length === 0) return '';
+    // Hard plausibility floor: even when filter passes, suppress the section
+    // for clearly-affluent profiles. Total liquid assets at age 65 are a
+    // simple guard: a household with > $400K (couple) or > $250K (single) in
+    // registered/non-registered savings will not realistically receive GIS.
+    var totalLiquidAt65 = (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0) + (p.lira || 0)
+                        + (p.cRRSP || 0) + (p.cTFSA || 0) + (p.cNR || 0);
+    var liquidCeiling = p.cOn ? 400000 : 250000;
+    if (totalLiquidAt65 > liquidCeiling) return '';
 
     var h = secPage();
-    h += F.Sec(secN, F.L('gis', fr), 'sec-gis');
+    h += F.Sec(secN, _term('gis', F.L('gis', fr)), 'sec-gis');
 
     var _gisTotal = _gisYrs.reduce(function(s, r) { return s + (r.srg || r.gis || 0); }, 0);
     var _gisAvg = _gisTotal / _gisYrs.length;
@@ -2002,12 +2262,141 @@
       h += Ch.svgTornado(d.sensData, { title: fr ? 'Sensibilit\u00e9 des param\u00e8tres' : 'Parameter Sensitivity' });
     }
 
+    // The 2D sensitivity heatmap lives in its own #sec-sensitivity section
+    // (not gated on expert mode) so all profiles see it. Previously also
+    // emitted here, which produced a duplicate for expert profiles.
+
     var _riskDet = fr
       ? 'La fourchette P25\u2013P75 de <strong>' + f$(Math.round(_spread25)) + '</strong> repr\u00e9sente la zone o\u00f9 se situe votre patrimoine dans la moiti\u00e9 des sc\u00e9narios simul\u00e9s. Plus cette fourchette est \u00e9troite, plus le r\u00e9sultat est pr\u00e9visible.'
       : 'The P25\u2013P75 range of <strong>' + f$(Math.round(_spread25)) + '</strong> represents the zone where your wealth falls in half of all simulated scenarios. A narrower range means more predictable outcomes.';
     h += narrAi(_riskDet, d.ai.riskInsight || d.ai.risk_plain_language, fr, fr ? 'Risque \u2014 Analyse IA' : 'Risk \u2014 AI Analysis');
+    // Methodology footer
+    h += _methodFooter(fr
+      ? '<strong>Fourchette P25–P75</strong> : zone où se situe votre patrimoine dans la moitié des ' + (d.p.nSim || 5000) + ' simulations Monte Carlo. <strong>Tornado</strong> : impact sur le patrimoine final médian quand chaque paramètre varie seul de ±1 écart-type. La carte thermique de sensibilité figure dans la section dédiée.'
+      : '<strong>P25–P75 range</strong>: zone where your wealth falls in half of the ' + (d.p.nSim || 5000) + ' Monte Carlo simulations. <strong>Tornado</strong>: impact on median final wealth when each parameter varies alone by ±1 standard deviation. The sensitivity heatmap appears in its own dedicated section.', fr);
     h += secPageEnd();
     return h;
+  }
+
+  // ─── Inline helpers (kept here to avoid touching report-formatters.js) ──
+
+  // Glossary term wrap — dotted underline + hover/click tooltip via the
+  // browser-side report-glossary.js (BFGlossary.terms[key] supplies the def).
+  function _term(key, text) {
+    return '<span class="bf-term" data-term="' + key + '">' + text + '</span>';
+  }
+
+  // Confidence indicator — small icon ◉ ◐ ○ next to projected numbers.
+  function _confDot(level, fr) {
+    var icon, color, hint;
+    if (level === 'user')    { icon = '\u25c9'; color = '#2a8c46'; hint = fr ? 'Saisi par vous — confiance élevée' : 'User-provided — high confidence'; }
+    else if (level === 'derived') { icon = '\u25d0'; color = '#b89830'; hint = fr ? 'Calculé à partir de vos saisies — confiance moyenne' : 'Derived from your inputs — medium confidence'; }
+    else { icon = '\u25cb'; color = '#888'; hint = fr ? 'Hypothèse modèle — voir méthodologie' : 'Model assumption — see methodology'; }
+    return '<span class="bf-conf-dot" style="color:' + color + ';font-size:11px;margin-left:4px;cursor:help;vertical-align:middle" title="' + hint + '" aria-label="' + hint + '">' + icon + '</span>';
+  }
+
+  // Methodology footer — collapsible "How is this calculated?" details element.
+  // CSS is provided by report-interactive.js runtime style injection
+  // (.bf-method-foot) so we just emit the markup here.
+  function _methodFooter(body, fr) {
+    if (!body) return '';
+    return '<details class="bf-method-foot">' +
+      '<summary>' + (fr ? 'Comment c\'est calculé ?' : 'How is this calculated?') + '</summary>' +
+      '<div class="bf-method-foot-body">' + body + '</div>' +
+    '</details>';
+  }
+
+  // Glossary appendix renderer — calls BFGlossary.renderAppendix(lang) which
+  // returns a 2-column <dl> of every term defined in report-glossary.js.
+  function _renderGlossaryAppendix(d, secN) {
+    var fr = d.fr;
+    var lang = fr ? 'fr' : 'en';
+    var listHtml = '';
+    if (typeof window !== 'undefined' && window.BFGlossary && typeof window.BFGlossary.renderAppendix === 'function') {
+      try { listHtml = window.BFGlossary.renderAppendix(lang); } catch (e) { listHtml = ''; }
+    }
+    if (!listHtml) {
+      listHtml = '<div style="font-size:10.5px;color:#888;font-style:italic">' +
+        (fr ? 'Glossaire indisponible.' : 'Glossary unavailable.') + '</div>';
+    }
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Glossaire' : 'Glossary', 'sec-glossary');
+    h += '<div style="font-size:10.5px;color:#666;margin-bottom:10px;font-style:italic;line-height:1.55">' +
+      (fr ? 'Définitions des termes techniques utilisés dans ce rapport. Les termes soulignés en pointillé à travers le rapport ouvrent une infobulle au survol.'
+          : 'Definitions of technical terms used in this report. Terms with a dotted underline throughout the report open a tooltip on hover.') +
+      '</div>';
+    h += listHtml;
+    h += secPageEnd();
+    return h;
+  }
+
+  // Sensitivity heatmap (inline — no new chart module required)
+  function _renderSensitivityHeatmap(d, fr) {
+    var p = d.p;
+    var baseSucc = d.succVal != null ? d.succVal : 0.7;
+    var baseEq = (p.eqRet || p.eqRetS || 0.06);
+    var baseInf = (p.inf || 0.021);
+    function _approxSucc(eq, infV) {
+      var dEq = (eq - baseEq) * 100;
+      var dInf = (infV - baseInf) * 100;
+      var s = baseSucc + (dEq * 0.06) - (dInf * 0.04);
+      return Math.max(0.05, Math.min(0.99, s));
+    }
+    function _hex(c) { return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; }
+    function _lerpColor(c1, c2, t) {
+      var a = _hex(c1), b = _hex(c2);
+      return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')';
+    }
+    function _heatColor(s) {
+      if (s == null) return '#eee';
+      if (s < 0.5) return _lerpColor('#cc4444', '#b89830', s / 0.5);
+      return _lerpColor('#b89830', '#2a8c46', (s - 0.5) / 0.5);
+    }
+    var eqRow = [baseEq + 0.02, baseEq + 0.01, baseEq, baseEq - 0.01, baseEq - 0.02]; // top→bottom
+    var infCol = [baseInf - 0.01, baseInf, baseInf + 0.01, baseInf + 0.02, baseInf + 0.03];
+    var W = 700, H = 240, ml = 110, mr = 25, mt = 28, mb = 60;
+    var nRows = eqRow.length, nCols = infCol.length;
+    var cellW = (W - ml - mr) / nCols, cellH = (H - mt - mb) / nRows;
+    var svg = '<svg role="img" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0">';
+    svg += '<text x="' + ml + '" y="16" font-size="11" font-weight="700" fill="#1a1610" font-family="Inter,sans-serif">' + (fr ? 'Carte thermique de sensibilité — taux de succès estimé' : 'Sensitivity heatmap — estimated success rate') + '</text>';
+    eqRow.forEach(function(eq, ri) {
+      infCol.forEach(function(infV, ci) {
+        var s = _approxSucc(eq, infV);
+        var x = ml + ci * cellW;
+        var y = mt + ri * cellH;
+        var col = _heatColor(s);
+        var isBase = (ri === 2 && ci === 1);
+        svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + cellW.toFixed(1) + '" height="' + cellH.toFixed(1) + '" fill="' + col + '" stroke="' + (isBase ? '#252d39' : '#fff') + '" stroke-width="' + (isBase ? 2.5 : 1) + '"/>';
+        var pct = Math.round(s * 100) + '%';
+        var txtCol = s < 0.6 ? '#fff' : '#1a1610';
+        svg += '<text x="' + (x + cellW / 2).toFixed(1) + '" y="' + (y + cellH / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + txtCol + '" font-family="JetBrains Mono,monospace">' + pct + '</text>';
+      });
+      svg += '<text x="' + (ml - 8) + '" y="' + (mt + ri * cellH + cellH / 2 + 4).toFixed(1) + '" text-anchor="end" font-size="10" fill="#444" font-family="Inter,sans-serif">' + (eq * 100).toFixed(1).replace('.', fr ? ',' : '.') + ' %</text>';
+    });
+    infCol.forEach(function(infV, ci) {
+      svg += '<text x="' + (ml + ci * cellW + cellW / 2).toFixed(1) + '" y="' + (H - mb + 16) + '" text-anchor="middle" font-size="10" fill="#444" font-family="Inter,sans-serif">' + (infV * 100).toFixed(1).replace('.', fr ? ',' : '.') + ' %</text>';
+    });
+    svg += '<text x="' + (ml + (W - ml - mr) / 2) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + C.gold + '" font-family="Inter,sans-serif" letter-spacing="1px">' + (fr ? 'INFLATION MOYENNE' : 'AVERAGE INFLATION') + '</text>';
+    svg += '<text x="14" y="' + (mt + (H - mt - mb) / 2) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + C.gold + '" font-family="Inter,sans-serif" letter-spacing="1px" transform="rotate(-90,14,' + (mt + (H - mt - mb) / 2) + ')">' + (fr ? 'RENDEMENT ACTIONS' : 'EQUITY RETURN') + '</text>';
+    svg += '</svg>';
+    var legend = '<div style="display:flex;justify-content:center;align-items:center;gap:14px;font-size:9.5px;color:#666;margin-top:4px;font-family:Inter,sans-serif">' +
+      '<span><span style="display:inline-block;width:10px;height:10px;background:#cc4444;vertical-align:middle;margin-right:4px"></span>' + (fr ? 'à risque' : 'at risk') + ' (&lt;50%)</span>' +
+      '<span><span style="display:inline-block;width:10px;height:10px;background:#b89830;vertical-align:middle;margin-right:4px"></span>' + (fr ? 'fragile' : 'fragile') + ' (50–75%)</span>' +
+      '<span><span style="display:inline-block;width:10px;height:10px;background:#2a8c46;vertical-align:middle;margin-right:4px"></span>' + (fr ? 'solide' : 'solid') + ' (&gt;75%)</span>' +
+      '<span style="margin-left:auto"><span style="display:inline-block;width:10px;height:10px;border:2px solid #252d39;vertical-align:middle;margin-right:4px"></span>' + (fr ? 'plan de base' : 'baseline') + '</span>' +
+    '</div>';
+    return '<div style="margin:18px 0 6px;font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px">' + (fr ? 'Carte thermique : rendement × inflation' : 'Heatmap: return × inflation') + '</div>' +
+      // Prominent caveat box — the numbers on the heatmap are an educational
+      // approximation, not a re-run of Monte Carlo. Made visually distinct so
+      // the reader cannot miss the disclaimer (per audit feedback).
+      '<div style="font-size:10.5px;color:#7a4a00;margin-bottom:8px;line-height:1.55;background:#fff8e0;border:1px solid #d8ad33;border-left:4px solid #d8ad33;padding:8px 12px;border-radius:4px">' +
+      '<strong style="color:#8a5500">⚠ ' + (fr ? 'Approximation pédagogique :' : 'Educational approximation:') + '</strong> ' +
+      (fr ? 'les pourcentages affichés ne proviennent PAS d\'une seconde simulation Monte Carlo. Ils sont estimés à partir de coefficients moyens (rendement ~6 pts/1 %, inflation ~−4 pts/1 %) appliqués au taux de succès de votre plan de base. Pour des chiffres exacts, utilisez le simulateur What-If qui rejoue 500 simulations en direct.'
+          : 'percentages shown are NOT from a second Monte Carlo run. They are estimated from average coefficients (return ~6 pts/1%, inflation ~−4 pts/1%) applied to your baseline success rate. For exact figures, use the What-If simulator which replays 500 simulations live.') +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#666;margin-bottom:6px;line-height:1.55">' +
+      (fr ? 'Pour chaque combinaison rendement/inflation, le taux de succès estimé. La cellule encadrée représente vos hypothèses de base.' : 'For each return/inflation combination, the estimated success rate. The boxed cell shows your baseline assumptions.') +
+      '</div>' + svg + legend;
   }
 
   // === SECTION: FINAL-WEALTH HISTOGRAM (Phase 11 gap-close) ===
@@ -2021,8 +2410,8 @@
     h += F.Sec(secN, fr ? 'Distribution du patrimoine final' : 'Final-wealth distribution', 'sec-histogram');
 
     h += narr(fr
-      ? 'Ce graphique montre comment les <strong>' + (d.p.nSim || 5000) + ' simulations</strong> se r\u00e9partissent en fin d\'horizon. Chaque barre regroupe les trajectoires dont le patrimoine final tombe dans la plage indiqu\u00e9e. Les rep\u00e8res P25, P50 et P75 marquent respectivement le sc\u00e9nario prudent, m\u00e9dian et favorable.'
-      : 'This chart shows how the <strong>' + (d.p.nSim || 5000) + ' simulations</strong> are distributed at the end of the horizon. Each bar groups trajectories whose final wealth falls in the indicated range. The P25, P50 and P75 markers show the cautious, median and favourable scenarios.');
+      ? 'Ce graphique montre comment les <strong>' + (d.p.nSim || 5000) + ' simulations</strong> se r\u00e9partissent en fin d\'horizon. Chaque barre regroupe les trajectoires dont le patrimoine final tombe dans la plage indiqu\u00e9e. Les rep\u00e8res ' + _term('p25', 'P25') + ', ' + _term('p50', 'P50') + ' et ' + _term('p75', 'P75') + ' marquent respectivement le sc\u00e9nario prudent, m\u00e9dian et favorable.'
+      : 'This chart shows how the <strong>' + (d.p.nSim || 5000) + ' simulations</strong> are distributed at the end of the horizon. Each bar groups trajectories whose final wealth falls in the indicated range. The ' + _term('p25', 'P25') + ', ' + _term('p50', 'P50') + ' and ' + _term('p75', 'P75') + ' markers show the cautious, median and favourable scenarios.');
 
     h += Ch.svgHistogram(mc.histogram, {
       title: fr ? 'Patrimoine final (dollars r\u00e9els)' : 'Final wealth (real dollars)',
@@ -2184,31 +2573,63 @@
     var h = secPage();
     h += F.Sec(secN, fr ? 'Plan d\'action' : 'Action plan', 'sec-actions');
     h += narr(fr
-      ? 'Les observations ci-dessous d\u00e9coulent de r\u00e8gles d\'analyse appliqu\u00e9es aux sorties du moteur. Elles ne constituent pas des recommandations prescriptives \u2014 chaque point est un signal pour discussion avec un planificateur financier agr\u00e9\u00e9. Les actions sont class\u00e9es par priorit\u00e9 puis par niveau de confiance.'
-      : 'The observations below flow from analytical rules applied to engine outputs. They are not prescriptive recommendations — each point is a signal for discussion with a certified financial planner. Actions are ranked by priority then by confidence level.');
+      ? 'Le plan ci-dessous regroupe les leviers selon la fen\u00eatre o\u00f9 ils ont le plus d\'effet : Maintenant, 12 mois, Pr\u00e9retraite, Retraite active. La logique est s\u00e9quentielle \u2014 ce qui est plac\u00e9 en \u00ab Maintenant \u00bb conditionne souvent ce qui devient pertinent ensuite. Chaque point est observationnel et m\u00e9rite discussion avec un planificateur financier agr\u00e9\u00e9.'
+      : 'The plan below groups levers by the window in which they have the most impact: Now, Next 12 months, Pre-retirement, In retirement. The logic is sequential — what sits in "Now" often conditions what becomes relevant later. Each point is observational and warrants discussion with a certified financial planner.');
 
-    actions.forEach(function(a, idx) {
-      var priorityLabel = a.priority === 'high'
-        ? (fr ? 'Priorit\u00e9 \u00e9lev\u00e9e' : 'High priority')
-        : a.priority === 'medium' ? (fr ? 'Priorit\u00e9 moyenne' : 'Medium priority')
-        : (fr ? 'Priorit\u00e9 faible' : 'Low priority');
-      var priorityClass = a.priority === 'high' ? 'reco-priority-high'
-        : a.priority === 'medium' ? 'reco-priority-medium' : 'reco-priority-low';
-      var tlLabel = TL[a.timeline] ? TL[a.timeline][fr ? 'fr' : 'en'] : (fr ? 'moyen terme' : 'medium term');
-      var impactHtml = '';
-      if (a.dollarImpact != null && a.dollarImpact >= 1000) {
-        impactHtml = '<div class="reco-impact">~ ' + f$(a.dollarImpact) + '</div>';
-      }
-      h += '<div class="reco-card">';
-      h += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">';
-      h += '<span class="reco-priority ' + priorityClass + '">' + priorityLabel + '</span>';
-      h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px">' + (fr ? 'Horizon' : 'Timeline') + ' : ' + tlLabel + '</span>';
-      h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-left:auto">' + (fr ? 'Confiance' : 'Confidence') + ' : ' + a.confidence + '</span>';
-      h += '</div>';
-      h += impactHtml;
-      h += '<div class="reco-title">' + F.esc(a.title) + '</div>';
-      h += '<div class="reco-body">' + a.rationale + '</div>';
-      h += '</div>';
+    // Group actions by timeline bucket; sort buckets by the natural life-stage
+    // order (Maintenant → 12 mois → Préretraite → Retraite active).
+    var buckets = { immediate: [], short: [], medium: [], long: [] };
+    actions.forEach(function(a) {
+      var tl = a.timeline && buckets[a.timeline] ? a.timeline : 'medium';
+      buckets[tl].push(a);
+    });
+    // Within each bucket, sort high → medium → low priority
+    var prioRank = { high: 0, medium: 1, low: 2 };
+    Object.keys(buckets).forEach(function(k) {
+      buckets[k].sort(function(x, y) { return (prioRank[x.priority] || 9) - (prioRank[y.priority] || 9); });
+    });
+
+    var bucketOrder = ['immediate', 'short', 'medium', 'long'];
+    bucketOrder.forEach(function(bk) {
+      var items = buckets[bk];
+      if (!items || items.length === 0) return;
+      var bucketLabel = TL[bk][fr ? 'fr' : 'en'];
+      var bucketSub = bk === 'immediate' ? (fr ? 'sans pr\u00e9requis \u2014 \u00e0 enclencher d\u00e8s maintenant' : 'no preconditions — start now')
+                    : bk === 'short'     ? (fr ? 'l\'ann\u00e9e \u00e0 venir' : 'the year ahead')
+                    : bk === 'medium'    ? (fr ? 'phase d\'ajustement avant la retraite' : 'adjustment phase before retirement')
+                    :                      (fr ? 'apr\u00e8s le d\u00e9but de la retraite' : 'after retirement begins');
+      // Bucket header
+      h += '<div class="action-bucket-header" style="margin:18px 0 10px;padding:10px 14px;background:linear-gradient(90deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:6px;border-left:4px solid ' + C.gold + ';display:flex;align-items:baseline;gap:14px;break-inside:avoid">' +
+        '<div style="font-family:\"JetBrains Mono\",monospace;font-size:14px;font-weight:700;color:' + C.gold + ';min-width:30px">0' + TL[bk].order + '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:' + C.gold + ';letter-spacing:1.5px;text-transform:uppercase">' + bucketLabel + '</div>' +
+          '<div style="font-family:Inter,sans-serif;font-size:10.5px;color:#bccbe0;font-style:italic;margin-top:2px">' + bucketSub + '</div>' +
+        '</div>' +
+        '<div style="font-family:\"JetBrains Mono\",monospace;font-size:9px;color:#bccbe0;letter-spacing:0.5px">' + items.length + ' ' + (fr ? (items.length > 1 ? 'leviers' : 'levier') : items.length > 1 ? 'levers' : 'lever') + '</div>' +
+        '</div>';
+      // Items in this bucket
+      items.forEach(function(a, idx) {
+        var priorityLabel = a.priority === 'high'
+          ? (fr ? 'Priorit\u00e9 \u00e9lev\u00e9e' : 'High priority')
+          : a.priority === 'medium' ? (fr ? 'Priorit\u00e9 moyenne' : 'Medium priority')
+          : (fr ? 'Priorit\u00e9 faible' : 'Low priority');
+        var priorityClass = a.priority === 'high' ? 'reco-priority-high'
+          : a.priority === 'medium' ? 'reco-priority-medium' : 'reco-priority-low';
+        var impactHtml = '';
+        if (a.dollarImpact != null && a.dollarImpact >= 1000) {
+          impactHtml = '<div class="reco-impact">~ ' + f$(a.dollarImpact) + '</div>';
+        }
+        h += '<div class="reco-card" style="margin-left:14px">';
+        h += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">';
+        h += '<span style="font-family:\"JetBrains Mono\",monospace;font-size:9px;color:#888;font-weight:700">' + (idx + 1) + '.</span>';
+        h += '<span class="reco-priority ' + priorityClass + '">' + priorityLabel + '</span>';
+        h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-left:auto">' + (fr ? 'Confiance' : 'Confidence') + ' : ' + a.confidence + '</span>';
+        h += '</div>';
+        h += impactHtml;
+        h += '<div class="reco-title">' + F.esc(a.title) + '</div>';
+        h += '<div class="reco-body">' + a.rationale + '</div>';
+        h += '</div>';
+      });
     });
 
     h += '<div class="disclaimer" style="margin-top:14px">' + (fr
@@ -2353,6 +2774,17 @@
     _exportMode = !!(data && data.exportMode);
     var d = D.buildReportPayload(data);
 
+    // Pass through the SKU flag so renderers can gate the embedded What-If.
+    // BData.buildReportPayload may strip unknown fields; we re-attach here from
+    // the original input. Default: include simulator (legacy behavior) when
+    // the flag is not provided, so existing callers keep working.
+    if (d) {
+      d.sku = (data && data.sku) || 'bilan';
+      d.includeSimulator = (data && typeof data.includeSimulator === 'boolean')
+        ? data.includeSimulator
+        : (d.sku !== 'planner');
+    }
+
     // Set the rendering-scope language so shared formatters (fmtCurrency, pc)
     // produce locale-correct output for EN reports. fmtCurrency previously
     // hardcoded fr-CA, which broke EN report currency formatting.
@@ -2380,8 +2812,14 @@
     // Cover page
     h += renderCover(d);
 
-    // Advisor letter — page 2 of the 18-22 page plan
+    // Advisor letter — first content page so the human framing comes before
+    // any numbers. Sets the emotional lens for the report.
     h += renderAdvisorLetter(d);
+
+    // Executive summary — 1-page TL;DR right after the warm opening, so a
+    // reader who only flips through still gets the verdict in 30 seconds
+    // without the cold-open feel of a number wall on page 2.
+    h += _renderExecSummary(d);
 
     // Main report header + grade
     h += renderHeader(d);
@@ -2442,6 +2880,12 @@
     h += renderTOC(tocSections, d.fr);
 
     // ── Section rendering (phase-aware ordering) ──
+    // Fix-plan flags: when the review pipeline detects a blocker, it sets
+    // d._suppressed[sectionId] = true so the renderer skips that section
+    // entirely. This is how the corrected-pass removes invalid GIS sections,
+    // duplicates, etc., without requiring a re-run of the engine.
+    var _suppressed = d._suppressed || {};
+    var _isSuppressed = function(id) { return !!_suppressed[id]; };
     var secN = 0;
 
     // 0. Overall Assessment (always, before numbered sections)
@@ -2451,6 +2895,11 @@
     secN++;
     h += renderDiagnostic(d, secN);
 
+    // 1.bis Teaser — Bilan readers see the What-If simulator pointer; Planner
+    // readers get an upsell-style note pointing them back to the live tool.
+    // The actual mount point at the end is gated identically.
+    h += d.includeSimulator !== false ? _renderWhatIfTeaser(d) : _renderUpsellTeaser(d);
+
     // 1.5 What Could Change This — only if MC payload carries real sweep data
     // (renderLevers is gated on mc._sweeps; avoids fabricated closed-form deltas).
     if (_hasSweeps) {
@@ -2458,17 +2907,28 @@
       h += renderLevers(d, secN);
     }
 
-    // 2. Profile (always)
+    // ─── CH.2 — VOTRE SITUATION (who they are, what they have) ──────────
+    // Profile + family + goals + asset-class deep dives. Asset deep dives
+    // (real estate, corp, RSU, debts) moved up here from late-report so the
+    // archetype's structural pillars appear *before* the trajectory section.
+    // CCPC owners especially benefit: corporation reads as the centerpiece.
     secN++;
     h += renderProfile(d, secN);
-
-    // 3. Family (conditional)
     if (d.R.hasFamily) { secN++; h += renderFamily(d, secN); }
+    if (d.R.hasGoals)  { secN++; h += renderGoals(d, secN); }
+    var reHtml = renderRealEstate(d, secN + 1);
+    if (reHtml)  { secN++; h += reHtml; }
+    var corpHtml = renderCorp(d, secN + 1);
+    if (corpHtml) { secN++; h += corpHtml; }
+    var rsuHtml = renderRSU(d, secN + 1);
+    if (rsuHtml) { secN++; h += rsuHtml; }
+    var debtHtml = renderDebts(d, secN + 1);
+    if (debtHtml) { secN++; h += debtHtml; }
 
-    // 4. Goals (conditional)
-    if (d.R.hasGoals) { secN++; h += renderGoals(d, secN); }
-
-    // 5-6. Projection & Revenue — DECUM puts revenue first
+    // ─── CH.3 — TRAJECTOIRE (what could happen) ─────────────────────────
+    // Projection / revenue / histogram / sensitivity / risk / stress / cashflow.
+    // Risk section moved up from previous position #17-18 to right after the
+    // sensitivity heatmap so the dispersion narrative flows continuously.
     if (isDecum) {
       secN++; h += renderRevenue(d, secN);
       secN++; h += renderProjection(d, secN);
@@ -2476,72 +2936,51 @@
       secN++; h += renderProjection(d, secN);
       secN++; h += renderRevenue(d, secN);
     }
-
-    // 6.5 Final-wealth distribution (histogram) — shows where simulations land
-    var histHtml = renderHistogram(d, secN + 1);
-    if (histHtml) { secN++; h += histHtml; }
-
-    // 6.6 Year-by-year cash flow — compact table at key ages
+    // V1 BAN per REPORT-SHIP-RULES.md:
+    //   - Histogram (sec-histogram) was labeled "(approximation)" in many
+    //     profiles → suppressed in V1 until verified as real-engine output.
+    //   - Sensitivity heatmap (sec-sensitivity) is an educational
+    //     approximation (not a real second MC run) → suppressed in V1.
+    // The risk section's tornado covers the dispersion / sensitivity story.
+    // Bilan readers can use the live What-If simulator for exact figures.
+    // Risk + dispersion narrative (expert only) — placed adjacent to sensitivity
+    // so the analytical thread stays continuous.
+    if (d.exp) { secN++; h += renderRisk(d, secN); }
+    // Stress tests
+    secN++;
+    h += renderStressTests(d, secN);
+    // Year-by-year cash flow detail
     var cfHtml = renderCashflow(d, secN + 1);
     if (cfHtml) { secN++; h += cfHtml; }
 
-    // 7. Strategies / SAM (if available)
+    // ─── CH.4 — STRATÉGIE & DÉCISIONS (levers, taxes, transmission) ─────
+    // Tax + draworder + meltdown clustered together (meltdown is a tax lever,
+    // previously orphaned in position #16 between succession and real estate).
+    // GIS / Succession / Insurance / Strategies follow.
     if (_hasStrats) { secN++; h += renderStrategies(d, secN); }
-
-    // 8. Tax Strategy (always)
     secN++;
     h += renderTax(d, secN);
-
-    // 8.5 Draw-order strategy (if enriched data available)
-    if (_hasDrawTrace) {
-      secN++;
-      h += renderDrawOrder(d, secN);
-    }
-
-    // 8.6 Stress tests — always emit (renderStressTests handles the
-    // "no _stress payload" case with a stub note so the section anchor
-    // is present for QA even when enrichment didn't run).
-    secN++;
-    h += renderStressTests(d, secN);
-
-    // 9. GIS (conditional)
-    var gisHtml = renderGIS(d, secN + 1);
-    if (gisHtml) { secN++; h += gisHtml; }
-
-    // 10. Meltdown (conditional)
+    if (_hasDrawTrace) { secN++; h += renderDrawOrder(d, secN); }
     var meltHtml = renderMeltdown(d, secN + 1);
     if (meltHtml) { secN++; h += meltHtml; }
-
-    // 11. Succession (conditional — skips if no estate data)
+    if (!_isSuppressed('sec-gis')) {
+      var gisHtml = renderGIS(d, secN + 1);
+      if (gisHtml) { secN++; h += gisHtml; }
+    }
     var succHtml = renderSuccession(d, secN + 1);
     if (succHtml) { secN++; h += succHtml; }
-
-    // 12. Real Estate (conditional)
-    var reHtml = renderRealEstate(d, secN + 1);
-    if (reHtml) { secN++; h += reHtml; }
-
-    // 13. RSU (conditional)
-    var rsuHtml = renderRSU(d, secN + 1);
-    if (rsuHtml) { secN++; h += rsuHtml; }
-
-    // 14. Corporation (conditional)
-    var corpHtml = renderCorp(d, secN + 1);
-    if (corpHtml) { secN++; h += corpHtml; }
-
-    // 15. Debts (conditional)
-    var debtHtml = renderDebts(d, secN + 1);
-    if (debtHtml) { secN++; h += debtHtml; }
-
-    // 16. Insurance (conditional — rendered only when user has coverage entered)
     var insHtml = renderInsurance(d, secN + 1);
     if (insHtml) { secN++; h += insHtml; }
-
-    // 17. Risk & Sensitivity (expert only)
-    if (d.exp) { secN++; h += renderRisk(d, secN); }
 
     // 17.5 Action Plan (rule-based; hidden when no actions apply)
     var actionsHtml = renderActionPlan(d, secN + 1);
     if (actionsHtml) { secN++; h += actionsHtml; }
+
+    // 17.7 What-If simulator — Bilan-only. Planner customers use the live
+    // Planner tool which is more capable than this embedded version.
+    if (d.includeSimulator !== false) {
+      h += _renderWhatIfMount(d);
+    }
 
     // 18. Methodology (always)
     secN++;
@@ -2551,14 +2990,74 @@
     secN++;
     h += renderAssumptions(d, secN);
 
+    // 18.7 Glossary appendix — bilingual definitions (server-side renderer
+    // calls into BFGlossary.renderAppendix which is loaded via the build
+    // pipeline). Falls back gracefully if the module is missing.
+    secN++;
+    h += _renderGlossaryAppendix(d, secN);
+
     // 19. Signature page (last content page before footer)
     h += renderSignaturePage(d);
 
     // Footer
     h += renderFooter(d);
 
+    // Inline interactive payload + scripts at the end of body so the DOM is
+    // fully parsed before they execute. Each module reads window.__BUILDFI__
+    // and decorates the static report with hover tooltips, year drilldown,
+    // print-profile toggle, glossary, what-if simulator, etc.
+    h += _emitInteractivePayload(d);
+
     h += '</body></html>';
     return h;
   };
+
+  // Build the inline interactive payload: window.__BUILDFI__ JSON + the
+  // pre-loaded BF_*_JS source strings as <script> tags. Order matters:
+  // engine first (whatif depends on it), then tooltip / interactive / whatif
+  // / glossary.
+  function _emitInteractivePayload(d) {
+    var p = d.p, mc = d.mc;
+    var fr = d.fr;
+    // Minimal payload — enough for tooltips, drilldown modal, and the
+    // What-If simulator's _readBaseline() (it overrides via data-bf-whatif-params).
+    var payload = {
+      meta: {
+        currentAge: p.age, retAge: p.retAge, deathAge: p.deathAge,
+        sex: p.sex, prov: p.prov, fr: !!fr,
+        clientName: (d.client && d.client.name) || '',
+        nSim: p.nSim || 5000
+      },
+      baseline: {
+        succ: d.succVal,
+        medF: mc && mc.medF, rMedF: mc && mc.rMedF,
+        p25F: mc && mc.p25F, rP25F: mc && mc.rP25F,
+        p75F: mc && mc.p75F, rP75F: mc && mc.rP75F,
+        p5Ruin: mc && mc.p5Ruin,
+        medEstateNet: mc && mc.medEstateNet
+      },
+      pD: (mc && mc.pD) || [],
+      medRevData: (mc && mc.medRevData) || []
+    };
+    var json = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script');
+    var out = '<script>window.__BUILDFI__=' + json + ';<\/script>';
+    function _stripScriptClose(s) { return s.replace(/<\/script/gi, '<\\/script'); }
+    var eJs = (typeof window !== 'undefined' && window.BF_ENGINE_JS) ? window.BF_ENGINE_JS : '';
+    var tJs = (typeof window !== 'undefined' && window.BF_TOOLTIP_JS) ? window.BF_TOOLTIP_JS : '';
+    var iJs = (typeof window !== 'undefined' && window.BF_INTERACTIVE_JS) ? window.BF_INTERACTIVE_JS : '';
+    var wJs = (typeof window !== 'undefined' && window.BF_WHATIF_JS) ? window.BF_WHATIF_JS : '';
+    var gJs = (typeof window !== 'undefined' && window.BF_GLOSSARY_JS) ? window.BF_GLOSSARY_JS : '';
+    // Tooltip / interactive / glossary always inline (universal niceties).
+    // Engine + What-If module only when includeSimulator is true (Bilan SKU).
+    // Saves ~150 KB on Planner reports.
+    if (tJs) out += '<script>' + _stripScriptClose(tJs) + '<\/script>';
+    if (iJs) out += '<script>' + _stripScriptClose(iJs) + '<\/script>';
+    if (gJs) out += '<script>' + _stripScriptClose(gJs) + '<\/script>';
+    if (d.includeSimulator !== false) {
+      if (eJs) out += '<script>' + _stripScriptClose(eJs) + '<\/script>';
+      if (wJs) out += '<script>' + _stripScriptClose(wJs) + '<\/script>';
+    }
+    return out;
+  }
 
 })();

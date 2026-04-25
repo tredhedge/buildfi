@@ -98,16 +98,27 @@
   // GRADE & COLOR SYSTEM
   // ══════════════════════════════════════════════════════════════
 
+  // Grade calibration — recalibrated per codex audit. Previous version called
+  // 89% "Solide" but the verdict text read "Fragile" — internally inconsistent.
+  // New scheme:
+  //   95-100 → A+ Excellent (with mandatory blind-spots)
+  //   90-94  → A  Très solide
+  //   80-89  → A- Solide (no longer "Acceptable" or "Fragile" in this band)
+  //   70-79  → B+ Robuste avec discipline
+  //   60-69  → B  À surveiller
+  //   45-59  → C  Sous tension
+  //   30-44  → D  Fragile (with explicit recovery path)
+  //   0-29   → F  À reconstruire
   function grade(succVal, fr) {
     if (succVal == null) return { letter: "\u2014", label: fr ? "En attente" : "Pending", color: "#b89830" };
     if (succVal >= 0.95) return { letter: "A+", label: fr ? "Excellent" : "Excellent", color: "#2a8c46" };
     if (succVal >= 0.90) return { letter: "A",  label: fr ? "Tr\u00e8s solide" : "Very solid", color: "#2a8c46" };
-    if (succVal >= 0.85) return { letter: "A-", label: fr ? "Solide" : "Solid", color: "#2a8c46" };
-    if (succVal >= 0.80) return { letter: "B+", label: fr ? "Acceptable" : "Acceptable", color: "#b89830" };
-    if (succVal >= 0.70) return { letter: "B",  label: fr ? "Fragile" : "Fragile", color: "#b89830" };
-    if (succVal >= 0.50) return { letter: "C",  label: fr ? "Risqu\u00e9" : "At risk", color: "#cc4444" };
-    if (succVal >= 0.30) return { letter: "D",  label: fr ? "Critique" : "Critical", color: "#cc4444" };
-    return { letter: "F", label: fr ? "Critique" : "Critical", color: "#cc4444" };
+    if (succVal >= 0.80) return { letter: "A-", label: fr ? "Solide" : "Solid", color: "#2a8c46" };
+    if (succVal >= 0.70) return { letter: "B+", label: fr ? "Robuste avec discipline" : "Robust with discipline", color: "#b89830" };
+    if (succVal >= 0.60) return { letter: "B",  label: fr ? "\u00c0 surveiller" : "Monitor closely", color: "#b89830" };
+    if (succVal >= 0.45) return { letter: "C",  label: fr ? "Sous tension" : "Under strain", color: "#cc8844" };
+    if (succVal >= 0.30) return { letter: "D",  label: fr ? "Fragile" : "Fragile", color: "#cc4444" };
+    return { letter: "F", label: fr ? "\u00c0 reconstruire" : "To rebuild", color: "#cc4444" };
   }
 
   // Color for a success rate value

@@ -1,9 +1,10 @@
 {
-  "_schema": "BuildFi realai profile spec v1 — single source consumed by gen-real-mc.mjs AND build-realai-reports.js",
+  "_schema": "BuildFi realai profile spec v2 — single source consumed by gen-real-mc.mjs AND build-realai-reports.js",
   "_fields": {
     "id":            "string — profile key, used in output filenames",
     "lang":          "'fr' | 'en' — narration language",
     "mode":          "'standard' | 'expert' — report mode, affects sections shown",
+    "sku":           "'bilan' | 'planner' — SKU controls includeSimulator flag (Bilan gets embedded What-If, Planner does not)",
     "nSim":          "integer — Monte Carlo simulation count (gen-real-mc.mjs)",
     "finLiteracy":   "'beginner' | 'intermediate' | 'advanced' — AI calibration",
     "stressLevel":   "'low' | 'moderate' | 'high' — AI tone",
@@ -16,6 +17,7 @@
       "id": "hnw_couple",
       "lang": "fr",
       "mode": "expert",
+      "sku": "planner",
       "nSim": 2000,
       "finLiteracy": "advanced",
       "stressLevel": "low",
@@ -52,6 +54,7 @@
       "id": "ccpc_owner",
       "lang": "en",
       "mode": "expert",
+      "sku": "planner",
       "nSim": 2000,
       "finLiteracy": "advanced",
       "stressLevel": "moderate",
@@ -79,6 +82,7 @@
       "id": "fire_seeker",
       "lang": "fr",
       "mode": "standard",
+      "sku": "bilan",
       "nSim": 2000,
       "finLiteracy": "advanced",
       "stressLevel": "low",
@@ -110,6 +114,7 @@
       "id": "low_income_gis",
       "lang": "en",
       "mode": "standard",
+      "sku": "bilan",
       "nSim": 2000,
       "finLiteracy": "beginner",
       "stressLevel": "moderate",
@@ -138,6 +143,7 @@
       "id": "debt_young",
       "lang": "fr",
       "mode": "standard",
+      "sku": "bilan",
       "nSim": 2000,
       "finLiteracy": "beginner",
       "stressLevel": "high",
@@ -164,6 +170,177 @@
         "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
         "merR": 0.015, "merT": 0.015, "merN": 0.015,
         "allocR": 0.7, "allocT": 0.7, "allocN": 0.6
+      }
+    },
+    {
+      "id": "conservative_retiree_qc",
+      "lang": "fr",
+      "mode": "standard",
+      "sku": "bilan",
+      "nSim": 2000,
+      "finLiteracy": "intermediate",
+      "stressLevel": "low",
+      "detailPref": "balanced",
+      "client": {
+        "name": "Pierre Tremblay",
+        "firstName": "Pierre",
+        "spouseFirstName": "Hélène",
+        "email": "pierre.tremblay@example.com"
+      },
+      "params": {
+        "age": 67, "retAge": 65, "deathAge": 92, "sex": "M", "prov": "QC",
+        "sal": 0, "rrsp": 295000, "tfsa": 142000, "nr": 88000,
+        "cOn": true, "cAge": 65, "cRetAge": 64, "cSex": "F",
+        "cSal": 0, "cRRSP": 175000, "cTFSA": 96000, "cNR": 22000,
+        "retSpM": 5800, "cRetSpM": 0,
+        "qppAge": 65, "oasAge": 65, "cQppAge": 65, "cOasAge": 65,
+        "avgE": 78000, "qppYrs": 35, "cAvgE": 52000, "cQppYrs": 30,
+        "penType": "db", "penM": 2400, "penIdx": true,
+        "melt": false, "meltTgt": 0, "split": true, "splitP": 0.5,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.05, "eqVol": 0.10, "bndRet": 0.035, "bndVol": 0.05,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.009, "merT": 0.009, "merN": 0.009,
+        "allocR": 0.30, "allocT": 0.40, "allocN": 0.25
+      }
+    },
+    {
+      "id": "rental_landlord_on",
+      "lang": "en",
+      "mode": "expert",
+      "sku": "planner",
+      "nSim": 2000,
+      "finLiteracy": "advanced",
+      "stressLevel": "low",
+      "detailPref": "detailed",
+      "client": {
+        "name": "Marcus Williams",
+        "firstName": "Marcus",
+        "spouseFirstName": "Tanya",
+        "email": "marcus@example.com"
+      },
+      "params": {
+        "age": 54, "retAge": 62, "deathAge": 90, "sex": "M", "prov": "ON",
+        "sal": 118000, "rrsp": 285000, "tfsa": 102000, "nr": 165000,
+        "cOn": true, "cAge": 51, "cRetAge": 62, "cSex": "F",
+        "cSal": 84000, "cRRSP": 142000, "cTFSA": 78000, "cNR": 25000,
+        "retSpM": 7800, "cRetSpM": 0,
+        "qppAge": 67, "oasAge": 67, "cQppAge": 65, "cOasAge": 65,
+        "avgE": 118000, "qppYrs": 30, "cAvgE": 84000, "cQppYrs": 25,
+        "rrspC": 16000, "tfsaC": 7000, "nrC": 12000,
+        "props": [
+          { "nm": "Duplex Hamilton", "val": 580000, "mb": 245000, "mr": 0.054, "ma": 22, "rm": 3400, "pt": 6200, "ins": 1800, "ox": 2400, "ri": 0.025, "sa": 0 },
+          { "nm": "Condo Mississauga", "val": 495000, "mb": 198000, "mr": 0.052, "ma": 20, "rm": 2700, "pt": 4800, "ins": 1500, "ox": 4200, "ri": 0.025, "sa": 0 }
+        ],
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.16, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.008, "merT": 0.008, "merN": 0.008,
+        "allocR": 0.55, "allocT": 0.65, "allocN": 0.50,
+        "goals": [
+          { "desc": "Cottage in Muskoka", "amount": 425000, "age": 60 }
+        ]
+      }
+    },
+    {
+      "id": "single_parent_qc",
+      "lang": "fr",
+      "mode": "standard",
+      "sku": "bilan",
+      "nSim": 2000,
+      "finLiteracy": "beginner",
+      "stressLevel": "moderate",
+      "detailPref": "balanced",
+      "client": {
+        "name": "Amélie Côté",
+        "firstName": "Amélie",
+        "email": "amelie.cote@example.com"
+      },
+      "params": {
+        "age": 44, "retAge": 65, "deathAge": 90, "sex": "F", "prov": "QC",
+        "sal": 68000, "rrsp": 52000, "tfsa": 28000, "nr": 8000,
+        "rrspC": 4200, "tfsaC": 2500, "nrC": 0,
+        "retSpM": 4200,
+        "qppAge": 65, "oasAge": 65, "avgE": 64000, "qppYrs": 18,
+        "family": [
+          { "name": "Léa", "age": 11, "type": "child" },
+          { "name": "Tom", "age": 8, "type": "child" }
+        ],
+        "wStrat": "standard",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.14, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.013, "merT": 0.013, "merN": 0.013,
+        "allocR": 0.55, "allocT": 0.60, "allocN": 0.50,
+        "goals": [
+          { "desc": "REEE pour les deux enfants (études)", "amount": 80000, "age": 56 }
+        ]
+      }
+    },
+    {
+      "id": "govt_db_couple_ab",
+      "lang": "en",
+      "mode": "expert",
+      "sku": "planner",
+      "nSim": 2000,
+      "finLiteracy": "intermediate",
+      "stressLevel": "low",
+      "detailPref": "detailed",
+      "client": {
+        "name": "Robert Anderson",
+        "firstName": "Robert",
+        "spouseFirstName": "Jennifer",
+        "email": "robert.anderson@example.com"
+      },
+      "params": {
+        "age": 60, "retAge": 62, "deathAge": 91, "sex": "M", "prov": "AB",
+        "sal": 128000, "rrsp": 215000, "tfsa": 88000, "nr": 42000,
+        "cOn": true, "cAge": 58, "cRetAge": 60, "cSex": "F",
+        "cSal": 96000, "cRRSP": 168000, "cTFSA": 72000, "cNR": 18000,
+        "retSpM": 6800, "cRetSpM": 0,
+        "qppAge": 65, "oasAge": 65, "cQppAge": 65, "cOasAge": 65,
+        "avgE": 128000, "qppYrs": 35, "cAvgE": 96000, "cQppYrs": 32,
+        "penType": "db", "penM": 4200, "penIdx": true,
+        "split": true, "splitP": 0.5,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.14, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.008, "merT": 0.008, "merN": 0.008,
+        "allocR": 0.50, "allocT": 0.60, "allocN": 0.40,
+        "goals": [
+          { "desc": "Annual snowbird trip to Arizona", "amount": 18000, "age": 64 }
+        ]
+      }
+    },
+    {
+      "id": "late_starter_bc",
+      "lang": "fr",
+      "mode": "standard",
+      "sku": "bilan",
+      "nSim": 2000,
+      "finLiteracy": "intermediate",
+      "stressLevel": "high",
+      "detailPref": "balanced",
+      "client": {
+        "name": "Jean-Marc Bouchard",
+        "firstName": "Jean-Marc",
+        "email": "jm.bouchard@example.com"
+      },
+      "params": {
+        "age": 51, "retAge": 67, "deathAge": 89, "sex": "M", "prov": "BC",
+        "sal": 88000, "rrsp": 38000, "tfsa": 22000, "nr": 12000,
+        "rrspC": 12000, "tfsaC": 5000, "nrC": 0,
+        "retSpM": 4800,
+        "qppAge": 67, "oasAge": 70, "avgE": 76000, "qppYrs": 22,
+        "wStrat": "optimized",
+        "goP": 1.0, "slP": 0.85, "noP": 0.7,
+        "eqRet": 0.06, "eqVol": 0.15, "bndRet": 0.035, "bndVol": 0.06,
+        "inf": 0.021, "fatT": true, "stochInf": true, "stochMort": false,
+        "merR": 0.011, "merT": 0.011, "merN": 0.011,
+        "allocR": 0.65, "allocT": 0.70, "allocN": 0.55
       }
     }
   ]

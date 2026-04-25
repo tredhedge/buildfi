@@ -1,0 +1,19 @@
+{
+  "findings": [],
+  "blockers": [],
+  "majors": [],
+  "minors": [],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": []
+  },
+  "can_ship": true,
+  "blocker_count": 0,
+  "major_count": 0,
+  "minor_count": 0
+}

@@ -46,7 +46,17 @@
     var x = function(i) { return ml + i / Math.max(1, data.length - 1) * w; };
     var y = function(v) { return mt + h2 - (v - yMin) / yRange * h2; };
 
-    var svg = '<svg role="img"' + (opts.title ? ' aria-label="' + opts.title + '"' : '') + ' xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0">';
+    // Tooltip payload — pass full row keyed by age so report-tooltip.js can
+    // surface each series value at hover. Filters out non-numeric fields.
+    var _areaDataJson = JSON.stringify(data.map(function(r) {
+      var pt = { age: r.age };
+      keys.forEach(function(k, ki) {
+        if (typeof r[k] === 'number') pt[labels && labels[ki] ? labels[ki] : k] = r[k];
+      });
+      return pt;
+    })).replace(/"/g, '&quot;');
+    var svg = '<svg role="img"' + (opts.title ? ' aria-label="' + opts.title + '"' : '') + ' xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0"' +
+      ' data-bf-chart="area" data-bf-chart-data="' + _areaDataJson + '">';
 
     // Grid lines
     for (var gi = 0; gi <= 4; gi++) {
@@ -143,7 +153,13 @@
     var x = function(i) { return ml + i / Math.max(1, pD.length - 1) * w; };
     var y = function(v) { return mt + h2 - (v - yMin) / yRange * h2; };
 
-    var svg = '<svg role="img"' + (opts.title ? ' aria-label="' + opts.title + '"' : '') + ' xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0">';
+    // Tooltip data — encoded so report-tooltip.js can snap to nearest point
+    // on hover. Keep only the fields the tooltip surfaces (age + percentiles).
+    var _fanDataJson = JSON.stringify(pD.map(function(r) {
+      return { age: r.age, p25: r.p25, p50: r.p50, p75: r.p75 };
+    })).replace(/"/g, '&quot;');
+    var svg = '<svg role="img"' + (opts.title ? ' aria-label="' + opts.title + '"' : '') + ' xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0"' +
+      ' data-bf-chart="fan" data-bf-chart-data="' + _fanDataJson + '">';
 
     // Grid
     for (var gi = 0; gi <= 4; gi++) {
@@ -238,7 +254,8 @@
 
     var html = '';
 
-    html += '<svg role="img" aria-label="' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + _tH + '" style="display:block;margin:6px 0"><title>' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '</title>';
+    var _tornDataJson = JSON.stringify(factors).replace(/"/g, '&quot;');
+    html += '<svg role="img" aria-label="' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + _tH + '" style="display:block;margin:6px 0" data-bf-chart="tornado" data-bf-chart-data="' + _tornDataJson + '"><title>' + (opts.title || (opts.fr ? 'Analyse de sensibilit\u00e9' : 'Sensitivity analysis')) + '</title>';
     html += '<line x1="250" x2="250" y1="15" y2="' + (_tH - 10) + '" stroke="' + C.gold + '" stroke-width="1" stroke-dasharray="2,2"/>';
 
     factors.forEach(function(s, i) {
@@ -273,7 +290,8 @@
     var n = bins.length;
     var barW = w / n - 1;
 
-    var svg = '<svg role="img" aria-label="' + (opts.title || 'Histogram') + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0">';
+    var _histDataJson = JSON.stringify(bins.map(function(b) { return { lo: b.lo, hi: b.hi, count: b.count }; })).replace(/"/g, '&quot;');
+    var svg = '<svg role="img" aria-label="' + (opts.title || 'Histogram') + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0" data-bf-chart="histogram" data-bf-chart-data="' + _histDataJson + '">';
 
     // Y-axis gridlines (visual reference — counts are approximate)
     for (var gi = 1; gi <= 3; gi++) {

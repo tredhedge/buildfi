@@ -33,6 +33,19 @@ global.document = { getElementById: () => null, querySelectorAll: () => [], acti
 Object.defineProperty(global, 'navigator', { value: { clipboard: { writeText: () => Promise.resolve() } }, writable: true, configurable: true });
 
 const reportDir = path.join(__dirname, '..');
+
+// Pre-load client-side modules as source strings so report-pdf.js can inline
+// them in the generated self-contained HTML. Must be set BEFORE report-pdf.js
+// is eval'd (it reads window.BF_*_JS at module scope).
+function _readOptional(name) {
+  try { return fs.readFileSync(path.join(reportDir, name), 'utf8'); } catch (e) { return ''; }
+}
+global.window.BF_INTERACTIVE_JS = _readOptional('report-interactive.js');
+global.window.BF_TOOLTIP_JS     = _readOptional('report-tooltip.js');
+global.window.BF_ENGINE_JS      = _readOptional('report-engine.js');
+global.window.BF_WHATIF_JS      = _readOptional('report-whatif.js');
+global.window.BF_GLOSSARY_JS    = _readOptional('report-glossary.js');
+
 ['report-formatters.js', 'report-data.js', 'report-charts.js', 'report-actions.js', 'report-pdf.js', 'report-ai-prompt.js'].forEach(f => {
   const code = fs.readFileSync(path.join(reportDir, f), 'utf8');
   try { eval(code); } catch (e) { console.error(`Failed to load ${f}:`, e.message); process.exit(1); }
@@ -70,10 +83,17 @@ function preparePayload(prof) {
   // AI a number with no engine basis. Real implementation will come from gen-real-mc
   // running a second MC with wStrat='standard' and emitting it on the payload.
   // Until then: no taxAlpha in prompt, no fabricated tax-alpha KPI.
+  // sku → includeSimulator flag. Bilan SKU embeds the live What-If; Planner
+  // SKU points readers back to the live Planner tool instead. Default is
+  // 'bilan' (includeSimulator=true) when sku is unspecified, since legacy
+  // profiles predate the flag.
+  const includeSim = (prof.sku || 'bilan') === 'bilan';
   return {
     params: prof.params, mc: mc, client: prof.client,
     rptLang: prof.lang, rptMode: prof.mode || 'standard',
-    finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref
+    finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref,
+    sku: prof.sku || 'bilan',
+    includeSimulator: includeSim
   };
 }
 
@@ -110,32 +130,46 @@ if (cmd === 'dump') {
 }
 
 if (cmd === 'render') {
-  console.log('Rendering reports with real AI responses...');
-  let ok = 0, missing = 0;
+  console.log('Rendering reports...');
+  let ok = 0, fallback = 0, errored = 0;
   PROFILES.forEach(prof => {
+    let mcExists;
+    try { loadRealMC(prof.id, prof.lang); mcExists = true; } catch (e) { mcExists = false; }
+    if (!mcExists) {
+      console.log('  ⨯ ' + prof.id + '_' + prof.lang + ' — missing MC payload (run gen-real-mc.mjs)');
+      errored++;
+      return;
+    }
     const respPath = path.join(__dirname, 'responses', prof.id + '_' + prof.lang + '.json');
-    if (!fs.existsSync(respPath)) {
-      console.log('  ⨯ ' + prof.id + '_' + prof.lang + ' — no response file at ' + respPath);
-      missing++;
-      return;
+    let responseJson = {};
+    let usedFallback = false;
+    if (fs.existsSync(respPath)) {
+      try { responseJson = JSON.parse(fs.readFileSync(respPath, 'utf8')); }
+      catch (e) {
+        console.log('  ⚠ ' + prof.id + '_' + prof.lang + ' — response JSON parse error, using deterministic fallback');
+        responseJson = {};
+        usedFallback = true;
+      }
+    } else {
+      usedFallback = true;
     }
-    const responseRaw = fs.readFileSync(respPath, 'utf8');
-    let responseJson;
-    try { responseJson = JSON.parse(responseRaw); } catch (e) {
-      console.log('  ⨯ ' + prof.id + '_' + prof.lang + ' — response JSON parse error: ' + e.message);
-      missing++;
-      return;
+    try {
+      const data = preparePayload(prof);
+      data.ai = responseJson;
+      const html = buildReport(data);
+      const fname = prof.id + '_' + prof.lang + '.html';
+      fs.writeFileSync(path.join(__dirname, 'output', fname), html, 'utf8');
+      const tag = usedFallback ? ' (deterministic fallback)' : '';
+      console.log('  ✓ ' + fname + ' (' + Math.round(html.length / 1024) + ' KB)' + tag + ' [sku=' + (prof.sku || 'bilan') + ']');
+      if (usedFallback) fallback++;
+      ok++;
+    } catch (e) {
+      console.log('  ⨯ ' + prof.id + '_' + prof.lang + ' — render error: ' + e.message);
+      errored++;
     }
-    const data = preparePayload(prof);
-    data.ai = responseJson;
-    const html = buildReport(data);
-    const fname = prof.id + '_' + prof.lang + '.html';
-    fs.writeFileSync(path.join(__dirname, 'output', fname), html, 'utf8');
-    console.log('  ✓ ' + fname + ' (' + Math.round(html.length / 1024) + ' KB)');
-    ok++;
   });
-  console.log('\nDone. ' + ok + '/' + PROFILES.length + ' rendered, ' + missing + ' missing responses.');
-  process.exit(missing > 0 ? 1 : 0);
+  console.log('\nDone. ' + ok + '/' + PROFILES.length + ' rendered (' + fallback + ' deterministic, ' + (ok - fallback) + ' with AI), ' + errored + ' errors.');
+  process.exit(errored > 0 ? 1 : 0);
 }
 
 console.error('Unknown command. Use: dump | render');

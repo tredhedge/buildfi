@@ -1,0 +1,345 @@
+{
+  "profile": {
+    "id": "govt_db_couple_ab",
+    "lang": "en",
+    "sku": "planner",
+    "mode": "expert",
+    "finLiteracy": "intermediate",
+    "stressLevel": "low",
+    "detailPref": "detailed",
+    "params": {
+      "age": 60,
+      "retAge": 62,
+      "deathAge": 91,
+      "sex": "M",
+      "prov": "AB",
+      "sal": 128000,
+      "rrsp": 215000,
+      "tfsa": 88000,
+      "nr": 42000,
+      "cOn": true,
+      "cAge": 58,
+      "cRetAge": 60,
+      "cSex": "F",
+      "cSal": 96000,
+      "cRRSP": 168000,
+      "cTFSA": 72000,
+      "cNR": 18000,
+      "retSpM": 6800,
+      "cRetSpM": 0,
+      "qppAge": 65,
+      "oasAge": 65,
+      "cQppAge": 65,
+      "cOasAge": 65,
+      "avgE": 128000,
+      "qppYrs": 35,
+      "cAvgE": 96000,
+      "cQppYrs": 32,
+      "penType": "db",
+      "penM": 4200,
+      "penIdx": true,
+      "split": true,
+      "splitP": 0.5,
+      "wStrat": "optimized",
+      "goP": 1,
+      "slP": 0.85,
+      "noP": 0.7,
+      "eqRet": 0.06,
+      "eqVol": 0.14,
+      "bndRet": 0.035,
+      "bndVol": 0.06,
+      "inf": 0.021,
+      "fatT": true,
+      "stochInf": true,
+      "stochMort": false,
+      "merR": 0.008,
+      "merT": 0.008,
+      "merN": 0.008,
+      "allocR": 0.5,
+      "allocT": 0.6,
+      "allocN": 0.4,
+      "goals": [
+        {
+          "desc": "Annual snowbird trip to Arizona",
+          "amount": 18000,
+          "age": 64
+        }
+      ]
+    }
+  },
+  "canonical": {
+    "success_rate": 0.998,
+    "p25_wealth_real": 205749.1611486422,
+    "p50_wealth_real": 326664.2442826277,
+    "p75_wealth_real": 498369.8424007445,
+    "gov_coverage_only": 0.3383143141645158,
+    "guaranteed_income_coverage": 0.8200342773302012,
+    "monthly_gap": 1569.0776654676058,
+    "oas_clawback_years": null,
+    "lifetime_tax_real": null,
+    "gis_plausibility": false
+  },
+  "sections": [
+    {
+      "id": "sec-letter",
+      "title": "sec-letter",
+      "bytes": 10033,
+      "offset": 14234,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-assessment",
+      "title": "☆Your plan in 30 seconds",
+      "bytes": 3511,
+      "offset": 24267,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-diagnostic",
+      "title": "1Executive Summary",
+      "bytes": 4048,
+      "offset": 27778,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-levers",
+      "title": "2What Could Change This Plan",
+      "bytes": 1515,
+      "offset": 31826,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-profile",
+      "title": "3Your Profile",
+      "bytes": 6639,
+      "offset": 33341,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-goals",
+      "title": "4Your Goals",
+      "bytes": 2493,
+      "offset": 39980,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-projection",
+      "title": "5Wealth Projection",
+      "bytes": 22906,
+      "offset": 42473,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-revenue",
+      "title": "6Retirement Income",
+      "bytes": 19274,
+      "offset": 65379,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-risk",
+      "title": "7Risk & Sensitivity",
+      "bytes": 4196,
+      "offset": 84653,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-stress",
+      "title": "8Stress tests",
+      "bytes": 2979,
+      "offset": 88849,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-cashflow",
+      "title": "9Year-by-year cash flow",
+      "bytes": 2064,
+      "offset": 91828,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-tax",
+      "title": "10Tax Strategy",
+      "bytes": 9449,
+      "offset": 93892,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-draworder",
+      "title": "11Draw-order strategy",
+      "bytes": 9250,
+      "offset": 103341,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-succession",
+      "title": "12Estate",
+      "bytes": 1829,
+      "offset": 112591,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-actions",
+      "title": "13Action plan",
+      "bytes": 5148,
+      "offset": 114420,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-methodology",
+      "title": "14Methodology",
+      "bytes": 2417,
+      "offset": 119568,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-assumptions",
+      "title": "15Appendix — Assumptions",
+      "bytes": 3108,
+      "offset": 121985,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-glossary",
+      "title": "16Glossary",
+      "bytes": 7351,
+      "offset": 125093,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-signature",
+      "title": "sec-signature",
+      "bytes": 268120,
+      "offset": 132444,
+      "isThin": false,
+      "isEmpty": false
+    }
+  ],
+  "charts": [
+    {
+      "type": "area",
+      "title": "Wealth Composition",
+      "offset": 42876
+    },
+    {
+      "type": "fan",
+      "title": "Monte Carlo Projection",
+      "offset": 53405
+    },
+    {
+      "type": "area",
+      "title": "Income Sources Over Time",
+      "offset": 70654
+    },
+    {
+      "type": "tornado",
+      "title": "Parameter Sensitivity",
+      "offset": 86261
+    },
+    {
+      "type": "fan",
+      "title": null,
+      "offset": 333583
+    }
+  ],
+  "percentages": [
+    {
+      "pct": 84,
+      "context": "Government income covers",
+      "offset": 27568
+    },
+    {
+      "pct": 42,
+      "context": "non-registered, and",
+      "offset": 33527
+    },
+    {
+      "pct": 15,
+      "context": "ive-bracket provincial tax structure with a maximum rate of",
+      "offset": 94273
+    },
+    {
+      "pct": 2,
+      "context": "MER deducts roughly",
+      "offset": 102621
+    },
+    {
+      "pct": 50,
+      "context": "pension income splitting at",
+      "offset": 103062
+    },
+    {
+      "pct": 75,
+      "context": "of Monte Carlo simulations end below this level,",
+      "offset": 129777
+    },
+    {
+      "pct": 25,
+      "context": "of simulations end below this level,",
+      "offset": 130173
+    },
+    {
+      "pct": 50,
+      "context": "Tax mechanism allowing up to",
+      "offset": 130370
+    },
+    {
+      "pct": 60,
+      "context": "monitor closely, under",
+      "offset": 132116
+    },
+    {
+      "pct": 75,
+      "context": "des simulations Monte Carlo terminent sous ce niveau,",
+      "offset": 384744
+    },
+    {
+      "pct": 75,
+      "context": "of Monte Carlo simulations end below this level,",
+      "offset": 384923
+    },
+    {
+      "pct": 25,
+      "context": "des simulations terminent sous ce niveau,",
+      "offset": 385443
+    },
+    {
+      "pct": 25,
+      "context": "of simulations end below this level,",
+      "offset": 385610
+    },
+    {
+      "pct": 60,
+      "context": "à surveiller, sous",
+      "offset": 386346
+    },
+    {
+      "pct": 60,
+      "context": "monitor closely, under",
+      "offset": 386560
+    },
+    {
+      "pct": 50,
+      "context": "'Tax mechanism allowing up to",
+      "offset": 393275
+    }
+  ]
+}
