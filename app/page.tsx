@@ -602,9 +602,18 @@ function StickyBar({ cl, theme, t, lang }: any) {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 600);
+    const onScroll = () => {
+      const scrolled = window.scrollY;
+      const distFromBottom = document.documentElement.scrollHeight - (scrolled + window.innerHeight);
+      setVisible(scrolled > 600 && distFromBottom > 700);
+    };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
   if (dismissed || !visible) return null;
   return (
@@ -808,7 +817,7 @@ function Footer({ cl, lang, t }: any) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 24, marginBottom: 28 }}>
           <div>
             <div style={{ color: cl.ac, fontWeight: 900, fontSize: 20, letterSpacing: -0.5, marginBottom: 8 }}>BuildFi</div>
-            <div style={{ fontSize: 12, color: cl.dm, lineHeight: 1.6 }}>{lang === "fr" ? "Planification retraite canadienne bilingue. Québec-first." : "Bilingual Canadian retirement planning. Quebec-first."}</div>
+            <div style={{ fontSize: 12, color: cl.dm, lineHeight: 1.6 }}>{lang === "fr" ? "Planification retraite pan-canadienne bilingue." : "Bilingual pan-Canadian retirement planning."}</div>
           </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: cl.dm, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>{t.footerLegal}</div>
@@ -893,7 +902,6 @@ function HomeInner() {
       <FAQ cl={cl} t={t} />
       <CTABottom cl={cl} theme={theme} t={t} lang={lang} />
       <Footer cl={cl} lang={lang} t={t} />
-      <StickyBar cl={cl} theme={theme} t={t} lang={lang} />
     </div>
   );
 }
