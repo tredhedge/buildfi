@@ -132,8 +132,8 @@ const COPY = {
     freeTitle: "Déjà gratuit — aucun courriel requis",
     freeSub: "Jouez avec vos chiffres avant d'acheter. Tout est local, rien n'est envoyé.",
     freeTools: [
-      { t: "Guide 101 — Les bases", b: "Valeur nette, budget, dette, REER vs CELI, crédit. 4 calculateurs.", href: "/guides/101", tag: "Gratuit" },
-      { t: "Guide 201 — Optimiser la retraite", b: "Retrait optimal, récupération PSV, RRQ/RPC, fractionnement, frais. 5 calculateurs + bonus 301 (CCPC, Smith, meltdown).", href: "/guides/201", tag: "Gratuit" },
+      { t: "Guide 101 — Les bases", b: "4 mini-calculateurs interactifs : valeur nette, budget, piège du crédit, intérêts composés. Plus REER vs CELI, dette, gouvernement.", href: "/guides/101", tag: "4 calculateurs" },
+      { t: "Guide 201 — Optimiser la retraite", b: "5 mini-calculateurs interactifs : décaissement, PSV, RRQ/RPC, fractionnement, frais. Bonus 301 : CCPC, Smith, meltdown REER.", href: "/guides/201", tag: "5 calculateurs" },
       { t: "Calculateur de dettes", b: "Avalanche vs snowball, consolidation, rembourser ou investir. Multi-provinces, couple, hypothèques.", href: "/outils/dettes", tag: "Gratuit" },
       { t: "Simulateur de décaissement", b: "Projection déterministe de votre portefeuille à la retraite. Durabilité, couverture garantie, taux de retrait.", href: "/outils/decaissement", tag: "Gratuit" },
     ],
@@ -315,8 +315,8 @@ const COPY = {
     freeTitle: "Already free — no email required",
     freeSub: "Play with your numbers before buying. Everything runs locally, nothing is sent.",
     freeTools: [
-      { t: "Guide 101 — The basics", b: "Net worth, budget, debt, RRSP vs TFSA, credit. 4 calculators.", href: "/guides/101?lang=en", tag: "Free" },
-      { t: "Guide 201 — Optimize retirement", b: "Optimal withdrawal, OAS clawback, QPP/CPP timing, splitting, fees. 5 calculators + bonus 301 (CCPC, Smith, meltdown).", href: "/guides/201?lang=en", tag: "Free" },
+      { t: "Guide 101 — The basics", b: "4 interactive mini-calculators: net worth, budget, credit-card trap, compound interest. Plus RRSP vs TFSA, debt, government programs.", href: "/guides/101?lang=en", tag: "4 calculators" },
+      { t: "Guide 201 — Optimize retirement", b: "5 interactive mini-calculators: withdrawal, OAS clawback, QPP/CPP timing, splitting, fees. Bonus 301: CCPC, Smith, RRSP meltdown.", href: "/guides/201?lang=en", tag: "5 calculators" },
       { t: "Debt calculator", b: "Avalanche vs snowball, consolidation, repay or invest. Multi-province, couple, mortgages.", href: "/outils/dettes?lang=en", tag: "Free" },
       { t: "Decumulation simulator", b: "Deterministic projection of your retirement portfolio. Sustainability, guaranteed coverage, withdrawal rate.", href: "/outils/decaissement?lang=en", tag: "Free" },
     ],
