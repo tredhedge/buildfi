@@ -844,10 +844,289 @@
     return h;
   }
 
+  // Phase 1 (premium shell): contextual hero KPI.
+  // The codex spec calls for the first visual focal point of the diagnostic
+  // to match the case, not always success-rate. Per-archetype mapping:
+  //   decum     → income durability ("Through age 92" or depletion year)
+  //   transition→ readiness gap ("3 years to retirement, X% confidence")
+  //   fire      → bridge-period coverage ("Bridge years covered: 12")
+  //   accum     → trajectory snapshot ("On track for $X.XM at retirement")
+  // Tag overlays add a tax/legacy/low-income spin where they out-rank phase:
+  //   tax_heavy → "Lifetime tax saved" when meaningful tax_alpha exists
+  //   low_income→ "Gov. coverage of target spending"
+  //   legacy    → "Median estate to heirs"
+  // Fallback: success rate (always defendable). The HERO surfaces ONE value
+  // dominantly; the existing g5/g6 KPI grid stays below as supporting data.
+  function _heroKPI(d, arch) {
+    var fr = d.fr, p = d.p || {}, mc = d.mc || {};
+    var f$ = F.fmtCompact;
+    var phase = arch.phase, tags = arch.tags || [];
+    var hasTax = tags.indexOf('tax_heavy') >= 0;
+    var hasLowInc = tags.indexOf('low_income') >= 0;
+    var hasLegacy = tags.indexOf('legacy') >= 0;
+    var hasCcpc = tags.indexOf('ccpc') >= 0;
+    var taxAlpha = +(d._taxAlpha || 0);
+    var medEstate = +(mc.medEstateNet || 0);
+    var corpVal = +(p.bizRetainedEarnings || p.corp || p.ccpc || p.corpVal || 0);
+    var govCovPct = null;
+    if (Array.isArray(d.medRevData) && d.medRevData.length) {
+      var retYrs = d.medRevData.filter(function(r){ return r.age >= (p.retAge||65); });
+      if (retYrs.length) {
+        var govSum = retYrs.reduce(function(s,r){ return s+(+r.rrq||0)+(+r.psv||0)+(+r.pen||0); }, 0);
+        var spendSum = retYrs.reduce(function(s,r){ return s+(+r.spend||0); }, 0);
+        if (spendSum > 0) govCovPct = Math.round(govSum/spendSum*100);
+      }
+    }
+    var succPct = (d.succVal != null) ? Math.round(d.succVal * 100) : null;
+    var sC = F.succColor(d.succVal);
+
+    var label, value, sub, color;
+    color = '#252d39';
+    // Overlay precedence (most-specific first):
+    //   tax_heavy with meaningful $ savings → "Lifetime tax savings"
+    //   low_income → "Government coverage of target spending"
+    //   ccpc owner with corp > $50K → "Corporation value extracted into your plan"
+    //   legacy with positive estate → "Median estate to heirs"
+    // Then phase fallback.
+    if (hasTax && taxAlpha >= 25000) {
+      label = fr ? 'Économies fiscales sur la durée du plan' : 'Lifetime tax savings under this plan';
+      value = f$(Math.round(taxAlpha));
+      sub = fr ? 'vs. une stratégie de retrait standard' : 'vs. a standard withdrawal strategy';
+      color = '#2a8c46';
+    } else if (hasLowInc && govCovPct != null) {
+      label = fr ? 'Revenu gouvernemental couvre vos dépenses cibles' : 'Government income covers your target spending';
+      value = govCovPct + '%';
+      sub = fr ? 'en moyenne sur la retraite' : 'on average across retirement';
+      color = '#256b88';
+    } else if (hasCcpc && corpVal > 50000) {
+      label = fr ? 'Valeur de votre société à intégrer au plan' : 'Corporation value to integrate into your plan';
+      value = f$(Math.round(corpVal));
+      sub = fr ? 'capital corporatif à transformer en revenu de retraite' : 'corporate capital to convert into retirement income';
+      color = '#256b88';
+    } else if (hasLegacy && medEstate > 0) {
+      label = fr ? 'Patrimoine médian transmis aux héritiers' : 'Median estate to your heirs';
+      value = f$(medEstate);
+      sub = fr ? 'à la fin de la projection (réel)' : 'at end of projection (real $)';
+      color = '#256b88';
+    } else if (phase === 'decum') {
+      var p5r = mc.p5Ruin;
+      if (p5r != null && p5r < 200 && p5r < (p.deathAge || 92)) {
+        label = fr ? 'Vos épargnes tiennent jusqu\'à' : 'Your savings hold through age';
+        value = p5r + (fr ? ' ans' : '');
+        sub = fr ? 'avant que les comptes non gouvernementaux ne s\'épuisent' : 'before non-government accounts deplete';
+        color = '#a85a3a';
+      } else {
+        label = fr ? 'Vos épargnes tiennent jusqu\'à' : 'Your savings hold through age';
+        value = (p.deathAge || 92) + (fr ? ' ans' : '');
+        sub = fr ? 'fin de l\'horizon de projection' : 'end of the projection horizon';
+        color = '#2a8c46';
+      }
+    } else if (phase === 'transition') {
+      var yrsToRet = Math.max(0, (p.retAge || 65) - (p.age || 60));
+      label = fr ? 'Années avant votre retraite' : 'Years until your retirement';
+      value = yrsToRet + (fr ? ' ans' : '');
+      sub = fr
+        ? (succPct != null ? 'avec un taux de succès actuel de ' + succPct + '%' : 'horizon évalué dans ce rapport')
+        : (succPct != null ? 'at a current success rate of ' + succPct + '%' : 'horizon assessed in this report');
+      color = sC;
+    } else if (phase === 'fire') {
+      var qppA = +(p.qppAge || 65);
+      var bridgeYrs = Math.max(0, qppA - (+p.retAge || 50));
+      label = fr ? 'Années avant le RPC/RRQ à couvrir vous-même' : 'Years to self-fund before CPP/QPP';
+      value = bridgeYrs + (fr ? ' ans' : '');
+      sub = fr
+        ? 'la période-pont — du départ en retraite anticipée à l\'arrivée des prestations'
+        : 'the bridge period — from early retirement to the arrival of public benefits';
+      color = '#256b88';
+    } else {
+      // Accumulation fallback: prefer the projected median final wealth — it's
+      // engine output that's always populated. medRevData lookup at retAge can
+      // miss when wealth lives outside the personal-liquid trio (e.g., CCPC).
+      var medFinal = mc.rMedF || mc.medF || 0;
+      var retRow = Array.isArray(d.medRevData)
+        ? d.medRevData.find(function(r){ return r.age === (+p.retAge||65); })
+        : null;
+      var retBal = retRow ? ((+retRow.aRR||0)+(+retRow.aTF||0)+(+retRow.aNR||0)) : 0;
+      var heroBal = retBal > 1000 ? retBal : medFinal;
+      if (heroBal > 1000) {
+        label = retBal > 1000
+          ? (fr ? 'Patrimoine projeté à votre retraite' : 'Projected wealth at your retirement')
+          : (fr ? 'Patrimoine médian projeté à long terme' : 'Long-run median projected wealth');
+        value = f$(heroBal);
+        sub = fr ? 'scénario médian (dollars réels)' : 'median scenario (real dollars)';
+        color = '#256b88';
+      }
+      // else fall through to success-rate fallback below.
+    }
+    if (label == null || value == null) {
+      label = fr ? 'Taux de succès du plan' : 'Plan success rate';
+      value = (succPct != null) ? succPct + '%' : '—';
+      sub = fr ? 'sur ' + ((p.deathAge || 90) - (p.age || 35)) + ' ans modélisés' : 'over ' + ((p.deathAge || 90) - (p.age || 35)) + ' modeled years';
+      color = sC;
+    }
+    return '<div class="bf-hero-kpi" style="margin:6px 0 18px;padding:24px 28px;border:1px solid #e8e0d4;border-left:4px solid ' + color + ';border-radius:6px;background:#fdfbf6">' +
+      '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#8a7a5c;margin-bottom:10px">' + F.esc(label) + '</div>' +
+      '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:42px;font-weight:600;color:' + color + ';line-height:1.05;letter-spacing:-0.5px">' + value + '</div>' +
+      (sub ? '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:13.5px;font-style:italic;color:#5a4f3a;line-height:1.5;margin-top:10px">' + F.esc(sub) + '</div>' : '') +
+      '</div>';
+  }
+
+  // Phase 1 (premium shell): chapter cover renderer.
+  // The codex spec mandates a 5-chapter product model:
+  //   Ch.1  Your plan at a glance       (assessment + diagnostic)
+  //   Ch.2  Why this plan works         (situation + trajectory)
+  //   Ch.3  Risks and tradeoffs         (stress + sensitivity + risk)
+  //   Ch.4  Explore alternatives        (the what-if mount)
+  //   Ch.5  Appendix                    (methodology + glossary)
+  // Chapter covers carry: eyebrow ("Chapitre N"), chapter title, single
+  // 1-line frame. Force a page break before each so the cover acts as a
+  // visual reset rather than another stacked section. The frame line is
+  // deterministic per chapter; archetype overlays may refine it later.
+  function _renderChapterCover(num, title, frame, fr) {
+    return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:80px 24px 40px;border-top:1px solid #e8e0d4;margin:48px 0 20px;text-align:center">' +
+      '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:3px;color:#a89460;text-transform:uppercase;margin-bottom:14px">' +
+        F.esc((fr ? 'Chapitre ' : 'Chapter ') + num) +
+      '</div>' +
+      '<div class="bf-chapter-title" style="font-family:\"Playfair Display\",Georgia,serif;font-size:34px;font-weight:600;color:#252d39;line-height:1.18;letter-spacing:-0.4px;margin:0 auto 18px;max-width:640px">' +
+        F.esc(title) +
+      '</div>' +
+      '<div class="bf-chapter-frame" style="font-family:\"Playfair Display\",Georgia,serif;font-size:14px;font-style:italic;color:#5a4f3a;line-height:1.55;max-width:520px;margin:0 auto">' +
+        F.esc(frame) +
+      '</div>' +
+      '</div>';
+  }
+
+  // Chapter copy is deterministic per locale + chapter index. Frame lines
+  // are single-sentence implications, never mechanism descriptions. Codex
+  // mandate: editorial pacing, not signposting.
+  function _chapterCopy(idx, fr, arch) {
+    var couple = arch && arch.tags && arch.tags.indexOf('couple') >= 0;
+    if (fr) {
+      switch (idx) {
+        case 1: return { title: 'Votre plan en un coup d\u2019\u0153il',
+                         frame: 'L\u2019essentiel \u2014 le cap, la vigueur du plan, et les deux ou trois leviers qui comptent.' };
+        case 2: return { title: 'Pourquoi ce plan tient la route',
+                         frame: couple
+                           ? 'Vos piliers communs, la trajectoire patrimoniale et les sources de revenu qui composent votre plan.'
+                           : 'Vos piliers structurels, la trajectoire patrimoniale et les sources de revenu qui composent votre plan.' };
+        case 3: return { title: 'Risques et compromis',
+                         frame: 'O\u00f9 le plan est sensible, comment il r\u00e9siste aux chocs, et quels arbitrages restent les v\u00f4tres.' };
+        case 4: return { title: 'Explorer des alternatives',
+                         frame: 'Quelques d\u00e9cisions concr\u00e8tes pour voir comment votre plan r\u00e9agit \u2014 votre plan de r\u00e9f\u00e9rence reste intact.' };
+        case 5: return { title: 'Annexe',
+                         frame: 'M\u00e9thode, hypoth\u00e8ses techniques, et le glossaire des termes utilis\u00e9s dans ce rapport.' };
+        default: return { title: '', frame: '' };
+      }
+    }
+    switch (idx) {
+      case 1: return { title: 'Your plan at a glance',
+                       frame: 'The essentials \u2014 the direction, the plan\u2019s strength, and the two or three levers that matter.' };
+      case 2: return { title: 'Why this plan works',
+                       frame: couple
+                         ? 'Your shared pillars, the wealth trajectory, and the income sources that make up your plan.'
+                         : 'Your structural pillars, the wealth trajectory, and the income sources that make up your plan.' };
+      case 3: return { title: 'Risks and tradeoffs',
+                       frame: 'Where the plan is sensitive, how it holds up under shocks, and which tradeoffs remain yours to make.' };
+      case 4: return { title: 'Explore alternatives',
+                       frame: 'A few concrete decisions to see how your plan responds \u2014 your baseline plan stays intact.' };
+      case 5: return { title: 'Appendix',
+                       frame: 'Method, technical assumptions, and the glossary of terms used in this report.' };
+      default: return { title: '', frame: '' };
+    }
+  }
+
+  // Phase 1 (premium shell): archetype inference from user inputs.
+  // Drives cover promise + contextual hero KPI + chapter framing copy.
+  // The classifier only sees finLiteracy/stressLevel/detailPref; archetype
+  // is a SEPARATE axis derived from the actual financial situation. Must
+  // generalize from arbitrary user-filled forms, not from dev profiles.
+  //
+  // Primary axis (life-phase):
+  //   decum     — already retired or at/past retAge
+  //   transition — within 7 years of retirement AND age >= 52
+  //   fire      — retiring before 55 AND a bridge gap exists (pre-CPP)
+  //   accum     — fallback (saving for a 60+ retirement)
+  //
+  // Secondary overlays (mutually compatible — archetype.tags[]):
+  //   couple    — p.cOn=true
+  //   ccpc      — p.corp / p.ccpc / corp_overlay signals
+  //   tax_heavy — likely OAS clawback (taxIncome > clawback threshold)
+  //   legacy    — explicit estate goals OR no_heir signal
+  //   low_income — gov benefits dominate income mix (gis-eligible band)
+  function _inferArchetype(d) {
+    var p = d.p || {};
+    var age = +p.age || 65;
+    var retAge = +p.retAge || age;
+    var deathAge = +p.deathAge || 92;
+    var yrsToRet = retAge - age;
+    var phase;
+    if (yrsToRet <= 0) phase = 'decum';
+    else if (yrsToRet <= 7 && age >= 52) phase = 'transition';
+    else if (retAge < 55 && yrsToRet >= 1) phase = 'fire';
+    else phase = 'accum';
+    var tags = [];
+    if (p.cOn) tags.push('couple');
+    // CCPC detection — engine field is bizOn+bizType='ccpc' (planner SKU);
+    // legacy fields (corp/ccpc/corpVal) preserved for forward-compat.
+    var corpVal = +(p.bizRetainedEarnings || p.corp || p.ccpc || p.corpVal || 0);
+    var hasCcpcBiz = (p.bizOn && (p.bizType === 'ccpc' || p.bizType === 'CCPC')) || corpVal > 0;
+    if (hasCcpcBiz) tags.push('ccpc');
+    var totalLiquid = (+p.rrsp || 0) + (+p.tfsa || 0) + (+p.nr || 0) + (+p.lira || 0)
+                    + (+p.cRRSP || 0) + (+p.cTFSA || 0) + (+p.cNR || 0);
+    var baseSal = +p.sal || 0;
+    var basePen = +p.penM ? (p.penM * 12) : 0;
+    var taxableProxy = baseSal + basePen;
+    var OAS_THR = 95323;
+    if (taxableProxy > OAS_THR * 1.05 || totalLiquid > 1500000) tags.push('tax_heavy');
+    if ((d.R && d.R.hasGoals) || p.estateGoal || p.noHeir) tags.push('legacy');
+    var govLeansHeavy = (basePen + baseSal) < 30000 && totalLiquid < 150000 && phase !== 'accum';
+    if (govLeansHeavy) tags.push('low_income');
+    return { phase: phase, tags: tags };
+  }
+
+  // Deterministic, archetype-keyed cover promise. ONE per archetype phase.
+  // Tags can refine but the family stays small: codex constraint is a
+  // controllable template family, not a per-case AI line. Couple variants
+  // tweak pronouns where natural; otherwise the phase line speaks to both.
+  function _coverPromise(arch, fr) {
+    var phase = arch.phase;
+    var couple = arch.tags && arch.tags.indexOf('couple') >= 0;
+    if (fr) {
+      switch (phase) {
+        case 'decum':
+          return couple
+            ? 'Une stratégie pour transformer votre patrimoine commun en revenus de retraite fiables.'
+            : 'Une stratégie pour transformer un patrimoine solide en revenus de retraite fiables.';
+        case 'transition':
+          return 'Une trajectoire pour protéger votre flexibilité et renforcer votre revenu à vie.';
+        case 'fire':
+          return 'Un chemin vers une retraite anticipée, étayé par une analyse de la période-pont.';
+        case 'accum':
+        default:
+          return 'Un plan discipliné vers la retraite, modélisé sur des milliers d\'avenirs possibles.';
+      }
+    }
+    switch (phase) {
+      case 'decum':
+        return couple
+          ? 'A strategy to turn your shared assets into reliable retirement income.'
+          : 'A strategy to turn strong assets into reliable retirement income.';
+      case 'transition':
+        return 'A trajectory to protect your flexibility and strengthen your lifetime income.';
+      case 'fire':
+        return 'A path toward early retirement, grounded in a bridge-period analysis.';
+      case 'accum':
+      default:
+        return 'A disciplined plan toward retirement, modeled across thousands of possible futures.';
+    }
+  }
+
   function renderCover(d) {
     var fr = d.fr, g = F.grade(d.succVal, fr), sC = F.succColor(d.succVal);
     var cName = (d.client.name || 'Client');
     var cSpouse = d.p.cOn ? (d.client.spouseName || d.p.cSpouseName || '') : '';
+    var arch = _inferArchetype(d);
+    d._archetype = arch; // share with downstream renderers (hero KPI, chapter framing)
     var h = '<div class="cover">';
     h += '<div style="margin-bottom:30px;opacity:0.95">' + logoSvg.replace(/fill="[^"]*"/g, 'fill="#c49a1a"').replace('fill="#c49a1a" opacity="0.6"', 'fill="#c49a1a" opacity="0.5"').replace('fill="#c49a1a" opacity="0.8"', 'fill="#c49a1a" opacity="0.7"') + '</div>';
     h += '<div class="cover-divider"></div>';
@@ -858,11 +1137,14 @@
     var _coverTitle = _isPlain
       ? (fr ? 'Plan financier' : 'Financial Plan')
       : F.L('cover_title', fr);
-    var _coverSub = _isPlain
-      ? (fr ? 'Aper\u00e7u personnalis\u00e9' : 'Personalized snapshot')
-      : F.L('cover_sub', fr);
     h += '<div class="cover-title">' + _coverTitle + '</div>';
-    h += '<div class="cover-subtitle">' + _coverSub + '</div>';
+    // Phase 1 cover-promise: replaces the old uppercase "Personalized snapshot"
+    // tracked-label subtitle with a deterministic archetype-keyed sentence
+    // that articulates WHY this report exists for THIS reader. Same family,
+    // archetype-keyed; never AI-generated (codex 2026-04-27: deterministic,
+    // not AI; safer, consistent, easier to control tone).
+    h += '<div class="cover-promise" style="font-family:\"Playfair Display\",Georgia,serif;font-size:16px;font-style:italic;color:#e8e0d4;line-height:1.5;max-width:520px;margin:18px auto 0;letter-spacing:0.1px">' +
+      F.esc(_coverPromise(arch, fr)) + '</div>';
     h += '<div class="cover-divider"></div>';
     h += '<div style="font-size:13px;color:#bccbe0;margin-top:10px;letter-spacing:0.4px">' + F.L('prepared_for', fr) + '</div>';
     h += '<div class="cover-client">' + F.esc(cName) + (cSpouse ? ' & ' + F.esc(cSpouse) : '') + '</div>';
@@ -1106,7 +1388,15 @@
         : (_nmFull ? _nmFull + ', you' : 'You') + ' are in the accumulation phase, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. Your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> forms the starting point for ' + (p.nSim || 5000) + ' projected scenarios. This report evaluates your wealth trajectory, retirement income adequacy, and available tax levers.' + _coupleNote);
     }
 
-    // KPIs
+    // Phase 1 hero KPI (codex 2026-04-27): one dominant insight per case,
+    // archetype-driven. Tax/legacy/low-income tags can outrank phase. Falls
+    // back to success rate. Sits ABOVE the supporting KPI grid below — the
+    // grid still renders, but visually demoted (the hero owns the focal
+    // point).
+    var _archHero = d._archetype || _inferArchetype(d);
+    h += _heroKPI(d, _archHero);
+
+    // KPIs (supporting grid; hero above is the primary focal point)
     h += '<div class="' + (exp ? 'g6' : 'g5') + '" style="margin-bottom:12px">';
     h += F.KPI('<span class="mono">' + (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%') + '</span>', fr ? 'Taux de succ\u00e8s' : 'Success rate', F.succColor(d.succVal));
     h += F.KPI('<span class="mono">' + f$(mc.rMedF || mc.medF) + '</span>', fr ? 'P50 patrimoine (r\u00e9el)' : 'P50 wealth (real)', C.blue);
@@ -5083,6 +5373,13 @@
     // entirely. This is how the corrected-pass removes invalid GIS sections,
     // duplicates, etc., without requiring a re-run of the engine.
     var secN = 0;
+    // Chapter pacing (Phase 1): codex 5-chapter product model. Forced page
+    // breaks before each chapter cover — codex mandate: spend space, do not
+    // optimize for page count. Soft inline behavior inside chapters.
+    var _arch = d._archetype || _inferArchetype(d);
+    var _isMinReader = _isPlainReader && d.renderProfile && d.renderProfile.densityMode === 'compact';
+    var _ch1 = _chapterCopy(1, d.fr, _arch);
+    h += _renderChapterCover(1, _ch1.title, _ch1.frame, d.fr);
 
     // 0. Overall Assessment (always, before numbered sections)
     h += renderOverallAssessment(d);
@@ -5108,11 +5405,13 @@
       h += renderLevers(d, secN);
     }
 
-    // ─── CH.2 — VOTRE SITUATION (who they are, what they have) ──────────
-    // Profile + family + goals + asset-class deep dives. Asset deep dives
-    // (real estate, corp, RSU, debts) moved up here from late-report so the
-    // archetype's structural pillars appear *before* the trajectory section.
+    // ─── CH.2 — POURQUOI CE PLAN TIENT LA ROUTE ─────────────────────────
+    // Profile + family + goals + asset-class deep dives + projection + revenue.
+    // Asset deep dives (real estate, corp, RSU, debts) sit before trajectory
+    // so the archetype's structural pillars appear *before* the projection.
     // CCPC owners especially benefit: corporation reads as the centerpiece.
+    var _ch2 = _chapterCopy(2, d.fr, _arch);
+    h += _renderChapterCover(2, _ch2.title, _ch2.frame, d.fr);
     secN++;
     h += renderProfile(d, secN);
     if (d.R.hasFamily) { secN++; h += renderFamily(d, secN); }
@@ -5162,6 +5461,18 @@
     //     approximation (not a real second MC run) → suppressed in V1.
     // The risk section's tornado covers the dispersion / sensitivity story.
     // Bilan readers can use the live What-If simulator for exact figures.
+    // ─── CH.3 — RISQUES ET COMPROMIS ────────────────────────────────────
+    // Risk + stress + tradeoffs. Risk section (when not already pulled up
+    // by leadWith='dispersion') lands here as the chapter opener. The
+    // chapter cover precedes risk/stress so the reader sees the visual
+    // reset between trajectory (Ch.2) and risk-narrative (Ch.3). For the
+    // minimal cell (beg+con) we suppress the chapter cover entirely —
+    // those readers don't get stress/risk/sensitivity in the first place,
+    // so the cover would point to nothing.
+    if (!_isMinReader) {
+      var _ch3 = _chapterCopy(3, d.fr, _arch);
+      h += _renderChapterCover(3, _ch3.title, _ch3.frame, d.fr);
+    }
     // Risk + dispersion narrative (expert only) — when leadWith='dispersion'
     // it was already rendered above; otherwise it lands here.
     if (d.exp && !riskLeads) { secN++; h += renderRisk(d, secN); }
@@ -5248,24 +5559,25 @@
     var recapHtml = renderClosingRecap(d, secN + 1);
     if (recapHtml) { secN++; h += recapHtml; }
 
-    // 17.7 What-If simulator — Bilan-only. Planner customers use the live
-    // Planner tool which is more capable than this embedded version.
-    // The depth auditor REQUIRES this section in all simulator-included reports
-    // (depth-simulator-missing blocker), so we keep it visible across all
-    // classifier combos. Plain-mode readers get a softer section heading via
-    // _renderWhatIfMount's classifier-aware language (handled inside that fn).
+    // ─── CH.4 — EXPLORER DES ALTERNATIVES ───────────────────────────────
+    // Chapter cover precedes the what-if mount. Phase 2 will fold the
+    // section heading INTO the chapter cover so the chapter title stands
+    // alone (no double-titling). For now the cover frames the mount.
+    // Suppressed entirely when the mount is suppressed — no orphan cover.
     if (d.includeSimulator !== false) {
+      var _ch4 = _chapterCopy(4, d.fr, _arch);
+      h += _renderChapterCover(4, _ch4.title, _ch4.frame, d.fr);
       h += _renderWhatIfMount(d);
     }
 
-    // ── BACK-MATTER (methodology / assumptions / glossary) ─────────────
-    // For plain readers (beginner+concise / beginner+balanced /
-    // beginner+detailed) we render all three inside ONE collapsed
-    // <details> disclosure — gives access to the depth without forcing
-    // the dense back-matter on a casual reader. For non-plain readers
-    // they render inline (each individually density-collapsed when
-    // compact via _densityWrap).
+    // ─── CH.5 — ANNEXE (methodology / assumptions / glossary) ──────────
+    // Codex 5-chapter product model: appendix material gets its own
+    // chapter cover so it doesn't read as orphaned back-matter at the
+    // tail of the report. Cover only renders when back-matter is shown
+    // (plain non-deep readers omit it entirely → no orphan cover).
     if (_showBackMatter) {
+      var _ch5 = _chapterCopy(5, d.fr, _arch);
+      h += _renderChapterCover(5, _ch5.title, _ch5.frame, d.fr);
       secN++;
       var _methHtml = renderMethodology(d, secN);
       secN++;
