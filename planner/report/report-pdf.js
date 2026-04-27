@@ -383,14 +383,14 @@
       '<div style="margin:14px 0;padding:14px 18px;background:linear-gradient(135deg,#252d39 0%,#344155 100%);border-radius:8px;border-left:4px solid #c49a1a;color:#faf8f4;display:flex;align-items:center;gap:14px;break-inside:avoid">' +
       '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:#c49a1a;flex-shrink:0;line-height:1">⚡</div>' +
       '<div style="flex:1">' +
-        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Simulateur — disponible plus loin dans ce rapport' : 'What-If Simulator — available later in this report') + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Explorer des alternatives — plus loin dans ce rapport' : 'Explore alternatives — later in this report') + '</div>' +
         '<div style="font-family:Inter,sans-serif;font-size:11.5px;color:#e8e0d4;line-height:1.55">' +
-          (fr ? 'Ajustez 12 paramètres (âge de retraite, dépenses, rendement, inflation, MER, allocation…) ou choisissez un scénario rapide (Récession 2008, FIRE, Stagflation…) pour voir comment votre plan réagit. Une nouvelle simulation Monte Carlo (500 scénarios) tourne en direct dans votre navigateur.'
-              : 'Adjust 12 parameters (retirement age, spending, return, inflation, MER, allocation…) or pick a quick scenario (2008 Recession, FIRE, Stagflation…) to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser.') +
+          (fr ? 'Testez quelques décisions concrètes — repousser la retraite, reporter le RPC/RRQ, réduire les frais de gestion — pour voir comment votre plan réagit. Le même modèle qui sous-tend votre plan recalcule chaque scénario, instantanément.'
+              : 'Try concrete decisions — retiring later, delaying CPP/QPP, lowering investment fees — to see how your plan responds. The same model behind your plan re-runs each scenario, instantly.') +
         '</div>' +
       '</div>' +
       '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;text-align:right;line-height:1.5">' +
-        (fr ? 'Voir le<br>simulateur →' : 'Go to<br>simulator →') +
+        (fr ? 'Voir les<br>alternatives →' : 'See the<br>alternatives →') +
       '</div>' +
       '</div></a>';
   }
@@ -427,23 +427,22 @@
     };
     var paramsJson = JSON.stringify(baselineParams).replace(/"/g, '&quot;');
     var h = '<div class="sec-page no-print" id="bf-whatif" data-bf-whatif-params="' + paramsJson + '">';
-    // Plain-mode readers get a beginner-friendly section heading + intro
-    // (no jargon). All other readers keep the technical "What-If" framing
-    // which advisors and intermediate readers expect. The DOM id (sec-whatif)
-    // and data attributes are unchanged so the depth auditor still finds it.
+    // Front-path label policy (Phase 0): "Simulator" / "What-If" terminology
+    // is reserved for internal code/comments only. Client-facing surfaces use
+    // "Explore alternatives" framing. The DOM id (sec-whatif) and data
+    // attributes are unchanged so the depth auditor still finds the mount.
+    // Phase 1 will fold this section into a dedicated "Explore alternatives"
+    // chapter cover; until then, the section heading carries the chapter
+    // name directly.
     var _plain = d.renderProfile && d.renderProfile.jargonMode === 'plain';
-    var _heading = _plain
-      ? (fr ? 'Essayez d\'autres sc\u00e9narios' : 'Try other scenarios')
-      : (fr ? 'Simulateur de sc\u00e9narios' : 'What-If Simulator');
+    var _heading = fr ? 'Explorer des alternatives' : 'Explore alternatives';
     h += F.Sec('?', _heading, 'sec-whatif');
-    var _bannerStrong = _plain
-      ? (fr ? 'Outil interactif.' : 'Interactive tool.')
-      : (fr ? 'Simulateur interactif.' : 'Interactive simulator.');
+    var _bannerStrong = fr ? 'Exploration guidée.' : 'Guided exploration.';
     var _bannerBody = _plain
-      ? (fr ? 'Modifiez quelques param\u00e8tres ci-dessous pour voir comment votre plan r\u00e9agit. Tout reste enregistr\u00e9 sur votre appareil.'
-            : 'Change a few inputs below to see how your plan reacts. Nothing leaves your device.')
-      : (fr ? 'Ajustez les param\u00e8tres ou choisissez un sc\u00e9nario rapide pour voir comment votre plan r\u00e9agit. Une nouvelle simulation Monte Carlo (500 sc\u00e9narios) tourne en direct dans votre navigateur. La narration AI ne change pas \u2014 elle reste calibr\u00e9e sur le plan de base.'
-            : 'Adjust the parameters or pick a quick scenario to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser. AI narration does not change \u2014 it stays calibrated on the baseline plan.');
+      ? (fr ? 'Choisissez un scénario ci-dessous pour voir comment votre plan y réagit. Votre plan de référence ne change pas — vous explorez seulement des alternatives.'
+            : 'Pick a scenario below to see how your plan responds. Your baseline plan does not change — you are simply exploring alternatives.')
+      : (fr ? 'Choisissez un scénario ou ajustez quelques décisions clés pour voir comment votre plan y réagit. Le même modèle qui sous-tend votre plan recalcule chaque alternative, instantanément. Votre plan de référence reste intact.'
+            : 'Pick a scenario or adjust a few key decisions to see how your plan responds. The same model behind your plan re-runs each alternative, instantly. Your baseline plan stays intact.');
     h += '<div class="bf-whatif-banner">' +
       '<strong>' + _bannerStrong + '</strong> ' + _bannerBody +
       '</div>';
@@ -835,8 +834,8 @@
     var _readFurther = _hidesSim
       ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et le plan d\'action proposent des leviers concrets.'
             : 'the advisor letter (p. 2) frames the read, and the diagnostic and action plan propose concrete levers.')
-      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur de sc\u00e9narios permet de tester vos propres hypoth\u00e8ses.'
-            : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the What-If simulator lets you test your own assumptions.');
+      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et la section « Explorer des alternatives » vous permet de tester quelques décisions clés.'
+            : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the "Explore alternatives" section lets you test a few key decisions.');
     h += '<div style="border-top:1px solid rgba(196,154,26,0.25);padding-top:14px;font-size:10.5px;color:#bccbe0;line-height:1.6">' +
       '<strong style="color:#c49a1a;letter-spacing:0.3px">' + (fr ? 'Pour aller plus loin :' : 'Read further:') + '</strong> ' +
       _readFurther +
@@ -4015,8 +4014,8 @@
       // the reader cannot miss the disclaimer (per audit feedback).
       '<div style="font-size:10.5px;color:#7a4a00;margin-bottom:8px;line-height:1.55;background:#fff8e0;border:1px solid #d8ad33;border-left:4px solid #d8ad33;padding:8px 12px;border-radius:4px">' +
       '<strong style="color:#8a5500">⚠ ' + (fr ? 'Approximation pédagogique :' : 'Educational approximation:') + '</strong> ' +
-      (fr ? 'les pourcentages affichés ne proviennent PAS d\'une seconde simulation Monte Carlo. Ils sont estimés à partir de coefficients moyens (rendement ~6 pts/1 %, inflation ~−4 pts/1 %) appliqués au taux de succès de votre plan de base. Pour des chiffres exacts, utilisez le simulateur de scénarios qui rejoue 500 simulations en direct.'
-          : 'percentages shown are NOT from a second Monte Carlo run. They are estimated from average coefficients (return ~6 pts/1%, inflation ~−4 pts/1%) applied to your baseline success rate. For exact figures, use the What-If simulator which replays 500 simulations live.') +
+      (fr ? 'les pourcentages affichés ne proviennent PAS d\'une seconde simulation complète. Ils sont estimés à partir de coefficients moyens (rendement ~6 pts/1 %, inflation ~−4 pts/1 %) appliqués au taux de succès de votre plan de base. Pour des chiffres exacts, utilisez « Explorer des alternatives » plus loin dans le rapport.'
+          : 'percentages shown are NOT from a full re-run. They are estimated from average coefficients (return ~6 pts/1%, inflation ~−4 pts/1%) applied to your baseline success rate. For exact figures, use the "Explore alternatives" section later in the report.') +
       '</div>' +
       '<div style="font-size:10.5px;color:#666;margin-bottom:6px;line-height:1.55">' +
       (fr ? 'Pour chaque combinaison rendement/inflation, le taux de succès estimé. La cellule encadrée représente vos hypothèses de base.' : 'For each return/inflation combination, the estimated success rate. The boxed cell shows your baseline assumptions.') +
@@ -5053,7 +5052,7 @@
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-closing-recap', label: d.fr ? 'Synth\u00e8se finale' : 'Final synthesis' });
     // What-If simulator: hidden for clientExport + Planner SKU + plain readers.
     if (d.includeSimulator !== false && !d.clientExport) {
-      _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Explorer des alternatives' : 'Explore alternatives' });
     }
     // Back-matter TOC.
     //   plain + !deep (beg_con / beg_bal): OMIT entirely. Methodology, raw

@@ -152,7 +152,7 @@
     // ─── Presets bar ──────────────────────────────────────────────────
     var presets = _presets(baselineParams);
     var presetsHtml = '<div class="bf-whatif-presets">' +
-      '<div class="bf-whatif-presets-label">' + (isFR ? 'Scénarios rapides :' : 'Quick scenarios:') + '</div>' +
+      '<div class="bf-whatif-presets-label">' + (isFR ? 'Décisions à explorer :' : 'Decisions to explore:') + '</div>' +
       '<div class="bf-whatif-presets-buttons">';
     presets.forEach(function(pr) {
       presetsHtml += '<button type="button" class="bf-whatif-preset" data-bf-preset="' + pr.id + '" title="' + pr.desc + '">' +
@@ -191,9 +191,9 @@
     controlsHtml += '</div>';
 
     var buttonsHtml = '<div class="bf-whatif-actions">' +
-      '<button type="button" id="bf-whatif-simulate" class="bf-whatif-btn">' + (isFR ? 'Simuler ce scénario' : 'Simulate this scenario') + '</button>' +
-      '<button type="button" id="bf-whatif-save" class="bf-whatif-btn bf-whatif-btn-secondary" disabled>' + (isFR ? 'Enregistrer le scénario' : 'Save scenario') + '</button>' +
-      '<button type="button" id="bf-whatif-reset" class="bf-whatif-btn bf-whatif-btn-secondary">' + (isFR ? 'Remettre au plan d\'origine' : 'Reset to baseline') + '</button>' +
+      '<button type="button" id="bf-whatif-simulate" class="bf-whatif-btn">' + (isFR ? 'Voir l\'effet sur mon plan' : 'See the effect on my plan') + '</button>' +
+      '<button type="button" id="bf-whatif-save" class="bf-whatif-btn bf-whatif-btn-secondary" disabled>' + (isFR ? 'Conserver cette alternative' : 'Keep this alternative') + '</button>' +
+      '<button type="button" id="bf-whatif-reset" class="bf-whatif-btn bf-whatif-btn-secondary">' + (isFR ? 'Revenir à mon plan' : 'Back to my plan') + '</button>' +
       '<span id="bf-whatif-status" class="bf-whatif-status"></span>' +
       '</div>';
 
@@ -265,9 +265,9 @@
       if (_savedScenarios.length >= 2) _savedScenarios.shift(); // FIFO drop
       _savedScenarios.push(window.__bfLastWhatIf);
       _renderCompareTable(baselineParams);
-      saveBtn.textContent = (isFR ? '✓ Enregistré (' + _savedScenarios.length + '/2)' : '✓ Saved (' + _savedScenarios.length + '/2)');
+      saveBtn.textContent = (isFR ? '✓ Conservée (' + _savedScenarios.length + '/2)' : '✓ Kept (' + _savedScenarios.length + '/2)');
       setTimeout(function() {
-        saveBtn.textContent = isFR ? 'Enregistrer le scénario' : 'Save scenario';
+        saveBtn.textContent = isFR ? 'Conserver cette alternative' : 'Keep this alternative';
       }, 1800);
     });
 
@@ -297,7 +297,7 @@
     var status = document.getElementById('bf-whatif-status');
     var results = document.getElementById('bf-whatif-results');
     var saveBtn = document.getElementById('bf-whatif-save');
-    status.textContent = isFR ? 'Simulation en cours…' : 'Simulating…';
+    status.textContent = isFR ? 'Calcul de l\'alternative…' : 'Calculating alternative…';
     status.className = 'bf-whatif-status running';
 
     // Snapshot slider values
@@ -326,7 +326,7 @@
       try {
         mc = window.BEngine.runMC(whatIfParams, nSim);
       } catch (e) {
-        status.textContent = (isFR ? 'Erreur de simulation: ' : 'Simulation error: ') + e.message;
+        status.textContent = (isFR ? 'Calcul interrompu : ' : 'Calculation interrupted: ') + e.message;
         status.className = 'bf-whatif-status error';
         return;
       }
@@ -423,14 +423,14 @@
           console.warn('[whatif] KPI block soft-failed:', kpiErr && kpiErr.message);
         }
         status.textContent = (isFR
-          ? 'Scénario partiel — certains KPIs ne sont pas disponibles pour ce scénario. Essayez un autre scénario rapide ou revenez à la base.'
-          : 'Partial scenario — some KPIs are unavailable for this scenario. Try another quick scenario or reset to baseline.');
+          ? 'Alternative partielle — certains résultats ne sont pas disponibles. Essayez une autre alternative ou revenez à votre plan.'
+          : 'Partial alternative — some results are unavailable. Try another alternative or return to your plan.');
         status.className = 'bf-whatif-status warn';
         saveBtn.disabled = true;
         return;
       }
 
-      status.textContent = (isFR ? 'Simulation terminée (' + nSim + ' scénarios, ' : 'Simulation complete (' + nSim + ' scenarios, ') + dt + ' ms)';
+      status.textContent = (isFR ? 'Alternative calculée (' + dt + ' ms)' : 'Alternative ready (' + dt + ' ms)');
       status.className = 'bf-whatif-status done';
       saveBtn.disabled = false;
 
@@ -445,8 +445,8 @@
       if (whatIfParams.oasAge !== (baselineParams.oasAge || 65)) changes.push((isFR ? 'PSV@' : 'OAS@') + whatIfParams.oasAge);
 
       var summary = isFR
-        ? 'Scénario testé : <strong>' + (changes.join(', ') || 'plan d\'origine') + '</strong>. Les chiffres ci-dessous montrent le delta par rapport au plan de base.'
-        : 'Scenario tested: <strong>' + (changes.join(', ') || 'baseline plan') + '</strong>. Figures below show the delta vs. baseline plan.';
+        ? 'Alternative explorée : <strong>' + (changes.join(', ') || 'aucun changement') + '</strong>. Les écarts ci-dessous se lisent par rapport à votre plan de référence.'
+        : 'Alternative explored: <strong>' + (changes.join(', ') || 'no change') + '</strong>. The deltas below read against your baseline plan.';
 
       // KPI tile count adjusts to the reader's literacy. A beginner reader
       // (jargonMode='plain' on body data attribute) sees only the 4
@@ -485,7 +485,7 @@
 
       // Capture for save-and-compare
       window.__bfLastWhatIf = {
-        label: changes.join(', ') || (isFR ? 'Scénario' : 'Scenario'),
+        label: changes.join(', ') || (isFR ? 'Alternative' : 'Alternative'),
         succ: Math.round(mc.succ * 100),
         medF: mc.rMedF || mc.medF,
         p25F: wiP25,
@@ -509,7 +509,7 @@
     if (_savedScenarios.length === 0) { box.innerHTML = ''; return; }
     var totalBaseTax = (P.medRevData || []).reduce(function(s, r) { return s + (r.tax || 0); }, 0);
     var baseRow = {
-      label: isFR ? 'Plan de base' : 'Baseline plan',
+      label: isFR ? 'Votre plan' : 'Your plan',
       succ: Math.round((B.succ || 0) * 100),
       medF: B.rMedF || B.medF || 0,
       p25F: B.rP25F || B.p25F || 0,
@@ -518,7 +518,7 @@
       tax: totalBaseTax
     };
     var rows = [baseRow].concat(_savedScenarios);
-    var html = '<div class="bf-whatif-compare-title">' + (isFR ? 'Comparaison de scénarios enregistrés' : 'Saved scenarios comparison') + '</div>';
+    var html = '<div class="bf-whatif-compare-title">' + (isFR ? 'Alternatives conservées' : 'Kept alternatives') + '</div>';
     html += '<table class="bf-whatif-compare-table"><thead><tr>';
     html += '<th>' + (isFR ? 'Métrique' : 'Metric') + '</th>';
     rows.forEach(function(r, i) {
@@ -541,7 +541,7 @@
       html += '</tr>';
     });
     html += '</tbody></table>';
-    html += '<div class="bf-whatif-compare-hint">' + (isFR ? 'Vous pouvez enregistrer jusqu\'à 2 scénarios pour les comparer côte à côte avec le plan de base.' : 'You can save up to 2 scenarios to compare side-by-side with the baseline plan.') + '</div>';
+    html += '<div class="bf-whatif-compare-hint">' + (isFR ? 'Vous pouvez conserver jusqu\'à 2 alternatives pour les comparer côte à côte avec votre plan.' : 'You can keep up to 2 alternatives to compare side-by-side with your plan.') + '</div>';
     box.innerHTML = html;
   }
 
