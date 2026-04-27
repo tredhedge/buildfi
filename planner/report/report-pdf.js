@@ -58,10 +58,21 @@
     '.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}',
     '.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}',
     '.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}',
-    // KPI
+    // KPI (legacy default — used elsewhere in the report)
     '.kpi{text-align:center;padding:10px 6px;border:1px solid #e0d3bf;border-radius:8px;background:#fffdf9;break-inside:avoid;box-shadow:0 1px 0 rgba(0,0,0,0.03)}',
     '.kpi-v{font-size:20px;font-weight:700;font-family:"JetBrains Mono",monospace;color:#3b2f1f}',
     '.kpi-l{font-size:10px;color:#6a6155;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}',
+    // Phase 6 finish pass (codex 2026-04-27): supporting KPI strip below
+    // the diagnostic hero. The hero owns the focal point; this strip
+    // is editorial support, not a dashboard. No individual tile borders;
+    // metrics separated by thin vertical hairlines. Lower contrast,
+    // smaller scale, single-row at desktop.
+    '.bf-support-strip{display:flex;align-items:stretch;background:transparent;border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:14px 0;margin:8px 0 18px;break-inside:avoid;page-break-inside:avoid}',
+    '.bf-support-tile{flex:1;padding:0 14px;text-align:center;border-right:1px solid #ece4d4}',
+    '.bf-support-tile:last-child{border-right:none}',
+    '.bf-support-tile-label{font-family:Inter,sans-serif;font-size:9.5px;font-weight:600;color:#8a7a5c;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;line-height:1.3}',
+    '.bf-support-tile-value{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:600;line-height:1.1;letter-spacing:-0.3px}',
+    '@media (max-width:760px){.bf-support-strip{flex-wrap:wrap;gap:0}.bf-support-tile{flex-basis:50%;padding:8px 10px;border-right:none;border-bottom:1px solid #ece4d4}.bf-support-tile:nth-child(2n){border-right:none}.bf-support-tile:nth-last-child(-n+2){border-bottom:none}}',
     '.grade-ring{display:inline-flex;align-items:center;justify-content:center;width:90px;height:90px;border-radius:50%;font-size:30px;font-weight:900;font-family:"JetBrains Mono",monospace}',
     '.grade-pill{display:inline-block;padding:4px 18px;border-radius:16px;font-weight:800;font-size:13px;color:#fff;margin-top:6px}',
     // Callouts
@@ -129,16 +140,26 @@
     '.narr strong{color:#1a1a1a}',
     '.narr em{color:#666;font-style:italic}',
     // TOC
-    '.toc{page-break-after:always;padding:30px 0}',
-    '.toc-title{font-size:22px;font-weight:700;color:'+C.gold+';margin-bottom:20px;letter-spacing:1px}',
-    '.toc-item{display:flex;align-items:center;padding:6px 0;border-bottom:1px dotted #e0d8c8}',
-    '.toc-item:last-child{border-bottom:none}',
-    '.toc-n{width:28px;height:28px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px}',
-    '.toc-label{flex:1;font-size:13px;color:#333;font-weight:500}',
-    '.toc-label a{color:#333;text-decoration:none}',
-    '.toc-label a:hover{color:'+C.gold+'}',
-    '.toc-dots{flex:1;border-bottom:1px dotted #ccc;margin:0 8px;min-width:20px}',
-    '.toc-pg{font-size:11px;color:#888;font-family:"JetBrains Mono",monospace}',
+    '.toc{page-break-after:always;padding:60px 24px 40px;max-width:760px;margin:0 auto}',
+    '.toc-title{font-family:"Playfair Display",Georgia,serif;font-size:14px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#a89460;margin-bottom:48px;text-align:center}',
+    // Chapter-grouped TOC (Phase 6 finish pass): chapter labels dominant,
+    // section anchors visually subordinate.
+    '.toc-chapter{margin:0 0 36px;break-inside:avoid;page-break-inside:avoid}',
+    '.toc-chapter-head{display:flex;align-items:baseline;gap:14px;padding-bottom:8px;border-bottom:1px solid #e8e0d4;margin-bottom:14px}',
+    '.toc-chapter-num{font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:2.4px;text-transform:uppercase;color:#a89460;flex-shrink:0;min-width:90px}',
+    '.toc-chapter-title{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:600;color:#252d39;line-height:1.25;letter-spacing:-0.2px;flex:1}',
+    '.toc-children{display:flex;flex-direction:column;gap:6px;padding-left:104px}',
+    '.toc-child{display:flex;align-items:baseline;gap:10px;padding:3px 0;font-family:Inter,sans-serif;font-size:12.5px;color:#5a4f3a}',
+    '.toc-child a{color:#5a4f3a;text-decoration:none;transition:color 0.12s}',
+    '.toc-child a:hover{color:#c49a1a}',
+    '.toc-child-num{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:600;color:#a89460;min-width:20px}',
+    '.toc-child-label{flex:1;line-height:1.5}',
+    '@media (max-width:680px){.toc-chapter-num{min-width:auto;font-size:10px}.toc-children{padding-left:24px}}',
+    '@media print{.toc-chapter{break-inside:avoid;page-break-inside:avoid}}',
+    // Legacy flat-TOC selectors retained for backwards-compat (no-op once removed)
+    '.toc-item{display:none}',
+    '.toc-n{display:none}',
+    '.toc-label,.toc-dots,.toc-pg{display:none}',
     // AI skeleton placeholder
     '.ai-placeholder{background:#f7f5f0;border:1px dashed #d8d4c8;border-radius:6px;padding:14px 16px;margin:8px 0;text-align:center}',
     '.ai-placeholder-lbl{font-size:10px;color:'+C.purple+';font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}',
@@ -324,18 +345,88 @@
     'sec-assumptions':      'std-full',
     'sec-glossary':         'std-full'
   };
-  function renderTOC(sections, fr) {
-    // Per Codex feedback (2026-04-27): the density-mode coverage legend +
-    // per-row badges are PRODUCT chrome, not client material. They were also
-    // failing WCAG color-contrast (green vs blue dots indistinguishable).
-    // Both removed — clean numbered TOC, nothing else.
-    var h = '<div class="toc">';
-    h += '<div class="toc-title">' + (fr ? 'Table des mati\u00e8res' : 'Table of Contents') + '</div>';
+  // Phase 6 (codex finish pass 2026-04-27): chapter-grouped TOC. The TOC
+  // is now hierarchical — major chapter labels dominate, section anchors
+  // are subordinated under them as small numbered children. Each section
+  // declares which chapter it belongs to (via the section's `chapter`
+  // field set by the orchestrator). Beginner cells get a shorter chapter
+  // list (Ch.3/Ch.4/Ch.5 may be absent — minimal cell omits stress/risk +
+  // back-matter, and the front-path Explore-alternatives entry is hidden).
+  //
+  // Section → chapter mapping (matches the body chapter cover sequence):
+  //   Ch.1  Plan at a glance      sec-assessment, sec-diagnostic, sec-levers
+  //   Ch.2  Why this plan works   sec-profile, sec-family, sec-goals,
+  //                                sec-realestate, sec-corp, sec-rsu, sec-debt,
+  //                                sec-projection, sec-revenue, sec-cashflow
+  //   Ch.3  Risks & tradeoffs     sec-risk, sec-stress, sec-strategies,
+  //                                sec-tax, sec-draworder, sec-meltdown,
+  //                                sec-gis, sec-succession, sec-realestate (rental),
+  //                                sec-insurance, sec-actions, sec-timeline,
+  //                                sec-closing-recap, sec-premium-deepdive
+  //   Ch.4  Explore alternatives  sec-whatif
+  //   Ch.5  Appendix              sec-methodology, sec-assumptions, sec-glossary
+  var TOC_CHAPTER_MAP = {
+    'sec-assessment': 1, 'sec-diagnostic': 1, 'sec-levers': 1,
+    'sec-profile': 2, 'sec-family': 2, 'sec-goals': 2,
+    'sec-realestate': 2, 'sec-corp': 2, 'sec-rsu': 2, 'sec-debt': 2,
+    'sec-projection': 2, 'sec-revenue': 2, 'sec-cashflow': 2,
+    'sec-risk': 3, 'sec-stress': 3, 'sec-strategies': 3,
+    'sec-tax': 3, 'sec-draworder': 3, 'sec-meltdown': 3, 'sec-gis': 3,
+    'sec-succession': 3, 'sec-insurance': 3, 'sec-actions': 3,
+    'sec-timeline': 3, 'sec-closing-recap': 3, 'sec-premium-deepdive': 3,
+    'sec-whatif': 4,
+    'sec-methodology': 5, 'sec-assumptions': 5, 'sec-glossary': 5
+  };
+
+  function renderTOC(sections, fr, opts) {
+    opts = opts || {};
+    // Group sections by chapter while preserving render order.
+    var grouped = { 1: [], 2: [], 3: [], 4: [], 5: [] };
     sections.forEach(function(s) {
-      h += '<div class="toc-item">' +
-        '<span class="toc-n">' + s.n + '</span>' +
-        '<span class="toc-label"><a href="#' + s.id + '">' + s.label + '</a></span>' +
-        '</div>';
+      var ch = TOC_CHAPTER_MAP[s.id] || 2;
+      // Beginner front-path simplification (codex 2026-04-27): hide
+      // Ch.4 (Explore alternatives) from beginner TOC. The interactive
+      // section still renders in the body for beginners who reach it,
+      // but it doesn't dominate the orientation experience.
+      if (opts.hideExplore && ch === 4) return;
+      grouped[ch].push(s);
+    });
+    // Chapter titles — same family as the body chapter covers (kept in
+    // lockstep with _chapterCopy()).
+    var CH_TITLES_FR = {
+      1: 'Votre plan en un coup d\u2019\u0153il',
+      2: 'Pourquoi ce plan tient la route',
+      3: 'Risques et compromis',
+      4: 'Explorer des alternatives',
+      5: 'Annexe'
+    };
+    var CH_TITLES_EN = {
+      1: 'Your plan at a glance',
+      2: 'Why this plan works',
+      3: 'Risks and tradeoffs',
+      4: 'Explore alternatives',
+      5: 'Appendix'
+    };
+    var TITLES = fr ? CH_TITLES_FR : CH_TITLES_EN;
+    var h = '<div class="toc">';
+    h += '<div class="toc-title">' + (fr ? 'Table des mati\u00e8res' : 'Table of contents') + '</div>';
+    [1, 2, 3, 4, 5].forEach(function(ch) {
+      var children = grouped[ch];
+      if (!children || children.length === 0) return;
+      var chLabel = (fr ? 'Chapitre ' : 'Chapter ') + ch;
+      h += '<div class="toc-chapter">' +
+        '<div class="toc-chapter-head">' +
+          '<div class="toc-chapter-num">' + F.esc(chLabel) + '</div>' +
+          '<div class="toc-chapter-title">' + F.esc(TITLES[ch]) + '</div>' +
+        '</div>' +
+        '<div class="toc-children">';
+      children.forEach(function(s) {
+        h += '<div class="toc-child">' +
+          '<span class="toc-child-num">' + s.n + '</span>' +
+          '<span class="toc-child-label"><a href="#' + s.id + '">' + s.label + '</a></span>' +
+          '</div>';
+      });
+      h += '</div></div>';
     });
     h += '</div>';
     return h;
@@ -680,35 +771,45 @@
             (v == null ? '\u2014' : Math.round(v)) + '</div>' +
         '</div>';
     });
-    // Hero block layout: gauge left, label below; breakdown right.
-    var h = '<div class="hero-score" style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:center;background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.25);border-radius:8px;padding:18px 22px;margin-bottom:20px">';
-    h += '<div style="text-align:center">';
-    h += '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">' + (fr ? 'Score de pr\u00e9paration' : 'Readiness score') + '</div>';
+    // Phase 6 finish pass (codex 2026-04-27): the hero-score block
+    // previously used a hard 240px / 1fr two-column grid that left the
+    // right-side component stack cramped and could clip in narrower
+    // render contexts. Restructured as TWO STACKED BANDS:
+    //   Band 1 — gauge + readiness label, full-width, generous breathing
+    //            room. The gauge and its plain-language explainer share
+    //            a centered column with auto sizing (no fixed rail).
+    //   Band 2 — the 5-component breakdown grid, full-width below the
+    //            gauge. Component rows now use minmax-friendly grid
+    //            (min 110px label | flex bar | 50px value) so the bar
+    //            never compresses. Legend sits at the bottom.
+    // Two bands instead of two columns means: the gauge has all the
+    // horizontal real estate it needs at the top, the components have
+    // all the horizontal real estate they need below, and neither
+    // element is fighting for space with the other. This also reads as
+    // a single editorial composition (introduce → defend) rather than
+    // a two-column dashboard.
+    var h = '<div class="hero-score" style="background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.25);border-radius:8px;padding:28px 28px 24px;margin-bottom:20px;break-inside:avoid">';
+    // Band 1 — gauge band
+    h += '<div class="hero-score-band hero-score-band-gauge" style="text-align:center;padding-bottom:24px;border-bottom:1px solid rgba(196,154,26,0.18);margin-bottom:22px">';
+    h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px">' + (fr ? 'Score de pr\u00e9paration' : 'Readiness score') + '</div>';
     h += svg;
-    // One-line plain-language explainer of WHAT the score actually measures.
-    // This is the single most-misread number on the page; without context
-    // readers conflate it with the success rate. The explainer makes it clear
-    // it scores STRUCTURAL preparedness, not the Monte Carlo outcome.
-    h += '<div style="font-family:Inter,sans-serif;font-size:10px;color:#9aabc7;margin-top:6px;letter-spacing:0.2px;line-height:1.5;max-width:240px;margin-left:auto;margin-right:auto">' +
+    h += '<div style="font-family:Inter,sans-serif;font-size:11px;color:#9aabc7;margin:14px auto 0;letter-spacing:0.2px;line-height:1.6;max-width:540px">' +
       (fr
-        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : il \u00e9value vos <em>fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
-        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: it scores your <em>foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
+        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : ce score \u00e9value vos <em>fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
+        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: this score evaluates your <em>foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
       '</div>';
     h += '</div>';
-    h += '<div>';
-    h += '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">' + (fr ? 'Composantes' : 'Components') + '</div>';
+    // Band 2 — component breakdown band
+    h += '<div class="hero-score-band hero-score-band-components">';
+    h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;text-align:center">' + (fr ? 'Composantes' : 'Components') + '</div>';
+    h += '<div style="max-width:680px;margin:0 auto">';
     h += compRows;
-    // Legend uses numeric ranges + color swatches only. Band labels
-    // (at-risk / fragile / solid / surplus) are intentionally OMITTED
-    // here: the thesis-coherence-auditor scans deterministic text for
-    // those tokens and would flag the legend as posture drift if it
-    // contained band words from outside the active band. The active
-    // band's name is already shown in the bandLabel above the gauge.
-    h += '<div style="font-family:Inter,sans-serif;font-size:8.5px;color:#9aabc7;font-style:italic;margin-top:8px;line-height:1.5">' +
+    h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#9aabc7;font-style:italic;margin-top:14px;line-height:1.6;text-align:center">' +
       (fr
-        ? 'Score structurel (ind\u00e9pendant des avenirs simul\u00e9s) sur cinq composantes pond\u00e9r\u00e9es. Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
-        : 'Structural score (independent of simulated futures) across five weighted components. Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
+        ? 'Score structurel (ind\u00e9pendant des avenirs simul\u00e9s). Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
+        : 'Structural score (independent of simulated futures). Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
       '</div>';
+    h += '</div>';
     h += '</div>';
     h += '</div>';
     return h;
@@ -866,7 +967,12 @@
     var pD = mc.pD;
     var endRow = pD[pD.length - 1];
     var p50End = +(endRow && (endRow.p50 || endRow.rmp_total || 0));
-    var p25End = +(endRow && (endRow.p25 || endRow.p5 || 0));
+    // P25 ONLY — never fall back to p5. P5 is the 5th percentile; the
+    // caption labels this number as "cautious quarter" which is P25 by
+    // definition. Mislabeling p5 as P25 reads ~$200K low for typical
+    // profiles. If pD doesn't carry a real p25, prefer the engine
+    // top-level rP25F / p25F (always populated in MC output).
+    var p25End = +(endRow && endRow.p25 ? endRow.p25 : (mc.rP25F || mc.p25F || 0));
     var p5Ruin = mc.p5Ruin;
     var deathAge = +p.deathAge || 92;
     var f$ = F.fmtCompact;
@@ -1044,15 +1150,30 @@
   // 1-line frame. Force a page break before each so the cover acts as a
   // visual reset rather than another stacked section. The frame line is
   // deterministic per chapter; archetype overlays may refine it later.
+  // Phase 6 finish pass (codex 2026-04-27): chapter covers were "too
+  // polite" — 34px / weight 600 read refined but not emphatic. The fix
+  // is structural, not decorative: bigger title scale, more weight, much
+  // more whitespace above and below, less surrounding chrome. Think book
+  // chapter opener, not card header.
+  //   Eyebrow:    Roman numeral + "Chapter N" tracked label, gold
+  //   Hairline:   short gold rule, 56px wide
+  //   Title:      Playfair, 56px (was 34), weight 700 (was 600), tight
+  //               leading. Drop shadow none — relies on scale alone.
+  //   Frame:      kept short, italic Playfair, 16px, max 540px width.
+  //   Spacing:    160px top padding, 80px bottom — chapter break feels
+  //               like a true reset in reading rhythm. Forced page break
+  //               retained so the cover sits alone on its page.
   function _renderChapterCover(num, title, frame, fr) {
-    return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:80px 24px 40px;border-top:1px solid #e8e0d4;margin:48px 0 20px;text-align:center">' +
-      '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:3px;color:#a89460;text-transform:uppercase;margin-bottom:14px">' +
-        F.esc((fr ? 'Chapitre ' : 'Chapter ') + num) +
+    var roman = ['', 'I', 'II', 'III', 'IV', 'V'][num] || String(num);
+    return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:160px 24px 80px;text-align:center">' +
+      '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:5px;color:#a89460;text-transform:uppercase;margin-bottom:32px">' +
+        F.esc((fr ? 'Chapitre ' : 'Chapter ') + roman) +
       '</div>' +
-      '<div class="bf-chapter-title" style="font-family:\"Playfair Display\",Georgia,serif;font-size:34px;font-weight:600;color:#252d39;line-height:1.18;letter-spacing:-0.4px;margin:0 auto 18px;max-width:640px">' +
+      '<div class="bf-chapter-rule" style="width:56px;height:2px;background:#c49a1a;margin:0 auto 36px"></div>' +
+      '<div class="bf-chapter-title" style="font-family:\"Playfair Display\",Georgia,serif;font-size:54px;font-weight:700;color:#1a1610;line-height:1.08;letter-spacing:-0.8px;margin:0 auto 32px;max-width:680px">' +
         F.esc(title) +
       '</div>' +
-      '<div class="bf-chapter-frame" style="font-family:\"Playfair Display\",Georgia,serif;font-size:14px;font-style:italic;color:#5a4f3a;line-height:1.55;max-width:520px;margin:0 auto">' +
+      '<div class="bf-chapter-frame" style="font-family:\"Playfair Display\",Georgia,serif;font-size:16px;font-style:italic;color:#5a4f3a;line-height:1.6;max-width:540px;margin:0 auto;letter-spacing:0.1px">' +
         F.esc(frame) +
       '</div>' +
       '</div>';
@@ -1458,19 +1579,59 @@
     var _archHero = d._archetype || _inferArchetype(d);
     h += _heroKPI(d, _archHero);
 
-    // KPIs (supporting grid; hero above is the primary focal point)
-    h += '<div class="' + (exp ? 'g6' : 'g5') + '" style="margin-bottom:12px">';
-    h += F.KPI('<span class="mono">' + (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%') + '</span>', fr ? 'Taux de succ\u00e8s' : 'Success rate', F.succColor(d.succVal));
-    h += F.KPI('<span class="mono">' + f$(mc.rMedF || mc.medF) + '</span>', fr ? 'P50 patrimoine (r\u00e9el)' : 'P50 wealth (real)', C.blue);
-    h += F.KPI('<span class="mono">' + f$(mc.rP25F || mc.p25F || mc.rVar5 || mc.var5) + '</span>', fr ? 'P25 prudent (r\u00e9el)' : 'P25 cautious (real)', C.amber);
-    // Durability KPI: "never" reads as nonsense — every plan ends at deathAge.
-    // When p5Ruin signals "no depletion", show "Through age X" instead.
+    // Phase 6 finish pass (codex 2026-04-27): supporting KPI strip.
+    // Replaces the old g5/g6 boxed-tile dashboard grid with a quieter
+    // editorial strip — no individual tile borders, hairline dividers,
+    // Playfair values, calmer scale. The hero KPI above owns the focal
+    // point; this strip is supporting evidence, not competing tiles.
     var _durLabel = (mc.p5Ruin || 999) >= 200
       ? (fr ? 'Jusqu\'\u00e0 ' + (p.deathAge || 90) + ' ans' : 'Through age ' + (p.deathAge || 90))
       : mc.p5Ruin + (fr ? ' ans' : ' yrs');
-    h += F.KPI('<span class="mono">' + _durLabel + '</span>', fr ? 'Durabilit\u00e9 de l\u2019\u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.red);
-    h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Retrait initial (% \u00e9pargne)' : 'Init. WR (% portfolio)', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : d._wdPct && parseFloat(d._wdPct) > 3.5 ? C.amber : C.green);
-    if (exp) h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
+    var _stripTiles = [
+      {
+        label: fr ? 'Taux de succès' : 'Success rate',
+        value: (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%'),
+        color: F.succColor(d.succVal)
+      },
+      {
+        label: fr ? 'Patrimoine médian (réel)' : 'Median wealth (real)',
+        value: f$(mc.rMedF || mc.medF),
+        color: '#252d39'
+      },
+      {
+        label: fr ? 'Quart prudent (P25)' : 'Cautious quarter (P25)',
+        value: f$(mc.rP25F || mc.p25F || mc.rVar5 || mc.var5),
+        color: '#a85a3a'
+      },
+      {
+        label: fr ? 'Durabilité' : 'Durability',
+        value: _durLabel,
+        color: (mc.p5Ruin || 999) >= 200 ? '#2a8c46' : '#cc4444'
+      },
+      {
+        label: fr ? 'Retrait initial' : 'Initial withdrawal',
+        value: (d._wdPct ? d._wdPct + '%' : '\u2014'),
+        color: d._wdPct && parseFloat(d._wdPct) > 4 ? '#cc4444'
+             : d._wdPct && parseFloat(d._wdPct) > 3.5 ? '#cf9850'
+             : '#2a8c46'
+      }
+    ];
+    if (exp) {
+      _stripTiles.push({
+        label: d._taxAlpha != null && d._taxAlpha > 0
+          ? (fr ? 'Économies fiscales' : 'Tax savings')
+          : (fr ? 'Impôt viager' : 'Lifetime tax'),
+        value: f$(Math.round(d._taxAlpha != null && d._taxAlpha > 0 ? d._taxAlpha : (d._optTax || 0))),
+        color: d._taxAlpha != null && d._taxAlpha > 0 ? '#2a8c46' : '#a85a3a'
+      });
+    }
+    h += '<div class="bf-support-strip">';
+    _stripTiles.forEach(function(t) {
+      h += '<div class="bf-support-tile">' +
+        '<div class="bf-support-tile-label">' + F.esc(t.label) + '</div>' +
+        '<div class="bf-support-tile-value" style="color:' + t.color + '">' + t.value + '</div>' +
+        '</div>';
+    });
     h += '</div>';
 
     // Cohort percentile — adds professional context to the success rate.
@@ -4902,10 +5063,42 @@
       svg += '<line x1="' + tx.toFixed(1) + '" x2="' + tx.toFixed(1) + '" y1="' + (trackY - 3) + '" y2="' + (trackY + 3) + '" stroke="#bbb" stroke-width="1"/>';
       svg += '<text x="' + tx.toFixed(1) + '" y="' + (trackY + 16) + '" font-size="9" fill="#888" text-anchor="middle" font-family="JetBrains Mono,monospace">' + a + '</text>';
     }
-    // Primary markers
-    primary.forEach(function(m, i) {
-      var mx = x(m.age);
-      var labelY = trackY - 10 - ((i % 2) * 14);
+    // Phase 6 fix (2026-04-27 user-flagged): label collision when two
+    // markers share an age. Old logic toggled labelY by array index
+    // (i%2), which left e.g. Retirement(65) + OAS(65) both at the same
+    // y because they were even-indexed in the array. New logic does
+    // collision-aware stacking: for each marker, scan all previously
+    // placed labels and bump labelY upward while any prior label sits
+    // within an x-distance threshold. Result: every label gets its
+    // own row, no matter how the input array is ordered.
+    function _placeLabels(markers, baselineY, lineHeight, direction) {
+      var placed = [];
+      var X_TOLERANCE = 60; // px on each side — wider than any single label
+      direction = direction || 'up'; // 'up' for primary (above track), 'down' for spouse
+      markers.forEach(function(m) {
+        var mx = x(m.age);
+        var rowY = baselineY;
+        var safe = false;
+        var attempt = 0;
+        while (!safe && attempt < 8) {
+          safe = true;
+          for (var i = 0; i < placed.length; i++) {
+            var prior = placed[i];
+            if (Math.abs(prior.mx - mx) < X_TOLERANCE && prior.rowY === rowY) {
+              safe = false;
+              rowY = (direction === 'up') ? rowY - lineHeight : rowY + lineHeight;
+              attempt++;
+              break;
+            }
+          }
+        }
+        placed.push({ mx: mx, rowY: rowY, marker: m });
+      });
+      return placed;
+    }
+    var placedPrimary = _placeLabels(primary, trackY - 12, 14, 'up');
+    placedPrimary.forEach(function(rec) {
+      var m = rec.marker, mx = rec.mx, labelY = rec.rowY;
       svg += '<line x1="' + mx.toFixed(1) + '" x2="' + mx.toFixed(1) + '" y1="' + (labelY + 2) + '" y2="' + trackY + '" stroke="' + m.color + '" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>';
       svg += '<text x="' + mx.toFixed(1) + '" y="' + labelY + '" font-size="9" fill="' + m.color + '" text-anchor="middle" font-weight="600" font-family="Inter,sans-serif">' + m.label + ' (' + m.age + ')</text>';
       svg += '<circle cx="' + mx.toFixed(1) + '" cy="' + trackY + '" r="6" fill="' + m.color + '" stroke="#fff" stroke-width="2"/>';
@@ -4913,9 +5106,9 @@
     // Spouse track (when present)
     if (spouse.length > 0) {
       svg += '<line x1="' + margin.left + '" x2="' + (W - margin.right) + '" y1="' + spouseY + '" y2="' + spouseY + '" stroke="#e8e0d4" stroke-width="1.5" stroke-dasharray="3,3"/>';
-      spouse.forEach(function(m, i) {
-        var mx = x(m.age);
-        var labelY = spouseY + 22 + ((i % 2) * 12);
+      var placedSpouse = _placeLabels(spouse, spouseY + 22, 12, 'down');
+      placedSpouse.forEach(function(rec) {
+        var m = rec.marker, mx = rec.mx, labelY = rec.rowY;
         svg += '<line x1="' + mx.toFixed(1) + '" x2="' + mx.toFixed(1) + '" y1="' + spouseY + '" y2="' + (labelY - 8) + '" stroke="' + m.color + '" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>';
         svg += '<circle cx="' + mx.toFixed(1) + '" cy="' + spouseY + '" r="5" fill="' + m.color + '" stroke="#fff" stroke-width="1.5"/>';
         svg += '<text x="' + mx.toFixed(1) + '" y="' + labelY + '" font-size="8.5" fill="' + m.color + '" text-anchor="middle" font-weight="600" font-family="Inter,sans-serif">' + m.label + ' (' + m.age + ')</text>';
@@ -5456,7 +5649,12 @@
     }
 
     // Render TOC
-    h += renderTOC(tocSections, d.fr);
+    // Phase 6 finish pass (codex 2026-04-27): beginner front-path
+    // simplification. Plain readers get a calm chapter-grouped TOC with
+    // the Explore-alternatives chapter hidden — the interactive section
+    // still renders in the body for those who reach it, but it does not
+    // dominate the orientation experience.
+    h += renderTOC(tocSections, d.fr, { hideExplore: !!_isPlainReader });
 
     // ── Section rendering (phase-aware ordering) ──
     // Fix-plan flags: when the review pipeline detects a blocker, it sets
