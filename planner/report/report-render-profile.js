@@ -165,47 +165,67 @@
     if (blockId === 'sequence_of_returns' && (data.covRatio || 0) > 0.8 && profile.toneMode === 'calm') {
       return false;
     }
-    // RRSP meltdown is an advanced tax-arbitrage strategy. Beginners get it
-    // hidden (technical jargon-heavy and easy to misapply); meltdown belongs
-    // to mixed/technical readers OR readers who explicitly chose 'detailed'.
-    if (blockId === 'meltdown') {
-      if (profile.jargonMode === 'plain' && profile.densityMode !== 'deep') return false;
-    }
-    // Real estate / rental-property analysis: no rentals → omit by content;
-    // for beginner+compact readers we also drop it because the property tables
-    // overwhelm someone with a single primary residence and nothing to model.
+    // ── 3×3 matrix honor (2026-04-28) ──────────────────────────────────
+    // Earlier gates collapsed two distinct axes (finLiteracy / detailPref)
+    // into a single "plain" hide. That broke the beginner+detailed reader,
+    // who explicitly asked for full content but in plain language. The new
+    // rule: hide content-volume sections only when reader is BOTH plain
+    // AND compact (the genuinely-minimal cell). Sections that are intrinsically
+    // jargon-heavy (asset_location, sensitivity tornado) keep the plain-only
+    // gate because the visualization itself doesn't translate to plain.
+    var isPlain = profile.jargonMode === 'plain';
+    var isCompact = profile.densityMode === 'compact';
+    var isDeep = profile.densityMode === 'deep';
+    var isMinimal = isPlain && isCompact;  // beginner + concise (the smallest cell)
+
+    // RRSP meltdown — keep visible for any reader who asked for detail/balance.
+    // Only hide for the genuinely-minimal beginner+concise cell.
+    if (blockId === 'meltdown' && isMinimal) return false;
+    // Real estate — no rentals + minimal reader → hide. Beginner+detailed
+    // who has rentals still gets it; beginner+detailed with no rentals
+    // doesn't (data condition).
     if (blockId === 'real_estate') {
       var props = (p && p.props) || [];
       var rentalCount = props.filter(function(pr) {
         return pr && pr.on && (pr.rm || 0) > 0;
       }).length;
-      if (rentalCount === 0 && profile.jargonMode === 'plain') return false;
+      if (rentalCount === 0 && isMinimal) return false;
     }
-    // Goals: always relevant when present, but a beginner+calm reader with
-    // a single small goal sees a sparse table — keep it; only suppress when
-    // the data layer marks it empty.
+    // Goals — always relevant when present (data-only gate).
     if (blockId === 'goals') {
       var goals = (p && p.goals) || [];
       if (goals.length === 0) return false;
     }
-    // Sensitivity tornado already gated on chartTier='full' by resolveRepresentation;
-    // here we add a content-relevance veto for beginner readers regardless.
-    if (blockId === 'sensitivity' && profile.jargonMode === 'plain') return false;
-    // Risk dispersion narrative (sec-risk) and stress-tests (sec-stress) are
-    // technical sections per Audit 8 (2026-04-27): plain-mode readers do not
-    // benefit from "P25-P75 dispersion" or "9 named stress scenarios" — they
-    // overload the reader and undercut the beginner-friendly framing.
-    if ((blockId === 'risk' || blockId === 'stress_tests') && profile.jargonMode === 'plain') return false;
-    // Codex 2026-04-27 P4: methodology, assumptions, glossary back-matter
-    // is for advanced/intermediate readers. Plain-mode (beginner+concise)
-    // gets inline term hovers + a calmer cover; these appendices are too
-    // dense and feel like machinery.
+    // Asset location strategy — INTRINSICALLY jargon-heavy. The chart
+    // shows "RRSP=bonds, TFSA=equities, NR=mixed" mapped to expected
+    // tax-drag deltas; even a beginner-detailed reader doesn't have the
+    // priors to act on it. Stays gated on plain alone.
+    if (blockId === 'asset_location' && isPlain) return false;
+    // Sensitivity tornado — visualization itself requires P25/P75 fluency.
+    // chartTier='full' already restricts visibility; the plain-only gate
+    // is a belt-and-suspenders check.
+    if (blockId === 'sensitivity' && isPlain) return false;
+    // Risk dispersion + stress tests — technical content but VALUABLE for
+    // a beginner+detailed reader who explicitly asked for depth. The
+    // narrative can be calmed via lossLanguageFor; the section itself
+    // stays. Hide only for the minimal cell.
+    if ((blockId === 'risk' || blockId === 'stress_tests') && isMinimal) return false;
+    // Methodology / assumptions / glossary back-matter — same logic.
+    // Beginner+detailed reader DOES want methodology (curiosity); they
+    // don't want the densest version, but they do want content. Hide
+    // only for the minimal cell.
     if ((blockId === 'methodology' || blockId === 'assumptions' || blockId === 'glossary')
-        && profile.jargonMode === 'plain') return false;
-    // Phase 2 finish: draw-order heatmap is omitted for plain readers
-    // (technical density). Income waterfall is universal — never omitted
-    // by relevance gate (resolver picks chart vs chart_simplified).
-    if (blockId === 'draw_order' && profile.jargonMode === 'plain') return false;
+        && isMinimal) return false;
+    // Draw-order heatmap — same: hide only for minimal cell. Beginner+
+    // detailed gets the heatmap with a plain-language caption.
+    if (blockId === 'draw_order' && isMinimal) return false;
+    // Sequence-of-returns — high-coverage calm reader doesn't need this
+    // (data-driven, tone-aware gate). Independent of plain/compact.
+    if (blockId === 'sequence_of_returns' && (data.covRatio || 0) > 0.8 && profile.toneMode === 'calm') {
+      return false;
+    }
+    // OAS clawback — zero-clawback minimal reader doesn't need it.
+    if (blockId === 'oas_clawback' && isMinimal && (data.oasClbkYrs || 0) === 0) return false;
     return true;
   }
 

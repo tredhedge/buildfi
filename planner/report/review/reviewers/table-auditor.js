@@ -18,27 +18,31 @@ function audit(pack) {
   var presentIds = {};
   pack.sections.forEach(function(s) { presentIds[s.id] = (presentIds[s.id] || 0) + 1; });
 
-  // Plain-mode readers (jargonMode='plain') legitimately omit a small set
-  // of technical sections via the Phase 5 relevance gate: stress tests +
-  // risk dispersion are too jargon-heavy and overload the audience. The
-  // table auditor must NOT treat those omissions as blockers for plain readers.
-  var profile = (pack.profile && pack.profile.params) || {};
-  // Render profile may live on the data payload OR be inferred from the
-  // profile-level classifier axes. Either source works.
-  var jargonMode = (pack.dPayload && pack.dPayload.renderProfile && pack.dPayload.renderProfile.jargonMode)
+  // 3×3 matrix gating (2026-04-28). Beginner+concise (the MINIMAL cell) is
+  // the only combo that legitimately omits back-matter + technical sections.
+  // Beginner+detailed asks for plain language but full content — those
+  // sections must be rendered, so the auditor must NOT exempt missing
+  // sections from anything but the minimal cell.
+  var rp = (pack.dPayload && pack.dPayload.renderProfile) || pack.renderProfile || {};
+  var jargonMode = rp.jargonMode
     || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain'
         : pack.profile && pack.profile.finLiteracy === 'advanced' ? 'technical'
         : 'mixed');
-  var PLAIN_OMITS = {
+  var densityMode = rp.densityMode
+    || (pack.profile && pack.profile.detailPref === 'concise' ? 'compact'
+        : pack.profile && pack.profile.detailPref === 'detailed' ? 'deep'
+        : 'balanced');
+  var isMinimal = jargonMode === 'plain' && densityMode === 'compact';
+  var MINIMAL_OMITS = {
     'sec-stress': true, 'sec-risk': true, 'sec-sensitivity': true,
-    // Codex 2026-04-27 P4: back-matter appendices omitted for plain readers
-    'sec-methodology': true, 'sec-assumptions': true, 'sec-glossary': true
+    'sec-methodology': true, 'sec-assumptions': true, 'sec-glossary': true,
+    'sec-draworder': true
   };
 
   Contract.SECTIONS.forEach(function(spec) {
     if (spec.mandatory && !presentIds[spec.id]) {
-      // Skip blocker for plain-mode legitimately-omitted sections.
-      if (jargonMode === 'plain' && PLAIN_OMITS[spec.id]) return;
+      // Skip blocker only for the genuinely-minimal cell.
+      if (isMinimal && MINIMAL_OMITS[spec.id]) return;
       findings.push({
         id: 'table-missing-' + spec.id,
         reviewer: 'table',

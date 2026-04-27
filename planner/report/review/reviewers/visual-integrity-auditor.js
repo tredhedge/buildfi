@@ -123,13 +123,18 @@ function audit(pack) {
   // when their data exists in the canonical pack. If the sensitivity
   // tornado data is in the MC payload but the section isn't rendered,
   // the report is silently shallow — a premium-quality regression.
-  // Plain-mode readers (jargonMode='plain') legitimately omit sec-risk via
-  // the Phase 5 relevance gate (technical content overload for beginners).
-  // Per Audit 8 (2026-04-27), this auditor must NOT flag those omissions.
-  var jargonMode = (pack.dPayload && pack.dPayload.renderProfile && pack.dPayload.renderProfile.jargonMode)
+  // 3×3 matrix gating (2026-04-28). The MINIMAL cell (beginner+concise)
+  // legitimately omits sec-risk via the relevance gate. A beginner+detailed
+  // reader keeps the section, so this auditor must only exempt the
+  // minimal cell, not all plain-mode readers.
+  var rp = (pack.dPayload && pack.dPayload.renderProfile) || pack.renderProfile || {};
+  var jargonMode = rp.jargonMode
     || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain' : 'mixed');
+  var densityMode = rp.densityMode
+    || (pack.profile && pack.profile.detailPref === 'concise' ? 'compact' : 'balanced');
+  var isMinimal = jargonMode === 'plain' && densityMode === 'compact';
   var hasRiskSec = pack.sections.some(function(s) { return s.id === 'sec-risk'; });
-  if (!hasRiskSec && jargonMode !== 'plain') {
+  if (!hasRiskSec && !isMinimal) {
     findings.push({
       id: 'visual-shallow-mode',
       reviewer: 'visual',

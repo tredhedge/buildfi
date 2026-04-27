@@ -4926,9 +4926,15 @@
     var _hasStress = !!(d.mc && d.mc._stress);
     var _suppressed = d._suppressed || {};
     var _isSuppressed = function(id) { return !!_suppressed[id]; };
-    // Plain-mode (beginner+concise) reader flag — declared early so all
-    // TOC + section gating below can reference it.
+    // Reader-class flags. Two distinct gates:
+    //   _isPlainReader — finLiteracy=beginner (plain language)
+    //   _isMinimalReader — beginner AND concise (the genuinely-minimal cell)
+    // Most TOC entries that used _isPlainReader actually mean "minimal" —
+    // a beginner who explicitly asked for DETAIL still wants the back-matter,
+    // just in plain language. Keep _isPlainReader for sections that are
+    // intrinsically jargon-heavy regardless of detail (asset_location).
     var _isPlainReader = d.renderProfile && d.renderProfile.jargonMode === 'plain';
+    var _isMinimalReader = _isPlainReader && d.renderProfile && d.renderProfile.densityMode === 'compact';
 
     // ── Build TOC sections array (pre-scan which sections will render) ──
     var tocSections = [];
@@ -4955,9 +4961,9 @@
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
     // Draw-order heatmap: hidden for plain-mode readers per Phase 2/5
     // (technical density). TOC entry must mirror the renderer's gate.
-    var _drawOrderShown = _hasDrawTrace && !_isPlainReader;
+    var _drawOrderShown = _hasDrawTrace && !_isMinimalReader;
     if (_drawOrderShown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
-    if (_hasStress && !_isPlainReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
+    if (_hasStress && !_isMinimalReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
     if (_gisCheck.length > 0 && !_isSuppressed('sec-gis')) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
     if (d.R.hasMeltdown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-meltdown', label: F.L('meltdown', d.fr) }); }
     if (_grossEstateCheck >= 1000) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-succession', label: F.L('succession', d.fr) }); }
@@ -4965,7 +4971,7 @@
     if (d.R.hasRSU) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-rsu', label: F.L('rsu', d.fr) }); }
     if (d.R.ccpc) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-corp', label: F.L('corp', d.fr) }); }
     if (d.R.debt) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-debt', label: F.L('debt', d.fr) }); }
-    if (d.exp && !_isPlainReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
+    if (d.exp && !_isMinimalReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
     // Insurance — rendered when d.R.hasInsuranceGap (resilience gap section)
     if (d.R && d.R.hasInsuranceGap) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-insurance', label: d.fr ? 'Assurance \u2014 \u00c9cart de r\u00e9silience' : 'Insurance \u2014 Resilience Gap' });
@@ -4984,9 +4990,11 @@
     if (d.includeSimulator !== false && !d.clientExport) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
     }
-    // Back-matter (methodology / assumptions / glossary): plain-mode readers
-    // skip these; they go to inline term hovers instead. Codex P4.
-    if (!_isPlainReader) {
+    // Back-matter (methodology / assumptions / glossary): only the genuinely-
+    // minimal cell (beginner+concise) skips these. A beginner+detailed reader
+    // wants methodology — they explicitly asked for depth. The 3×3 matrix
+    // honors finLiteracy × detailPref independently.
+    if (!_isMinimalReader) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
