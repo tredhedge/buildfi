@@ -472,7 +472,18 @@ function PortalContent() {
                         const res = await fetch("/api/checkout", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: profile.email, type: "report-pack", lang }),
+                          body: JSON.stringify({
+                            email: profile.email,
+                            type: "report-pack",
+                            lang,
+                            termsAccepted: true,
+                            // Loi 25 / LPRPDE — re-affirm at purchase. Must match
+                            // CURRENT_POLICY_VERSION in /lib/consent.ts.
+                            consent: {
+                              policyVersion: "2026-04-26-v1",
+                              acceptedAt: new Date().toISOString(),
+                            },
+                          }),
                         });
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;

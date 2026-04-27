@@ -180,6 +180,7 @@
 
   function _wire() {
     if (typeof document === 'undefined') return;
+    if (typeof document.querySelectorAll !== 'function') return;
     var nodes = document.querySelectorAll('.bf-term[data-term]');
     for (var i = 0; i < nodes.length; i++) {
       (function(n) {
@@ -198,33 +199,107 @@
   }
 
   // ─── Appendix renderer (server-side from buildReport) ─────────────────
+  // Renders ALL terms server-side. Runtime filter (_filterAppendixToUsedTerms)
+  // hides terms that don't appear anywhere in the report body. The
+  // server-side render keeps the static HTML self-describing (anyone
+  // reading the raw file gets the full bilingual reference); the runtime
+  // pass surfaces only what's actually relevant to THIS report.
   function renderAppendix(language) {
     var L = (language === 'fr') ? 'fr' : 'en';
     var keys = Object.keys(TERMS).sort(function(a, b) {
       return TERMS[a][L].label.localeCompare(TERMS[b][L].label);
     });
-    var h = '<div class="glossary-appendix">';
+    var h = '<div class="glossary-appendix" data-bf-glossary-root>';
     h += '<dl class="glossary-list">';
     keys.forEach(function(k) {
       var e = TERMS[k][L];
-      h += '<dt id="gl-' + k + '" class="glossary-term">' + e.label + '</dt>';
-      h += '<dd class="glossary-def">' + e.def + '</dd>';
+      // Each term carries data-bf-term-key so the runtime filter can
+      // hide it without affecting siblings.
+      h += '<dt id="gl-' + k + '" class="glossary-term" data-bf-term-key="' + k + '">' + e.label + '</dt>';
+      h += '<dd class="glossary-def" data-bf-term-key="' + k + '">' + e.def + '</dd>';
     });
-    h += '</dl></div>';
+    h += '</dl>';
+    // Curation footer — populated by the runtime filter ("Glossaire
+    // personnalisé — N termes utilisés dans ce rapport"). Shown only
+    // after filtering completes (server-side render emits empty span).
+    h += '<div class="glossary-footer" data-bf-glossary-footer style="display:none;font-size:9.5px;color:#888;font-style:italic;margin-top:10px;border-top:1px solid #e8e0d4;padding-top:8px"></div>';
+    h += '</div>';
     return h;
   }
 
+  // ─── Runtime filter — hides terms not used elsewhere in the report ────
+  // Two signals indicate a term is "used":
+  //   1. <span class="bf-term" data-term="key"> markup elsewhere on the page
+  //   2. The term's label or a known acronym appears in the body text
+  // Anything not matched is hidden. Footer surfaces the curated count.
+  function _filterAppendixToUsedTerms() {
+    // Node-side stubs of `document` are partial — only the browser has
+    // querySelector / cloneNode / textContent. Bail cleanly if any of
+    // these are missing so the build-time eval doesn't throw.
+    if (typeof document === 'undefined') return;
+    if (typeof document.querySelector !== 'function') return;
+    if (typeof document.querySelectorAll !== 'function') return;
+    var root = document.querySelector('[data-bf-glossary-root]');
+    if (!root) return;
+    var lang = (document.documentElement.lang || 'fr').toLowerCase().slice(0, 2);
+    var L = lang === 'fr' ? 'fr' : 'en';
+    // Collect explicit data-term references first.
+    var used = {};
+    var explicit = document.querySelectorAll('.bf-term[data-term]');
+    for (var i = 0; i < explicit.length; i++) {
+      used[explicit[i].getAttribute('data-term')] = true;
+    }
+    // Body-text scan: every term key, plus its localized label, against
+    // the report body MINUS the appendix itself (avoid self-matching).
+    var appendixId = root.id || '';
+    var bodyClone = document.body.cloneNode(true);
+    var dropAppendix = bodyClone.querySelector('[data-bf-glossary-root]');
+    if (dropAppendix && dropAppendix.parentNode) dropAppendix.parentNode.removeChild(dropAppendix);
+    var bodyText = (bodyClone.textContent || '').toLowerCase();
+    Object.keys(TERMS).forEach(function(k) {
+      if (used[k]) return;
+      // Match by key (e.g. "RRSP") or by translated label.
+      var label = (TERMS[k][L] && TERMS[k][L].label || '').toLowerCase();
+      if (k && bodyText.indexOf(k.toLowerCase()) >= 0) used[k] = true;
+      else if (label && label.length > 3 && bodyText.indexOf(label) >= 0) used[k] = true;
+    });
+    // Hide unused entries.
+    var entries = root.querySelectorAll('[data-bf-term-key]');
+    var totalShown = 0;
+    var seenKeys = {};
+    for (var j = 0; j < entries.length; j++) {
+      var k2 = entries[j].getAttribute('data-bf-term-key');
+      if (!used[k2]) {
+        entries[j].style.display = 'none';
+      } else if (!seenKeys[k2]) {
+        seenKeys[k2] = true;
+        totalShown += 1;
+      }
+    }
+    // Footer with the curated count.
+    var foot = root.querySelector('[data-bf-glossary-footer]');
+    if (foot) {
+      foot.textContent = (L === 'fr')
+        ? 'Glossaire personnalisé — ' + totalShown + ' terme' + (totalShown > 1 ? 's' : '') + ' utilisé' + (totalShown > 1 ? 's' : '') + ' dans ce rapport.'
+        : 'Personalized glossary — ' + totalShown + ' term' + (totalShown > 1 ? 's' : '') + ' used in this report.';
+      foot.style.display = '';
+    }
+  }
+
+  // Boot: wire tooltip handlers + filter the appendix to terms-used.
+  function _boot() { _wire(); _filterAppendixToUsedTerms(); }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', _wire);
+      document.addEventListener('DOMContentLoaded', _boot);
     } else {
-      _wire();
+      _boot();
     }
   }
 
   window.BFGlossary = {
     terms: TERMS,
     renderAppendix: renderAppendix,
-    rebind: _wire
+    rebind: _wire,
+    refilterAppendix: _filterAppendixToUsedTerms
   };
 })();

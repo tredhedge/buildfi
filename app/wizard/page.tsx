@@ -17,6 +17,11 @@ import {
 const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", tx: "#2a3442", al: "#172332", dm: "#4a5a6e", ac: "#8f6d2f", gn: "#2f8a4a", rd: "#b93f43" };
 const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", gn: "#48a66d", rd: "#cf6060" };
 
+// Loi 25 / LPRPDE — must match CURRENT_POLICY_VERSION in /lib/consent.ts.
+// If the server bumps the policy, the user is re-prompted at next checkout via the
+// `consent_required` 400 response and `requiredPolicyVersion` field.
+const CLIENT_POLICY_VERSION = "2026-04-26-v1";
+
 const COPY = {
   fr: {
     title: "Questionnaire adaptatif",
@@ -38,12 +43,15 @@ const COPY = {
     termsLink: "Conditions d'utilisation",
     andAvis: "et l'",
     avisLink: "Avis légal",
+    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mon rapport. Conservation : 90 jours. Suppression sur demande.",
+    consentLink: "Politique de confidentialité",
     backHome: "← Retour à l'accueil",
     yes: "Oui",
     no: "Non",
     loading: "Redirection vers le paiement…",
     errorEmail: "Adresse courriel invalide",
     errorTerms: "Vous devez accepter les conditions",
+    errorConsent: "Vous devez autoriser le traitement des données pour générer le rapport",
     errorRequired: "Champs requis manquants",
     errorGeneric: "Erreur lors de la création de la session. Réessayez.",
   },
@@ -67,12 +75,15 @@ const COPY = {
     termsLink: "Terms of Use",
     andAvis: "and ",
     avisLink: "Legal Notice",
+    consentLabel: "I authorize BuildFi to process my financial data to generate my report. Retention: 90 days. Deletion on request.",
+    consentLink: "Privacy Policy",
     backHome: "← Back to home",
     yes: "Yes",
     no: "No",
     loading: "Redirecting to payment…",
     errorEmail: "Invalid email address",
     errorTerms: "You must accept the terms",
+    errorConsent: "You must authorize data processing to generate the report",
     errorRequired: "Required fields missing",
     errorGeneric: "Error creating session. Please try again.",
   },
@@ -279,10 +290,11 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
   const totalFields = blocks.reduce((s: number, b: WizardBlock) => s + b.fields.length, 0);
   const [email, setEmail] = useState(answers.__email || "");
   const [terms, setTerms] = useState(answers.__terms || false);
+  const [consent, setConsent] = useState(answers.__consent || false);
 
   useEffect(() => {
-    setAnswers({ ...answers, __email: email, __terms: terms });
-  }, [email, terms]); // eslint-disable-line
+    setAnswers({ ...answers, __email: email, __terms: terms, __consent: consent });
+  }, [email, terms, consent]); // eslint-disable-line
 
   const renderField = (f: WizardField) => {
     const val = answers[f.id] ?? "";
@@ -392,6 +404,24 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
             <a href="/avis-legal" target="_blank" rel="noopener" style={{ color: cl.ac }}>{t.avisLink}</a>.
           </span>
         </label>
+
+        {/* Loi 25 / LPRPDE consent — required for the server to record a versioned consent receipt */}
+        <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 13, color: cl.tx, cursor: "pointer", marginTop: 10 }}>
+          <input
+            id="f-__consent"
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            style={{ marginTop: 3, accentColor: cl.ac }}
+          />
+          <span>
+            {t.consentLabel}{" "}
+            <a href="/confidentialite" target="_blank" rel="noopener" style={{ color: cl.ac }}>
+              {t.consentLink}
+            </a>
+            .
+          </span>
+        </label>
       </div>
 
       {error && (
@@ -487,6 +517,7 @@ function WizardInner() {
     const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((answers.__email || "").trim());
     if (!emailOK) { setError(t.errorEmail); setErrorFieldId("__email"); return false; }
     if (!answers.__terms) { setError(t.errorTerms); return false; }
+    if (!answers.__consent) { setError(t.errorConsent); setErrorFieldId("__consent"); return false; }
     for (const b of blocks) {
       for (const f of b.fields) {
         const v = answers[f.id];
@@ -531,6 +562,12 @@ function WizardInner() {
           quizAnswers: wizardAnswers,
           lang,
           termsAccepted: true,
+          // Loi 25 / LPRPDE — server validates policyVersion + acceptedAt freshness.
+          // The server gate is the authority; this client gate is UX-only.
+          consent: {
+            policyVersion: CLIENT_POLICY_VERSION,
+            acceptedAt: new Date().toISOString(),
+          },
         }),
       });
       const data = await resp.json();

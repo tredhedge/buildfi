@@ -19,7 +19,9 @@ function arbitrate(findingsArray) {
   var majors   = findings.filter(function(f) { return f.severity === 'major'; });
   var minors   = findings.filter(function(f) { return f.severity === 'minor'; });
 
-  // Build fix plan — group by fix_kind so the correction pass can route
+  // Build fix plan — group by fix_kind so the correction pass can route.
+  // Premium rebuild adds `replace_with_callout` collapse target and the
+  // bare `manual` bucket for findings the renderer can't auto-repair.
   var fixPlan = {
     remove_section: [],
     rerun_ai_slot: [],

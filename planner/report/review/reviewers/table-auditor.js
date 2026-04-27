@@ -51,6 +51,26 @@ function audit(pack) {
     }
   });
 
+  // ─── 2.5) TOC must not point to non-rendered anchors ──────────────────
+  var tocRe = /<a href="#(sec-[a-z-]+)"/g;
+  var tocMatch;
+  while ((tocMatch = tocRe.exec(pack.html)) !== null) {
+    var tocId = tocMatch[1];
+    if (!presentIds[tocId]) {
+      findings.push({
+        id: 'table-broken-toc-' + tocId,
+        reviewer: 'table',
+        severity: 'blocker',
+        category: 'broken_toc',
+        section: null,
+        message: 'Table of contents links to "' + tocId + '" but that section is not rendered.',
+        evidence: 'href=#' + tocId,
+        fix_kind: 'manual',
+        fix_target: tocId
+      });
+    }
+  }
+
   // ─── 3) Empty / thin sections ────────────────────────────────────────
   pack.sections.forEach(function(s) {
     if (s.isEmpty) {
@@ -134,6 +154,67 @@ function audit(pack) {
         evidence: 'emDash_count=' + emDashKpis,
         fix_kind: 'block_data',
         fix_target: 'kpi-resolution'
+      });
+    }
+  }
+
+  // ─── 6) Client-visible AI placeholders are not allowed ────────────────
+  if (/class="ai-placeholder"/i.test(pack.html) ||
+      /Click "AI Analysis" for a personalized observation\./i.test(pack.html) ||
+      /Cliquez sur [^<]{0,40}Analyse IA[^<]{0,80}observation personnalis/i.test(pack.html)) {
+    findings.push({
+      id: 'table-ai-placeholder-visible',
+      reviewer: 'table',
+      severity: 'blocker',
+      category: 'placeholder_visible',
+      section: null,
+      message: 'A client-visible AI placeholder is still present in the rendered report.',
+      evidence: 'ai-placeholder / Click "AI Analysis"',
+      fix_kind: 'manual',
+      fix_target: 'global'
+    });
+  }
+
+  // ─── 7) Debt table row-credibility check (P1.4) ──────────────────────
+  // Pattern that broke trust in debt_young_fr: 3 active debts, balance > 0,
+  // but monthly payment = 0 AND months remaining = 0. Reads as broken to
+  // any reader. Fix: renderer must skip such rows OR replace them with a
+  // "modalités à confirmer" note. Auditor enforces the rule by inspecting
+  // the rendered table directly.
+  var debtSec = pack.sections.find(function(s) { return s.id === 'sec-debt'; });
+  if (debtSec) {
+    var debtHtml = pack.html.slice(debtSec.offset, debtSec.offset + debtSec.bytes);
+    // Each tbody row is <tr><td>name</td><td>balance</td><td>rate%</td>
+    // <td>payment/m</td><td>months</td></tr>
+    var rowRe = /<tr[^>]*>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<td[^>]*>([^<]*)<\/td>\s*<\/tr>/g;
+    var rm;
+    var bad = 0;
+    var examples = [];
+    while ((rm = rowRe.exec(debtHtml)) !== null) {
+      var balRaw = (rm[2] || '').replace(/[^\d-]/g, '');
+      var payRaw = (rm[4] || '').replace(/[^\d-]/g, '');
+      var monRaw = (rm[5] || '').replace(/[^\d-]/g, '');
+      var bal = parseInt(balRaw, 10);
+      var pay = parseInt(payRaw, 10);
+      var mon = parseInt(monRaw, 10);
+      // Skip header rows (often have non-numeric content)
+      if (isNaN(bal) || bal <= 0) continue;
+      if ((isNaN(pay) || pay === 0) && (isNaN(mon) || mon === 0)) {
+        bad++;
+        if (examples.length < 3) examples.push((rm[1] || '').trim() + ' bal=' + bal);
+      }
+    }
+    if (bad > 0) {
+      findings.push({
+        id: 'table-debt-zero-rows',
+        reviewer: 'table',
+        severity: 'blocker',
+        category: 'debt_table_invalid',
+        section: 'sec-debt',
+        message: bad + ' debt row(s) carry a positive balance with payment=0 AND months_remaining=0 — looks broken to any reader.',
+        evidence: examples.join(' | '),
+        fix_kind: 'manual',
+        fix_target: 'sec-debt-rows'
       });
     }
   }

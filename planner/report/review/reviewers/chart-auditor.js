@@ -1,21 +1,29 @@
-// chart-auditor.js — Deterministic chart auditor.
+// chart-auditor.js - Deterministic chart auditor.
 //
 // Detects:
 //   - approximation_visible: any chart whose title contains "approximation" /
-//     "approximate" — these must not appear in client deliverables.
-//   - duplicate_chart: same chart type rendered twice in the report.
-//   - missing_income_source: income chart legend doesn't include a material
-//     income source flagged by the profile (corp dividends, rental cashflow).
-//   - uniform_stress: stress section all rows identical → callout, not section.
+//     "approximate" - these must not appear in client deliverables.
+//   - duplicate_chart: same chart title rendered twice in the report.
+//   - missing_income_source: revenue chart legend omits a material income
+//     source flagged by the profile (corp dividends, rental cash flow).
+//   - uniform_stress: stress section all rows identical -> callout, not section.
 
 'use strict';
 
+function _legendLabels(sectionHtml) {
+  var labels = [];
+  var re = /<span class="chart-legend-item">\s*<span class="chart-legend-swatch"[^>]*><\/span>\s*([^<]+)<\/span>/g;
+  var m;
+  while ((m = re.exec(sectionHtml)) !== null) labels.push((m[1] || '').trim());
+  return labels;
+}
+
 function audit(pack) {
   var findings = [];
-  var fr = pack.profile.lang === 'fr';
   var p = pack.profile.params || {};
+  var revData = pack.revData || [];
 
-  // ─── 1) Approximation labels in chart titles ─────────────────────────
+  // 1) Approximation labels in chart titles
   pack.charts.forEach(function(c) {
     if (c.title && /approximation|approximate/i.test(c.title)) {
       findings.push({
@@ -24,7 +32,7 @@ function audit(pack) {
         severity: 'blocker',
         category: 'approximation_visible',
         section: null,
-        message: 'Chart "' + c.title + '" is labeled approximation — should not appear in client report.',
+        message: 'Chart "' + c.title + '" is labeled approximation and must not appear in a client report.',
         evidence: c.title,
         fix_kind: 'remove_section',
         fix_target: c.type
@@ -32,10 +40,7 @@ function audit(pack) {
     }
   });
 
-  // ─── 2) Sensitivity heatmap is itself an approximation ───────────────
-  // Even when the chart-title doesn't say so, the dedicated heatmap is
-  // explicitly described as an educational approximation. In V1 we ban it
-  // from client reports.
+  // 2) Sensitivity heatmap is itself an approximation
   var hasSensHeatmap = pack.charts.some(function(c) { return c.type === 'heatmap-sensitivity'; });
   if (hasSensHeatmap) {
     findings.push({
@@ -44,17 +49,14 @@ function audit(pack) {
       severity: 'blocker',
       category: 'approximation_visible',
       section: 'sec-sensitivity',
-      message: 'Sensitivity heatmap is an educational approximation, not real Monte Carlo output. Ban from client report.',
+      message: 'Sensitivity heatmap is an educational approximation, not real Monte Carlo output. Ban it from the client report.',
       evidence: 'heatmap present',
       fix_kind: 'remove_section',
       fix_target: 'sec-sensitivity'
     });
   }
 
-  // ─── 3) Duplicate charts of the same TITLE (not type) ─────────────────
-  // Two charts of the same SVG type (e.g. two area charts: one for income,
-  // one for couple coordination) are legitimate — they show different data.
-  // True duplication is two charts with the same TITLE; that's a render bug.
+  // 3) Duplicate charts of the same title
   var byTitle = {};
   pack.charts.forEach(function(c) {
     if (!c.title) return;
@@ -76,46 +78,57 @@ function audit(pack) {
     }
   });
 
-  // ─── 4) Missing income source for material assets ────────────────────
-  // If profile has a corp (bizOn / bizRetainedEarnings) or rentals (props),
-  // the income chart should surface those streams. We detect by scanning the
-  // sec-revenue section for those keywords.
+  // 4) Missing income source for material assets
   var revSection = pack.sections.find(function(s) { return s.id === 'sec-revenue'; });
   if (revSection) {
     var revHtml = pack.html.slice(revSection.offset, revSection.offset + revSection.bytes);
-    if ((p.bizOn || p.bizRetainedEarnings) && !/dividend|corp|société|incorpor/i.test(revHtml)) {
+    var legend = _legendLabels(revHtml).join(' | ').toLowerCase();
+    var hasCorpProfile = !!(p.bizOn || p.bizRetainedEarnings || p.bizRevenue || p.bizVal);
+    var hasRentalProfile = !!((p.props || []).some(function(pr) {
+      return pr && pr.on && ((pr.rm || 0) > 0 || (pr.ri || 0) > 0 || (pr.nm && /rental|locatif|plex|duplex|triplex|hamilton|mississauga/i.test(pr.nm)));
+    }));
+    var hasCorpFlow = revData.some(function(r) {
+      return (r.corpDiv || 0) > 0 || (r.corpSal || 0) > 0 || (r.corpExtract || 0) > 0;
+    });
+    var hasRentalFlow = revData.some(function(r) {
+      return (r.tiRe || 0) > 0;
+    });
+    var requiresCorpLegend = hasCorpProfile && hasCorpFlow;
+    var requiresRentalLegend = hasRentalProfile && hasRentalFlow;
+
+    if (requiresCorpLegend && !/dividend|corp|corporate|societe|soci.t.|incorpor/i.test(legend)) {
       findings.push({
         id: 'chart-missing-corp',
         reviewer: 'chart',
         severity: 'blocker',
         category: 'missing_income_source',
         section: 'sec-revenue',
-        message: 'Profile has a corporation but the revenue section / chart does not surface corporate income as a distinct stream.',
-        evidence: 'bizOn=' + !!p.bizOn + ', bizRetainedEarnings=' + p.bizRetainedEarnings,
+        message: 'Profile has a corporation but the revenue chart legend does not surface corporate income as a distinct stream.',
+        evidence: 'legend=' + (legend || '(none)'),
         fix_kind: 'recompute_from_canonical',
         fix_target: 'income_chart'
       });
     }
-    if (p.props && p.props.length > 0 && !/rental|locati(ve|f)|loyer/i.test(revHtml)) {
+
+    if (requiresRentalLegend && !/rental|rent|cash flow|loyer|locatif/i.test(legend)) {
       findings.push({
         id: 'chart-missing-rental',
         reviewer: 'chart',
         severity: 'blocker',
         category: 'missing_income_source',
         section: 'sec-revenue',
-        message: 'Profile has ' + p.props.length + ' rental properties but the revenue section / chart does not surface rental cashflow.',
-        evidence: 'props_count=' + p.props.length,
+        message: 'Profile has rental real estate but the revenue chart legend does not surface rental cash flow.',
+        evidence: 'legend=' + (legend || '(none)'),
         fix_kind: 'recompute_from_canonical',
         fix_target: 'income_chart'
       });
     }
   }
 
-  // ─── 5) Stress section uniformity — all rows identical ───────────────
+  // 5) Stress section uniformity - all rows identical
   var stressSection = pack.sections.find(function(s) { return s.id === 'sec-stress'; });
   if (stressSection) {
     var stressHtml = pack.html.slice(stressSection.offset, stressSection.offset + stressSection.bytes);
-    // Extract success-rate values per scenario row
     var rowSucc = [];
     var re = /(\d{1,3})\s*%/g;
     var m;

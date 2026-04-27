@@ -20,20 +20,36 @@
 /* eslint-disable */
 // @ts-nocheck — This is a mechanical port; strict TS comes in P4
 
-var TAX_BASE_YEAR = 2026; // All tax constants below are 2026 values; indexed by CPI in calcTax
-var FED_BRACKETS = [58523, 117045, 181440, 258482]; // 2026 federal brackets
-var FED_RATES = [0.14, 0.205, 0.26, 0.29, 0.33];
-var FED_PERSONAL = 16452; // 2026 basic personal amount
-var OAS_CLAWBACK_THR = 95323; // 2026 OAS recovery threshold
-var OAS_MAX_MONTHLY = 742.31;
-var GIS_MAX_SINGLE = 1105.43; // 2026 Q1
-var GIS_MAX_COUPLE = 667.41; // 2026 Q1 (spouse receives full OAS)
-var QPP_MAX_MONTHLY = 1507.65; // 2026 CPP/QPP max monthly at 65 (incl. enhancement)
-var QPP_MGA = 74600; // 2026 YMPE
-var QPP_YAMPE = 85000; // 2026 YAMPE
-var QPP2_MAX_MONTHLY = 81.00; // 2026 est. CPP2 max monthly enhancement
-var PENSION_CREDIT_MAX = 2000;
-var TFSA_LIMIT_2026 = 7000;
+// ── A0: SINGLE SOURCE OF TRUTH ────────────────────────────────────────
+// All fiscal/benefit thresholds READ from window.BFConstants (loaded
+// from report/report-constants-2026.js). The bindings below provide
+// hoisted local names so existing engine code (calcTax / calcOAS /
+// calcQPP / calcGIS / etc.) can reference TAX_BASE_YEAR, FED_BRACKETS,
+// etc. without changes. NEVER add an inline literal value here. To
+// update tax-year values, edit report/report-constants-2026.js (and the
+// parallel ESM file lib/constants/engine-shim.js). A pre-commit grep
+// guard catches any hardcoded threshold (95323 / 1105.43 / 742.31 /
+// 16452 / 74600 / etc.) introduced outside the two shim files.
+var _C = (typeof window !== 'undefined' && window.BFConstants) ? window.BFConstants : (typeof global !== 'undefined' && global.BFConstants ? global.BFConstants : null);
+if (!_C) {
+  // Fallback: allow file to load standalone, but flag the missed wiring.
+  console && console.warn && console.warn('report-engine.js: BFConstants shim not loaded; values will be undefined. Load report/report-constants-2026.js BEFORE this file.');
+  _C = {};
+}
+var TAX_BASE_YEAR = _C.TAX_BASE_YEAR;
+var FED_BRACKETS = _C.FED_BRACKETS;
+var FED_RATES = _C.FED_RATES;
+var FED_PERSONAL = _C.FED_PERSONAL;
+var OAS_CLAWBACK_THR = _C.OAS_CLAWBACK_THR;
+var OAS_MAX_MONTHLY = _C.OAS_MAX_MONTHLY;
+var GIS_MAX_SINGLE = _C.GIS_MAX_SINGLE;
+var GIS_MAX_COUPLE = _C.GIS_MAX_COUPLE;
+var QPP_MAX_MONTHLY = _C.QPP_MAX_MONTHLY;
+var QPP_MGA = _C.QPP_MGA;
+var QPP_YAMPE = _C.QPP_YAMPE;
+var QPP2_MAX_MONTHLY = _C.QPP2_MAX_MONTHLY;
+var PENSION_CREDIT_MAX = _C.PENSION_CREDIT_MAX;
+var TFSA_LIMIT_2026 = _C.TFSA_LIMIT_2026;
 // === END NAMED CONSTANTS ===
 // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // TAX BRACKETS \u2014 Federal: 2025 (CRA T1 General)
@@ -44,23 +60,8 @@ var TFSA_LIMIT_2026 = 7000;
 // Last verified: February 2026
 // To update: replace bracket thresholds, rates, personal amounts
 // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-var PROV_TAX = {
-  // eligDivCr / nonEligDivCr: provincial dividend tax credit rates (% of grossed-up amount)
-  // Ref: PASSATION_CCPC_MODULE.md §2.4 — RCGT / EY 2025-2026 tables
-  QC: { b: [54345, 108680, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362 , ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
-  ON: { b: [53891, 107785, 15e4, 22e4], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863 , ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
-  BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196 , ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
-  AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218 , ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
-  SK: { b: [54532, 155805], r: [0.105, 0.125, 0.145], pd: 20381, abate: 1, eligDivCr: 0.11, nonEligDivCr: 0.02105 , ageAmt: 5518, ageThresh: 0, penAmt: 1000 },
-  MB: { b: [47e3, 1e5], r: [0.108, 0.1275, 0.174], pd: 15780, abate: 1, eligDivCr: 0.08, nonEligDivCr: 0.007835 , ageAmt: 3728, ageThresh: 0, penAmt: 1000 },
-  NB: { b: [51306, 102614, 190081], r: [0.094, 0.14, 0.16, 0.195], pd: 13396, abate: 1, eligDivCr: 0.14, nonEligDivCr: 0.027518 , ageAmt: 5849, ageThresh: 42553, penAmt: 1000 },
-  NS: { b: [30182, 60364, 94860, 153e3], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 8651, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015 , ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
-  PE: { b: [33538, 67079], r: [0.098, 0.138, 0.167], pd: 13865, abate: 1, eligDivCr: 0.105, nonEligDivCr: 0.013 , ageAmt: 4862, ageThresh: 0, penAmt: 1000 },
-  NL: { b: [44062, 88123, 157329, 220262, 281387, 562714], r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], pd: 11034, abate: 1, eligDivCr: 0.063, nonEligDivCr: 0.032 , ageAmt: 7742, ageThresh: 39880, penAmt: 1000 },
-  NT: { b: [51963, 103931, 169067], r: [0.059, 0.086, 0.122, 0.1405], pd: 17041, abate: 1, eligDivCr: 0.115, nonEligDivCr: 0.06 , ageAmt: 8200, ageThresh: 0, penAmt: 1000 },
-  YT: { b: [58523, 117045, 181440, 258482, 5e5], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067 , ageAmt: 8790, ageThresh: 44325, penAmt: 2000 },
-  NU: { b: [54333, 108668, 177231], r: [0.04, 0.07, 0.09, 0.115], pd: 18284, abate: 1, eligDivCr: 0.0551, nonEligDivCr: 0.025904 , ageAmt: 14865, ageThresh: 0, penAmt: 2000 }
-};
+// PROV_TAX read from the shim (single source of truth).
+var PROV_TAX = _C.PROV_TAX;
 function calcTax(inc, yr, prov, infR, retired, divInfo) {
   // Ref: PASSATION_CCPC_MODULE.md §4.1-4.2
   // divInfo = { eligDiv: cash_eligible_dividend, nonEligDiv: cash_non_eligible_dividend } || null
@@ -1590,7 +1591,10 @@ function runMC(p, N, _progressCb) {
       // Correctly excludes: TFSA withdrawals (tax-free, not reported on T1)
       // Note: GIS tests income not assets (Line 23600). TFSA-heavy retirees legitimately qualify.
       if (retired && age >= 65 && gis > 0) {
-        var _gisFullInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + (rrifMin || 0) + (cRrifMin || 0) + (meltAmt || 0) + (_wFromRR || 0) + (reNet > 0 ? reNet : 0) + (liraWith || 0) + (cLiraWith || 0);
+        // F18 — Audit fix: include NR-withdrawal taxable portion in the
+        // GIS recalc. See lib/engine/index.js for full rationale.
+        var _nrTaxablePart = (typeof _nrIncl === 'number') ? _nrIncl : (_wFromNR || 0) * 0.5;
+        var _gisFullInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + (rrifMin || 0) + (cRrifMin || 0) + (meltAmt || 0) + (_wFromRR || 0) + (reNet > 0 ? reNet : 0) + (liraWith || 0) + (cLiraWith || 0) + _nrTaxablePart;
         var gisNew = calcGIS(age, _gisFullInc / Math.max(1, infM), y, p.inf, p.cOn && cAlive) * 12;
         if (gisNew !== gis) {
           govInc += (gisNew - gis);
@@ -1922,7 +1926,12 @@ function runMC(p, N, _progressCb) {
     else if (p.prov === "AB") probate = 525;
     else if (p.prov === "QC") probate = 1200;
     else probate = Math.max(0, _estGross * 0.004);
+    // Probate is a fee on a real estate. Skip when there's nothing to
+    // probate (avoids the -$1200 / -$525 artifact on QC/AB ruin paths).
+    if (_estGross <= 0 && reEquity <= 0) probate = 0;
     var estateNet = finalVal - estTax - probate + (lifeIns || 0) + (cLifeIns || 0);
+    // Floor at 0 — negative estate isn't inherited by beneficiaries.
+    if (estateNet < 0) estateNet = 0;
     // GK per-sim stats
     gkAllCuts.push(gkCutCount); gkAllRaises.push(gkRaiseCount); gkAllCutYrs.push(gkCutYrs); gkAllMaxStreak.push(gkMaxCutStreak);
     gkAllMinFactor.push(gkMinFactor);
@@ -1993,34 +2002,72 @@ function runMC(p, N, _progressCb) {
     var mrAge = p.age + mri;
     var mrInf = Math.pow(1 + p.inf, mri);
     var mrRetired = mrAge >= p.retAge;
-    var mrTaxInc, mrTax;
+    // ── A1/A2 mirror of lib/engine: scope-tagged metrics + Codex fixes
+    // (taxInc household separation, cPenIdx, cSal-cRetAge, target/funded
+    // spending). See lib/engine/index.js for full rationale.
+    var mrTaxInc_primary, mrTaxInc_spouse, mrTax_primary, mrTax_spouse;
+    var _mrCRetiredOwnAge = p.cOn && ((p.cAge||p.age) + mri >= (p.cRetAge || p.retAge));
     if (mrRetired) {
-      // R6: withdrawal income capped at available balance — can't tax phantom income
       var _mrWdNeed = Math.max(0, (mrp.spend||0) - (mrp.qpp||0) - (mrp.oas||0) - (mrp.gis||0) - (mrp.pen||0) - (mrp.pt||0));
       var _mrAvailBal = (mrp.rr||0) + (mrp.tf||0) + (mrp.nr||0) + (mrp.pe||0) + (mrp.pm||0) + (mrp.dc||0) + (mrp.crr||0) + (mrp.ctf||0) + (mrp.cnr||0) + (mrp.corp||0);
       var _mrWdCapped = Math.min(_mrWdNeed, _mrAvailBal);
-      mrTaxInc = (mrp.qpp||0) + (mrp.oas||0) + (mrp.pen||0) + _mrWdCapped;
-      var mrCTaxInc = 0;
-      if (p.cOn) { var mrCA = (p.cAge||p.age) + mri; if (mrCA >= (p.cQppAge||65)) mrCTaxInc += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0)*12*mrInf; if (mrCA >= (p.cOasAge||65)) mrCTaxInc += calcOAS(p.cOasAge||65,mrCTaxInc,mri,p.inf,mrCA)*12; if (p.cPenType==="db") { var _mrCPenInf = p.penIdx === 2 ? mrInf : p.penIdx === 1 ? Math.pow(1 + p.inf * 0.5, mri) : 1; mrCTaxInc += (p.cPenM||0)*12*_mrCPenInf; } }
-      var mrRetTxCalc = calcTax(mrTaxInc, mri, p.prov || "QC", p.inf, mrAge >= 65);
-      var _mrCRetired = p.cOn && ((p.cAge||p.age) + mri >= (p.cRetAge||p.retAge));
-      var mrCA2 = p.cOn ? (p.cAge||p.age) + mri : 0;
-      var mrCRetTx = mrCTaxInc > 0 ? calcTax(mrCTaxInc, mri, p.prov || "QC", p.inf, mrCA2 >= 65) : {total:0};
-      mrTax = mrRetTxCalc.total + (mrCRetTx ? mrCRetTx.total : 0);
+      mrTaxInc_primary = (mrp.qpp||0) + (mrp.oas||0) + (mrp.pen||0) + _mrWdCapped;
+      mrTaxInc_spouse = 0;
+      if (p.cOn) {
+        var mrCA = (p.cAge||p.age) + mri;
+        if (mrCA >= (p.cQppAge||65)) mrTaxInc_spouse += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0) * 12 * mrInf;
+        if (mrCA >= (p.cOasAge||65)) mrTaxInc_spouse += calcOAS(p.cOasAge||65, mrTaxInc_spouse, mri, p.inf, mrCA) * 12;
+        if (p.cPenType === "db" && _mrCRetiredOwnAge) {
+          var _mrCPenInf = p.cPenIdx === 2 ? mrInf : p.cPenIdx === 1 ? Math.pow(1 + p.inf * 0.5, mri) : 1;
+          mrTaxInc_spouse += (p.cPenM||0) * 12 * _mrCPenInf;
+        }
+        if (!_mrCRetiredOwnAge) mrTaxInc_spouse += (p.cSal || 0) * mrInf;
+      }
+      mrTax_primary = calcTax(mrTaxInc_primary, mri, p.prov || "QC", p.inf, mrAge >= 65).total;
+      mrTax_spouse = mrTaxInc_spouse > 0 ? calcTax(mrTaxInc_spouse, mri, p.prov || "QC", p.inf, ((p.cAge||p.age) + mri) >= 65).total : 0;
     } else {
-      mrTaxInc = p.sal * mrInf;
-      var mrCPreTaxInc = p.cOn ? (p.cSal || 0) * mrInf : 0;
-      var mrTxCalc = calcTax(mrTaxInc, mri, p.prov || "QC", p.inf);
-      var mrCPreTx = mrCPreTaxInc > 0 ? calcTax(mrCPreTaxInc, mri, p.prov || "QC", p.inf) : {total:0};
-      mrTax = mrTxCalc.total + (mrCPreTx ? mrCPreTx.total : 0);
+      mrTaxInc_primary = p.sal * mrInf;
+      mrTaxInc_spouse = (p.cOn && !_mrCRetiredOwnAge) ? (p.cSal || 0) * mrInf : 0;
+      if (p.cOn && _mrCRetiredOwnAge) {
+        var mrCA0 = (p.cAge||p.age) + mri;
+        if (mrCA0 >= (p.cQppAge||65)) mrTaxInc_spouse += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0) * 12 * mrInf;
+        if (mrCA0 >= (p.cOasAge||65)) mrTaxInc_spouse += calcOAS(p.cOasAge||65, mrTaxInc_spouse, mri, p.inf, mrCA0) * 12;
+        if (p.cPenType === "db") {
+          var _mrCPenInf2 = p.cPenIdx === 2 ? mrInf : p.cPenIdx === 1 ? Math.pow(1 + p.inf * 0.5, mri) : 1;
+          mrTaxInc_spouse += (p.cPenM||0) * 12 * _mrCPenInf2;
+        }
+      }
+      mrTax_primary = calcTax(mrTaxInc_primary, mri, p.prov || "QC", p.inf).total;
+      mrTax_spouse = mrTaxInc_spouse > 0 ? calcTax(mrTaxInc_spouse, mri, p.prov || "QC", p.inf).total : 0;
     }
-    // R6: Cap withdrawals at available balance — can't withdraw from empty accounts
+    var mrTaxInc_household = mrTaxInc_primary + mrTaxInc_spouse;
+    var mrTax_household = mrTax_primary + mrTax_spouse;
+    var mrTaxInc = mrTaxInc_household;
+    var mrTax = mrTax_household;
     var _mrRetNeed = Math.max(0, (mrp.spend||0) - (mrp.qpp||0) - (mrp.oas||0) - (mrp.gis||0) - (mrp.pen||0) - (mrp.pt||0));
     var _mrTotalBal = (mrp.rr||0) + (mrp.tf||0) + (mrp.nr||0) + (mrp.pe||0) + (mrp.pm||0) + (mrp.dc||0) + (mrp.crr||0) + (mrp.ctf||0) + (mrp.cnr||0) + (mrp.corp||0);
     var _mrRetCapped = Math.min(_mrRetNeed, _mrTotalBal);
     var _mrGov = (mrp.qpp||0) + (mrp.oas||0) + (mrp.gis||0) + (mrp.pen||0) + (mrp.pt||0);
-    var _mrActualSpend = mrRetired ? _mrGov + _mrRetCapped : (mrp.spend||0);
-    medRevData.push({ age: mrAge, rrq: mrp.qpp||0, psv: mrp.oas||0, srg: mrp.gis||0, pen: mrp.pen||0, pt: mrp.pt||0, ret: _mrRetCapped, spend: _mrActualSpend, tax: mrTax, taxInc: Math.max(0, mrTaxInc), penCont: mrp.penCont||0, sal: mrRetired ? 0 : p.sal * mrInf, payroll: mrRetired ? 0 : calcPayroll(p.sal * mrInf, p.prov || "QC"), cSal: mrRetired ? 0 : (p.cSal || 0) * mrInf, cPayroll: mrRetired ? 0 : calcPayroll((p.cSal || 0) * mrInf, p.prov || "QC"),
+    var _mrSpendTarget = mrp.spend || 0;
+    var _mrSpendFunded = mrRetired ? _mrGov + _mrRetCapped : _mrSpendTarget;
+    var _mrActualSpend = _mrSpendFunded;
+    medRevData.push({ age: mrAge, rrq: mrp.qpp||0, psv: mrp.oas||0, srg: mrp.gis||0, pen: mrp.pen||0, pt: mrp.pt||0, ret: _mrRetCapped, spend: _mrActualSpend,
+      spend_target: _mrSpendTarget, spend_funded: _mrSpendFunded,
+      tax: mrTax_household, tax_primary: mrTax_primary, tax_spouse: mrTax_spouse, tax_household: mrTax_household,
+      taxInc: Math.max(0, mrTaxInc_household), taxInc_primary: Math.max(0, mrTaxInc_primary), taxInc_spouse: Math.max(0, mrTaxInc_spouse), taxInc_household: Math.max(0, mrTaxInc_household),
+      penCont: mrp.penCont||0, sal: mrRetired ? 0 : p.sal * mrInf, payroll: mrRetired ? 0 : calcPayroll(p.sal * mrInf, p.prov || "QC"),
+      cSal: _mrCRetiredOwnAge ? 0 : (p.cSal || 0) * mrInf, cPayroll: _mrCRetiredOwnAge ? 0 : calcPayroll((p.cSal || 0) * mrInf, p.prov || "QC"),
+      // Spouse retirement-income streams forwarded from medPath so renderers
+      // and the canonical contract can compute *household* coverage (P1.1).
+      // medPath stores them as cQpp / cOas / cGis / cPen; medRevData mirrors
+      // the primary keys (rrq / psv / srg / pen) for symmetry.
+      cRrq: mrp.cQpp||0, cPsv: mrp.cOas||0, cSrg: mrp.cGis||0, cPen: mrp.cPen||0, cInc: mrp.cInc||0,
+      // Rental cash flow (taxable-income basis) — preserved from revData so
+      // the revenue chart can surface it as a distinct income stream.
+      tiRe: revData[mri] ? (revData[mri].tiRe||0) : 0,
+      // LIRA withdrawals primary + spouse — distinct stream when present.
+      liraWith: revData[mri] ? (revData[mri].liraWith||0) : 0,
+      cLiraWith: revData[mri] ? (revData[mri].cLiraWith||0) : 0,
       aRR: mrp.rr||0, aTF: mrp.tf||0, aNR: mrp.nr||0, aPE: mrp.pe||0, aPM: mrp.pm||0, aDC: mrp.dc||0, aCRR: mrp.crr||0, aCTF: mrp.ctf||0, aCNR: mrp.cnr||0, aRE: mrp.re||0, aLIRA: mrp.lira||0, aCLIRA: mrp.cLira||0, gis: mrp.gis||0,
       corpBal: mrp.corp||0, corpTax: revData[mri] ? (revData[mri].corpTax||0) : 0, corpSal: revData[mri] ? (revData[mri].corpSal||0) : 0, corpDiv: revData[mri] ? (revData[mri].corpDiv||0) : 0, corpExtract: revData[mri] ? (revData[mri].corpExtract||0) : 0, corpCDA: revData[mri] ? (revData[mri].corpCDA||0) : 0, corpRDTOH: revData[mri] ? (revData[mri].corpRDTOH||0) : 0 });
   }
@@ -2079,8 +2126,11 @@ function runMC(p, N, _progressCb) {
     snapshots.sort(function(a, b) {
       return a.t - b.t;
     });
-    var pcts = [0.05, 0.1, 0.25, 0.5, 0.75, 0.95];
-    var pNames = ["p5", "p10", "p25", "p50", "p75", "p95"];
+    // Mirror of lib/engine/index.js: include p90 so the fan chart can use
+    // P10–P90 as the wide band (P5/P95 are outliers, misleading for
+    // fail-prone profiles).
+    var pcts = [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95];
+    var pNames = ["p5", "p10", "p25", "p50", "p75", "p90", "p95"];
     var row = { age: p.age + y2 };
     var _kPct = Math.max(3, Math.round(N * 0.01));
     for (var pi = 0; pi < pcts.length; pi++) {
@@ -2379,6 +2429,24 @@ function runMC(p, N, _progressCb) {
     sens,
     revData,
     medRevData,
+    // Schema-gap exports — see DATA-VALIDATION-2026-04-25.md.
+    oasClbkYrs: (function() {
+      var thr = 95000;
+      return medRevData.filter(function(r) {
+        if (r.age < (p.oasAge || 65)) return false;
+        var infY = Math.pow(1 + (p.inf || 0.021), r.age - p.age);
+        return (r.taxInc || 0) > thr * infY;
+      }).length;
+    })(),
+    _lifetimeTax: (function() {
+      var total = 0;
+      medRevData.forEach(function(r) {
+        if (r.age < (p.retAge || 65)) return;
+        var infY = Math.pow(1 + (p.inf || 0.021), r.age - p.age);
+        total += (r.tax || 0) / infY;
+      });
+      return Math.round(total);
+    })(),
     avgDeath,
     deathAges: deathAges,
     cDeathAges: cDeathAges,

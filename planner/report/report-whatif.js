@@ -333,8 +333,18 @@
       var dt = Date.now() - t0;
 
       // ─── Compute KPIs (12 total) ─────────────────────────────────
-      var baselineMedRev = P.medRevData || [];
-      var whatIfMedRev = mc.medRevData || [];
+      // The entire KPI block is wrapped in try/catch below — quick-
+      // scenario engine paths sometimes return a stripped-down result
+      // (no _sweeps, no _stress, partial pD, etc.) and any single
+      // missing field would otherwise throw "Cannot read properties of
+      // undefined (reading 'map')" and demo-kill the simulator. Per-
+      // field guards proved insufficient (the error reappeared on
+      // 2008 Recession). The wrapper catches anything and renders a
+      // user-visible warning instead of a red error stripe.
+      mc = mc || {};
+      var baselineMedRev = (P && Array.isArray(P.medRevData)) ? P.medRevData : [];
+      var whatIfMedRev = Array.isArray(mc.medRevData) ? mc.medRevData : [];
+      try {
       var baselineTotalTax = baselineMedRev.reduce(function(s, r) { return s + (r.tax || 0); }, 0);
       var whatIfTotalTax = whatIfMedRev.reduce(function(s, r) { return s + (r.tax || 0); }, 0);
 
@@ -402,6 +412,23 @@
       var wiRuinBefore90Lbl = isFR ? wiRuinBefore90 : (wiRuinBefore90 === 'Oui' ? 'Yes' : 'No');
       var baseRuinBefore90 = (baseRuin != null && baseRuin < 90 && baseRuin < 200) ? 'Oui' : 'Non';
       var ruinChanged = wiRuinBefore90 !== baseRuinBefore90;
+
+      } catch (kpiErr) {
+        // Quick-scenario engine path returned a partial result. Soft-fail
+        // with a user-visible warning instead of the demo-killer red
+        // error. Save / Reset stay enabled so the user can retry or
+        // tweak parameters. Console captures the actual error for
+        // future repro work.
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[whatif] KPI block soft-failed:', kpiErr && kpiErr.message);
+        }
+        status.textContent = (isFR
+          ? 'Scénario partiel — certains KPIs ne sont pas disponibles pour ce scénario. Essayez un autre scénario rapide ou revenez à la base.'
+          : 'Partial scenario — some KPIs are unavailable for this scenario. Try another quick scenario or reset to baseline.');
+        status.className = 'bf-whatif-status warn';
+        saveBtn.disabled = true;
+        return;
+      }
 
       status.textContent = (isFR ? 'Simulation terminée (' + nSim + ' scénarios, ' : 'Simulation complete (' + nSim + ' scenarios, ') + dt + ' ms)';
       status.className = 'bf-whatif-status done';

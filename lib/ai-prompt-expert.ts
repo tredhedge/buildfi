@@ -2,6 +2,11 @@
 // Section-based: generates 4 batches of prompts for parallel Anthropic calls
 // Each batch = system + user prompt → returns narration for 3-6 sections
 // Pattern: extends ai-prompt-inter.ts with adaptive sections from STRATEGY §22
+//
+// PII AUDIT (2026-04-26 — Sprint 4 Loi 25 review):
+//   No email, last name, or direct identifier may flow into Anthropic.
+//   Verified: zero email-like substrings in this file. The quiz/profile
+//   data carries no name fields. If that changes, scrub here.
 
 import { computeDerivedProfile, computeRenderPlan } from "./ai-profile";
 import { type ExpertSectionKey, getActiveExpertSections } from "./ai-constants";
