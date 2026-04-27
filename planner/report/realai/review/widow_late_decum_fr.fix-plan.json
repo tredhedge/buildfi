@@ -32,6 +32,12 @@
   "localize_label": [],
   "manual": [
     {
+      "section": "sec-more-detail",
+      "target": "sec-more-detail",
+      "severity": "minor",
+      "message": "Section sec-more-detail renders but contains only 14 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty."
+    },
+    {
       "section": null,
       "target": "global",
       "severity": "minor",

@@ -144,34 +144,34 @@
       "isEmpty": false
     },
     {
-      "id": "sec-projection",
-      "title": "6Wealth Projection",
-      "bytes": 28521,
+      "id": "sec-cashflow",
+      "title": "6Year-by-year cash flow",
+      "bytes": 2149,
       "offset": 95199,
       "isThin": false,
       "isEmpty": false
     },
     {
+      "id": "sec-projection",
+      "title": "7Wealth Projection",
+      "bytes": 28521,
+      "offset": 97348,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
       "id": "sec-risk",
-      "title": "7Risk & Sensitivity",
+      "title": "8Risk & Sensitivity",
       "bytes": 3183,
-      "offset": 123720,
+      "offset": 125869,
       "isThin": false,
       "isEmpty": false
     },
     {
       "id": "sec-stress",
-      "title": "8Stress tests",
+      "title": "9Stress tests",
       "bytes": 3009,
-      "offset": 126903,
-      "isThin": false,
-      "isEmpty": false
-    },
-    {
-      "id": "sec-cashflow",
-      "title": "9Year-by-year cash flow",
-      "bytes": 2149,
-      "offset": 129912,
+      "offset": 129052,
       "isThin": false,
       "isEmpty": false
     },
@@ -281,12 +281,12 @@
     {
       "type": "area",
       "title": "Wealth Composition (liquid + illiquid)",
-      "offset": 95683
+      "offset": 97832
     },
     {
       "type": "fan",
       "title": "Monte Carlo Projection",
-      "offset": 110790
+      "offset": 112939
     },
     {
       "type": "fan",

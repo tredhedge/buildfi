@@ -3931,10 +3931,8 @@
   // Glossary appendix renderer — calls BFGlossary.renderAppendix(lang) which
   // returns a 2-column <dl> of every term defined in report-glossary.js.
   function _renderGlossaryAppendix(d, secN) {
-    // Codex P4: glossary is for technical readers. Plain-mode beginners
-    // get inline term hovers via report-glossary.js; the back-matter
-    // appendix is omitted.
-    if (!_relevanceGate(d, 'glossary')) return '';
+    // 2026-04-28: always rendered. Plain readers see it inside the
+    // orchestrator's "more detail" <details> disclosure.
     var fr = d.fr;
     var lang = fr ? 'fr' : 'en';
     var listHtml = '';
@@ -4145,9 +4143,8 @@
   // Complements sec-methodology (which explains METHOD) with the CONSTANTS
   // and ENGINE PARAMETERS used for this specific plan.
   function renderAssumptions(d, secN) {
-    // Codex P4: assumptions appendix is back-matter for advanced readers;
-    // beginner+concise audience does not consume it.
-    if (!_relevanceGate(d, 'assumptions')) return '';
+    // 2026-04-28: always rendered. Plain readers see the section inside
+    // the orchestrator's "more detail" <details> disclosure.
     var fr = d.fr, p = d.p;
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
@@ -4730,9 +4727,10 @@
 
   // === SECTION: METHODOLOGY ===
   function renderMethodology(d, secN) {
-    // Codex 2026-04-27 P4: beginner+concise readers do NOT need the
-    // methodology section — it is too dense and feels like machinery.
-    if (!_relevanceGate(d, 'methodology')) return '';
+    // 2026-04-28: methodology is now ALWAYS rendered. For plain readers
+    // (beginner+concise), the orchestrator wraps it in a "more detail"
+    // <details> disclosure that's collapsed by default. The reader can
+    // expand it on demand.
     var fr = d.fr, exp = d.exp, p = d.p, mc = d.mc;
     var _isQC = d._isQC;
     var h = secPage();
@@ -5057,11 +5055,12 @@
     if (d.includeSimulator !== false && !d.clientExport) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
     }
-    // Back-matter (methodology / assumptions / glossary): only the genuinely-
-    // minimal cell (beginner+concise) skips these. A beginner+detailed reader
-    // wants methodology — they explicitly asked for depth. The 3×3 matrix
-    // honors finLiteracy × detailPref independently.
-    if (!_isMinimalReader) {
+    // Back-matter TOC: plain readers (beginner) get a single grouped
+    // disclosure entry "More detail" that opens to reveal all three;
+    // non-plain readers get individual entries for each appendix.
+    if (_isPlainReader) {
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-more-detail', label: d.fr ? 'Pour plus de d\u00e9tails' : 'For more detail' });
+    } else {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
@@ -5109,7 +5108,12 @@
     secN++;
     h += renderProfile(d, secN);
     if (d.R.hasFamily) { secN++; h += renderFamily(d, secN); }
-    if (d.R.hasGoals)  { secN++; h += renderGoals(d, secN); }
+    // Phase 3 leadWith reorder: goals appear here in the default flow, but
+    // when leadWith='floor' (calm reader) we DEFER goals to right after
+    // revenue (they read as future income obligations and pair naturally
+    // with the income-floor narrative). The flag is set in the orchestrator
+    // pre-flight; we render goals here when NOT goalsLeads, otherwise later.
+    if (d.R.hasGoals && !goalsLeads)  { secN++; h += renderGoals(d, secN); }
     var reHtml = renderRealEstate(d, secN + 1);
     if (reHtml)  { secN++; h += reHtml; }
     var corpHtml = renderCorp(d, secN + 1);
@@ -5125,6 +5129,14 @@
     // sensitivity heatmap so the dispersion narrative flows continuously.
     if (revenueFirst) {
       secN++; h += renderRevenue(d, secN);
+      // Phase 3 leadWith='floor': goals + cashflow follow revenue (income-
+      // floor narrative). Goals first (what you owe) then cashflow (what
+      // comes in vs goes out year by year), then projection (long-term).
+      if (d.R.hasGoals && goalsLeads) { secN++; h += renderGoals(d, secN); }
+      if (cashflowLeads) {
+        var _cfEarly = renderCashflow(d, secN + 1);
+        if (_cfEarly) { secN++; h += _cfEarly; d._cashflowRenderedEarly = true; }
+      }
       // Direct reader: pull risk section up adjacent to revenue/projection
       // so the dispersion narrative arrives before the soft fan chart.
       if (riskLeads) { secN++; h += renderRisk(d, secN); }
@@ -5156,9 +5168,23 @@
       'Stress tests \u2014 alternative scenarios (click to open)',
       d
     );
-    // Year-by-year cash flow detail
-    var cfHtml = renderCashflow(d, secN + 1);
-    if (cfHtml) { secN++; h += cfHtml; }
+    // Year-by-year cash flow detail. Skip if Phase 3 already rendered it
+    // earlier (cashflowLeads + revenueFirst). Density-collapse for compact
+    // readers — the table is large (30+ rows) and overwhelming if not
+    // collapsed.
+    if (!d._cashflowRenderedEarly) {
+      var cfHtml = renderCashflow(d, secN + 1);
+      if (cfHtml) {
+        secN++;
+        h += _densityWrap(
+          cfHtml,
+          'sec-cashflow',
+          'Flux annuel \u2014 ann\u00e9e par ann\u00e9e (cliquer pour ouvrir)',
+          'Year-by-year cash flow (click to open)',
+          d
+        );
+      }
+    }
 
     // ─── CH.4 — STRATÉGIE & DÉCISIONS (levers, taxes, transmission) ─────
     // Tax + draworder + meltdown clustered together (meltdown is a tax lever,
@@ -5167,7 +5193,19 @@
     if (_hasStrats) { secN++; h += renderStrategies(d, secN); }
     secN++;
     h += renderTax(d, secN);
-    if (_hasDrawTrace) { secN++; h += renderDrawOrder(d, secN); }
+    if (_hasDrawTrace) {
+      secN++;
+      // Phase 4 density wrap — draw-order heatmap is dense; collapse for
+      // compact readers so the section appears as a single-line teaser
+      // with click-to-expand.
+      h += _densityWrap(
+        renderDrawOrder(d, secN),
+        'sec-draworder',
+        'Ordre des retraits \u2014 s\u00e9quence de d\u00e9caissement (cliquer pour ouvrir)',
+        'Draw-order strategy \u2014 withdrawal sequence (click to open)',
+        d
+      );
+    }
     var meltHtml = renderMeltdown(d, secN + 1);
     if (meltHtml) { secN++; h += meltHtml; }
     if (!_isSuppressed('sec-gis')) {
@@ -5188,7 +5226,10 @@
     var premiumHtml = renderPremiumDeepDive(d, secN + 1);
     if (premiumHtml) { secN++; h += premiumHtml; }
 
-    // 17.5 Action Plan (rule-based; hidden when no actions apply)
+    // 17.5 Action Plan (rule-based; hidden when no actions apply).
+    // Action plan is the most decision-relevant section — NEVER density-
+    // collapsed regardless of reader. Even a beginner+concise reader
+    // should see the action items front-and-centre.
     var actionsHtml = renderActionPlan(d, secN + 1);
     if (actionsHtml) { secN++; h += actionsHtml; }
 
@@ -5209,40 +5250,49 @@
       h += _renderWhatIfMount(d);
     }
 
-    // 18. Methodology (always)
-    // Phase 4: collapse for densityMode != 'deep'.
+    // ── BACK-MATTER (methodology / assumptions / glossary) ─────────────
+    // For plain readers (beginner+concise / beginner+balanced /
+    // beginner+detailed) we render all three inside ONE collapsed
+    // <details> disclosure — gives access to the depth without forcing
+    // the dense back-matter on a casual reader. For non-plain readers
+    // they render inline (each individually density-collapsed when
+    // compact via _densityWrap).
     secN++;
-    h += _densityWrap(
-      renderMethodology(d, secN),
-      'sec-methodology',
-      'M\u00e9thodologie \u2014 hypoth\u00e8ses + tables fiscales (cliquer pour ouvrir)',
-      'Methodology \u2014 assumptions + tax tables (click to open)',
-      d
-    );
+    var _methHtml = renderMethodology(d, secN);
+    secN++;
+    var _assumpHtml = renderAssumptions(d, secN);
+    secN++;
+    var _glossHtml = _renderGlossaryAppendix(d, secN);
 
-    // 18.5 Assumptions appendix — consolidates engine inputs for audit trail
-    // Phase 4: collapse when detailPref='concise'.
-    secN++;
-    h += _densityWrap(
-      renderAssumptions(d, secN),
-      'sec-assumptions',
-      'Annexe \u2014 hypoth\u00e8ses d\u00e9taill\u00e9es (cliquer pour ouvrir)',
-      'Appendix \u2014 detailed assumptions (click to open)',
-      d
-    );
-
-    // 18.7 Glossary appendix — bilingual definitions (server-side renderer
-    // calls into BFGlossary.renderAppendix which is loaded via the build
-    // pipeline). Falls back gracefully if the module is missing.
-    // Phase 4: collapse when densityMode != 'deep'.
-    secN++;
-    h += _densityWrap(
-      _renderGlossaryAppendix(d, secN),
-      'sec-glossary',
-      'Glossaire \u2014 d\u00e9finitions des termes (cliquer pour ouvrir)',
-      'Glossary \u2014 term definitions (click to open)',
-      d
-    );
+    if (_isPlainReader) {
+      // Single grouped disclosure — opens to reveal all three inline.
+      var _isFR = !!d.fr;
+      h += '<div class="sec-page" id="sec-more-detail" data-bf-disclosure="more-detail">' +
+        '<details class="bf-more-detail-disclosure" style="margin:24px 0;border:1px solid ' + C.border + ';border-radius:6px;background:#fdfbf6">' +
+          '<summary style="cursor:pointer;padding:14px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:' + C.gold + ';letter-spacing:0.3px;list-style:none">' +
+            '<span style="display:inline-block;margin-right:6px;font-size:11px">\u25b8</span>' +
+            (_isFR ? 'Vous voulez plus de d\u00e9tails ? Cliquez pour ouvrir' : 'Want more detail? Click to open') +
+            '<span style="display:block;font-size:10px;color:#888;font-weight:400;letter-spacing:0;margin-top:4px;margin-left:14px">' +
+              (_isFR
+                ? 'M\u00e9thodologie, hypoth\u00e8ses techniques, glossaire des termes.'
+                : 'Methodology, technical assumptions, glossary of terms.') +
+            '</span>' +
+          '</summary>' +
+          '<div style="padding:0 18px 18px">' + _methHtml + _assumpHtml + _glossHtml + '</div>' +
+        '</details></div>';
+    } else {
+      // Non-plain readers — each section renders inline, density-collapsed
+      // (compact wraps in <details>; balanced/deep show inline).
+      h += _densityWrap(_methHtml, 'sec-methodology',
+        'M\u00e9thodologie \u2014 hypoth\u00e8ses + tables fiscales (cliquer pour ouvrir)',
+        'Methodology \u2014 assumptions + tax tables (click to open)', d);
+      h += _densityWrap(_assumpHtml, 'sec-assumptions',
+        'Annexe \u2014 hypoth\u00e8ses d\u00e9taill\u00e9es (cliquer pour ouvrir)',
+        'Appendix \u2014 detailed assumptions (click to open)', d);
+      h += _densityWrap(_glossHtml, 'sec-glossary',
+        'Glossaire \u2014 d\u00e9finitions des termes (cliquer pour ouvrir)',
+        'Glossary \u2014 term definitions (click to open)', d);
+    }
 
     // 19. Signature page (last content page before footer)
     h += renderSignaturePage(d);

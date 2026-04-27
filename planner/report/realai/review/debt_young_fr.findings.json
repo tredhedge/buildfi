@@ -1,6 +1,17 @@
 {
   "findings": [
     {
+      "id": "content-shallow-sec-more-detail",
+      "reviewer": "content-depth",
+      "severity": "minor",
+      "category": "content_shallow",
+      "section": "sec-more-detail",
+      "message": "Section sec-more-detail renders but contains only 14 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty.",
+      "evidence": "words=14 bytes=737",
+      "fix_kind": "manual",
+      "fix_target": "sec-more-detail"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -15,6 +26,17 @@
   "blockers": [],
   "majors": [],
   "minors": [
+    {
+      "id": "content-shallow-sec-more-detail",
+      "reviewer": "content-depth",
+      "severity": "minor",
+      "category": "content_shallow",
+      "section": "sec-more-detail",
+      "message": "Section sec-more-detail renders but contains only 14 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty.",
+      "evidence": "words=14 bytes=737",
+      "fix_kind": "manual",
+      "fix_target": "sec-more-detail"
+    },
     {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
@@ -36,6 +58,12 @@
     "localize_label": [],
     "manual": [
       {
+        "section": "sec-more-detail",
+        "target": "sec-more-detail",
+        "severity": "minor",
+        "message": "Section sec-more-detail renders but contains only 14 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty."
+      },
+      {
         "section": null,
         "target": "global",
         "severity": "minor",
@@ -46,5 +74,5 @@
   "can_ship": true,
   "blocker_count": 0,
   "major_count": 0,
-  "minor_count": 1
+  "minor_count": 2
 }

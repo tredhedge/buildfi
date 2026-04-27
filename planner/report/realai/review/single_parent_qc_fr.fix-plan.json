@@ -57,6 +57,12 @@
       "message": "Plan posture is \"failure\" (succ=7%) but slot \"sec-letter-deterministic\" uses \"solide\" (band=\"solid\", 3 bands away). Posture must match."
     },
     {
+      "section": "sec-more-detail",
+      "target": "sec-more-detail",
+      "severity": "minor",
+      "message": "Section sec-more-detail renders but contains only 14 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty."
+    },
+    {
       "section": null,
       "target": "global",
       "severity": "minor",

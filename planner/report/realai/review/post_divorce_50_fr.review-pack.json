@@ -117,34 +117,34 @@
       "isEmpty": false
     },
     {
-      "id": "sec-projection",
-      "title": "5Projection du patrimoine",
-      "bytes": 29699,
+      "id": "sec-cashflow",
+      "title": "5Flux de trésorerie annuel",
+      "bytes": 2170,
       "offset": 85257,
       "isThin": false,
       "isEmpty": false
     },
     {
+      "id": "sec-projection",
+      "title": "6Projection du patrimoine",
+      "bytes": 29699,
+      "offset": 87427,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
       "id": "sec-risk",
-      "title": "6Risque & sensibilité",
+      "title": "7Risque & sensibilité",
       "bytes": 4139,
-      "offset": 114956,
+      "offset": 117126,
       "isThin": false,
       "isEmpty": false
     },
     {
       "id": "sec-stress",
-      "title": "7Tests de stress",
+      "title": "8Tests de stress",
       "bytes": 3139,
-      "offset": 119095,
-      "isThin": false,
-      "isEmpty": false
-    },
-    {
-      "id": "sec-cashflow",
-      "title": "8Flux de trésorerie annuel",
-      "bytes": 2170,
-      "offset": 122234,
+      "offset": 121265,
       "isThin": false,
       "isEmpty": false
     },
@@ -254,12 +254,12 @@
     {
       "type": "area",
       "title": "Composition du patrimoine (actifs liquides + illiquides)",
-      "offset": 85796
+      "offset": 87966
     },
     {
       "type": "fan",
       "title": "Projection Monte Carlo",
-      "offset": 98646
+      "offset": 100816
     },
     {
       "type": "fan",
@@ -281,17 +281,17 @@
     {
       "pct": 4,
       "context": "inflation persistante à",
-      "offset": 120143
+      "offset": 122313
     },
     {
       "pct": 4,
       "context": "Inflation persistante",
-      "offset": 120901
+      "offset": 123071
     },
     {
       "pct": 15,
       "context": ", la hausse des dépenses de",
-      "offset": 121672
+      "offset": 123842
     },
     {
       "pct": 5,

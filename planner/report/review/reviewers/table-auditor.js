@@ -95,7 +95,10 @@ function audit(pack) {
   }
 
   // ─── 3) Empty / thin sections ────────────────────────────────────────
+  // sec-whatif is intentionally a banner + mount point — body is injected
+  // by report-whatif.js at runtime. Both empty + thin checks skip it.
   pack.sections.forEach(function(s) {
+    if (s.id === 'sec-whatif') return;
     if (s.isEmpty) {
       findings.push({
         id: 'table-empty-' + s.id,
@@ -109,10 +112,6 @@ function audit(pack) {
         fix_target: s.id
       });
     } else if (s.isThin) {
-      // Skip the What-If section: its body is intentionally just a banner +
-      // mount point, with all content injected by JS at runtime. Static
-      // thinness here is by design, not a defect.
-      if (s.id === 'sec-whatif') return;
       findings.push({
         id: 'table-thin-' + s.id,
         reviewer: 'table',

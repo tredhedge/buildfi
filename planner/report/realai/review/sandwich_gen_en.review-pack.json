@@ -135,50 +135,50 @@
       "isEmpty": false
     },
     {
-      "id": "sec-goals",
-      "title": "4Your Goals",
-      "bytes": 5038,
+      "id": "sec-revenue",
+      "title": "4Retirement Income",
+      "bytes": 39658,
       "offset": 52559,
       "isThin": false,
       "isEmpty": false
     },
     {
-      "id": "sec-revenue",
-      "title": "5Retirement Income",
-      "bytes": 39658,
-      "offset": 57597,
-      "isThin": false,
-      "isEmpty": false
-    },
-    {
-      "id": "sec-projection",
-      "title": "6Wealth Projection",
-      "bytes": 36491,
-      "offset": 97255,
-      "isThin": false,
-      "isEmpty": false
-    },
-    {
-      "id": "sec-risk",
-      "title": "7Risk & Sensitivity",
-      "bytes": 4173,
-      "offset": 133746,
-      "isThin": false,
-      "isEmpty": false
-    },
-    {
-      "id": "sec-stress",
-      "title": "8Stress tests",
-      "bytes": 3015,
-      "offset": 137919,
+      "id": "sec-goals",
+      "title": "5Your Goals",
+      "bytes": 5038,
+      "offset": 92217,
       "isThin": false,
       "isEmpty": false
     },
     {
       "id": "sec-cashflow",
-      "title": "9Year-by-year cash flow",
+      "title": "6Year-by-year cash flow",
       "bytes": 2125,
-      "offset": 140934,
+      "offset": 97255,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-projection",
+      "title": "7Wealth Projection",
+      "bytes": 36491,
+      "offset": 99380,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-risk",
+      "title": "8Risk & Sensitivity",
+      "bytes": 4173,
+      "offset": 135871,
+      "isThin": false,
+      "isEmpty": false
+    },
+    {
+      "id": "sec-stress",
+      "title": "9Stress tests",
+      "bytes": 3015,
+      "offset": 140044,
       "isThin": false,
       "isEmpty": false
     },
@@ -267,17 +267,17 @@
     {
       "type": "area",
       "title": "Income Sources Over Time",
-      "offset": 76693
+      "offset": 71655
     },
     {
       "type": "area",
       "title": "Wealth Composition (liquid + illiquid)",
-      "offset": 97739
+      "offset": 99864
     },
     {
       "type": "fan",
       "title": "Monte Carlo Projection",
-      "offset": 117415
+      "offset": 119540
     },
     {
       "type": "fan",

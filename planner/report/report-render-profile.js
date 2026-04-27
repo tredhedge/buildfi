@@ -240,12 +240,12 @@
     // narrative can be calmed via lossLanguageFor; the section itself
     // stays. Hide only for the minimal cell.
     if ((blockId === 'risk' || blockId === 'stress_tests') && isMinimal) return false;
-    // Methodology / assumptions / glossary back-matter — same logic.
-    // Beginner+detailed reader DOES want methodology (curiosity); they
-    // don't want the densest version, but they do want content. Hide
-    // only for the minimal cell.
-    if ((blockId === 'methodology' || blockId === 'assumptions' || blockId === 'glossary')
-        && isMinimal) return false;
+    // Methodology / assumptions / glossary back-matter is NEVER omitted
+    // (per user feedback 2026-04-28 — beginner+concise should still have
+    // ACCESS to methodology, just collapsed by default). The orchestrator
+    // wraps these three sections in a single "More detail" <details>
+    // disclosure for plain readers; the content is present in the HTML
+    // and the reader can reveal it on click.
     // Draw-order heatmap — same: hide only for minimal cell. Beginner+
     // detailed gets the heatmap with a plain-language caption.
     if (blockId === 'draw_order' && isMinimal) return false;
