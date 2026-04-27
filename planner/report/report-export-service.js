@@ -16,14 +16,41 @@
     return missing;
   }
 
-  // Generate HTML report string
-  function generateReport(data) {
+  // CLASSIFIER-RENDER-PLAN Phase 6 — export contract.
+  // Exported reports (HTML download, print, PDF) must include every block the
+  // simulator can render, regardless of the reader's classifier preferences.
+  // Rationale: an exported PDF is a permanent artifact handed to advisors, tax
+  // preparers, family members. They cannot toggle a 3-state view; they need the
+  // full chartTier='full' + densityMode='deep' rendering by default.
+  // Reader-screen (in-app) rendering still respects the live renderProfile.
+  function _exportProfile() {
+    return {
+      finLiteracy: 'advanced',
+      stressLevel: 'low',         // direct, no softening
+      detailPref:  'detailed'     // deep
+    };
+  }
+  function _withExportRenderProfile(data) {
+    if (!data) return data;
+    var ep = _exportProfile();
+    var clone = {};
+    for (var k in data) { if (Object.prototype.hasOwnProperty.call(data, k)) clone[k] = data[k]; }
+    clone.finLiteracy = ep.finLiteracy;
+    clone.stressLevel = ep.stressLevel;
+    clone.detailPref  = ep.detailPref;
+    clone._exportMode = true;
+    return clone;
+  }
+
+  // Generate HTML report string. exportMode=true forces the full/deep render.
+  function generateReport(data, opts) {
     var missing = _checkDeps();
     if (missing.length > 0) {
       console.error("[BExport] Missing dependencies:", missing.join(", "));
       return '<p style="padding:20px;color:red">Report modules not loaded: ' + missing.join(", ") + '</p>';
     }
-    return window.buildReport(data);
+    var payload = (opts && opts.exportMode) ? _withExportRenderProfile(data) : data;
+    return window.buildReport(payload);
   }
 
   // Lazy-load the Excel vendor bundles on first export. Together these are
@@ -68,9 +95,10 @@
       });
   }
 
-  // Print report (opens in new window)
+  // Print report (opens in new window). Forces export render profile so the
+  // printed artifact is comprehensive regardless of reader's screen settings.
   function printReport(data) {
-    var html = generateReport(data);
+    var html = generateReport(data, { exportMode: true });
     if (!html) return;
     var win = window.open("", "_blank");
     if (!win) { alert("Popup blocked. Allow popups for printing."); return; }
@@ -80,9 +108,10 @@
     setTimeout(function() { win.print(); }, 500);
   }
 
-  // Download report as HTML file
+  // Download report as HTML file. Forces export render profile so the saved
+  // artifact carries the full report regardless of the reader's classifier.
   function downloadHTML(data) {
-    var html = generateReport(data);
+    var html = generateReport(data, { exportMode: true });
     if (!html) return;
     var blob = new Blob([html], { type: "text/html;charset=utf-8" });
     var url = URL.createObjectURL(blob);

@@ -152,9 +152,22 @@ function buildReviewPack(profile, htmlPath, mcPath, responsePath, dPayload) {
     revData: (dPayload && dPayload.revData) || (mc && mc.medRevData) || [],
     succVal: (dPayload && dPayload.succVal != null) ? dPayload.succVal : (mc && mc.succ),
     R: (dPayload && dPayload.R) || { phase: profile.params.retAge <= profile.params.age ? 'decum' : 'accum' },
-    oasClbkYrs: (dPayload && dPayload.oasClbkYrs != null) ? dPayload.oasClbkYrs : (mc && mc.oasClbkYrs)
+    oasClbkYrs: (dPayload && dPayload.oasClbkYrs != null) ? dPayload.oasClbkYrs : (mc && mc.oasClbkYrs),
+    _sensData: (dPayload && dPayload.sensData) || (mc && mc._sensData) || null,
+    _caseDriver: profile.case_driver || null
   };
   var canonical = Contract.buildCanonicalMetrics(canonicalInput);
+  // CLASSIFIER-RENDER-PLAN Phase 1: surface renderProfile on pack so
+  // auditors can suppress false positives on hidden blocks (e.g. don't
+  // flag a missing tornado when chartTier='lite' deliberately omits it).
+  var renderProfileObj = (dPayload && dPayload.renderProfile) || null;
+  if (!renderProfileObj) {
+    // Best-effort derive from classifiers when dPayload didn't carry it.
+    var rpMod = (function() { try { return require('../report-render-profile.js'); } catch (e) { return null; } })();
+    if (rpMod && typeof rpMod.deriveRenderProfile === 'function') {
+      renderProfileObj = rpMod.deriveRenderProfile(profile.finLiteracy, profile.stressLevel, profile.detailPref);
+    }
+  }
   return {
     profile: {
       id: profile.id,
@@ -164,17 +177,20 @@ function buildReviewPack(profile, htmlPath, mcPath, responsePath, dPayload) {
       finLiteracy: profile.finLiteracy,
       stressLevel: profile.stressLevel,
       detailPref: profile.detailPref,
+      case_driver: profile.case_driver || null,
       params: profile.params || {}
     },
+    renderProfile: renderProfileObj,
     canonical: canonical,
+    revData: canonicalInput.revData,
     sections: extractSections(html),
     charts: extractCharts(html),
     tables: extractTables(html),
     percentages: extractPercentages(html),
-    ai_slots: aiResponse,
+    ai_slots: (dPayload && dPayload.ai) || aiResponse,
     html: html,
     html_size: html.length,
-    render_version: 'v12.1.0'
+    render_version: 'v12.2.0-premium'
   };
 }
 

@@ -42,11 +42,15 @@ function _readOptional(name) {
 }
 global.window.BF_INTERACTIVE_JS = _readOptional('report-interactive.js');
 global.window.BF_TOOLTIP_JS     = _readOptional('report-tooltip.js');
+global.window.BF_CONSTANTS_JS   = _readOptional('report-constants-2026.js');
 global.window.BF_ENGINE_JS      = _readOptional('report-engine.js');
 global.window.BF_WHATIF_JS      = _readOptional('report-whatif.js');
 global.window.BF_GLOSSARY_JS    = _readOptional('report-glossary.js');
 
-['report-formatters.js', 'report-data.js', 'report-charts.js', 'report-actions.js', 'report-pdf.js', 'report-ai-prompt.js'].forEach(f => {
+// CLASSIFIER-RENDER-PLAN Phase 1: report-render-profile.js loaded BEFORE
+// report-data.js so that BData.buildReportPayload can read from
+// window.BFRenderProfile.deriveRenderProfile when stamping d.renderProfile.
+['report-render-profile.js', 'report-formatters.js', 'report-data.js', 'report-charts.js', 'report-actions.js', 'report-pdf.js', 'report-ai-prompt.js'].forEach(f => {
   const code = fs.readFileSync(path.join(reportDir, f), 'utf8');
   try { eval(code); } catch (e) { console.error(`Failed to load ${f}:`, e.message); process.exit(1); }
 });
@@ -87,7 +91,7 @@ function preparePayload(prof) {
   // SKU points readers back to the live Planner tool instead. Default is
   // 'bilan' (includeSimulator=true) when sku is unspecified, since legacy
   // profiles predate the flag.
-  const includeSim = (prof.sku || 'bilan') === 'bilan';
+  const includeSim = prof.includeSimulator !== false;
   return {
     params: prof.params, mc: mc, client: prof.client,
     rptLang: prof.lang, rptMode: prof.mode || 'standard',

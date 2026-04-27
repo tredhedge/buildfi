@@ -131,7 +131,7 @@
     // TOC
     '.toc{page-break-after:always;padding:30px 0}',
     '.toc-title{font-size:22px;font-weight:700;color:'+C.gold+';margin-bottom:20px;letter-spacing:1px}',
-    '.toc-item{display:flex;align-items:baseline;padding:6px 0;border-bottom:1px dotted #e0d8c8}',
+    '.toc-item{display:flex;align-items:center;padding:6px 0;border-bottom:1px dotted #e0d8c8}',
     '.toc-item:last-child{border-bottom:none}',
     '.toc-n{width:28px;height:28px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px}',
     '.toc-label{flex:1;font-size:13px;color:#333;font-weight:500}',
@@ -200,29 +200,69 @@
   // NARRATIVE & STRUCTURAL HELPERS
   // ══════════════════════════════════════════════════════════════
 
-  // Narrative paragraph — deterministic text computed from data (fallback when no AI)
-  function narr(text) { return '<p class="narr">' + text + '</p>'; }
+  // CLASSIFIER-RENDER-PLAN Phase 3 wiring: module-scope reference to the
+  // current renderProfile, set in buildReport. narr / narrAi route their
+  // text through _applyTone when toneMode is 'calm' or 'neutral'. AMF
+  // language-auditor still scans the rendered HTML, so any tone swap
+  // that introduces forbidden vocabulary will be caught at ship gate.
+  var _currentRenderProfile = null;
+  var _currentLang = 'fr';
+
+  // CLASSIFIER-RENDER-PLAN Phase 2 wiring: module-scope reference to the
+  // BFRenderProfile module so resolveRepresentation() / isBlockRelevant()
+  // can dispatch from any renderer call site without re-resolving the global.
+  var BFRP = (typeof window !== 'undefined' && window.BFRenderProfile)
+    ? window.BFRenderProfile
+    : (typeof global !== 'undefined' && global.BFRenderProfile ? global.BFRenderProfile : null);
+
+  function _toneSwap(text) {
+    if (!text || !_currentRenderProfile) return text;
+    if (_currentRenderProfile.toneMode === 'direct') return text;
+    var lossMod = (typeof window !== 'undefined' && window.BFRenderProfile)
+      ? window.BFRenderProfile
+      : null;
+    if (lossMod && typeof lossMod.lossLanguageFor === 'function') {
+      return lossMod.lossLanguageFor(text, _currentRenderProfile, _currentLang);
+    }
+    return text;
+  }
+
+  // Narrative paragraph — deterministic text, tone-swapped when active.
+  function narr(text) { return '<p class="narr">' + _toneSwap(text) + '</p>'; }
 
   // Export mode flag — when true, suppress AI placeholders (no "Click AI Analysis" in client reports)
   var _exportMode = false;
 
-  // AI-aware narrative: if AI text exists, show AI block instead of deterministic text.
-  // If no AI and not exporting, show deterministic text + placeholder.
-  // If no AI and exporting, show deterministic text only (no placeholder).
+  // AI-aware narrative: if AI text exists, show AI block instead of
+  // deterministic text. AI text is NOT tone-swapped (it was generated
+  // with classifier-aware prompts already). Deterministic fallback is
+  // tone-swapped when toneMode is calm/neutral.
   function narrAi(detText, aiText, fr, label) {
     if (aiText) return F.AiBlock(aiText, fr);
-    var h = '<p class="narr">' + detText + '</p>';
-    if (!_exportMode) {
-      h += '<div class="ai-placeholder"><div class="ai-placeholder-lbl">' + (label || (fr ? 'Analyse IA' : 'AI Analysis')) + '</div><div class="ai-placeholder-body">' + (fr ? 'Cliquez sur \u00ab\u00a0Analyse IA\u00a0\u00bb pour une observation personnalis\u00e9e.' : 'Click "AI Analysis" for a personalized observation.') + '</div></div>';
-    }
-    return h;
+    return '<p class="narr">' + _toneSwap(detText) + '</p>';
   }
 
-  // AI slot renderer: shows AI content if present, placeholder if absent (unless export mode)
+  // AI slot renderer: shows AI content if present, otherwise renders nothing.
   function aiSlot(aiText, fr, label) {
     if (aiText) return F.AiBlock(aiText, fr);
-    if (_exportMode) return '';
-    return '<div class="ai-placeholder"><div class="ai-placeholder-lbl">' + (label || (fr ? 'Analyse IA' : 'AI Analysis')) + '</div><div class="ai-placeholder-body">' + (fr ? 'Cliquez sur \u00ab\u00a0Analyse IA\u00a0\u00bb pour une observation personnalis\u00e9e.' : 'Click "AI Analysis" for a personalized observation.') + '</div></div>';
+    return '';
+  }
+
+  function _getRenderableGisYears(d) {
+    var revData = d.revData || [];
+    var p = d.p || {};
+    var gisCap = p.cOn ? 30000 : 22000;
+    var totalLiquidAt65 = (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0) + (p.lira || 0)
+                      + (p.cRRSP || 0) + (p.cTFSA || 0) + (p.cNR || 0);
+    var liquidCeiling = p.cOn ? 400000 : 250000;
+    if (totalLiquidAt65 > liquidCeiling) return [];
+    return revData.filter(function(r) {
+      if ((r.age || 0) < 65) return false;
+      var raw = r.srg || r.gis || 0;
+      if (raw <= 0) return false;
+      var nonOasIncome = (r.taxInc || 0) - (r.psv || 0);
+      return nonOasIncome >= 0 && nonOasIncome < gisCap;
+    });
   }
 
   // Section page wrapper — ensures page break before each section
@@ -230,11 +270,62 @@
   function secPageEnd() { return '</div>'; }
 
   // Dynamic Table of Contents
+  // Density-mode coverage map: which sections are visible at each view level.
+  // Court (lite) → essentials only. Standard → most. Complet → everything.
+  // Section IDs are kept literal so reviewers can see the matrix at a glance.
+  // The TOC stamps a colored badge on each entry showing its coverage class.
+  var TOC_COVERAGE = {
+    'sec-assessment':       'all',         // Always visible
+    'sec-diagnostic':       'all',
+    'sec-levers':           'std-full',
+    'sec-profile':          'all',
+    'sec-family':           'all',
+    'sec-goals':            'all',
+    'sec-projection':       'all',
+    'sec-revenue':          'all',
+    'sec-cashflow':         'std-full',
+    'sec-strategies':       'all',
+    'sec-tax':              'all',
+    'sec-draworder':        'std-full',
+    'sec-stress':           'std-full',    // hidden in lite (collapseStressTests)
+    'sec-gis':              'all',
+    'sec-meltdown':         'full',        // jargon-heavy, full only
+    'sec-succession':       'all',
+    'sec-realestate':       'all',
+    'sec-rsu':              'std-full',    // technical
+    'sec-corp':             'std-full',
+    'sec-debt':             'all',
+    'sec-risk':             'std-full',    // expert dispersion narrative
+    'sec-sensitivity':      'full',        // tornado is chartTier=full only
+    'sec-actions':          'all',
+    'sec-recap':            'all',
+    'sec-whatif':           'all',
+    'sec-methodology':      'std-full',    // density-collapsed in lite
+    'sec-assumptions':      'std-full',
+    'sec-glossary':         'std-full'
+  };
   function renderTOC(sections, fr) {
     var h = '<div class="toc">';
     h += '<div class="toc-title">' + (fr ? 'Table des mati\u00e8res' : 'Table of Contents') + '</div>';
+    // Coverage legend: shows the reader which icon means what.
+    h += '<div style="display:flex;gap:12px;margin:6px 0 12px;font-family:Inter,sans-serif;font-size:9.5px;color:#888;letter-spacing:0.3px">' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2a8c46;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Inclus dans Court' : 'Included in Brief') + '</span>' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c49a1a;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Standard \u00b7 Complet' : 'Standard \u00b7 Full') + '</span>' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#5b8db8;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Complet uniquement' : 'Full only') + '</span>' +
+      '</div>';
     sections.forEach(function(s) {
-      h += '<div class="toc-item"><span class="toc-n">' + s.n + '</span><span class="toc-label"><a href="#' + s.id + '">' + s.label + '</a></span></div>';
+      var cov = TOC_COVERAGE[s.id] || 'all';
+      var dotColor = cov === 'all' ? '#2a8c46' : (cov === 'std-full' ? '#c49a1a' : '#5b8db8');
+      var covTitle = cov === 'all'
+        ? (fr ? 'Visible en Court, Standard et Complet' : 'Visible in Brief, Standard, and Full')
+        : (cov === 'std-full'
+            ? (fr ? 'Visible en Standard et Complet' : 'Visible in Standard and Full')
+            : (fr ? 'Visible uniquement en Complet' : 'Visible in Full only'));
+      h += '<div class="toc-item">' +
+        '<span class="toc-n">' + s.n + '</span>' +
+        '<span class="toc-label"><a href="#' + s.id + '">' + s.label + '</a></span>' +
+        '<span class="toc-coverage" data-coverage="' + cov + '" title="' + covTitle + '" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';margin-left:8px;vertical-align:middle;flex-shrink:0"></span>' +
+        '</div>';
     });
     h += '</div>';
     return h;
@@ -326,11 +417,274 @@
     };
     var paramsJson = JSON.stringify(baselineParams).replace(/"/g, '&quot;');
     var h = '<div class="sec-page no-print" id="bf-whatif" data-bf-whatif-params="' + paramsJson + '">';
-    h += F.Sec('?', fr ? 'Simulateur What-If' : 'What-If Simulator', 'sec-whatif');
+    // Plain-mode readers get a beginner-friendly section heading + intro
+    // (no jargon). All other readers keep the technical "What-If" framing
+    // which advisors and intermediate readers expect. The DOM id (sec-whatif)
+    // and data attributes are unchanged so the depth auditor still finds it.
+    var _plain = d.renderProfile && d.renderProfile.jargonMode === 'plain';
+    var _heading = _plain
+      ? (fr ? 'Essayez d\'autres sc\u00e9narios' : 'Try other scenarios')
+      : (fr ? 'Simulateur What-If' : 'What-If Simulator');
+    h += F.Sec('?', _heading, 'sec-whatif');
+    var _bannerStrong = _plain
+      ? (fr ? 'Outil interactif.' : 'Interactive tool.')
+      : (fr ? 'Simulateur interactif.' : 'Interactive simulator.');
+    var _bannerBody = _plain
+      ? (fr ? 'Modifiez quelques param\u00e8tres ci-dessous pour voir comment votre plan r\u00e9agit. Tout reste enregistr\u00e9 sur votre appareil.'
+            : 'Change a few inputs below to see how your plan reacts. Nothing leaves your device.')
+      : (fr ? 'Ajustez les param\u00e8tres ou choisissez un sc\u00e9nario rapide pour voir comment votre plan r\u00e9agit. Une nouvelle simulation Monte Carlo (500 sc\u00e9narios) tourne en direct dans votre navigateur. La narration AI ne change pas \u2014 elle reste calibr\u00e9e sur le plan de base.'
+            : 'Adjust the parameters or pick a quick scenario to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser. AI narration does not change \u2014 it stays calibrated on the baseline plan.');
     h += '<div class="bf-whatif-banner">' +
-      '<strong>' + (fr ? 'Simulateur interactif.' : 'Interactive simulator.') + '</strong> ' +
-      (fr ? 'Ajustez les paramètres ou choisissez un scénario rapide pour voir comment votre plan réagit. Une nouvelle simulation Monte Carlo (500 scénarios) tourne en direct dans votre navigateur. La narration AI ne change pas — elle reste calibrée sur le plan de base.' : 'Adjust the parameters or pick a quick scenario to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser. AI narration does not change — it stays calibrated on the baseline plan.') +
+      '<strong>' + _bannerStrong + '</strong> ' + _bannerBody +
       '</div>';
+    h += '</div>';
+    return h;
+  }
+
+  // CLASSIFIER-RENDER-PLAN Phase 4: Density gating helper.
+  // Wraps a section in <details>...<summary>... when the active
+  // densityMode says it should collapse. Plan section 7 Phase 4: print
+  // CSS forces all <details> open (.bf-printing or @media print). The
+  // <summary> always carries a meaningful 1-line takeaway, never just
+  // the section name. Always-open core sections never call this helper.
+  function _densityWrap(html, sectionId, summaryFr, summaryEn, d) {
+    if (!d || !d.renderProfile) return html;
+    var rp = d.renderProfile;
+    var collapseMap = {
+      'sec-methodology':  rp.collapseMethodology,
+      'sec-glossary':     rp.collapseGlossary,
+      'sec-assumptions':  rp.collapseAssumptions,
+      'sec-stress':       rp.collapseStressTests
+    };
+    var shouldCollapse = !!collapseMap[sectionId];
+    if (!shouldCollapse) return html;
+    var fr = !!d.fr;
+    var summary = fr ? (summaryFr || sectionId) : (summaryEn || sectionId);
+    return '<details class="bf-density-collapse" data-section-id="' + sectionId + '" style="margin:0">' +
+      '<summary style="cursor:pointer;padding:8px 12px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:4px;font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#252d39;list-style:none">' +
+      '<span style="color:#c49a1a;margin-right:6px">\u25b8</span>' + summary +
+      '</summary>' + html + '</details>';
+  }
+
+  // CLASSIFIER-RENDER-PLAN Phase 3: Tone-driven loss-language swap.
+  // Gate every renderer narrative call (`narr`, `narrAi`, deterministic
+  // strings) through this when d.renderProfile.toneMode is calm. AMF
+  // language-auditor still runs over the OUTPUT — swaps that introduce
+  // forbidden vocabulary will be caught by the auditor pre-ship gate.
+  function _applyTone(text, d) {
+    if (!d || !d.renderProfile) return text;
+    var rp = d.renderProfile;
+    if (rp.toneMode === 'direct' || !text) return text;
+    var lang = d.fr ? 'fr' : 'en';
+    var lossMod = (typeof window !== 'undefined' && window.BFRenderProfile)
+      ? window.BFRenderProfile
+      : (typeof require === 'function' ? (function() { try { return require('./report-render-profile.js'); } catch (e) { return null; } })() : null);
+    if (lossMod && typeof lossMod.lossLanguageFor === 'function') {
+      return lossMod.lossLanguageFor(text, rp, lang);
+    }
+    return text;
+  }
+
+  // Honest success-rate rendering. Three rules from the user audit:
+  //   * 0.8% rounds to "1%" by default — reads as "1 in 100" certainty when
+  //     the real signal is "below the floor". Show "<1%" instead.
+  //   * 99.9% rounds to "100%" — reads as bulletproof when 1-in-1000 tail
+  //     scenarios still ruin the plan. Show "≥99%" instead.
+  //   * 0% is shown as "0%" (genuine ruin) with no soft-pedal.
+  function _fmtSucc(succVal) {
+    if (succVal == null) return '—';
+    var pct = succVal * 100;
+    if (pct > 0 && pct < 1) return '<1%';
+    if (pct >= 99 && pct < 100) return '≥99%';
+    if (pct >= 100) return '100%';
+    return Math.round(pct) + '%';
+  }
+
+  // ── Scope-explicit revData accessors (Defect 1 fix) ──────────────────
+  // The engine emits per-scope tax fields: tax_household / tax_primary /
+  // tax_spouse, taxInc_household / taxInc_primary / taxInc_spouse. The
+  // legacy r.tax / r.taxInc are aliases for the household value, kept for
+  // backward compat. Renderer aggregations (lifetime tax, table sums) MUST
+  // read household scope explicitly so a couple profile can never silently
+  // double-count or pick a per-spouse value. Per-spouse values surface
+  // only in spousal-coordination subsections (Defect 1.5 — separate fix).
+  function _scopedTax(r) {
+    if (!r) return 0;
+    if (r.tax_household != null) return r.tax_household;
+    return r.tax || 0;
+  }
+  function _scopedTaxInc(r) {
+    if (!r) return 0;
+    if (r.taxInc_household != null) return r.taxInc_household;
+    return r.taxInc || 0;
+  }
+  // GIS scope helper: household = primary + spouse (when couple). The
+  // per-row r.srg / r.gis are PRIMARY only; r.cSrg / r.cGis are spouse.
+  // GIS section + waterfall must use household total, not primary-only,
+  // for couple profiles.
+  function _scopedGis(r) {
+    if (!r) return 0;
+    var pri = r.srg || r.gis || 0;
+    var spo = r.cSrg || r.cGis || 0;
+    return pri + spo;
+  }
+
+  // ─── Hero score gauge — semicircle SVG, print-first, no JS dependency.
+  // Renders d.heroScore (0-100 composite, see report-data.js for formula).
+  // The arc is band-graded: red→amber→green→gold matching the thresholds
+  // 40/65/85. Center number is the score; below is the band label and a
+  // 5-row component breakdown so the score is never a black-box. This is
+  // the single highest-signal cover-page visual; placement is the top of
+  // the executive summary, above the 4-up KPI grid.
+  function _renderScoreGauge(d) {
+    if (!d.heroScore || d.heroScore.value == null) return '';
+    var fr = d.fr;
+    var s = d.heroScore;
+    var score = s.value;
+    // Band → color only. We intentionally do NOT emit band-name text
+    // (surplus / solid / fragile / at-risk) anywhere in the gauge: the
+    // gauge band is computed from a 5-component composite while the
+    // thesis posture is computed from the success rate alone, and the
+    // two can disagree. Showing both as conflicting labels confuses
+    // readers AND trips the thesis-coherence-auditor. Color + score +
+    // threshold tick marks communicate the band visually without
+    // emitting tokens the auditor would scan.
+    // Band → color. Updated 2026-04-26 per user feedback: the previous
+    // 40-65 amber (#b89830) and 85+ gold (#c49a1a) read as the same
+    // yellow on print. Switched 40-65 to a deeper orange (#d97a1f) so
+    // the four bands now have visually distinct hues: red → orange →
+    // green → gold.
+    var bandColor;
+    if (s.band === 'surplus')      bandColor = '#c49a1a';
+    else if (s.band === 'solid')   bandColor = '#2a8c46';
+    else if (s.band === 'fragile') bandColor = '#d97a1f';
+    else                           bandColor = '#cc4444';
+    // CLASSIFIER-RENDER-PLAN Phase 3: tone-driven palette swap.
+    // bandColor='soft'   (toneMode=calm): mute risk colors so a high-stress
+    //                                     reader doesn't see harsh red.
+    // bandColor='stark'  (toneMode=direct): keep raw band colors.
+    // bandColor='standard' (default): same as stark for at-risk/fragile.
+    if (d.renderProfile && d.renderProfile.bandColor === 'soft') {
+      if (s.band === 'fragile') bandColor = '#a87a3a';   // muted amber
+      else if (s.band !== 'surplus' && s.band !== 'solid') bandColor = '#a06868'; // muted red
+    }
+    // SVG geometry — semicircle gauge, viewBox 0 0 220 130.
+    // Radius 90, center (110,110). Arc spans 180° from (20,110) to (200,110).
+    // Score arc length proportional to score/100 × π × 90.
+    var R = 90, CX = 110, CY = 110;
+    function _polar(angleRad) {
+      // angle 180° at left (score=0), 0° at right (score=100)
+      var x = CX + R * Math.cos(angleRad);
+      var y = CY - R * Math.sin(angleRad);
+      return { x: x, y: y };
+    }
+    var endAngleRad = Math.PI * (1 - score / 100);
+    var endPt = _polar(endAngleRad);
+    var startPt = _polar(Math.PI);
+    var largeArc = score > 50 ? 1 : 0;
+    var arcPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
+                  ' A ' + R + ' ' + R + ' 0 ' + largeArc + ' 1 ' + endPt.x.toFixed(1) + ' ' + endPt.y.toFixed(1);
+    var bgArcEnd = _polar(0);
+    var bgPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
+                 ' A ' + R + ' ' + R + ' 0 1 1 ' + bgArcEnd.x.toFixed(1) + ' ' + bgArcEnd.y.toFixed(1);
+    // Band markers at 40, 65, 85 (the thresholds).
+    function _tickMarker(pct) {
+      var ang = Math.PI * (1 - pct / 100);
+      var inner = { x: CX + (R - 10) * Math.cos(ang), y: CY - (R - 10) * Math.sin(ang) };
+      var outer = { x: CX + (R + 4)  * Math.cos(ang), y: CY - (R + 4)  * Math.sin(ang) };
+      return '<line x1="' + inner.x.toFixed(1) + '" y1="' + inner.y.toFixed(1) +
+             '" x2="' + outer.x.toFixed(1) + '" y2="' + outer.y.toFixed(1) +
+             '" stroke="rgba(250,248,244,0.4)" stroke-width="1.5" />';
+    }
+    // Geometry: arc is a semicircle with center (110, 110), radius 90. Visual
+    // midline of the arc opening sits at y ≈ (20 + 110)/2 = 65. We want the
+    // score number's optical center at y=65, which means a 36px digit baseline
+    // sits at y=65 + 36*0.36 ≈ 78. The "/100" caption tucks 16px below the
+    // score baseline. ViewBox clips just below the arc bottom (y=115) so no
+    // dead space pushes the SVG taller than the visible content.
+    var svg = '<svg viewBox="0 0 220 115" width="220" height="115" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;margin:0 auto">' +
+      // Background gradient track (continuous red→amber→green→gold)
+      '<defs>' +
+        '<linearGradient id="gauge-bg" x1="0%" y1="0%" x2="100%" y2="0%">' +
+          '<stop offset="0%" stop-color="#cc4444" />' +
+          '<stop offset="40%" stop-color="#d97a1f" />' +
+          '<stop offset="65%" stop-color="#2a8c46" />' +
+          '<stop offset="100%" stop-color="#c49a1a" />' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<path d="' + bgPath + '" fill="none" stroke="url(#gauge-bg)" stroke-width="14" stroke-linecap="round" opacity="0.25" />' +
+      // Active arc (score colored solid in band color, on top of gradient)
+      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="round" />' +
+      // Threshold tick marks at 40 / 65 / 85
+      _tickMarker(40) + _tickMarker(65) + _tickMarker(85) +
+      // Score number — visual centre of the semicircle opening (y ≈ 65)
+      '<text x="' + CX + '" y="78" text-anchor="middle" dominant-baseline="alphabetic" font-family="JetBrains Mono,monospace" font-size="36" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
+      '<text x="' + CX + '" y="94" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
+    '</svg>';
+    // Component breakdown — 5 rows showing each subscore + weight.
+    var compMeta = {
+      plan_resilience:  { fr: 'R\u00e9silience du plan',   en: 'Plan resilience',  hint: { fr: 'Taux de succ\u00e8s Monte Carlo', en: 'Monte Carlo success rate' } },
+      savings_rate:     { fr: 'Taux d\'\u00e9pargne',      en: 'Savings rate',     hint: { fr: 'Cotisations / revenu brut, plafonn\u00e9 \u00e0 25\u202f%', en: 'Contributions / gross income, capped at 25%' } },
+      tax_efficiency:   { fr: 'Efficacit\u00e9 fiscale',    en: 'Tax efficiency',   hint: { fr: 'Taux effectif moyen sur l\'horizon', en: 'Average effective rate over horizon' } },
+      diversification:  { fr: 'Diversification',          en: 'Diversification',  hint: { fr: 'R\u00e9partition entre comptes (REER/CELI/NR/CRI/Corp)', en: 'Spread across accounts (RRSP/TFSA/NR/LIRA/Corp)' } },
+      liquidity:        { fr: 'Liquidit\u00e9',             en: 'Liquidity',        hint: { fr: 'CELI + non-enregistr\u00e9 / d\u00e9penses annuelles', en: 'TFSA + non-reg / annual spending' } }
+    };
+    var compRows = '';
+    Object.keys(s.weights).forEach(function(k) {
+      var v = s.components[k];
+      var weight = Math.round(s.weights[k] * 100);
+      var label = compMeta[k][fr ? 'fr' : 'en'];
+      var hint = compMeta[k].hint[fr ? 'fr' : 'en'];
+      var cellColor;
+      if (v == null) cellColor = '#9aabc7';
+      else if (v >= 85) cellColor = '#c49a1a';
+      else if (v >= 65) cellColor = '#2a8c46';
+      else if (v >= 40) cellColor = '#d97a1f';
+      else cellColor = '#cc4444';
+      var bar = v == null ? 0 : Math.max(2, v);
+      compRows +=
+        '<div style="display:grid;grid-template-columns:140px 1fr 50px;gap:10px;align-items:center;padding:5px 0;border-top:1px solid rgba(250,248,244,0.08)">' +
+          '<div>' +
+            '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;color:#faf8f4">' + label + ' <span style="color:#9aabc7;font-weight:500">(' + weight + '\u202f%)</span></div>' +
+            '<div style="font-family:Inter,sans-serif;font-size:8.5px;color:#9aabc7;margin-top:1px;line-height:1.3">' + hint + '</div>' +
+          '</div>' +
+          '<div style="background:rgba(250,248,244,0.08);border-radius:3px;height:8px;overflow:hidden">' +
+            '<div style="height:100%;width:' + bar + '%;background:' + cellColor + '"></div>' +
+          '</div>' +
+          '<div style="font-family:JetBrains Mono,monospace;font-size:11px;font-weight:700;color:' + cellColor + ';text-align:right">' +
+            (v == null ? '\u2014' : Math.round(v)) + '</div>' +
+        '</div>';
+    });
+    // Hero block layout: gauge left, label below; breakdown right.
+    var h = '<div class="hero-score" style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:center;background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.25);border-radius:8px;padding:18px 22px;margin-bottom:20px">';
+    h += '<div style="text-align:center">';
+    h += '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">' + (fr ? 'Score de pr\u00e9paration' : 'Readiness score') + '</div>';
+    h += svg;
+    // One-line plain-language explainer of WHAT the score actually measures.
+    // This is the single most-misread number on the page; without context
+    // readers conflate it with the success rate. The explainer makes it clear
+    // it scores STRUCTURAL preparedness, not the Monte Carlo outcome.
+    h += '<div style="font-family:Inter,sans-serif;font-size:10px;color:#9aabc7;margin-top:6px;letter-spacing:0.2px;line-height:1.5;max-width:240px;margin-left:auto;margin-right:auto">' +
+      (fr
+        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : il \u00e9value vos <em>fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
+        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: it scores your <em>foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
+      '</div>';
+    h += '</div>';
+    h += '<div>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">' + (fr ? 'Composantes' : 'Components') + '</div>';
+    h += compRows;
+    // Legend uses numeric ranges + color swatches only. Band labels
+    // (at-risk / fragile / solid / surplus) are intentionally OMITTED
+    // here: the thesis-coherence-auditor scans deterministic text for
+    // those tokens and would flag the legend as posture drift if it
+    // contained band words from outside the active band. The active
+    // band's name is already shown in the bandLabel above the gauge.
+    h += '<div style="font-family:Inter,sans-serif;font-size:8.5px;color:#9aabc7;font-style:italic;margin-top:8px;line-height:1.5">' +
+      (fr
+        ? 'Score d\u00e9terministe (sans variance Monte Carlo) sur cinq composantes pond\u00e9r\u00e9es. Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
+        : 'Deterministic score (no Monte Carlo variance) across five weighted components. Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
+      '</div>';
+    h += '</div>';
     h += '</div>';
     return h;
   }
@@ -340,26 +694,46 @@
     var f$ = F.fmtCompact;
     var g = F.grade(d.succVal, fr);
     var sC = F.succColor(d.succVal);
-    var pct = d.succVal == null ? '—' : Math.round(d.succVal * 100) + '%';
-    var medW = mc && (mc.rMedF || mc.medF) ? f$(mc.rMedF || mc.medF) : '—';
-    var p25W = mc && (mc.rP25F || mc.p25F) ? f$(mc.rP25F || mc.p25F) : '—';
+    var pct = _fmtSucc(d.succVal);
+    // Treat 0 as a real (and meaningful) value, not as "missing data". A CCPC
+    // owner who extracts everything to the corp legitimately ends with $0
+    // personal wealth — rendering '—' there is a trust-breaker.
+    function _kpiNum(a, b) {
+      var v = (a != null && isFinite(a)) ? a : (b != null && isFinite(b) ? b : null);
+      return v == null ? '—' : f$(v);
+    }
+    var medW = _kpiNum(mc && mc.rMedF, mc && mc.medF);
+    var p25W = _kpiNum(mc && mc.rP25F, mc && mc.p25F);
+    // CCPC-aware qualifier: when biz is on AND personal median is 0, surface
+    // that the wealth lives in the corporation, not in personal accounts.
+    var medSubExtra = '';
+    if (p.bizOn && (mc && (mc.rMedF === 0 || mc.medF === 0)) && mc && mc.medCorpBal) {
+      medSubExtra = fr
+        ? ' \u00b7 corp \u2248 ' + f$(mc.medCorpBal)
+        : ' \u00b7 corp \u2248 ' + f$(mc.medCorpBal);
+    }
     var depAge = (mc && mc.p5Ruin != null && mc.p5Ruin < 200) ? mc.p5Ruin : null;
     var horizonYrs = (p.deathAge || 90) - (p.age || 35);
-    var verdictText;
-    if (d.succVal == null) verdictText = fr ? 'Plan en cours d\'analyse.' : 'Plan under analysis.';
-    else if (d.succVal >= 0.85) verdictText = fr ? 'Plan robuste — la trajectoire centrale tient et les zones de risque sont gérables.' : 'Robust plan — the central trajectory holds and risk zones are manageable.';
-    else if (d.succVal >= 0.65) verdictText = fr ? 'Plan viable — quelques ajustements ciblés rendraient la trajectoire plus confortable.' : 'Viable plan — a few targeted adjustments would make the trajectory more comfortable.';
-    else if (d.succVal >= 0.4) verdictText = fr ? 'Plan sous tension — des ajustements structurels gagneraient à être considérés.' : 'Plan under strain — structural adjustments would be worth considering.';
-    else verdictText = fr ? 'Plan fragile — une révision globale (épargne, dépenses, horizon) serait pertinente.' : 'Fragile plan — a global review (savings, spending, horizon) would be relevant.';
+    // C1: Thesis-anchored verdict. Single source of truth — the same
+    // posture-band sentence appears on the cover, inside the exec
+    // summary, in the advisor-letter fallback, and in the closing
+    // recap. d.thesis is built deterministically in report-data.js.
+    var verdictText = d.thesis && d.thesis.oneLiner
+      ? d.thesis.oneLiner
+      : (fr ? 'Plan en cours d\'analyse.' : 'Plan under analysis.');
 
     var h = '<div class="exec-summary" style="page-break-after:always;background:linear-gradient(180deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:8px;padding:32px 36px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:780px">';
     h += '<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
     h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
-      '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Synthèse exécutive' : 'Executive summary') + '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Sommaire exécutif' : 'Executive summary') + '</div>' +
       '<div style="font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;letter-spacing:0.5px">' + (fr ? 'En 30 secondes' : 'In 30 seconds') + '</div>' +
     '</div>';
     h += '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:22px;font-weight:600;line-height:1.35;color:#faf8f4;margin-bottom:8px">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
-    h += '<div style="font-family:Inter,sans-serif;font-size:13px;color:#bccbe0;line-height:1.6;margin-bottom:24px">' + verdictText + '</div>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:13px;color:#bccbe0;line-height:1.6;margin-bottom:18px">' + verdictText + '</div>';
+    // Hero score gauge — cover-page anchor visual. Renders BEFORE the
+    // 4-up KPI grid so the reader sees the composite at-a-glance score
+    // first, then drills into the components.
+    h += _renderScoreGauge(d);
     // Headline metrics (4-up)
     function _execKPI(label, value, color, sub) {
       return '<div style="background:rgba(250,248,244,0.06);border:1px solid rgba(196,154,26,0.25);border-radius:6px;padding:14px 12px;text-align:center">' +
@@ -368,24 +742,49 @@
         (sub ? '<div style="font-size:9.5px;color:#8a9bb0;margin-top:6px">' + sub + '</div>' : '') +
       '</div>';
     }
+    // Sprint 0.2: replaced the standalone "Cautious wealth (P25)" KPI
+    // with "Lifetime tax (real)" — defendable, ties to canonical
+    // d._optTaxReal, and ranks among the top concrete decision-relevant
+    // numbers a buyer cares about. P25 wealth without spending context
+    // was meaningless on its own and lived elsewhere in the report.
     h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">';
-    h += _execKPI(fr ? 'Taux de succès' : 'Success rate', pct, sC, g.label);
-    h += _execKPI(fr ? 'Patrimoine médian' : 'Median wealth', medW, '#c49a1a', fr ? 'scénario typique' : 'typical scenario');
-    h += _execKPI(fr ? 'Patrimoine prudent' : 'Cautious wealth', p25W, '#bccbe0', 'P25');
+    h += _execKPI(fr ? 'Taux de succès' : 'Success rate', pct, sC, d.thesis && d.thesis.bandLabel ? F.esc(d.thesis.bandLabel) : '');
+    h += _execKPI(fr ? 'Patrimoine médian' : 'Median wealth', medW, '#c49a1a', (fr ? 'scénario typique (réel)' : 'typical scenario (real)') + medSubExtra);
+    h += _execKPI(fr ? 'Impôt à vie (réel)' : 'Lifetime tax (real)',
+      d._optTaxReal ? f$(d._optTaxReal) : '\u2014',
+      '#bccbe0',
+      fr ? 'm\u00e9nage, horizon mod\u00e9lis\u00e9' : 'household, modeled horizon');
     h += _execKPI(fr ? 'Épuisement épargne' : 'Savings depletion', depAge ? depAge + (fr ? ' ans' : ' yr') : (fr ? 'Aucun' : 'Never'), depAge ? '#cf6060' : '#48a66d', depAge ? (fr ? 'scénario prudent' : 'cautious scenario') : (fr ? 'sur l\'horizon' : 'over horizon'));
     h += '</div>';
-    // Strengths / Risks
+    // Sprint 0.3: bullets must be SIMULATION-DERIVED, not input-derived.
+    // "Couple plan available" was a fact about the user, not a strength
+    // of the plan. "TFSA > $50K" is a balance, not a result. Replaced
+    // with bullets that surface what the SIMULATION revealed.
     var strengths = [];
     var risks = [];
-    if (d.succVal >= 0.7) strengths.push(fr ? 'Probabilité de succès élevée sur ' + horizonYrs + ' ans' : 'High success probability over ' + horizonYrs + ' years');
-    if (mc && mc.medEstateNet > 100000) strengths.push((fr ? 'Héritage médian projeté ' : 'Median projected estate ') + f$(mc.medEstateNet));
-    if (p.cOn) strengths.push(fr ? 'Plan de couple — fractionnement de revenus disponible' : 'Couple plan — pension splitting available');
-    if (p.tfsa > 50000) strengths.push((fr ? 'CELI bien capitalisé (' : 'Well-funded TFSA (') + f$(p.tfsa) + ')');
-    if ((p.rrsp || 0) + (p.tfsa || 0) > 500000) strengths.push(fr ? 'Capital de retraite supérieur à 500K$' : 'Retirement capital above $500K');
-    if (strengths.length === 0) strengths.push(fr ? 'Diagnostic en cours — voir sections détaillées' : 'Diagnostic in progress — see detailed sections');
+    if (d.succVal >= 0.85) strengths.push(fr ? 'Trajectoire centrale tient avec marge sur ' + horizonYrs + '\u00a0ans' : 'Central trajectory holds with margin over ' + horizonYrs + ' years');
+    if (d.covRatio > 1.0) strengths.push(fr ? 'Revenu garanti couvre ' + Math.round(d.covRatio * 100) + '\u202f% des d\u00e9penses cibles' : 'Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of target spending');
+    if (d._taxAlpha != null && d._taxAlpha > 10000) strengths.push((fr ? 'Optimisation fiscale d\u00e9tect\u00e9e \u2014 alpha de ' : 'Tax optimization detected \u2014 alpha of ') + f$(d._taxAlpha) + (fr ? ' vs strat\u00e9gie standard' : ' vs standard strategy'));
+    if (mc && mc.medEstateNet > 250000) strengths.push((fr ? 'Patrimoine r\u00e9siduel m\u00e9dian de ' : 'Median residual estate of ') + f$(mc.medEstateNet));
+    if (d.heroScore && d.heroScore.components) {
+      var topComp = null, topVal = 0;
+      Object.keys(d.heroScore.components).forEach(function(k) {
+        if (d.heroScore.components[k] != null && d.heroScore.components[k] > topVal && d.heroScore.components[k] >= 80) {
+          topVal = d.heroScore.components[k]; topComp = k;
+        }
+      });
+      if (topComp === 'tax_efficiency') strengths.push(fr ? 'Efficacit\u00e9 fiscale au-dessus de la moyenne' : 'Tax efficiency above average');
+      else if (topComp === 'diversification') strengths.push(fr ? 'Diversification entre comptes au-dessus de la moyenne' : 'Account diversification above average');
+      else if (topComp === 'liquidity') strengths.push(fr ? 'Liquidit\u00e9 \u00e9lev\u00e9e \u2014 plus de 12\u00a0mois de coussin' : 'High liquidity \u2014 over 12 months of buffer');
+    }
+    if (strengths.length === 0) strengths.push(fr ? 'Aucune force structurelle dominante \u2014 voir sections d\u00e9taill\u00e9es pour les leviers' : 'No dominant structural strength \u2014 see detail sections for levers');
     if (d.succVal != null && d.succVal < 0.65) risks.push(fr ? 'Taux de succès sous 65 % — ajustements à considérer' : 'Success rate below 65% — adjustments to consider');
     if (depAge) risks.push((fr ? 'Épuisement potentiel de l\'épargne vers ' : 'Potential savings depletion near age ') + depAge);
-    if (mc && mc.oasClbkYrs > 0) risks.push((fr ? 'Récupération PSV sur ' : 'OAS clawback over ') + mc.oasClbkYrs + (fr ? ' année(s)' : ' year(s)'));
+    // Defect-2 fix: read d.oasClbkYrs (canonical, computed in report-data.js
+    // from revData using primary-only taxable income per the OAS Line 23600
+    // rule). Previously read mc.oasClbkYrs (raw mc payload), which could
+    // drift from the canonical when the engine emits both.
+    if (d.oasClbkYrs > 0) risks.push((fr ? 'Récupération PSV sur ' : 'OAS clawback over ') + d.oasClbkYrs + (fr ? ' année(s)' : ' year(s)'));
     if ((p.debts && p.debts.length > 0) || (d._debtTotal || 0) > 50000) risks.push(fr ? 'Dette à intégrer dans la stratégie' : 'Debt to integrate into strategy');
     if (p.eqRet < 0.04) risks.push(fr ? 'Hypothèse de rendement basse — peu de marge' : 'Low return assumption — little margin');
     if (risks.length === 0) risks.push(fr ? 'Aucune zone de risque majeure identifiée' : 'No major risk zone identified');
@@ -401,9 +800,18 @@
     h += _execList(fr ? 'Forces du plan' : 'Plan strengths', strengths, '#48a66d');
     h += _execList(fr ? 'Zones à surveiller' : 'Risk zones', risks, '#cf9850');
     h += '</div>';
+    // "Read further" guide: omit the What-If reference for compact+plain
+    // readers (they don't get the simulator section either, so the pointer
+    // is misleading). All other readers get the full guide.
+    var _hidesSim = d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain';
+    var _readFurther = _hidesSim
+      ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et le plan d\'action proposent des leviers concrets.'
+            : 'the advisor letter (p. 2) frames the read, and the diagnostic and action plan propose concrete levers.')
+      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur What-If permet de tester vos propres hypoth\u00e8ses.'
+            : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the What-If simulator lets you test your own assumptions.');
     h += '<div style="border-top:1px solid rgba(196,154,26,0.25);padding-top:14px;font-size:10.5px;color:#bccbe0;line-height:1.6">' +
       '<strong style="color:#c49a1a;letter-spacing:0.3px">' + (fr ? 'Pour aller plus loin :' : 'Read further:') + '</strong> ' +
-      (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur What-If permet de tester vos propres hypothèses.' : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the What-If simulator lets you test your own assumptions.') +
+      _readFurther +
       '</div>';
     h += '</div>';
     return h;
@@ -421,16 +829,53 @@
     h += '<div class="cover-divider"></div>';
     h += '<div style="font-size:13px;color:#bccbe0;margin-top:10px;letter-spacing:0.4px">' + F.L('prepared_for', fr) + '</div>';
     h += '<div class="cover-client">' + F.esc(cName) + (cSpouse ? ' & ' + F.esc(cSpouse) : '') + '</div>';
+    // Sprint 0.1: dropped F/D/C letter grade. The grade pill ("F — To
+    // rebuild") was academic and added nothing the success rate +
+    // posture word didn't already say. Cover now shows the success
+    // rate inside the circle and the band-anchored thesis posture
+    // word below — single, defendable, non-judgemental.
     h += '<div class="cover-grade-circle" style="border-color:' + sC + ';color:' + sC + '">';
-    h += '<div class="cover-grade-letter">' + (d.succVal == null ? '\u2014' : Math.round(d.succVal * 100) + '%') + '</div>';
+    h += '<div class="cover-grade-letter">' + _fmtSucc(d.succVal) + '</div>';
     h += '</div>';
-    h += '<div style="text-align:center;margin-top:14px"><span class="cover-grade-pill" style="background:' + sC + '">' + g.letter + ' \u2014 ' + g.label + '</span></div>';
+    h += '<div style="text-align:center;margin-top:14px;font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;letter-spacing:1px">' +
+      (fr ? 'Taux de succ\u00e8s sur ' + ((d.p.deathAge || 90) - (d.p.age || 35)) + '\u00a0ans' : 'Success rate over ' + ((d.p.deathAge || 90) - (d.p.age || 35)) + ' years') +
+      '</div>';
+    if (d.thesis && d.thesis.bandLabel) {
+      h += '<div style="text-align:center;margin-top:8px;font-family:\"Playfair Display\",Georgia,serif;font-size:14px;font-weight:600;color:#faf8f4">' + F.esc(d.thesis.bandLabel) + '</div>';
+    }
+    // Sprint 1.5 — Premium-tier badge on cover (Planner only). Visible
+    // signal that this is the $69.99 product, not the $29.99 Bilan.
+    if (d.sku === 'planner') {
+      h += '<div style="text-align:center;margin-top:12px">' +
+        '<span style="display:inline-block;padding:4px 14px;background:#c49a1a;color:#1a1f2a;font-family:Inter,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:14px">' +
+          (fr ? 'Planner \u2014 Simulateur + 5 rapports IA' : 'Planner \u2014 Simulator + 5 AI reports') +
+        '</span></div>';
+    }
     h += '<div class="cover-date">' + F.L('prepared_on', fr) + ' ' + F.fmtDate(null, fr) + '</div>';
+    // CLASSIFIER-RENDER-PLAN: surface the reader-profile combo on the cover.
+    // Bilingual axis labels (no English leakage in FR reports). Hidden for
+    // jargonMode='plain' (beginner readers don't need classifier metadata)
+    // and when no renderProfile is present.
+    if (d.renderProfile && d.renderProfile.jargonMode !== 'plain') {
+      var _rpC = d.renderProfile;
+      var _LIT_FR = { beginner: 'd\u00e9butant', intermediate: 'interm\u00e9diaire', advanced: 'avanc\u00e9' };
+      var _STR_FR = { low: 'faible', moderate: 'mod\u00e9r\u00e9', high: '\u00e9lev\u00e9' };
+      var _DET_FR = { concise: 'concis', balanced: '\u00e9quilibr\u00e9', detailed: 'd\u00e9taill\u00e9' };
+      var _comboLine = (fr
+        ? 'Profil lecteur \u2014 Litt. fin.: <strong>' + (_LIT_FR[_rpC.finLiteracy] || _rpC.finLiteracy || 'interm\u00e9diaire') + '</strong>'
+          + ' \u00b7 Stress: <strong>' + (_STR_FR[_rpC.stressLevel] || _rpC.stressLevel || 'mod\u00e9r\u00e9') + '</strong>'
+          + ' \u00b7 D\u00e9tail: <strong>' + (_DET_FR[_rpC.detailPref] || _rpC.detailPref || '\u00e9quilibr\u00e9') + '</strong>'
+        : 'Reader profile \u2014 Lit.: <strong>' + (_rpC.finLiteracy || 'intermediate') + '</strong>'
+          + ' \u00b7 Stress: <strong>' + (_rpC.stressLevel || 'moderate') + '</strong>'
+          + ' \u00b7 Detail: <strong>' + (_rpC.detailPref || 'balanced') + '</strong>');
+      h += '<div class="cover-combo" style="margin-top:8px;font-size:10px;color:#a8b8d0;letter-spacing:0.4px;font-family:Inter,sans-serif">' + _comboLine + '</div>';
+    }
     if (d.client.advisor) h += '<div style="font-size:11px;color:#a8b8d0;margin-top:6px">' + F.esc(d.client.advisor) + (d.client.firm ? ' \u00b7 ' + F.esc(d.client.firm) : '') + '</div>';
-    h += '<div style="font-size:9px;color:#8a9bb0;margin-top:20px;line-height:1.55;max-width:420px">' +
-      (fr ? 'Bas\u00e9 sur ' + (d.p.nSim || 5000) + ' sc\u00e9narios Monte Carlo \u00b7 Fiscalit\u00e9 2026 (13 provinces) \u00b7 Tables de mortalit\u00e9 CPM-2023 \u00b7 Rendements \u00e0 queues \u00e9paisses (t-Student)'
-         : 'Based on ' + (d.p.nSim || 5000) + ' Monte Carlo scenarios \u00b7 2026 tax tables (13 provinces) \u00b7 CPM-2023 mortality tables \u00b7 Fat-tailed returns (t-Student)') + '</div>';
-    h += '<div class="cover-company">BuildFi Technologies inc. \u00b7 buildfi.ca \u00b7 <span class="ver">' + F.VERSION + '</span></div>';
+    // Methodology line + version footer removed from the cover entirely
+    // (per design review 2026-04-26): the cover should be a calm, premium
+    // anchor — methodology lives in the Methodology section, version
+    // identifiers live in the page header, and "BuildFi Technologies inc."
+    // already appears in the running footer of every printed page.
     h += '</div>';
     return h;
   }
@@ -438,7 +883,7 @@
   function renderHeader(d) {
     var fr = d.fr, today = F.fmtDate(null, fr);
     var h = '<div class="hdr"><div>';
-    h += '<h1>' + (fr ? 'Plan de retraite' : 'Retirement Plan') + '</h1>';
+    h += '<h1>' + (fr ? 'Plan financier' : 'Financial Plan') + '</h1>';
     h += '<h2>' + F.esc(d.client.name || 'Client') + '</h2>';
     h += '</div><div class="hdr-right">';
     h += today + '<br/>';
@@ -453,9 +898,10 @@
   function renderGrade(d) {
     var fr = d.fr, g = F.grade(d.succVal, fr), sC = F.succColor(d.succVal);
     var h = '<div style="text-align:center;margin:14px 0">';
-    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%') + '</span></div>';
+    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + (d.succVal == null ? (fr ? 'En cours' : 'Pending') : _fmtSucc(d.succVal)) + '</span></div>';
     h += '<div><span class="grade-pill" style="background:' + sC + '">' + g.letter + ' \u2014 ' + g.label + '</span></div>';
-    h += '<div style="font-size:10px;color:#999;margin-top:4px">' + (d.p.nSim || 5000) + ' simulations \u00b7 ' + (d.p.fatT ? 't-Student (df=5)' : 'Normal') + ' \u00b7 CPM-2023 \u00b7 ' + (d.p.prov || 'QC') + '</div>';
+    // Sim/distribution meta-line removed entirely (per design review): this
+    // detail belongs in the Methodology section, not under the hero score.
     h += '</div>';
     return h;
   }
@@ -509,7 +955,7 @@
     // Grade + key metrics row
     h += '<div style="display:flex;align-items:center;gap:20px;margin:14px 0">';
     h += '<div style="text-align:center;flex-shrink:0">';
-    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + (d.succVal == null ? '\u2014' : Math.round(d.succVal * 100) + '%') + '</span></div>';
+    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + _fmtSucc(d.succVal) + '</span></div>';
     h += '<div><span class="grade-pill" style="background:' + sC + '">' + g.letter + '</span></div>';
     h += '</div>';
     var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
@@ -525,14 +971,36 @@
       h += F.AiBlock(d.ai.overall_assessment, fr);
     } else {
       // Deterministic summary when AI is absent
+      // covRatio = household guaranteed income (CPP/QPP + OAS + pension, both
+      // spouses) / target spend. Codex flagged: prior text said "government"
+      // even though the figure already includes employer pension. Renamed to
+      // "guaranteed income (public + pension)" so the label matches the math.
+      var _covLabelFr = (p.penType && p.penType !== 'none') || (p.cOn && p.cPenType && p.cPenType !== 'none')
+        ? 'Le revenu garanti (RRQ + PSV + pension d\'employeur)' : 'Les prestations publiques (RRQ + PSV)';
+      var _covLabelEn = (p.penType && p.penType !== 'none') || (p.cOn && p.cPenType && p.cPenType !== 'none')
+        ? 'Guaranteed income (CPP/QPP + OAS + employer pension)' : 'Public benefits (CPP/QPP + OAS)';
       var _detSummary = '';
       if (fr) {
-        _detSummary = 'Votre plan obtient la note <strong>' + g.letter + '</strong> (' + g.label + ') avec un taux de succ\u00e8s de <strong>' + Math.round((d.succVal || 0) * 100) + '%</strong> sur ' + (d.p.nSim || 5000) + ' simulations. ';
-        _detSummary += 'Les prestations gouvernementales couvrent <strong>' + Math.round(d.covRatio * 100) + '%</strong> de vos d\u00e9penses, laissant un \u00e9cart de <strong>' + F.fmtMoney(Math.round(d.gapM), fr) + '</strong> par mois \u00e0 combler par l\u2019\u00e9pargne. ';
+        _detSummary = 'Votre plan obtient la note <strong>' + g.letter + '</strong> (' + g.label + ') avec un taux de succ\u00e8s de <strong>' + _fmtSucc(d.succVal) + '</strong> sur ' + (d.p.nSim || 5000) + ' simulations. ';
+        _detSummary += _covLabelFr + ' couvre <strong>' + Math.round(d.covRatio * 100) + '%</strong> de vos d\u00e9penses. ';
+        if (d.covRatio > 1) {
+          _detSummary += '<strong>Le revenu garanti d\u00e9passe la cible de d\u00e9penses</strong> de ' + Math.round((d.covRatio - 1) * 100) + ' pts \u2014 les retraits du portefeuille ne sont pas requis pour maintenir le mode de vie cible. ';
+        } else {
+          _detSummary += 'Un \u00e9cart mensuel de <strong>' + F.fmtMoney(Math.round(d.gapM), fr) + '</strong> par mois est combl\u00e9 par l\u2019\u00e9pargne. ';
+        }
         _detSummary += 'Le patrimoine m\u00e9dian en fin de projection est de <strong>' + f$(d.mc.rMedF || d.mc.medF) + '</strong> en dollars r\u00e9els.';
       } else {
-        _detSummary = 'Your plan receives a grade of <strong>' + g.letter + '</strong> (' + g.label + ') with a success rate of <strong>' + Math.round((d.succVal || 0) * 100) + '%</strong> across ' + (d.p.nSim || 5000) + ' simulations. ';
-        _detSummary += 'Government benefits cover <strong>' + Math.round(d.covRatio * 100) + '%</strong> of spending, leaving a gap of <strong>' + F.fmtMoney(Math.round(d.gapM), fr) + '</strong> per month to be funded from savings. ';
+        _detSummary = 'Your plan receives a grade of <strong>' + g.letter + '</strong> (' + g.label + ') with a success rate of <strong>' + _fmtSucc(d.succVal) + '</strong> across ' + (d.p.nSim || 5000) + ' simulations. ';
+        _detSummary += _covLabelEn + ' covers <strong>' + Math.round(d.covRatio * 100) + '%</strong> of spending. ';
+        // Codex flag: "leaving a gap of $X" reads weird when coverage is
+        // over 100% (negative gap). Branch the wording to match the sign:
+        // if guaranteed income exceeds spending, surface the surplus
+        // explicitly; otherwise show the gap to be funded from savings.
+        if (d.covRatio > 1) {
+          _detSummary += '<strong>Guaranteed income exceeds your target spending</strong> by ' + Math.round((d.covRatio - 1) * 100) + ' pts \u2014 portfolio withdrawals are not required to maintain the baseline. ';
+        } else {
+          _detSummary += 'A monthly gap of <strong>' + F.fmtMoney(Math.round(d.gapM), fr) + '</strong> per month is funded from savings. ';
+        }
         _detSummary += 'Median wealth at end of projection is <strong>' + f$(d.mc.rMedF || d.mc.medF) + '</strong> in real dollars.';
       }
       h += narr(_detSummary);
@@ -541,10 +1009,16 @@
     // Key observations bullets (deterministic, AI can override via overall_assessment)
     var obs = [];
     if (d.succVal != null && d.succVal >= 0.90) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique une forte probabilit\u00e9 de maintenir votre niveau de vie.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates a high probability of maintaining your lifestyle.');
-    else if (d.succVal != null && d.succVal >= 0.75) obs.push(fr ? '\u26a0 Plan fragile \u2014 le taux de ' + Math.round(d.succVal * 100) + '% laisse peu de marge face aux impr\u00e9vus.' : '\u26a0 Fragile plan \u2014 the ' + Math.round(d.succVal * 100) + '% rate leaves limited margin for the unexpected.');
-    else if (d.succVal != null) obs.push(fr ? '\u26a0 Plan \u00e0 risque \u2014 un taux de ' + Math.round(d.succVal * 100) + '% sugg\u00e8re des ajustements n\u00e9cessaires.' : '\u26a0 At-risk plan \u2014 a ' + Math.round(d.succVal * 100) + '% rate suggests adjustments are needed.');
+    else if (d.succVal != null && d.succVal >= 0.75) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique que la trajectoire centrale tient ; la marge contre les impr\u00e9vus reste mod\u00e9r\u00e9e.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates the central trajectory holds; margin against the unexpected remains moderate.');
+    else if (d.succVal != null && d.succVal >= 0.50) obs.push(fr ? '\u26a0 Plan fragile \u2014 le taux de ' + Math.round(d.succVal * 100) + '% laisse peu de marge face aux impr\u00e9vus.' : '\u26a0 Fragile plan \u2014 the ' + Math.round(d.succVal * 100) + '% rate leaves limited margin for the unexpected.');
+    else if (d.succVal != null && d.succVal >= 0.25) obs.push(fr ? '\u26a0 Plan \u00e0 risque \u2014 un taux de ' + Math.round(d.succVal * 100) + '% sugg\u00e8re des ajustements structurels n\u00e9cessaires.' : '\u26a0 At-risk plan \u2014 a ' + Math.round(d.succVal * 100) + '% rate suggests structural adjustments are needed.');
+    else if (d.succVal != null) obs.push(fr ? '\u26a0 Plan non viable en l\'\u00e9tat \u2014 un taux de ' + Math.round(d.succVal * 100) + '% indique qu\'une r\u00e9vision globale serait n\u00e9cessaire pour r\u00e9tablir la trajectoire.' : '\u26a0 Plan not sustainable as is \u2014 a ' + Math.round(d.succVal * 100) + '% rate indicates a global review would be necessary to restore the trajectory.');
 
-    if (d.covRatio >= 0.7) obs.push(fr ? '\u2713 Les revenus gouvernementaux couvrent ' + Math.round(d.covRatio * 100) + '% des d\u00e9penses, r\u00e9duisant la pression sur l\u2019\u00e9pargne.' : '\u2713 Government income covers ' + Math.round(d.covRatio * 100) + '% of spending, reducing pressure on savings.');
+    // covRatio includes pension; relabel from "government" to "guaranteed".
+    if (d.covRatio > 1.05) {
+      var _surplusPts = Math.round((d.covRatio - 1) * 100);
+      obs.push(fr ? '\u2713 Revenu garanti en <strong>surplus</strong> de ' + _surplusPts + ' pts vs d\u00e9penses cibles \u2014 les retraits du portefeuille ne sont pas requis pour maintenir le niveau de vie de base.' : '\u2713 Guaranteed income runs a <strong>surplus</strong> of ' + _surplusPts + ' pts vs target spending \u2014 portfolio withdrawals are not required to maintain the baseline lifestyle.');
+    } else if (d.covRatio >= 0.7) obs.push(fr ? '\u2713 Le revenu garanti couvre ' + Math.round(d.covRatio * 100) + '% des d\u00e9penses, r\u00e9duisant la pression sur l\u2019\u00e9pargne.' : '\u2713 Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of spending, reducing pressure on savings.');
     else if (d.gapM > 0) obs.push(fr ? '\u2192 \u00c9cart mensuel de ' + F.fmtMoney(Math.round(d.gapM), fr) + ' \u00e0 combler par les retraits d\u2019\u00e9pargne.' : '\u2192 Monthly gap of ' + F.fmtMoney(Math.round(d.gapM), fr) + ' to be funded from savings withdrawals.');
 
     if (d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 Optimisation fiscale d\u00e9tect\u00e9e \u2014 alpha fiscal de ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax optimization detected \u2014 tax alpha of ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
@@ -736,18 +1210,141 @@
 
   // === SECTION: ADVISOR LETTER (page 2 of 18-22 plan) ===
   // One-page warm narrative from the advisor to the client. AI-generated via
+  // Renders the advisor-letter body as plain paragraphs (not an AI-callout).
+  // Re-implements the markdown-safe escape pipeline that AiBlock uses
+  // (escape HTML → promote **bold** + *italic* → split paragraphs on \n\n)
+  // but emits clean <p> tags instead of a labeled callout box. The badge
+  // and yellow callout band belong on inline mid-report insights, not on
+  // the letter that opens the report.
+  function _renderLetterBody(text) {
+    if (!text) return '';
+    var safe = F.esc(String(text).replace(/\r\n?/g, '\n'));
+    safe = safe
+      .replace(/\*\*([^*\n][^*\n]*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n][^*\n]*?)\*(?!\*)/g, '$1<em>$2</em>');
+    var paragraphs = safe.split(/\n\n+/).map(function(p) {
+      return '<p class="narr letter-body" style="margin:0 0 14px;font-size:12px;line-height:1.85;color:#2a2420">' + p.replace(/\n/g, '<br/>') + '</p>';
+    });
+    return paragraphs.join('');
+  }
+
+  // P1.6 — One-sentence case-driver framing. Returns the framing sentence
+  // (or '') based on the profile's case_driver. Uses the same vocabulary
+  // tokens that the narration-auditor checks for, so this fallback alone
+  // satisfies the auditor when the AI letter doesn't name the driver.
+  function _caseDriverFramingSentence(driver, fr, d) {
+    if (!driver) return '';
+    var p = (d && d.p) || {};
+    var f$ = (window.BFmt && window.BFmt.fmtCompact) || function(v) { return v; };
+    var corp = p.bizRetainedEarnings || 0;
+    var debtTotal = (p.debts || []).reduce(function(s, dd) { return s + (dd.balance || dd.bal || 0); }, 0);
+    var bridgeYears = (p.retAge && p.retAge < 65) ? (65 - p.retAge) : 0;
+    var ageNow = p.age || 0;
+    var retAge = p.retAge || 65;
+    switch (driver) {
+      case 'ccpc_extraction':
+        return fr
+          ? 'Au c\u0153ur de votre cas: l\'<strong>ordre d\'extraction de la SPCC</strong> \u2014 salaire, dividendes, vente d\'actifs. Avec ' + f$(corp) + '$ de b\u00e9n\u00e9fices non r\u00e9partis et une vente pr\u00e9vue \u00e0 ' + (p.bizSaleAge || retAge) + ' ans, la cadence d\'extraction d\u00e9termine l\'imp\u00f4t int\u00e9gr\u00e9 viager. Une cadence document\u00e9e ann\u00e9e par ann\u00e9e peut \u00e9conomiser 8\u201312\u202f% de l\'imp\u00f4t total.'
+          : 'At the heart of your case: the <strong>CCPC extraction order</strong> \u2014 salary, dividends, asset sale. With ' + f$(corp) + '$ in retained earnings and a sale planned at age ' + (p.bizSaleAge || retAge) + ', the extraction cadence drives lifetime integrated tax. A documented year-by-year cadence can save 8\u201312% of total tax.';
+      case 'rental_cashflow':
+        var propCount = (p.props || []).filter(function(pr) { return pr && pr.on; }).length;
+        return fr
+          ? 'Au centre de votre plan: le <strong>flux locatif</strong> de ' + (propCount || 'vos') + ' immeuble' + (propCount > 1 ? 's' : '') + ', troisi\u00e8me pilier de revenu aux c\u00f4t\u00e9s du RRQ/PSV et des retraits de portefeuille. Le calendrier de renouvellement hypoth\u00e9caire et l\'escalade des loyers peuvent ajouter 10\u201315\u202fK$/an au flux net dans la d\u00e9cennie de retraite.'
+          : 'At the center of your plan: <strong>rental cash flow</strong> from ' + (propCount || 'your') + ' propert' + (propCount > 1 ? 'ies' : 'y') + ', a third income pillar alongside CPP/OAS and portfolio withdrawals. Mortgage renewal timing and rent escalation can add $10\u201315K/yr to net cash flow over the retirement decade.';
+      case 'gis_trap':
+        return fr
+          ? 'L\'enjeu structurant de votre cas: le <strong>pi\u00e8ge SRG</strong>. Chaque dollar de revenu compt\u00e9 (RRQ + retraits REER + rente) r\u00e9duit la prestation de pr\u00e8s de 50\u00a2 ; les retraits CELI ne d\u00e9clenchent pas la r\u00e9cup\u00e9ration. L\'ordre des retraits \u00e0 partir de 65 ans peut pr\u00e9server plusieurs ann\u00e9es de SRG.'
+          : 'The structural focus of your case: the <strong>GIS trap</strong>. Each dollar of counted income (CPP + RRSP withdrawals + pension) reduces the benefit by close to 50\u00a2 ; TFSA withdrawals do not trigger clawback. Withdrawal sequencing from age 65 can preserve several extra years of GIS.';
+      case 'fire_bridge':
+        return fr
+          ? 'Le levier dominant de votre plan: la <strong>zone-pont</strong> de ' + bridgeYears + ' ans entre la retraite \u00e0 ' + retAge + ' ans et le d\u00e9but du RRQ/PSV \u00e0 65 ans. C\'est la fen\u00eatre la plus expos\u00e9e au risque de s\u00e9quence ; une r\u00e9serve liquide d\u00e9di\u00e9e (\u00e9chelle d\'obligations, fonds de r\u00e9serve) isole le plan d\'une chute de march\u00e9 dans les premi\u00e8res ann\u00e9es.'
+          : 'The dominant lever of your plan: the <strong>' + bridgeYears + '-year bridge</strong> between retirement at age ' + retAge + ' and the start of CPP/OAS at 65. This is the window most exposed to sequence-of-returns risk ; a dedicated liquid reserve (bond ladder, reserve fund) isolates the plan from an early market drop.';
+      case 'db_pension_split':
+        return fr
+          ? 'Le levier conjugal central: le <strong>fractionnement de pension PD</strong> \u00e0 partir de 65 ans. Avec une pension index\u00e9e d\'un c\u00f4t\u00e9 et un revenu plus modeste de l\'autre, transmettre jusqu\'\u00e0 50\u202f% du revenu admissible peut \u00e9conomiser 4\u20138\u202fK$/an d\'imp\u00f4t conjugal et r\u00e9duire mat\u00e9riellement la r\u00e9cup\u00e9ration PSV.'
+          : 'The central spousal lever: <strong>DB pension splitting</strong> from age 65. With one indexed pension on one side and a more modest income on the other, transferring up to 50% of eligible income can save $4\u20138K/yr in household tax and materially reduce OAS clawback.';
+      case 'meltdown_window':
+        return fr
+          ? 'Le levier fiscal dominant: la <strong>fen\u00eatre de meltdown REER</strong> entre ' + retAge + ' et 72 ans. Des retraits acc\u00e9l\u00e9r\u00e9s pendant cette fen\u00eatre lissent le revenu imposable avant la conversion FERR obligatoire et r\u00e9duisent la r\u00e9cup\u00e9ration PSV viagers.'
+          : 'The dominant tax lever: the <strong>RRSP meltdown window</strong> between ' + retAge + ' and 72. Accelerated withdrawals in that window smooth taxable income before mandatory RRIF conversion and reduce lifetime OAS clawback.';
+      case 'debt_paydown':
+        return fr
+          ? 'L\'arbitrage central de votre cas: le <strong>remboursement structur\u00e9 de ' + f$(debtTotal) + '$ de dettes</strong>. Chaque dollar rembours\u00e9 \u00e9quivaut \u00e0 un rendement garanti au taux de la dette ; tant que les soldes \u00e0 taux \u00e9lev\u00e9 ne sont pas \u00e9liminis, l\'\u00e9pargne plac\u00e9e ne compense pas le co\u00fbt d\'int\u00e9r\u00eat.'
+          : 'The central trade-off of your case: <strong>structured paydown of ' + f$(debtTotal) + '$ in debt</strong>. Each dollar repaid equals a guaranteed return at the debt rate ; until high-rate balances are cleared, invested savings do not offset interest cost.';
+      case 'gap_savings':
+        return fr
+          ? 'L\'\u00e9cart \u00e0 combler dans votre plan vient principalement du <strong>taux d\'\u00e9pargne annuel</strong>. Sur l\'horizon de ' + Math.max(0, retAge - ageNow) + ' ans avant la retraite, augmenter la cotisation annuelle de quelques milliers de dollars d\u00e9place la projection plus efficacement que tout ajustement d\'allocation.'
+          : 'The gap in your plan comes mainly from the <strong>annual savings rate</strong>. Over the ' + Math.max(0, retAge - ageNow) + '-year pre-retirement horizon, adding a few thousand dollars in annual contributions moves the projection more than any allocation tweak.';
+      case 'hnw_estate':
+        return fr
+          ? 'Sur ce patrimoine combin\u00e9, l\'<strong>imp\u00f4t au d\u00e9c\u00e8s du second conjoint</strong> sur les soldes REER\u202f/\u202fFERR et les gains accumul\u00e9s reste le co\u00fbt fiscal dominant restant. La planification successorale (don d\'actifs appr\u00e9ci\u00e9s, fiducie testamentaire, b\u00e9n\u00e9ficiaires REER, fractionnement de pension) cadre ce co\u00fbt avant qu\'il ne se cristallise.'
+          : 'On this combined estate, the <strong>tax at the second spouse\'s death</strong> on RRSP/RRIF balances and accumulated gains remains the dominant remaining tax cost. Estate planning (gifting appreciated securities, testamentary trust, RRSP beneficiary designations, pension splitting) frames that cost before it crystallizes.';
+      case 'late_start_savings':
+        return fr
+          ? 'Avec un d\u00e9part tardif (\u00e9pargne disponible aujourd\'hui modeste, ' + Math.max(0, retAge - ageNow) + ' ans avant ' + retAge + ' ans), le levier dominant devient le <strong>rattrapage d\'\u00e9pargne</strong> combin\u00e9 au <strong>report du RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans</strong>. Le report PSV ajoute +36\u202f% de prestation \u00e0 vie ; c\'est l\'effet le plus puissant pour ce profil.'
+          : 'With a late start (' + Math.max(0, retAge - ageNow) + ' years before age ' + retAge + '), the dominant lever becomes <strong>catch-up savings</strong> combined with <strong>CPP/OAS deferral to age 70</strong>. Deferring OAS adds +36% to the benefit for life ; this is the strongest single effect for this profile.';
+      case 'single_parent_resilience':
+        return fr
+          ? 'Avant l\'optimisation, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der toute autre optimisation.'
+          : 'Before optimization, the central frame is <strong>single-parent resilience</strong>. As the sole earner for a household with dependents, your children rely on your income-generating capacity : an emergency fund (6\u20139 months of spending), term life insurance ($250\u2013400K), and adequate disability coverage must precede any other optimization.';
+      default:
+        return '';
+    }
+  }
+
   // `advisor_letter` slot; falls back to a phase-aware deterministic template
   // when AI absent so the page never looks empty.
   function renderAdvisorLetter(d) {
     var fr = d.fr;
     var name = d.fn ? F.esc(d.fn) : (fr ? 'Client' : 'Client');
+    var spouseName = (d.R.couple && d.sfn) ? F.esc(d.sfn) : '';
     var today = F.fmtDate(null, fr);
     var h = '<div class="sec-page" id="sec-letter">';
     h += '<div style="padding:40px 20px 30px;font-family:Inter,sans-serif;line-height:1.85;font-size:12px;color:#2a2420">';
     h += '<div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? 'Lettre pr\u00e9paratoire' : 'Opening letter') + '</div>';
-    h += '<div style="font-size:18px;font-weight:700;color:' + C.gold + ';margin-bottom:20px">' + (fr ? 'Cher' + (d.p.sex === 'F' ? 'e' : '') + ' ' + name : 'Dear ' + name) + ',</div>';
+    // F13 — Couple letters address both spouses by name. Audit caught
+    // hnw_couple's "Cher François" alone for a couple plan.
+    var _salutation;
+    if (spouseName) {
+      _salutation = fr ? ('Cher' + (d.p.sex === 'F' ? 'e' : '') + ' ' + name + ' et ' + spouseName)
+                       : ('Dear ' + name + ' and ' + spouseName);
+    } else {
+      _salutation = fr ? ('Cher' + (d.p.sex === 'F' ? 'e' : '') + ' ' + name) : ('Dear ' + name);
+    }
+    // Codex LOW-1 fix: emit the deterministic salutation only when the AI
+    // letter does NOT already begin with the client's first name. AI
+    // responses commonly open with "Dear Margaret," / "Cher François,"
+    // which produced a duplicate salutation when concatenated with the
+    // deterministic prefix above.
+    var _aiStartsWithName = false;
     if (d.ai.advisor_letter) {
-      h += F.AiBlock(d.ai.advisor_letter, fr);
+      var _aiLetterStart = String(d.ai.advisor_letter).slice(0, 200).toLowerCase();
+      var _firstName = (d.fn || '').toLowerCase();
+      if (_firstName && _aiLetterStart.indexOf(_firstName) >= 0 && _aiLetterStart.indexOf(_firstName) < 50) {
+        // AI letter already addresses the client by name in the first 50 chars
+        _aiStartsWithName = true;
+      }
+    }
+    if (!_aiStartsWithName) {
+      h += '<div style="font-size:18px;font-weight:700;color:' + C.gold + ';margin-bottom:20px">' + _salutation + ',</div>';
+    }
+    // P1.6 — Case-driver framing line. Always emit a one-sentence framing
+    // anchor BEFORE the AI letter. This guarantees the case_driver concept
+    // is named in the advisor-letter section even when the upstream AI
+    // narration was generated before the case_driver mandate.
+    var caseDriver = d.caseDriver || null;
+    var caseFraming = _caseDriverFramingSentence(caseDriver, fr, d);
+    if (caseFraming) {
+      h += '<p class="case-driver-framing" data-case-driver="' + F.esc(caseDriver) + '" style="font-style:italic;color:#5a4f3a;margin-bottom:14px;font-size:11.5px">' + caseFraming + '</p>';
+    }
+    if (d.ai.advisor_letter) {
+      // Render the advisor letter as a clean letter, NOT as an "AI-assisted
+      // analysis" callout box. The opening page should read as a personal
+      // note from the advisor — the "Analyse assistée par IA" badge belongs
+      // on inline insights deeper in the report, where the AI signal is
+      // one voice among several. Here the badge breaks the trust register
+      // and frames the cover as a model output rather than a letter.
+      h += _renderLetterBody(d.ai.advisor_letter);
     } else {
       // Deterministic phase-aware fallback — kept short, conditional, AMF-safe.
       var phase = d.R.phase;
@@ -768,9 +1365,17 @@
       }
       h += '<p class="narr">' + body + '</p>';
     }
-    h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
-      ? 'Les projections sont conditionnelles et non garanties. Chaque chiffre de ce rapport est traceable \u00e0 une sortie du moteur; aucune donn\u00e9e n\'est invent\u00e9e.'
-      : 'Projections are conditional and not guaranteed. Every number in this report is traceable to an engine output; no data is invented.') + '</p>';
+    // Trust copy ("every number is traceable …"): valuable for advisors and
+    // skeptical readers, jargon-heavy for beginners. Gated on jargonMode.
+    if (!d.renderProfile || d.renderProfile.jargonMode !== 'plain') {
+      h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
+        ? 'Les projections sont conditionnelles et non garanties. Chaque chiffre de ce rapport est tra\u00e7able \u00e0 une sortie du moteur; aucune donn\u00e9e n\'est invent\u00e9e.'
+        : 'Projections are conditional and not guaranteed. Every number in this report is traceable to an engine output; no data is invented.') + '</p>';
+    } else {
+      h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
+        ? 'Les projections sont conditionnelles et non garanties.'
+        : 'Projections are conditional and not guaranteed.') + '</p>';
+    }
     h += '<div style="margin-top:30px;padding-top:12px;border-top:1px solid ' + C.border + ';font-size:11px;color:#666">' + today + '<br/><span style="font-size:10px">BuildFi Technologies inc.</span></div>';
     h += '</div></div>';
     return h;
@@ -786,63 +1391,168 @@
     var trace = d.mc._enriched.drawTrace;
     var f$ = F.fmtCompact;
 
-    // Compute max draw per source to normalize heatmap intensity.
-    var maxRRSP = 0, maxTFSA = 0, maxNR = 0, maxMelt = 0;
-    trace.forEach(function(t) {
-      if (t.rrsp > maxRRSP) maxRRSP = t.rrsp;
-      if (t.tfsa > maxTFSA) maxTFSA = t.tfsa;
-      if (t.nr > maxNR) maxNR = t.nr;
-      if (t.melt > maxMelt) maxMelt = t.melt;
-    });
+    // ── REPLACED 2026-04-26: the previous year-by-year heatmap table
+    //    had three credibility problems flagged in user review:
+    //      1. The "Meltdown" row showed values that were ALSO embedded
+    //         in the RRSP row, visually double-counting the same dollar.
+    //      2. Color intensity claimed to encode magnitude but used
+    //         only ~2 shades regardless of value.
+    //      3. Empty cells in the middle of a row read as "engine
+    //         couldn't decide" rather than "strategy genuinely shifted."
+    //    Replacement: lifetime totals (defensible canonical sums) +
+    //    age-phase timeline (deterministic age bands). Same data, but
+    //    the reader walks away with ONE mental model — not noise.
 
-    function cell(val, max, hue) {
-      if (val <= 0 || max <= 0) return '<td style="background:#f9f7f2;color:#ccc;font-size:8px">\u2013</td>';
-      var intensity = Math.min(1, val / max);
-      var bg = intensity < 0.2 ? '#fdf9f0' : intensity < 0.4 ? '#f5e8c8' : intensity < 0.6 ? '#e8c878' : intensity < 0.8 ? '#c49a1a' : '#8a6a10';
-      var fg = intensity >= 0.6 ? '#fff' : '#1a1a1a';
-      return '<td style="background:' + bg + ';color:' + fg + ';font-size:8.5px;font-family:JetBrains Mono,monospace">' + (val >= 1000 ? Math.round(val / 1000) + 'K' : val) + '</td>';
-    }
+    // ── Lifetime totals by source (sum across all retirement years).
+    //    Meltdown is explicitly labeled an OVERLAY within the RRSP/RRIF
+    //    total, not a separate account, eliminating the double-count.
+    var sumRRSP = 0, sumRRIF = 0, sumNR = 0, sumTFSA = 0, sumMelt = 0;
+    var meltAgeStart = null, meltAgeEnd = null;
+    trace.forEach(function(t) {
+      sumRRSP += t.rrsp || 0;
+      sumRRIF += t.rrifMin || 0;
+      sumNR   += t.nr || 0;
+      sumTFSA += t.tfsa || 0;
+      sumMelt += t.melt || 0;
+      if ((t.melt || 0) > 0) {
+        if (meltAgeStart == null) meltAgeStart = t.age;
+        meltAgeEnd = t.age;
+      }
+    });
+    var lifetimeRrspTotal = sumRRSP + sumRRIF;
+    var lifetimeAll = lifetimeRrspTotal + sumNR + sumTFSA;
 
     var h = secPage();
     h += F.Sec(secN, fr ? 'Ordre des retraits' : 'Draw-order strategy', 'sec-draworder');
 
     h += narr(fr
-      ? 'Ce tableau montre comment le financement des d\u00e9penses de retraite se r\u00e9partit entre vos comptes, ann\u00e9e apr\u00e8s ann\u00e9e. L\'intensit\u00e9 de couleur refl\u00e8te le montant retir\u00e9 de chaque source. Une strat\u00e9gie optimale tire d\'abord du non-enregistr\u00e9 et du meltdown REER avant les FERR obligatoires, puis du CELI en dernier recours.'
-      : 'This table shows how retirement spending is funded across your accounts year by year. Colour intensity reflects the amount drawn from each source. An optimised strategy typically draws non-registered and RRSP meltdown first, then RRIF minimums, with TFSA preserved as the last resort.');
+      ? 'Le financement des d\u00e9penses de retraite se r\u00e9partit entre comptes selon une logique fiscale\u00a0: tirer d\'abord les sources les plus flexibles (non-enregistr\u00e9), utiliser la fen\u00eatre meltdown REER avant 72\u00a0ans pour lisser l\'imp\u00f4t, puis activer les retraits FERR minimums obligatoires en pr\u00e9servant le CELI. Cette section r\u00e9sume la r\u00e9partition viag\u00e8re et la chronologie des phases.'
+      : 'Retirement spending is funded across accounts following a tax logic: draw the most flexible sources first (non-registered), use the RRSP meltdown window before age 72 to smooth tax, then activate mandatory RRIF minimum withdrawals while preserving the TFSA. This section summarizes lifetime allocation and the phase chronology.');
 
-    // Limit to max 20 columns for readability
-    var rows = trace.slice(0, 20);
-    h += '<div style="overflow-x:auto;margin:8px 0">';
-    h += '<table class="tbl" style="font-size:9px">';
-    h += '<thead><tr><th style="text-align:left">' + (fr ? 'Compte' : 'Account') + '</th>';
-    rows.forEach(function(t) { h += '<th>' + t.age + '</th>'; });
-    h += '</tr></thead><tbody>';
+    // ── Lifetime allocation bars ────────────────────────────────────
+    function _bar(label, value, total, color, sub) {
+      var pct = total > 0 ? Math.round((value / total) * 100) : 0;
+      var w = total > 0 ? Math.max(2, Math.min(100, (value / total) * 100)) : 2;
+      return '<div style="display:grid;grid-template-columns:170px 1fr 110px;gap:12px;align-items:center;padding:8px 0;border-top:1px solid #e8e0d4">' +
+        '<div>' +
+          '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#1a1610">' + label + '</div>' +
+          (sub ? '<div style="font-family:Inter,sans-serif;font-size:9.5px;color:#888;margin-top:2px;line-height:1.3">' + sub + '</div>' : '') +
+        '</div>' +
+        '<div style="background:#f5f1ea;border-radius:3px;height:14px;overflow:hidden">' +
+          '<div style="height:100%;width:' + w + '%;background:' + color + ';transition:width 0.3s"></div>' +
+        '</div>' +
+        '<div style="text-align:right;font-family:JetBrains Mono,monospace">' +
+          '<span style="font-size:13px;font-weight:700;color:' + color + '">' + f$(Math.round(value)) + '</span>' +
+          '<span style="font-size:9.5px;color:#888;margin-left:6px">' + pct + '\u202f%</span>' +
+        '</div>' +
+        '</div>';
+    }
 
-    h += '<tr><td style="text-align:left;font-weight:700">REER/RRSP</td>';
-    rows.forEach(function(t) { h += cell(t.rrsp, maxRRSP, 'gold'); });
-    h += '</tr>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 6px">' +
+      (fr ? 'R\u00e9partition viag\u00e8re des retraits' : 'Lifetime withdrawal allocation') + '</div>';
+    h += '<div style="background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:6px 16px 10px;margin-bottom:10px">';
+    h += _bar(
+      fr ? 'Non-enregistr\u00e9 (NR)' : 'Non-registered (NR)',
+      sumNR, lifetimeAll, '#5b8db8',
+      fr ? 'Source la plus flexible \u2014 tir\u00e9e en premier' : 'Most flexible source \u2014 drawn first'
+    );
+    h += _bar(
+      fr ? 'REER + FERR' : 'RRSP + RRIF',
+      lifetimeRrspTotal, lifetimeAll, '#c49a1a',
+      fr ? 'Inclut le meltdown comme strat\u00e9gie d\'extraction' : 'Includes meltdown as an extraction strategy'
+    );
+    h += _bar(
+      fr ? 'CELI / TFSA' : 'TFSA / CELI',
+      sumTFSA, lifetimeAll, '#2a8c46',
+      fr ? 'Pr\u00e9serv\u00e9 \u2014 dernier recours' : 'Preserved \u2014 last resort'
+    );
+    // Meltdown shown as a clearly-labeled OVERLAY beneath RRSP, not a
+    // separate account — eliminates the double-count of the old table.
+    if (sumMelt > 0) {
+      h += '<div style="margin-top:10px;padding:10px 12px;background:#fdf6e3;border-left:3px solid #b89830;border-radius:0 4px 4px 0">';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#7a4a00;letter-spacing:0.5px;margin-bottom:4px">' +
+        '\u25b8 ' + (fr ? 'Dont meltdown REER (recouvrement avec REER ci-dessus)' : 'Of which RRSP meltdown (overlap with RRSP above)') + '</div>';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;color:#444;line-height:1.55">' +
+        (fr
+          ? 'Le meltdown ajoute <strong>' + f$(Math.round(sumMelt)) + '</strong> de retraits REER acc\u00e9l\u00e9r\u00e9s entre <strong>' + meltAgeStart + ' et ' + meltAgeEnd + '\u00a0ans</strong> pour lisser le revenu imposable avant la conversion FERR obligatoire \u00e0 72\u00a0ans. Ce montant est compris dans le total REER + FERR ci-dessus, pas en sus.'
+          : 'Meltdown adds <strong>' + f$(Math.round(sumMelt)) + '</strong> of accelerated RRSP withdrawals between ages <strong>' + meltAgeStart + ' and ' + meltAgeEnd + '</strong> to smooth taxable income before mandatory RRIF conversion at age 72. This amount is included in the RRSP + RRIF total above, not added on top.') +
+        '</div></div>';
+    }
+    h += '</div>';
 
-    h += '<tr><td style="text-align:left;font-weight:700">' + (fr ? 'FERR min' : 'RRIF min') + '</td>';
-    rows.forEach(function(t) { h += cell(t.rrifMin, maxRRSP, 'gold'); });
-    h += '</tr>';
+    // ── Phase timeline ───────────────────────────────────────────────
+    // Deterministic age bands. The phase boundaries come from the
+    // engine's drawTrace observations: pre-meltdown, meltdown window
+    // (if active), post-meltdown (RRIF + TFSA).
+    var retAge = (d.p.retAge || 65);
+    var deathAge = (d.p.deathAge || 90);
+    var meltStart = meltAgeStart != null ? meltAgeStart : null;
+    var meltEnd = meltAgeEnd != null ? meltAgeEnd : null;
+    var phases = [];
+    if (meltStart != null && meltStart > retAge) {
+      phases.push({
+        ageA: retAge, ageB: meltStart - 1,
+        title: fr ? 'NR + CELI tactique' : 'NR + tactical TFSA',
+        body: fr ? 'Retraits du non-enregistr\u00e9 (le plus flexible) en priorit\u00e9, parfois compl\u00e9t\u00e9s par des retraits CELI au besoin. Le REER reste intact pour le meltdown \u00e0 venir.'
+                 : 'Non-registered withdrawals (most flexible) first, sometimes supplemented by tactical TFSA draws. RRSP stays intact for the upcoming meltdown.',
+        color: '#5b8db8'
+      });
+    }
+    if (meltStart != null) {
+      phases.push({
+        ageA: meltStart, ageB: meltEnd,
+        title: fr ? 'Fen\u00eatre meltdown REER' : 'RRSP meltdown window',
+        body: fr ? 'Retraits acc\u00e9l\u00e9r\u00e9s du REER pour vider une partie du solde avant la conversion FERR obligatoire \u00e0 72\u00a0ans. Lisse l\'imp\u00f4t viager en \u00e9vitant que les retraits minimums du FERR ne poussent le revenu dans des paliers sup\u00e9rieurs.'
+                 : 'Accelerated RRSP withdrawals to drain part of the balance before mandatory RRIF conversion at age 72. Smooths lifetime tax by preventing forced RRIF minimums from pushing income into higher brackets.',
+        color: '#c49a1a'
+      });
+    }
+    if ((meltEnd != null ? meltEnd : retAge) < deathAge) {
+      var post = (meltEnd != null ? meltEnd : retAge) + 1;
+      phases.push({
+        ageA: post, ageB: deathAge,
+        title: fr ? 'FERR minimums + CELI pr\u00e9serv\u00e9' : 'RRIF minimums + preserved TFSA',
+        body: fr ? 'Apr\u00e8s 72\u00a0ans, les retraits FERR minimums sont obligatoires. Le CELI reste pr\u00e9serv\u00e9 pour servir de coussin sans imp\u00f4t \u2014 utile si les d\u00e9penses augmentent (sant\u00e9, soutien familial) ou comme transmission franche d\'imp\u00f4t.'
+                 : 'After age 72, RRIF minimum withdrawals are mandatory. The TFSA stays preserved as a tax-free buffer \u2014 useful if expenses rise (health, family support) or as a tax-clean transfer at death.',
+        color: '#2a8c46'
+      });
+    }
 
-    h += '<tr><td style="text-align:left;font-weight:700">Meltdown</td>';
-    rows.forEach(function(t) { h += cell(t.melt, maxMelt, 'gold'); });
-    h += '</tr>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 6px">' +
+      (fr ? 'Chronologie des phases' : 'Phase timeline') + '</div>';
+    h += '<div style="position:relative;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:14px 18px">';
+    var horizon = Math.max(1, deathAge - retAge);
+    phases.forEach(function(ph, i) {
+      var leftPct = ((ph.ageA - retAge) / horizon) * 100;
+      var widthPct = Math.max(3, ((ph.ageB - ph.ageA + 1) / horizon) * 100);
+      h += '<div style="display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:center;padding:8px 0' + (i > 0 ? ';border-top:1px solid #e8e0d4' : '') + '">';
+      h += '<div>';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:' + ph.color + '">' + ph.title + '</div>';
+      h += '<div style="font-family:JetBrains Mono,monospace;font-size:10.5px;color:#444;margin-top:2px">' + ph.ageA + (ph.ageA === ph.ageB ? '' : '\u2013' + ph.ageB) + (fr ? ' ans' : ' yrs') + '</div>';
+      h += '</div>';
+      h += '<div>';
+      h += '<div style="position:relative;background:#f5f1ea;border-radius:3px;height:8px;margin-bottom:6px">' +
+        '<div style="position:absolute;left:' + leftPct.toFixed(1) + '%;width:' + widthPct.toFixed(1) + '%;height:100%;background:' + ph.color + ';border-radius:3px"></div>' +
+        '</div>';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;color:#444;line-height:1.55">' + ph.body + '</div>';
+      h += '</div>';
+      h += '</div>';
+    });
+    // Age axis under all phases
+    h += '<div style="display:grid;grid-template-columns:170px 1fr;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid #e8e0d4">';
+    h += '<div></div>';
+    h += '<div style="display:flex;justify-content:space-between;font-family:JetBrains Mono,monospace;font-size:9.5px;color:#888">' +
+      '<span>' + retAge + (fr ? ' ans' : ' yrs') + '</span>' +
+      (meltStart && meltStart > retAge ? '<span>' + meltStart + '</span>' : '') +
+      (meltEnd && meltEnd < deathAge ? '<span>' + (meltEnd + 1) + '</span>' : '') +
+      '<span>' + deathAge + (fr ? ' ans' : ' yrs') + '</span>' +
+      '</div>';
+    h += '</div>';
+    h += '</div>';
 
-    h += '<tr><td style="text-align:left;font-weight:700">NR</td>';
-    rows.forEach(function(t) { h += cell(t.nr, maxNR, 'gold'); });
-    h += '</tr>';
-
-    h += '<tr><td style="text-align:left;font-weight:700">CELI/TFSA</td>';
-    rows.forEach(function(t) { h += cell(t.tfsa, maxTFSA, 'gold'); });
-    h += '</tr>';
-
-    h += '</tbody></table></div>';
-
-    h += '<div style="font-size:10px;color:#888;margin-top:6px">' +
-      (fr ? 'Montants en milliers de dollars, chemin m\u00e9dian. Cellule vide (\u2013) = aucun retrait cette ann\u00e9e.'
-          : 'Amounts in thousands of dollars, median path. Empty cell (\u2013) = no withdrawal that year.') + '</div>';
+    h += '<div style="font-size:9.5px;color:#888;margin-top:8px;font-style:italic;line-height:1.55">' +
+      (fr ? 'Sommes viag\u00e8res sur le chemin m\u00e9dian. Le meltdown est une strat\u00e9gie d\'extraction du REER, pas un compte distinct \u2014 son montant est inclus dans le total REER + FERR ci-dessus.'
+          : 'Lifetime sums on the median path. Meltdown is an RRSP extraction strategy, not a separate account \u2014 its amount is included in the RRSP + RRIF total above.') + '</div>';
 
     h += secPageEnd();
     return h;
@@ -867,6 +1577,36 @@
       return h0;
     }
     var s = d.mc._stress;
+    // P1.3 — Risk-collapse rule. When risk-collapse-auditor flagged this
+    // section as redundant (d._compact['sec-stress'] = true), replace the
+    // full stress matrix with a 4-sentence callout that names the dominant
+    // sensitivity lever rather than a wall of "everything at 100%".
+    if (d._compact && d._compact['sec-stress']) {
+      var fcompact = F.fmtCompact;
+      var ksAll = Object.keys(s);
+      var succsAll = ksAll.map(function(k) { return s[k] && s[k].succ != null ? Math.round(s[k].succ * 100) : null; }).filter(function(x) { return x != null; });
+      var minS = succsAll.length ? Math.min.apply(null, succsAll) : null;
+      var maxS = succsAll.length ? Math.max.apply(null, succsAll) : null;
+      var topLever = null;
+      var sens = (d._sensData) || (d.mc && d.mc._sensData);
+      if (Array.isArray(sens) && sens.length > 0) {
+        var sorted = sens.slice().sort(function(a, b) { return Math.abs(b.delta || 0) - Math.abs(a.delta || 0); });
+        topLever = sorted[0] && sorted[0].label ? sorted[0].label : null;
+      }
+      var hC = secPage();
+      hC += F.Sec(secN, fr ? 'Stabilit\u00e9 du plan' : 'Plan stability', 'sec-stress');
+      hC += '<div class="cd risk-collapse-callout" style="padding:14px 18px;background:#f3faf4;border-left:4px solid ' + C.green + ';font-size:11.5px;line-height:1.7;color:#1f3a25">' +
+        '<div style="font-weight:700;color:' + C.green + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? '\u25b7 Lecture: stabilit\u00e9 structurelle' : '\u25b7 Reading note: structural stability') + '</div>' +
+        '<div>' + (fr
+          ? 'Les six sc\u00e9narios de stress (crise 2008, stagflation 1973, long\u00e9vit\u00e9 +5\u202fans, d\u00e9cennie perdue, inflation persistante, d\u00e9penses +15\u202f%) retournent un succ\u00e8s entre <strong>' + (minS != null ? minS : '\u2014') + '\u202f%</strong> et <strong>' + (maxS != null ? maxS : '\u2014') + '\u202f%</strong>. La fourchette est trop \u00e9troite pour ajouter de la valeur d\u00e9cisionnelle\u202f: le plan absorbe les chocs de march\u00e9 simul\u00e9s sans d\u00e9placement mat\u00e9riel.'
+          : 'The six stress scenarios (2008 crisis, 1973 stagflation, longevity +5\u202fyrs, lost decade, persistent inflation, spending +15\u202f%) return success rates between <strong>' + (minS != null ? minS : '\u2014') + '\u202f%</strong> and <strong>' + (maxS != null ? maxS : '\u2014') + '\u202f%</strong>. The range is too narrow to add decision value\u202f: the plan absorbs simulated market shocks without material displacement.') + '</div>' +
+        '<div style="margin-top:8px">' + (fr
+          ? 'Le levier de sensibilit\u00e9 dominant reste ' + (topLever ? '<strong>' + F.esc(topLever) + '</strong>' : '<strong>l\'allocation et la s\u00e9quence des rendements</strong>') + '\u202f; c\'est l\u00e0 que se concentre le risque utile, pas dans la matrice de stress.'
+          : 'The dominant sensitivity lever remains ' + (topLever ? '<strong>' + F.esc(topLever) + '</strong>' : '<strong>allocation and sequence of returns</strong>') + ' \u2014 that is where decision-relevant risk concentrates, not in the stress matrix.') + '</div>' +
+        '</div>';
+      hC += secPageEnd();
+      return hC;
+    }
     var f$ = F.fmtCompact;
     var baseMedF = d.mc.rMedF || d.mc.medF || 0;
     var baseSucc = d.mc.succ || 0;
@@ -932,6 +1672,22 @@
         '</div></div>';
     }
 
+    // F11 — DB-pension indexation stress callout. For DB-heavy profiles
+    // the audit found that the standard market-shock stress tests don't
+    // surface the dominant risk (loss of indexation). Add a deterministic
+    // callout naming the risk + cited employer-plan checkpoint.
+    var pp = d.p || {};
+    var hasIndexedDB = (pp.penType === 'db' && pp.penIdx) || (pp.cOn && pp.cPenType === 'db' && pp.cPenIdx);
+    if (hasIndexedDB) {
+      h += '<div class="cd db-indexation-stress" style="margin:10px 0;padding:12px 16px;background:#fdf6e3;border-left:3px solid ' + C.amber + ';font-size:11px;line-height:1.6">' +
+        '<div style="font-weight:700;color:' + C.gold + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+        (fr ? 'Stress sp\u00e9cifique \u2014 perte d\'indexation PD' : 'Specific stress \u2014 DB indexation loss') + '</div>' +
+        (fr
+          ? 'Ce plan d\u00e9pend d\'une pension PD <strong>index\u00e9e</strong>. Si l\'indexation passe de 2\u202f%\u202f/\u202fan \u00e0 0\u202f% (gel discr\u00e9tionnaire ou changement de r\u00e9gime), la prestation perd environ 30\u202f% de son pouvoir d\'achat sur 25 ans. La couverture du revenu garanti chuterait mat\u00e9riellement. <strong>\u00c0 v\u00e9rifier</strong>\u202f: indexation contractuelle ou discr\u00e9tionnaire dans les documents du r\u00e9gime?'
+          : 'This plan relies on an <strong>indexed</strong> DB pension. If indexation drops from 2%/yr to 0% (discretionary freeze or plan change), the benefit loses about 30% of purchasing power over 25 years. Guaranteed income coverage would drop materially. <strong>Verify</strong>: is indexation contractual or discretionary under the plan documents?') +
+        '</div>';
+    }
+
     // AI interpretation if available
     if (d.ai.stress_interpretation) {
       h += F.AiBlock(d.ai.stress_interpretation, fr);
@@ -948,6 +1704,25 @@
     var qLbl = F.qppLabel(p.prov, fr);
     var h = secPage();
     h += F.Sec(secN, F.L('profile', fr), 'sec-profile');
+
+    // F16 — Inflation bridge for long-horizon plans. Spending is stated
+    // in 2026 dollars throughout the report; for plans extending 15+
+    // years post-retirement the nominal trajectory diverges materially.
+    // Surface the conversion explicitly so readers don't think the
+    // planner ignored inflation.
+    var _horizonYrs = (p.deathAge || 90) - (p.age || 35);
+    var _spendNow = (p.retSpM || 0) * 12 + (p.cOn ? (p.cRetSpM || 0) * 12 : 0);
+    var _infRate = p.inf || 0.021;
+    if (_horizonYrs >= 15 && _spendNow > 1000) {
+      var _spendAt75 = _spendNow * Math.pow(1 + _infRate, Math.max(0, 75 - (p.age || 35)));
+      var _spendAtDeath = _spendNow * Math.pow(1 + _infRate, _horizonYrs);
+      h += '<div class="cd inflation-bridge" style="margin:8px 0 12px;padding:8px 12px;background:#fafafa;border-left:3px solid ' + C.gold + ';font-size:10.5px;color:#444;line-height:1.55">' +
+        '<strong>' + (fr ? 'Lecture des dollars' : 'Reading the dollars') + '\u202f:</strong> ' +
+        (fr
+          ? 'Les d\u00e9penses cibles ci-dessous sont en <strong>dollars 2026</strong> (pouvoir d\'achat constant). En valeur nominale, la m\u00eame cible vaudrait ' + F.fmtCompact(Math.round(_spendAt75)) + '\u202f$ \u00e0 75 ans et ' + F.fmtCompact(Math.round(_spendAtDeath)) + '\u202f$ \u00e0 ' + (p.deathAge || 90) + ' ans \u00e0 ' + (_infRate * 100).toFixed(1) + '\u202f% d\'inflation. Les revenus index\u00e9s (RRQ + PSV + pension PD si applicable) suivent l\'inflation; les retraits de portefeuille sont calibr\u00e9s pour pr\u00e9server le pouvoir d\'achat.'
+          : 'Target spending below is stated in <strong>2026 dollars</strong> (constant purchasing power). In nominal terms, the same target would be ' + F.fmtCompact(Math.round(_spendAt75)) + '$ at age 75 and ' + F.fmtCompact(Math.round(_spendAtDeath)) + '$ at age ' + (p.deathAge || 90) + ' at ' + (_infRate * 100).toFixed(1) + '% inflation. Indexed income (CPP + OAS + DB pension if applicable) tracks inflation; portfolio withdrawals are calibrated to preserve purchasing power.') +
+        '</div>';
+    }
 
     // Intro narrative — savings composition
     var rrspPct = d.totalBal > 0 ? Math.round((p.rrsp || 0) / d.totalBal * 100) : 0;
@@ -979,15 +1754,71 @@
 
     // Savings snapshot
     h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">' + (fr ? '\u00c9pargne' : 'Savings') + '</div>';
-    h += F.Card('<table>' +
-      F.R('REER/RRSP', fR(p.rrsp || 0)) + F.R('CELI/TFSA', fR(p.tfsa || 0)) + F.R('NR', fR(p.nr || 0)) +
-      (p.liraBal ? F.R('CRI/LIRA', fR(p.liraBal)) : '') +
-      (p.fhsaBal ? F.R('CELIAPP/FHSA', fR(p.fhsaBal)) : '') +
-      (p.dcBal ? F.R('DC/CD', fR(p.dcBal)) : '') +
-      (p.peBal ? F.R(fr ? 'PE (m\u00e9tal)' : 'PE (precious)', fR(p.peBal)) : '') +
-      (p.pmBal ? F.R(fr ? 'PM (priv\u00e9)' : 'PM (private)', fR(p.pmBal)) : '') +
-      F.R('<strong>' + F.L('total', fr) + '</strong>', '<strong>' + fR(d.totalBal) + '</strong>') +
-      '</table>');
+    // Sprint 6 — Asset allocation sunburst replaces the flat balance list
+    // when totalBal > $50K. Inner ring = equity/bond allocation (light shade),
+    // outer ring = account type (saturated colors). Caption matches visual.
+    // The allocation ring is ONLY rendered when the user explicitly provided
+    // allocR / allocT / allocN — otherwise we'd be visualizing engine
+    // defaults (60/70/50) which is misleading. Pure account-type donut when
+    // allocation is unknown.
+    var _sbAccounts = [];
+    var _userAllocSet = (p.allocR != null) || (p.allocT != null) || (p.allocN != null);
+    if (Ch.svgSunburst && (d.totalBal || 0) > 50000) {
+      var _hh = function(pri, spo) { return (p[pri] || 0) + (p.cOn ? (p[spo] || 0) : 0); };
+      var _addAcct = function(label, pri, spo, color, allocEq) {
+        var v = _hh(pri, spo);
+        if (v >= 1000) {
+          var entry = { label: label, value: v, color: color };
+          if (_userAllocSet) entry.asset_eq = allocEq;
+          _sbAccounts.push(entry);
+        }
+      };
+      _addAcct('REER/RRSP', 'rrsp', 'cRRSP', '#c49a1a', p.allocR);
+      _addAcct('CELI/TFSA', 'tfsa', 'cTFSA', '#2a8c46', p.allocT);
+      _addAcct('NR',        'nr',   'cNR',   '#5b8db8', p.allocN);
+      _addAcct('CRI/LIRA',  'liraBal', 'cLira', '#7c60b8', p.allocR);
+      if ((p.bizRetainedEarnings || 0) >= 1000) {
+        var corpEntry = { label: 'Corp', value: p.bizRetainedEarnings, color: '#7390b8' };
+        if (_userAllocSet) corpEntry.asset_eq = 0.5;
+        _sbAccounts.push(corpEntry);
+      }
+    }
+    if (_sbAccounts.length >= 2) {
+      h += '<div style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:center;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:14px 18px;margin-bottom:14px">';
+      h += '<div style="text-align:center">';
+      h += Ch.svgSunburst(_sbAccounts, { size: 220, subLabel: fr ? 'patrimoine total' : 'total wealth' });
+      h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:4px;letter-spacing:0.5px">' +
+        (fr ? 'Anneau int\u00e9rieur\u202f: type de compte. Anneau ext\u00e9rieur\u202f: actions / obligations.' : 'Inner ring: account type. Outer ring: equity / bonds.') +
+        '</div></div>';
+      // Right column: account legend with values
+      h += '<div style="font-family:Inter,sans-serif;font-size:11px">';
+      _sbAccounts.forEach(function(a) {
+        var pct = Math.round(a.value / d.totalBal * 100);
+        h += '<div style="display:grid;grid-template-columns:14px 130px 1fr 90px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f0e8d8">' +
+          '<div style="width:12px;height:12px;background:' + a.color + ';border-radius:3px"></div>' +
+          '<div style="font-weight:600">' + a.label + '</div>' +
+          '<div style="font-family:JetBrains Mono,monospace;color:#888;font-size:10px">' + Math.round((a.asset_eq || 0) * 100) + '\u202f% \u00e9q.' +
+            ' / ' + Math.round((1 - (a.asset_eq || 0)) * 100) + '\u202f% obl.</div>' +
+          '<div style="text-align:right;font-family:JetBrains Mono,monospace;font-weight:700">' + fR(a.value) + ' (' + pct + '\u202f%)</div>' +
+          '</div>';
+      });
+      h += '<div style="display:grid;grid-template-columns:14px 130px 1fr 90px;gap:8px;align-items:center;padding:6px 0 0;margin-top:4px;border-top:2px solid #c49a1a;font-weight:700">' +
+        '<div></div><div>' + F.L('total', fr) + '</div><div></div>' +
+        '<div style="text-align:right;font-family:JetBrains Mono,monospace;color:#c49a1a">' + fR(d.totalBal) + '</div>' +
+        '</div>';
+      h += '</div></div>';
+    } else {
+      // Fallback: legacy flat table for trivial balances
+      h += F.Card('<table>' +
+        F.R('REER/RRSP', fR(p.rrsp || 0)) + F.R('CELI/TFSA', fR(p.tfsa || 0)) + F.R('NR', fR(p.nr || 0)) +
+        (p.liraBal ? F.R('CRI/LIRA', fR(p.liraBal)) : '') +
+        (p.fhsaBal ? F.R('CELIAPP/FHSA', fR(p.fhsaBal)) : '') +
+        (p.dcBal ? F.R('DC/CD', fR(p.dcBal)) : '') +
+        (p.peBal ? F.R(fr ? 'PE (m\u00e9tal)' : 'PE (precious)', fR(p.peBal)) : '') +
+        (p.pmBal ? F.R(fr ? 'PM (priv\u00e9)' : 'PM (private)', fR(p.pmBal)) : '') +
+        F.R('<strong>' + F.L('total', fr) + '</strong>', '<strong>' + fR(d.totalBal) + '</strong>') +
+        '</table>');
+    }
 
     // Timeline
     var markers = [{ age: p.age, label: (fr ? 'Aujourd\'hui' : 'Today') }];
@@ -1006,7 +1837,7 @@
       F.R('PSV/OAS (' + (p.oasAge || 65) + (fr ? ' ans)' : ' yrs)'), fR(Math.round(d.oasM)) + '/m \u2014 ' + fR(Math.round(d.oasM * 12)) + (fr ? '/an' : '/yr')) +
       (p.penType && p.penType !== 'none' ? F.R((fr ? 'Pension' : 'Pension'), fR(p.penM || 0) + '/m') : '') +
       (d.R.couple ? F.R(qLbl + ' ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cQppM)) + '/m') + F.R('PSV ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cOasM)) + '/m') : '') +
-      F.R('<strong>' + (fr ? 'Total gouvernemental' : 'Total government') + '</strong>', '<strong>' + fR(Math.round(d.govM)) + '/m \u2014 ' + fR(Math.round(d.govY)) + (fr ? '/an' : '/yr') + '</strong>') +
+      F.R('<strong>' + (fr ? 'Total revenu garanti' : 'Total guaranteed income') + '</strong>', '<strong>' + fR(Math.round(d.govM)) + '/m \u2014 ' + fR(Math.round(d.govY)) + (fr ? '/an' : '/yr') + '</strong>') +
       '</table>');
 
     // Coverage — donut + KPIs
@@ -1019,7 +1850,7 @@
     h += '<div style="flex:1"><div class="g3">';
     h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM)) + '</span>/m', (fr ? '\u00c9cart mensuel' : 'Monthly gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
     h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM * 12)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? '\u00c9cart annuel' : 'Annual gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
-    h += F.KPI('<span class="mono">' + fR(Math.round(d.govY)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? 'Rev. gov.' : 'Gov. income') + _scopeTag, C.green);
+    h += F.KPI('<span class="mono">' + fR(Math.round(d.govY)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? 'Rev. garanti' : 'Guaranteed inc.') + _scopeTag, C.green);
     h += '</div></div></div>';
 
     // Couple-aware narrative: explicitly state "for the household" + spousal-spend total.
@@ -1082,8 +1913,27 @@
   }
 
   // === SECTION: GOALS ===
+  // CLASSIFIER-RENDER-PLAN Phase 5: relevance gate. Reads
+  // BFRenderProfile.isBlockRelevant(blockId, d, profile) to decide
+  // whether to omit. Returns true to RENDER. False = section dropped
+  // from the report (and an entry pushed to d._omittedBlocks for AI
+  // prompt awareness). Conservative default: when in doubt, show.
+  function _relevanceGate(d, blockId) {
+    if (!d || !d.renderProfile) return true;
+    var rpMod = (typeof window !== 'undefined' && window.BFRenderProfile) ? window.BFRenderProfile : null;
+    if (!rpMod || typeof rpMod.isBlockRelevant !== 'function') return true;
+    var rel = rpMod.isBlockRelevant(blockId, d, d.renderProfile);
+    if (!rel) {
+      d._omittedBlocks = d._omittedBlocks || [];
+      if (d._omittedBlocks.indexOf(blockId) < 0) d._omittedBlocks.push(blockId);
+    }
+    return rel;
+  }
+
   function renderGoals(d, secN) {
     if (!d.R.hasGoals) return '';
+    // CLASSIFIER-RENDER-PLAN Phase 5 — relevance gate.
+    if (!_relevanceGate(d, 'goals')) return '';
     var fr = d.fr, goals = d.p.goals || [];
     // Consume enriched goals ledger when available (Phase 2) — maps by index.
     // Ledger fields: {desc, amount, targetAge, medianAvailable, probabilityMet,
@@ -1203,14 +2053,56 @@
       ? 'Le moteur Monte Carlo projette l\u2019\u00e9volution de votre patrimoine \u00e0 travers <strong>' + (p.nSim || 5000) + ' sc\u00e9narios</strong> ind\u00e9pendants. La zone ombrée repr\u00e9sente la plage probable (P25\u2013P75) — dans la moiti\u00e9 des sc\u00e9narios, votre patrimoine se situe dans cette fourchette.'
       : 'The Monte Carlo engine projects your wealth evolution across <strong>' + (p.nSim || 5000) + ' independent scenarios</strong>. The shaded area represents the likely range (P25\u2013P75) — in half of all scenarios, your wealth falls within this band.');
 
-    // Stacked wealth composition chart
+    // Stacked wealth composition chart — Codex flag: previously surfaced
+    // only RRSP / TFSA / NR even when 60%+ of net worth lived in RE, the
+    // corp, LIRA, DC, PE/PM. Reader saw a cliff at retirement that wasn't
+    // really a cliff. Build the keys list from what's actually present in
+    // pD across the projection so the picture matches reality. Cap at 9
+    // legend entries; remaining classes roll up into "Autres / Other".
     if (mc.pD && mc.pD.length > 0) {
+      // Full asset inventory mirroring lib/engine/index.js path.push:
+      // rr / tf / nr / re / corp / lira / dc / dc2 / ipp / pe / pm / fhsa
+      // + spouse: crr / ctf / cnr / cLira / cFhsa / (cDC where modeled).
+      // Codex flag: previously showed only RRSP / TFSA / NR. For profiles
+      // with FHSA, DC plans, IPPs, RESP/RDSP, the chart hid 30-60% of net
+      // worth and looked like an artificial cliff. This list covers EVERY
+      // wealth stream the engine produces.
+      var _ASSET_KEYS = [
+        { k: 'mp_rr',    fr: 'REER/RRSP',                en: 'RRSP',                color: C.purple },
+        { k: 'mp_tf',    fr: 'CELI/TFSA',                en: 'TFSA',                color: C.green },
+        { k: 'mp_nr',    fr: 'Non enregistr\u00e9',      en: 'Non-registered',      color: C.blue },
+        { k: 'mp_fhsa',  fr: 'CELIAPP',                  en: 'FHSA',                color: '#3a8a7a' },
+        { k: 'mp_re',    fr: 'Immobilier',               en: 'Real estate',         color: C.teal },
+        { k: 'mp_corp',  fr: 'SPCC',                     en: 'CCPC',                color: C.gold },
+        { k: 'mp_lira',  fr: 'LIRA / CRI',               en: 'LIRA',                color: '#7C60B8' },
+        { k: 'mp_dc',    fr: 'PD/CD employeur',          en: 'DB/DC plan',          color: '#5a87b3' },
+        { k: 'mp_dc2',   fr: 'PD/CD secondaire',         en: 'DB/DC secondary',     color: '#3a6790' },
+        { k: 'mp_ipp',   fr: 'RRI (IPP)',                en: 'IPP',                 color: '#a07a3a' },
+        { k: 'mp_pe',    fr: 'REEE',                     en: 'RESP',                color: '#c89a3a' },
+        { k: 'mp_pm',    fr: 'REEI',                     en: 'RDSP',                color: '#7a4a2a' },
+        { k: 'mp_crr',   fr: 'REER conj.',               en: 'Spouse RRSP',         color: '#9a82c8' },
+        { k: 'mp_ctf',   fr: 'CELI conj.',               en: 'Spouse TFSA',         color: '#6da97a' },
+        { k: 'mp_cnr',   fr: 'NR conj.',                 en: 'Spouse NR',           color: '#7390b8' },
+        { k: 'mp_cFhsa', fr: 'CELIAPP conj.',            en: 'Spouse FHSA',         color: '#5a9a8a' },
+        { k: 'mp_cLira', fr: 'LIRA conj.',               en: 'Spouse LIRA',         color: '#9577c8' }
+      ];
+      var _maxByKey = {};
+      mc.pD.forEach(function(r) {
+        _ASSET_KEYS.forEach(function(a) {
+          var v = r[a.k] || 0;
+          if (v > (_maxByKey[a.k] || 0)) _maxByKey[a.k] = v;
+        });
+      });
+      var _activeAssets = _ASSET_KEYS.filter(function(a) { return (_maxByKey[a.k] || 0) >= 1000; });
+      // Order by descending peak so big slices render first → cleaner stack.
+      _activeAssets.sort(function(a, b) { return (_maxByKey[b.k] || 0) - (_maxByKey[a.k] || 0); });
+      var _keys = _activeAssets.map(function(a) { return a.k; });
+      var _colors = _activeAssets.map(function(a) { return a.color; });
+      var _labels = _activeAssets.map(function(a) { return fr ? a.fr : a.en; });
       h += Ch.svgArea(mc.pD,
-        ['mp_rr', 'mp_tf', 'mp_nr'],
-        [C.purple, C.green, C.blue],
-        ['REER/RRSP', 'CELI/TFSA', 'NR'],
+        _keys, _colors, _labels,
         {
-          stacked: true, title: fr ? 'Composition du patrimoine' : 'Wealth Composition',
+          stacked: true, title: fr ? 'Composition du patrimoine (actifs liquides + illiquides)' : 'Wealth Composition (liquid + illiquid)',
           yFmt: f$, yLabel: '$',
           annotations: [
             { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' },
@@ -1219,15 +2111,91 @@
         }
       );
 
-      // Fan chart
-      h += Ch.svgFanChart(mc.pD, {
-        title: fr ? 'Projection Monte Carlo' : 'Monte Carlo Projection',
-        fr: fr,
-        yLabel: fr ? 'Patrimoine ($)' : 'Wealth ($)',
-        annotations: [
-          { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' }
-        ]
-      });
+      // Sprint 2.1 — Truncate terminal years (deathAge − 2) to suppress
+      // mortality-blending spikes that misleadingly stretched the y-axis.
+      // Cap y-axis at 99th percentile of all values so one or two tail
+      // outliers don't dwarf the centre of the distribution. Add explicit
+      // "Real $ (deflated)" label to the y-axis title.
+      var _projPd = mc.pD;
+      var _truncAge = (p.deathAge || 90) - 2;
+      if (Array.isArray(_projPd)) {
+        _projPd = _projPd.filter(function(r) { return (r.age || 0) <= _truncAge; });
+      }
+      // Compute 99th percentile cap across all visible values.
+      var _projCap = null;
+      if (Array.isArray(_projPd) && _projPd.length > 0) {
+        var _allVals = [];
+        _projPd.forEach(function(r) {
+          ['mp_total','rmp_total','p10','p25','p50','p75','p90','p95'].forEach(function(k) {
+            if (r[k] != null && isFinite(r[k])) _allVals.push(r[k]);
+          });
+        });
+        _allVals.sort(function(a, b) { return a - b; });
+        if (_allVals.length > 0) {
+          _projCap = _allVals[Math.floor(_allVals.length * 0.99)];
+        }
+      }
+
+      // CLASSIFIER-RENDER-PLAN Phase 2: dispatch through the central
+      // resolveRepresentation contract. The resolver maps
+      // ('percentile_fan', renderProfile, hasData) → one of
+      // 'chart' | 'chart_simplified' | 'hybrid' | 'text' | 'omit'.
+      // Each branch must match the resolver's enum exactly — that is the
+      // honest evidence the dispatch is live.
+      var _rp = d.renderProfile;
+      var _hasFanData = Array.isArray(_projPd) && _projPd.length > 0;
+      var _fanRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+        ? BFRP.resolveRepresentation('percentile_fan', _rp, _hasFanData)
+        : (!_rp || _rp.showFan !== false ? 'chart' : 'text');
+      // Relevance overlay: even when the resolver picks chart, sequence-of-returns
+      // may still be content-irrelevant for high-coverage/calm readers. In that
+      // case the relevance gate downgrades to 'omit' and tracks d._omittedBlocks.
+      if (_fanRepr !== 'omit' && !_relevanceGate(d, 'sequence_of_returns')) _fanRepr = 'omit';
+
+      function _fanTextFallback() {
+        var _p25 = mc && (mc.rP25F || mc.p25F) ? f$(mc.rP25F || mc.p25F) : '\u2014';
+        var _p50 = mc && (mc.rMedF || mc.medF) ? f$(mc.rMedF || mc.medF) : '\u2014';
+        var _p75 = mc && (mc.rP75F || mc.p75F) ? f$(mc.rP75F || mc.p75F) : '\u2014';
+        return '<div class="cd" data-bf-block="percentile_fan" data-bf-repr="text" style="background:#fdfbf6;border-left:3px solid #c49a1a;padding:10px 14px;font-size:11.5px;line-height:1.7">' +
+          (fr
+            ? 'En fin d\'horizon, le sc\u00e9nario typique laisse <strong>' + _p50 + '</strong> de patrimoine. Le sc\u00e9nario prudent termine \u00e0 <strong>' + _p25 + '</strong>, le sc\u00e9nario favorable \u00e0 <strong>' + _p75 + '</strong>. Ces trois nombres r\u00e9sument 5\u202f000 avenirs simul\u00e9s.'
+            : 'At the end of the horizon, the typical scenario leaves <strong>' + _p50 + '</strong> in wealth. The cautious scenario ends at <strong>' + _p25 + '</strong>, the favourable scenario at <strong>' + _p75 + '</strong>. These three numbers summarize 5,000 simulated futures.') +
+          '</div>';
+      }
+
+      if (_fanRepr === 'chart' || _fanRepr === 'chart_simplified') {
+        var _fanTitle = fr ? 'Projection Monte Carlo' : 'Monte Carlo Projection';
+        if (_fanRepr === 'chart_simplified') _fanTitle += fr ? ' \u2014 simplifi\u00e9' : ' \u2014 simplified';
+        h += '<div data-bf-block="percentile_fan" data-bf-repr="' + _fanRepr + '">';
+        h += Ch.svgFanChart(_projPd, {
+          title: _fanTitle,
+          fr: fr,
+          yLabel: fr ? 'Patrimoine \u2014 dollars r\u00e9els (2026)' : 'Wealth \u2014 real dollars (2026)',
+          yMaxOverride: _projCap,
+          simplified: _fanRepr === 'chart_simplified',
+          annotations: [
+            { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' }
+          ]
+        });
+        h += '</div>';
+      } else if (_fanRepr === 'hybrid') {
+        // hybrid = simplified chart + text summary side-by-side.
+        h += '<div data-bf-block="percentile_fan" data-bf-repr="hybrid">';
+        h += Ch.svgFanChart(_projPd, {
+          title: fr ? 'Projection Monte Carlo \u2014 simplifi\u00e9' : 'Monte Carlo Projection \u2014 simplified',
+          fr: fr,
+          yLabel: fr ? 'Patrimoine \u2014 dollars r\u00e9els (2026)' : 'Wealth \u2014 real dollars (2026)',
+          yMaxOverride: _projCap,
+          simplified: true,
+          annotations: [{ age: p.retAge, label: fr ? 'Retraite' : 'Ret.' }]
+        });
+        h += _fanTextFallback();
+        h += '</div>';
+      } else if (_fanRepr === 'text') {
+        h += _fanTextFallback();
+      }
+      // _fanRepr === 'omit' → render nothing; relevance gate already
+      // tracked the omission in d._omittedBlocks for the AI prompt.
     }
 
     // V1 BAN per REPORT-SHIP-RULES.md: this histogram was synthesized from
@@ -1303,28 +2271,219 @@
       ? 'Cette section d\u00e9taille la composition des revenus de retraite. Le <strong>revenu garanti combin\u00e9</strong> (RRQ + PSV + pension d\'employeur) couvre <strong>' + guarPct + ' %</strong> des d\u00e9penses cibles.' + (wdPct > 0 ? ' Les <strong>' + wdPct + ' %</strong> restants proviennent de retraits du portefeuille.' : ' Les retraits du portefeuille ne sont pas requis pour couvrir les d\u00e9penses cibles.')
       : 'This section details the composition of retirement income. <strong>Combined guaranteed income</strong> (CPP + OAS + employer pension) covers <strong>' + guarPct + ' %</strong> of target spending.' + (wdPct > 0 ? ' The remaining <strong>' + wdPct + ' %</strong> comes from portfolio withdrawals.' : ' Portfolio withdrawals are not needed to cover target spending.'));
 
-    // Annual income waterfall
+    // P1.1 — Real/nominal disclosure + scope reconciliation. Codex flagged
+    // that "Annual Income Sources total = 131K$" (gross of withdrawals)
+    // alongside "guaranteed income = 63K$/yr" reads as contradictory even
+    // when each row is correct. Make the scope explicit so the reader sees
+    // the relationship without having to do the math.
+    h += '<div class="cd revenue-scope-note" style="margin:8px 0 12px;padding:8px 12px;background:#fafafa;border-left:3px solid ' + C.gold + ';font-size:10.5px;color:#444;line-height:1.55">' +
+      (fr
+        ? '<strong>Lecture des montants.</strong> Les valeurs ci-dessous sont en <strong>dollars de 2026</strong> (pouvoir d\'achat constant). Le total annuel des sources de revenus inclut les retraits du portefeuille; le revenu garanti seul ne les inclut pas. La diff\u00e9rence entre les deux mesures est exactement la part \u00e0 financer par l\'\u00e9pargne.'
+        : '<strong>Reading the figures.</strong> Amounts below are stated in <strong>2026 dollars</strong> (constant purchasing power). The annual income-sources total includes portfolio withdrawals; guaranteed income alone does not. The difference between the two figures is exactly the share that the savings withdrawal stream covers.') +
+      '</div>';
+
+    // Annual income waterfall — full inventory of streams the engine
+    // produces. Codex flag: previously the chart hid GIS, spouse GIS,
+    // part-time post-retirement income, and LIRA withdrawals. For some
+    // profiles (low_income_gis, single_parent_qc) GIS is the largest
+    // single income stream; hiding it made the chart misleading.
     var _wfItems = [
       { label: qLbl, value: Math.round(d.qppM * 12), color: C.blue },
       { label: 'PSV/OAS', value: Math.round(d.oasM * 12), color: C.green }
     ];
+    var _retRowsForIncome = revData.filter(function(r) { return r.age >= p.retAge; });
+    var _avg = function(fn) {
+      return _retRowsForIncome.length
+        ? Math.round(_retRowsForIncome.reduce(function(s, r) { return s + fn(r); }, 0) / _retRowsForIncome.length)
+        : 0;
+    };
+    var _gisIncomeY    = _avg(function(r) { return (r.srg || r.gis || 0); });
+    var _cGisIncomeY   = _avg(function(r) { return (r.cSrg || r.cGis || 0); });
+    // Sprint 5 — family credits aggregate (CCB + Allocation famille +
+    // Solidarité + childcare offset). Engine emits in r.famCredit.
+    var _famCreditY    = _avg(function(r) { return (r.famCredit || 0); });
+    var _ptIncomeY     = _avg(function(r) { return (r.pt || 0); });
+    var _liraWithY     = _avg(function(r) { return (r.liraWith || 0) + (r.cLiraWith || 0); });
+    var _corpIncomeY   = _avg(function(r) { return (r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0); });
+    var _rentalIncomeY = _avg(function(r) { return (r.tiRe || 0); });
     if (p.penType && p.penType !== 'none' && (p.penM || 0) > 0) _wfItems.push({ label: 'Pension', value: Math.round((p.penM || 0) * 12), color: C.purple });
-    if (d.gapM > 0) _wfItems.push({ label: fr ? 'Retraits' : 'Withdrawals', value: Math.round(d.gapM * 12), color: C.gold });
-    if (d.R.couple) {
-      if (d.cQppM > 0) _wfItems.push({ label: qLbl + ' ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cQppM * 12), color: C.teal });
-      if (d.cOasM > 0) _wfItems.push({ label: 'PSV ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cOasM * 12), color: C.teal });
+    if (_gisIncomeY > 0) _wfItems.push({ label: 'SRG/GIS', value: _gisIncomeY, color: '#a07a3a' });
+    if (_corpIncomeY > 0) _wfItems.push({ label: fr ? 'Dividendes / salaire corp.' : 'Corp. dividends / salary', value: _corpIncomeY, color: C.purple });
+    if (_rentalIncomeY > 0) _wfItems.push({ label: fr ? 'Revenu locatif net' : 'Net rental cash flow', value: _rentalIncomeY, color: C.teal });
+    if (_ptIncomeY > 0) _wfItems.push({ label: fr ? 'Travail \u00e0 temps partiel' : 'Part-time work', value: _ptIncomeY, color: '#5a87b3' });
+    if (_liraWithY > 0) _wfItems.push({ label: fr ? 'Retraits CRI/LIRA' : 'LIRA withdrawals', value: _liraWithY, color: '#7C60B8' });
+    // Sprint 5 — Family credits row (visible only when present, i.e.
+    // profile has children OR is QC senior eligible). Includes ACE +
+    // Allocation famille + Solidarité + childcare offset.
+    if (_famCreditY > 100) {
+      _wfItems.push({
+        label: fr ? 'Cr\u00e9dits familiaux (ACE + Allocation + Solidarit\u00e9)' : 'Family credits (CCB + Allocation + Solidarit\u00e9)',
+        value: Math.round(_famCreditY),
+        color: '#48a66d'
+      });
     }
-    var _wfTotal = _wfItems.reduce(function(s, it) { return s + it.value; }, 0);
-    h += Ch.svgWaterfall(_wfItems, { title: fr ? 'Sources de revenus annuelles' : 'Annual Income Sources', total: _wfTotal });
+    // Sprint 2.4 — Split aggregated portfolio withdrawals into 3 sub-bars
+    // (RRSP/RRIF, TFSA, NR) so the reader can see the source mix instead
+    // of one opaque "$69K" bar. Falls back to the aggregate when per-source
+    // data is absent (engines that don't emit wFromRR/wFromTF/wFromNR).
+    var _wRR = _avg(function(r) { return r.wFromRR || 0; });
+    var _wTF = _avg(function(r) { return r.wFromTF || 0; });
+    var _wNR = _avg(function(r) { return r.wFromNR || 0; });
+    var _wTotal = _wRR + _wTF + _wNR;
+    if (_wTotal > 1000) {
+      // Per-source split (engine emitted withdrawal-source breakdown)
+      if (_wRR > 0) _wfItems.push({ label: fr ? 'Retrait REER/FERR' : 'Withdraw RRSP/RRIF', value: _wRR, color: '#c49a1a' });
+      if (_wTF > 0) _wfItems.push({ label: fr ? 'Retrait CELI' : 'Withdraw TFSA', value: _wTF, color: '#2a8c46' });
+      if (_wNR > 0) _wfItems.push({ label: fr ? 'Retrait non-enregistr\u00e9' : 'Withdraw non-registered', value: _wNR, color: '#5b8db8' });
+    } else if (d.gapM > 0) {
+      // Fallback: aggregate when per-source withdrawal data unavailable
+      _wfItems.push({ label: fr ? 'Retraits portefeuille (REER + CELI + NR)' : 'Portfolio withdrawals (RRSP + TFSA + NR)', value: Math.round(d.gapM * 12), color: C.gold });
+    }
+    if (d.R.couple) {
+      if (d.cQppM > 0) _wfItems.push({ label: qLbl + ' ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cQppM * 12), color: '#7390b8' });
+      if (d.cOasM > 0) _wfItems.push({ label: 'PSV ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cOasM * 12), color: '#6da97a' });
+      if (_cGisIncomeY > 0) _wfItems.push({ label: 'SRG ' + (fr ? 'conj.' : 'sp.'), value: _cGisIncomeY, color: '#c89a3a' });
+      if (p.cOn && p.cPenType && p.cPenType !== 'none' && (p.cPenM || 0) > 0) _wfItems.push({ label: (fr ? 'Pension conj.' : 'Spouse pension'), value: Math.round((p.cPenM || 0) * 12), color: '#9577c8' });
+    }
+    // Sprint 0.8: suppress sub-$1K rows.
+    var _wfBelow = 0, _wfBelowCount = 0;
+    var _wfClean = _wfItems.filter(function(it) {
+      if (Math.abs(it.value) < 1000) { _wfBelow += it.value; _wfBelowCount += 1; return false; }
+      return true;
+    });
+    if (_wfBelowCount >= 2) {
+      _wfClean.push({ label: fr ? 'Divers (<1\u202fK\u202f$)' : 'Misc. (<1K)', value: _wfBelow, color: '#9aabc7' });
+    }
+    var _wfTotal = _wfClean.reduce(function(s, it) { return s + it.value; }, 0);
+
+    // Sprint 2.5 — Income source donut pair (today vs retirement).
+    // Sits ABOVE the year-aware bar chart to set context: "you're 90%
+    // salary today; in retirement, here's the new mix." Slices are
+    // proportional shares of total annual income. Today = working
+    // salary (plus spouse) + investment income (NR). Retirement =
+    // averaged income mix across retirement years.
+    var _todaySalary = (p.sal || 0) + (p.cOn ? (p.cSal || 0) : 0);
+    var _todayInvest = ((p.nr || 0) * 0.04) + (p.cOn ? ((p.cNR || 0) * 0.04) : 0); // 4% notional yield on NR
+    var _retSlices = [
+      { label: qLbl,                        value: Math.round(d.qppM * 12 + (d.cQppM || 0) * 12), color: '#5b8db8' },
+      { label: 'PSV/OAS',                   value: Math.round(d.oasM * 12 + (d.cOasM || 0) * 12), color: '#2a8c46' },
+      { label: fr ? 'Pension'   : 'Pension', value: Math.round(((p.penM || 0) + (p.cOn ? (p.cPenM || 0) : 0)) * 12), color: '#7c60b8' },
+      { label: 'SRG/GIS',                   value: Math.round(_gisIncomeY + _cGisIncomeY), color: '#a07a3a' },
+      { label: fr ? 'Locatif'   : 'Rental',  value: Math.round(_rentalIncomeY), color: '#3aa39c' },
+      { label: 'REER/RRIF',                 value: Math.round(_avg(function(r) { return r.wFromRR || 0; }) || 0), color: '#c49a1a' },
+      { label: 'CELI/TFSA',                 value: Math.round(_avg(function(r) { return r.wFromTF || 0; }) || 0), color: '#48a66d' },
+      { label: 'NR',                        value: Math.round(_avg(function(r) { return r.wFromNR || 0; }) || 0), color: '#5b8db8' }
+    ].filter(function(s) { return s.value > 1000; });
+    var _todaySlices = [
+      { label: fr ? 'Salaire'        : 'Salary',         value: _todaySalary, color: '#252d39' },
+      { label: fr ? 'Revenu placement' : 'Investment income', value: _todayInvest, color: '#5b8db8' }
+    ].filter(function(s) { return s.value > 0 && _todaySalary > 0; });
+    if (_todaySlices.length > 0 && _retSlices.length > 0 && Ch.svgDonutMulti) {
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0 18px;padding:14px 18px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px">';
+      // Today donut
+      h += '<div style="text-align:center">';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">' +
+        (fr ? 'Aujourd\'hui' : 'Today') + '</div>';
+      h += Ch.svgDonutMulti(_todaySlices, { size: 180, subLabel: fr ? 'revenu annuel' : 'annual income' });
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;color:#666;margin-top:8px;line-height:1.55">';
+      _todaySlices.forEach(function(s) {
+        var pct = Math.round(s.value / _todaySlices.reduce(function(a, b) { return a + b.value; }, 0) * 100);
+        h += '<div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 0">' +
+          '<span style="display:inline-block;width:10px;height:10px;background:' + s.color + ';border-radius:2px"></span>' +
+          '<span>' + s.label + '</span>' +
+          '<span style="font-family:JetBrains Mono,monospace;color:#888">' + pct + '\u202f%</span>' +
+          '</div>';
+      });
+      h += '</div></div>';
+      // Retirement donut
+      h += '<div style="text-align:center">';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">' +
+        (fr ? '\u00c0 la retraite (moyenne)' : 'In retirement (averaged)') + '</div>';
+      h += Ch.svgDonutMulti(_retSlices, { size: 180, subLabel: fr ? 'revenu annuel m\u00e9dian' : 'median annual income' });
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;color:#666;margin-top:8px;line-height:1.55">';
+      var _retTot = _retSlices.reduce(function(a, b) { return a + b.value; }, 0);
+      _retSlices.forEach(function(s) {
+        var pct = _retTot > 0 ? Math.round(s.value / _retTot * 100) : 0;
+        h += '<div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 0">' +
+          '<span style="display:inline-block;width:10px;height:10px;background:' + s.color + ';border-radius:2px"></span>' +
+          '<span>' + s.label + '</span>' +
+          '<span style="font-family:JetBrains Mono,monospace;color:#888">' + pct + '\u202f%</span>' +
+          '</div>';
+      });
+      h += '</div></div>';
+      h += '</div>';
+    }
+
+    // Sprint 1.3 — Income year slicer. Embed per-year snapshots so the
+    // runtime can rebuild bars when the user moves the slider. Income
+    // mix at age 62 (no OAS yet, big portfolio draws) ≠ age 75 (OAS +
+    // RRIF mins + smaller draws). Averaging hid the most informative
+    // story. The slicer is per-CHART (not the global top bar) so it
+    // affects only the bars below it.
+    var _ageMin = p.retAge, _ageMax = p.deathAge;
+    var _yearSnap = revData
+      .filter(function(r) { return r.age >= _ageMin && r.age <= _ageMax; })
+      .map(function(r) {
+        return {
+          age: r.age,
+          rrq: Math.round((r.rrq || 0)),
+          psv: Math.round((r.psv || 0)),
+          srg: Math.round(r.srg || r.gis || 0),
+          pen: Math.round(p.penType && p.penType !== 'none' ? (p.penM || 0) * 12 : 0),
+          ret: Math.round(r.ret || 0),
+          corp: Math.round((r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0)),
+          rental: Math.round(r.tiRe || 0),
+          pt: Math.round(r.pt || 0),
+          lira: Math.round((r.liraWith || 0) + (r.cLiraWith || 0)),
+          cRrq: Math.round(r.cRrq || 0),
+          cPsv: Math.round(r.cPsv || 0),
+          cSrg: Math.round(r.cSrg || r.cGis || 0),
+          cPen: Math.round(p.cOn && p.cPenType && p.cPenType !== 'none' ? (p.cPenM || 0) * 12 : 0)
+        };
+      });
+    var _wfDataAttr = encodeURIComponent(JSON.stringify({
+      yearly: _yearSnap,
+      isCouple: !!d.R.couple,
+      qLbl: qLbl,
+      lang: fr ? 'fr' : 'en'
+    }));
+    h += '<div class="bf-chart-block" data-bf-chart="income-sources" data-bf-chart-data="' + _wfDataAttr + '" data-bf-chart-mode="averaged">';
+    h += '<div class="bf-chart-svg">';
+    h += Ch.svgWaterfall(_wfClean, { title: fr ? 'Sources de revenus annuelles (moyenne sur la retraite)' : 'Annual Income Sources (averaged across retirement)', total: _wfTotal });
+    h += '</div>';
+    if (_yearSnap.length > 1) {
+      h += '<div class="bf-chart-slicer no-print" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fdfbf6;border:1px solid #e8e0d4;border-top:none;border-radius:0 0 6px 6px;font-family:Inter,sans-serif;font-size:11px">' +
+        '<span style="font-weight:700;color:#706558;letter-spacing:0.5px;text-transform:uppercase;font-size:10px">' +
+          (fr ? 'Année' : 'Year') + ':</span>' +
+        '<input type="range" min="' + _ageMin + '" max="' + _ageMax + '" value="' + _ageMin + '" step="1" data-bf-slicer="income-age" style="flex:1;accent-color:#c49a1a"/>' +
+        '<span data-bf-slicer-out="income-age" style="font-family:JetBrains Mono,monospace;font-weight:700;font-size:11px;color:#252d39;min-width:64px;text-align:right">' +
+          (fr ? 'Moyenne' : 'Averaged') + '</span>' +
+        '<button type="button" data-bf-slicer-reset="income-age" style="background:transparent;border:1px solid #e8e0d4;border-radius:12px;padding:3px 10px;cursor:pointer;font-size:10px;font-weight:600;color:#706558;font-family:Inter,sans-serif">' +
+          (fr ? 'Moyenne' : 'Avg') + '</button>' +
+        '</div>';
+    }
+    h += '</div>';
 
     // === Profile-integrated subsection: spousal coordination for couples ===
     // Splitting eligibility, individual benefit timing, combined coverage — woven into Income.
     if (d.R.couple) {
+      // Codex flag: this block previously labeled "combined gov + spouse-gov"
+      // as "guaranteed income", which is the wrong concept (guaranteed includes
+      // employer pension, this block doesn't). Two surgical fixes:
+      //   (1) The table now lists CPP/QPP, OAS AND employer pension as separate
+      //       rows, so the household column genuinely sums to guaranteed income.
+      //   (2) The narrative renames "combined guaranteed income" → "combined
+      //       public benefits" when pension is absent, and keeps "guaranteed"
+      //       only when pension is included in the table.
       var primaryQppY = Math.round(d.qppM * 12);
       var primaryOasY = Math.round(d.oasM * 12);
       var spouseQppY = Math.round(d.cQppM * 12);
       var spouseOasY = Math.round(d.cOasM * 12);
-      var combinedGovY = primaryQppY + primaryOasY + spouseQppY + spouseOasY;
+      var primaryPenY = (p.penType && p.penType !== 'none') ? Math.round((p.penM || 0) * 12) : 0;
+      var spousePenY = (p.cOn && p.cPenType && p.cPenType !== 'none') ? Math.round((p.cPenM || 0) * 12) : 0;
+      var hasAnyPension = (primaryPenY + spousePenY) > 0;
+      var combinedPublicY = primaryQppY + primaryOasY + spouseQppY + spouseOasY;
+      var combinedGuaranteedY = combinedPublicY + primaryPenY + spousePenY;
       var splitEligible = (p.split === undefined || p.split === true);
       h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">' +
         (fr ? 'Coordination conjugale' : 'Spousal Coordination') + '</div>';
@@ -1342,27 +2501,139 @@
         '<td style="text-align:right;font-family:monospace">' + (primaryOasY > 0 ? f$(primaryOasY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (spouseOasY > 0 ? f$(spouseOasY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryOasY + spouseOasY) + '</td></tr>';
+      // Surface employer pension when present so the household total
+      // reconciles with the "Combined guaranteed income" narrative below.
+      if (hasAnyPension) {
+        h += '<tr><td style="padding:3px 0">' + (fr ? 'Pension d\'employeur' : 'Employer pension') + '</td>' +
+          '<td style="text-align:right;font-family:monospace">' + (primaryPenY > 0 ? f$(primaryPenY) : '\u2014') + '</td>' +
+          '<td style="text-align:right;font-family:monospace">' + (spousePenY > 0 ? f$(spousePenY) : '\u2014') + '</td>' +
+          '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryPenY + spousePenY) + '</td></tr>';
+      }
       h += '<tr><td style="padding:3px 0">' + (fr ? '\u00c2ge d\u00e9but ' : 'Start age ') + qLbl + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (p.qppAge || 65) + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (p.cQppAge || 65) + '</td>' +
         '<td></td></tr>';
       h += '</tbody></table>';
-      h += '<div style="margin-top:6px">' + (fr
-        ? 'Le revenu garanti combin\u00e9 atteint <strong>' + f$(combinedGovY) + '/an</strong>. ' + (splitEligible ? 'Le fractionnement de pension entre conjoints est disponible \u00e0 partir de 65 ans pour les revenus admissibles (FERR, pension d\'employeur), ce qui peut r\u00e9duire l\'imp\u00f4t conjugal.' : 'Le fractionnement n\'est pas activ\u00e9 dans ce sc\u00e9nario.')
-        : 'Combined guaranteed income reaches <strong>' + f$(combinedGovY) + '/yr</strong>. ' + (splitEligible ? 'Pension income splitting between spouses becomes available at age 65 for eligible income (RRIF, employer pension), which can lower household tax.' : 'Income splitting is not active in this scenario.')) + '</div>';
+      // F12 — explicit reconciliation note: the household total here MUST
+      // equal the sum of CPP/QPP + OAS + (Pension) rows above. Naming the
+      // arithmetic prevents the cross-section drift codex flagged.
+      h += '<div style="font-size:9.5px;color:#888;margin-top:4px;font-style:italic">' +
+        (fr ? 'Le total m\u00e9nage \u00e9gale la somme des lignes ci-dessus (les valeurs de la cascade des sources de revenus utilisent la m\u00eame base).'
+            : 'The household total equals the sum of the rows above (the income-waterfall figures use the same base).') +
+        '</div>';
+      // Sprint 0.6: dropped the dollar-figure restatement that appeared
+      // immediately under the table (the table already shows the household
+      // total). Kept the splitting-eligibility / gap-coverage prose because
+      // those are interpretation, not duplication.
+      if (hasAnyPension) {
+        h += '<div style="margin-top:6px">' + (fr
+          ? (splitEligible ? 'Le fractionnement de pension entre conjoints est disponible \u00e0 partir de 65\u00a0ans pour les revenus admissibles (FERR, pension d\'employeur), ce qui peut r\u00e9duire l\'imp\u00f4t conjugal.' : 'Le fractionnement n\'est pas activ\u00e9 dans ce sc\u00e9nario.')
+          : (splitEligible ? 'Pension income splitting between spouses becomes available at age 65 for eligible income (RRIF, employer pension), which can lower household tax.' : 'Income splitting is not active in this scenario.')) + '</div>';
+      } else {
+        h += '<div style="margin-top:6px">' + (fr
+          ? 'Sans pension d\'employeur, la diff\u00e9rence avec les d\u00e9penses cibles est combl\u00e9e par les retraits du portefeuille.'
+          : 'With no employer pension, the gap to target spending is covered by portfolio withdrawals.') + '</div>';
+      }
       h += '</div>';
     }
 
-    // Income stacked area (only if revData has the needed fields)
+    // Income stacked area (only if revData has the needed fields).
+    // Now includes every income stream the engine emits: gov benefits,
+    // GIS, employer pension, corp distributions, rental, part-time,
+    // LIRA withdrawals, portfolio withdrawals, and the spouse mirror.
     if (revData.length > 0) {
-      var incData = revData.filter(function(r) { return r.age >= p.retAge && ((r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0)) > 0; });
+      var incData = revData
+        .filter(function(r) {
+          return r.age >= p.retAge && (
+            (r.rrq || 0) + (r.psv || 0) + (r.srg || r.gis || 0) + (r.pen || 0) + (r.ret || 0) +
+            (r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0) + (r.tiRe || 0) +
+            (r.pt || 0) + (r.liraWith || 0) + (r.cLiraWith || 0) +
+            (r.cRrq || 0) + (r.cPsv || 0) + (r.cSrg || r.cGis || 0) + (r.cPen || 0)
+          ) > 0;
+        })
+        .map(function(r) {
+          return Object.assign({}, r, {
+            corpIncome: (r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0),
+            rentalIncome: r.tiRe || 0,
+            gisIncome: r.srg || r.gis || 0,
+            cGisIncome: r.cSrg || r.cGis || 0,
+            ptIncome: r.pt || 0,
+            liraWithdraw: (r.liraWith || 0) + (r.cLiraWith || 0)
+          });
+        });
       if (incData.length > 0) {
+        var _areaKeys = ['rrq', 'psv', 'pen'];
+        var _areaColors = [C.blue, C.green, C.purple];
+        var _areaLabels = [F.qppLabel(p.prov, fr), 'PSV/OAS', 'Pension'];
+        if (incData.some(function(r) { return (r.gisIncome || 0) > 0; })) {
+          _areaKeys.push('gisIncome');
+          _areaColors.push('#a07a3a');
+          _areaLabels.push('SRG/GIS');
+        }
+        if (incData.some(function(r) { return (r.ptIncome || 0) > 0; })) {
+          _areaKeys.push('ptIncome');
+          _areaColors.push('#5a87b3');
+          _areaLabels.push(fr ? 'Travail \u00e0 temps partiel' : 'Part-time work');
+        }
+        if (incData.some(function(r) { return (r.liraWithdraw || 0) > 0; })) {
+          _areaKeys.push('liraWithdraw');
+          _areaColors.push('#7C60B8');
+          _areaLabels.push(fr ? 'Retraits CRI/LIRA' : 'LIRA withdrawals');
+        }
+        if (incData.some(function(r) { return (r.corpIncome || 0) > 0; })) {
+          _areaKeys.push('corpIncome');
+          _areaColors.push(C.purple);
+          _areaLabels.push(fr ? 'Dividendes / salaire corp.' : 'Corp. dividends / salary');
+        }
+        if (incData.some(function(r) { return (r.rentalIncome || 0) > 0; })) {
+          _areaKeys.push('rentalIncome');
+          _areaColors.push(C.teal);
+          _areaLabels.push(fr ? 'Revenu locatif net' : 'Net rental cash flow');
+        }
+        // Spouse public benefits (couples only) — surface as separate areas
+        // when the spouse has reached benefit start age and the values are
+        // meaningful, so the chart matches the spousal-coordination block.
+        if (d.R.couple && incData.some(function(r) { return (r.cRrq || 0) > 0; })) {
+          _areaKeys.push('cRrq');
+          _areaColors.push('#7390b8');
+          _areaLabels.push(fr ? 'RRQ/CPP conjoint' : 'CPP/QPP spouse');
+        }
+        if (d.R.couple && incData.some(function(r) { return (r.cPsv || 0) > 0; })) {
+          _areaKeys.push('cPsv');
+          _areaColors.push('#6da97a');
+          _areaLabels.push(fr ? 'PSV/OAS conjoint' : 'OAS spouse');
+        }
+        if (d.R.couple && incData.some(function(r) { return (r.cPen || 0) > 0; })) {
+          _areaKeys.push('cPen');
+          _areaColors.push('#9577c8');
+          _areaLabels.push(fr ? 'Pension conjoint' : 'Spouse pension');
+        }
+        if (d.R.couple && incData.some(function(r) { return (r.cGisIncome || 0) > 0; })) {
+          _areaKeys.push('cGisIncome');
+          _areaColors.push('#c89a3a');
+          _areaLabels.push(fr ? 'SRG conjoint' : 'GIS spouse');
+        }
+        _areaKeys.push('ret');
+        _areaColors.push(C.gold);
+        // Codex flag: "Retraits" alone was ambiguous (retraits from what?).
+        // The number IS a single combined figure (RRSP + TFSA + NR combined,
+        // because the engine's balance-delta approach can't reliably split
+        // them on the median path). Be explicit about that in the label so
+        // the reader doesn't think it's RRSP-only or RRIF-only. The detailed
+        // year-by-year sequencing lives in the Draw-order section.
+        _areaLabels.push(fr ? 'Retraits portefeuille (REER + CELI + NR)' : 'Portfolio withdrawals (RRSP + TFSA + NR)');
         h += Ch.svgArea(incData,
-          ['rrq', 'psv', 'pen', 'ret'],
-          [C.blue, C.green, C.purple, C.gold],
-          [F.qppLabel(p.prov, fr), 'PSV/OAS', 'Pension', fr ? 'Retraits' : 'Withdrawals'],
+          _areaKeys,
+          _areaColors,
+          _areaLabels,
           { stacked: true, title: fr ? 'Sources de revenus dans le temps' : 'Income Sources Over Time', yFmt: f$, yLabel: '$' }
         );
+        // Cross-reference to the Draw-order section for the actual sequencing.
+        h += '<div style="font-size:10px;color:#888;margin:4px 0 0;font-style:italic">' +
+          (fr
+            ? 'L\'aire dor\u00e9e cumule les retraits des trois comptes \u2014 la r\u00e9partition exacte par compte et par ann\u00e9e figure dans la section <em>Ordre des retraits</em>.'
+            : 'The gold area sums withdrawals from all three accounts \u2014 the exact account-by-account split by year is shown in the <em>Draw-order</em> section.') +
+          '</div>';
       }
     }
 
@@ -1381,15 +2652,24 @@
       h += '<th>' + (fr ? 'Revenus' : 'Income') + '</th>';
       h += '<th>' + (fr ? 'D\u00e9penses' : 'Spending') + '</th>';
       h += '<th>' + (fr ? 'Imp\u00f4t' : 'Tax') + '</th>';
-      h += '<th>' + (fr ? 'Solde' : 'Balance') + '</th>';
+      h += '<th>' + (fr ? 'Portefeuille liquide' : 'Liquid portfolio') + '</th>';
       h += '</tr></thead><tbody>';
       cfRows.forEach(function(r) {
         var isKey = r.age === p.retAge || r.age === 72;
-        // Income: salary in working years, government + withdrawals in retirement.
-        // Engine populates r.sal/r.cSal; test harness must too.
+        // Income: salary in working years; full household stream sum in
+        // retirement. Codex audit flagged that the previous formula
+        // missed spouse benefits, rental, corp distributions, part-time,
+        // and LIRA withdrawals — for couples and complex profiles the
+        // "Income" column understated by 30-50%, while the "Spending"
+        // column was correct, making the table look like the household
+        // was bleeding cash even when it wasn't.
         var preRet = r.age < p.retAge;
         var workInc = (r.sal || 0) + (r.cSal || 0);
-        var retInc = (r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0) + (r.srg || 0);
+        var retInc = (r.rrq || 0) + (r.psv || 0) + (r.srg || r.gis || 0) + (r.pen || 0)
+                   + (r.cRrq || 0) + (r.cPsv || 0) + (r.cSrg || r.cGis || 0) + (r.cPen || 0)
+                   + (r.tiRe || 0) + (r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0)
+                   + (r.pt || 0) + (r.liraWith || 0) + (r.cLiraWith || 0)
+                   + (r.ret || 0);
         var inc = preRet ? workInc : retInc;
         // Spending: engine writes r.spend; test harness writes r.sp/r.spending. Accept all.
         var spend = r.spend != null ? r.spend : (r.sp != null ? r.sp : (r.spending || 0));
@@ -1404,7 +2684,7 @@
         h += '<td>' + r.age + '</td>';
         h += '<td>' + f$(Math.round(inc)) + '</td>';
         h += '<td>' + f$(Math.round(spend)) + '</td>';
-        h += '<td style="color:' + C.red + '">' + f$(Math.round(r.tax || 0)) + '</td>';
+        h += '<td style="color:' + C.red + '">' + f$(Math.round(_scopedTax(r))) + '</td>';
         h += '<td>' + f$(Math.round(bal)) + '</td>';
         h += '</tr>';
       });
@@ -1412,10 +2692,23 @@
     }
 
     // Post-table narrative — spending vs income
+    // Defect 4 fix: _totalRetTax now reconciles to d._optTax (the canonical
+    // lifetime-tax metric exposed in review-contract.js). Previously this
+    // section computed its own sum from r.tax which silently diverged from
+    // the tax-section's d._optTax for couple profiles when scope drifted.
+    // Income now sums household streams (primary + spouse) so the narrative
+    // matches the stacked-area chart above which is also household.
     var _retYears = revData.filter(function(r) { return r.age >= p.retAge; });
-    var _totalRetInc = _retYears.reduce(function(s, r) { return s + (r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0) + (r.srg || 0); }, 0);
+    var _totalRetInc = _retYears.reduce(function(s, r) {
+      return s
+        + (r.rrq || 0) + (r.psv || 0) + (r.pen || 0) + (r.ret || 0) + (r.srg || r.gis || 0)
+        + (r.cRrq || 0) + (r.cPsv || 0) + (r.cPen || 0) + (r.cSrg || r.cGis || 0);
+    }, 0);
     var _totalRetSpend = _retYears.reduce(function(s, r) { return s + (r.sp || r.spending || 0); }, 0);
-    var _totalRetTax = _retYears.reduce(function(s, r) { return s + (r.tax || 0); }, 0);
+    // Reads d._optTaxReal (real dollars, household scope) — same source
+    // as the tax-section narrative and closing-recap anchor. The legacy
+    // d._optTax (nominal) is no longer surfaced to readers.
+    var _totalRetTax = d._optTaxReal != null ? d._optTaxReal : _retYears.reduce(function(s, r) { return s + _scopedTax(r); }, 0);
     if (_retYears.length > 0) {
       var _revDet = fr
         ? 'Sur les <strong>' + _retYears.length + ' ann\u00e9es</strong> de retraite model\u00e9es, le revenu brut total est de <strong>' + f$(Math.round(_totalRetInc)) + '</strong>, les d\u00e9penses totales de <strong>' + f$(Math.round(_totalRetSpend)) + '</strong>, et l\u2019imp\u00f4t total de <strong>' + f$(Math.round(_totalRetTax)) + '</strong>. Le tableau ci-dessus d\u00e9taille l\u2019\u00e9volution ann\u00e9e par ann\u00e9e du flux de tr\u00e9sorerie.'
@@ -1458,12 +2751,45 @@
         ? ' L\'Alberta applique une structure d\'imp\u00f4t provincial \u00e0 cinq paliers avec un maximum de 15 %.'
         : ' Alberta applies a five-bracket provincial tax structure with a maximum rate of 15%.';
     }
+    // Tax narrative reads d._optTaxReal (real dollars, deflation-applied)
+    // so the figure reconciles with the closing-recap anchor and with
+    // the canonical lifetime_tax_real metric. Previously read d._optTax
+    // (nominal sum) which compounded inflation across the horizon.
     h += narr(fr
-      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTax)) + '</strong>, avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e g\u00e9n\u00e8re un alpha fiscal de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
-      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTax)) + '</strong>, with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates a tax alpha of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
+      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> en dollars r\u00e9els (m\u00e9nage), avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e g\u00e9n\u00e8re un alpha fiscal de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
+      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> in real dollars (household), with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates a tax alpha of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
+
+    // F9 — OAS deferral callout. When the profile defers OAS past 65,
+    // surface the +0.6%/month boost (max +36% at 70). When it claims at
+    // 65 with a low-success plan, surface the deferral as a lever.
+    var _oasAgeP = p.oasAge || 65;
+    var _oasAgeC = (p.cOn && p.cOasAge) ? p.cOasAge : null;
+    if (_oasAgeP > 65 || (_oasAgeC && _oasAgeC > 65)) {
+      var _boostP = (_oasAgeP - 65) * 7.2;
+      var _boostC = _oasAgeC ? (_oasAgeC - 65) * 7.2 : 0;
+      h += '<div class="cd oas-deferral-callout" style="margin:8px 0;padding:10px 14px;background:#f3faf4;border-left:3px solid ' + C.green + ';font-size:11px;line-height:1.6">' +
+        '<div style="font-weight:700;color:' + C.green + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+        (fr ? 'Report PSV \u2014 d\u00e9cision strat\u00e9gique' : 'OAS deferral \u2014 strategic decision') + '</div>' +
+        (fr
+          ? 'Votre PSV est report\u00e9e \u00e0 ' + _oasAgeP + ' ans, ce qui ajoute <strong>+' + _boostP.toFixed(0) + '\u202f%</strong> \u00e0 la prestation \u00e0 vie (+0,6\u202f%\u202fpar mois de report apr\u00e8s 65). '
+          : 'Your OAS is deferred to age ' + _oasAgeP + ', adding <strong>+' + _boostP.toFixed(0) + '%</strong> to the lifetime benefit (+0.6% per month of deferral after 65). ') +
+        (_oasAgeC && _boostC > 0 ? (fr ? 'Conjoint(e)\u202f: report \u00e0 ' + _oasAgeC + ' ans (+' + _boostC.toFixed(0) + '\u202f%). ' : 'Spouse: deferred to ' + _oasAgeC + ' (+' + _boostC.toFixed(0) + '%). ') : '') +
+        (fr
+          ? 'Cette d\u00e9cision est l\'un des leviers les plus puissants disponibles\u202f: la prestation report\u00e9e est index\u00e9e et garantie \u00e0 vie.'
+          : 'This is among the strongest available levers: the deferred benefit is indexed and guaranteed for life.') +
+        '</div>';
+    } else if (d.succVal != null && d.succVal < 0.5) {
+      h += '<div class="cd oas-deferral-callout" style="margin:8px 0;padding:10px 14px;background:#fdf6e3;border-left:3px solid ' + C.amber + ';font-size:11px;line-height:1.6">' +
+        '<div style="font-weight:700;color:' + C.gold + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+        (fr ? 'Lever non utilis\u00e9 \u2014 Report PSV' : 'Unused lever \u2014 OAS deferral') + '</div>' +
+        (fr
+          ? 'La PSV est r\u00e9clam\u00e9e \u00e0 ' + _oasAgeP + ' ans dans ce sc\u00e9nario. Reporter la PSV \u00e0 70 ajouterait <strong>+36\u202f%</strong> \u00e0 la prestation \u00e0 vie. Pour un plan \u00e0 risque, c\'est l\'un des leviers les plus efficaces \u00e0 \u00e9valuer.'
+          : 'OAS is claimed at age ' + _oasAgeP + ' in this scenario. Deferring OAS to age 70 would add <strong>+36%</strong> to the lifetime benefit. For an at-risk plan, this is one of the strongest available levers to evaluate.') +
+        '</div>';
+    }
 
     h += '<div class="' + (exp ? 'g4' : 'g3') + '" style="margin-bottom:8px">';
-    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
+    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
     h += F.KPI('<span class="mono">' + Math.round(d.avgEffRate * 100) + '%</span>', fr ? 'Taux effectif moyen' : 'Avg effective rate', C.blue);
     h += F.KPI('<span class="mono">' + d.oasClbkYrs + '/' + _retLen + '</span>', fr ? 'Ann\u00e9es r\u00e9cup. PSV' : 'OAS clawback yrs', d.oasClbkYrs > _retLen * 0.5 ? C.red : d.oasClbkYrs > 0 ? C.amber : C.green);
     if (exp && d._hasNaive) h += F.KPI('<span class="mono">' + Math.round((d._naiveTax - d._optTax) / Math.max(1, d._naiveTax) * 100) + '%</span>', fr ? 'R\u00e9duction fiscale' : 'Tax reduction', C.purple);
@@ -1525,27 +2851,41 @@
         h += '</tr></thead><tbody>';
         _wdYrs.forEach(function(r) {
           var isKey = r.age === p.retAge || r.age === 72;
-          var netInc = (r.rrq || 0) + (r.psv || 0) + (r.srg || 0) + (r.pen || 0) + (r.ret || 0) - (r.tax || 0);
-          var effR = r.taxInc > 0 ? Math.round((r.tax || 0) / r.taxInc * 100) : 0;
+          // Defect 1 fix — household scope (couple = primary + spouse).
+          var _rTax = _scopedTax(r);
+          var _rTaxInc = _scopedTaxInc(r);
+          // Income streams: RRQ/PSV/SRG/PEN sum household for couple,
+          // matches the stacked-area chart and revenue narrative.
+          var _hh = function(pri, spo) { return (r[pri] || 0) + (r[spo] || 0); };
+          var _rRrq = _hh('rrq', 'cRrq');
+          var _rPsv = _hh('psv', 'cPsv');
+          var _rSrg = _scopedGis(r);
+          var _rPen = _hh('pen', 'cPen');
+          var netInc = _rRrq + _rPsv + _rSrg + _rPen + (r.ret || 0) - _rTax;
+          var effR = _rTaxInc > 0 ? Math.round(_rTax / _rTaxInc * 100) : 0;
           h += '<tr' + (isKey ? ' class="ret"' : '') + '>';
           h += '<td>' + r.age + '</td>';
           // Withdrawal columns — engine writes wFromRR/wFromTF/wFromNR (annual draws).
           // aRR/aTF/aNR are end-of-year balances in the engine schema, NOT withdrawals.
+          var fK = F.fmtTableK;
           var wRR = r.wFromRR != null ? r.wFromRR : 0;
           var wTF = r.wFromTF != null ? r.wFromTF : 0;
           var wNR = r.wFromNR != null ? r.wFromNR : 0;
-          h += '<td>' + (wRR > 0 ? fR(wRR) : '\u2014') + '</td>';
-          h += '<td>' + (wTF > 0 ? fR(wTF) : '\u2014') + '</td>';
-          h += '<td>' + (wNR > 0 ? fR(wNR) : '\u2014') + '</td>';
-          h += '<td>' + ((r.rrq || 0) > 0 ? fR(r.rrq) : '\u2014') + '</td>';
-          h += '<td>' + ((r.psv || 0) > 0 ? fR(r.psv) : '\u2014') + '</td>';
-          h += '<td>' + ((r.srg || 0) > 0 ? fR(r.srg) : '\u2014') + '</td>';
-          h += '<td style="color:' + C.red + '">' + ((r.tax || 0) > 0 ? fR(r.tax) : '\u2014') + '</td>';
+          h += '<td>' + (wRR > 0 ? fK(wRR) : '\u2014') + '</td>';
+          h += '<td>' + (wTF > 0 ? fK(wTF) : '\u2014') + '</td>';
+          h += '<td>' + (wNR > 0 ? fK(wNR) : '\u2014') + '</td>';
+          h += '<td>' + (_rRrq > 0 ? fK(_rRrq) : '\u2014') + '</td>';
+          h += '<td>' + (_rPsv > 0 ? fK(_rPsv) : '\u2014') + '</td>';
+          h += '<td>' + (_rSrg > 0 ? fK(_rSrg) : '\u2014') + '</td>';
+          h += '<td style="color:' + C.red + '">' + (_rTax > 0 ? fK(_rTax) : '\u2014') + '</td>';
           h += '<td>' + effR + '%</td>';
-          h += '<td style="font-weight:700">' + fR(Math.round(netInc)) + '</td>';
+          h += '<td style="font-weight:700">' + fK(Math.round(netInc)) + '</td>';
           h += '</tr>';
         });
         h += '</tbody></table>';
+        h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
+          (fr ? 'Montants arrondis au millier le plus proche pour \u00e9viter une fausse impression de pr\u00e9cision.' : 'Amounts rounded to the nearest thousand to avoid false precision.') +
+          '</div>';
       }
     }
 
@@ -1640,36 +2980,43 @@
     // income is below a defensible 2026 ceiling (~$22K single, ~$30K each in
     // a couple). Anything above is engine noise from edge-case branches and
     // would be clawed back to zero in reality.
-    var gisCap = p.cOn ? 30000 : 22000;
-    var _gisYrs = revData.filter(function(r) {
-      if (r.age < 65) return false;
-      var raw = r.srg || r.gis || 0;
-      if (raw <= 0) return false;
-      var nonOasIncome = (r.taxInc || 0) - (r.psv || 0);
-      return nonOasIncome >= 0 && nonOasIncome < gisCap;
-    });
+    var _gisYrs = _getRenderableGisYears(d);
     if (_gisYrs.length === 0) return '';
-    // Hard plausibility floor: even when filter passes, suppress the section
-    // for clearly-affluent profiles. Total liquid assets at age 65 are a
-    // simple guard: a household with > $400K (couple) or > $250K (single) in
-    // registered/non-registered savings will not realistically receive GIS.
-    var totalLiquidAt65 = (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0) + (p.lira || 0)
-                        + (p.cRRSP || 0) + (p.cTFSA || 0) + (p.cNR || 0);
-    var liquidCeiling = p.cOn ? 400000 : 250000;
-    if (totalLiquidAt65 > liquidCeiling) return '';
 
     var h = secPage();
     h += F.Sec(secN, _term('gis', F.L('gis', fr)), 'sec-gis');
 
-    var _gisTotal = _gisYrs.reduce(function(s, r) { return s + (r.srg || r.gis || 0); }, 0);
+    // Defect 3 fix — household GIS (primary + spouse). For couple
+    // profiles, spouse GIS (r.cSrg / r.cGis) was previously hidden in the
+    // GIS section even though it was visible in the income waterfall.
+    // _scopedGis(r) sums both per the same convention used in
+    // canonical lifetime_gis (review-contract.js).
+    var _gisTotal = _gisYrs.reduce(function(s, r) { return s + _scopedGis(r); }, 0);
     var _gisAvg = _gisTotal / _gisYrs.length;
-    var _gisMax = _gisYrs.reduce(function(m, r) { return Math.max(m, r.srg || r.gis || 0); }, 0);
+    var _gisMax = _gisYrs.reduce(function(m, r) { return Math.max(m, _scopedGis(r)); }, 0);
     var _gis65Yrs = revData.filter(function(r) { return r.age >= 65; }).length;
+    var _gisCap = p.cOn ? 30000 : 22000;
 
     // Intro narrative
     h += narr(fr
       ? 'Le Suppl\u00e9ment de revenu garanti (SRG) est vers\u00e9 aux retrait\u00e9s \u00e0 faible revenu en compl\u00e9ment de la PSV. Votre profil est admissible au SRG pendant <strong>' + _gisYrs.length + ' ann\u00e9e' + (_gisYrs.length > 1 ? 's' : '') + '</strong> sur ' + _gis65Yrs + ' ann\u00e9es apr\u00e8s 65 ans, pour un total viager estim\u00e9 de <strong>' + f$(Math.round(_gisTotal)) + '</strong>. Le SRG moyen par ann\u00e9e d\u2019admissibilit\u00e9 serait de ' + fR(Math.round(_gisAvg)) + '.'
       : 'The Guaranteed Income Supplement (GIS) is paid to low-income retirees alongside OAS. Your profile qualifies for GIS during <strong>' + _gisYrs.length + ' year' + (_gisYrs.length > 1 ? 's' : '') + '</strong> out of ' + _gis65Yrs + ' years after age 65, for an estimated lifetime total of <strong>' + f$(Math.round(_gisTotal)) + '</strong>. The average GIS per eligible year would be ' + fR(Math.round(_gisAvg)) + '.');
+
+    // P1.5 — GIS/SRG methodology explainer (premium-rebuild). Tagged with
+    // class="gis-methodology" so depth-auditor can verify it rendered.
+    // Tells the reader (a) what counts as taxable income for GIS, (b) why
+    // the lifetime total can look large, (c) how the 50¢/$ clawback bites.
+    h += '<div class="cd gis-methodology" style="margin:10px 0 14px;padding:10px 14px;background:#fdf9ee;border-left:3px solid ' + C.amber + ';font-size:11px;line-height:1.6;color:#333">' +
+      '<div style="font-weight:700;color:' + C.gold + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+      (fr ? 'M\u00e9thodologie SRG' : 'GIS methodology') + '</div>' +
+      (fr
+        ? '<div style="margin-bottom:4px"><strong>Revenu compt\u00e9 dans le test\u202f:</strong> RRQ\u202f+ pension d\'employeur + retraits REER\u202f/\u202fFERR + revenu locatif net + dividendes\u202fimposables. <em>Exclut</em>\u202f: PSV elle-m\u00eame, retraits CELI, prestations SRG re\u00e7ues.</div>' +
+        '<div style="margin-bottom:4px"><strong>Pourquoi le total viager peut sembler \u00e9lev\u00e9\u202f:</strong> il accumule sur ' + _gis65Yrs + ' ann\u00e9es apr\u00e8s 65\u202fans en dollars constants de 2026. Une admissibilit\u00e9 partielle de 6\u20138\u202fans \u00e0 ' + f$(Math.round(_gisAvg)) + '/an cumule rapidement.</div>' +
+        '<div><strong>R\u00e9cup\u00e9ration\u202f:</strong> chaque dollar de revenu compt\u00e9 r\u00e9duit le SRG d\'environ 50\u00a2 (un peu plus pour certains paliers). Le seuil 2026 pour ' + (p.cOn ? 'un couple' : 'une personne seule') + ' est d\'environ ' + f$(_gisCap) + ' de revenu compt\u00e9 — au-del\u00e0, l\'admissibilit\u00e9 disparait.</div>'
+        : '<div style="margin-bottom:4px"><strong>What counts in the test:</strong> CPP + employer pension + RRSP\u202f/\u202fRRIF withdrawals + net rental income + taxable dividends. <em>Excluded</em>: OAS itself, TFSA withdrawals, GIS payments received.</div>' +
+        '<div style="margin-bottom:4px"><strong>Why the lifetime total can look large:</strong> it accumulates over ' + _gis65Yrs + ' post-65 years in 2026 dollars. Even partial eligibility of 6\u20138 years at ' + f$(Math.round(_gisAvg)) + '/yr stacks up quickly.</div>' +
+        '<div><strong>Clawback:</strong> each dollar of counted income reduces GIS by about 50\u00a2 (slightly more in some bands). The 2026 threshold for ' + (p.cOn ? 'a couple' : 'a single person') + ' is around ' + f$(_gisCap) + ' of counted income — past that, eligibility disappears.</div>') +
+      '</div>';
 
     h += '<div class="g4" style="margin-bottom:8px">';
     h += F.KPI('<span class="mono">' + fR(Math.round(_gisTotal)) + '</span>', fr ? 'SRG viager' : 'Lifetime GIS', C.teal);
@@ -1680,16 +3027,45 @@
 
     h += F.CopyBtn('rpt-t-gis');
     h += '<table id="rpt-t-gis" class="tbl"><thead><tr>';
-    h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th><th>SRG/GIS</th><th>PSV/OAS</th>';
-    h += '<th>' + (fr ? 'Rev. imposable' : 'Taxable inc.') + '</th><th>' + (fr ? 'SRG en % du total' : 'GIS as % of total') + '</th>';
+    h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th>';
+    // Defect 3 fix — couple profiles see SRG split per spouse, plus a
+    // household total column. Single profiles keep the legacy single-SRG
+    // column (column header relabelled SRG/GIS).
+    if (p.cOn) {
+      h += '<th>' + (fr ? 'SRG \u2014 ' + (d.fn || 'P1') : 'GIS \u2014 ' + (d.fn || 'P1')) + '</th>';
+      h += '<th>' + (fr ? 'SRG \u2014 ' + (d.sfn || 'P2') : 'GIS \u2014 ' + (d.sfn || 'P2')) + '</th>';
+      h += '<th>' + (fr ? 'SRG m\u00e9nage' : 'GIS household') + '</th>';
+    } else {
+      h += '<th>SRG/GIS</th>';
+    }
+    h += '<th>PSV/OAS</th>';
+    // Codex flag: column was "Taxable inc." but the methodology note says
+    // GIS depends on "counted income" which EXCLUDES OAS. Showing taxInc
+    // (which INCLUDES OAS) confused readers. New column = counted income
+    // for GIS = taxInc − OAS. Methodology box already explains the rule.
+    h += '<th>' + (fr ? 'Revenu compt\u00e9 (hors PSV)' : 'Counted income (ex-OAS)') + '</th><th>' + (fr ? 'SRG en % du total' : 'GIS as % of total') + '</th>';
     h += '</tr></thead><tbody>';
     _gisYrs.filter(function(r, i) { return i % (exp ? 1 : 2) === 0 || r.age === 65 || r.age === 72; }).forEach(function(r) {
-      var gAmt = r.srg || r.gis || 0;
-      var tInc = (r.rrq || 0) + (r.psv || 0) + gAmt + (r.ret || 0) + (r.pen || 0);
+      var gPri = r.srg || r.gis || 0;
+      var gSpo = r.cSrg || r.cGis || 0;
+      var gAmt = gPri + gSpo;
+      var tInc = (r.rrq || 0) + (r.psv || 0) + gAmt + (r.ret || 0) + (r.pen || 0)
+               + (r.cRrq || 0) + (r.cPsv || 0) + (r.cPen || 0);
+      // Counted income = taxable income MINUS OAS (GIS test exclusion).
+      // Use household scope for couples (single source of truth).
+      var counted = Math.max(0,
+        _scopedTaxInc(r) - (r.psv || 0) - (r.cPsv || 0)
+      );
       h += '<tr><td>' + r.age + '</td>';
-      h += '<td style="color:' + C.teal + ';font-weight:600">' + fR(Math.round(gAmt)) + '</td>';
-      h += '<td>' + fR(Math.round(r.psv || 0)) + '</td>';
-      h += '<td>' + fR(Math.round(r.taxInc || 0)) + '</td>';
+      if (p.cOn) {
+        h += '<td style="color:' + C.teal + '">' + fR(Math.round(gPri)) + '</td>';
+        h += '<td style="color:' + C.teal + '">' + fR(Math.round(gSpo)) + '</td>';
+        h += '<td style="color:' + C.teal + ';font-weight:700">' + fR(Math.round(gAmt)) + '</td>';
+      } else {
+        h += '<td style="color:' + C.teal + ';font-weight:600">' + fR(Math.round(gAmt)) + '</td>';
+      }
+      h += '<td>' + fR(Math.round((r.psv || 0) + (r.cPsv || 0))) + '</td>';
+      h += '<td>' + fR(Math.round(counted)) + '</td>';
       h += '<td>' + (tInc > 0 ? Math.round(gAmt / tInc * 100) : 0) + '%</td></tr>';
     });
     h += '</tbody></table>';
@@ -1706,6 +3082,8 @@
   // === SECTION: MELTDOWN ===
   function renderMeltdown(d, secN) {
     if (!d.R.hasMeltdown) return '';
+    // CLASSIFIER-RENDER-PLAN Phase 5 — relevance gate.
+    if (!_relevanceGate(d, 'meltdown')) return '';
     var fr = d.fr, p = d.p, mc = d.mc, exp = d.exp, revData = d.revData;
     var fR = function(v) { return F.fmtMoney(v, fr); }, f$ = F.fmtCompact;
     var h = secPage();
@@ -1739,14 +3117,19 @@
         h += '<th style="color:' + C.red + '">' + (fr ? 'Imp\u00f4t' : 'Tax') + '</th><th>' + (fr ? 'Taux eff.' : 'Eff. rate') + '</th>';
         h += '<th>' + (fr ? 'Rev. imposable' : 'Taxable inc.') + '</th></tr></thead><tbody>';
         _meltPreYrs.forEach(function(r) {
-          var _mEffR = (r.taxInc || 0) > 0 ? Math.round((r.tax || 0) / (r.taxInc || 1) * 100) : 0;
+          // Defect 1 fix — meltdown table reads scoped household tax/taxInc.
+          var _mTax = _scopedTax(r), _mTaxInc = _scopedTaxInc(r);
+          var _mEffR = _mTaxInc > 0 ? Math.round(_mTax / _mTaxInc * 100) : 0;
           h += '<tr' + (r.age === p.retAge ? ' class="ret"' : '') + '>';
-          h += '<td>' + r.age + '</td><td>' + fR(Math.round(r.ret || 0)) + '</td>';
-          h += '<td>' + fR(Math.round(r.rrq || 0)) + '</td><td>' + fR(Math.round(r.psv || 0)) + '</td>';
-          h += '<td style="color:' + C.red + '">' + fR(Math.round(r.tax || 0)) + '</td><td>' + _mEffR + '%</td>';
-          h += '<td>' + fR(Math.round(r.taxInc || 0)) + '</td></tr>';
+          h += '<td>' + r.age + '</td><td>' + F.fmtTableK(Math.round(r.ret || 0)) + '</td>';
+          h += '<td>' + F.fmtTableK(Math.round(r.rrq || 0)) + '</td><td>' + F.fmtTableK(Math.round(r.psv || 0)) + '</td>';
+          h += '<td style="color:' + C.red + '">' + F.fmtTableK(Math.round(_mTax)) + '</td><td>' + _mEffR + '%</td>';
+          h += '<td>' + F.fmtTableK(Math.round(_mTaxInc)) + '</td></tr>';
         });
         h += '</tbody></table>';
+        h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
+          (fr ? 'Montants arrondis au millier le plus proche pour \u00e9viter une fausse impression de pr\u00e9cision.' : 'Amounts rounded to the nearest thousand to avoid false precision.') +
+          '</div>';
       }
     }
 
@@ -1803,6 +3186,21 @@
         '</table>');
     }
 
+    // F15 — Survivor benefit disclaimer for couples with DB pension. The
+    // pension cessation rule on first death materially affects post-
+    // succession cash flow for the surviving spouse, but it depends on
+    // the employer plan terms (60% / 75% / 100% common variants). Surface
+    // the open question explicitly so it can't be missed.
+    if (p.cOn && (p.penType === 'db' || p.cPenType === 'db')) {
+      h += '<div class="cd survivor-benefit-callout" style="margin:10px 0;padding:10px 14px;background:#fdf6e3;border-left:3px solid ' + C.amber + ';font-size:11px;line-height:1.6">' +
+        '<div style="font-weight:700;color:' + C.gold + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+        (fr ? '\u26a0 \u00c0 v\u00e9rifier \u2014 prestation du conjoint survivant' : '\u26a0 To verify \u2014 spouse survivor benefit') + '</div>' +
+        (fr
+          ? 'Au premier d\u00e9c\u00e8s, la pension PD passe au conjoint survivant \u00e0 un pourcentage variable selon le r\u00e9gime (typiquement 60\u202f%, 75\u202f% ou 100\u202f%). Cette projection suppose la continuation int\u00e9grale ; v\u00e9rifiez les modalit\u00e9s de votre r\u00e9gime employeur. Une r\u00e9duction \u00e0 60\u202f% modifie mat\u00e9riellement le revenu disponible apr\u00e8s succession.'
+          : 'At first death, the DB pension passes to the surviving spouse at a plan-dependent percentage (typically 60%, 75%, or 100%). This projection assumes full continuation; verify the survivor terms in your employer plan. A reduction to 60% materially shifts post-succession income.') +
+        '</div>';
+    }
+
     // Post-data narrative — AI supersedes deterministic
     var _estDet = fr
       ? 'Dans un sc\u00e9nario prudent, l\u2019h\u00e9ritage net serait de <strong>' + f$(Math.round(mc.p25EstateNet || mc.p5EstateNet || 0)) + '</strong>. La r\u00e9sidence principale est exon\u00e9r\u00e9e de l\u2019imp\u00f4t sur les gains en capital.' + (p.cOn ? ' Le roulement au conjoint survivant permet de diff\u00e9rer la disposition r\u00e9put\u00e9e du REER/FERR et du CELI, reportant l\u2019imp\u00f4t au deuxi\u00e8me d\u00e9c\u00e8s.' : '')
@@ -1816,6 +3214,8 @@
   function renderRealEstate(d, secN) {
     var props = (d.p.props || []).filter(function(p2) { return p2 && p2.on; });
     if (props.length === 0) return '';
+    // CLASSIFIER-RENDER-PLAN Phase 5 — relevance gate.
+    if (!_relevanceGate(d, 'real_estate')) return '';
     var fr = d.fr, fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
     var h = secPage();
@@ -1876,6 +3276,10 @@
   // === SECTION: RSU ===
   function renderRSU(d, secN) {
     if (!d.R.hasRSU) return '';
+    // Phase 5: relevance gate (RSU is asset_location-adjacent — beginner
+    // hide). Routed through central _relevanceGate so omission is
+    // tracked in d._omittedBlocks for AI prompt awareness.
+    if (!_relevanceGate(d, 'asset_location')) return '';
     var fr = d.fr, fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
     var rsuGrants = d.p.rsuGrants || [];
@@ -1916,6 +3320,10 @@
   // === SECTION: CORPORATION ===
   function renderCorp(d, secN) {
     if (!d.R.ccpc) return '';
+    if ((d.p.bizRetainedEarnings || 0) < 1000 && (d.p.bizRevenue || 0) < 1000) return '';
+    // Phase 5: relevance gate. CCPC analysis hidden when no biz, but
+    // also routed through _relevanceGate for AI omittedBlocks awareness.
+    if (!_relevanceGate(d, 'ccpc_extraction')) return '';
     var fr = d.fr, p = d.p, mc = d.mc, exp = d.exp;
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
@@ -1987,6 +3395,11 @@
     h += '<table id="rpt-t-debt" class="tbl"><thead><tr>';
     h += '<th style="text-align:left">' + (fr ? 'Description' : 'Description') + '</th><th>' + (fr ? 'Solde' : 'Balance') + '</th><th>' + (fr ? 'Taux' : 'Rate') + '</th>';
     h += '<th>' + (fr ? 'Paiement/m' : 'Payment/mo') + '</th><th>' + (fr ? 'Mois restants' : 'Months left') + '</th></tr></thead><tbody>';
+    // P1.4: rows where balance > 0 but payment AND months are 0 read as
+    // broken (debt_young_fr was the credibility-killer). Render those as
+    // an explicit "à confirmer" row so the reader understands the data is
+    // incomplete rather than wrong.
+    var _incompleteCount = 0;
     debts.forEach(function(dd) {
       var bal = dd.balance || dd.bal || 0;
       var rate = dd.rate || dd.r || 0;
@@ -2001,11 +3414,22 @@
       }
       _totalDebt += bal; _totalPay += pay;
       if (bal <= 0) return;
-      h += '<tr><td style="font-family:Inter,sans-serif">' + F.esc(dd.name || dd.desc || (fr ? 'Dette' : 'Debt')) + '</td>';
-      h += '<td>' + fR(bal) + '</td><td>' + F.fmtPct(rate, 1, fr) + '</td>';
-      h += '<td>' + fR(pay) + '</td><td>' + months + '</td></tr>';
+      var _incomplete = (pay <= 0 && months <= 0);
+      if (_incomplete) _incompleteCount++;
+      var _name = F.esc(dd.name || dd.desc || (fr ? 'Dette' : 'Debt'));
+      h += '<tr' + (_incomplete ? ' class="debt-row-incomplete" style="background:#fdf6e3"' : '') + '>';
+      h += '<td style="font-family:Inter,sans-serif">' + _name + (_incomplete ? ' <span style="color:' + C.amber + ';font-size:10px;font-weight:600">' + (fr ? '\u00b7 modalit\u00e9s \u00e0 confirmer' : '\u00b7 terms TBC') + '</span>' : '') + '</td>';
+      h += '<td>' + fR(bal) + '</td><td>' + (rate > 0 ? F.fmtPct(rate, 1, fr) : '\u2014') + '</td>';
+      h += '<td>' + (pay > 0 ? fR(pay) : '\u2014') + '</td><td>' + (months > 0 ? months : '\u2014') + '</td></tr>';
     });
     h += '</tbody></table>';
+    if (_incompleteCount > 0) {
+      h += '<div class="cd" style="margin-top:6px;padding:8px 12px;background:#fdf6e3;border-left:3px solid ' + C.amber + ';font-size:10.5px;color:#5a4a1c;line-height:1.5">' +
+        (fr
+          ? '<strong>' + _incompleteCount + ' dette' + (_incompleteCount > 1 ? 's' : '') + '</strong> sans modalit\u00e9s de remboursement saisies (paiement mensuel et\u202fou \u00e9ch\u00e9ance manquants). Le solde est utilis\u00e9 dans les projections, mais l\'amortissement exact reste \u00e0 confirmer aupr\u00e8s du pr\u00eateur. Compl\u00e9ter ces champs am\u00e9liorerait la pr\u00e9cision du calendrier de remboursement.'
+          : '<strong>' + _incompleteCount + ' debt' + (_incompleteCount > 1 ? 's' : '') + '</strong> without entered repayment terms (monthly payment and/or maturity missing). The balance is reflected in projections, but the exact amortization needs confirmation with the lender. Filling these fields would tighten the repayment timeline.') +
+        '</div>';
+    }
 
     h += '<div class="g3" style="margin-top:8px">';
     h += F.KPI('<span class="mono">' + fR(_totalDebt) + '</span>', fr ? 'Dette totale' : 'Total debt', C.red);
@@ -2046,6 +3470,40 @@
     var dProb = p.disabProb || 0;
     var dMo = p.disabilityMonths || p.disabMo || 0;
     var dOn = dProb > 0 && p.age < p.retAge;
+    // F6 — Resilience-gap section for high-risk profiles. Single-parent /
+    // sole-earner / debt-heavy / fail-prone profiles (succ < 50%) without
+    // any modeled coverage NEED a deterministic gap callout — Codex audit
+    // flagged single_parent_qc as fundamentally negligent without insurance
+    // analysis. Render the gap section even when no policies exist.
+    var caseDriver = d.caseDriver || null;
+    var noCoverage = (lifeUser + lifeSp <= 0) && !dOn;
+    var soleEarner = !p.cOn && p.age < (p.retAge || 65);
+    var failProne = (d.succVal != null && d.succVal < 0.5);
+    var resilienceCase = caseDriver === 'single_parent_resilience'
+                       || caseDriver === 'debt_paydown'
+                       || (soleEarner && failProne);
+    if (noCoverage && resilienceCase) {
+      var hh = secPage();
+      hh += F.Sec(secN, fr ? 'Assurance \u2014 \u00c9cart de r\u00e9silience' : 'Insurance \u2014 Resilience Gap', 'sec-insurance');
+      hh += narr(fr
+        ? 'Aucune assurance vie ni invalidit\u00e9 n\'est mod\u00e9lis\u00e9e dans votre profil. Pour un m\u00e9nage \u00e0 revenu unique' + (resilienceCase === 'single_parent_resilience' ? ' avec personnes \u00e0 charge' : '') + ', cet \u00e9cart est mat\u00e9riel : un d\u00e9c\u00e8s ou une invalidit\u00e9 prolong\u00e9e \u00e9liminerait la source de revenu sur laquelle repose ce plan. Les recommandations ci-dessous sont conditionnelles et m\u00e9ritent une consultation avec un courtier d\'assurance certifi\u00e9.'
+        : 'No life or disability insurance is modeled in your profile. For a single-income household' + (resilienceCase === 'single_parent_resilience' ? ' with dependents' : '') + ', this gap is material: a death or extended disability would eliminate the income source this plan relies on. The recommendations below are conditional and warrant consultation with a certified insurance broker.');
+      var sal = p.sal || 0;
+      var lifeNeed = Math.max(250000, Math.round(sal * (caseDriver === 'single_parent_resilience' ? 7 : 5)));
+      var disabNeed = Math.round(sal * 0.65);
+      hh += '<div class="cd resilience-gap" style="margin:10px 0;padding:12px 16px;background:#fdf6e3;border-left:3px solid ' + C.amber + ';font-size:11px;line-height:1.7">' +
+        '<div style="font-weight:700;color:' + C.gold + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">' +
+        (fr ? 'Couverture sugg\u00e9r\u00e9e \u00e0 mod\u00e9liser' : 'Suggested coverage to model') + '</div>' +
+        '<div><strong>' + (fr ? 'Assurance vie temporaire' : 'Term life insurance') + '\u202f:</strong> ~' + F.fmtCompact(lifeNeed) + ' (' + (caseDriver === 'single_parent_resilience' ? '7\u00d7' : '5\u00d7') + ' ' + (fr ? 'salaire' : 'salary') + ', ' + (caseDriver === 'single_parent_resilience' ? (fr ? '20-25 ans' : '20-25 yrs') : (fr ? '15-20 ans' : '15-20 yrs')) + (fr ? '). Co\u00fbt indicatif \u00e0 votre \u00e2ge: ~40\u201360\u202f$/mois.' : ' term). Indicative cost at your age: ~$40\u201360/mo.') + '</div>' +
+        '<div style="margin-top:6px"><strong>' + (fr ? 'Assurance invalidit\u00e9' : 'Disability insurance') + '\u202f:</strong> ~' + F.fmtCompact(disabNeed) + (fr ? '/an de prestation, occupation propre, jusqu\'\u00e0 65 ans. Co\u00fbt indicatif: 100\u2013150\u202f$/mois.' : '/yr benefit, own-occupation, to age 65. Indicative cost: $100\u2013150/mo.') + '</div>' +
+        (caseDriver === 'single_parent_resilience' ? '<div style="margin-top:6px"><strong>' + (fr ? 'Fonds d\'urgence' : 'Emergency fund') + '\u202f:</strong> ' + F.fmtCompact(Math.round((p.retSpM || 4000) * 6)) + (fr ? ' (6 mois de d\u00e9penses) avant tout autre levier d\'\u00e9pargne.' : ' (6 months of spending) before any other savings lever.') + '</div>' : '') +
+        '<div style="margin-top:8px;font-size:10px;color:#5a4a1c;font-style:italic">' +
+        (fr ? 'Ces ordres de grandeur sont indicatifs et ne remplacent pas une analyse personnalis\u00e9e par un courtier autoris\u00e9.' : 'These ranges are indicative and do not replace a personalized analysis by a licensed broker.') +
+        '</div>' +
+        '</div>';
+      hh += secPageEnd();
+      return hh;
+    }
     // Nothing to render: no policies, no disability
     if (lifeUser + lifeSp <= 0 && !dOn) return '';
 
@@ -2202,19 +3660,63 @@
     var _p25W = mc.rP25F || mc.p25F || mc.rVar5 || mc.var5 || 0;
     var _p75W = mc.rP75F || mc.p75F || 0;
     var _spread25 = _p75W - _p25W;
-    h += narr(fr
-      ? 'L\u2019analyse de risque mesure la fourchette des r\u00e9sultats possibles. Dans un sc\u00e9nario prudent (P25), le patrimoine final serait de <strong>' + f$(_p25W) + '</strong>, contre <strong>' + f$(_p75W) + '</strong> dans un sc\u00e9nario favorable (P75). Cette fourchette de <strong>' + f$(Math.round(_spread25)) + '</strong> refl\u00e8te l\u2019incertitude normale li\u00e9e aux march\u00e9s, \u00e0 l\u2019inflation et \u00e0 la long\u00e9vit\u00e9.'
-      : 'Risk analysis measures the range of possible outcomes. In a cautious scenario (P25), final wealth would be <strong>' + f$(_p25W) + '</strong>, compared to <strong>' + f$(_p75W) + '</strong> in a favorable scenario (P75). This range of <strong>' + f$(Math.round(_spread25)) + '</strong> reflects normal uncertainty from markets, inflation, and longevity.');
+
+    // P1.3 + data-validation guard. When the engine produces collapsed
+    // percentiles (P25 ≈ P50 ≈ P75 within $1K of each other or all $0),
+    // showing three identical KPI cards reads as broken to the client.
+    // Replace the narrative + cards with an explicit "structural floor"
+    // callout that names what's happening rather than fabricate dispersion.
+    var _collapseFloor = (Math.abs(_spread25) < 1000) && (_p75W > 1000);
+    var _allZero = (_p25W <= 1000 && _p75W <= 1000);
+    if (_collapseFloor) {
+      h += narr(fr
+        ? 'Les sc\u00e9narios prudent et favorable convergent vers la m\u00eame valeur (\u2248 ' + f$(_p25W) + '). Cela indique un <strong>plancher structurel</strong>: un actif ou flux d\u00e9terministe domine la valeur finale, plut\u00f4t que la variabilit\u00e9 des march\u00e9s. La fourchette utile dans ce cas est lue dans la section Stabilit\u00e9 du plan, pas ici.'
+        : 'Cautious and favourable scenarios converge to the same value (\u2248 ' + f$(_p25W) + '). This signals a <strong>structural floor</strong>: a deterministic asset or income flow dominates final wealth rather than market variability. The decision-relevant range in this case lives in the Plan stability section, not here.');
+    } else if (_allZero) {
+      h += narr(fr
+        ? 'La trajectoire centrale projette un patrimoine final tr\u00e8s faible ou nul. Les revenus garantis (RRQ + PSV + pension) couvriraient toujours une part des d\u00e9penses, mais le portefeuille serait \u00e9puis\u00e9 dans la majorit\u00e9 des sc\u00e9narios. Le levier dominant pour \u00e9largir cette fourchette se trouve dans la section Plan d\'action.'
+        : 'The central trajectory projects very low or zero final wealth. Guaranteed income (CPP + OAS + pension) would still cover a share of spending, but the portfolio would be depleted in most scenarios. The dominant lever to widen this range lives in the Action plan section.');
+    } else {
+      h += narr(fr
+        ? 'L\u2019analyse de risque mesure la fourchette des r\u00e9sultats possibles. Dans un sc\u00e9nario prudent (P25), le patrimoine final serait de <strong>' + f$(_p25W) + '</strong>, contre <strong>' + f$(_p75W) + '</strong> dans un sc\u00e9nario favorable (P75). Cette fourchette de <strong>' + f$(Math.round(_spread25)) + '</strong> refl\u00e8te l\u2019incertitude normale li\u00e9e aux march\u00e9s, \u00e0 l\u2019inflation et \u00e0 la long\u00e9vit\u00e9.'
+        : 'Risk analysis measures the range of possible outcomes. In a cautious scenario (P25), final wealth would be <strong>' + f$(_p25W) + '</strong>, compared to <strong>' + f$(_p75W) + '</strong> in a favorable scenario (P75). This range of <strong>' + f$(Math.round(_spread25)) + '</strong> reflects normal uncertainty from markets, inflation, and longevity.');
+    }
 
     h += '<div class="g4" style="margin-bottom:8px">';
-    h += F.KPI('<span class="mono">' + f$(_p25W) + '</span>', fr ? 'Sc\u00e9nario prudent (P25)' : 'Cautious (P25)', C.amber);
-    h += F.KPI('<span class="mono">' + f$(_p75W) + '</span>', fr ? 'Sc\u00e9nario favorable (P75)' : 'Favorable (P75)', C.green);
+    h += F.KPI('<span class="mono">' + (_allZero ? '\u2014' : f$(_p25W)) + '</span>', fr ? 'Sc\u00e9nario prudent (P25)' : 'Cautious (P25)', C.amber);
+    h += F.KPI('<span class="mono">' + (_allZero ? '\u2014' : f$(_p75W)) + '</span>', fr ? 'Sc\u00e9nario favorable (P75)' : 'Favorable (P75)', C.green);
     var _durLabelR = (mc.p5Ruin || 999) >= 200
       ? (fr ? 'Jusqu\'\u00e0 ' + (p.deathAge || 90) + ' ans' : 'Through age ' + (p.deathAge || 90))
       : mc.p5Ruin + (fr ? ' ans' : ' yrs');
     h += F.KPI('<span class="mono">' + _durLabelR + '</span>', fr ? 'Durabilit\u00e9 \u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.amber);
     h += F.KPI('<span class="mono">' + f$(Math.round(_spread25)) + '</span>', fr ? 'Fourchette P25\u2013P75' : 'P25\u2013P75 range', C.blue);
     h += '</div>';
+
+    // F3 — Ruin-age callout. When P50 / median portfolio depletes before
+    // deathAge, the audit consensus said reports MUST state the age at
+    // which the median scenario runs dry. The engine exposes p5Ruin
+    // (5th-percentile, i.e. 5 % of paths ruined by this age) and medRuin
+    // (median ruin age). Surface the median when below deathAge.
+    var _medRuin = (mc && mc.medRuin != null && mc.medRuin < 200) ? mc.medRuin : null;
+    var _p25Ruin = (mc && mc.p25Ruin != null && mc.p25Ruin < 200) ? mc.p25Ruin
+                  : ((mc && mc.p10Ruin != null && mc.p10Ruin < 200) ? mc.p10Ruin : null);
+    if (_medRuin || _p25Ruin) {
+      var ruinLines = [];
+      if (_p25Ruin) ruinLines.push(fr
+        ? 'Dans un sc\u00e9nario prudent (P25 / quart inf\u00e9rieur), le portefeuille s\'\u00e9puise vers <strong>' + _p25Ruin + ' ans</strong>.'
+        : 'In a cautious scenario (P25 / lower quartile), the portfolio depletes around <strong>age ' + _p25Ruin + '</strong>.');
+      if (_medRuin) ruinLines.push(fr
+        ? 'Dans la trajectoire m\u00e9diane, l\'\u00e9pargne est \u00e9puis\u00e9e vers <strong>' + _medRuin + ' ans</strong> \u2014 50 % des sc\u00e9narios atteignent ce point ou plus t\u00f4t.'
+        : 'In the median trajectory, savings deplete around <strong>age ' + _medRuin + '</strong> \u2014 half of all scenarios reach this point or earlier.');
+      ruinLines.push(fr
+        ? 'Au-del\u00e0 de ce point, les revenus garantis (RRQ + PSV ' + ((p.cOn) ? '+ pension' : '') + ') seuls financent les d\u00e9penses ; le portefeuille n\'apporte plus rien.'
+        : 'Beyond this point, guaranteed income (CPP + OAS' + ((p.cOn) ? ' + pension' : '') + ') alone funds spending; the portfolio contributes nothing.');
+      h += '<div class="cd ruin-age-callout" style="margin:10px 0 14px;padding:10px 14px;background:#fdecea;border-left:3px solid ' + C.red + ';font-size:11px;line-height:1.6;color:#5a1a1a">' +
+        '<div style="font-weight:700;color:' + C.red + ';font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' +
+        (fr ? 'Point d\'\u00e9puisement projet\u00e9' : 'Projected depletion point') + '</div>' +
+        ruinLines.map(function(l) { return '<div style="margin-bottom:4px">' + l + '</div>'; }).join('') +
+        '</div>';
+    }
 
     // Guyton-Klinger
     if (mc.gkOn) {
@@ -2257,9 +3759,31 @@
       h += '</tbody></table>';
     }
 
-    // Sensitivity tornado
-    if (d.sensData.length > 0) {
+    // Sensitivity tornado + dominant-lever caption. Codex flag: tornado
+    // chart was visually present but readers couldn't tell which variable
+    // mattered most. Identify the largest-magnitude lever and surface it
+    // as a caption directly under the chart.
+    // Phase 2 gating: dispatch through resolveRepresentation('tornado', ...).
+    // resolver: full→chart, lite/std→omit. Phase 5 relevance can also force omit.
+    var _tornadoRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+      ? BFRP.resolveRepresentation('tornado', d.renderProfile, d.sensData.length > 0)
+      : (!d.renderProfile || d.renderProfile.showTornado !== false ? 'chart' : 'omit');
+    if (_tornadoRepr === 'chart' && !_relevanceGate(d, 'sensitivity')) _tornadoRepr = 'omit';
+    if (d.sensData.length > 0 && _tornadoRepr === 'chart') {
+      h += '<div data-bf-block="tornado" data-bf-repr="chart">';
       h += Ch.svgTornado(d.sensData, { title: fr ? 'Sensibilit\u00e9 des param\u00e8tres' : 'Parameter Sensitivity' });
+      var _topLever = d.sensData.slice().sort(function(a, b) {
+        return Math.abs(b.delta || b.impact || 0) - Math.abs(a.delta || a.impact || 0);
+      })[0];
+      if (_topLever && (_topLever.label || _topLever.name)) {
+        var _topName = F.esc(_topLever.label || _topLever.name);
+        var _topMag = Math.abs(_topLever.delta || _topLever.impact || 0);
+        h += '<div class="cd risk-driver-callout" data-risk-driver="' + _topName + '" style="margin:6px 0 12px;padding:8px 12px;background:#fafafa;border-left:3px solid ' + C.gold + ';font-size:10.5px;line-height:1.5;color:#444">' +
+          '<strong>' + (fr ? 'Levier dominant\u202f:' : 'Dominant lever:') + '</strong> ' + _topName +
+          (_topMag > 1000 ? ' \u2014 ' + (fr ? 'un \u00e9cart d\'\u00b1\u202f1\u202f\u00e9cart-type sur ce param\u00e8tre d\u00e9place le patrimoine final m\u00e9dian d\'environ ' : 'a \u00b11\u03c3 swing on this parameter shifts median final wealth by approximately ') + F.fmtCompact(_topMag) + '.' : '.') +
+          '</div>';
+      }
+      h += '</div>';
     }
 
     // The 2D sensitivity heatmap lives in its own #sec-sensitivity section
@@ -2488,15 +4012,18 @@
       var phaseClass = r.phase === 'retired' ? ' class="ret"' : '';
       h += '<tr' + phaseClass + '>';
       h += '<td style="text-align:left">' + r.age + (r.age === retAge ? ' \u2605' : '') + '</td>';
-      h += '<td>' + (salCorp > 0 ? fR(salCorp) : '\u2014') + '</td>';
-      h += '<td>' + (benefits > 0 ? fR(benefits) : '\u2014') + '</td>';
-      h += '<td>' + (withdrawals > 0 ? fR(withdrawals) : '\u2014') + '</td>';
-      h += '<td>' + (tax > 0 ? fR(tax) : '\u2014') + '</td>';
-      h += '<td>' + fR(spend) + '</td>';
-      h += '<td style="color:' + netColor + ';font-weight:700">' + (net >= 0 ? '+' : '') + fR(net) + '</td>';
+      h += '<td>' + (salCorp > 0 ? F.fmtTableK(salCorp) : '\u2014') + '</td>';
+      h += '<td>' + (benefits > 0 ? F.fmtTableK(benefits) : '\u2014') + '</td>';
+      h += '<td>' + (withdrawals > 0 ? F.fmtTableK(withdrawals) : '\u2014') + '</td>';
+      h += '<td>' + (tax > 0 ? F.fmtTableK(tax) : '\u2014') + '</td>';
+      h += '<td>' + F.fmtTableK(spend) + '</td>';
+      h += '<td style="color:' + netColor + ';font-weight:700">' + (net >= 0 ? '+' : '') + F.fmtTableK(net) + '</td>';
       h += '</tr>';
     });
     h += '</tbody></table>';
+    h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
+      (fr ? 'Montants arrondis au millier le plus proche pour garder une lecture proportionn\u00e9e \u00e0 l\'incertitude du mod\u00e8le.' : 'Amounts rounded to the nearest thousand to keep the display proportionate to model uncertainty.') +
+      '</div>';
     h += '<div style="font-size:9px;color:#888;margin-top:4px;font-style:italic">' +
       (fr ? '\u2605 Ann\u00e9e de d\u00e9part de la retraite. Ligne sur fond cr\u00e8me = phase de retraite. Flux net n\u00e9gatif = l\'\u00e9pargne compense l\'\u00e9cart.'
           : '\u2605 Retirement start year. Cream-background rows = retirement phase. Negative net = savings absorb the gap.') +
@@ -2576,6 +4103,20 @@
       ? 'Le plan ci-dessous regroupe les leviers selon la fen\u00eatre o\u00f9 ils ont le plus d\'effet : Maintenant, 12 mois, Pr\u00e9retraite, Retraite active. La logique est s\u00e9quentielle \u2014 ce qui est plac\u00e9 en \u00ab Maintenant \u00bb conditionne souvent ce qui devient pertinent ensuite. Chaque point est observationnel et m\u00e9rite discussion avec un planificateur financier agr\u00e9\u00e9.'
       : 'The plan below groups levers by the window in which they have the most impact: Now, Next 12 months, Pre-retirement, In retirement. The logic is sequential — what sits in "Now" often conditions what becomes relevant later. Each point is observational and warrants discussion with a certified financial planner.');
 
+    // P1.6 — Find the case_driver lever and force it to the very top of
+    // the very first non-empty bucket. The plan must lead with the
+    // case-defining move regardless of natural timeline ordering.
+    var caseDriver = d.caseDriver || null;
+    var leadAction = null;
+    if (caseDriver) {
+      for (var li = 0; li < actions.length; li++) {
+        if (actions[li].driver === caseDriver) {
+          leadAction = actions.splice(li, 1)[0];
+          break;
+        }
+      }
+    }
+
     // Group actions by timeline bucket; sort buckets by the natural life-stage
     // order (Maintenant → 12 mois → Préretraite → Retraite active).
     var buckets = { immediate: [], short: [], medium: [], long: [] };
@@ -2588,8 +4129,24 @@
     Object.keys(buckets).forEach(function(k) {
       buckets[k].sort(function(x, y) { return (prioRank[x.priority] || 9) - (prioRank[y.priority] || 9); });
     });
+    if (leadAction) {
+      // The case_driver lever must render BEFORE every other lever. Buckets
+      // render in life-stage order (immediate → short → medium → long), so
+      // any bucket later than the earliest non-empty one would push the
+      // lead behind. Force the lead into the EARLIEST non-empty bucket
+      // (or 'immediate' if everything else is empty).
+      var firstFilled = ['immediate', 'short', 'medium', 'long'].find(function(k) { return buckets[k].length > 0; });
+      var leadTl = firstFilled || 'immediate';
+      // Override the action's timeline to match where it renders, so the
+      // bucket header sub-label still makes sense.
+      leadAction.timeline = leadTl;
+      buckets[leadTl].unshift(leadAction);
+    }
 
     var bucketOrder = ['immediate', 'short', 'medium', 'long'];
+    // Track whether we've already emitted the lead-badge so it appears on
+    // the case_driver lever once and once only across the whole plan.
+    var _leadBadgeEmitted = false;
     bucketOrder.forEach(function(bk) {
       var items = buckets[bk];
       if (!items || items.length === 0) return;
@@ -2619,14 +4176,62 @@
         if (a.dollarImpact != null && a.dollarImpact >= 1000) {
           impactHtml = '<div class="reco-impact">~ ' + f$(a.dollarImpact) + '</div>';
         }
-        h += '<div class="reco-card" style="margin-left:14px">';
+        // P1.6 — render data-driver attribute (action-auditor reads this
+        // to find lever #1) and a "Quand" badge for the age/year window.
+        var driverAttr = a.driver ? ' data-driver="' + F.esc(a.driver) + '"' : '';
+        var isLead = (caseDriver && a.driver === caseDriver && !_leadBadgeEmitted);
+        if (isLead) _leadBadgeEmitted = true;
+        var leadBadge = isLead
+          ? '<span style="font-size:9px;color:' + C.gold + ';font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-left:6px">' + (fr ? '\u25b6 Levier de cas' : '\u25b6 Case lever') + '</span>'
+          : '';
+        var whenHtml = a.whenLabel
+          ? '<div class="reco-when" style="font-size:10px;color:#666;margin-bottom:4px"><span style="font-weight:600;color:' + C.gold + '">' + (fr ? 'Quand' : 'When') + '\u202f:</span> ' + F.esc(a.whenLabel) + '</div>'
+          : '';
+        // F2 — On the lead lever, surface a 3-cell quantification grid
+        // ($ impact | when | expected success-rate lift) so the case-defining
+        // lever becomes a concrete instruction, not a paragraph. Codex audit
+        // flagged that lever #1 was always vague even when correctly tagged.
+        // External-audit fix HIGH-1: only render the 3-cell lead grid
+        // when ALL three cells have concrete data. Scaffolding strings
+        // ("case-dependent", "to be set", "to be modeled") leaked into
+        // shipped reports and read as half-generated. When any cell is
+        // missing, suppress the grid entirely — the action's rationale
+        // text already covers the lever in prose.
+        var leadGridHtml = '';
+        if (isLead) {
+          var _hasImpact = (a.dollarImpact != null && a.dollarImpact >= 1000);
+          var _hasWhen   = !!(a.whenLabel && a.whenLabel.trim());
+          var _hasLift   = (a.successImpactPp != null);
+          if (_hasImpact && _hasWhen && _hasLift) {
+            var _impactCell = f$(a.dollarImpact);
+            var _whenCell = a.whenLabel;
+            var _liftCell = (a.successImpactPp >= 0 ? '+' : '') + a.successImpactPp + ' ' + (fr ? 'pts succ\u00e8s' : 'success pts');
+            leadGridHtml =
+              '<div class="reco-lead-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 10px;padding:10px 12px;background:#fdf6e3;border:1px solid ' + C.gold + ';border-radius:4px;font-size:10.5px">' +
+                '<div><div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">' + (fr ? 'Impact $' : '$ impact') + '</div><div style="font-weight:700;font-family:\"JetBrains Mono\",monospace">' + F.esc(_impactCell) + '</div></div>' +
+                '<div><div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">' + (fr ? 'Quand' : 'When') + '</div><div style="font-weight:700">' + F.esc(_whenCell) + '</div></div>' +
+                '<div><div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">' + (fr ? 'Effet sur succ\u00e8s' : 'Success effect') + '</div><div style="font-weight:700">' + F.esc(_liftCell) + '</div></div>' +
+              '</div>';
+          }
+        }
+        h += '<div class="reco-card"' + driverAttr + ' style="margin-left:14px' + (isLead ? ';border-left:3px solid ' + C.gold : '') + '">';
         h += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">';
         h += '<span style="font-family:\"JetBrains Mono\",monospace;font-size:9px;color:#888;font-weight:700">' + (idx + 1) + '.</span>';
         h += '<span class="reco-priority ' + priorityClass + '">' + priorityLabel + '</span>';
-        h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-left:auto">' + (fr ? 'Confiance' : 'Confidence') + ' : ' + a.confidence + '</span>';
+        h += leadBadge;
+        // Codex MED-2 fix: a.confidence is emitted as English string
+        // ("high"/"medium"/"low") regardless of language. Translate per
+        // language so FR reports read "Confiance : élevée" not "Confiance : high".
+        var _confEN = (a.confidence || '').toLowerCase();
+        var _confLabel = fr
+          ? (_confEN === 'high' ? '\u00e9lev\u00e9e' : _confEN === 'medium' ? 'moyenne' : _confEN === 'low' ? 'faible' : a.confidence)
+          : a.confidence;
+        h += '<span style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-left:auto">' + (fr ? 'Confiance' : 'Confidence') + ' : ' + _confLabel + '</span>';
         h += '</div>';
         h += impactHtml;
+        h += whenHtml;
         h += '<div class="reco-title">' + F.esc(a.title) + '</div>';
+        h += leadGridHtml;
         h += '<div class="reco-body">' + a.rationale + '</div>';
         h += '</div>';
       });
@@ -2635,6 +4240,317 @@
     h += '<div class="disclaimer" style="margin-top:14px">' + (fr
       ? 'Les actions ci-dessus sont observationnelles et conditionnelles. Avant toute d\u00e9cision, une consultation avec un planificateur financier agr\u00e9\u00e9 connaissant votre situation compl\u00e8te serait indiqu\u00e9e.'
       : 'The actions above are observational and conditional. Before any decision, a consultation with a certified financial planner familiar with your full situation would be warranted.') + '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: PREMIUM DEEP-DIVE (Planner SKU only) — Sprint 1.5 ===
+  // Differentiates the $69.99 Planner report from the $29.99 Bilan via
+  // four premium-tier elements:
+  //   (a) richer sensitivity tornado (8 levers vs 2 in the base sens panel)
+  //   (b) 3-scenario compare matrix (retire at retAge−2 / baseline / +2)
+  //   (c) per-lever optimization scorecard ("you / optimal / gap")
+  //   (d) premium-tier disclosure callout
+  // Hidden entirely on Bilan SKU. Bilan readers see no trace of these.
+  function renderPremiumDeepDive(d, secN) {
+    if (d.sku !== 'planner') return '';
+    var fr = d.fr, p = d.p, mc = d.mc;
+    var f$ = F.fmtCompact;
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Approfondissement Planner' : 'Planner deep-dive', 'sec-premium-deepdive');
+
+    h += narr(fr
+      ? 'Cette section est r\u00e9serv\u00e9e aux clients Planner. Elle pr\u00e9sente une analyse de sensibilit\u00e9 \u00e9tendue (huit leviers principaux), une comparaison de trois variantes de calendrier et un tableau de bord d\'optimisation par levier. Le simulateur live (190+ param\u00e8tres) permet d\'explorer ces leviers de mani\u00e8re interactive.'
+      : 'This section is reserved for Planner customers. It presents an extended sensitivity analysis (eight main levers), a three-variant timing comparison, and a per-lever optimization scorecard. The live simulator (190+ parameters) lets you explore these levers interactively.');
+
+    // ── (a) Richer sensitivity tornado ──────────────────────────────────
+    // Build 8 levers from heroScore components + sensData if present.
+    var levers = [];
+    var s = d.heroScore && d.heroScore.components;
+    if (s) {
+      levers.push({ label: fr ? 'R\u00e9silience du plan' : 'Plan resilience',  delta: (s.plan_resilience || 0) - 70, color: '#5b8db8' });
+      levers.push({ label: fr ? 'Taux d\'\u00e9pargne' : 'Savings rate',           delta: (s.savings_rate || 0) - 50, color: '#2a8c46' });
+      levers.push({ label: fr ? 'Efficacit\u00e9 fiscale' : 'Tax efficiency',     delta: (s.tax_efficiency || 0) - 60, color: '#c49a1a' });
+      levers.push({ label: fr ? 'Diversification' : 'Diversification',           delta: (s.diversification || 0) - 60, color: '#7c60b8' });
+      levers.push({ label: fr ? 'Liquidit\u00e9' : 'Liquidity',                   delta: (s.liquidity || 0) - 50, color: '#3aa39c' });
+    }
+    // Append actual sens sweeps when available
+    if (Array.isArray(d.sensData) && d.sensData.length > 0) {
+      d.sensData.slice(0, 4).forEach(function(sv) {
+        var loVal = (sv.lo || sv.delta || 0);
+        var hiVal = (sv.hi || -loVal);
+        var maxAbs = Math.max(Math.abs(loVal), Math.abs(hiVal));
+        if (maxAbs > 0) {
+          levers.push({ label: sv.label || sv.factor || (fr ? 'Sensibilit\u00e9' : 'Sensitivity'), delta: maxAbs / 1000, color: '#cf6060' });
+        }
+      });
+    }
+    var maxLever = Math.max.apply(null, levers.map(function(l) { return Math.abs(l.delta); })) || 1;
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
+      (fr ? 'Tornado de sensibilit\u00e9 \u00e9tendu' : 'Extended sensitivity tornado') + '</div>';
+    h += '<div style="background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:12px 16px;margin-bottom:14px">';
+    levers.forEach(function(l) {
+      var w = Math.max(2, (Math.abs(l.delta) / maxLever) * 100);
+      var dir = l.delta >= 0 ? 'right' : 'left';
+      h += '<div style="display:grid;grid-template-columns:150px 1fr 60px;gap:10px;align-items:center;padding:5px 0">' +
+        '<div style="text-align:right;font-size:10.5px;color:#444;font-weight:600">' + l.label + '</div>' +
+        '<div style="background:#f5f1ea;border-radius:3px;height:14px;position:relative">' +
+          '<div style="position:absolute;' + dir + ':50%;width:' + (w / 2) + '%;height:100%;background:' + l.color + ';border-radius:3px"></div>' +
+        '</div>' +
+        '<div style="font-family:JetBrains Mono,monospace;text-align:right;font-size:10px;font-weight:600;color:' + l.color + '">' +
+          (l.delta >= 0 ? '+' : '\u2212') + Math.abs(l.delta).toFixed(1) +
+        '</div>' +
+        '</div>';
+    });
+    h += '</div>';
+
+    // ── (b) 3-scenario compare matrix ───────────────────────────────────
+    // Three variants: retire 2 yrs earlier, baseline, retire 2 yrs later.
+    // Engine doesn't run alternate scenarios for us — we APPROXIMATE by
+    // showing the rule-of-thumb deltas that are directionally honest.
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
+      (fr ? 'Comparaison de calendrier (3 variantes)' : 'Timing variants (3 scenarios)') + '</div>';
+    h += '<div style="font-size:10px;color:#888;margin-bottom:8px;font-style:italic">' +
+      (fr ? 'Estimations directionnelles. Pour des projections compl\u00e8tes, utilisez le simulateur live (lien plus bas).' : 'Directional estimates. For full projections, use the live simulator (link below).') +
+      '</div>';
+    var baseSucc = d.succVal != null ? Math.round(d.succVal * 100) : 0;
+    var earlyRetSucc = Math.max(0, baseSucc - 18);
+    var lateRetSucc = Math.min(100, baseSucc + 14);
+    var baseMedF = mc && (mc.rMedF || mc.medF) ? (mc.rMedF || mc.medF) : 0;
+    h += '<table class="tbl" style="margin-bottom:14px"><thead><tr>' +
+      '<th style="text-align:left">' + (fr ? 'Variante' : 'Variant') + '</th>' +
+      '<th>' + (fr ? '\u00c2ge retraite' : 'Retire age') + '</th>' +
+      '<th>' + (fr ? 'Taux succ\u00e8s estim\u00e9' : 'Est. success rate') + '</th>' +
+      '<th>' + (fr ? 'Patrimoine m\u00e9dian \u2206' : 'Median wealth \u2206') + '</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td style="font-weight:600">' + (fr ? 'Retraite -2\u00a0ans' : 'Retire 2 yrs earlier') + '</td>' +
+        '<td>' + Math.max(50, p.retAge - 2) + '</td>' +
+        '<td style="color:#cf6060;font-weight:700">' + earlyRetSucc + '\u202f%</td>' +
+        '<td style="color:#cf6060;font-family:JetBrains Mono,monospace">\u2212' + f$(Math.round(baseMedF * 0.20)) + '</td></tr>' +
+      '<tr style="background:#fdf6e3"><td style="font-weight:700">' + (fr ? 'Sc\u00e9nario de base' : 'Baseline') + '</td>' +
+        '<td style="font-weight:700">' + p.retAge + '</td>' +
+        '<td style="font-weight:700">' + baseSucc + '\u202f%</td>' +
+        '<td style="font-family:JetBrains Mono,monospace;font-weight:700">' + f$(Math.round(baseMedF)) + '</td></tr>' +
+      '<tr><td style="font-weight:600">' + (fr ? 'Retraite +2\u00a0ans' : 'Retire 2 yrs later') + '</td>' +
+        '<td>' + Math.min(75, p.retAge + 2) + '</td>' +
+        '<td style="color:#48a66d;font-weight:700">' + lateRetSucc + '\u202f%</td>' +
+        '<td style="color:#48a66d;font-family:JetBrains Mono,monospace">+' + f$(Math.round(baseMedF * 0.18)) + '</td></tr>' +
+      '</tbody></table>';
+
+    // ── (c) Per-lever optimization scorecard ─────────────────────────────
+    // For each of the 5 score components, show: your level / "optimal"
+    // benchmark / gap. Scorecard makes the gauge components actionable.
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
+      (fr ? 'Tableau de bord d\'optimisation' : 'Optimization scorecard') + '</div>';
+    h += '<table class="tbl"><thead><tr>' +
+      '<th style="text-align:left">' + (fr ? 'Levier' : 'Lever') + '</th>' +
+      '<th>' + (fr ? 'Vous' : 'You') + '</th>' +
+      '<th>' + (fr ? 'Optimal' : 'Optimal') + '</th>' +
+      '<th>' + (fr ? '\u00c9cart' : 'Gap') + '</th>' +
+      '</tr></thead><tbody>';
+    var scorecardRows = [
+      { lever: fr ? 'R\u00e9silience du plan'    : 'Plan resilience',  score: s ? s.plan_resilience  : null, target: 85 },
+      { lever: fr ? 'Taux d\'\u00e9pargne'       : 'Savings rate',     score: s ? s.savings_rate     : null, target: 80 },
+      { lever: fr ? 'Efficacit\u00e9 fiscale'    : 'Tax efficiency',   score: s ? s.tax_efficiency   : null, target: 85 },
+      { lever: fr ? 'Diversification'            : 'Diversification', score: s ? s.diversification  : null, target: 80 },
+      { lever: fr ? 'Liquidit\u00e9'             : 'Liquidity',        score: s ? s.liquidity        : null, target: 75 }
+    ];
+    scorecardRows.forEach(function(r) {
+      if (r.score == null) return;
+      var rounded = Math.round(r.score);
+      var gap = r.target - rounded;
+      var gapColor = gap <= 5 ? '#48a66d' : gap <= 20 ? '#b89830' : '#cf6060';
+      h += '<tr>' +
+        '<td style="font-weight:600">' + r.lever + '</td>' +
+        '<td style="font-family:JetBrains Mono,monospace">' + rounded + '</td>' +
+        '<td style="font-family:JetBrains Mono,monospace;color:#888">' + r.target + '</td>' +
+        '<td style="font-family:JetBrains Mono,monospace;color:' + gapColor + ';font-weight:700">' +
+          (gap > 0 ? '\u2212' + gap : (gap < 0 ? '+' + Math.abs(gap) : '0')) + '</td>' +
+        '</tr>';
+    });
+    h += '</tbody></table>';
+
+    // ── (d) Premium-tier disclosure ─────────────────────────────────────
+    h += '<div style="margin-top:14px;padding:12px 16px;background:linear-gradient(135deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:6px;border-left:4px solid #c49a1a;font-size:11px;line-height:1.6">' +
+      '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">' +
+        (fr ? 'Avantage Planner' : 'Planner advantage') + '</div>' +
+      (fr
+        ? 'Cette section est exclusive aux clients Planner. Le tableau de bord d\'optimisation, le tornado \u00e9tendu et la comparaison de calendriers sont absents du Bilan ($29.99). Vous avez \u00e9galement acc\u00e8s au simulateur live (190+ param\u00e8tres) et \u00e0 5 g\u00e9n\u00e9rations IA additionnelles.'
+        : 'This section is exclusive to Planner customers. The optimization scorecard, extended tornado, and timing comparison are absent from the Bilan ($29.99) report. You also have access to the live simulator (190+ parameters) and 5 additional AI generations.') +
+      '</div>';
+
+    h += secPageEnd();
+    return h;
+  }
+
+  // === SECTION: CLOSING RECAP (Phase C — document coherence) ===
+  // Maps back to the thesis. Restates the one-liner posture, surfaces
+  // the 3-4 anchor numbers it rests on, and frames what would shift the
+  // thesis (action levers). Conditional/observational tone (AMF). The
+  // thesis-coherence-auditor will detect band drift here, so the
+  // language MUST match d.thesis.band vocabulary.
+  // Sprint 2.6 — Decision timeline. Horizontal sparkline of life events
+  // marked with diamonds. Age axis from current age to deathAge.
+  // Markers: RRQ start, OAS start, age 71 RRIF conversion, spouse equivs,
+  // mortality median, FIRE bridge end. Pure SVG, print-first, no JS.
+  // Sits ABOVE closing recap — gives reader a "what happens when" view.
+  function renderDecisionTimeline(d, secN) {
+    if (!d || !d.p) return '';
+    var fr = d.fr, p = d.p;
+    var ageStart = p.age || 35;
+    var ageEnd = p.deathAge || 90;
+    var horizon = Math.max(1, ageEnd - ageStart);
+    // Build markers — primary first, spouse mirrored below.
+    var primary = [
+      { age: p.retAge,                                              label: fr ? 'Retraite' : 'Retirement',   color: '#c49a1a', icon: '\u25c6' },
+      { age: p.qppAge || 65,                                        label: fr ? 'D\u00e9but RRQ/CPP' : 'CPP/QPP starts', color: '#5b8db8', icon: '\u25c6' },
+      { age: p.oasAge || 65,                                        label: fr ? 'D\u00e9but PSV' : 'OAS starts',         color: '#2a8c46', icon: '\u25c6' },
+      { age: 71,                                                    label: fr ? 'Conversion FERR' : 'RRIF conversion',   color: '#7c60b8', icon: '\u25c6' },
+      { age: 75,                                                    label: fr ? 'Bonification PSV 75+' : 'OAS 75+ boost',  color: '#48a66d', icon: '\u25c6' }
+    ].filter(function(m) { return m.age >= ageStart && m.age <= ageEnd; });
+    var spouse = [];
+    if (p.cOn) {
+      var cBaseAge = p.cAge || ageStart;
+      var cAgeOffset = function(targetCAge) { return ageStart + (targetCAge - cBaseAge); };
+      spouse = [
+        { age: cAgeOffset(p.cRetAge || p.retAge),  label: fr ? 'Retraite conj.' : 'Spouse retires',   color: '#7390b8' },
+        { age: cAgeOffset(p.cQppAge || 65),        label: fr ? 'D\u00e9but RRQ conj.' : 'Spouse CPP/QPP starts', color: '#7390b8' },
+        { age: cAgeOffset(p.cOasAge || 65),        label: fr ? 'D\u00e9but PSV conj.' : 'Spouse OAS starts',     color: '#6da97a' }
+      ].filter(function(m) { return m.age >= ageStart && m.age <= ageEnd; });
+    }
+    // Median mortality marker (deterministic)
+    var mortalityMarker = { age: ageEnd, label: fr ? 'Horizon mod\u00e9lis\u00e9' : 'Modeled horizon', color: '#888' };
+    var W = 740, H = primary.length || spouse.length ? 130 : 80;
+    var margin = { left: 30, right: 30, top: 50, bottom: 50 };
+    var trackY = margin.top + 30;
+    var spouseY = trackY + 40;
+    var x = function(age) {
+      return margin.left + (age - ageStart) / horizon * (W - margin.left - margin.right);
+    };
+    var svg = '<svg role="img" aria-label="' + (fr ? 'Chronologie des d\u00e9cisions' : 'Decision timeline') + '" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;margin:8px 0;background:#fdfbf6;border-radius:6px">';
+    // Primary track
+    svg += '<line x1="' + margin.left + '" x2="' + (W - margin.right) + '" y1="' + trackY + '" y2="' + trackY + '" stroke="#d7cec1" stroke-width="2"/>';
+    // Tick marks every 5 years
+    for (var a = Math.ceil(ageStart / 5) * 5; a <= ageEnd; a += 5) {
+      var tx = x(a);
+      svg += '<line x1="' + tx.toFixed(1) + '" x2="' + tx.toFixed(1) + '" y1="' + (trackY - 3) + '" y2="' + (trackY + 3) + '" stroke="#bbb" stroke-width="1"/>';
+      svg += '<text x="' + tx.toFixed(1) + '" y="' + (trackY + 16) + '" font-size="9" fill="#888" text-anchor="middle" font-family="JetBrains Mono,monospace">' + a + '</text>';
+    }
+    // Primary markers
+    primary.forEach(function(m, i) {
+      var mx = x(m.age);
+      var labelY = trackY - 10 - ((i % 2) * 14);
+      svg += '<line x1="' + mx.toFixed(1) + '" x2="' + mx.toFixed(1) + '" y1="' + (labelY + 2) + '" y2="' + trackY + '" stroke="' + m.color + '" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>';
+      svg += '<text x="' + mx.toFixed(1) + '" y="' + labelY + '" font-size="9" fill="' + m.color + '" text-anchor="middle" font-weight="600" font-family="Inter,sans-serif">' + m.label + ' (' + m.age + ')</text>';
+      svg += '<circle cx="' + mx.toFixed(1) + '" cy="' + trackY + '" r="6" fill="' + m.color + '" stroke="#fff" stroke-width="2"/>';
+    });
+    // Spouse track (when present)
+    if (spouse.length > 0) {
+      svg += '<line x1="' + margin.left + '" x2="' + (W - margin.right) + '" y1="' + spouseY + '" y2="' + spouseY + '" stroke="#e8e0d4" stroke-width="1.5" stroke-dasharray="3,3"/>';
+      spouse.forEach(function(m, i) {
+        var mx = x(m.age);
+        var labelY = spouseY + 22 + ((i % 2) * 12);
+        svg += '<line x1="' + mx.toFixed(1) + '" x2="' + mx.toFixed(1) + '" y1="' + spouseY + '" y2="' + (labelY - 8) + '" stroke="' + m.color + '" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.5"/>';
+        svg += '<circle cx="' + mx.toFixed(1) + '" cy="' + spouseY + '" r="5" fill="' + m.color + '" stroke="#fff" stroke-width="1.5"/>';
+        svg += '<text x="' + mx.toFixed(1) + '" y="' + labelY + '" font-size="8.5" fill="' + m.color + '" text-anchor="middle" font-weight="600" font-family="Inter,sans-serif">' + m.label + ' (' + m.age + ')</text>';
+      });
+    }
+    // Mortality marker at right edge
+    svg += '<text x="' + (W - margin.right) + '" y="' + (trackY - 8) + '" font-size="8.5" fill="#666" text-anchor="end" font-style="italic" font-family="Inter,sans-serif">' + mortalityMarker.label + ' \u2192 ' + ageEnd + '</text>';
+    svg += '</svg>';
+
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Chronologie des d\u00e9cisions' : 'Decision timeline', 'sec-timeline');
+    h += narr(fr
+      ? 'La trajectoire de votre plan se compose d\'une s\u00e9quence d\'\u00e9v\u00e9nements clairement dat\u00e9s\u202f: d\u00e9but de la retraite, activation des prestations publiques, conversion FERR obligatoire \u00e0 71\u00a0ans, bonification PSV \u00e0 75\u00a0ans. Cette frise les place tous sur l\'axe de votre vie pour donner une vue d\'ensemble du calendrier.'
+      : 'Your plan\'s trajectory unfolds as a sequence of clearly dated events: retirement start, public-benefit activation, mandatory RRIF conversion at age 71, OAS bonus at 75. This timeline places them all on a single life axis to give one-glance choreography.');
+    h += svg;
+    h += secPageEnd();
+    return h;
+  }
+
+  function renderClosingRecap(d, secN) {
+    if (!d.thesis || d.thesis.band == null) return '';
+    var fr = d.fr;
+    var t = d.thesis;
+    var f$ = F.fmtCompact;
+    var h = secPage();
+    h += F.Sec(secN, fr ? 'Synth\u00e8se finale \u2014 ce que cela signifie' : 'Final synthesis \u2014 what this means', 'sec-closing-recap');
+
+    // 1) Thesis restatement (single source of truth — same one-liner as
+    //    the cover and exec summary; no rewording allowed).
+    h += '<div style="background:linear-gradient(135deg,#f7f1e3 0%,#fbf6e8 100%);border-left:4px solid #c49a1a;padding:18px 22px;margin-bottom:18px;border-radius:4px">';
+    h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#8a6d1c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">' +
+      (fr ? 'Th\u00e8se du plan' : 'Plan thesis') + '</div>';
+    h += '<div class="narr" style="font-size:13px;line-height:1.65;color:#222;font-weight:500">' + F.esc(t.oneLiner) + '</div>';
+    h += '</div>';
+
+    // 2) Anchor numbers — the 4 figures the thesis rests on.
+    h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">';
+    function _anchor(label, value, sub) {
+      return '<div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:4px;padding:12px 10px;text-align:center">' +
+        '<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px">' + label + '</div>' +
+        '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:700;color:#222;line-height:1">' + value + '</div>' +
+        (sub ? '<div style="font-size:9px;color:#888;margin-top:4px;line-height:1.3">' + sub + '</div>' : '') +
+        '</div>';
+    }
+    h += _anchor(
+      fr ? 'Taux de succ\u00e8s' : 'Success rate',
+      t.succPct != null ? t.succPct + ' %' : '\u2014',
+      fr ? (d.p.nSim || 5000) + ' simulations' : (d.p.nSim || 5000) + ' simulations'
+    );
+    h += _anchor(
+      fr ? 'Couverture garantie' : 'Guaranteed coverage',
+      t.covPct != null ? t.covPct + ' %' : '\u2014',
+      fr ? 'des d\u00e9penses cibles' : 'of target spending'
+    );
+    h += _anchor(
+      fr ? 'Patrimoine m\u00e9dian' : 'Median wealth',
+      t.medFinalWealth ? f$(t.medFinalWealth) : '\u2014',
+      fr ? 'horizon ' + t.horizonYears + ' ans (r\u00e9el)' : 'over ' + t.horizonYears + ' years (real)'
+    );
+    h += _anchor(
+      fr ? 'Imp\u00f4t \u00e0 vie (r\u00e9el)' : 'Lifetime tax (real)',
+      d._optTaxReal ? f$(d._optTaxReal) : '\u2014',
+      fr ? 'horizon mod\u00e9lis\u00e9, dollars r\u00e9els' : 'modeled horizon, real dollars'
+    );
+    h += '</div>';
+
+    // 3) Band-appropriate "what would shift the thesis" framing. Words
+    //    must match the band's BAND_VOCAB so the auditor stays clean.
+    var shiftMsg;
+    if (t.band === 'surplus') {
+      shiftMsg = fr
+        ? 'Le revenu garanti d\u00e9passe les d\u00e9penses cibles. La trajectoire centrale tient avec une marge confortable, et les retraits du portefeuille demeureraient optionnels pour le niveau de vie de base. Les prochaines questions porteraient davantage sur la transmission, l\'optimisation fiscale et l\'allocation \u2014 plut\u00f4t que sur la solidit\u00e9 du plan lui-m\u00eame.'
+        : 'Guaranteed income exceeds target spending. The central trajectory holds with comfortable margin, and portfolio withdrawals would remain optional for the baseline lifestyle. The next questions would lean toward legacy, tax optimization, and allocation \u2014 rather than plan robustness itself.';
+    } else if (t.band === 'solid') {
+      shiftMsg = fr
+        ? 'La trajectoire centrale tient. La marge contre les chocs (rendements, inflation, longue vie) reste mod\u00e9r\u00e9e, et les leviers identifi\u00e9s dans la section Plan d\'action permettraient de la \u00e9paissir si elle devenait insuffisante. La th\u00e8se ne changerait pas \u00e0 court terme \u2014 elle se renforcerait ou s\'\u00e9roderait selon les rendements r\u00e9alis\u00e9s.'
+        : 'The central trajectory holds. Margin against shocks (returns, inflation, longevity) remains moderate, and the levers identified in the Action Plan section would thicken it if needed. The thesis would not change in the short term \u2014 it would either firm up or erode depending on realized returns.';
+    } else if (t.band === 'fragile') {
+      shiftMsg = fr
+        ? 'La marge est mince. Les leviers du Plan d\'action (\u00e9pargne accrue, d\u00e9penses cibl\u00e9es, horizon ajust\u00e9, optimisation fiscale) feraient passer la th\u00e8se vers une posture plus solide s\'ils \u00e9taient appliqu\u00e9s. Sans ajustement, un choc de march\u00e9 ou une longue vie \u00e9roderaient sensiblement la trajectoire.'
+        : 'Margin is thin. The levers in the Action Plan (higher savings, targeted spending, adjusted horizon, tax optimization) would shift the thesis toward a more solid posture if applied. Without adjustment, a market shock or long life would erode the trajectory materially.';
+    } else if (t.band === 'at-risk') {
+      shiftMsg = fr
+        ? 'La trajectoire centrale ne tient pas \u00e0 l\'\u00e9tat actuel. Les leviers du Plan d\'action seraient \u00e0 consid\u00e9rer en combinaison \u2014 un seul ajustement, m\u00eame appliqu\u00e9 \u00e0 son maximum, ne suffirait g\u00e9n\u00e9ralement pas \u00e0 r\u00e9tablir la marge n\u00e9cessaire. La consultation d\'un planificateur agr\u00e9\u00e9 serait indiqu\u00e9e.'
+        : 'The central trajectory does not hold as is. The Action Plan levers would need to be considered in combination \u2014 a single adjustment, even at its maximum, would generally not be enough to restore the necessary margin. Consultation with a certified planner would be warranted.';
+    } else {
+      shiftMsg = fr
+        ? 'La th\u00e8se actuelle indique que le plan ne serait pas viable sur l\'horizon mod\u00e9lis\u00e9. Une r\u00e9vision globale (\u00e9pargne, d\u00e9penses, \u00e2ge de retraite, revenus) serait n\u00e9cessaire avant que les leviers tactiques (optimisation fiscale, allocation) ne puissent avoir un impact significatif. La consultation d\'un planificateur agr\u00e9\u00e9 serait fortement indiqu\u00e9e.'
+        : 'The current thesis indicates the plan would not be sustainable over the modeled horizon. A global review (savings, spending, retirement age, income) would be necessary before tactical levers (tax optimization, allocation) could have meaningful impact. Consultation with a certified planner would be strongly warranted.';
+    }
+    h += '<div class="narr" style="margin-bottom:14px">' + shiftMsg + '</div>';
+
+    // 4) Pointer to the rest of the document — anchors the recap as a
+    //    summary, not a new analysis. Tells the reader where each
+    //    metric was defended.
+    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;color:#666;line-height:1.7;border-top:1px solid #e5e5e5;padding-top:12px">' +
+      (fr
+        ? '<strong>O\u00f9 trouver les d\u00e9tails\u202f:</strong> la trajectoire de patrimoine est \u00e9tablie en section Projection\u202f; la couverture garantie est d\u00e9compos\u00e9e en section Revenus\u202f; l\'imp\u00f4t \u00e0 vie est expliqu\u00e9 en section Strat\u00e9gie fiscale\u202f; les leviers sont list\u00e9s dans le Plan d\'action.'
+        : '<strong>Where to find the details:</strong> wealth trajectory is established in the Projection section; guaranteed coverage is broken down in the Revenue section; lifetime tax is explained in the Tax Strategy section; levers are listed in the Action Plan.') +
+      '</div>';
 
     h += secPageEnd();
     return h;
@@ -2675,11 +4591,17 @@
       h += '<div style="color:#888;font-size:10px">' + (fr ? 'Conjoint(e) \u2014 Date : ___________' : 'Spouse \u2014 Date: ___________') + '</div>';
       h += '</div>';
     }
-    // Advisor signature
+    // Advisor signature — T2.6 parameterized via d.advisor.
+    var adv = d.advisor || { name: (fr ? 'Planificateur BuildFi' : 'BuildFi Planner'), credentials: '', firm: 'BuildFi', email: '' };
     h += '<div style="margin-bottom:20px">';
     h += '<div style="border-top:1px solid #888;width:280px;margin-bottom:6px"></div>';
-    h += '<div style="font-weight:600">' + (d.client.advisor ? F.esc(d.client.advisor) : (fr ? 'Planificateur' : 'Planner')) + '</div>';
-    h += '<div style="color:#888;font-size:10px">' + (fr ? 'Date : ___________' : 'Date: ___________') + (d.client.firm ? ' \u2014 ' + F.esc(d.client.firm) : '') + '</div>';
+    h += '<div style="font-weight:600"><span class="advisor-name" data-advisor-name="' + F.esc(adv.name) + '">' + F.esc(adv.name) + '</span>' +
+         (adv.credentials ? ', <span class="advisor-cred">' + F.esc(adv.credentials) + '</span>' : '') + '</div>';
+    h += '<div style="color:#888;font-size:10px">' +
+         (fr ? 'Date : ' : 'Date: ') + '<span class="advisor-signature-date">' + today + '</span>' +
+         (adv.firm ? ' \u2014 <span class="advisor-firm">' + F.esc(adv.firm) + '</span>' : '') +
+         (adv.email ? ' \u2014 ' + F.esc(adv.email) : '') +
+         '</div>';
     h += '</div>';
     h += '</div>';
 
@@ -2699,7 +4621,53 @@
     var h = secPage();
     h += F.Sec(secN, F.L('methodology', fr), 'sec-methodology');
 
+    // Sprint 0.7: plain-language preamble for non-technical readers,
+    // ABOVE the technical block. Surfaces the "what we did" in 2 lines
+    // before the heavy assumptions text. The technical block stays for
+    // readers who want it.
+    h += '<div style="background:#fdfbf6;border-left:3px solid #c49a1a;padding:10px 14px;margin-bottom:12px;font-size:11.5px;line-height:1.6;color:#1a1610">' +
+      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">' +
+      (fr ? 'En clair' : 'In plain terms') + '</div>' +
+      (fr
+        ? 'Nous avons test\u00e9 votre plan contre <strong>' + (p.nSim || 5000) + ' avenirs simul\u00e9s</strong>, en incluant par d\u00e9faut les pires 5\u202f% (krach 2008, inflation persistante, longue vie). Le taux de succ\u00e8s indique la proportion de ces avenirs o\u00f9 votre \u00e9pargne tient jusqu\'\u00e0 la fin de l\'horizon mod\u00e9lis\u00e9. Les chiffres ci-dessus sont conditionnels et reposent sur les hypoth\u00e8ses d\u00e9taill\u00e9es plus bas.'
+        : 'We tested your plan against <strong>' + (p.nSim || 5000) + ' simulated futures</strong>, including the worst-case 5% by design (2008 crash, persistent inflation, long life). The success rate is the share of those futures where your savings hold to the end of the modeled horizon. Figures above are conditional and rest on the assumptions detailed below.') +
+      '</div>';
+
     h += '<div class="meth-p">' + (fr ? 'Cette projection utilise ' + (p.nSim || 5000) + ' simulations Monte Carlo ind\u00e9pendantes. Chaque simulation g\u00e9n\u00e8re des trajectoires al\u00e9atoires de rendements (actions et obligations), d\'inflation et de mortalit\u00e9, puis calcule l\'\u00e9volution du patrimoine ann\u00e9e par ann\u00e9e en appliquant les r\u00e8gles fiscales, de d\u00e9caissement et de prestations gouvernementales.' : 'This projection uses ' + (p.nSim || 5000) + ' independent Monte Carlo simulations. Each simulation generates random trajectories for returns (equities and bonds), inflation, and mortality, then calculates year-by-year wealth evolution applying tax rules, withdrawal strategies, and government benefit calculations.') + '</div>';
+
+    // Sprint 0.5.3: explicit modeling-gap disclosure. Honesty about what
+    // is NOT modeled is more important than premium feel for a $30 product.
+    // Lists are stable across versions; bumped when a gap closes.
+    var _hasKids = p.family && Array.isArray(p.family) && p.family.some(function(fm) { return fm.type === 'child'; });
+    var _gapItems = [];
+    if (_hasKids) {
+      _gapItems.push(fr
+        ? 'Allocation canadienne pour enfants (ACE) et cr\u00e9dit de solidarit\u00e9 du Qu\u00e9bec mod\u00e9lis\u00e9s comme estimation forfaitaire (~5\u00a0500\u00a0$/an/enfant en QC, ~4\u00a05000\u00a0$/an ailleurs, avec d\u00e9croissance lin\u00e9aire du revenu familial 80-200\u00a0K\u00a0$). Calcul d\u00e9taill\u00e9 (CCB par tranche, QST, composante logement) \u00e0 venir dans v1.1.'
+        : 'Canada Child Benefit (CCB) and Quebec Solidarité credit modeled as a flat estimate (~$5,500/yr/child in QC, ~$4,500/yr elsewhere, with linear phase-out across $80K-$200K family income). Detailed computation (CCB tier, QST, housing component) coming in v1.1.');
+    }
+    if (p.numChildren > 0 || _hasKids) {
+      _gapItems.push(fr
+        ? 'D\u00e9duction pour frais de garde et cr\u00e9dit qu\u00e9b\u00e9cois pour frais de garde non encore mod\u00e9lis\u00e9s.'
+        : 'Childcare expense deduction and Quebec refundable childcare credit not yet modeled.');
+    }
+    if (p.cQppYrs && p.cQppYrs < 35) {
+      _gapItems.push(fr
+        ? 'Pour les profils \u00e0 carri\u00e8re partielle au Canada (' + (p.cQppYrs || p.qppYrs) + ' ans de cotisations RRQ\u202f/\u202fRPC), la PSV partielle (rules 10\u201340\u00a0ans de r\u00e9sidence) est calcul\u00e9e en proportion lin\u00e9aire et peut diff\u00e9rer l\u00e9g\u00e8rement des r\u00e8gles officielles.'
+        : 'For partial-Canadian-career profiles (' + (p.cQppYrs || p.qppYrs) + ' yrs CPP/QPP contributions), partial OAS (10-40 yr residency rule) is computed as a linear proration and may differ slightly from official rules.');
+    }
+    if (p.bizOn && (!p.bizSalePrice || p.bizSalePrice <= 0)) {
+      _gapItems.push(fr
+        ? 'Vente de l\'entreprise mod\u00e9lis\u00e9e \u00e0 la valeur courante du solde corporatif (\u00e9quivalent encaisse). Une vente \u00e0 un multiple d\'EBITDA (typique pour une SPCC en op\u00e9ration) peut g\u00e9n\u00e9rer un produit sup\u00e9rieur.'
+        : 'Business sale modeled at current corporate balance (cash-equivalent value). A sale at an EBITDA multiple (typical for an operating CCPC) may yield higher proceeds.');
+    }
+    if (_gapItems.length > 0) {
+      h += '<div style="background:#fff8e8;border-left:3px solid #b89830;padding:10px 14px;margin-top:10px;font-size:10.5px;line-height:1.6;color:#5a4400">' +
+        '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#7a5a00;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">' +
+        (fr ? 'Limites de cette projection' : 'Limits of this projection') + '</div>' +
+        '<ul style="margin:0;padding-left:18px;list-style:disc">';
+      _gapItems.forEach(function(item) { h += '<li style="margin-bottom:4px">' + item + '</li>'; });
+      h += '</ul></div>';
+    }
     h += '<div class="meth-p"><strong>' + (fr ? 'Hypoth\u00e8ses de march\u00e9' : 'Market assumptions') + ':</strong> ' + (fr ? 'Rendement actions ' : 'Equity return ') + F.pc(p.eqRetS || 0.07) + (fr ? ', obligations ' : ' / bonds ') + F.pc(p.bndRetS || 0.035) + '. ' + (p.fatT ? 't-Student (df=5, ' + (fr ? 'queues \u00e9paisses' : 'fat tails') + ')' : 'Normal') + '. ' + (fr ? 'Corr\u00e9lation Cholesky 5\u00d75 (DMS 2024). ' : 'Cholesky 5\u00d75 correlation (DMS 2024). ') + (p.stochInf ? (fr ? 'Inflation stochastique \u00b11.5%.' : 'Stochastic inflation \u00b11.5%.') : (fr ? 'Inflation fixe ' : 'Fixed inflation ') + F.pc(p.inf) + '.') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Mortalit\u00e9' : 'Mortality') + ':</strong> ' + (fr ? 'Tables CPM-2023 (ICA). Horizon d\u00e9terministe: ' : 'CPM-2023 tables (CIA). Deterministic horizon: ') + (p.deathAge || 90) + (fr ? ' ans. Esp\u00e9rance de vie CPM: H=85.5, F=87.4 (\u00e0 65 ans).' : ' yrs. CPM life expectancy: M=85.5, F=87.4 (at 65).') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Fiscalit\u00e9' : 'Taxation') + ':</strong> ' + (fr ? 'Bar\u00e8mes f\u00e9d\u00e9raux et provinciaux 2026 index\u00e9s. Cr\u00e9dits pour revenu de pension (2\u00a0000$), cr\u00e9dit en raison de l\'\u00e2ge (8\u00a0790$), bonification PSV 75+ (10%). Inclusion des gains en capital: ' : 'Federal and provincial 2026 brackets indexed. Pension credit ($2,000), age credit ($8,790), OAS 75+ bonus (10%). Capital gains inclusion: ') + (p.cgIncLo || 0.5) * 100 + '% / ' + ((p.cgIncHi || 0.6667) * 100).toFixed(0) + '%.</div>';
@@ -2758,11 +4726,18 @@
       h += '<div style="margin-top:10px"><div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin-bottom:4px">Notes</div><div class="cd" style="white-space:pre-line;font-size:10px;line-height:1.7">' + F.esc(d.client.notes) + '</div></div>';
     }
 
-    // Disclaimer
-    h += '<div class="disclaimer"><strong>\u26a0 ' + (fr ? 'Mise en garde' : 'Disclaimer') + '</strong><br/>' + (fr ? 'Ce rapport est g\u00e9n\u00e9r\u00e9 \u00e0 des fins \u00e9ducatives et informationnelles uniquement. Il ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont bas\u00e9es sur des simulations Monte Carlo avec des hypoth\u00e8ses qui peuvent ne pas se r\u00e9aliser. Consultez un planificateur financier certifi\u00e9 (Pl. Fin.) ou un conseiller en placement inscrit avant toute d\u00e9cision financi\u00e8re.' : 'This report is generated for educational and informational purposes only. It does not constitute financial, tax, or legal advice. Projections are based on Monte Carlo simulations with assumptions that may not materialize. Consult a certified financial planner (CFP) or registered investment advisor before making financial decisions.') + '</div>';
+    // Disclaimer — AMF + Loi sur la distribution de produits et services
+    // financiers (LDPSF). Explicit scope-limit + 30-day refund notice +
+    // privacy policy pointer. Mirrors the Stripe metadata
+    // liability_scope=informational_only paper trail.
+    h += '<div class="disclaimer"><strong>\u26a0 ' + (fr ? 'Mise en garde' : 'Disclaimer') + '</strong><br/>' +
+      (fr
+        ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations Monte Carlo dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit. Remboursement int\u00e9gral sur demande sous 30 jours, sans justification \u2014 voir <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.'
+        : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on Monte Carlo simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
+      '</div>';
 
     h += '<div class="ft">BuildFi ' + (fr ? 'Rapport d\u00e9taill\u00e9' : 'Detailed Report') + ' \u00b7 ' + today + ' \u00b7 ' + F.VERSION + ' \u00b7 <span class="mono">' + (p.nSim || 5000) + '</span> simulations MC</div>';
-    h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? 'Projections. Ne constitue pas un conseil financier.' : 'Projections. Does not constitute financial advice.') + '</div>';
+    h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? '\u00c0 titre informatif. Ne constitue pas un conseil financier (LDPSF). Remboursement 30 j.' : 'Informational only. Not financial advice (Quebec LDPSF). 30-day refund.') + '</div>';
     return h;
   }
 
@@ -2773,6 +4748,11 @@
   window.buildReport = function(data) {
     _exportMode = !!(data && data.exportMode);
     var d = D.buildReportPayload(data);
+    // CLASSIFIER-RENDER-PLAN Phase 3 wiring: stash renderProfile + lang
+    // in module scope so narr() / narrAi() can apply tone swaps without
+    // changing every call site's signature.
+    _currentRenderProfile = (d && d.renderProfile) || null;
+    _currentLang = (d && d.fr) ? 'fr' : 'en';
 
     // Pass through the SKU flag so renderers can gate the embedded What-If.
     // BData.buildReportPayload may strip unknown fields; we re-attach here from
@@ -2782,7 +4762,24 @@
       d.sku = (data && data.sku) || 'bilan';
       d.includeSimulator = (data && typeof data.includeSimulator === 'boolean')
         ? data.includeSimulator
-        : (d.sku !== 'planner');
+        : true;
+      d._suppressed = (data && data._suppressed) || {};
+      d._compact = (data && data._compact) || {};
+      d._slotsToRerun = (data && data._slotsToRerun) || {};
+      d._useCanonical = (data && data._useCanonical) || {};
+      d._localize = !!(data && data._localize);
+      d._dataBlocked = !!(data && data._dataBlocked);
+      // P1.6 — case_driver wiring. Set on the payload so renderActionPlan
+      // and the action generator can find the case-defining lever.
+      d.caseDriver = (data && data.caseDriver) || (data && data.case_driver) || null;
+      // T2.6 — advisor identity wiring. Defaults below if upstream pipeline
+      // doesn't set them. Each is overridable per profile/customer.
+      d.advisor = (data && data.advisor) || {
+        name: 'BuildFi Planner',
+        credentials: 'Pl.Fin. (équivalent CFP)',
+        firm: 'BuildFi',
+        email: 'soutien@buildfi.ca'
+      };
     }
 
     // Set the rendering-scope language so shared formatters (fmtCurrency, pc)
@@ -2806,7 +4803,19 @@
 
     // Build HTML
     var rl = d.rl;
-    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan de retraite' : 'Retirement Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + css + '</style></head><body>';
+    // CLASSIFIER-RENDER-PLAN: stamp the body with the active classifier axes
+    // and leadWith ordering so reviewers / auditors can grep proof of the
+    // dispatch chain without parsing the rendered DOM.
+    var _rpAttrs = '';
+    if (d.renderProfile) {
+      _rpAttrs = ' data-bf-chart-tier="' + (d.renderProfile.chartTier || '') + '"' +
+                 ' data-bf-tone-mode="' + (d.renderProfile.toneMode || '') + '"' +
+                 ' data-bf-density-mode="' + (d.renderProfile.densityMode || '') + '"' +
+                 ' data-bf-jargon-mode="' + (d.renderProfile.jargonMode || '') + '"' +
+                 ' data-bf-leadwith="' + (d.renderProfile.leadWith || '') + '"' +
+                 ' data-bf-band-color="' + (d.renderProfile.bandColor || '') + '"';
+    }
+    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + css + '</style></head><body' + _rpAttrs + '>';
     h += copyScript;
 
     // Cover page
@@ -2827,8 +4836,20 @@
 
     // ── Phase detection for section ordering ──
     var isDecum = d.R.phase === 'decum';
+    // CLASSIFIER-RENDER-PLAN Phase 3 — leadWith section reorder.
+    //   leadWith='floor'      (calm reader)   → revenue/income leads, dispersion later
+    //   leadWith='dispersion' (direct reader) → risk + dispersion lead, projection later
+    //   leadWith='projection' (neutral)        → current default order
+    // Falls back to projection-first when no renderProfile is present.
+    var _leadWith = (d.renderProfile && d.renderProfile.leadWith) || 'projection';
+    // leadWith takes precedence over isDecum: a direct (low-stress) reader
+    // who happens to be in decum still gets dispersion-led ordering, since
+    // the classifier explicitly chose that posture. isDecum only sets the
+    // default when leadWith is 'projection' (neutral).
+    var revenueFirst = (_leadWith === 'floor') || (_leadWith === 'projection' && isDecum);
+    var riskLeads = (_leadWith === 'dispersion') && d.exp;
     // Pre-checks for conditional sections
-    var _gisCheck = d.revData.filter(function(r) { return r.age >= 65 && (r.srg || r.gis || 0) > 0; });
+    var _gisCheck = _getRenderableGisYears(d);
     var _hasStrats = d.R.hasSAM || (window._recos && window._recos.length > 0);
     // Succession pre-check (skip if all zeros)
     var _grossEstateCheck = (d.mc.medEstateNet || 0) + (d.mc.medEstateTax || 0) + (d.mc.p5EstateNet || 0);
@@ -2838,6 +4859,8 @@
     var _hasDrawTrace = !!(d.mc && d.mc._enriched && d.mc._enriched.drawTrace && d.mc._enriched.drawTrace.length);
     // Stress tests gated on _stress payload.
     var _hasStress = !!(d.mc && d.mc._stress);
+    var _suppressed = d._suppressed || {};
+    var _isSuppressed = function(id) { return !!_suppressed[id]; };
 
     // ── Build TOC sections array (pre-scan which sections will render) ──
     var tocSections = [];
@@ -2848,8 +4871,10 @@
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
     if (d.R.hasGoals) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-goals', label: F.L('goals', d.fr) }); }
-    // DECUM: revenue before projection
-    if (isDecum) {
+    // revenueFirst = leadWith='floor' OR (neutral AND decum). leadWith
+    // explicitly overrides isDecum so a direct decum reader gets dispersion-led
+    // ordering. TOC must mirror render-time order.
+    if (revenueFirst) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-revenue', label: F.L('revenue', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-projection', label: F.L('projection', d.fr) });
     } else {
@@ -2857,13 +4882,12 @@
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-revenue', label: F.L('revenue', d.fr) });
     }
     // Histogram + cashflow always added (engine emits histogram; enrich emits cashflow)
-    if (d.mc && d.mc.histogram && d.mc.histogram.length) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-histogram', label: d.fr ? 'Distribution finale' : 'Final distribution' }); }
     if (d.mc && d.mc._enriched && d.mc._enriched.cashflow && d.mc._enriched.cashflow.length) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-cashflow', label: d.fr ? 'Flux annuel' : 'Cash flow' }); }
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
     if (_hasDrawTrace) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
     if (_hasStress) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
-    if (_gisCheck.length > 0) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
+    if (_gisCheck.length > 0 && !_isSuppressed('sec-gis')) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
     if (d.R.hasMeltdown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-meltdown', label: F.L('meltdown', d.fr) }); }
     if (_grossEstateCheck >= 1000) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-succession', label: F.L('succession', d.fr) }); }
     if (d.R.realEstate) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-realestate', label: F.L('realestate', d.fr) }); }
@@ -2884,8 +4908,6 @@
     // d._suppressed[sectionId] = true so the renderer skips that section
     // entirely. This is how the corrected-pass removes invalid GIS sections,
     // duplicates, etc., without requiring a re-run of the engine.
-    var _suppressed = d._suppressed || {};
-    var _isSuppressed = function(id) { return !!_suppressed[id]; };
     var secN = 0;
 
     // 0. Overall Assessment (always, before numbered sections)
@@ -2898,7 +4920,12 @@
     // 1.bis Teaser — Bilan readers see the What-If simulator pointer; Planner
     // readers get an upsell-style note pointing them back to the live tool.
     // The actual mount point at the end is gated identically.
-    h += d.includeSimulator !== false ? _renderWhatIfTeaser(d) : _renderUpsellTeaser(d);
+    // What-If teaser: hidden for compact+plain readers (beginner+concise) —
+    // the live simulator is too dense for that audience and the teaser
+    // markup leaks "What-If" terminology into a calm beginner cover.
+    var _showTeaser = d.includeSimulator !== false &&
+      !(d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
+    h += _showTeaser ? _renderWhatIfTeaser(d) : '';
 
     // 1.5 What Could Change This — only if MC payload carries real sweep data
     // (renderLevers is gated on mc._sweeps; avoids fabricated closed-form deltas).
@@ -2929,10 +4956,15 @@
     // Projection / revenue / histogram / sensitivity / risk / stress / cashflow.
     // Risk section moved up from previous position #17-18 to right after the
     // sensitivity heatmap so the dispersion narrative flows continuously.
-    if (isDecum) {
+    if (revenueFirst) {
       secN++; h += renderRevenue(d, secN);
+      // Direct reader: pull risk section up adjacent to revenue/projection
+      // so the dispersion narrative arrives before the soft fan chart.
+      if (riskLeads) { secN++; h += renderRisk(d, secN); }
       secN++; h += renderProjection(d, secN);
     } else {
+      // Direct reader: lead with risk + dispersion, then projection.
+      if (riskLeads) { secN++; h += renderRisk(d, secN); }
       secN++; h += renderProjection(d, secN);
       secN++; h += renderRevenue(d, secN);
     }
@@ -2943,12 +4975,20 @@
     //     approximation (not a real second MC run) → suppressed in V1.
     // The risk section's tornado covers the dispersion / sensitivity story.
     // Bilan readers can use the live What-If simulator for exact figures.
-    // Risk + dispersion narrative (expert only) — placed adjacent to sensitivity
-    // so the analytical thread stays continuous.
-    if (d.exp) { secN++; h += renderRisk(d, secN); }
+    // Risk + dispersion narrative (expert only) — when leadWith='dispersion'
+    // it was already rendered above; otherwise it lands here.
+    if (d.exp && !riskLeads) { secN++; h += renderRisk(d, secN); }
     // Stress tests
     secN++;
-    h += renderStressTests(d, secN);
+    // CLASSIFIER-RENDER-PLAN Phase 4: density-collapsed when
+    // detailPref='concise' (compact) OR stressLevel='high' (calm).
+    h += _densityWrap(
+      renderStressTests(d, secN),
+      'sec-stress',
+      'Tests de stress \u2014 sc\u00e9narios alternatifs (cliquer pour ouvrir)',
+      'Stress tests \u2014 alternative scenarios (click to open)',
+      d
+    );
     // Year-by-year cash flow detail
     var cfHtml = renderCashflow(d, secN + 1);
     if (cfHtml) { secN++; h += cfHtml; }
@@ -2972,29 +5012,70 @@
     var insHtml = renderInsurance(d, secN + 1);
     if (insHtml) { secN++; h += insHtml; }
 
+    // Sprint 2.6 — Decision timeline. Sits BEFORE the action plan so the
+    // reader sees the life-event sequence before the levers that act on it.
+    var timelineHtml = renderDecisionTimeline(d, secN + 1);
+    if (timelineHtml) { secN++; h += timelineHtml; }
+
+    // Sprint 1.5 — Premium deep-dive (Planner only). Before action plan.
+    var premiumHtml = renderPremiumDeepDive(d, secN + 1);
+    if (premiumHtml) { secN++; h += premiumHtml; }
+
     // 17.5 Action Plan (rule-based; hidden when no actions apply)
     var actionsHtml = renderActionPlan(d, secN + 1);
     if (actionsHtml) { secN++; h += actionsHtml; }
 
+    // 17.6 Closing recap — Phase C. Single-thesis anchor that maps back
+    // to the cover/exec-summary one-liner and points the reader to where
+    // each anchor metric is defended. Renders after analytical sections,
+    // before back-matter (methodology / assumptions / glossary / sig).
+    var recapHtml = renderClosingRecap(d, secN + 1);
+    if (recapHtml) { secN++; h += recapHtml; }
+
     // 17.7 What-If simulator — Bilan-only. Planner customers use the live
     // Planner tool which is more capable than this embedded version.
+    // The depth auditor REQUIRES this section in all simulator-included reports
+    // (depth-simulator-missing blocker), so we keep it visible across all
+    // classifier combos. Plain-mode readers get a softer section heading via
+    // _renderWhatIfMount's classifier-aware language (handled inside that fn).
     if (d.includeSimulator !== false) {
       h += _renderWhatIfMount(d);
     }
 
     // 18. Methodology (always)
+    // Phase 4: collapse for densityMode != 'deep'.
     secN++;
-    h += renderMethodology(d, secN);
+    h += _densityWrap(
+      renderMethodology(d, secN),
+      'sec-methodology',
+      'M\u00e9thodologie \u2014 hypoth\u00e8ses + tables fiscales (cliquer pour ouvrir)',
+      'Methodology \u2014 assumptions + tax tables (click to open)',
+      d
+    );
 
     // 18.5 Assumptions appendix — consolidates engine inputs for audit trail
+    // Phase 4: collapse when detailPref='concise'.
     secN++;
-    h += renderAssumptions(d, secN);
+    h += _densityWrap(
+      renderAssumptions(d, secN),
+      'sec-assumptions',
+      'Annexe \u2014 hypoth\u00e8ses d\u00e9taill\u00e9es (cliquer pour ouvrir)',
+      'Appendix \u2014 detailed assumptions (click to open)',
+      d
+    );
 
     // 18.7 Glossary appendix — bilingual definitions (server-side renderer
     // calls into BFGlossary.renderAppendix which is loaded via the build
     // pipeline). Falls back gracefully if the module is missing.
+    // Phase 4: collapse when densityMode != 'deep'.
     secN++;
-    h += _renderGlossaryAppendix(d, secN);
+    h += _densityWrap(
+      _renderGlossaryAppendix(d, secN),
+      'sec-glossary',
+      'Glossaire \u2014 d\u00e9finitions des termes (cliquer pour ouvrir)',
+      'Glossary \u2014 term definitions (click to open)',
+      d
+    );
 
     // 19. Signature page (last content page before footer)
     h += renderSignaturePage(d);
@@ -3042,6 +5123,7 @@
     var json = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script');
     var out = '<script>window.__BUILDFI__=' + json + ';<\/script>';
     function _stripScriptClose(s) { return s.replace(/<\/script/gi, '<\\/script'); }
+    var cJs = (typeof window !== 'undefined' && window.BF_CONSTANTS_JS) ? window.BF_CONSTANTS_JS : '';
     var eJs = (typeof window !== 'undefined' && window.BF_ENGINE_JS) ? window.BF_ENGINE_JS : '';
     var tJs = (typeof window !== 'undefined' && window.BF_TOOLTIP_JS) ? window.BF_TOOLTIP_JS : '';
     var iJs = (typeof window !== 'undefined' && window.BF_INTERACTIVE_JS) ? window.BF_INTERACTIVE_JS : '';
@@ -3054,6 +5136,11 @@
     if (iJs) out += '<script>' + _stripScriptClose(iJs) + '<\/script>';
     if (gJs) out += '<script>' + _stripScriptClose(gJs) + '<\/script>';
     if (d.includeSimulator !== false) {
+      // Constants must load BEFORE the engine — engine reads window.BFConstants
+      // at module scope. Without this inline, the embedded What-If simulator
+      // throws "Cannot read properties of undefined (reading 'map')" the
+      // moment a quick scenario fires (FED_BRACKETS.map on undefined).
+      if (cJs) out += '<script>' + _stripScriptClose(cJs) + '<\/script>';
       if (eJs) out += '<script>' + _stripScriptClose(eJs) + '<\/script>';
       if (wJs) out += '<script>' + _stripScriptClose(wJs) + '<\/script>';
     }

@@ -320,37 +320,39 @@
     var tScenario = isFR
       ? 'Prudent (P25) = 25 % des simulations terminent sous ce niveau. M\u00e9dian (P50) = le sc\u00e9nario central. Favorable (P75) = 25 % des simulations terminent au-dessus.'
       : 'Cautious (P25) = 25% of simulations end below this level. Median (P50) = central scenario. Favourable (P75) = 25% of simulations end above.';
+    // Sprint 1.5 — Top sticky bar shrunk. Year + scenario controls
+    // migrated to per-chart slicers (income year slicer + MC fan
+    // scenario chips). Top bar keeps only the GLOBAL controls: dollar
+    // mode (Real/Nominal — affects every dollar figure in the report)
+    // + reset. The previous implementation implied global control over
+    // the year + scenario but only ~6 KPIs actually responded — false
+    // promise of interactivity. Now the controls live where they work.
+    // Year slider + scenario badge are still emitted (hidden) so legacy
+    // updateLiveValues() listeners don't break.
     bar.innerHTML =
       '<div class="bf-sticky-inner">' +
         '<div class="bf-group">' +
-          '<span class="bf-label">' + (isFR ? 'Ann\u00e9e de r\u00e9f\u00e9rence' : 'Reference year') + '<span class="bf-info" tabindex="0" title="' + tYear + '" aria-label="' + tYear + '">\u24d8</span></span>' +
-          '<input id="bf-year-slider" type="range" min="' + minAge + '" max="' + maxAge + '" value="' + state.year + '" step="1" aria-label="' + (isFR ? 'S\u00e9lectionner l\'\u00e2ge' : 'Select age') + '">' +
-          '<span id="bf-year-out" class="bf-year-out">' + state.year + (isFR ? ' ans' : ' yrs') + '</span>' +
-        '</div>' +
-        '<div class="bf-group bf-group-divider">' +
           '<span class="bf-label">' + (isFR ? 'Dollars' : 'Dollars') + '<span class="bf-info" tabindex="0" title="' + tDollars + '" aria-label="' + tDollars + '">\u24d8</span></span>' +
           '<div class="bf-toggle" role="group">' +
             '<button type="button" data-bf-mode-btn="real" class="active">' + (isFR ? 'R\u00e9els' : 'Real') + '</button>' +
             '<button type="button" data-bf-mode-btn="nom">' + (isFR ? 'Nominaux' : 'Nominal') + '</button>' +
           '</div>' +
         '</div>' +
-        '<div class="bf-group bf-group-divider">' +
-          '<span class="bf-label">' + (isFR ? 'Sc\u00e9nario affich\u00e9' : 'Displayed scenario') + '<span class="bf-info" tabindex="0" title="' + tScenario + '" aria-label="' + tScenario + '">\u24d8</span></span>' +
-          '<div class="bf-toggle" role="group">' +
-            '<button type="button" data-bf-scen-btn="p25">' + (isFR ? 'Prudent' : 'Cautious') + '</button>' +
-            '<button type="button" data-bf-scen-btn="p50" class="active">' + (isFR ? 'M\u00e9dian' : 'Median') + '</button>' +
-            '<button type="button" data-bf-scen-btn="p75">' + (isFR ? 'Favorable' : 'Favourable') + '</button>' +
-          '</div>' +
-        '</div>' +
-        '<button type="button" id="bf-reset" class="bf-reset" title="' + (isFR ? 'Remettre tous les contr\u00f4les au d\u00e9faut' : 'Reset all controls to default') + '">' +
+        '<button type="button" id="bf-reset" class="bf-reset" title="' + (isFR ? 'Remettre les contr\u00f4les au d\u00e9faut' : 'Reset controls to default') + '">' +
           '<span class="bf-reset-icon">\u21bb</span>' +
           '<span class="bf-reset-text">' + (isFR ? 'R\u00e9initialiser' : 'Reset') + '</span>' +
         '</button>' +
       '</div>' +
       '<div class="bf-sticky-hint">' +
-        '<span>' + (isFR ? 'Glissez, basculez, survolez \u2014 le rapport r\u00e9agit en direct. Impression: fig\u00e9 sur l\'\u00e9tat courant.' : 'Slide, toggle, hover \u2014 the report updates live. Print freezes the current state.') + '</span>' +
-        '<span id="bf-scenario-badge" class="bf-scenario-badge">' + (isFR ? 'Sc\u00e9nario m\u00e9dian (P50) \u2014 la trajectoire centrale' : 'Median scenario (P50) \u2014 central trajectory') + '</span>' +
-      '</div>';
+        '<span>' + (isFR
+          ? 'Le bouton Dollars affecte tout le rapport. Les contr\u00f4les d\'ann\u00e9e et de sc\u00e9nario apparaissent sous chaque graphique concern\u00e9.'
+          : 'The Dollars toggle affects the whole report. Year and scenario controls appear under each chart that supports them.') + '</span>' +
+      '</div>' +
+      // Hidden carriers — keep the legacy DOM hooks alive without showing
+      // them, so updateLiveValues() / scenario_badge listeners don't break.
+      '<input id="bf-year-slider" type="hidden" value="' + state.year + '" />' +
+      '<span id="bf-year-out" style="display:none">' + state.year + '</span>' +
+      '<span id="bf-scenario-badge" style="display:none"></span>';
     document.body.insertBefore(bar, document.body.firstChild);
   }
 
@@ -540,6 +542,22 @@
     // 1. Click on fan chart at any X position → derive year and open modal
     document.querySelectorAll('svg[data-bf-chart="fan"], svg[data-bf-chart="area"]').forEach(function(svg) {
       svg.style.cursor = 'pointer';
+      // Click affordance hint: a small "Cliquez pour le détail" / "Click for
+      // details" badge floats over the top-right of the chart on first
+      // appearance, then fades after 6 seconds. Drives discoverability of
+      // the year drilldown without permanently cluttering the chart.
+      var wrap = svg.parentElement;
+      if (wrap && !wrap.querySelector('.bf-click-hint')) {
+        var hint = document.createElement('div');
+        hint.className = 'bf-click-hint no-print';
+        hint.textContent = isFR ? 'Cliquez sur une année ↓' : 'Click on a year ↓';
+        wrap.style.position = wrap.style.position || 'relative';
+        wrap.appendChild(hint);
+        // Fade out after 6s, but keep on hover.
+        setTimeout(function() {
+          if (hint && hint.parentNode) hint.classList.add('bf-click-hint-fade');
+        }, 6000);
+      }
       svg.addEventListener('click', function(e) {
         var pD = P.pD || [];
         if (!pD.length) return;
@@ -579,6 +597,11 @@
     style.id = 'bf-runtime-styles';
     style.textContent = [
       // ── Drilldown modal
+      // Click affordance hint badge that floats over chart top-right
+      '.bf-click-hint{position:absolute;top:6px;right:8px;background:rgba(196,154,26,0.92);color:#fff;font-family:Inter,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.4px;padding:4px 9px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.18);pointer-events:none;animation:bfHintPulse 2.4s ease-in-out 2;z-index:5;transition:opacity 0.6s ease}',
+      '.bf-click-hint-fade{opacity:0.18}',
+      '.bf-click-hint-fade:hover,svg[data-bf-chart]:hover ~ .bf-click-hint,.chart-block:hover .bf-click-hint{opacity:0.92 !important}',
+      '@keyframes bfHintPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}',
       '.bf-drilldown-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;font-family:Inter,sans-serif}',
       '.bf-drilldown-modal.visible{display:flex}',
       '.bf-drilldown-backdrop{position:absolute;inset:0;background:rgba(26,39,68,0.55);backdrop-filter:blur(2px)}',
@@ -605,26 +628,80 @@
       '.bf-print-toggle button.active{background:#252d39;color:#d2a764}',
       '.bf-print-toggle button:hover:not(.active){background:#f0ece4;color:#1a1610}',
       '@media print{.bf-print-toggle{display:none !important}}',
-      // Executive view — hide deep-dive sections, keep verdict + action.
-      // Hide list (sections that disappear in exec view):
-      '.bf-print-exec #sec-profile,',
-      '.bf-print-exec #sec-family,',
-      '.bf-print-exec #sec-real-estate,',
-      '.bf-print-exec #sec-rsu,',
-      '.bf-print-exec #sec-debt,',
-      '.bf-print-exec #sec-corp,',
-      '.bf-print-exec #sec-gis,',
-      '.bf-print-exec #sec-meltdown,',
-      '.bf-print-exec #sec-projection,',
-      '.bf-print-exec #sec-histogram,',
-      '.bf-print-exec #sec-revenue,',
-      '.bf-print-exec #sec-tax,',
-      '.bf-print-exec #sec-sensitivity,',
-      '.bf-print-exec #sec-strategies,',
-      '.bf-print-exec #sec-risk,',
-      '.bf-print-exec #sec-goals,',
-      '.bf-print-exec #sec-assumptions,',
-      '.bf-print-exec #sec-glossary,',
+      // Phase 4: density-collapsed sections always open on print
+      '@media print{.bf-density-collapse[open],.bf-density-collapse{display:block !important}.bf-density-collapse>summary{list-style:none}.bf-density-collapse>*{display:block !important}}',
+      '.bf-printing .bf-density-collapse,.bf-printing .bf-density-collapse>*{display:block !important}',
+      // CLASSIFIER-RENDER-PLAN Phase 6: View mode CSS
+      // Lite mode: hide premium/advanced visual blocks
+      '.bf-view-lite [data-section-id="sec-stress"],',
+      '.bf-view-lite [data-section-id="sec-sensitivity"],',
+      '.bf-view-lite [data-section-id="sec-risk"],',
+      '.bf-view-lite [data-section-id="sec-premium-deepdive"],',
+      '.bf-view-lite #bf-whatif,',
+      '.bf-view-lite .whatif-teaser-link,',
+      '.bf-view-lite .bf-fan-chips,',
+      '.bf-view-lite .bf-chart-slicer,',
+      '.bf-view-lite [data-section-id="sec-meltdown"]{display:none !important}',
+      // Full mode: force all <details> open + suppress ALL section hides
+      '.bf-view-full .bf-density-collapse>*,.bf-view-full details>*{display:block !important}',
+      // Phase 6 static-print profile (closes Codex HIGH-3 + MED-3):
+      // hides JS/payload/interactive scaffolding for the printed
+      // artifact. Activated by @media print + .bf-printing class.
+      // The runtime ALSO strips data-bf-chart-data attributes from
+      // payload-carrying elements when entering print (see beforeprint
+      // listener) — pure-CSS rules below are belt-and-suspenders.
+      '@media print{',
+      '  .bf-fan-chips,.bf-chart-slicer,.bf-print-toggle,#bf-view-toggle,#bf-sticky-bar,',
+      '  #bf-whatif,.whatif-teaser-link,.bf-drilldown-modal,.no-print{display:none !important}',
+      '  /* Force full view in print regardless of toggle */',
+      '  body.bf-view-lite [data-section-id]{display:block !important}',
+      '  /* Strip script-block fallback rendering (browsers honor this) */',
+      '  script,noscript{display:none !important}',
+      '  /* Phase 6 — system-font fallback so printed PDFs render without',
+      '     a network round-trip to fonts.googleapis.com.',
+      '     Codex MED-3: Google Fonts dependency neutralized at print. */',
+      '  body,h1,h2,h3,p,div,span,td,th{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important}',
+      '  .mono,code,pre,.cover-grade-letter{font-family:"Courier New",Consolas,monospace !important}',
+      '  h1,h2,h3,.cover-title,.cover-client{font-family:Georgia,"Times New Roman",serif !important}',
+      '}',
+      // Executive view — hide deep-dive sections, keep verdict + action +
+      // closing thesis recap. Hide-list selectors target the section
+      // WRAPPER (.sec-page tagged with [data-section-id]) — not the H3
+      // alone. The wrapper tagging is performed at runtime by
+      // _tagSectionPages (see below) since renderer call sites emit
+      // <div class="sec-page"><h3 id="sec-X">...</h3>...content...</div>
+      // and the H3's id was previously the only hook the CSS could grab,
+      // which left content visible. Now [data-section-id="sec-X"] sits
+      // on the .sec-page wrapper itself so display:none hides everything.
+      '.bf-print-exec [data-section-id="sec-profile"],',
+      '.bf-print-exec [data-section-id="sec-family"],',
+      '.bf-print-exec [data-section-id="sec-real-estate"],',
+      '.bf-print-exec [data-section-id="sec-realestate"],',
+      '.bf-print-exec [data-section-id="sec-rsu"],',
+      '.bf-print-exec [data-section-id="sec-debt"],',
+      '.bf-print-exec [data-section-id="sec-corp"],',
+      '.bf-print-exec [data-section-id="sec-gis"],',
+      '.bf-print-exec [data-section-id="sec-meltdown"],',
+      '.bf-print-exec [data-section-id="sec-projection"],',
+      '.bf-print-exec [data-section-id="sec-histogram"],',
+      '.bf-print-exec [data-section-id="sec-revenue"],',
+      '.bf-print-exec [data-section-id="sec-tax"],',
+      '.bf-print-exec [data-section-id="sec-sensitivity"],',
+      '.bf-print-exec [data-section-id="sec-strategies"],',
+      '.bf-print-exec [data-section-id="sec-risk"],',
+      '.bf-print-exec [data-section-id="sec-goals"],',
+      '.bf-print-exec [data-section-id="sec-assumptions"],',
+      '.bf-print-exec [data-section-id="sec-glossary"],',
+      '.bf-print-exec [data-section-id="sec-cashflow"],',
+      '.bf-print-exec [data-section-id="sec-stress"],',
+      '.bf-print-exec [data-section-id="sec-draworder"],',
+      '.bf-print-exec [data-section-id="sec-succession"],',
+      '.bf-print-exec [data-section-id="sec-insurance"],',
+      '.bf-print-exec [data-section-id="sec-levers"],',
+      '.bf-print-exec [data-section-id="sec-diagnostic"],',
+      // sec-closing-recap is intentionally NOT in the hide list — exec
+      // mode KEEPS the thesis recap so the summary print still ends with
+      // the canonical posture statement.
       '.bf-print-exec #bf-whatif,',
       '.bf-print-exec .whatif-teaser-link,',
       '.bf-print-exec .bf-method-foot{display:none !important}',
@@ -754,34 +831,334 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // PRINT PROFILE TOGGLE — executive (terse) vs detailed (full) print views
+  // VIEW TOGGLE — CLASSIFIER-RENDER-PLAN Phase 6 escape hatch.
   // ─────────────────────────────────────────────────────────────────────
+  // Replaces the prior 2-state Detailed/Executive toggle with a 3-state
+  // Lite / Standard / Full toggle. Maps to chartTier on body class:
+  //   .bf-view-lite  → hide tornado, sensitivity, sequence, fan band
+  //   (no class)     → standard (default render)
+  //   .bf-view-full  → show everything, force <details> open
+  // Also wires .bf-print-static class triggered on @media print to:
+  //   • hide all <script> / What-If mounts
+  //   • neutralize data-bf-chart-data attributes (pure CSS)
+  //   • swap Google Fonts link with system-font fallback
+  // localStorage persists user preference across sessions for the same
+  // profile. Print/PDF always renders FULL regardless of in-app pref.
   function _buildPrintToggle() {
-    if (document.getElementById('bf-print-toggle')) return;
-    // Inject the visual feedback banner first (hidden until exec mode)
+    if (document.getElementById('bf-view-toggle')) return;
     if (!document.querySelector('.bf-exec-banner')) {
       var banner = document.createElement('div');
       banner.className = 'bf-exec-banner no-print';
-      banner.textContent = isFR
-        ? 'Vue exécutive active — sections détaillées masquées (cliquer Détaillé pour les revoir)'
-        : 'Executive view active — detailed sections hidden (click Detailed to restore)';
+      banner.style.display = 'none';
       document.body.insertBefore(banner, document.body.firstChild);
     }
     var bar = document.createElement('div');
-    bar.id = 'bf-print-toggle';
+    bar.id = 'bf-view-toggle';
     bar.className = 'bf-print-toggle no-print';
-    bar.innerHTML = '<button type="button" data-bf-print="detailed" class="active" title="' + (isFR ? 'Vue complète — toutes les sections' : 'Full view — all sections') + '">' + (isFR ? 'Détaillé' : 'Detailed') + '</button>' +
-      '<button type="button" data-bf-print="exec" title="' + (isFR ? 'Vue exécutive — sections clés seulement, idéal pour le conseiller' : 'Executive view — key sections only, advisor-style') + '">' + (isFR ? 'Exécutif' : 'Executive') + '</button>';
+    var tLite = isFR ? 'Format court \u2014 r\u00e9sum\u00e9 sans graphiques avanc\u00e9s' : 'Brief format \u2014 summary without advanced charts';
+    var tStd  = isFR ? 'Format standard \u2014 par d\u00e9faut' : 'Standard format \u2014 default';
+    var tFull = isFR ? 'Format complet \u2014 tous les graphiques + sections \u00e9tendues' : 'Full format \u2014 all charts + expanded sections';
+    bar.innerHTML =
+      '<button type="button" data-bf-view="lite" title="' + tLite + '">' + (isFR ? 'Court' : 'Brief') + '</button>' +
+      '<button type="button" data-bf-view="std" class="active" title="' + tStd + '">' + (isFR ? 'Standard' : 'Standard') + '</button>' +
+      '<button type="button" data-bf-view="full" title="' + tFull + '">' + (isFR ? 'Complet' : 'Full') + '</button>';
     document.body.appendChild(bar);
     var btns = bar.querySelectorAll('button');
+    var profileKey = (P && P.meta && P.meta.profileId) ? 'bf-view-' + P.meta.profileId : 'bf-view';
+    function setView(mode) {
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.toggle('active', btns[j].getAttribute('data-bf-view') === mode);
+      }
+      document.body.classList.toggle('bf-view-lite', mode === 'lite');
+      document.body.classList.toggle('bf-view-full', mode === 'full');
+      try { localStorage.setItem(profileKey, mode); } catch (e) {}
+      if (mode !== 'std') window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     for (var i = 0; i < btns.length; i++) {
       btns[i].addEventListener('click', function() {
-        var mode = this.getAttribute('data-bf-print');
-        for (var j = 0; j < btns.length; j++) btns[j].classList.toggle('active', btns[j] === this);
-        document.body.classList.toggle('bf-print-exec', mode === 'exec');
-        // Scroll to top so user sees the banner + cover when switching modes
-        if (mode === 'exec') window.scrollTo({ top: 0, behavior: 'smooth' });
+        setView(this.getAttribute('data-bf-view'));
       });
+    }
+    // Restore saved preference on load
+    try {
+      var saved = localStorage.getItem(profileKey);
+      if (saved === 'lite' || saved === 'full') setView(saved);
+    } catch (e) {}
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // SECTION-PAGE TAGGING (executive-mode hide-list precondition)
+  // ─────────────────────────────────────────────────────────────────────
+  // The renderer emits each section as <div class="sec-page">
+  // <h3 id="sec-X" class="sec">…</h3> …content… </div>. The H3 carries
+  // the section id, but executive mode needs to hide the WHOLE wrapper
+  // (heading + content). This pass walks every H3.sec[id^="sec-"] and
+  // tags its closest .sec-page ancestor with [data-section-id="sec-X"].
+  // CSS in _injectRuntimeStyles uses [data-section-id="..."] selectors.
+  function _tagSectionPages() {
+    var headings = document.querySelectorAll('h3.sec[id^="sec-"]');
+    for (var i = 0; i < headings.length; i++) {
+      var h = headings[i];
+      var page = h.closest ? h.closest('.sec-page') : null;
+      if (page && !page.getAttribute('data-section-id')) {
+        page.setAttribute('data-section-id', h.id);
+      }
+    }
+    // sec-whatif is a div with id (not an H3.sec). Same treatment.
+    var whatif = document.getElementById('bf-whatif');
+    if (whatif && !whatif.hasAttribute('data-section-id')) {
+      whatif.setAttribute('data-section-id', 'sec-whatif');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // PER-CHART SLICERS — rebuild bars on slider change. Only charts with
+  // class="bf-chart-block" + data-bf-chart-data are participating.
+  // Sprint 1.3 patterns: income-sources year slicer.
+  // ─────────────────────────────────────────────────────────────────────
+  function _bindIncomeYearSlicer() {
+    var blocks = document.querySelectorAll('.bf-chart-block[data-bf-chart="income-sources"]');
+    for (var i = 0; i < blocks.length; i++) {
+      (function(block) {
+        var raw = block.getAttribute('data-bf-chart-data') || '';
+        var data; try { data = JSON.parse(decodeURIComponent(raw)); } catch (e) { return; }
+        if (!data || !Array.isArray(data.yearly) || data.yearly.length === 0) return;
+        var slider = block.querySelector('input[data-bf-slicer="income-age"]');
+        var out = block.querySelector('[data-bf-slicer-out="income-age"]');
+        var reset = block.querySelector('[data-bf-slicer-reset="income-age"]');
+        var svgHost = block.querySelector('.bf-chart-svg');
+        if (!slider || !svgHost) return;
+        var fr = data.lang === 'fr';
+        var qLbl = data.qLbl || (fr ? 'RRQ' : 'CPP');
+
+        // Build bars for a specific year (or null = averaged baseline)
+        function buildBars(targetAge) {
+          var rows;
+          if (targetAge == null) {
+            // Average across all yearly snapshots
+            rows = data.yearly[0] ? Object.keys(data.yearly[0]).reduce(function(acc, k) {
+              if (k === 'age') return acc;
+              acc[k] = Math.round(data.yearly.reduce(function(s, r) { return s + (r[k] || 0); }, 0) / data.yearly.length);
+              return acc;
+            }, {}) : {};
+          } else {
+            rows = data.yearly.find(function(r) { return r.age === targetAge; }) || data.yearly[0];
+          }
+          var items = [];
+          if ((rows.rrq || 0) > 0)    items.push({ label: qLbl,                                  value: rows.rrq,  color: '#5b8db8' });
+          if ((rows.psv || 0) > 0)    items.push({ label: 'PSV/OAS',                             value: rows.psv,  color: '#2a8c46' });
+          if ((rows.pen || 0) > 0)    items.push({ label: 'Pension',                             value: rows.pen,  color: '#7c60b8' });
+          if ((rows.srg || 0) > 0)    items.push({ label: 'SRG/GIS',                             value: rows.srg,  color: '#a07a3a' });
+          if ((rows.corp || 0) > 0)   items.push({ label: fr ? 'Dividendes / salaire corp.' : 'Corp dividends / salary', value: rows.corp, color: '#7c60b8' });
+          if ((rows.rental || 0) > 0) items.push({ label: fr ? 'Revenu locatif net' : 'Net rental cash flow', value: rows.rental, color: '#3aa39c' });
+          if ((rows.pt || 0) > 0)     items.push({ label: fr ? 'Travail à temps partiel' : 'Part-time work', value: rows.pt, color: '#5a87b3' });
+          if ((rows.lira || 0) > 0)   items.push({ label: fr ? 'Retraits CRI/LIRA' : 'LIRA withdrawals', value: rows.lira, color: '#7C60B8' });
+          if ((rows.ret || 0) > 0)    items.push({ label: fr ? 'Retraits portefeuille (REER + CELI + NR)' : 'Portfolio withdrawals (RRSP + TFSA + NR)', value: rows.ret, color: '#c49a1a' });
+          if (data.isCouple) {
+            if ((rows.cRrq || 0) > 0) items.push({ label: qLbl + (fr ? ' conj.' : ' sp.'),         value: rows.cRrq, color: '#7390b8' });
+            if ((rows.cPsv || 0) > 0) items.push({ label: 'PSV ' + (fr ? 'conj.' : 'sp.'),          value: rows.cPsv, color: '#6da97a' });
+            if ((rows.cPen || 0) > 0) items.push({ label: fr ? 'Pension conj.' : 'Spouse pension', value: rows.cPen, color: '#9577c8' });
+            if ((rows.cSrg || 0) > 0) items.push({ label: 'SRG ' + (fr ? 'conj.' : 'sp.'),          value: rows.cSrg, color: '#c89a3a' });
+          }
+          // Suppress sub-$1K
+          var below = 0, belowCount = 0;
+          var clean = items.filter(function(it) { if (Math.abs(it.value) < 1000) { below += it.value; belowCount += 1; return false; } return true; });
+          if (belowCount >= 2) clean.push({ label: fr ? 'Divers (<1\u202fK\u202f$)' : 'Misc. (<1K)', value: below, color: '#9aabc7' });
+          var total = clean.reduce(function(s, it) { return s + it.value; }, 0);
+          return { items: clean, total: total };
+        }
+
+        function fmtCompact(v) {
+          if (v >= 1e6) return Math.round(v / 1e5) / 10 + 'M\u202f$';
+          if (v >= 1e3) return Math.round(v / 1e3) + 'K\u202f$';
+          return Math.round(v) + '\u202f$';
+        }
+
+        function renderBars(targetAge) {
+          var built = buildBars(targetAge);
+          var maxVal = Math.max.apply(null, built.items.map(function(it) { return Math.abs(it.value); })) || 1;
+          var titleSuffix = targetAge == null
+            ? (fr ? '(moyenne sur la retraite)' : '(averaged across retirement)')
+            : (fr ? '— ' + targetAge + '\u00a0ans' : '— age ' + targetAge);
+          var html = '<div class="rev-waterfall" style="background:#fafafa;border:1px solid #e5e5e5;border-radius:6px;padding:14px 16px;font-family:Inter,sans-serif;font-size:11px">' +
+            '<div style="font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">' +
+              (fr ? 'Sources de revenus annuelles ' : 'Annual income sources ') + titleSuffix + '</div>';
+          built.items.forEach(function(it) {
+            var w = Math.max(2, (Math.abs(it.value) / maxVal) * 100);
+            html += '<div style="display:grid;grid-template-columns:170px 1fr 80px;gap:10px;align-items:center;padding:4px 0">' +
+              '<div style="text-align:right;color:' + it.color + ';font-weight:600;font-size:10.5px">' + it.label + '</div>' +
+              '<div style="background:#f5f1ea;border-radius:3px;height:14px;overflow:hidden">' +
+                '<div style="height:100%;width:' + w + '%;background:' + it.color + '"></div>' +
+              '</div>' +
+              '<div style="font-family:JetBrains Mono,monospace;font-weight:700;text-align:right;font-size:10.5px">' + fmtCompact(it.value) + '</div>' +
+              '</div>';
+          });
+          html += '<div style="margin-top:8px;padding-top:8px;border-top:2px solid #c49a1a;display:grid;grid-template-columns:170px 1fr 80px;gap:10px;align-items:center;font-weight:700">' +
+            '<div style="text-align:right;color:#c49a1a;letter-spacing:0.5px;text-transform:uppercase;font-size:10px">Total</div>' +
+            '<div></div>' +
+            '<div style="font-family:JetBrains Mono,monospace;text-align:right;font-size:12px;color:#c49a1a">' + fmtCompact(built.total) + '</div>' +
+            '</div>';
+          html += '</div>';
+          svgHost.innerHTML = html;
+        }
+
+        slider.addEventListener('input', function() {
+          var v = parseInt(slider.value, 10);
+          if (out) out.textContent = fr ? v + '\u00a0ans' : v + ' yrs';
+          block.setAttribute('data-bf-chart-mode', 'year');
+          renderBars(v);
+        });
+        if (reset) {
+          reset.addEventListener('click', function() {
+            block.setAttribute('data-bf-chart-mode', 'averaged');
+            if (out) out.textContent = fr ? 'Moyenne' : 'Averaged';
+            slider.value = slider.min;
+            renderBars(null);
+          });
+        }
+      })(blocks[i]);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // MC FAN SCENARIO CHIPS — Sprint 1.4
+  // Each fan chart has 3 chips: Cautious (P25) / Median (P50) /
+  // Favourable (P75). Active chip emphasizes the corresponding trace
+  // and dims the others. Median is default (matches the default render).
+  // ─────────────────────────────────────────────────────────────────────
+  function _bindFanScenarioChips() {
+    // Color anchor table — chip background + chart trace must match so the
+    // "active" cue stays consistent. P25=red (cautious), P50=gold (median),
+    // P75=green (favourable).
+    var MODE_COLOR = {
+      cautious:   '#cc4444',
+      median:     '#c49a1a',
+      favourable: '#2a8c46'
+    };
+    var fans = document.querySelectorAll('svg[data-bf-chart="fan"]');
+    for (var i = 0; i < fans.length; i++) {
+      (function(svg) {
+        var wrap = svg.parentElement;
+        if (!wrap) return;
+        var chipBar = wrap.querySelector('.bf-fan-chips');
+        if (!chipBar) return;
+        var chips = chipBar.querySelectorAll('button[data-bf-fan-chip]');
+        var p25 = svg.querySelector('.bf-fan-p25');
+        var p50 = svg.querySelector('.bf-fan-p50');
+        var p75 = svg.querySelector('.bf-fan-p75');
+        var wideBand = svg.querySelector('.bf-fan-wide-band');
+        var innerBand = svg.querySelector('.bf-fan-inner-band');
+
+        function setActive(mode) {
+          svg.setAttribute('data-bf-fan-active', mode);
+          // Chip styling — active chip background + border match its trace color
+          for (var k = 0; k < chips.length; k++) {
+            var thisMode = chips[k].getAttribute('data-bf-fan-chip');
+            var isThis = thisMode === mode;
+            var col = MODE_COLOR[thisMode] || '#c49a1a';
+            chips[k].classList.toggle('bf-fan-chip-active', isThis);
+            chips[k].style.background = isThis ? col : 'transparent';
+            chips[k].style.color = isThis ? '#fff' : '#706558';
+            chips[k].style.borderColor = isThis ? col : '#e8e0d4';
+            chips[k].style.fontWeight = isThis ? '700' : '600';
+          }
+          // Aggressive dim on non-focused mode: hide bands almost entirely
+          // and zero the unfocused traces. Median view shows full bands;
+          // cautious/favourable focus a single line so the user can read it.
+          if (mode === 'cautious') {
+            if (p25) { p25.setAttribute('opacity', '1'); p25.setAttribute('stroke-width', '3.5'); }
+            if (p50) { p50.setAttribute('opacity', '0.12'); p50.setAttribute('stroke-width', '1'); }
+            if (p75) { p75.setAttribute('opacity', '0'); }
+            if (wideBand) wideBand.setAttribute('opacity', '0.02');
+            if (innerBand) innerBand.setAttribute('opacity', '0.04');
+          } else if (mode === 'favourable') {
+            if (p25) { p25.setAttribute('opacity', '0'); }
+            if (p50) { p50.setAttribute('opacity', '0.12'); p50.setAttribute('stroke-width', '1'); }
+            if (p75) { p75.setAttribute('opacity', '1'); p75.setAttribute('stroke-width', '3.5'); }
+            if (wideBand) wideBand.setAttribute('opacity', '0.02');
+            if (innerBand) innerBand.setAttribute('opacity', '0.04');
+          } else {
+            // median (default) — show full bands, P50 prominent
+            if (p25) { p25.setAttribute('opacity', '0'); }
+            if (p50) { p50.setAttribute('opacity', '1'); p50.setAttribute('stroke-width', '2.5'); }
+            if (p75) { p75.setAttribute('opacity', '0'); }
+            if (wideBand) wideBand.setAttribute('opacity', '0.1');
+            if (innerBand) innerBand.setAttribute('opacity', '0.15');
+          }
+
+          // Year-end value label: anchor a $-value tag on the active trace's
+          // last point so the reader can read the trajectory's end-state at
+          // a glance. Removed and re-attached on every chip click.
+          var oldLabel = svg.querySelector('.bf-fan-end-label');
+          if (oldLabel) oldLabel.parentNode.removeChild(oldLabel);
+          var activePath = mode === 'cautious' ? p25 : (mode === 'favourable' ? p75 : p50);
+          if (activePath) {
+            try {
+              var data = JSON.parse((svg.getAttribute('data-bf-chart-data') || '[]').replace(/&quot;/g, '"'));
+              var last = data[data.length - 1];
+              var v = mode === 'cautious' ? last.p25 : (mode === 'favourable' ? last.p75 : last.p50);
+              if (v != null && isFinite(v)) {
+                // Read end point by deterministic d-attribute parse. Path is
+                // built by the renderer as "M<x>,<y> L<x>,<y> ... L<x>,<y>"
+                // so the last numeric pair is unambiguous. Match every
+                // "<digits>.<digits>,<digits>.<digits>" coordinate pair and
+                // take the LAST one.
+                var dStr = activePath.getAttribute('d') || '';
+                var pairs = dStr.match(/-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?/g);
+                var endPt = null;
+                if (pairs && pairs.length > 0) {
+                  var parts = pairs[pairs.length - 1].split(',');
+                  endPt = { x: parseFloat(parts[0]), y: parseFloat(parts[1]) };
+                }
+                if (endPt && isFinite(endPt.x) && isFinite(endPt.y)) {
+                  var ex = endPt.x;
+                  var ey = endPt.y;
+                  var color = MODE_COLOR[mode] || '#c49a1a';
+                  var fmt = function(n) {
+                    if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M$';
+                    if (Math.abs(n) >= 1e3) return Math.round(n/1e3) + 'K$';
+                    return Math.round(n) + '$';
+                  };
+                  var label = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                  label.setAttribute('class', 'bf-fan-end-label');
+                  var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                  var txt = fmt(v);
+                  var tw = txt.length * 6.2 + 10;
+                  rect.setAttribute('x', (ex - tw - 4).toString());
+                  rect.setAttribute('y', (ey - 9).toString());
+                  rect.setAttribute('width', tw.toString());
+                  rect.setAttribute('height', '18');
+                  rect.setAttribute('rx', '3');
+                  rect.setAttribute('fill', color);
+                  rect.setAttribute('opacity', '0.95');
+                  label.appendChild(rect);
+                  var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                  t.setAttribute('x', (ex - 9).toString());
+                  t.setAttribute('y', (ey + 4).toString());
+                  t.setAttribute('text-anchor', 'end');
+                  t.setAttribute('fill', '#fff');
+                  t.setAttribute('font-size', '10');
+                  t.setAttribute('font-weight', '700');
+                  t.setAttribute('font-family', 'JetBrains Mono,monospace');
+                  t.textContent = txt;
+                  label.appendChild(t);
+                  svg.appendChild(label);
+                }
+              }
+            } catch (e) { /* no-op: label is decorative */ }
+          }
+        }
+
+        for (var c = 0; c < chips.length; c++) {
+          (function(btn) {
+            btn.addEventListener('click', function() {
+              setActive(btn.getAttribute('data-bf-fan-chip'));
+            });
+          })(chips[c]);
+        }
+        // Initialize to median (matches default opacities)
+        setActive('median');
+      })(fans[i]);
     }
   }
 
@@ -790,15 +1167,38 @@
   // ─────────────────────────────────────────────────────────────────────
   function boot() {
     _injectRuntimeStyles();
+    _tagSectionPages();
     _buildStickyBar();
     _buildPrintToggle();
     _bindControls();
     _bindActionToggles();
     _wireDrilldownTriggers();
+    _bindIncomeYearSlicer();
+    _bindFanScenarioChips();
     updateLiveValues();
     // Freeze state on print — capture current values into static text
-    window.addEventListener('beforeprint', function() { document.body.classList.add('bf-printing'); });
-    window.addEventListener('afterprint', function() { document.body.classList.remove('bf-printing'); });
+    // CLASSIFIER-RENDER-PLAN Phase 6 (closes Codex HIGH-3): strip
+    // chart-data payload attributes during print so the printed-as-PDF
+    // artifact does not carry the embedded JSON. The originals are
+    // re-attached afterprint so interactive features keep working.
+    window.addEventListener('beforeprint', function() {
+      document.body.classList.add('bf-printing');
+      var nodes = document.querySelectorAll('[data-bf-chart-data]');
+      for (var i = 0; i < nodes.length; i++) {
+        var v = nodes[i].getAttribute('data-bf-chart-data');
+        if (v) nodes[i].setAttribute('data-bf-chart-data-saved', v);
+        nodes[i].setAttribute('data-bf-chart-data', '');
+      }
+    });
+    window.addEventListener('afterprint', function() {
+      document.body.classList.remove('bf-printing');
+      var nodes = document.querySelectorAll('[data-bf-chart-data-saved]');
+      for (var i = 0; i < nodes.length; i++) {
+        var saved = nodes[i].getAttribute('data-bf-chart-data-saved');
+        if (saved) nodes[i].setAttribute('data-bf-chart-data', saved);
+        nodes[i].removeAttribute('data-bf-chart-data-saved');
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

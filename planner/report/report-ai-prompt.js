@@ -85,6 +85,12 @@
     '- "concise": MAX 2 sentences per slot. Strip qualifying clauses. Use short sentences.\n' +
     '- "balanced": 2-3 sentences per slot.\n' +
     '- "detailed": 2-4 sentences per slot (max 5 for overall_assessment).\n\n' +
+    '## RENDER PROFILE & OMITTED BLOCKS — CLASSIFIER-RENDER-PLAN Phase 5\n' +
+    'The DATA section contains `renderProfile` (chart_tier, tone_mode, density_mode, jargon_mode) and `omittedBlocks` (an array of section IDs the renderer hid for this reader).\n' +
+    '- Do NOT reference any block listed in `omittedBlocks`. The reader will not see it.\n' +
+    '- Examples: if `omittedBlocks` contains `tornado`, do not write "as the sensitivity tornado shows". If it contains `oas_clawback`, do not mention OAS clawback at all.\n' +
+    '- Do NOT reference "the percentile fan above" or "the chart at the top" if `chart_tier=\'lite\'` — those visuals are replaced by prose.\n' +
+    '- If `jargon_mode=\'plain\'`, never use: alpha, t-Student, P25/P50/P75, Monte Carlo (use "simulated futures"), engine output, sequence-of-returns (use "order of returns").\n\n' +
     '## STYLE\n' +
     '- Professional but warm. Not robotic.\n' +
     '- Use bold (**text**) for key numbers — and only for numbers that appear in DATA verbatim.\n' +
@@ -132,6 +138,32 @@
     '- FIRE-seeker: focus on the "hinge age" — earliest age the plan holds. Discuss the 2-3 adjustments that buy the most freedom. Sequence-of-returns over a 50-year horizon.\n' +
     '- Debt-heavy / young: do NOT just diagnose failure. Frame a recovery trajectory: phase 1 stabilize cash flow; phase 2 deleverage high-rate debt; phase 3 rebuild savings capacity; phase 4 re-plan goals. The reader should feel a path forward, not an obituary.\n' +
     'Each archetype has its own RHYTHM. Do not write the same arc for all.\n\n' +
+    '## CASE-DRIVER MANDATE (P1.6) — MANDATORY\n' +
+    'The DATA block carries a `case_driver` field. This is the SINGLE MOST CASE-DEFINING LEVER for this profile, set by the pipeline. The auditors will verify two things:\n' +
+    '1. The `advisor_letter` AND/OR `overall_assessment` slot must explicitly NAME the concept this case_driver represents. Use one of the natural-language tokens listed below in at least one of those two slots.\n' +
+    '2. The first lever in the action plan section will be enforced by the renderer to align with the case_driver. Your `best_move_explainer` (or equivalent action-oriented slot) must lead with that same case_driver lever.\n\n' +
+    'CASE_DRIVER TOKEN MAP (use any natural form, not literal):\n' +
+    '- **ccpc_extraction** → "extraction order", "salary vs dividend", "CCPC integration", "corp distributions" / "ordre d\'extraction", "salaire vs dividende", "intégration CCPC".\n' +
+    '- **rental_cashflow** → "rental cash flow", "tenant strategy", "property maintenance window", "duplex/plex" / "flux locatif", "loyer", "renouvellement hypothécaire".\n' +
+    '- **gis_trap** → "GIS trap", "50¢-per-dollar clawback", "eligibility threshold" / "piège SRG", "récupération à 50 ¢", "seuil d\'admissibilité".\n' +
+    '- **fire_bridge** → "bridge years", "pre-CPP horizon", "sequence-of-returns window" / "zone-pont", "horizon avant 65 ans", "fenêtre séquentielle".\n' +
+    '- **db_pension_split** → "DB pension splitting", "indexed pension", "couple income shifting" / "fractionnement pension PD", "indexée à vie", "transfert conjugal".\n' +
+    '- **meltdown_window** → "meltdown window", "RRIF conversion at 72", "accelerated RRSP withdrawal" / "fenêtre de meltdown", "conversion FERR à 72", "retraits accélérés".\n' +
+    '- **debt_paydown** → "high-rate debt", "structured paydown", "guaranteed return" / "remboursement structuré", "taux élevé", "rendement garanti".\n' +
+    '- **gap_savings** → "savings rate", "annual contribution gap", "pre-retirement runway" / "taux d\'épargne", "écart de cotisation".\n' +
+    '- **hnw_estate** → "estate transfer", "second-spouse death tax", "RRSP-on-death deemed disposition" / "transmission successorale", "imp\u00f4t au d\u00e9c\u00e8s du second conjoint".\n' +
+    '- **late_start_savings** → "catch-up program", "delay retirement window", "deferred CPP/OAS to 70" / "rattrapage", "report RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans".\n' +
+    '- **single_parent_resilience** → "emergency fund", "term life coverage", "disability insurance", "single-income resilience" / "fonds d\'urgence", "assurance vie temporaire", "r\u00e9silience monoparentale".\n' +
+    'Without naming the case_driver concept in the opening slots, the entire report thesis lacks case-specific framing. The narration-auditor flags this; the report does not ship.\n\n' +
+    '## TONE-vs-SUCCESS GUARD (Codex review pattern) — MANDATORY\n' +
+    'A reader who sees "solid plan / strong fundamentals" in the opening slots while the success rate is 7 % loses trust immediately. The grade band drives the rhetorical posture (already detailed in TONE BY GRADE above), but in addition:\n' +
+    '- When `successRate < 50 %`: NEVER use the words "solid", "robust", "strong", "fort", "robuste", "solide", "fiable", "stable", "sain" in advisor_letter / overall_assessment / verdict / page_zero_verdict slots without an explicit qualifier ("solid X but fragile Y", "robuste sur le plan X, à risque sur le plan Y").\n' +
+    '- When `successRate < 25 %`: open the assessment with the diagnosis, not reassurance. "This plan faces significant challenges" is appropriate; "solid plan" is not.\n' +
+    '- When `successRate ≥ 90 %`: still name at least one zone of vigilance per the A/A+ rule. A glowing report reads simplistic and erodes trust as much as a paradox.\n\n' +
+    '## SUCCESS-RATE DISPLAY GUARD\n' +
+    'Use the SAME success-rate string the renderer surfaces (the DATA block "successRate" field). The renderer applies <1% / ≥99% boundaries — so when DATA says "<1%" or "≥99%", quote that wording, not "0%" or "100%". Numeric rounding errors in narration break the cover/section reconciliation.\n\n' +
+    '## DISPERSION DRIVER MANDATE (B7) — when |dispersion_pts| ≥ 15\n' +
+    'When the DATA block reports `dispersion_pts ≥ 15`, the risk narration must NAME the dominant driver of the spread. Allowed drivers (use one or two): sequence-of-returns / inflation / longevity / spending variance / allocation choice / market volatility. Pure number-quoting without naming a driver gets flagged as narration_dispersion_driver_missing.\n\n' +
     '## COVERAGE METRIC GUARD — NEVER INTRODUCE COMPETING DEFINITIONS\n' +
     '- The DATA section provides ONE coverage number: `guaranteed_income_coverage`. It includes CPP/QPP + OAS + GIS + employer pension. It EXCLUDES portfolio withdrawals.\n' +
     '- DO NOT compute or quote any other coverage percentage. NEVER write "government coverage X%" or "couverture gouvernementale Y%" with a different number than `guaranteed_income_coverage`.\n' +
@@ -178,6 +210,13 @@
     var _missingCore = Object.keys(_coreFields).filter(function(k) { return _coreFields[k] === null; });
     var _coreInvalid = _missingCore.length > 0;
 
+    // P1.6/B7 — surface the case_driver and dispersion to the AI so it can
+    // honor the CASE-DRIVER and DISPERSION DRIVER mandates in the system prompt.
+    var _caseDriver = d.caseDriver || (d.profile && d.profile.case_driver) || null;
+    var _dispPts = (mc && mc.succP75 != null && mc.succP25 != null)
+      ? Math.round((mc.succP75 - mc.succP25) * 100)
+      : null;
+
     var data = {
       lang: fr ? 'fr' : 'en',
       phase: d.R.phase,
@@ -190,11 +229,25 @@
       province: p.prov || 'QC',
       yearsToRetirement: Math.max(0, p.retAge - p.age),
       horizon: (p.deathAge || 90) - p.age,
+      // CLASSIFIER-RENDER-PLAN Phase 5: surface renderProfile + omitted
+      // blocks so the AI never references analyses the renderer hid.
+      // The system prompt's anti-repetition + per-archetype arc rules
+      // already key off finLiteracy/stress/detail — adding renderProfile
+      // and omittedBlocks lets the prompt strictly enforce "do not
+      // mention these blocks: [list]" when the renderer omits them.
+      renderProfile: d.renderProfile || null,
+      omittedBlocks: d._omittedBlocks || [],
       narrativePreferences: {
         finLiteracy: d.finLiteracy || p.finLiteracy || 'intermediate',
         stressLevel: d.stressLevel || p.stressLevel || 'moderate',
         detailPreference: d.detailPref || p.detailPref || 'balanced'
       },
+      // P1.6 — case_driver mandate. AI must name this concept in advisor_letter
+      // OR overall_assessment. Auditor verifies post-render.
+      case_driver: _caseDriver,
+      // B7 — dispersion driver mandate. When |dispersion_pts| >= 15, the AI
+      // must name a driver (sequence/inflation/longevity/spending/allocation/markets).
+      dispersion_pts: _dispPts,
 
       // Savings
       totalSavings: f$(d.totalBal),
@@ -203,7 +256,19 @@
       nr: f$(p.nr || 0),
 
       // MC results
-      successRate: _coreFields.succVal == null ? 'pending' : Math.round(_coreFields.succVal * 100) + '%',
+      successRate: (function() {
+        // Mirror the renderer's _fmtSucc helper so the AI quotes the same
+        // boundary-aware string the reader will see: "<1%" / "≥99%" /
+        // "100%" / nearest whole percent. Eliminates the 0.8% → "1%"
+        // rounding mismatch the user audit flagged.
+        var v = _coreFields.succVal;
+        if (v == null) return 'pending';
+        var pct = v * 100;
+        if (pct > 0 && pct < 1) return '<1%';
+        if (pct >= 99 && pct < 100) return '≥99%';
+        if (pct >= 100) return '100%';
+        return Math.round(pct) + '%';
+      })(),
       grade: window.BFmt.grade(_coreFields.succVal, fr).letter,
       gradeLabel: window.BFmt.grade(_coreFields.succVal, fr).label,
       p50Wealth: _finStr(f$, _coreFields.medF),

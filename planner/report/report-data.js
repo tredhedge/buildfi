@@ -8,20 +8,25 @@
   // NAMED CONSTANTS (2026 PAG) — mirrors planner_v2.html engine
   // ══════════════════════════════════════════════════════════════
 
-  var TAX_BASE_YEAR = 2026;
-  var FED_BRACKETS = [58523, 117045, 181440, 258482];
-  var FED_RATES = [0.14, 0.205, 0.26, 0.29, 0.33];
-  var FED_PERSONAL = 16452;
-  var OAS_CLAWBACK_THR = 95323;
-  var OAS_MAX_MONTHLY = 742.31;
-  var GIS_MAX_SINGLE = 1105.43;
-  var GIS_MAX_COUPLE = 667.41;
-  var QPP_MAX_MONTHLY = 1507.65;
-  var QPP_MGA = 74600;
-  var QPP_YAMPE = 85000;
-  var QPP2_MAX_MONTHLY = 81.00;
-  var PENSION_CREDIT_MAX = 2000;
-  var TFSA_LIMIT_2026 = 7000;
+  // ── A0: SINGLE SOURCE OF TRUTH ──────────────────────────────────────
+  // Read from window.BFConstants (loaded by report/report-constants-2026.js).
+  // No inline literal allowed here. Drift: GIS_MAX_COUPLE was 667.41 vs
+  // canon 665.41 — fixed at the shim. To update: edit the shim ONLY.
+  var _C = (typeof window !== 'undefined' && window.BFConstants) ? window.BFConstants : (typeof global !== 'undefined' && global.BFConstants ? global.BFConstants : {});
+  var TAX_BASE_YEAR = _C.TAX_BASE_YEAR;
+  var FED_BRACKETS = _C.FED_BRACKETS;
+  var FED_RATES = _C.FED_RATES;
+  var FED_PERSONAL = _C.FED_PERSONAL;
+  var OAS_CLAWBACK_THR = _C.OAS_CLAWBACK_THR;
+  var OAS_MAX_MONTHLY = _C.OAS_MAX_MONTHLY;
+  var GIS_MAX_SINGLE = _C.GIS_MAX_SINGLE;
+  var GIS_MAX_COUPLE = _C.GIS_MAX_COUPLE;
+  var QPP_MAX_MONTHLY = _C.QPP_MAX_MONTHLY;
+  var QPP_MGA = _C.QPP_MGA;
+  var QPP_YAMPE = _C.QPP_YAMPE;
+  var QPP2_MAX_MONTHLY = _C.QPP2_MAX_MONTHLY;
+  var PENSION_CREDIT_MAX = _C.PENSION_CREDIT_MAX;
+  var TFSA_LIMIT_2026 = _C.TFSA_LIMIT_2026;
 
   var CFG_SMOOTH = {
     MELT: 0.40, MELT_FLOOR: 5000,
@@ -71,21 +76,8 @@
   // PROVINCIAL TAX BRACKETS (2026)
   // ══════════════════════════════════════════════════════════════
 
-  var PROV_TAX = {
-    QC: { b: [54345, 108730, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362, ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
-    ON: { b: [53891, 107785, 15e4, 22e4], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863, ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
-    BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196, ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
-    AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218, ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
-    SK: { b: [54532, 155805], r: [0.105, 0.125, 0.145], pd: 20381, abate: 1, eligDivCr: 0.11, nonEligDivCr: 0.02105, ageAmt: 5518, ageThresh: 0, penAmt: 1000 },
-    MB: { b: [47e3, 1e5], r: [0.108, 0.1275, 0.174], pd: 15780, abate: 1, eligDivCr: 0.08, nonEligDivCr: 0.007835, ageAmt: 3728, ageThresh: 0, penAmt: 1000 },
-    NB: { b: [51306, 102614, 190081], r: [0.094, 0.14, 0.16, 0.195], pd: 13396, abate: 1, eligDivCr: 0.14, nonEligDivCr: 0.027518, ageAmt: 5849, ageThresh: 42553, penAmt: 1000 },
-    NS: { b: [30182, 60364, 94860, 153000], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 8651, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015, ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
-    PE: { b: [33538, 67079], r: [0.098, 0.138, 0.167], pd: 13865, abate: 1, eligDivCr: 0.105, nonEligDivCr: 0.013, ageAmt: 4862, ageThresh: 0, penAmt: 1000 },
-    NL: { b: [44062, 88123, 157329, 220262, 281387, 562714], r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], pd: 11034, abate: 1, eligDivCr: 0.063, nonEligDivCr: 0.032, ageAmt: 7742, ageThresh: 39880, penAmt: 1000 },
-    NT: { b: [51963, 103931, 169067], r: [0.059, 0.086, 0.122, 0.1405], pd: 17041, abate: 1, eligDivCr: 0.115, nonEligDivCr: 0.06, ageAmt: 8200, ageThresh: 0, penAmt: 1000 },
-    YT: { b: [58523, 117045, 181440, 258482, 500000], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067, ageAmt: 8790, ageThresh: 44325, penAmt: 2000 },
-    NU: { b: [54333, 108668, 177231], r: [0.04, 0.07, 0.09, 0.115], pd: 18284, abate: 1, eligDivCr: 0.0551, nonEligDivCr: 0.025904, ageAmt: 14865, ageThresh: 0, penAmt: 2000 }
-  };
+  // PROV_TAX from canonical shim. A0 — single source of truth.
+  var PROV_TAX = _C.PROV_TAX;
 
   // ══════════════════════════════════════════════════════════════
   // calcTax — Federal + provincial tax with dividend credits
@@ -334,14 +326,35 @@
     // Path-derived steady state: average across retirement years where both QPP and OAS are flowing.
     // This keeps the KPI band, snapshot text, and revenue chart numerically aligned.
     var _retPathRows = revData.filter(function(r) { return (r.age || 0) >= (retAge || 65); });
-    var _bothOnRows = _retPathRows.filter(function(r) { return (r.rrq || 0) > 0 && (r.psv || 0) > 0; });
-    var _useRows = _bothOnRows.length > 0 ? _bothOnRows : _retPathRows;
+    // Codex audit found rendered coverage diverged from canonical because
+    // we previously averaged ONLY over rows where both primary CPP and OAS
+    // were firing (skipping early-retirement years). Canonical contract
+    // averages over ALL retirement rows. Aligning here so the same number
+    // appears in cover, KPI, narrative, and review-pack.
+    var _useRows = _retPathRows;
+    // P1.1 (data plumbing) — guaranteed income is HOUSEHOLD: primary + spouse
+    // public benefits + employer pension. The "Cher reader sees a 41% coverage
+    // because the report computed primary-only" bug was caused by ignoring
+    // r.cRrq / r.cPsv / r.cSrg / r.cPen here. Fixed.
     var govY, spendY, qppM, oasM;
+    // ── A3: govY / spendY now use scope-tagged engine fields ────────
+    // spend_target (target spending) is the canonical denominator. The
+    // legacy `r.spend` field (= funded) is a back-compat fallback only;
+    // when both are present, target wins. Numerator sums household
+    // public benefits + employer pension across both spouses.
     if (_useRows.length > 0) {
-      govY = _useRows.reduce(function(s, r) { return s + (r.rrq || 0) + (r.psv || 0) + (r.pen || 0); }, 0) / _useRows.length;
-      spendY = _useRows.reduce(function(s, r) { return s + (r.sp || r.spending || r.spend || 0); }, 0) / _useRows.length;
-      qppM = _useRows.reduce(function(s, r) { return s + (r.rrq || 0); }, 0) / _useRows.length / 12;
-      oasM = _useRows.reduce(function(s, r) { return s + (r.psv || 0); }, 0) / _useRows.length / 12;
+      govY = _useRows.reduce(function(s, r) {
+        return s
+          + (r.rrq || 0) + (r.psv || 0) + (r.srg || r.gis || 0) + (r.pen || 0)
+          + (r.cRrq || 0) + (r.cPsv || 0) + (r.cSrg || 0) + (r.cPen || 0);
+      }, 0) / _useRows.length;
+      // Codex finding 3: use spend_target (engine A1+A2) so coverage
+      // doesn't flatter when plan is starving.
+      spendY = _useRows.reduce(function(s, r) {
+        return s + (r.spend_target != null ? r.spend_target : (r.sp || r.spending || r.spend || 0));
+      }, 0) / _useRows.length;
+      qppM = _useRows.reduce(function(s, r) { return s + (r.rrq || 0) + (r.cRrq || 0); }, 0) / _useRows.length / 12;
+      oasM = _useRows.reduce(function(s, r) { return s + (r.psv || 0) + (r.cPsv || 0); }, 0) / _useRows.length / 12;
     } else {
       govY = (_qppSnap + _oasSnap + (p.cOn ? cQppM + cOasM : 0)) * 12;
       spendY = totalSpM * 12;
@@ -355,17 +368,49 @@
     // MER weighted
     var merWt = totalBal > 0 ? ((p.merR || 0) * (p.rrsp || 0) + (p.merT || 0) * (p.tfsa || 0) + (p.merN || 0) * (p.nr || 0)) / Math.max(1, (p.rrsp || 0) + (p.tfsa || 0) + (p.nr || 0)) : 0;
 
-    // Tax alpha
-    var _optTax = revData.reduce(function(s, r) { return s + (r.tax || 0); }, 0);
+    // ── A3: Tax metrics now use scope-tagged household fields ────────
+    // _optTax (legacy name, kept for backward compat) = household tax
+    // sum on the modeled retirement horizon. avgEffRate denominator now
+    // uses taxInc_household (Codex finding 2: previously household-tax
+    // / primary-taxable-income gave nonsense ratio).
+    var _optTax = revData.reduce(function(s, r) {
+      return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0);
+    }, 0);
+    // Defect 4 cross-section fix: real-dollar deflated household tax,
+    // matching review-contract.js lifetime_tax_real exactly. The legacy
+    // _optTax is NOMINAL sum (compounds inflation). Sections that quote
+    // "lifetime tax" to the reader (closing recap, tax narrative) MUST
+    // use _optTaxReal so the value reconciles across the report and
+    // matches the canonical metric the auditor enforces.
+    var _optTaxReal = revData.reduce(function(s, r) {
+      if (r.age < (p.retAge || 65)) return s;
+      var infY = Math.pow(1 + (p.inf || 0.021), r.age - (p.age || 0));
+      return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0) / infY;
+    }, 0);
     var _naiveTax = 0;
     var _hasNaive = p.wStrat === "optimized" && mc._naiveMC && mc._naiveMC.medRevData;
-    if (_hasNaive) _naiveTax = (mc._naiveMC.medRevData || []).reduce(function(s, r) { return s + (r.tax || 0); }, 0);
+    if (_hasNaive) {
+      _naiveTax = (mc._naiveMC.medRevData || []).reduce(function(s, r) {
+        return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0);
+      }, 0);
+    }
     var _taxAlpha = _hasNaive ? _naiveTax - _optTax : null;
-    var avgEffRate = _optTax > 0 ? _optTax / Math.max(1, revData.reduce(function(s, r) { return s + (r.taxInc || 0); }, 0)) : 0;
+    var avgEffRate = _optTax > 0
+      ? _optTax / Math.max(1, revData.reduce(function(s, r) {
+          return s + ((r.taxInc_household != null ? r.taxInc_household : r.taxInc) || 0);
+        }, 0))
+      : 0;
     var oasClbkYrs = revData.filter(function(r) {
       var yr = Math.max(0, (r.age || 0) - age);
-      var thr = OAS_CLAWBACK_THR * Math.pow(1 + (p.inf || 0.02), yr);
-      return (r.taxInc || 0) > thr;
+      // Inflation default 0.021 — must match review-contract.js so the
+      // canonical and renderer compute identical OAS clawback counts.
+      var thr = OAS_CLAWBACK_THR * Math.pow(1 + (p.inf || 0.021), yr);
+      // Use taxInc_primary for OAS clawback (OAS clawback applies per-
+      // person on Line 23600, NOT on household-summed income). For
+      // couple profiles, household sum overstated clawback. Codex
+      // finding 1: same metric had different values across sections.
+      var personInc = (r.taxInc_primary != null ? r.taxInc_primary : (r.taxInc || 0));
+      return personInc > thr;
     }).length;
 
     // Fee impact
@@ -414,6 +459,146 @@
     var _fn = (client.firstName || (client.name || '').split(/\s+/)[0] || '').trim();
     var _sfn = (client.spouseFirstName || (client.spouseName || p.cSpouseName || '').split(/\s+/)[0] || '').trim();
 
+    // ── Hero Score (composite 0-100) ─────────────────────────────────
+    // Formula spec — locked, deterministic, NO Monte Carlo variance.
+    // Same profile must always score the same. Each component traces
+    // to a canonical metric or directly observable input. Bands are
+    // defined by thresholds the thesis-coherence-auditor recognizes.
+    //
+    // Components (5):
+    //   • plan_resilience   (40%) = success_rate × 100
+    //   • savings_rate      (20%) = annual contributions / gross income,
+    //                                normalized to 25% = 100. Above 25% caps.
+    //   • tax_efficiency    (15%) = 100 − (avgEffRate × 200), capped 0-100.
+    //                                A 20% effective rate scores 60;
+    //                                a 50%+ rate scores 0.
+    //   • diversification   (15%) = (1 / Σwᵢ²) / 4 × 100, where wᵢ are
+    //                                portfolio shares across {RRSP, TFSA,
+    //                                NR, LIRA, corp}. 4 effective buckets
+    //                                = 100 (perfectly spread).
+    //   • liquidity         (10%) = (TFSA + NR) / annual_spending × 100,
+    //                                capped at 100. 12 months coverage
+    //                                = 100.
+    //
+    // Bands (matched to thesis-coherence vocabulary):
+    //   ≥85 → surplus  (gold)
+    //   ≥65 → solid    (green)
+    //   ≥40 → fragile  (amber)
+    //   <40 → at-risk  (red)
+    //
+    // The breakdown panel renders next to the gauge so the score is
+    // never a black-box number — every reader can see the math.
+    function _scoreOrNull(v) { return v == null || !isFinite(v) ? null : Math.max(0, Math.min(100, v)); }
+    var _scComponents = {};
+    _scComponents.plan_resilience = succVal != null ? _scoreOrNull(succVal * 100) : null;
+    var _scGrossInc = (p.sal || 0) + (p.cOn ? (p.cSal || 0) : 0);
+    var _scAnnContrib = (p.rrspC || 0) + (p.tfsaC || 0) + (p.nrC || 0)
+                      + (p.cOn ? ((p.cRrspC || 0) + (p.cTfsaC || 0) + (p.cNrC || 0)) : 0);
+    _scComponents.savings_rate = _scGrossInc > 0
+      ? _scoreOrNull(((_scAnnContrib / _scGrossInc) / 0.25) * 100)
+      : null;
+    _scComponents.tax_efficiency = avgEffRate != null && _optTax > 0
+      ? _scoreOrNull(100 - avgEffRate * 200)
+      : null;
+    var _scPots = [
+      (p.rrsp || 0) + (p.cOn ? (p.cRRSP || 0) : 0),
+      (p.tfsa || 0) + (p.cOn ? (p.cTFSA || 0) : 0),
+      (p.nr || 0)   + (p.cOn ? (p.cNR || 0) : 0),
+      (p.liraBal || 0) + (p.cOn ? (p.cLira || 0) : 0),
+      (p.bizRetainedEarnings || 0)
+    ];
+    var _scTotalPots = _scPots.reduce(function(s, v) { return s + v; }, 0);
+    if (_scTotalPots > 0) {
+      var _hhi = _scPots.reduce(function(s, v) { var w = v / _scTotalPots; return s + w * w; }, 0);
+      var _effBuckets = 1 / _hhi; // 1 = single bucket, 5 = perfectly even
+      _scComponents.diversification = _scoreOrNull((_effBuckets / 4) * 100);
+    } else {
+      _scComponents.diversification = null;
+    }
+    var _scLiquid = (p.tfsa || 0) + (p.nr || 0) + (p.cOn ? ((p.cTFSA || 0) + (p.cNR || 0)) : 0);
+    var _scAnnSpend = spendY > 0 ? spendY : (totalSpM > 0 ? totalSpM * 12 : 0);
+    _scComponents.liquidity = _scAnnSpend > 0
+      ? _scoreOrNull((_scLiquid / _scAnnSpend) * 100)
+      : null;
+    var _scWeights = { plan_resilience: 0.40, savings_rate: 0.20, tax_efficiency: 0.15, diversification: 0.15, liquidity: 0.10 };
+    var _scTotal = 0, _scWeightSum = 0;
+    Object.keys(_scWeights).forEach(function(k) {
+      if (_scComponents[k] != null) {
+        _scTotal += _scComponents[k] * _scWeights[k];
+        _scWeightSum += _scWeights[k];
+      }
+    });
+    var _scValue = _scWeightSum > 0 ? Math.round(_scTotal / _scWeightSum) : null;
+    var _scBand = null;
+    if (_scValue != null) {
+      if (_scValue >= 85) _scBand = 'surplus';
+      else if (_scValue >= 65) _scBand = 'solid';
+      else if (_scValue >= 40) _scBand = 'fragile';
+      else _scBand = 'at-risk';
+    }
+    var heroScore = {
+      value: _scValue,
+      band: _scBand,
+      components: _scComponents,
+      weights: _scWeights
+    };
+
+    // ── C0: Single-thesis anchor (document coherence layer) ──────────
+    // One deterministic posture for the whole report. Cover, exec
+    // summary, advisor-letter fallback, and closing recap all read
+    // from this so the document speaks with one voice. Words match the
+    // BAND_VOCAB the thesis-coherence-auditor enforces, so deterministic
+    // and AI text can never disagree on posture.
+    function _thesisBand(s, c) {
+      if (s == null) return null;
+      if (s >= 0.90 && c >= 1.0) return 'surplus';
+      if (s >= 0.75) return 'solid';
+      if (s >= 0.50) return 'fragile';
+      if (s >= 0.25) return 'at-risk';
+      return 'failure';
+    }
+    var _band = _thesisBand(succVal, covRatio);
+    var _bLabel = {
+      surplus:  { fr: 'Plan en surplus',              en: 'Plan in surplus' },
+      solid:    { fr: 'Plan solide',                  en: 'Solid plan' },
+      fragile:  { fr: 'Plan fragile',                 en: 'Fragile plan' },
+      'at-risk':{ fr: 'Plan \u00e0 risque',           en: 'At-risk plan' },
+      failure:  { fr: 'Plan non viable en l\'\u00e9tat', en: 'Plan not sustainable as is' }
+    };
+    var _bandLabel = _band ? _bLabel[_band][fr ? 'fr' : 'en'] : (fr ? 'Plan en analyse' : 'Plan under analysis');
+    var _succPct = succVal != null ? Math.round(succVal * 100) : null;
+    var _covPct = covRatio > 0 ? Math.round(covRatio * 100) : null;
+    var _medF = (mc && (mc.rMedF != null ? mc.rMedF : mc.medF)) || 0;
+    var _oneLiner;
+    if (_band == null) {
+      _oneLiner = fr ? 'Trajectoire en cours d\'analyse.' : 'Trajectory under analysis.';
+    } else if (_band === 'surplus' || _band === 'solid') {
+      _oneLiner = fr
+        ? _bandLabel + ' \u2014 taux de succ\u00e8s ' + _succPct + ' % sur ' + horizon + ' ans, le revenu garanti couvre ' + (_covPct != null ? _covPct + ' %' : '\u2014') + ' des d\u00e9penses cibles.'
+        : _bandLabel + ' \u2014 ' + _succPct + '% success over ' + horizon + ' years; guaranteed income covers ' + (_covPct != null ? _covPct + '%' : '\u2014') + ' of target spending.';
+    } else if (_band === 'fragile') {
+      _oneLiner = fr
+        ? _bandLabel + ' \u2014 taux de succ\u00e8s ' + _succPct + ' %\u202f; la marge contre les impr\u00e9vus est mince et des ajustements cibl\u00e9s rendraient la trajectoire plus confortable.'
+        : _bandLabel + ' \u2014 ' + _succPct + '% success; margin against the unexpected is thin and targeted adjustments would make the trajectory more comfortable.';
+    } else if (_band === 'at-risk') {
+      _oneLiner = fr
+        ? _bandLabel + ' \u2014 taux de succ\u00e8s ' + _succPct + ' %\u202f; des ajustements structurels (\u00e9pargne, d\u00e9penses, horizon) seraient \u00e0 consid\u00e9rer.'
+        : _bandLabel + ' \u2014 ' + _succPct + '% success; structural adjustments (savings, spending, horizon) could shift the trajectory.';
+    } else {
+      _oneLiner = fr
+        ? _bandLabel + ' \u2014 taux de succ\u00e8s ' + _succPct + ' %\u202f; une r\u00e9vision globale serait n\u00e9cessaire pour r\u00e9tablir la trajectoire.'
+        : _bandLabel + ' \u2014 ' + _succPct + '% success; a global review would be necessary to restore the trajectory.';
+    }
+    var thesis = {
+      band: _band,
+      bandLabel: _bandLabel,
+      succPct: _succPct,
+      covPct: _covPct,
+      medFinalWealth: _medF,
+      horizonYears: horizon,
+      oneLiner: _oneLiner
+    };
+
     return {
       empty: false,
       mc: mc,
@@ -425,6 +610,21 @@
       finLiteracy: data.finLiteracy || p.finLiteracy || "intermediate",
       stressLevel: data.stressLevel || p.stressLevel || "moderate",
       detailPref: data.detailPref || p.detailPref || "balanced",
+      // CLASSIFIER-RENDER-PLAN Phase 1: derive renderProfile from the
+      // three classifiers so downstream renderer/auditor/AI prompt have
+      // a single dispatch object. Phase 1 is purely additive — nothing
+      // reads from this yet. Phase 2-6 wire the consumers.
+      renderProfile: (function() {
+        var fL = data.finLiteracy || p.finLiteracy || "intermediate";
+        var sL = data.stressLevel || p.stressLevel || "moderate";
+        var dP = data.detailPref || p.detailPref || "balanced";
+        var rpMod = (typeof window !== 'undefined' && window.BFRenderProfile)
+          ? window.BFRenderProfile
+          : (typeof require === 'function' ? (function() { try { return require('./report-render-profile.js'); } catch (e) { return null; } })() : null);
+        return rpMod && typeof rpMod.deriveRenderProfile === 'function'
+          ? rpMod.deriveRenderProfile(fL, sL, dP)
+          : null;
+      })(),
       fn: _fn,
       sfn: _sfn,
       rm: rm,
@@ -450,6 +650,7 @@
       gapM: gapM,
       merWt: merWt,
       _optTax: _optTax,
+      _optTaxReal: _optTaxReal,
       _naiveTax: _naiveTax,
       _hasNaive: _hasNaive,
       _taxAlpha: _taxAlpha,
@@ -460,7 +661,9 @@
       _retRow: _retRow,
       _retBal: _retBal,
       _wdPct: _wdPct,
-      sensData: sensData
+      sensData: sensData,
+      thesis: thesis,
+      heroScore: heroScore
     };
   }
 

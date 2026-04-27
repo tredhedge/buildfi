@@ -16,12 +16,42 @@
   }
 
   // Compact money: 485K$, 1.2M$
+  // Codex MED-1 fix: EN reports were rendering "346K$" (FR convention)
+  // instead of "$346K" (EN convention). The formatter now reads the
+  // rendering-scope language flag set in window.__bfLang at top of
+  // buildReport. FR keeps suffixed `K$` / `M$`; EN uses prefix `$`.
+  function _isEN() { return typeof window !== 'undefined' && window.__bfLang === 'en'; }
+
   function fmtCompact(v) {
     if (v === void 0 || v === null || isNaN(v)) return "\u2014";
     var a = Math.abs(v);
-    if (a >= 1e6) return (v < 0 ? "\u2212" : "") + (a / 1e6).toFixed(1) + "M$";
-    if (a >= 1e3) return (v < 0 ? "\u2212" : "") + Math.round(a / 1e3) + "K$";
-    return Math.round(v) + "$";
+    var sign = v < 0 ? "\u2212" : "";
+    var en = _isEN();
+    if (a >= 1e6) {
+      var m = (a / 1e6).toFixed(1);
+      return en ? sign + "$" + m + "M" : sign + m + "M$";
+    }
+    if (a >= 1e3) {
+      var k = Math.round(a / 1e3);
+      return en ? sign + "$" + k + "K" : sign + k + "K$";
+    }
+    return en ? sign + "$" + Math.round(a) : sign + Math.round(a) + "$";
+  }
+
+  // Table money: intentionally coarse to avoid false precision in projected
+  // yearly flows / withdrawals. Always expresses amounts in K$ once non-zero.
+  function fmtTableK(v) {
+    if (v === void 0 || v === null || isNaN(v)) return "\u2014";
+    var a = Math.abs(v);
+    var sign = v < 0 ? "\u2212" : "";
+    var en = _isEN();
+    if (a === 0) return en ? "$0K" : "0K$";
+    if (a >= 1e6) {
+      var m = (a / 1e6).toFixed(1);
+      return en ? sign + "$" + m + "M" : sign + m + "M$";
+    }
+    var k = Math.max(1, Math.round(a / 1e3));
+    return en ? sign + "$" + k + "K" : sign + k + "K$";
   }
 
   // Full money with locale: FR "485 000 $" / EN "$485,000"
@@ -163,10 +193,15 @@
     return '<tr><td class="rl">' + l + '</td><td class="rv">' + v + '</td></tr>';
   }
 
-  // KPI card with colored top border
+  // Sprint 0.9: KPI cards default to NAVY (#252d39), not gold. Gold is
+  // restricted to the hero gauge + verdict line + cover so it carries
+  // signal ("this is the premium element"). Previous overuse made gold
+  // wallpaper. Per-KPI color override still works for risk (red) /
+  // success (green) coding via explicit color arg.
   function KPI(v, l, c) {
-    return '<div class="kpi" style="border-top:3px solid ' + (c || COLORS.gold) + '">' +
-      '<div class="kpi-v" style="color:' + (c || COLORS.gold) + '">' + v + '</div>' +
+    var defaultC = '#252d39';
+    return '<div class="kpi" style="border-top:3px solid ' + (c || defaultC) + '">' +
+      '<div class="kpi-v" style="color:' + (c || defaultC) + '">' + v + '</div>' +
       '<div class="kpi-l">' + l + '</div></div>';
   }
 
@@ -284,7 +319,7 @@
   var LABELS = {
     // Section titles
     cover_title:     { fr: "Rapport d\u00e9taill\u00e9", en: "Detailed Report" },
-    cover_sub:       { fr: "Plan de retraite", en: "Retirement Plan" },
+    cover_sub:       { fr: "Plan financier personnalis\u00e9", en: "Personalized Financial Plan" },
     toc:             { fr: "Table des mati\u00e8res", en: "Table of Contents" },
     page_zero:       { fr: "Votre plan en 30 secondes", en: "Your plan in 30 seconds" },
     diagnostic:      { fr: "Sommaire ex\u00e9cutif", en: "Executive Summary" },
@@ -354,6 +389,7 @@
   window.BFmt = Object.freeze({
     // Number formatters
     fmtCompact: fmtCompact,
+    fmtTableK: fmtTableK,
     fmtMoney: fmtMoney,
     fmtCurrency: fmtCurrency,
     fmtInt: fmtInt,
