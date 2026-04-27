@@ -1,19 +1,50 @@
 {
-  "findings": [],
+  "findings": [
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "advisor_letter"
+    }
+  ],
   "blockers": [],
-  "majors": [],
+  "majors": [
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "advisor_letter"
+    }
+  ],
   "minors": [],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "advisor_letter",
+        "severity": "major",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone."
+      }
+    ],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
     "manual": []
   },
-  "can_ship": true,
+  "can_ship": false,
   "blocker_count": 0,
-  "major_count": 0,
+  "major_count": 1,
   "minor_count": 0
 }

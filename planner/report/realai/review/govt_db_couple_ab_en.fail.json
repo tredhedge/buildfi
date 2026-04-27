@@ -1,0 +1,64 @@
+{
+  "profile": "govt_db_couple_ab_en",
+  "shipped": false,
+  "can_ship": false,
+  "data_blocked": false,
+  "remaining_blockers": [],
+  "remaining_majors": [
+    {
+      "id": "content-missing-beat-db_formula_explained",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"DB pension formula sized (years × accrual × earnings, OR rule of 80/85, OR bridge benefit)\" is missing for case_driver=db_pension_split. No matching pattern anywhere in visible text.",
+      "evidence": "driver=db_pension_split beat=db_formula_explained patterns=[\"years of service\",\"ann[ée]es de service\",\"accrual rate\",\"taux d['’]accumulation\",\"rule of 80\",\"rule of 85\",\"r[èe]gle (du|de) 80\",\"r[èe]gle (du|de) 85\",\"bridge benefit\",\"prestation de raccordement\",\"\\\\bYMPE\\\\b\",\"\\\\bMGAP\\\\b\",\"pension formula\",\"formule.{0,20}pension\",\"(1\\\\.[0-9]|2\\\\.0)\\\\s?%.{0,30}(service|year|ann[ée]e)\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
+  "ai_regen_required": {
+    "income_insight": [
+      {
+        "rule": "canonical-quote-guaranteed_income_coverage-income_insight",
+        "message": "AI slot \"income_insight\" quotes pct value 111 for \"guaranteed_income_coverage\" but canonical is 112.69. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Guaranteed income coverage reaches **111%**, with a monthly gap of **$0** — combined CP\"  (canon=112.68616244136125, quoted=111)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 670000 for \"lifetime_tax_real\" but canonical is 394794. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Lifetime tax registers at **670K$** with an average effective rate of **14.7%*\"  (canon=394794, quoted=670000)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-net_estate-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 44000 for \"net_estate\" but canonical is 570777.96. Slot must be regenerated to match canonical.",
+        "evidence": "\"…cond death projects at **580K$**, with **44K$** in tax at death and Alberta probate capped\"  (canon=570777.9568301641, quoted=44000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 501000 for \"p25_wealth_real\" but canonical is 205590.62. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The dispersion from **208K$** to **501K$** at the P25-P75 boundaries is concentrated\"  (canon=205590.61624512862, quoted=501000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-success_rate-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 98 for \"success_rate\" but canonical is 99.85. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ss scenarios, success rates range from **98%** under longevityPlus5 to **100%** under both\"  (canon=99.85000000000001, quoted=98)"
+      }
+    ],
+    "narrative": [
+      {
+        "rule": "content-missing-beat-db_formula_explained",
+        "message": "Required content beat \"DB pension formula sized (years × accrual × earnings, OR rule of 80/85, OR bridge benefit)\" is missing for case_driver=db_pension_split. No matching pattern anywhere in visible text.",
+        "evidence": "driver=db_pension_split beat=db_formula_explained patterns=[\"years of service\",\"ann[ée]es de service\",\"accrual rate\",\"taux d['’]accumulation\",\"rule of 80\",\"rule of 85\",\"r[èe]gle (du|de) 80\",\"r[èe]gle (du|de) 85\",\"bridge benefit\",\"prestation de raccordement\",\"\\\\bYMPE\\\\b\",\"\\\\bMGAP\\\\b\",\"pension formula\",\"formule.{0,20}pension\",\"(1\\\\.[0-9]|2\\\\.0)\\\\s?%.{0,30}(service|year|ann[ée]e)\"]"
+      }
+    ]
+  }
+}

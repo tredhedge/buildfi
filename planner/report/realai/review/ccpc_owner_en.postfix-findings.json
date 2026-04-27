@@ -1,11 +1,42 @@
 {
-  "findings": [],
+  "findings": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    }
+  ],
   "blockers": [],
   "majors": [],
-  "minors": [],
+  "minors": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    }
+  ],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      }
+    ],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
@@ -15,5 +46,5 @@
   "can_ship": true,
   "blocker_count": 0,
   "major_count": 0,
-  "minor_count": 0
+  "minor_count": 1
 }

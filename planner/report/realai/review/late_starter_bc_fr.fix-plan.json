@@ -1,9 +1,48 @@
 {
-  "remove_section": [],
-  "rerun_ai_slot": [],
+  "remove_section": [
+    {
+      "section": "sec-gis",
+      "target": "sec-gis",
+      "severity": "blocker",
+      "message": "GIS section is present but the plausibility gate failed."
+    },
+    {
+      "section": "sec-gis",
+      "target": "sec-gis",
+      "severity": "blocker",
+      "message": "Rendered lifetime GIS does not reconcile with the canonical plausible GIS total."
+    }
+  ],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-gis",
+      "target": "gis_insight",
+      "severity": "major",
+      "message": "AI GIS narrative does not appear to match the rendered GIS total."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes pct value 13.1 for \"lifetime_effective_tax_rate\" but canonical is 7.55. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (68392). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention."
+    }
+  ],
   "recompute_from_canonical": [],
   "block_data": [],
   "replace_with_callout": [],
-  "localize_label": [],
+  "localize_label": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "major",
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
+    }
+  ],
   "manual": []
 }

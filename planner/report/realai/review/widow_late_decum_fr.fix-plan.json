@@ -1,0 +1,34 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 60000 for \"p50_wealth_real\" but canonical is 79330.87. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 108000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-trajectory-insight",
+      "target": "trajectory_insight",
+      "severity": "major",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 108000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-estateInsight",
+      "target": "estateInsight",
+      "severity": "major",
+      "message": "AI slot \"estateInsight\" quotes dollar value 89000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": []
+}

@@ -1,0 +1,50 @@
+{
+  "profile": "hnw_couple_fr",
+  "shipped": false,
+  "can_ship": false,
+  "data_blocked": false,
+  "remaining_blockers": [],
+  "remaining_majors": [
+    {
+      "id": "content-missing-beat-estate_freeze_or_trust",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Estate freeze, alter-ego trust, or charitable strategy named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
+      "evidence": "driver=hnw_estate beat=estate_freeze_or_trust patterns=[\"estate freeze\",\"gel successoral\",\"alter.?ego.?trust\",\"fiducie.{0,10}alter.?ego\",\"fiducie en faveur de soi\",\"charitable\",\"don de bienfaisance\",\"donor.advised\",\"fondation\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
+  "ai_regen_required": {
+    "overall_assessment": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-overall_assessment",
+        "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
+        "evidence": "\"…comprimerait le scénario prudent vers **466K$** d'actifs résiduels. À l'inverse, la durabi\"  (canon=405044.6398872129, quoted=466000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Le taux effectif moyen projeté à **24.3%** sur un fardeau fiscal viager de **1.9M$**\"  (canon=22.729684467680382, quoted=24.3)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
+        "evidence": "\"…nt, la succession nette descendrait à **822K$**, ce qui circonscrit l'amplitude du transfe\"  (canon=405044.6398872129, quoted=822000)"
+      }
+    ],
+    "narrative": [
+      {
+        "rule": "content-missing-beat-estate_freeze_or_trust",
+        "message": "Required content beat \"Estate freeze, alter-ego trust, or charitable strategy named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
+        "evidence": "driver=hnw_estate beat=estate_freeze_or_trust patterns=[\"estate freeze\",\"gel successoral\",\"alter.?ego.?trust\",\"fiducie.{0,10}alter.?ego\",\"fiducie en faveur de soi\",\"charitable\",\"don de bienfaisance\",\"donor.advised\",\"fondation\"]"
+      }
+    ]
+  }
+}

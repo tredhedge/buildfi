@@ -1,0 +1,41 @@
+{
+  "profile": "debt_young_fr",
+  "generated_at": "2026-04-27T04:09:05.154Z",
+  "canonical": {
+    "success_rate": 0.055,
+    "p25_wealth_real": 0,
+    "p50_wealth_real": 0,
+    "p75_wealth_real": 0,
+    "gov_coverage_only": 0.42798698658203044,
+    "guaranteed_income_coverage": 0.42798698658203044,
+    "monthly_gap": 7597.248313591576,
+    "oas_clawback_years": 0,
+    "lifetime_tax_real": 7767,
+    "lifetime_taxable_income_real": 438741,
+    "lifetime_effective_tax_rate": 0.01770396088159505,
+    "lifetime_gis": 757529.3211297545,
+    "gis_years": 23,
+    "net_estate": 0,
+    "gis_plausibility": true,
+    "dispersion_pts": null,
+    "stress_pts": 3,
+    "top_sensitivity_lever": null,
+    "case_driver": "debt_paydown"
+  },
+  "case_driver": "debt_paydown",
+  "slots": {
+    "narrative": [
+      {
+        "rule": "content-missing-beat-debt_vs_invest_tradeoff",
+        "message": "Required content beat \"Debt-paydown vs invest tradeoff named\" is missing for case_driver=debt_paydown. No matching pattern anywhere in visible text.",
+        "evidence": "driver=debt_paydown beat=debt_vs_invest_tradeoff patterns=[\"pay.{0,10}debt.{0,15}invest\",\"rembourser.{0,15}investir\",\"investir.{0,15}rembourser\",\"after.tax return\",\"rendement apr[èe]s imp[oô]t\",\"opportunity cost\",\"co[uû]t d['’]opportunit[ée]\"]"
+      },
+      {
+        "rule": "content-missing-beat-debt_vs_invest_tradeoff",
+        "message": "Required content beat \"Debt-paydown vs invest tradeoff named\" is missing for case_driver=debt_paydown. No matching pattern anywhere in visible text.",
+        "evidence": "driver=debt_paydown beat=debt_vs_invest_tradeoff patterns=[\"pay.{0,10}debt.{0,15}invest\",\"rembourser.{0,15}investir\",\"investir.{0,15}rembourser\",\"after.tax return\",\"rendement apr[èe]s imp[oô]t\",\"opportunity cost\",\"co[uû]t d['’]opportunit[ée]\"]"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/debt_young_fr.json and re-run the pipeline."
+}

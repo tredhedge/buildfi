@@ -1,19 +1,50 @@
 {
-  "findings": [],
+  "findings": [
+    {
+      "id": "content-missing-beat-debt_vs_invest_tradeoff",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Debt-paydown vs invest tradeoff named\" is missing for case_driver=debt_paydown. No matching pattern anywhere in visible text.",
+      "evidence": "driver=debt_paydown beat=debt_vs_invest_tradeoff patterns=[\"pay.{0,10}debt.{0,15}invest\",\"rembourser.{0,15}investir\",\"investir.{0,15}rembourser\",\"after.tax return\",\"rendement apr[èe]s imp[oô]t\",\"opportunity cost\",\"co[uû]t d['’]opportunit[ée]\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
   "blockers": [],
-  "majors": [],
+  "majors": [
+    {
+      "id": "content-missing-beat-debt_vs_invest_tradeoff",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Debt-paydown vs invest tradeoff named\" is missing for case_driver=debt_paydown. No matching pattern anywhere in visible text.",
+      "evidence": "driver=debt_paydown beat=debt_vs_invest_tradeoff patterns=[\"pay.{0,10}debt.{0,15}invest\",\"rembourser.{0,15}investir\",\"investir.{0,15}rembourser\",\"after.tax return\",\"rendement apr[èe]s imp[oô]t\",\"opportunity cost\",\"co[uû]t d['’]opportunit[ée]\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
   "minors": [],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Required content beat \"Debt-paydown vs invest tradeoff named\" is missing for case_driver=debt_paydown. No matching pattern anywhere in visible text."
+      }
+    ],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
     "manual": []
   },
-  "can_ship": true,
+  "can_ship": false,
   "blocker_count": 0,
-  "major_count": 0,
+  "major_count": 1,
   "minor_count": 0
 }

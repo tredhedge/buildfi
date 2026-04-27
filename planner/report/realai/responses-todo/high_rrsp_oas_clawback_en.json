@@ -1,0 +1,64 @@
+{
+  "profile": "high_rrsp_oas_clawback_en",
+  "generated_at": "2026-04-27T03:01:22.181Z",
+  "canonical": {
+    "success_rate": 0.949,
+    "p25_wealth_real": 266979.45035169367,
+    "p50_wealth_real": 500471.0204462586,
+    "p75_wealth_real": 869284.7985884757,
+    "gov_coverage_only": 0.38780371127272023,
+    "guaranteed_income_coverage": 0.6425424975125013,
+    "monthly_gap": 3087.109415416098,
+    "oas_clawback_years": 3,
+    "lifetime_tax_real": 333027,
+    "lifetime_taxable_income_real": 2060640,
+    "lifetime_effective_tax_rate": 0.16161333631239264,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 660319.6966487964,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 15,
+    "top_sensitivity_lever": null,
+    "case_driver": "meltdown_window"
+  },
+  "case_driver": "meltdown_window",
+  "slots": {
+    "verdict": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 498000 for \"p25_wealth_real\" but canonical is 266979.45. Slot must be regenerated to match canonical.",
+        "evidence": "\"…823K$** at the favourable P75 — and a **498K$** median — describes a plan where solvency i\"  (canon=266979.45035169367, quoted=498000)"
+      }
+    ],
+    "income_insight": [
+      {
+        "rule": "canonical-quote-guaranteed_income_coverage-income_insight",
+        "message": "AI slot \"income_insight\" quotes pct value 59 for \"guaranteed_income_coverage\" but canonical is 64.25. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Guaranteed income coverage sits at **59%**, with **$5,279** in monthly government and p\"  (canon=64.25424975125013, quoted=59)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-net_estate-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 255000 for \"net_estate\" but canonical is 660319.7. Slot must be regenerated to match canonical.",
+        "evidence": "\"…state is projected at **661K$** after **255K$** in tax at death, against a gross of **915K\"  (canon=660319.6966487964, quoted=255000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 823000 for \"p25_wealth_real\" but canonical is 266979.45. Slot must be regenerated to match canonical.",
+        "evidence": "\"…P25-P75 spread runs from **259K$** to **823K$**, a dispersion that — combined with savings\"  (canon=266979.45035169367, quoted=823000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-success_rate-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 75 for \"success_rate\" but canonical is 94.9. Slot must be regenerated to match canonical.",
+        "evidence": "\"…n holds up with success rates between **75%** (stagflation73) and **89%** (lostDecade), co\"  (canon=94.89999999999999, quoted=75)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/high_rrsp_oas_clawback_en.json and re-run the pipeline."
+}

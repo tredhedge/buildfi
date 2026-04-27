@@ -1,6 +1,13 @@
 {
   "remove_section": [],
-  "rerun_ai_slot": [],
+  "rerun_ai_slot": [
+    {
+      "section": null,
+      "target": "advisor_letter",
+      "severity": "major",
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone."
+    }
+  ],
   "recompute_from_canonical": [],
   "block_data": [],
   "replace_with_callout": [],

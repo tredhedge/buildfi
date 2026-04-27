@@ -1,0 +1,79 @@
+{
+  "profile": "rental_heavy_couple_fr",
+  "generated_at": "2026-04-27T03:01:19.279Z",
+  "canonical": {
+    "success_rate": 0.415,
+    "p25_wealth_real": 0,
+    "p50_wealth_real": 0,
+    "p75_wealth_real": 241040.61556789523,
+    "gov_coverage_only": 0.6055906728095052,
+    "guaranteed_income_coverage": 0.6055906728095052,
+    "monthly_gap": 4283.4133477057885,
+    "oas_clawback_years": 10,
+    "lifetime_tax_real": 175776,
+    "lifetime_taxable_income_real": 1884231,
+    "lifetime_effective_tax_rate": 0.09328776971835914,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 0,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 14,
+    "top_sensitivity_lever": null,
+    "case_driver": "rental_cashflow"
+  },
+  "case_driver": "rental_cashflow",
+  "slots": {
+    "overall_assessment": [
+      {
+        "rule": "narration-tone-paradox-overall_assessment",
+        "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+        "evidence": "overall_assessment: \"renouvellement hypothécaire défavorable, une vacance prolongée ou un cycle d'entretien lou\""
+      },
+      {
+        "rule": "thesis-cumulative-drift",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+        "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile"
+      }
+    ],
+    "verdict": [
+      {
+        "rule": "narration-tone-paradox-verdict",
+        "message": "Success rate is 42% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+        "evidence": "verdict: \"histoire claire : le scénario favorable termine à **240K$** alors que le scénario typique \""
+      },
+      {
+        "rule": "thesis-drift-verdict-surplus",
+        "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
+        "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3"
+      }
+    ],
+    "trajectory_insight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-trajectory_insight",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"…**0$**, tandis que le **p75** atteint **240K$** : seules les trajectoires les plus favorab\"  (canon=0, quoted=240000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes pct value 15.8 for \"lifetime_effective_tax_rate\" but canonical is 9.33. Slot must be regenerated to match canonical.",
+        "evidence": "\"…orizon, avec un taux effectif moyen de **15.8%**, ce qui demeure modéré pour un ménage qui\"  (canon=9.328776971835914, quoted=15.8)"
+      },
+      {
+        "rule": "scope-oas-clawback-drift",
+        "message": "OAS clawback years mentioned across sections drifts from canonical (10 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
+        "evidence": "sec-tax=0"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"…L'écart **p25-p75** va de **0$** à **240K$**, ce qui révèle une dispersion serrée vers\"  (canon=0, quoted=240000)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/rental_heavy_couple_fr.json and re-run the pipeline."
+}

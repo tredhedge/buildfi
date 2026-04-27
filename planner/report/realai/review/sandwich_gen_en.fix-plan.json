@@ -1,0 +1,76 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-assessment",
+      "target": "advisor_letter",
+      "severity": "major",
+      "message": "Success rate is 43% but slot \"advisor_letter\" describes the plan with positive framing (\"work in your favor\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 43% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-overall-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "AI slot \"overall_assessment\" quotes pct value 46 for \"success_rate\" but canonical is 42.95. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 0 for \"p75_wealth_real\" but canonical is 256136.7. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-trajectory-insight",
+      "target": "trajectory_insight",
+      "severity": "major",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 964000 for \"lifetime_tax_real\" but canonical is 194335. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-gis-insight",
+      "target": "gis_insight",
+      "severity": "major",
+      "message": "AI slot \"gis_insight\" quotes dollar value 169000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-riskInsight",
+      "target": "riskInsight",
+      "severity": "major",
+      "message": "AI slot \"riskInsight\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-stress-interpretation",
+      "target": "stress_interpretation",
+      "severity": "major",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 42.95. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (6 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": []
+}

@@ -1,0 +1,57 @@
+{
+  "profile": "rrsp_only_late_starter_en",
+  "shipped": false,
+  "can_ship": false,
+  "data_blocked": false,
+  "remaining_blockers": [],
+  "remaining_majors": [
+    {
+      "id": "content-missing-beat-shortfall_or_lifestyle_compromise",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Shortfall or lifestyle-compromise tradeoff surfaced\" is missing for case_driver=late_start_savings. No matching pattern anywhere in visible text.",
+      "evidence": "driver=late_start_savings beat=shortfall_or_lifestyle_compromise patterns=[\"short.?fall\",\"manque.?[\\\\s-]?[àa]?[\\\\s-]?gagner\",\"lifestyle.{0,10}adjust\",\"compromis.{0,20}(train|d[ée]penses|niveau de vie)\",\"ajust(er|ement).{0,15}train de vie\",\"reduc(e|ed|ing|tion).{0,15}(spending|target spending)\",\"r[ée]du(ire|ction).{0,15}(d[ée]penses|train de vie)\",\"lower.{0,10}retirement.{0,10}income\",\"funding gap\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
+  "ai_regen_required": {
+    "verdict": [
+      {
+        "rule": "narration-tone-paradox-verdict",
+        "message": "Success rate is 45% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
+        "evidence": "verdict: \"us scenario at **0$** and the favourable scenario at **44K$** is wide because savings sit \""
+      }
+    ],
+    "income_insight": [
+      {
+        "rule": "canonical-quote-gov_coverage_only-income_insight",
+        "message": "AI slot \"income_insight\" quotes pct value 67 for \"gov_coverage_only\" but canonical is 63.54. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Public benefits would cover roughly **67%** of needs, leaving a monthly gap of **$1,977*\"  (canon=63.53560881694411, quoted=67)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 191000 for \"lifetime_tax_real\" but canonical is 82403. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The lifetime tax bill would land near **191K$** at an average effective rate of **11.0%**,\"  (canon=82403, quoted=191000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)"
+      }
+    ],
+    "narrative": [
+      {
+        "rule": "content-missing-beat-shortfall_or_lifestyle_compromise",
+        "message": "Required content beat \"Shortfall or lifestyle-compromise tradeoff surfaced\" is missing for case_driver=late_start_savings. No matching pattern anywhere in visible text.",
+        "evidence": "driver=late_start_savings beat=shortfall_or_lifestyle_compromise patterns=[\"short.?fall\",\"manque.?[\\\\s-]?[àa]?[\\\\s-]?gagner\",\"lifestyle.{0,10}adjust\",\"compromis.{0,20}(train|d[ée]penses|niveau de vie)\",\"ajust(er|ement).{0,15}train de vie\",\"reduc(e|ed|ing|tion).{0,15}(spending|target spending)\",\"r[ée]du(ire|ction).{0,15}(d[ée]penses|train de vie)\",\"lower.{0,10}retirement.{0,10}income\",\"funding gap\"]"
+      }
+    ]
+  }
+}

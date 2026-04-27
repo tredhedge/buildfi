@@ -1,0 +1,76 @@
+{
+  "profile": "mortgage_in_retirement_en",
+  "generated_at": "2026-04-27T03:01:05.472Z",
+  "canonical": {
+    "success_rate": 0.5705,
+    "p25_wealth_real": 0,
+    "p50_wealth_real": 27307.734413184986,
+    "p75_wealth_real": 173832.4405159615,
+    "gov_coverage_only": 0.6925941455611284,
+    "guaranteed_income_coverage": 0.6925941455611284,
+    "monthly_gap": 2658.298452970315,
+    "oas_clawback_years": 0,
+    "lifetime_tax_real": 375392,
+    "lifetime_taxable_income_real": 2637379,
+    "lifetime_effective_tax_rate": 0.14233539946992216,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 47335.882994132575,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 40,
+    "top_sensitivity_lever": null,
+    "case_driver": "debt_paydown"
+  },
+  "case_driver": "debt_paydown",
+  "slots": {
+    "overall_assessment": [
+      {
+        "rule": "canonical-quote-success_rate-overall_assessment",
+        "message": "AI slot \"overall_assessment\" quotes pct value 59 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The plan currently shows a **59%** success rate (grade **C**, Under strain), wh\"  (canon=57.05, quoted=59)"
+      },
+      {
+        "rule": "thesis-cumulative-drift",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"fragile\"). Cumulatively the report swings posture; consolidate tone.",
+        "evidence": "overall_assessment=solid, sec-assessment-deterministic=solid, sec-closing-recap-deterministic=solid"
+      }
+    ],
+    "income_insight": [
+      {
+        "rule": "canonical-quote-guaranteed_income_coverage-income_insight",
+        "message": "AI slot \"income_insight\" quotes pct value 72 for \"guaranteed_income_coverage\" but canonical is 69.26. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Guaranteed income coverage stands at **72%**, with QPP/CPP at **$3,551** monthly and OAS\"  (canon=69.25941455611284, quoted=72)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 521000 for \"lifetime_tax_real\" but canonical is 375392. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The lifetime tax estimate is **521K$** with an average effective rate of **13.9%*\"  (canon=375392, quoted=521000)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-net_estate-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 52000 for \"net_estate\" but canonical is 47335.88. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The projected net estate of **52K$** with **0$** of tax at death reflects the mo\"  (canon=47335.882994132575, quoted=52000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-success_rate-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
+        "evidence": "\"…pending shocks (success rate drops to **16%** under the spending+15% scenario) and to long\"  (canon=57.05, quoted=16)"
+      }
+    ],
+    "advisor_letter": [
+      {
+        "rule": "thesis-drift-advisor_letter-failure",
+        "message": "Plan posture is \"fragile\" (succ=57%) but slot \"advisor_letter\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match.",
+        "evidence": "truth_band=fragile  found_token=\"rebuild\"  drift=2"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/mortgage_in_retirement_en.json and re-run the pipeline."
+}

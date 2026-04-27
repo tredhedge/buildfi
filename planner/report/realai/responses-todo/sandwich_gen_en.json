@@ -1,0 +1,107 @@
+{
+  "profile": "sandwich_gen_en",
+  "generated_at": "2026-04-27T03:01:08.550Z",
+  "canonical": {
+    "success_rate": 0.4295,
+    "p25_wealth_real": 0,
+    "p50_wealth_real": 0,
+    "p75_wealth_real": 256136.7002946958,
+    "gov_coverage_only": 0.551326767887877,
+    "guaranteed_income_coverage": 0.551326767887877,
+    "monthly_gap": 7364.519554843905,
+    "oas_clawback_years": 6,
+    "lifetime_tax_real": 194335,
+    "lifetime_taxable_income_real": 1863595,
+    "lifetime_effective_tax_rate": 0.10427953714907899,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 0,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 16,
+    "top_sensitivity_lever": null,
+    "case_driver": "gap_savings"
+  },
+  "case_driver": "gap_savings",
+  "slots": {
+    "advisor_letter": [
+      {
+        "rule": "narration-tone-paradox-advisor_letter",
+        "message": "Success rate is 43% but slot \"advisor_letter\" describes the plan with positive framing (\"work in your favor\"). Tone must match grade band.",
+        "evidence": "advisor_letter: \"s allocated. Several elements work in your favor: you both still have active employment in\""
+      }
+    ],
+    "verdict": [
+      {
+        "rule": "narration-tone-paradox-verdict",
+        "message": "Success rate is 43% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
+        "evidence": "verdict: \"P25) ends at **0$** while the favourable scenario (P75) lands near **285K$**, with the typ\""
+      },
+      {
+        "rule": "canonical-quote-p25_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"… favourable scenario (P75) lands near **285K$**, with the typical scenario also at **0$**.\"  (canon=0, quoted=285000)"
+      },
+      {
+        "rule": "canonical-quote-p75_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 0 for \"p75_wealth_real\" but canonical is 256136.7. Slot must be regenerated to match canonical.",
+        "evidence": "\"…$**, with the typical scenario also at **0$**. That spread reflects how sensitive the plan\"  (canon=256136.7002946958, quoted=0)"
+      }
+    ],
+    "overall_assessment": [
+      {
+        "rule": "canonical-quote-success_rate-overall_assessment",
+        "message": "AI slot \"overall_assessment\" quotes pct value 46 for \"success_rate\" but canonical is 42.95. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The plan currently shows a **46%** success rate (grade **C**, Under strain), wh\"  (canon=42.95, quoted=46)"
+      }
+    ],
+    "trajectory_insight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-trajectory_insight",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"…he favourable scenario (P75) lands at **285K$**. The trajectory crosses zero in roughly ha\"  (canon=0, quoted=285000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 964000 for \"lifetime_tax_real\" but canonical is 194335. Slot must be regenerated to match canonical.",
+        "evidence": "\"…tprint across the projection comes to **964K$** at an average effective rate of **14.5%**,\"  (canon=194335, quoted=964000)"
+      },
+      {
+        "rule": "scope-oas-clawback-drift",
+        "message": "OAS clawback years mentioned across sections drifts from canonical (6 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
+        "evidence": "sec-tax=0"
+      }
+    ],
+    "gis_insight": [
+      {
+        "rule": "canonical-quote-lifetime_gis-gis_insight",
+        "message": "AI slot \"gis_insight\" quotes dollar value 169000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ection, with a lifetime GIS amount of **169K$** averaging **$8,875** per year. This signal\"  (canon=0, quoted=169000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 285000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+        "evidence": "\"… at P25) and the favourable scenario (**285K$** at P75) is wide, and savings durability pr\"  (canon=0, quoted=285000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-success_rate-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 42.95. Slot must be regenerated to match canonical.",
+        "evidence": "\"…tagflation73** (success rate falls to **16%**) and to a **lostDecade** scenario (**23%**),\"  (canon=42.95, quoted=16)"
+      }
+    ],
+    "narrative": [
+      {
+        "rule": "content-missing-beat-retirement_age_lever",
+        "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
+        "evidence": "driver=gap_savings beat=retirement_age_lever patterns=[\"retire.{0,15}later\",\"retraite.{0,15}plus tard\",\"delay.{0,10}retir\",\"report(er)?.{0,15}retraite\",\"report.{0,5}de retraite\",\"extend.{0,10}working\",\"prolonger.{0,15}travail\",\"push.{0,10}retirement\",\"ajustement.{0,20}horizon\",\"horizon.{0,15}planification\"]"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/sandwich_gen_en.json and re-run the pipeline."
+}

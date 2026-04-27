@@ -1,0 +1,34 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 45% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-income-insight",
+      "target": "income_insight",
+      "severity": "major",
+      "message": "AI slot \"income_insight\" quotes pct value 67 for \"gov_coverage_only\" but canonical is 63.54. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 191000 for \"lifetime_tax_real\" but canonical is 82403. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-riskInsight",
+      "target": "riskInsight",
+      "severity": "major",
+      "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": []
+}

@@ -1,19 +1,134 @@
 {
-  "findings": [],
+  "findings": [
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 105 for \"guaranteed_income_coverage\" but canonical is 97.6. Slot must be regenerated to match canonical.",
+      "evidence": "\"…duces a guaranteed income coverage of **105%** and a **$0** monthly gap. OAS is the domina\"  (canon=97.60051508783144, quoted=105)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 8000 for \"lifetime_tax_real\" but canonical is 769. Slot must be regenerated to match canonical.",
+      "evidence": "\"…etime tax footprint is light: roughly **8K$** over the horizon at an average effective rat\"  (canon=769, quoted=8000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 0 for \"net_estate\" but canonical is 36052.71. Slot must be regenerated to match canonical.",
+      "evidence": "\"…d net estate sits near **36K$**, with **0$** of tax at death thanks to the modest register\"  (canon=36052.710625824475, quoted=0)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 15 for \"success_rate\" but canonical is 91.35. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ity is a sustained spending increase: a 15% spending uplift drops the success rate to **8%\"  (canon=91.35, quoted=15)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    }
+  ],
   "blockers": [],
-  "majors": [],
+  "majors": [
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 105 for \"guaranteed_income_coverage\" but canonical is 97.6. Slot must be regenerated to match canonical.",
+      "evidence": "\"…duces a guaranteed income coverage of **105%** and a **$0** monthly gap. OAS is the domina\"  (canon=97.60051508783144, quoted=105)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 8000 for \"lifetime_tax_real\" but canonical is 769. Slot must be regenerated to match canonical.",
+      "evidence": "\"…etime tax footprint is light: roughly **8K$** over the horizon at an average effective rat\"  (canon=769, quoted=8000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 0 for \"net_estate\" but canonical is 36052.71. Slot must be regenerated to match canonical.",
+      "evidence": "\"…d net estate sits near **36K$**, with **0$** of tax at death thanks to the modest register\"  (canon=36052.710625824475, quoted=0)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 15 for \"success_rate\" but canonical is 91.35. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ity is a sustained spending increase: a 15% spending uplift drops the success rate to **8%\"  (canon=91.35, quoted=15)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    }
+  ],
   "minors": [],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [],
+    "rerun_ai_slot": [
+      {
+        "section": "sec-income-insight",
+        "target": "income_insight",
+        "severity": "major",
+        "message": "AI slot \"income_insight\" quotes pct value 105 for \"guaranteed_income_coverage\" but canonical is 97.6. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes dollar value 8000 for \"lifetime_tax_real\" but canonical is 769. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-estateInsight",
+        "target": "estateInsight",
+        "severity": "major",
+        "message": "AI slot \"estateInsight\" quotes dollar value 0 for \"net_estate\" but canonical is 36052.71. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-stress-interpretation",
+        "target": "stress_interpretation",
+        "severity": "major",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 15 for \"success_rate\" but canonical is 91.35. Slot must be regenerated to match canonical."
+      }
+    ],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
     "manual": []
   },
-  "can_ship": true,
+  "can_ship": false,
   "blocker_count": 0,
-  "major_count": 0,
+  "major_count": 4,
   "minor_count": 0
 }

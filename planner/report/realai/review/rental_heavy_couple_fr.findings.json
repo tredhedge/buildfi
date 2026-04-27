@@ -1,0 +1,275 @@
+{
+  "findings": [
+    {
+      "id": "lang-leak",
+      "reviewer": "language",
+      "severity": "major",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences",
+      "evidence": "\\bclawback\\b (×1): \"39;est anticipée ( 0 année de clawback), ce qui retire un risque fis\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "narration-tone-paradox-overall_assessment",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+      "evidence": "overall_assessment: \"renouvellement hypothécaire défavorable, une vacance prolongée ou un cycle d'entretien lou\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "narration-tone-paradox-verdict",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 42% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+      "evidence": "verdict: \"histoire claire : le scénario favorable termine à **240K$** alors que le scénario typique \"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…**0$**, tandis que le **p75** atteint **240K$** : seules les trajectoires les plus favorab\"  (canon=0, quoted=240000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes pct value 15.8 for \"lifetime_effective_tax_rate\" but canonical is 9.33. Slot must be regenerated to match canonical.",
+      "evidence": "\"…orizon, avec un taux effectif moyen de **15.8%**, ce qui demeure modéré pour un ménage qui\"  (canon=9.328776971835914, quoted=15.8)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…L'écart **p25-p75** va de **0$** à **240K$**, ce qui révèle une dispersion serrée vers\"  (canon=0, quoted=240000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "thesis-drift-verdict-surplus",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-verdict",
+      "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "scope-oas-clawback-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (10 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
+      "evidence": "sec-tax=0",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "lang-leak",
+      "reviewer": "language",
+      "severity": "major",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences",
+      "evidence": "\\bclawback\\b (×1): \"39;est anticipée ( 0 année de clawback), ce qui retire un risque fis\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "narration-tone-paradox-overall_assessment",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+      "evidence": "overall_assessment: \"renouvellement hypothécaire défavorable, une vacance prolongée ou un cycle d'entretien lou\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "narration-tone-paradox-verdict",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 42% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
+      "evidence": "verdict: \"histoire claire : le scénario favorable termine à **240K$** alors que le scénario typique \"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…**0$**, tandis que le **p75** atteint **240K$** : seules les trajectoires les plus favorab\"  (canon=0, quoted=240000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes pct value 15.8 for \"lifetime_effective_tax_rate\" but canonical is 9.33. Slot must be regenerated to match canonical.",
+      "evidence": "\"…orizon, avec un taux effectif moyen de **15.8%**, ce qui demeure modéré pour un ménage qui\"  (canon=9.328776971835914, quoted=15.8)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…L'écart **p25-p75** va de **0$** à **240K$**, ce qui révèle une dispersion serrée vers\"  (canon=0, quoted=240000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "thesis-drift-verdict-surplus",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-verdict",
+      "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "scope-oas-clawback-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (10 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
+      "evidence": "sec-tax=0",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    }
+  ],
+  "minors": [],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": "sec-assessment",
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
+      },
+      {
+        "section": "sec-assessment",
+        "target": "verdict",
+        "severity": "major",
+        "message": "Success rate is 42% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
+      },
+      {
+        "section": "sec-trajectory-insight",
+        "target": "trajectory_insight",
+        "severity": "major",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes pct value 15.8 for \"lifetime_effective_tax_rate\" but canonical is 9.33. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
+        "severity": "major",
+        "message": "AI slot \"riskInsight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-verdict",
+        "target": "verdict",
+        "severity": "major",
+        "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match."
+      },
+      {
+        "section": null,
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
+      },
+      {
+        "section": "sec-tax",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "OAS clawback years mentioned across sections drifts from canonical (10 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "major",
+        "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
+      }
+    ],
+    "manual": []
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 9,
+  "minor_count": 0
+}

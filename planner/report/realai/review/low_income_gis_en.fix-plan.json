@@ -1,6 +1,31 @@
 {
   "remove_section": [],
-  "rerun_ai_slot": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-income-insight",
+      "target": "income_insight",
+      "severity": "major",
+      "message": "AI slot \"income_insight\" quotes pct value 105 for \"guaranteed_income_coverage\" but canonical is 97.6. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 8000 for \"lifetime_tax_real\" but canonical is 769. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-estateInsight",
+      "target": "estateInsight",
+      "severity": "major",
+      "message": "AI slot \"estateInsight\" quotes dollar value 0 for \"net_estate\" but canonical is 36052.71. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-stress-interpretation",
+      "target": "stress_interpretation",
+      "severity": "major",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 15 for \"success_rate\" but canonical is 91.35. Slot must be regenerated to match canonical."
+    }
+  ],
   "recompute_from_canonical": [],
   "block_data": [],
   "replace_with_callout": [],

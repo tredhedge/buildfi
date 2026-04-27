@@ -1,0 +1,50 @@
+{
+  "findings": [
+    {
+      "id": "content-missing-beat-spousal_rollover",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
+      "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "content-missing-beat-spousal_rollover",
+      "reviewer": "content-depth",
+      "severity": "major",
+      "category": "content_missing_beat",
+      "section": null,
+      "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
+      "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "narrative"
+    }
+  ],
+  "minors": [],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": []
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 1,
+  "minor_count": 0
+}
