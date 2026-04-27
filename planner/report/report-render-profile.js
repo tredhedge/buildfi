@@ -235,31 +235,60 @@
   // when jargonMode === 'plain'. The AI prompt's CALIBRATION block
   // already handles the AI text — this swaps the deterministic
   // copy that the renderer emits.
+  // Conservative swap table — only safe lexical substitutions that don't
+  // produce grammar errors or double-substitution artifacts. Each entry
+  // is a STANDALONE term that appears in deterministic prose without
+  // adjacent context that would make the swap awkward.
+  //
+  // Avoided patterns (do NOT add these, they break prose):
+  //   - "P25" alone — usually appears as "scenario prudent (P25)" already,
+  //     so swapping produces "scenario prudent (scenario prudent)".
+  //   - "median" / "m\u00e9diane" — appears in "median wealth" / "patrimoine
+  //     m\u00e9dian" where the surrounding noun already conveys the idea.
+  //   - "RRSP" / "REER" / "TFSA" / "CELI" — universally recognized; expanding
+  //     clutters every sentence. Glossary handles the explanation.
+  //   - Compound phrases that overlap with shorter swaps — replace order-
+  //     dependent and brittle.
   var JARGON_SWAPS = {
     en: {
-      'tax alpha':              'tax savings',
-      'lifetime effective rate':'average tax rate',
-      'OAS clawback':           'OAS reduction',
-      'P25':                    'cautious scenario',
-      'P50':                    'typical scenario',
-      'P75':                    'favourable scenario',
-      'Monte Carlo':            'simulated futures',
-      'engine output':          'projection',
-      'traceable to an engine output': 'reflects the projection',
-      't-Student':              'fat-tailed',
-      'fat-tailed':             'with rare-event allowance',
-      'sequence-of-returns':    'order-of-returns'
+      // Tax + benefit jargon (whole-phrase, non-overlapping)
+      'tax alpha':                      'tax savings',
+      'Tax alpha':                      'Tax savings',
+      'lifetime effective rate':        'average tax rate',
+      'effective tax rate':             'average tax rate',
+      'OAS clawback':                   'OAS reduction',
+      // Statistical jargon (standalone only — NOT P25/P50/P75 substrings)
+      'Monte Carlo':                    'simulated futures',
+      'monte carlo':                    'simulated futures',
+      'stochastic':                     'random',
+      'volatility':                     'market swings',
+      'sequence-of-returns':            'order-of-returns',
+      'sequence of returns':            'order of returns',
+      // Audit-trail vocabulary
+      'traceable to an engine output':  'reflects the projection'
     },
     fr: {
-      'alpha fiscal':           '\u00e9conomies fiscales',
-      'taux effectif viager':   'taux d\'imp\u00f4t moyen',
+      // Fiscalit\u00e9 + prestations.
+      // Multi-word swaps with article preservation (ordered first by length-
+      // sort so they fire BEFORE the bare "alpha fiscal" swap). FR grammar:
+      // "alpha fiscal" is masculine, "\u00e9conomies fiscales" is feminine plural.
+      // We rewrite the whole noun phrase so article + adjective agree.
+      'un alpha fiscal':                'des \u00e9conomies fiscales',
+      "l'alpha fiscal":                 'les \u00e9conomies fiscales',
+      'alpha fiscal':                   '\u00e9conomies fiscales',
+      'Alpha fiscal':                   '\u00c9conomies fiscales',
+      'taux effectif viager':           'taux d\'imp\u00f4t moyen',
+      'taux effectif moyen':            'taux d\'imp\u00f4t moyen',
       'r\u00e9cup\u00e9ration de la PSV': 'r\u00e9duction de la PSV',
-      'P25':                    'sc\u00e9nario prudent',
-      'P50':                    'sc\u00e9nario typique',
-      'P75':                    'sc\u00e9nario favorable',
-      'Monte Carlo':            'avenirs simul\u00e9s',
-      'sortie du moteur':       'projection',
-      's\u00e9quence des rendements': 'ordre des rendements'
+      // Statistique
+      'Monte Carlo':                    'avenirs simul\u00e9s',
+      'monte carlo':                    'avenirs simul\u00e9s',
+      'stochastique':                   'al\u00e9atoire',
+      'volatilit\u00e9':                'fluctuations de march\u00e9',
+      's\u00e9quence des rendements':   'ordre des rendements',
+      's\u00e9quence-de-rendements':    'ordre-des-rendements',
+      // Tra\u00e7abilit\u00e9
+      'tra\u00e7able \u00e0 une sortie du moteur': 'refl\u00e8te la projection'
     }
   };
 
@@ -268,9 +297,22 @@
     if (!text) return text;
     var swaps = JARGON_SWAPS[lang === 'en' ? 'en' : 'fr'] || {};
     var out = text;
-    Object.keys(swaps).forEach(function(from) {
-      // Case-insensitive whole-word replace; preserve first letter case.
-      var re = new RegExp('\\b' + from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+    // Sort by length descending so compound terms ("P25\u2013P75") replace
+    // BEFORE their substrings ("P25"). Otherwise the substring substitution
+    // happens first and the compound key never matches.
+    var keys = Object.keys(swaps).sort(function(a, b) { return b.length - a.length; });
+    keys.forEach(function(from) {
+      // P25/P50/P75/CELI/REER etc. start with a letter or use digits; \b
+      // works for letters but not for some Unicode dashes. Use a custom
+      // boundary that allows space, punctuation, or string edge.
+      var escaped = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // For terms with digits ($, %, ...), boundary on either side is
+      // either a non-word char OR a string edge. \b handles letters/digits
+      // correctly; for keys ending in punctuation we don't need a trailing \b.
+      var pattern = '\\b' + escaped + '\\b';
+      var re;
+      try { re = new RegExp(pattern, 'gi'); }
+      catch (e) { return; }
       out = out.replace(re, swaps[from]);
     });
     return out;

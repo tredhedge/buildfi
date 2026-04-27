@@ -448,22 +448,38 @@
         ? 'Scénario testé : <strong>' + (changes.join(', ') || 'plan d\'origine') + '</strong>. Les chiffres ci-dessous montrent le delta par rapport au plan de base.'
         : 'Scenario tested: <strong>' + (changes.join(', ') || 'baseline plan') + '</strong>. Figures below show the delta vs. baseline plan.';
 
-      // KPIs in 4 rows of 3 (12 total)
+      // KPI tile count adjusts to the reader's literacy. A beginner reader
+      // (jargonMode='plain' on body data attribute) sees only the 4
+      // headline KPIs — overload was the original concern. Intermediate
+      // and advanced see the full 12-tile grid.
+      var bodyJargon = '';
+      try { bodyJargon = (document.body.getAttribute('data-bf-jargon-mode') || ''); } catch (e) {}
+      var isBeginnerReader = bodyJargon === 'plain';
+
+      // 4 essentials (always shown). These four answer "is the plan working?"
+      // in the simplest possible terms.
+      var headline =
+        _kpiCard(isFR ? 'Taux de succès' : 'Success rate', Math.round(mc.succ * 100) + '%', fmtDelta(dSucc, 'pts'), dSucc, true) +
+        _kpiCard(isFR ? 'Patrimoine médian (réel)' : 'Median wealth (real)', fmtCompact(mc.rMedF || mc.medF), fmtDelta(dMedF, '$'), dMedF, true) +
+        _kpiCard(isFR ? 'Épuisement épargne' : 'Savings depletion', ruinDisplay, dRuin ? fmtDelta(dRuin, 'yrs') : '—', dRuin, true) +
+        _kpiCard(isFR ? 'Couverture gouv.' : 'Gov. coverage', Math.round(wiCov) + '%', fmtDelta(dCov, 'pts'), dCov, true);
+
+      // 8 secondary KPIs (intermediate + advanced). Adds dispersion, estate,
+      // tax detail, withdrawal rate, income at 75. These are useful for
+      // mixed/technical readers but overwhelming for beginners.
+      var secondary = isBeginnerReader ? '' : (
+        _kpiCard(isFR ? 'Patrimoine prudent P25' : 'Cautious wealth P25', fmtCompact(wiP25), fmtDelta(dP25, '$'), dP25, true) +
+        _kpiCard(isFR ? 'Ruine avant 90 ans' : 'Ruin before age 90', wiRuinBefore90Lbl, ruinChanged ? (isFR ? 'changé' : 'changed') : '—', ruinChanged ? (wiRuinBefore90 === 'Non' ? 1 : -1) : 0, true) +
+        _kpiCard(isFR ? 'Héritage médian' : 'Median estate', fmtCompact(mc.medEstateNet || 0), fmtDelta(dEstate, '$'), dEstate, true) +
+        _kpiCard(isFR ? 'Impôt viager total' : 'Total lifetime tax', fmtCompact(whatIfTotalTax), fmtDelta(dTax, '$'), dTax, false) +
+        _kpiCard(isFR ? 'Efficacité fiscale' : 'Tax efficiency', wiTaxEff.toFixed(1) + '%', fmtDelta(dTaxEff, 'pts'), dTaxEff, true) +
+        _kpiCard(isFR ? 'Récup. PSV (ans)' : 'OAS clawback (yrs)', wiOasYrs + (isFR ? ' ans' : ' yrs'), fmtDelta(dOasYrs, 'yrs'), dOasYrs, false) +
+        _kpiCard(isFR ? 'Retrait initial' : 'Initial withdrawal rate', wiWR.toFixed(1).replace('.', isFR ? ',' : '.') + '%', fmtDelta(dWR, 'pts'), dWR, false) +
+        _kpiCard(isFR ? 'Revenu net @75 ans' : 'Net income @ age 75', fmtCompact(wiInc75), fmtDelta(dInc75, '$'), dInc75, true)
+      );
+      var gridClass = isBeginnerReader ? 'bf-whatif-kpis-4' : 'bf-whatif-kpis-12';
       var kpisHtml = '<div class="bf-whatif-summary">' + summary + '</div>' +
-        '<div class="bf-whatif-kpis bf-whatif-kpis-12">' +
-          _kpiCard(isFR ? 'Taux de succès' : 'Success rate', Math.round(mc.succ * 100) + '%', fmtDelta(dSucc, 'pts'), dSucc, true) +
-          _kpiCard(isFR ? 'Patrimoine médian (réel)' : 'Median wealth (real)', fmtCompact(mc.rMedF || mc.medF), fmtDelta(dMedF, '$'), dMedF, true) +
-          _kpiCard(isFR ? 'Patrimoine prudent P25' : 'Cautious wealth P25', fmtCompact(wiP25), fmtDelta(dP25, '$'), dP25, true) +
-          _kpiCard(isFR ? 'Épuisement épargne' : 'Savings depletion', ruinDisplay, dRuin ? fmtDelta(dRuin, 'yrs') : '—', dRuin, true) +
-          _kpiCard(isFR ? 'Ruine avant 90 ans' : 'Ruin before age 90', wiRuinBefore90Lbl, ruinChanged ? (isFR ? 'changé' : 'changed') : '—', ruinChanged ? (wiRuinBefore90 === 'Non' ? 1 : -1) : 0, true) +
-          _kpiCard(isFR ? 'Héritage médian' : 'Median estate', fmtCompact(mc.medEstateNet || 0), fmtDelta(dEstate, '$'), dEstate, true) +
-          _kpiCard(isFR ? 'Impôt viager total' : 'Total lifetime tax', fmtCompact(whatIfTotalTax), fmtDelta(dTax, '$'), dTax, false) +
-          _kpiCard(isFR ? 'Efficacité fiscale' : 'Tax efficiency', wiTaxEff.toFixed(1) + '%', fmtDelta(dTaxEff, 'pts'), dTaxEff, true) +
-          _kpiCard(isFR ? 'Récup. PSV (ans)' : 'OAS clawback (yrs)', wiOasYrs + (isFR ? ' ans' : ' yrs'), fmtDelta(dOasYrs, 'yrs'), dOasYrs, false) +
-          _kpiCard(isFR ? 'Retrait initial' : 'Initial withdrawal rate', wiWR.toFixed(1).replace('.', isFR ? ',' : '.') + '%', fmtDelta(dWR, 'pts'), dWR, false) +
-          _kpiCard(isFR ? 'Couverture gouv.' : 'Gov. coverage', Math.round(wiCov) + '%', fmtDelta(dCov, 'pts'), dCov, true) +
-          _kpiCard(isFR ? 'Revenu net @75 ans' : 'Net income @ age 75', fmtCompact(wiInc75), fmtDelta(dInc75, '$'), dInc75, true) +
-        '</div>';
+        '<div class="bf-whatif-kpis ' + gridClass + '">' + headline + secondary + '</div>';
 
       results.innerHTML = kpisHtml;
 

@@ -81,14 +81,16 @@ function preparePayload(prof, ai) {
     rptLang: prof.lang, rptMode: prof.mode || 'standard',
     finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref,
     sku: prof.sku || 'bilan',
-    // CLIENT-EXPORT (Codex 2026-04-27 P1): the realai pipeline produces
-    // CANONICAL CLIENT DELIVERABLES — not in-app dashboards. Default to
-    // clientExport=true so the embedded What-If simulator section + the
-    // ~150KB report-whatif.js runtime are NOT inlined. Reports feel like
-    // finished documents, not exported app shells. Per-profile override
-    // possible via prof.clientExport=false.
-    clientExport: prof.clientExport !== false,
-    includeSimulator: false,
+    // Reverted 2026-04-28: I previously defaulted clientExport=true here
+    // without asking, which stripped the What-If simulator from all 20
+    // shipped reports. Bilan+Planner readers BOTH benefit from the
+    // simulator. The PRINT / PDF EXPORT path (report-export-service.js)
+    // still defaults clientExport=true via _withExportRenderProfile, so
+    // PDFs handed to clients are clean. The canonical realai pipeline now
+    // keeps the simulator inlined unless a profile explicitly sets
+    // clientExport=true.
+    clientExport: prof.clientExport === true,
+    includeSimulator: prof.includeSimulator !== false,
     // P1.6 — case_driver flows from profile → renderer → action plan re-ranker
     caseDriver: prof.case_driver || null,
     // T2.6 — advisor identity (parameterizable per profile in future; default

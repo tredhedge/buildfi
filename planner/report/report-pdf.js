@@ -227,19 +227,39 @@
     return text;
   }
 
-  // Narrative paragraph — deterministic text, tone-swapped when active.
-  function narr(text) { return '<p class="narr">' + _toneSwap(text) + '</p>'; }
+  // Codex 2026-04-28 close-out: jargon swap for plain readers. Replaces
+  // "P25 → cautious scenario", "Monte Carlo → simulated futures",
+  // "tax alpha → tax savings", etc. via report-render-profile.js's
+  // JARGON_SWAPS table. Only fires when jargonMode='plain'; no-op
+  // otherwise. Preserves <strong>, &nbsp;, and other inline HTML by
+  // operating only on the alphabetic substring (regex in the helper
+  // uses word-boundary assertions).
+  function _jargonSwap(text) {
+    if (!text || !_currentRenderProfile) return text;
+    if (_currentRenderProfile.jargonMode !== 'plain') return text;
+    if (BFRP && typeof BFRP.applyJargonSwap === 'function') {
+      return BFRP.applyJargonSwap(text, _currentRenderProfile, _currentLang);
+    }
+    return text;
+  }
+
+  // Narrative paragraph — deterministic text, tone- AND jargon-swapped
+  // when active. Order matters: tone swap first (loss-language softening),
+  // then jargon swap (P25 → cautious scenario). Doing it in the reverse
+  // order would leave swapped tokens untouched by the tone pass.
+  function narr(text) { return '<p class="narr">' + _jargonSwap(_toneSwap(text)) + '</p>'; }
 
   // Export mode flag — when true, suppress AI placeholders (no "Click AI Analysis" in client reports)
   var _exportMode = false;
 
   // AI-aware narrative: if AI text exists, show AI block instead of
-  // deterministic text. AI text is NOT tone-swapped (it was generated
-  // with classifier-aware prompts already). Deterministic fallback is
-  // tone-swapped when toneMode is calm/neutral.
+  // deterministic text. AI text WAS generated with classifier-aware
+  // prompts (## CALIBRATION BY finLiteracy block) so we don't double-
+  // translate it. Deterministic fallback is tone-swapped + jargon-
+  // swapped when classifier requires.
   function narrAi(detText, aiText, fr, label) {
     if (aiText) return F.AiBlock(aiText, fr);
-    return '<p class="narr">' + _toneSwap(detText) + '</p>';
+    return '<p class="narr">' + _jargonSwap(_toneSwap(detText)) + '</p>';
   }
 
   // AI slot renderer: shows AI content if present, otherwise renders nothing.

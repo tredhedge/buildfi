@@ -806,8 +806,11 @@
       '.bf-whatif-summary{font-size:11px;color:#4a3f33;margin:8px 0 10px;padding:8px 12px;background:#f9f7f2;border-radius:4px;line-height:1.55}',
       '.bf-whatif-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}',
       '.bf-whatif-kpis-12{grid-template-columns:repeat(4,1fr)}',
-      '@media (max-width:900px){.bf-whatif-kpis,.bf-whatif-kpis-12{grid-template-columns:repeat(3,1fr)}}',
-      '@media (max-width:600px){.bf-whatif-kpis,.bf-whatif-kpis-12{grid-template-columns:repeat(2,1fr)}}',
+      // Beginner-mode 4-tile grid: bigger cards, single row at desktop.
+      '.bf-whatif-kpis-4{grid-template-columns:repeat(4,1fr)}',
+      '.bf-whatif-kpis-4 .bf-whatif-kpi{padding:14px 12px}',
+      '@media (max-width:900px){.bf-whatif-kpis,.bf-whatif-kpis-12,.bf-whatif-kpis-4{grid-template-columns:repeat(2,1fr)}}',
+      '@media (max-width:600px){.bf-whatif-kpis,.bf-whatif-kpis-12,.bf-whatif-kpis-4{grid-template-columns:repeat(2,1fr)}}',
       '.bf-whatif-kpi{background:#fff;border:1px solid #e8e0d4;border-radius:6px;padding:10px;text-align:center}',
       '.bf-whatif-kpi-label{font-size:9px;color:#706558;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;font-weight:600}',
       '.bf-whatif-kpi-value{font-family:"JetBrains Mono",monospace;font-size:16px;font-weight:700;color:#1a1610;margin-bottom:3px}',
