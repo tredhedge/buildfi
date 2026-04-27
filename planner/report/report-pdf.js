@@ -648,7 +648,7 @@
     '</svg>';
     // Component breakdown — 5 rows showing each subscore + weight.
     var compMeta = {
-      plan_resilience:  { fr: 'R\u00e9silience du plan',   en: 'Plan resilience',  hint: { fr: 'Taux de succ\u00e8s Monte Carlo', en: 'Monte Carlo success rate' } },
+      plan_resilience:  { fr: 'R\u00e9silience du plan',   en: 'Plan resilience',  hint: { fr: 'Taux de succ\u00e8s sur les avenirs simul\u00e9s', en: 'Success rate across simulated futures' } },
       savings_rate:     { fr: 'Taux d\'\u00e9pargne',      en: 'Savings rate',     hint: { fr: 'Cotisations / revenu brut, plafonn\u00e9 \u00e0 25\u202f%', en: 'Contributions / gross income, capped at 25%' } },
       tax_efficiency:   { fr: 'Efficacit\u00e9 fiscale',    en: 'Tax efficiency',   hint: { fr: 'Taux effectif moyen sur l\'horizon', en: 'Average effective rate over horizon' } },
       diversification:  { fr: 'Diversification',          en: 'Diversification',  hint: { fr: 'R\u00e9partition entre comptes (REER/CELI/NR/CRI/Corp)', en: 'Spread across accounts (RRSP/TFSA/NR/LIRA/Corp)' } },
@@ -706,8 +706,8 @@
     // band's name is already shown in the bandLabel above the gauge.
     h += '<div style="font-family:Inter,sans-serif;font-size:8.5px;color:#9aabc7;font-style:italic;margin-top:8px;line-height:1.5">' +
       (fr
-        ? 'Score d\u00e9terministe (sans variance Monte Carlo) sur cinq composantes pond\u00e9r\u00e9es. Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
-        : 'Deterministic score (no Monte Carlo variance) across five weighted components. Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
+        ? 'Score structurel (ind\u00e9pendant des avenirs simul\u00e9s) sur cinq composantes pond\u00e9r\u00e9es. Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
+        : 'Structural score (independent of simulated futures) across five weighted components. Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
       '</div>';
     h += '</div>';
     h += '</div>';
@@ -1574,8 +1574,8 @@
 
     h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:6px">' +
       (fr
-        ? 'Chaque d\u00e9lta provient d\'une simulation Monte Carlo compl\u00e8te \u2014 pas d\'approximation analytique. Les facteurs ne sont pas additifs: combiner plusieurs perturbations requiert une simulation combin\u00e9e d\u00e9di\u00e9e.'
-        : 'Every delta originates from a complete Monte Carlo run \u2014 no closed-form approximation. Factors are not additive: combining multiple perturbations requires a dedicated combined simulation.') +
+        ? 'Chaque écart provient d\'un calcul complet sur les avenirs simulés — pas d\'approximation analytique. Les facteurs ne sont pas additifs : combiner plusieurs ajustements requiert une exploration combinée dédiée.'
+        : 'Every figure comes from a full computation across the simulated futures — no closed-form approximation. The levers are not additive: combining several adjustments requires a dedicated combined exploration.') +
       '</div>';
 
     h += secPageEnd();
@@ -5183,6 +5183,19 @@
     h += '<div style="font-size:10px;font-weight:600;color:#4060b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? 'Intelligence artificielle' : 'Artificial Intelligence') + '</div>';
     h += '<div style="font-size:11px;color:#555;line-height:1.6">' + (fr ? 'Certaines observations de ce rapport ont \u00e9t\u00e9 assist\u00e9es par l\u2019intelligence artificielle (Claude, Anthropic). Le mod\u00e8le AI observe les donn\u00e9es du moteur de calcul et formule des observations en langage clair. Les calculs sous-jacents (fiscalit\u00e9, Monte Carlo, mortalit\u00e9) sont enti\u00e8rement d\u00e9terministes et ne d\u00e9pendent pas de l\u2019AI.' : 'Some observations in this report were assisted by artificial intelligence (Claude, Anthropic). The AI model observes data from the calculation engine and formulates observations in plain language. The underlying calculations (tax, Monte Carlo, mortality) are entirely deterministic and do not depend on AI.') + '</div></div>';
 
+    // Phase 4 (codex 2026-04-27): full LDPSF/AMF disclosure block lives
+    // in the methodology appendix, not at the end of the report body.
+    // Tightens the body's reading rhythm (no legal wall closing the
+    // experience) while preserving compliance reviewability.
+    h += '<div class="bf-full-disclaimer" style="margin-top:18px;padding:14px 18px;background:#fafafa;border:1px solid #e8e0d4;border-radius:6px;font-size:10.5px;color:#555;line-height:1.7">' +
+      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#888;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px">' +
+        (fr ? 'Mise en garde compl\u00e8te (LDPSF / AMF)' : 'Full disclosure (Quebec LDPSF / AMF)') +
+      '</div>' +
+      (fr
+        ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit. Remboursement int\u00e9gral sur demande sous 30\u00a0jours, sans justification \u2014 voir <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.'
+        : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
+      '</div>';
+
     h += secPageEnd();
     return h;
   }
@@ -5198,14 +5211,15 @@
       h += '<div style="margin-top:10px"><div style="font-size:11px;font-weight:700;color:' + C.gold + ';margin-bottom:4px">Notes</div><div class="cd" style="white-space:pre-line;font-size:10px;line-height:1.7">' + F.esc(d.client.notes) + '</div></div>';
     }
 
-    // Disclaimer — AMF + Loi sur la distribution de produits et services
-    // financiers (LDPSF). Explicit scope-limit + 30-day refund notice +
-    // privacy policy pointer. Mirrors the Stripe metadata
-    // liability_scope=informational_only paper trail.
-    h += '<div class="disclaimer"><strong>\u26a0 ' + (fr ? 'Mise en garde' : 'Disclaimer') + '</strong><br/>' +
+    // Phase 4 (codex 2026-04-27): split disclaimer.
+    //   1-line compliance note in body — preserves trust, doesn't end the
+    //     reading experience on a wall of legal text.
+    //   Full LDPSF/AMF disclosure block lives in the appendix (renderMethodology
+    //     emits it there) — reviewable by an accountant, not dominant.
+    h += '<div class="disclaimer-short" style="margin-top:18px;padding:10px 14px;background:#fdfbf6;border-left:3px solid #c49a1a;border-radius:0 4px 4px 0;font-size:10.5px;color:#5a4f3a;line-height:1.6;font-style:italic">' +
       (fr
-        ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations Monte Carlo dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit. Remboursement int\u00e9gral sur demande sous 30 jours, sans justification \u2014 voir <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.'
-        : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on Monte Carlo simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
+        ? '\u00c0 titre informatif. Ne constitue pas un conseil financier au sens de la LDPSF. La mise en garde compl\u00e8te figure en annexe.'
+        : 'For informational purposes. Does not constitute financial advice under the Quebec LDPSF. The full notice is in the appendix.') +
       '</div>';
 
     // Codex P5: page-running footer scrubbed of build metadata.
