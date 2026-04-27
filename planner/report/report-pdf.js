@@ -5055,12 +5055,21 @@
     if (d.includeSimulator !== false && !d.clientExport) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
     }
-    // Back-matter TOC: plain readers (beginner) get a single grouped
-    // disclosure entry "More detail" that opens to reveal all three;
-    // non-plain readers get individual entries for each appendix.
-    if (_isPlainReader) {
-      _tocN++; tocSections.push({ n: _tocN, id: 'sec-more-detail', label: d.fr ? 'Pour plus de d\u00e9tails' : 'For more detail' });
-    } else {
+    // Back-matter TOC.
+    //   plain + !deep (beg_con / beg_bal): OMIT entirely. Methodology, raw
+    //     assumptions, and the glossary appendix are technical reference
+    //     material that does not help a plain-language reader navigate the
+    //     report. Putting them at the end as collapsed disclosure is dead
+    //     weight (per user feedback 2026-04-27). Glossary terms are still
+    //     surfaced inline via the interactive tooltip layer.
+    //   plain + deep (beg_det): INLINE all three (classifier flag
+    //     `densityMode==='deep'` says "full back-matter"). The renderer
+    //     applies the jargon swap so a plain reader can actually read them.
+    //   non-plain (int / adv): individual entries — density-collapsed in
+    //     compact mode via _densityWrap, inline otherwise.
+    var _plainBackMatter = d.renderProfile && d.renderProfile.densityMode === 'deep';
+    var _showBackMatter = _plainBackMatter || !_isPlainReader;
+    if (_showBackMatter) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
@@ -5257,41 +5266,33 @@
     // the dense back-matter on a casual reader. For non-plain readers
     // they render inline (each individually density-collapsed when
     // compact via _densityWrap).
-    secN++;
-    var _methHtml = renderMethodology(d, secN);
-    secN++;
-    var _assumpHtml = renderAssumptions(d, secN);
-    secN++;
-    var _glossHtml = _renderGlossaryAppendix(d, secN);
+    if (_showBackMatter) {
+      secN++;
+      var _methHtml = renderMethodology(d, secN);
+      secN++;
+      var _assumpHtml = renderAssumptions(d, secN);
+      secN++;
+      var _glossHtml = _renderGlossaryAppendix(d, secN);
 
-    if (_isPlainReader) {
-      // Single grouped disclosure — opens to reveal all three inline.
-      var _isFR = !!d.fr;
-      h += '<div class="sec-page" id="sec-more-detail" data-bf-disclosure="more-detail">' +
-        '<details class="bf-more-detail-disclosure" style="margin:24px 0;border:1px solid ' + C.border + ';border-radius:6px;background:#fdfbf6">' +
-          '<summary style="cursor:pointer;padding:14px 18px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:' + C.gold + ';letter-spacing:0.3px;list-style:none">' +
-            '<span style="display:inline-block;margin-right:6px;font-size:11px">\u25b8</span>' +
-            (_isFR ? 'Vous voulez plus de d\u00e9tails ? Cliquez pour ouvrir' : 'Want more detail? Click to open') +
-            '<span style="display:block;font-size:10px;color:#888;font-weight:400;letter-spacing:0;margin-top:4px;margin-left:14px">' +
-              (_isFR
-                ? 'M\u00e9thodologie, hypoth\u00e8ses techniques, glossaire des termes.'
-                : 'Methodology, technical assumptions, glossary of terms.') +
-            '</span>' +
-          '</summary>' +
-          '<div style="padding:0 18px 18px">' + _methHtml + _assumpHtml + _glossHtml + '</div>' +
-        '</details></div>';
-    } else {
-      // Non-plain readers — each section renders inline, density-collapsed
-      // (compact wraps in <details>; balanced/deep show inline).
-      h += _densityWrap(_methHtml, 'sec-methodology',
-        'M\u00e9thodologie \u2014 hypoth\u00e8ses + tables fiscales (cliquer pour ouvrir)',
-        'Methodology \u2014 assumptions + tax tables (click to open)', d);
-      h += _densityWrap(_assumpHtml, 'sec-assumptions',
-        'Annexe \u2014 hypoth\u00e8ses d\u00e9taill\u00e9es (cliquer pour ouvrir)',
-        'Appendix \u2014 detailed assumptions (click to open)', d);
-      h += _densityWrap(_glossHtml, 'sec-glossary',
-        'Glossaire \u2014 d\u00e9finitions des termes (cliquer pour ouvrir)',
-        'Glossary \u2014 term definitions (click to open)', d);
+      if (_isPlainReader) {
+        // Plain + deep: render inline, but pass each block through the
+        // jargon swap so the plain reader can actually read them.
+        h += _jargonSwap(_methHtml);
+        h += _jargonSwap(_assumpHtml);
+        h += _jargonSwap(_glossHtml);
+      } else {
+        // Non-plain readers — each section renders inline, density-collapsed
+        // (compact wraps in <details>; balanced/deep show inline).
+        h += _densityWrap(_methHtml, 'sec-methodology',
+          'M\u00e9thodologie \u2014 hypoth\u00e8ses + tables fiscales (cliquer pour ouvrir)',
+          'Methodology \u2014 assumptions + tax tables (click to open)', d);
+        h += _densityWrap(_assumpHtml, 'sec-assumptions',
+          'Annexe \u2014 hypoth\u00e8ses d\u00e9taill\u00e9es (cliquer pour ouvrir)',
+          'Appendix \u2014 detailed assumptions (click to open)', d);
+        h += _densityWrap(_glossHtml, 'sec-glossary',
+          'Glossaire \u2014 d\u00e9finitions des termes (cliquer pour ouvrir)',
+          'Glossary \u2014 term definitions (click to open)', d);
+      }
     }
 
     // 19. Signature page (last content page before footer)

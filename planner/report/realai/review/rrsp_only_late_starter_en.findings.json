@@ -67,17 +67,6 @@
       "fix_target": "sec-assessment-deterministic"
     },
     {
-      "id": "content-shallow-sec-more-detail",
-      "reviewer": "content-depth",
-      "severity": "minor",
-      "category": "content_shallow",
-      "section": "sec-more-detail",
-      "message": "Section sec-more-detail renders but contains only 12 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty.",
-      "evidence": "words=12 bytes=715",
-      "fix_kind": "manual",
-      "fix_target": "sec-more-detail"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -160,17 +149,6 @@
   ],
   "minors": [
     {
-      "id": "content-shallow-sec-more-detail",
-      "reviewer": "content-depth",
-      "severity": "minor",
-      "category": "content_shallow",
-      "section": "sec-more-detail",
-      "message": "Section sec-more-detail renders but contains only 12 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty.",
-      "evidence": "words=12 bytes=715",
-      "fix_kind": "manual",
-      "fix_target": "sec-more-detail"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -228,12 +206,6 @@
         "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
       },
       {
-        "section": "sec-more-detail",
-        "target": "sec-more-detail",
-        "severity": "minor",
-        "message": "Section sec-more-detail renders but contains only 12 visible words (threshold 50). Either the deterministic copy is too thin or an AI slot returned empty."
-      },
-      {
         "section": null,
         "target": "global",
         "severity": "minor",
@@ -244,5 +216,5 @@
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 6,
-  "minor_count": 2
+  "minor_count": 1
 }

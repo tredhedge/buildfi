@@ -18,11 +18,16 @@ function audit(pack) {
   var presentIds = {};
   pack.sections.forEach(function(s) { presentIds[s.id] = (presentIds[s.id] || 0) + 1; });
 
-  // 3×3 matrix gating (2026-04-28). Beginner+concise (the MINIMAL cell) is
-  // the only combo that legitimately omits back-matter + technical sections.
-  // Beginner+detailed asks for plain language but full content — those
-  // sections must be rendered, so the auditor must NOT exempt missing
-  // sections from anything but the minimal cell.
+  // 3×3 matrix gating (2026-04-28, refined 2026-04-27 based on user
+  // feedback re: dead-weight back-matter at end of report for beginners).
+  //   minimal cell (plain + compact): omits the full set below.
+  //   plain + balanced: also omits methodology/assumptions/glossary
+  //     (technical reference material, never useful for a plain reader
+  //     even when collapsed at the end of the report).
+  //   plain + deep: renders ALL sections (back-matter inline, jargon-
+  //     swapped). Stress/risk/sensitivity/draworder must be present.
+  //   non-plain: renders ALL sections; compact-density wrap may collapse
+  //     them into <details> but they are still in the DOM.
   var rp = (pack.dPayload && pack.dPayload.renderProfile) || pack.renderProfile || {};
   var jargonMode = rp.jargonMode
     || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain'
@@ -33,16 +38,22 @@ function audit(pack) {
         : pack.profile && pack.profile.detailPref === 'detailed' ? 'deep'
         : 'balanced');
   var isMinimal = jargonMode === 'plain' && densityMode === 'compact';
+  var isPlainNonDeep = jargonMode === 'plain' && densityMode !== 'deep';
   var MINIMAL_OMITS = {
     'sec-stress': true, 'sec-risk': true, 'sec-sensitivity': true,
     'sec-methodology': true, 'sec-assumptions': true, 'sec-glossary': true,
     'sec-draworder': true
   };
+  var PLAIN_BACKMATTER_OMITS = {
+    'sec-methodology': true, 'sec-assumptions': true, 'sec-glossary': true
+  };
 
   Contract.SECTIONS.forEach(function(spec) {
     if (spec.mandatory && !presentIds[spec.id]) {
-      // Skip blocker only for the genuinely-minimal cell.
+      // Skip blocker for the genuinely-minimal cell, OR for back-matter
+      // sections in any plain non-deep cell (beg_bal in particular).
       if (isMinimal && MINIMAL_OMITS[spec.id]) return;
+      if (isPlainNonDeep && PLAIN_BACKMATTER_OMITS[spec.id]) return;
       findings.push({
         id: 'table-missing-' + spec.id,
         reviewer: 'table',
