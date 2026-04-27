@@ -67,6 +67,11 @@
     // is editorial support, not a dashboard. No individual tile borders;
     // metrics separated by thin vertical hairlines. Lower contrast,
     // smaller scale, single-row at desktop.
+    // Force readable color on emphasized inline tags inside the hero-score
+    // block. Without this, AI markdown italics (`*foundations*`) and any
+    // `<em>` text inherit a dark color and disappear on the navy hero bg.
+    '.hero-score em,.hero-score-explainer em{color:#e8e0d4;font-style:italic}',
+    '.hero-score strong,.hero-score-explainer strong{color:#c8d3e2}',
     '.bf-support-strip{display:flex;align-items:stretch;background:transparent;border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:14px 0;margin:8px 0 18px;break-inside:avoid;page-break-inside:avoid}',
     '.bf-support-tile{flex:1;padding:0 14px;text-align:center;border-right:1px solid #ece4d4}',
     '.bf-support-tile:last-child{border-right:none}',
@@ -793,10 +798,10 @@
     h += '<div class="hero-score-band hero-score-band-gauge" style="text-align:center;padding-bottom:24px;border-bottom:1px solid rgba(196,154,26,0.18);margin-bottom:22px">';
     h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px">' + (fr ? 'Score de pr\u00e9paration' : 'Readiness score') + '</div>';
     h += svg;
-    h += '<div style="font-family:Inter,sans-serif;font-size:11px;color:#9aabc7;margin:14px auto 0;letter-spacing:0.2px;line-height:1.6;max-width:540px">' +
+    h += '<div class="hero-score-explainer" style="font-family:Inter,sans-serif;font-size:11px;color:#9aabc7;margin:14px auto 0;letter-spacing:0.2px;line-height:1.6;max-width:540px">' +
       (fr
-        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : ce score \u00e9value vos <em>fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
-        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: this score evaluates your <em>foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
+        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : ce score \u00e9value vos <em style="color:#e8e0d4;font-style:italic">fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
+        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: this score evaluates your <em style="color:#e8e0d4;font-style:italic">foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
       '</div>';
     h += '</div>';
     // Band 2 — component breakdown band
@@ -1165,15 +1170,15 @@
   //               retained so the cover sits alone on its page.
   function _renderChapterCover(num, title, frame, fr) {
     var roman = ['', 'I', 'II', 'III', 'IV', 'V'][num] || String(num);
-    return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:160px 24px 80px;text-align:center">' +
-      '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:5px;color:#a89460;text-transform:uppercase;margin-bottom:32px">' +
+    return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:180px 24px 100px;text-align:center">' +
+      '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:12px;font-weight:700;letter-spacing:6px;color:#a89460;text-transform:uppercase;margin-bottom:40px">' +
         F.esc((fr ? 'Chapitre ' : 'Chapter ') + roman) +
       '</div>' +
-      '<div class="bf-chapter-rule" style="width:56px;height:2px;background:#c49a1a;margin:0 auto 36px"></div>' +
-      '<div class="bf-chapter-title" style="font-family:\"Playfair Display\",Georgia,serif;font-size:54px;font-weight:700;color:#1a1610;line-height:1.08;letter-spacing:-0.8px;margin:0 auto 32px;max-width:680px">' +
+      '<div class="bf-chapter-rule" style="width:64px;height:3px;background:#c49a1a;margin:0 auto 44px"></div>' +
+      '<div class="bf-chapter-title" style="font-family:\"Playfair Display\",Georgia,serif;font-size:78px;font-weight:800;color:#0f0d09;line-height:1.04;letter-spacing:-1.2px;margin:0 auto 40px;max-width:820px">' +
         F.esc(title) +
       '</div>' +
-      '<div class="bf-chapter-frame" style="font-family:\"Playfair Display\",Georgia,serif;font-size:16px;font-style:italic;color:#5a4f3a;line-height:1.6;max-width:540px;margin:0 auto;letter-spacing:0.1px">' +
+      '<div class="bf-chapter-frame" style="font-family:\"Playfair Display\",Georgia,serif;font-size:18px;font-style:italic;color:#5a4f3a;line-height:1.6;max-width:600px;margin:0 auto;letter-spacing:0.1px">' +
         F.esc(frame) +
       '</div>' +
       '</div>';
