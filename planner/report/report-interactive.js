@@ -1172,7 +1172,14 @@
     _injectRuntimeStyles();
     _tagSectionPages();
     _buildStickyBar();
-    _buildPrintToggle();
+    // 2026-04-28: floating Court / Standard / Complet toggle removed.
+    // Classifier is now the source of truth for report length — a reader
+    // who chose "concise" gets the brief render at generate-time. The
+    // post-render JS toggle was contradicting that promise (it just
+    // hid sections via CSS, which left the FULL HTML present in the
+    // delivered file). Readers who want more depth than their classifier
+    // picked use the inline <details> disclosure at the back-matter.
+    // _buildPrintToggle();
     _bindControls();
     _bindActionToggles();
     _wireDrilldownTriggers();

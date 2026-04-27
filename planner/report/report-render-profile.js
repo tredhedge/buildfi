@@ -116,6 +116,36 @@
       if (profile.chartTier === 'lite') return 'omit';
       return 'chart';
     }
+    if (blockId === 'wealth_composition') {
+      // Stacked area chart of liquid + illiquid assets over time.
+      // Lite → text fallback (single-number summary); std/full → chart.
+      if (profile.chartTier === 'lite') return 'text';
+      return 'chart';
+    }
+    if (blockId === 'histogram') {
+      // Final-wealth distribution. Lite + std readers get omit (the
+      // percentile fan already shows the same dispersion idea, more
+      // intuitively). full readers get the chart.
+      return profile.chartTier === 'full' ? 'chart' : 'omit';
+    }
+    if (blockId === 'donut_multi' || blockId === 'income_breakdown') {
+      // Multi-slice donut for income source composition. lite → simpler
+      // top-3 list; std/full → full multi-slice donut.
+      if (profile.chartTier === 'lite') return 'chart_simplified';
+      return 'chart';
+    }
+    if (blockId === 'fee_impact') {
+      // Bar chart comparing fee scenarios. Lite → text, std → hybrid,
+      // full → chart. Already wired earlier; documented here for clarity.
+      if (profile.chartTier === 'lite') return 'text';
+      if (profile.chartTier === 'std')  return 'hybrid';
+      return 'chart';
+    }
+    if (blockId === 'sensitivity_2d') {
+      // 2D heatmap of return × inflation impact. Full only — too dense
+      // for std and meaningless for lite.
+      return profile.chartTier === 'full' ? 'chart' : 'omit';
+    }
 
     if (blockId === 'stress_tests' && profile.toneMode === 'calm' && profile.chartTier !== 'full') {
       return 'text';

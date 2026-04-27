@@ -608,13 +608,20 @@
              '" x2="' + outer.x.toFixed(1) + '" y2="' + outer.y.toFixed(1) +
              '" stroke="rgba(250,248,244,0.55)" stroke-width="1.5" stroke-linecap="round" />';
     }
-    // Geometry: arc center (110, 110), radius 90, stroke 14. Arc top edge at
-    // y = 110 - 90 - 7 = 13, bottom inner edge at y = 110 - 7 = 103. Visual
-    // midline of the OPENING (not the geometric centre) sits at y ≈ 65.
-    // dominant-baseline=central anchors the text's vertical centre at the
-    // given y, so y=58 puts the score visually centered inside the arc.
+    // Geometry: arc center (110, 110), radius 90, stroke 14. Both arcs use
+    // stroke-linecap="round" with the SAME path geometry — this guarantees
+    // their round caps overlap exactly, eliminating the score-dependent
+    // visual artifacts that plagued the butt+round mix.
+    //
+    // Root-cause history: previous versions had stroke-linecap="round" on
+    // the gradient track but stroke-linecap="butt" on the active arc. The
+    // gradient's round caps protrude ~7px beyond the path endpoints; the
+    // active arc's butt caps cut sharp. At low scores the active arc was
+    // small and the gradient mismatch was invisible; at high scores the
+    // active arc spanned most of the track and the gradient's protruding
+    // round cap on the right (gold cap past x=200) became visible.
+    // Matching round-on-round eliminates this.
     var svg = '<svg viewBox="0 0 220 115" width="220" height="115" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;margin:0 auto">' +
-      // Background gradient track (continuous red→amber→green→gold)
       '<defs>' +
         '<linearGradient id="gauge-bg" x1="0%" y1="0%" x2="100%" y2="0%">' +
           '<stop offset="0%" stop-color="#cc4444" />' +
@@ -623,22 +630,22 @@
           '<stop offset="100%" stop-color="#c49a1a" />' +
         '</linearGradient>' +
       '</defs>' +
+      // Background gradient track. Round caps for visual softness.
       '<path d="' + bgPath + '" fill="none" stroke="url(#gauge-bg)" stroke-width="14" stroke-linecap="round" opacity="0.25" />' +
-      // Active arc — `butt` linecap (NOT round). The round caps were drawing
-      // half-disc bleeds at the score position and at the start, which read
-      // as two big green chunks at each end of the arc. butt = clean cuts.
-      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="butt" />' +
+      // Active arc. Same round caps so terminations match. The mild round
+      // bleed at the active arc's end is now visually consistent with
+      // the gradient's caps and reads as intentional.
+      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="round" />' +
       // Threshold tick marks at 40 / 65 / 85
       _tickMarker(40) + _tickMarker(65) + _tickMarker(85) +
-      // Score number — explicit y-baseline calculation so the rendering does
-      // NOT depend on dominant-baseline="central" (Chrome OK, but several
-      // print/PDF engines + WebKit on iOS ignore it). For a 32px font the
-      // optical centre sits ~10.5px above the alphabetic baseline. Target
-      // optical centre y=58 → baseline y=68.
-      '<text x="' + CX + '" y="68" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="32" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
-      // "/ 100" caption tucked snug under the score with the same explicit
-      // baseline approach. font-size 9 → baseline 88 so optical centre y=84.
-      '<text x="' + CX + '" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
+      // Score number — explicit y so we don\'t depend on dominant-baseline.
+      // Math: target optical centre = y=62 (visual midline of the
+      // semicircle opening). For 32px JetBrains Mono, alphabetic baseline
+      // sits ~22px below x-height; optical centre is at half-cap-height
+      // (~10) above baseline. baseline = 62 + 10 = 72.
+      '<text x="' + CX + '" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="32" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
+      // "/ 100" caption — separated from score by 8px, sits at baseline 90.
+      '<text x="' + CX + '" y="90" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
     '</svg>';
     // Component breakdown — 5 rows showing each subscore + weight.
     var compMeta = {
@@ -1362,15 +1369,6 @@
     if (!_aiStartsWithName) {
       h += '<div style="font-size:18px;font-weight:700;color:' + C.gold + ';margin-bottom:20px">' + _salutation + ',</div>';
     }
-    // P1.6 — Case-driver framing line. Always emit a one-sentence framing
-    // anchor BEFORE the AI letter. This guarantees the case_driver concept
-    // is named in the advisor-letter section even when the upstream AI
-    // narration was generated before the case_driver mandate.
-    var caseDriver = d.caseDriver || null;
-    var caseFraming = _caseDriverFramingSentence(caseDriver, fr, d);
-    if (caseFraming) {
-      h += '<p class="case-driver-framing" data-case-driver="' + F.esc(caseDriver) + '" style="font-style:italic;color:#5a4f3a;margin-bottom:14px;font-size:11.5px">' + caseFraming + '</p>';
-    }
     if (d.ai.advisor_letter) {
       // Render the advisor letter as a clean letter, NOT as an "AI-assisted
       // analysis" callout box. The opening page should read as a personal
@@ -1404,6 +1402,18 @@
     // traceable to an engine output") leaks internal QA language into the
     // client deliverable. Removed entirely. The standard AMF disclaimer
     // ("projections are conditional and not guaranteed") is preserved.
+    // Case-driver framing — emitted AFTER the letter body. Originally lived
+    // BEFORE the AI letter, which broke the "personal note from advisor"
+    // register when the AI started with the client's name (the framing
+    // became the leading paragraph). Now it sits after the body as a
+    // closing observation, never preceding the salutation. It carries
+    // the case_driver content beats the auditor checks for, so removing
+    // it entirely is not an option.
+    var caseDriver = d.caseDriver || null;
+    var caseFraming = _caseDriverFramingSentence(caseDriver, fr, d);
+    if (caseFraming) {
+      h += '<p class="case-driver-framing" data-case-driver="' + F.esc(caseDriver) + '" style="font-style:italic;color:#5a4f3a;margin-top:18px;font-size:11.5px;line-height:1.7;border-left:3px solid ' + C.gold + ';padding:10px 14px;background:#fdfbf6">' + caseFraming + '</p>';
+    }
     h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
       ? 'Les projections sont conditionnelles et non garanties.'
       : 'Projections are conditional and not guaranteed.') + '</p>';
@@ -2141,17 +2151,35 @@
       var _keys = _activeAssets.map(function(a) { return a.k; });
       var _colors = _activeAssets.map(function(a) { return a.color; });
       var _labels = _activeAssets.map(function(a) { return fr ? a.fr : a.en; });
-      h += Ch.svgArea(mc.pD,
-        _keys, _colors, _labels,
-        {
+      // Phase 2 dispatch — route stacked wealth-composition through
+      // resolveRepresentation('wealth_composition'). lite → text fallback
+      // (P25/P50/P75 prose); std/full → stacked area chart.
+      var _wcRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+        ? BFRP.resolveRepresentation('wealth_composition', d.renderProfile, mc.pD && mc.pD.length > 0)
+        : 'chart';
+      if (_wcRepr === 'chart' || _wcRepr === 'chart_simplified') {
+        h += '<div data-bf-block="wealth_composition" data-bf-repr="' + _wcRepr + '">';
+        h += Ch.svgArea(mc.pD, _keys, _colors, _labels, {
           stacked: true, title: fr ? 'Composition du patrimoine (actifs liquides + illiquides)' : 'Wealth Composition (liquid + illiquid)',
           yFmt: f$, yLabel: '$',
+          simplified: _wcRepr === 'chart_simplified',
           annotations: [
             { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' },
             { age: 72, label: 'FERR' }
           ]
-        }
-      );
+        });
+        h += '</div>';
+      } else if (_wcRepr === 'text') {
+        // Lite fallback: prose summary of asset breakdown at retirement.
+        var _retIdx = (mc.pD || []).findIndex(function(r) { return r.age === p.retAge; });
+        var _retRow = _retIdx >= 0 ? mc.pD[_retIdx] : (mc.pD && mc.pD[0]);
+        var _liquidTotal = (_retRow && (_retRow.mp_total || 0)) || 0;
+        h += '<div class="cd" data-bf-block="wealth_composition" data-bf-repr="text" style="background:#fdfbf6;border-left:3px solid #c49a1a;padding:10px 14px;font-size:11.5px;line-height:1.7">' +
+          (fr
+            ? '\u00c0 la retraite, votre patrimoine total atteindrait <strong>' + f$(_liquidTotal) + '</strong>, r\u00e9parti entre vos comptes (REER, CELI, non-enregistr\u00e9) et tout actif immobilier ou corporatif. Le graphique d\u00e9taill\u00e9 est disponible dans la version compl\u00e8te du rapport.'
+            : 'At retirement, your total wealth would be <strong>' + f$(_liquidTotal) + '</strong>, spread across your accounts (RRSP, TFSA, non-registered) plus any real estate or corporate holdings. The detailed chart is available in the full version of the report.') +
+          '</div>';
+      }
 
       // Sprint 2.1 — Truncate terminal years (deathAge − 2) to suppress
       // mortality-blending spikes that misleadingly stretched the y-axis.
@@ -2420,8 +2448,21 @@
       { label: fr ? 'Salaire'        : 'Salary',         value: _todaySalary, color: '#252d39' },
       { label: fr ? 'Revenu placement' : 'Investment income', value: _todayInvest, color: '#5b8db8' }
     ].filter(function(s) { return s.value > 0 && _todaySalary > 0; });
-    if (_todaySlices.length > 0 && _retSlices.length > 0 && Ch.svgDonutMulti) {
-      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0 18px;padding:14px 18px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px">';
+    // Phase 2 dispatch — donut-multi for income breakdown. lite gets a
+    // simplified rendering (top-3 slices), std/full get the full donut.
+    var _dmRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+      ? BFRP.resolveRepresentation('income_breakdown', d.renderProfile, _retSlices.length > 0)
+      : 'chart';
+    if (_dmRepr === 'chart_simplified' && _retSlices.length > 3) {
+      // Keep top 3 slices, aggregate the rest into "Other".
+      _retSlices.sort(function(a, b) { return b.value - a.value; });
+      var top3 = _retSlices.slice(0, 3);
+      var rest = _retSlices.slice(3).reduce(function(s, x) { return s + x.value; }, 0);
+      if (rest > 0) top3.push({ label: fr ? 'Autres' : 'Other', value: rest, color: '#999' });
+      _retSlices = top3;
+    }
+    if (_dmRepr !== 'omit' && _todaySlices.length > 0 && _retSlices.length > 0 && Ch.svgDonutMulti) {
+      h += '<div data-bf-block="income_breakdown" data-bf-repr="' + _dmRepr + '" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:14px 0 18px;padding:14px 18px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px">';
       // Today donut
       h += '<div style="text-align:center">';
       h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">' +
@@ -3989,6 +4030,12 @@
   // with P25/P50/P75 markers. Consumed from mc.histogram (engine-emitted bins).
   function renderHistogram(d, secN) {
     if (!d.mc || !d.mc.histogram || !d.mc.histogram.length) return '';
+    // Phase 2 dispatch — histogram is full-tier only (the percentile fan
+    // covers the same dispersion idea more intuitively for lite/std).
+    var _hRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+      ? BFRP.resolveRepresentation('histogram', d.renderProfile, true)
+      : (d.renderProfile && d.renderProfile.chartTier === 'full' ? 'chart' : 'omit');
+    if (_hRepr !== 'chart') return '';
     var fr = d.fr, mc = d.mc;
     var f$ = F.fmtCompact;
     var h = secPage();
