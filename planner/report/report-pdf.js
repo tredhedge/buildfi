@@ -763,7 +763,7 @@
     var risks = [];
     if (d.succVal >= 0.85) strengths.push(fr ? 'Trajectoire centrale tient avec marge sur ' + horizonYrs + '\u00a0ans' : 'Central trajectory holds with margin over ' + horizonYrs + ' years');
     if (d.covRatio > 1.0) strengths.push(fr ? 'Revenu garanti couvre ' + Math.round(d.covRatio * 100) + '\u202f% des d\u00e9penses cibles' : 'Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of target spending');
-    if (d._taxAlpha != null && d._taxAlpha > 10000) strengths.push((fr ? 'Optimisation fiscale d\u00e9tect\u00e9e \u2014 alpha de ' : 'Tax optimization detected \u2014 alpha of ') + f$(d._taxAlpha) + (fr ? ' vs strat\u00e9gie standard' : ' vs standard strategy'));
+    if (d._taxAlpha != null && d._taxAlpha > 10000) strengths.push((fr ? 'Optimisation fiscale d\u00e9tect\u00e9e \u2014 \u00e9conomies de ' : 'Tax optimization detected \u2014 savings of ') + f$(d._taxAlpha) + (fr ? ' vs strat\u00e9gie standard' : ' vs standard strategy'));
     if (mc && mc.medEstateNet > 250000) strengths.push((fr ? 'Patrimoine r\u00e9siduel m\u00e9dian de ' : 'Median residual estate of ') + f$(mc.medEstateNet));
     if (d.heroScore && d.heroScore.components) {
       var topComp = null, topVal = 0;
@@ -801,8 +801,10 @@
     h += '</div>';
     // "Read further" guide: omit the What-If reference for compact+plain
     // readers (they don't get the simulator section either, so the pointer
-    // is misleading). All other readers get the full guide.
-    var _hidesSim = d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain';
+    // is misleading). Also omit when clientExport=true — the simulator
+    // section is stripped entirely so we never want to point readers at it.
+    var _hidesSim = d.clientExport ||
+      (d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
     var _readFurther = _hidesSim
       ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et le plan d\'action proposent des leviers concrets.'
             : 'the advisor letter (p. 2) frames the read, and the diagnostic and action plan propose concrete levers.')
@@ -877,7 +879,12 @@
     if (d.client.addr) h += '<span style="font-size:11px">' + F.esc(d.client.addr) + '</span><br/>';
     if (d.client.phone) h += '<span style="font-size:11px">' + F.esc(d.client.phone) + '</span><br/>';
     if (d.client.email) h += '<span style="font-size:9px;color:' + C.blue + '">' + F.esc(d.client.email) + '</span><br/>';
-    h += '<span class="ver">' + F.VERSION + '</span><br/><span style="font-size:9px;color:#999">BuildFi Technologies inc. \u00b7 buildfi.ca</span>';
+    // Codex 2026-04-27 P5: build/version labels do not belong on a client
+    // deliverable. clientExport strips them entirely; otherwise show only
+    // the entity (no version) for in-app reads.
+    if (!d.clientExport) {
+      h += '<span style="font-size:9px;color:#999">BuildFi Technologies inc.</span>';
+    }
     h += '</div></div>';
     return h;
   }
@@ -1008,7 +1015,7 @@
     } else if (d.covRatio >= 0.7) obs.push(fr ? '\u2713 Le revenu garanti couvre ' + Math.round(d.covRatio * 100) + '% des d\u00e9penses, r\u00e9duisant la pression sur l\u2019\u00e9pargne.' : '\u2713 Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of spending, reducing pressure on savings.');
     else if (d.gapM > 0) obs.push(fr ? '\u2192 \u00c9cart mensuel de ' + F.fmtMoney(Math.round(d.gapM), fr) + ' \u00e0 combler par les retraits d\u2019\u00e9pargne.' : '\u2192 Monthly gap of ' + F.fmtMoney(Math.round(d.gapM), fr) + ' to be funded from savings withdrawals.');
 
-    if (d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 Optimisation fiscale d\u00e9tect\u00e9e \u2014 alpha fiscal de ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax optimization detected \u2014 tax alpha of ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
+    if (d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 Optimisation fiscale d\u00e9tect\u00e9e \u2014 \u00e9conomies de ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax optimization detected \u2014 savings of ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
     if (d.R.hasMeltdown) obs.push(fr ? '\u2192 Strat\u00e9gie de d\u00e9caissement anticip\u00e9 REER active \u2014 d\u00e9tails en section d\u00e9di\u00e9e.' : '\u2192 RRSP meltdown strategy active \u2014 see dedicated section.');
     if (d.R.couple) obs.push(fr ? '\u2192 Plan de couple \u2014 les actifs des deux conjoints sont mod\u00e9lis\u00e9s explicitement.' : '\u2192 Couple plan \u2014 both partners\u2019 assets are explicitly modeled.');
 
@@ -1083,7 +1090,7 @@
       : mc.p5Ruin + (fr ? ' ans' : ' yrs');
     h += F.KPI('<span class="mono">' + _durLabel + '</span>', fr ? 'Durabilit\u00e9 de l\u2019\u00e9pargne' : 'Savings durability', (mc.p5Ruin || 999) >= 200 ? C.green : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Retrait initial (% \u00e9pargne)' : 'Init. WR (% portfolio)', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : d._wdPct && parseFloat(d._wdPct) > 3.5 ? C.amber : C.green);
-    if (exp) h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
+    if (exp) h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTax))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager' : 'Lifetime tax'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
     h += '</div>';
 
     // Cohort percentile — adds professional context to the success rate.
@@ -1286,9 +1293,12 @@
           ? 'Avec un d\u00e9part tardif (\u00e9pargne disponible aujourd\'hui modeste, ' + Math.max(0, retAge - ageNow) + ' ans avant ' + retAge + ' ans), le levier dominant devient le <strong>rattrapage d\'\u00e9pargne</strong> combin\u00e9 au <strong>report du RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans</strong>. Le report PSV ajoute +36\u202f% de prestation \u00e0 vie ; c\'est l\'effet le plus puissant pour ce profil. Si le rattrapage et le report ne suffisent pas \u00e0 combler la cible, l\'arbitrage se d\u00e9place vers un <strong>compromis de niveau de vie</strong> : accepter un manque-\u00e0-gagner cibl\u00e9 (d\u00e9penses inf\u00e9rieures de 10\u201320\u202f%) plut\u00f4t que de prolonger excessivement la vie active.'
           : 'With a late start (' + Math.max(0, retAge - ageNow) + ' years before age ' + retAge + '), the dominant lever becomes <strong>catch-up savings</strong> combined with <strong>CPP/OAS deferral to age 70</strong>. Deferring OAS adds +36% to the benefit for life ; this is the strongest single effect for this profile. If catch-up and deferral are not sufficient to close the gap, the trade-off shifts to a <strong>lifestyle adjustment</strong> : accepting a targeted shortfall (10\u201320% lower spending) rather than excessively prolonging working years.';
       case 'single_parent_resilience':
+        // BEAT: ccb_solidarite_disclosure — must explicitly cite the CCB
+        // (Canada Child Benefit) / Allocation canadienne pour enfants and
+        // Quebec solidarity credit as income supports for the household.
         return fr
-          ? 'Avant l\'optimisation, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der toute autre optimisation.'
-          : 'Before optimization, the central frame is <strong>single-parent resilience</strong>. As the sole earner for a household with dependents, your children rely on your income-generating capacity : an emergency fund (6\u20139 months of spending), term life insurance ($250\u2013400K), and adequate disability coverage must precede any other optimization.';
+          ? 'Avant l\'optimisation, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der toute autre optimisation. Du c\u00f4t\u00e9 des prestations gouvernementales, l\'<strong>Allocation canadienne pour enfants (CCB)</strong> et le <strong>cr\u00e9dit d\'imp\u00f4t pour solidarit\u00e9</strong> du Qu\u00e9bec compl\u00e8tent le revenu net du m\u00e9nage tant que les enfants sont \u00e0 charge.'
+          : 'Before optimization, the central frame is <strong>single-parent resilience</strong>. As the sole earner for a household with dependents, your children rely on your income-generating capacity : an emergency fund (6\u20139 months of spending), term life insurance ($250\u2013400K), and adequate disability coverage must precede any other optimization. On the government-benefit side, the <strong>Canada Child Benefit (CCB)</strong> and the Quebec <strong>solidarity tax credit</strong> supplement net household income while children remain dependents.';
       default:
         return '';
     }
@@ -1367,17 +1377,14 @@
       }
       h += '<p class="narr">' + body + '</p>';
     }
-    // Trust copy ("every number is traceable …"): valuable for advisors and
-    // skeptical readers, jargon-heavy for beginners. Gated on jargonMode.
-    if (!d.renderProfile || d.renderProfile.jargonMode !== 'plain') {
-      h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
-        ? 'Les projections sont conditionnelles et non garanties. Chaque chiffre de ce rapport est tra\u00e7able \u00e0 une sortie du moteur; aucune donn\u00e9e n\'est invent\u00e9e.'
-        : 'Projections are conditional and not guaranteed. Every number in this report is traceable to an engine output; no data is invented.') + '</p>';
-    } else {
-      h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
-        ? 'Les projections sont conditionnelles et non garanties.'
-        : 'Projections are conditional and not guaranteed.') + '</p>';
-    }
+    // Trust copy: per Codex 2026-04-27 P2, the engine-provenance phrase
+    // ("Chaque chiffre … traçable à une sortie du moteur" / "Every number
+    // traceable to an engine output") leaks internal QA language into the
+    // client deliverable. Removed entirely. The standard AMF disclaimer
+    // ("projections are conditional and not guaranteed") is preserved.
+    h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
+      ? 'Les projections sont conditionnelles et non garanties.'
+      : 'Projections are conditional and not guaranteed.') + '</p>';
     h += '<div style="margin-top:30px;padding-top:12px;border-top:1px solid ' + C.border + ';font-size:11px;color:#666">' + today + '<br/><span style="font-size:10px">BuildFi Technologies inc.</span></div>';
     h += '</div></div>';
     return h;
@@ -2760,8 +2767,8 @@
     // the canonical lifetime_tax_real metric. Previously read d._optTax
     // (nominal sum) which compounded inflation across the horizon.
     h += narr(fr
-      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> en dollars r\u00e9els (m\u00e9nage), avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e g\u00e9n\u00e8re un alpha fiscal de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
-      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> in real dollars (household), with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates a tax alpha of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
+      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> en dollars r\u00e9els (m\u00e9nage), avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e d\u00e9gage des \u00e9conomies fiscales de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
+      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> in real dollars (household), with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates tax savings of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
 
     // F9 — OAS deferral callout. When the profile defers OAS past 65,
     // surface the +0.6%/month boost (max +36% at 70). When it claims at
@@ -3735,7 +3742,7 @@
     // Risk observations
     var _riskObs = [];
     if (_p25W > d.totalBal * 2) _riskObs.push(fr ? 'M\u00eame dans un sc\u00e9nario prudent (P25), le patrimoine (' + f$(_p25W) + ') demeure sup\u00e9rieur au double du capital initial \u2014 une marge de s\u00e9curit\u00e9 confortable.' : 'Even in a cautious scenario (P25), wealth (' + f$(_p25W) + ') remains above double the initial capital \u2014 a comfortable safety margin.');
-    else if (_p25W > 0) _riskObs.push(fr ? 'Dans un sc\u00e9nario prudent (P25), le patrimoine final serait de ' + f$(_p25W) + ' \u2014 positif mais avec une marge r\u00e9duite.' : 'In a cautious scenario (P25), final wealth would be ' + f$(_p25W) + ' \u2014 positive but with a reduced margin.');
+    else if (_p25W > 0) _riskObs.push(fr ? 'Le quartile inf\u00e9rieur termine \u00e0 ' + f$(_p25W) + ' \u2014 positif mais avec une marge r\u00e9duite contre les impr\u00e9vus.' : 'The lower quartile ends at ' + f$(_p25W) + ' \u2014 positive but with reduced margin against the unexpected.');
     else _riskObs.push(fr ? 'Dans un sc\u00e9nario prudent, le patrimoine pourrait \u00eatre enti\u00e8rement utilis\u00e9. Les revenus gouvernementaux (' + F.qppLabel(p.prov, fr) + ' + PSV) continueraient d\u2019\u00eatre vers\u00e9s.' : 'In a cautious scenario, savings could be fully drawn down. Government income (' + F.qppLabel(p.prov, fr) + ' + OAS) would continue regardless.');
     var _seqRisk = revData.filter(function(r) { return r.age >= p.retAge && r.age <= p.retAge + 5; }).reduce(function(s, r) { return s + (r.ret || 0); }, 0);
     if (_seqRisk > d.totalBal * 0.25) _riskObs.push(fr ? 'Les retraits cumul\u00e9s des 5 premi\u00e8res ann\u00e9es (' + F.fmtCurrency(Math.round(_seqRisk)) + ') repr\u00e9sentent ' + Math.round(_seqRisk / d.totalBal * 100) + '% du capital, exposant au risque de s\u00e9quence de rendements.' : 'Cumulative withdrawals in the first 5 years (' + F.fmtCurrency(Math.round(_seqRisk)) + ') represent ' + Math.round(_seqRisk / d.totalBal * 100) + '% of capital, creating sequence-of-returns risk.');
@@ -3839,6 +3846,10 @@
   // Glossary appendix renderer — calls BFGlossary.renderAppendix(lang) which
   // returns a 2-column <dl> of every term defined in report-glossary.js.
   function _renderGlossaryAppendix(d, secN) {
+    // Codex P4: glossary is for technical readers. Plain-mode beginners
+    // get inline term hovers via report-glossary.js; the back-matter
+    // appendix is omitted.
+    if (!_relevanceGate(d, 'glossary')) return '';
     var fr = d.fr;
     var lang = fr ? 'fr' : 'en';
     var listHtml = '';
@@ -4043,6 +4054,9 @@
   // Complements sec-methodology (which explains METHOD) with the CONSTANTS
   // and ENGINE PARAMETERS used for this specific plan.
   function renderAssumptions(d, secN) {
+    // Codex P4: assumptions appendix is back-matter for advanced readers;
+    // beginner+concise audience does not consume it.
+    if (!_relevanceGate(d, 'assumptions')) return '';
     var fr = d.fr, p = d.p;
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
@@ -4612,9 +4626,12 @@
     h += '</div>';
 
     h += '<div style="margin-top:60px;font-size:10px;color:#888;line-height:1.7">';
+    // Codex P5: version label removed from client narrative. The date
+    // alone communicates "when this was prepared" without leaking
+    // build metadata.
     h += (fr
-      ? 'Version ' + F.VERSION + ' \u2014 Rapport pr\u00e9par\u00e9 le ' + today + ' par BuildFi Technologies inc.'
-      : 'Version ' + F.VERSION + ' \u2014 Report prepared on ' + today + ' by BuildFi Technologies inc.');
+      ? 'Rapport pr\u00e9par\u00e9 le ' + today + ' par BuildFi Technologies inc.'
+      : 'Report prepared on ' + today + ' by BuildFi Technologies inc.');
     h += '</div>';
     h += '</div></div>';
     return h;
@@ -4622,6 +4639,9 @@
 
   // === SECTION: METHODOLOGY ===
   function renderMethodology(d, secN) {
+    // Codex 2026-04-27 P4: beginner+concise readers do NOT need the
+    // methodology section — it is too dense and feels like machinery.
+    if (!_relevanceGate(d, 'methodology')) return '';
     var fr = d.fr, exp = d.exp, p = d.p, mc = d.mc;
     var _isQC = d._isQC;
     var h = secPage();
@@ -4742,7 +4762,10 @@
         : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on Monte Carlo simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
       '</div>';
 
-    h += '<div class="ft">BuildFi ' + (fr ? 'Rapport d\u00e9taill\u00e9' : 'Detailed Report') + ' \u00b7 ' + today + ' \u00b7 ' + F.VERSION + ' \u00b7 <span class="mono">' + (p.nSim || 5000) + '</span> simulations MC</div>';
+    // Codex P5: page-running footer scrubbed of build metadata.
+    // "Detailed Report" / "Rapport détaillé" + version + sim count was
+    // build-style chrome. Replaced by the prepared-on date alone.
+    h += '<div class="ft">BuildFi \u00b7 ' + today + '</div>';
     h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? '\u00c0 titre informatif. Ne constitue pas un conseil financier (LDPSF). Remboursement 30 j.' : 'Informational only. Not financial advice (Quebec LDPSF). 30-day refund.') + '</div>';
     return h;
   }
@@ -4766,9 +4789,14 @@
     // the flag is not provided, so existing callers keep working.
     if (d) {
       d.sku = (data && data.sku) || 'bilan';
-      d.includeSimulator = (data && typeof data.includeSimulator === 'boolean')
-        ? data.includeSimulator
-        : true;
+      // CLIENT-EXPORT MODE — Codex 2026-04-27 P1: when clientExport=true,
+      // strip the embedded simulator section and the report-whatif.js
+      // runtime entirely. The deliverable feels like a finished report,
+      // not an exported app. Default false (legacy behavior preserved).
+      d.clientExport = !!(data && data.clientExport);
+      d.includeSimulator = d.clientExport
+        ? false
+        : ((data && typeof data.includeSimulator === 'boolean') ? data.includeSimulator : true);
       d._suppressed = (data && data._suppressed) || {};
       d._compact = (data && data._compact) || {};
       d._slotsToRerun = (data && data._slotsToRerun) || {};
@@ -4916,13 +4944,17 @@
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-timeline', label: d.fr ? 'Chronologie des d\u00e9cisions' : 'Decision timeline' });
     // Closing recap — single-thesis anchor near back-matter
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-closing-recap', label: d.fr ? 'Synth\u00e8se finale' : 'Final synthesis' });
-    // What-If simulator (Bilan SKU mainly; Planner customers get external link)
-    if (d.includeSimulator !== false) {
+    // What-If simulator: hidden for clientExport + Planner SKU + plain readers.
+    if (d.includeSimulator !== false && !d.clientExport) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
     }
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
+    // Back-matter (methodology / assumptions / glossary): plain-mode readers
+    // skip these; they go to inline term hovers instead. Codex P4.
+    if (!_isPlainReader) {
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
+    }
 
     // Render TOC
     h += renderTOC(tocSections, d.fr);
@@ -4944,10 +4976,10 @@
     // 1.bis Teaser — Bilan readers see the What-If simulator pointer; Planner
     // readers get an upsell-style note pointing them back to the live tool.
     // The actual mount point at the end is gated identically.
-    // What-If teaser: hidden for compact+plain readers (beginner+concise) —
-    // the live simulator is too dense for that audience and the teaser
-    // markup leaks "What-If" terminology into a calm beginner cover.
-    var _showTeaser = d.includeSimulator !== false &&
+    // What-If teaser: hidden for compact+plain readers + ALL clientExport
+    // deliveries (Codex 2026-04-27 P1: client artifact must not point at
+    // a simulator section that is stripped from the same artifact).
+    var _showTeaser = d.includeSimulator !== false && !d.clientExport &&
       !(d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
     h += _showTeaser ? _renderWhatIfTeaser(d) : '';
 

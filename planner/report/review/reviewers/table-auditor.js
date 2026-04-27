@@ -29,7 +29,11 @@ function audit(pack) {
     || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain'
         : pack.profile && pack.profile.finLiteracy === 'advanced' ? 'technical'
         : 'mixed');
-  var PLAIN_OMITS = { 'sec-stress': true, 'sec-risk': true, 'sec-sensitivity': true };
+  var PLAIN_OMITS = {
+    'sec-stress': true, 'sec-risk': true, 'sec-sensitivity': true,
+    // Codex 2026-04-27 P4: back-matter appendices omitted for plain readers
+    'sec-methodology': true, 'sec-assumptions': true, 'sec-glossary': true
+  };
 
   Contract.SECTIONS.forEach(function(spec) {
     if (spec.mandatory && !presentIds[spec.id]) {

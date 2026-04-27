@@ -61,5 +61,12 @@
       "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
     }
   ],
-  "manual": []
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
 }

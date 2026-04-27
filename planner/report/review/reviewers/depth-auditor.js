@@ -28,19 +28,26 @@ function audit(pack) {
   var canonical = pack.canonical || {};
 
   // 1) Embedded simulator presence
-  var hasSimulator = /id="bf-whatif"/i.test(html) && /id="bf-year-slider"/i.test(html);
-  if (!hasSimulator) {
-    findings.push({
-      id: 'depth-simulator-missing',
-      reviewer: 'depth',
-      severity: 'blocker',
-      category: 'depth_required_missing',
-      section: 'sec-whatif',
-      message: 'Premium report is missing the embedded What-If simulator.',
-      evidence: 'whatif_present=false',
-      fix_kind: 'manual',
-      fix_target: 'sec-whatif'
-    });
+  // Codex 2026-04-27 P1: clientExport mode legitimately strips the
+  // simulator section + report-whatif.js runtime. The deliverable is a
+  // finished report, not an exported app. Skip this check when
+  // clientExport is on.
+  var clientExport = !!(pack.dPayload && pack.dPayload.clientExport);
+  if (!clientExport) {
+    var hasSimulator = /id="bf-whatif"/i.test(html) && /id="bf-year-slider"/i.test(html);
+    if (!hasSimulator) {
+      findings.push({
+        id: 'depth-simulator-missing',
+        reviewer: 'depth',
+        severity: 'blocker',
+        category: 'depth_required_missing',
+        section: 'sec-whatif',
+        message: 'Premium report is missing the embedded What-If simulator.',
+        evidence: 'whatif_present=false',
+        fix_kind: 'manual',
+        fix_target: 'sec-whatif'
+      });
+    }
   }
 
   // 2) Advisor signature parameterized

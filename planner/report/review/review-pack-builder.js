@@ -188,6 +188,9 @@ function buildReviewPack(profile, htmlPath, mcPath, responsePath, dPayload) {
     tables: extractTables(html),
     percentages: extractPercentages(html),
     ai_slots: (dPayload && dPayload.ai) || aiResponse,
+    // dPayload exposes payload-level flags (clientExport, _suppressed,
+    // includeSimulator) so auditors can branch on them.
+    dPayload: dPayload || null,
     html: html,
     html_size: html.length,
     render_version: 'v12.2.0-premium'

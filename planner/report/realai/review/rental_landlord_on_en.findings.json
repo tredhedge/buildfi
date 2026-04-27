@@ -65,6 +65,17 @@
       "evidence": "\"… in the **stagflation73** scenario at **3.1M$** and the highest in **longevityPlus5** at *\"  (canon=1702136.8252610012, quoted=3100000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [],
@@ -136,7 +147,19 @@
       "fix_target": "stress_interpretation"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [],
     "rerun_ai_slot": [
@@ -181,10 +204,17 @@
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
-    "manual": []
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
   },
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 6,
-  "minor_count": 0
+  "minor_count": 1
 }

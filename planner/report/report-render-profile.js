@@ -176,6 +176,12 @@
     // benefit from "P25-P75 dispersion" or "9 named stress scenarios" — they
     // overload the reader and undercut the beginner-friendly framing.
     if ((blockId === 'risk' || blockId === 'stress_tests') && profile.jargonMode === 'plain') return false;
+    // Codex 2026-04-27 P4: methodology, assumptions, glossary back-matter
+    // is for advanced/intermediate readers. Plain-mode (beginner+concise)
+    // gets inline term hovers + a calmer cover; these appendices are too
+    // dense and feel like machinery.
+    if ((blockId === 'methodology' || blockId === 'assumptions' || blockId === 'glossary')
+        && profile.jargonMode === 'plain') return false;
     return true;
   }
 

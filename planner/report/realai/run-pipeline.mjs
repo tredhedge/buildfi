@@ -81,7 +81,14 @@ function preparePayload(prof, ai) {
     rptLang: prof.lang, rptMode: prof.mode || 'standard',
     finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref,
     sku: prof.sku || 'bilan',
-    includeSimulator: prof.includeSimulator !== false,
+    // CLIENT-EXPORT (Codex 2026-04-27 P1): the realai pipeline produces
+    // CANONICAL CLIENT DELIVERABLES — not in-app dashboards. Default to
+    // clientExport=true so the embedded What-If simulator section + the
+    // ~150KB report-whatif.js runtime are NOT inlined. Reports feel like
+    // finished documents, not exported app shells. Per-profile override
+    // possible via prof.clientExport=false.
+    clientExport: prof.clientExport !== false,
+    includeSimulator: false,
     // P1.6 — case_driver flows from profile → renderer → action plan re-ranker
     caseDriver: prof.case_driver || null,
     // T2.6 — advisor identity (parameterizable per profile in future; default

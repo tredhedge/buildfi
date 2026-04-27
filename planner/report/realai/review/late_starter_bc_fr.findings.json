@@ -65,6 +65,17 @@
       "evidence": "sec-tax=408000 (drift 497%)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "taxInsight"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [
@@ -137,7 +148,19 @@
       "fix_target": "taxInsight"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [
       {
@@ -184,10 +207,17 @@
         "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
       }
     ],
-    "manual": []
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
   },
   "can_ship": false,
   "blocker_count": 2,
   "major_count": 4,
-  "minor_count": 0
+  "minor_count": 1
 }

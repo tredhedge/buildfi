@@ -5,12 +5,12 @@
     "pre": {
       "blockers": 0,
       "majors": 3,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -23,12 +23,12 @@
     "pre": {
       "blockers": 0,
       "majors": 6,
-      "minors": 1
+      "minors": 2
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 1
+      "minors": 2
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -41,12 +41,12 @@
     "pre": {
       "blockers": 0,
       "majors": 1,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -59,12 +59,12 @@
     "pre": {
       "blockers": 0,
       "majors": 4,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -77,12 +77,12 @@
     "pre": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -95,12 +95,12 @@
     "pre": {
       "blockers": 0,
       "majors": 1,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -113,12 +113,12 @@
     "pre": {
       "blockers": 0,
       "majors": 6,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -131,12 +131,12 @@
     "pre": {
       "blockers": 3,
       "majors": 5,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [
@@ -151,12 +151,12 @@
     "pre": {
       "blockers": 0,
       "majors": 5,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -169,12 +169,12 @@
     "pre": {
       "blockers": 2,
       "majors": 4,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [
@@ -189,12 +189,12 @@
     "pre": {
       "blockers": 0,
       "majors": 4,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -207,12 +207,12 @@
     "pre": {
       "blockers": 0,
       "majors": 6,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -225,12 +225,12 @@
     "pre": {
       "blockers": 0,
       "majors": 6,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -243,12 +243,12 @@
     "pre": {
       "blockers": 0,
       "majors": 8,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -261,12 +261,12 @@
     "pre": {
       "blockers": 0,
       "majors": 5,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -279,12 +279,12 @@
     "pre": {
       "blockers": 0,
       "majors": 11,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -297,12 +297,12 @@
     "pre": {
       "blockers": 3,
       "majors": 6,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [
@@ -317,12 +317,12 @@
     "pre": {
       "blockers": 0,
       "majors": 4,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -335,12 +335,12 @@
     "pre": {
       "blockers": 0,
       "majors": 9,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],
@@ -353,12 +353,12 @@
     "pre": {
       "blockers": 0,
       "majors": 5,
-      "minors": 0
+      "minors": 1
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 0
+      "minors": 1
     },
     "shipped": true,
     "pre_blocker_categories": [],

@@ -42,5 +42,12 @@
   "block_data": [],
   "replace_with_callout": [],
   "localize_label": [],
-  "manual": []
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
 }

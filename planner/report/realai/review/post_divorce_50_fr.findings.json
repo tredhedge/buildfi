@@ -98,6 +98,17 @@
       "evidence": "overall_assessment=at-risk, verdict=at-risk, sec-assessment-deterministic=at-risk",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "overall_assessment"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [
@@ -203,7 +214,19 @@
       "fix_target": "overall_assessment"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [
       {
@@ -267,11 +290,17 @@
         "target": "sec-letter-deterministic",
         "severity": "major",
         "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
+      },
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
       }
     ]
   },
   "can_ship": false,
   "blocker_count": 3,
   "major_count": 6,
-  "minor_count": 0
+  "minor_count": 1
 }

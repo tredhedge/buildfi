@@ -63,6 +63,10 @@ var contentDepthAuditor = _safeRequire('./reviewers/content-depth-auditor.js');
 // blank KPIs, mixed-language classifier labels, placeholder copy,
 // internal engineering vocabulary leaks. All findings are BLOCKER.
 var trustGateAuditor = _safeRequire('./reviewers/trust-gate-auditor.js');
+// Polish auditor (2026-04-27 P5) — repeated-phrase / build-label /
+// templating-debris detection. Catches QA slips that survive structural
+// auditors but break premium feel.
+var polishAuditor = _safeRequire('./reviewers/polish-auditor.js');
 
 function _runAuditor(aud, pack, label) {
   if (!aud || typeof aud.audit !== 'function') return [];
@@ -102,6 +106,9 @@ function runAuditors(pack) {
   // Trust-gate runs absolutely last — it inspects the final rendered HTML
   // for client-facing trust-breakers and blocks ship if any are present.
   findings.push(_runAuditor(trustGateAuditor, pack, 'trust-gate'));
+  // Polish auditor runs after trust-gate. Catches stylistic stutters +
+  // build/version labels that survive structural auditors.
+  findings.push(_runAuditor(polishAuditor, pack, 'polish'));
   return arbiter.arbitrate(findings);
 }
 

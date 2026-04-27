@@ -61,6 +61,12 @@
       "target": "sec-letter-deterministic",
       "severity": "major",
       "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
+    },
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
     }
   ]
 }

@@ -43,6 +43,17 @@
       "evidence": "\"…transmise serait plutôt de l'ordre de **89K$**. Cette transmission semble couler simplemen\"  (canon=58829.049943369966, quoted=89000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "estateInsight"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [],
@@ -92,7 +103,19 @@
       "fix_target": "estateInsight"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [],
     "rerun_ai_slot": [
@@ -125,10 +148,17 @@
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
-    "manual": []
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
   },
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 4,
-  "minor_count": 0
+  "minor_count": 1
 }

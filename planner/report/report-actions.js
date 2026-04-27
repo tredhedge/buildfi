@@ -125,8 +125,8 @@
       actions.push(mk('tax-alpha-preserve',
         fr ? 'Pr\u00e9servation de la coordination de retraits actuelle' : 'Preserve the current withdrawal coordination',
         fr
-          ? 'La strat\u00e9gie actuelle d\u00e9gage un alpha fiscal de <strong>' + _f$(d._taxAlpha) + '</strong> sur l\'horizon du plan, soit environ <strong>' + Math.round((d._taxAlpha / Math.max(1, d._optTax)) * 100) + ' %</strong> de l\'imp\u00f4t viager. Cette valeur pourrait \u00eatre pr\u00e9serv\u00e9e en maintenant l\'ordre de retraits observ\u00e9.'
-          : 'The current strategy realizes a tax alpha of <strong>' + _f$(d._taxAlpha) + '</strong> over the plan horizon, roughly <strong>' + Math.round((d._taxAlpha / Math.max(1, d._optTax)) * 100) + '%</strong> of lifetime tax. This value could be preserved by maintaining the observed withdrawal order.',
+          ? 'La strat\u00e9gie actuelle d\u00e9gage des \u00e9conomies fiscales de <strong>' + _f$(d._taxAlpha) + '</strong> sur l\'horizon du plan, soit environ <strong>' + Math.round((d._taxAlpha / Math.max(1, d._optTax)) * 100) + ' %</strong> de l\'imp\u00f4t viager. Cette valeur pourrait \u00eatre pr\u00e9serv\u00e9e en maintenant l\'ordre de retraits observ\u00e9.'
+          : 'The current strategy realizes tax savings of <strong>' + _f$(d._taxAlpha) + '</strong> over the plan horizon, roughly <strong>' + Math.round((d._taxAlpha / Math.max(1, d._optTax)) * 100) + '%</strong> of lifetime tax. This value could be preserved by maintaining the observed withdrawal order.',
         { dollarImpact: Math.round(d._taxAlpha), timeline: 'medium', confidence: 'high', priority: 'medium', kind: 'tax', whenLabel: fr ? 'sur l\'horizon' : 'over horizon' }
       ));
     }

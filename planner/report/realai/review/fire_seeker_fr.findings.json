@@ -10,6 +10,17 @@
       "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "overall_assessment"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [],
@@ -26,7 +37,19 @@
       "fix_target": "overall_assessment"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [],
     "rerun_ai_slot": [
@@ -41,10 +64,17 @@
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
-    "manual": []
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
   },
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 1,
-  "minor_count": 0
+  "minor_count": 1
 }

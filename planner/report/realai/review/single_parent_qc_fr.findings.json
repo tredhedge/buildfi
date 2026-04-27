@@ -87,6 +87,17 @@
       "evidence": "truth_band=failure  found_token=\"solide\"  drift=3",
       "fix_kind": "manual",
       "fix_target": "sec-letter-deterministic"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
     }
   ],
   "blockers": [
@@ -181,7 +192,19 @@
       "fix_target": "sec-letter-deterministic"
     }
   ],
-  "minors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
   "fix_plan": {
     "remove_section": [
       {
@@ -239,11 +262,17 @@
         "target": "sec-letter-deterministic",
         "severity": "major",
         "message": "Plan posture is \"failure\" (succ=7%) but slot \"sec-letter-deterministic\" uses \"solide\" (band=\"solid\", 3 bands away). Posture must match."
+      },
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
       }
     ]
   },
   "can_ship": false,
   "blocker_count": 3,
   "major_count": 5,
-  "minor_count": 0
+  "minor_count": 1
 }
