@@ -5295,7 +5295,16 @@
                  ' data-bf-leadwith="' + (d.renderProfile.leadWith || '') + '"' +
                  ' data-bf-band-color="' + (d.renderProfile.bandColor || '') + '"';
     }
-    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + css + '</style></head><body' + _rpAttrs + '>';
+    // Phase 2: stamp the inferred archetype on <body> so the runtime
+    // hydration scripts (report-whatif.js) can pick the right Level-1
+    // curated scenario set without re-deriving from raw params.
+    var _archAttrs = '';
+    var _archForBody = d._archetype || _inferArchetype(d);
+    if (_archForBody) {
+      _archAttrs = ' data-bf-archetype-phase="' + (_archForBody.phase || '') + '"' +
+                   ' data-bf-archetype-tags="' + ((_archForBody.tags || []).join(',')) + '"';
+    }
+    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + css + '</style></head><body' + _rpAttrs + _archAttrs + '>';
     h += copyScript;
 
     // Cover page

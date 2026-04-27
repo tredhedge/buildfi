@@ -57,69 +57,110 @@
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // PRESETS — one-click scenario applicators. Each returns a partial
-  // params object that overrides the baseline. Naming kept evocative.
+  // CURATED DECISIONS (Level 1) — codex 2026-04-27 spec.
+  //   Show 3-4 cards, framed as REAL CLIENT DECISIONS (not market shocks).
+  //   "Retire 2 years later" / "Delay CPP/QPP to 70" / "Reduce fees" / "Spend 10% less".
+  //   Market-shock chips (2008 Recession, Stagflation, Bull markets) are
+  //   demoted to Level-2 advanced controls below the curated set.
+  //   Archetype-driven: decum/transition see decisions about WHEN to draw
+  //   on benefits and HOW MUCH to spend; accum/fire see decisions about
+  //   timing + saving pace. Beginner readers see only L1.
   // ──────────────────────────────────────────────────────────────────────
-  function _presets(baseline) {
-    return [
+  function _curatedDecisions(baseline, archPhase) {
+    var decum = (archPhase === 'decum' || archPhase === 'transition');
+    var fire = (archPhase === 'fire');
+    var defaults = [
       {
-        id: 'recession',
-        label: isFR ? 'Récession 2008' : '2008 Recession',
-        icon: '↘',
-        desc: isFR ? 'Rendement −2 pts, inflation +1 pt' : 'Return −2 pts, inflation +1 pt',
-        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) - 0.02), inf: (baseline.inf || 0.021) + 0.01 }
+        id: 'cpp_delay_70',
+        label: isFR ? 'Reporter le RPC/RRQ à 70' : 'Delay CPP/QPP to 70',
+        desc: isFR ? 'Vos prestations gouvernementales débutent à 70 — augmentation viagère ~42%.'
+                   : 'Public benefits start at 70 — lifetime payout increases ~42%.',
+        apply: { qppAge: 70, oasAge: 70 }
       },
       {
-        id: 'stagflation',
-        label: isFR ? 'Stagflation' : 'Stagflation',
-        icon: '⚠',
-        desc: isFR ? 'Rendement −1 pt, inflation +2 pts' : 'Return −1 pt, inflation +2 pts',
-        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) - 0.01), inf: (baseline.inf || 0.021) + 0.02 }
+        id: 'reduce_fees',
+        label: isFR ? 'Baisser les frais de gestion' : 'Reduce investment fees',
+        desc: isFR ? 'MER ramené à 0,5% — rendement net plus élevé année après année.'
+                   : 'MER lowered to 0.5% — higher net return compounded over time.',
+        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) + Math.max(0, (baseline.merWt || 0.01) - 0.005)) }
       },
       {
-        id: 'optimistic',
-        label: isFR ? 'Marchés porteurs' : 'Bull markets',
-        icon: '↗',
-        desc: isFR ? 'Rendement +1,5 pt, inflation stable' : 'Return +1.5 pts, inflation stable',
-        apply: { eqRet: (baseline.eqRet || 0.06) + 0.015 }
-      },
-      {
-        id: 'fire',
-        label: isFR ? 'FIRE (retraite hâtive)' : 'FIRE (early retirement)',
-        icon: '◐',
-        desc: isFR ? 'Retraite −5 ans, dépenses −15%' : 'Retire 5 yrs earlier, spend 15% less',
-        apply: { retAge: Math.max(50, (baseline.retAge || 65) - 5), retSpM: Math.round((baseline.retSpM || 5000) * 0.85) }
-      },
-      {
-        id: 'late_ret',
-        label: isFR ? 'Retraite tardive' : 'Late retirement',
-        icon: '⏳',
-        desc: isFR ? 'Retraite +3 ans, cotisation +5K$' : 'Retire 3 yrs later, +5K contrib',
-        apply: { retAge: Math.min(75, (baseline.retAge || 65) + 3), rrspC: (baseline.rrspC || 0) + 5000 }
-      },
-      {
-        id: 'long_life',
-        label: isFR ? 'Longévité élevée' : 'High longevity',
-        icon: '∞',
-        desc: isFR ? 'Décès projeté +7 ans' : 'Projected death age +7 yrs',
-        apply: { deathAge: Math.min(105, (baseline.deathAge || 90) + 7) }
-      },
-      {
-        id: 'high_mer',
-        label: isFR ? 'Frais bancaires (MER 2%)' : 'Bank fund fees (MER 2%)',
-        icon: '%',
-        desc: isFR ? 'MER fixé à 2%, rendement net réduit' : 'MER set to 2%, net return reduced',
-        // Approximation: subtract the extra MER drag from eqRet (engine doesn't have direct MER)
-        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) - 0.013) }
-      },
-      {
-        id: 'aggressive_save',
-        label: isFR ? 'Épargne agressive' : 'Aggressive saving',
-        icon: '↑',
-        desc: isFR ? 'Cotisations REER +50%' : 'RRSP contributions +50%',
-        apply: { rrspC: Math.round((baseline.rrspC || 5000) * 1.5) }
+        id: 'spend_less',
+        label: isFR ? 'Réduire les dépenses de 10%' : 'Spend 10% less',
+        desc: isFR ? 'Train de vie ajusté à 90% du niveau de référence.'
+                   : 'Lifestyle adjusted to 90% of the baseline level.',
+        apply: { retSpM: Math.round((baseline.retSpM || 5000) * 0.9) }
       }
     ];
+    if (decum) {
+      // For retirees / near-retirees, the fourth card is "downsize later"
+      // (drop dependence on dispersed wealth). Implementation: simulate a
+      // 5% lifestyle cut starting at age 75. Approximated via retSpM × 0.95
+      // since the slider lattice doesn't carry an age-keyed cut.
+      defaults.push({
+        id: 'downsize_75',
+        label: isFR ? 'Ajuster le train de vie à 75 ans' : 'Adjust lifestyle at 75',
+        desc: isFR ? 'Petite réduction ciblée des dépenses lorsque la mobilité change.'
+                   : 'A small, targeted reduction in spending as mobility shifts.',
+        apply: { retSpM: Math.round((baseline.retSpM || 5000) * 0.95) }
+      });
+    } else if (fire) {
+      defaults.push({
+        id: 'retire_2_later',
+        label: isFR ? 'Repousser la retraite de 2 ans' : 'Retire 2 years later',
+        desc: isFR ? 'Deux années supplémentaires de cotisations et de revenu salarial.'
+                   : 'Two more years of contributions and salary income.',
+        apply: { retAge: Math.min(75, (baseline.retAge || 60) + 2) }
+      });
+    } else {
+      // Accumulation default fourth card
+      defaults.push({
+        id: 'aggressive_save',
+        label: isFR ? 'Augmenter l\'épargne (REER +50%)' : 'Increase savings (RRSP +50%)',
+        desc: isFR ? 'Cotisations REER majorées de 50% chaque année jusqu\'à la retraite.'
+                   : 'RRSP contributions raised 50% every year until retirement.',
+        apply: { rrspC: Math.round(((baseline.rrspC || 5000) || 5000) * 1.5) }
+      });
+    }
+    return defaults;
+  }
+
+  // Market-shock chips (Level 2 — advanced). Demoted from L1; only shown
+  // inside the collapsed advanced panel for non-beginner readers.
+  function _marketShocks(baseline) {
+    return [
+      { id: 'recession', label: isFR ? 'Récession 2008' : '2008 Recession',
+        desc: isFR ? 'Rendement −2 pts, inflation +1 pt' : 'Return −2 pts, inflation +1 pt',
+        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) - 0.02), inf: (baseline.inf || 0.021) + 0.01 } },
+      { id: 'stagflation', label: 'Stagflation',
+        desc: isFR ? 'Rendement −1 pt, inflation +2 pts' : 'Return −1 pt, inflation +2 pts',
+        apply: { eqRet: Math.max(0.02, (baseline.eqRet || 0.06) - 0.01), inf: (baseline.inf || 0.021) + 0.02 } },
+      { id: 'optimistic', label: isFR ? 'Marchés porteurs' : 'Bull markets',
+        desc: isFR ? 'Rendement +1,5 pt' : 'Return +1.5 pts',
+        apply: { eqRet: (baseline.eqRet || 0.06) + 0.015 } },
+      { id: 'long_life', label: isFR ? 'Longévité élevée' : 'High longevity',
+        desc: isFR ? 'Décès projeté +7 ans' : 'Projected death age +7 yrs',
+        apply: { deathAge: Math.min(105, (baseline.deathAge || 90) + 7) } }
+    ];
+  }
+
+  // Read body.dataset.bfArchetypePhase — single source of truth wired by
+  // report-pdf.js. Falls back to phase inference from baseline params if
+  // the attr is missing (defensive).
+  function _readArchetypePhase(baseline) {
+    var v = (typeof document !== 'undefined' && document.body && document.body.dataset)
+      ? document.body.dataset.bfArchetypePhase : '';
+    if (v) return v;
+    var ytr = (baseline.retAge || 65) - (baseline.age || 60);
+    if (ytr <= 0) return 'decum';
+    if (ytr <= 7 && (baseline.age || 60) >= 52) return 'transition';
+    if ((baseline.retAge || 65) < 55 && ytr >= 1) return 'fire';
+    return 'accum';
+  }
+
+  function _isPlainReader() {
+    if (typeof document === 'undefined' || !document.body) return false;
+    return document.body.dataset.bfJargonMode === 'plain';
   }
 
   // Build the UI inside the existing section shell (report-pdf.js emits the
@@ -149,49 +190,107 @@
       allocR:      { group: 'strategy', label: isFR ? 'Allocation actions REER' : 'RRSP equity alloc', min: 20, max: 95, step: 5, val: Math.round((baselineParams.allocR || 0.6) * 100), unit: '%' }
     };
 
-    // ─── Presets bar ──────────────────────────────────────────────────
-    var presets = _presets(baselineParams);
-    var presetsHtml = '<div class="bf-whatif-presets">' +
-      '<div class="bf-whatif-presets-label">' + (isFR ? 'Décisions à explorer :' : 'Decisions to explore:') + '</div>' +
-      '<div class="bf-whatif-presets-buttons">';
-    presets.forEach(function(pr) {
-      presetsHtml += '<button type="button" class="bf-whatif-preset" data-bf-preset="' + pr.id + '" title="' + pr.desc + '">' +
-        '<span class="bf-whatif-preset-icon">' + pr.icon + '</span>' +
-        '<span class="bf-whatif-preset-label">' + pr.label + '</span>' +
+    // ─── Level 1 — Curated decision cards (always visible) ────────────
+    // Codex 2026-04-27 spec: 3-4 cards framed as REAL CLIENT DECISIONS,
+    // archetype-driven. Market-shock chips moved to L2 advanced.
+    var archPhase = _readArchetypePhase(baselineParams);
+    var plainReader = _isPlainReader();
+    var curated = _curatedDecisions(baselineParams, archPhase);
+    var marketShocks = _marketShocks(baselineParams);
+    // L1 wraps in a card grid, not a button bar — each card carries label
+    // + description so the reader sees the meaning before clicking.
+    var presetsHtml = '<div class="bf-whatif-presets bf-whatif-l1">' +
+      '<div class="bf-whatif-presets-label">' + (isFR ? 'Décisions à explorer' : 'Decisions to explore') + '</div>' +
+      '<div class="bf-whatif-card-grid">';
+    curated.forEach(function(pr) {
+      presetsHtml += '<button type="button" class="bf-whatif-decision-card" data-bf-preset="' + pr.id + '">' +
+        '<span class="bf-whatif-card-label">' + pr.label + '</span>' +
+        '<span class="bf-whatif-card-desc">' + pr.desc + '</span>' +
       '</button>';
     });
     presetsHtml += '</div></div>';
+    // The full preset registry — L1 cards + L2 market shocks — for the
+    // click-handler dispatcher below.
+    var presets = curated.concat(marketShocks);
 
-    // ─── Grouped sliders ──────────────────────────────────────────────
+    // ─── Level 2 — Advanced controls (collapsed, opt-in) ───────────────
+    // Codex 2026-04-27: hide entirely for plain readers (beginners).
+    // Non-plain readers see a collapsed <details> with sliders + market-
+    // shock chips inside. This is the "advanced" tier — visible but
+    // demoted, never dominating the main exploration path.
     var groups = {
-      timing:   { label: isFR ? 'Échéances' : 'Timing',     icon: '⏱' },
-      spending: { label: isFR ? 'Dépenses' : 'Spending',     icon: '$' },
-      markets:  { label: isFR ? 'Marchés' : 'Markets',       icon: '∿' },
-      strategy: { label: isFR ? 'Stratégie' : 'Strategy',    icon: '◇' }
+      timing:   { label: isFR ? 'Échéances' : 'Timing' },
+      spending: { label: isFR ? 'Dépenses' : 'Spending' },
+      markets:  { label: isFR ? 'Marchés' : 'Markets' },
+      strategy: { label: isFR ? 'Stratégie' : 'Strategy' }
     };
-    var controlsHtml = '<div class="bf-whatif-controls">';
-    Object.keys(groups).forEach(function(gKey) {
-      var g = groups[gKey];
-      controlsHtml += '<div class="bf-whatif-group">' +
-        '<div class="bf-whatif-group-header">' +
-          '<span class="bf-whatif-group-icon">' + g.icon + '</span>' +
-          '<span class="bf-whatif-group-label">' + g.label + '</span>' +
-        '</div>';
-      Object.keys(slBase).forEach(function(k) {
-        var s = slBase[k];
-        if (s.group !== gKey) return;
-        controlsHtml += '<div class="bf-whatif-row">' +
-          '<label class="bf-whatif-label" for="bfwi-' + k + '">' + s.label + '</label>' +
-          '<input type="range" id="bfwi-' + k + '" class="bf-whatif-slider" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + s.val + '" data-bf-whatif-key="' + k + '">' +
-          '<span class="bf-whatif-val" id="bfwi-' + k + '-out">' + s.val + s.unit + '</span>' +
+    var controlsHtml = '';
+    if (!plainReader) {
+      controlsHtml = '<details class="bf-whatif-l2">' +
+        '<summary class="bf-whatif-l2-summary">' +
+          (isFR ? 'Ajuster les hypothèses moi-même (avancé)' : 'Adjust assumptions yourself (advanced)') +
+          '<span class="bf-whatif-l2-summary-hint">' +
+            (isFR ? ' — curseurs détaillés et chocs de marché' : ' — detailed sliders and market shocks') +
+          '</span>' +
+        '</summary>' +
+        '<div class="bf-whatif-l2-body">';
+      // Market-shock chips (demoted from L1).
+      controlsHtml += '<div class="bf-whatif-shocks">' +
+        '<div class="bf-whatif-shocks-label">' + (isFR ? 'Chocs de marché' : 'Market shocks') + '</div>' +
+        '<div class="bf-whatif-shocks-buttons">';
+      marketShocks.forEach(function(s) {
+        controlsHtml += '<button type="button" class="bf-whatif-shock" data-bf-preset="' + s.id + '" title="' + s.desc + '">' +
+          s.label + '</button>';
+      });
+      controlsHtml += '</div></div>';
+      // Slider lattice
+      controlsHtml += '<div class="bf-whatif-controls">';
+      Object.keys(groups).forEach(function(gKey) {
+        var g = groups[gKey];
+        controlsHtml += '<div class="bf-whatif-group">' +
+          '<div class="bf-whatif-group-header">' +
+            '<span class="bf-whatif-group-label">' + g.label + '</span>' +
           '</div>';
+        Object.keys(slBase).forEach(function(k) {
+          var s = slBase[k];
+          if (s.group !== gKey) return;
+          controlsHtml += '<div class="bf-whatif-row">' +
+            '<label class="bf-whatif-label" for="bfwi-' + k + '">' + s.label + '</label>' +
+            '<input type="range" id="bfwi-' + k + '" class="bf-whatif-slider" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '" value="' + s.val + '" data-bf-whatif-key="' + k + '">' +
+            '<span class="bf-whatif-val" id="bfwi-' + k + '-out">' + s.val + s.unit + '</span>' +
+            '</div>';
+        });
+        controlsHtml += '</div>';
       });
       controlsHtml += '</div>';
-    });
-    controlsHtml += '</div>';
+      controlsHtml += '</div></details>';
+    } else {
+      // Plain reader: no L2 panel rendered. But the card-click dispatcher
+      // reads slider DOM elements to apply preset overrides. Without the
+      // sliders, the apply step would no-op and the simulation would
+      // never change. Emit hidden inputs in lieu of sliders so the
+      // existing dispatcher works unchanged. This keeps plain readers in
+      // a "guided cards only" UX while preserving the run-loop wiring.
+      controlsHtml += '<div class="bf-whatif-hidden-state" style="display:none">';
+      Object.keys(slBase).forEach(function(k) {
+        var s = slBase[k];
+        controlsHtml += '<input type="hidden" id="bfwi-' + k + '" value="' + s.val + '" data-bf-whatif-key="' + k + '">' +
+          '<span id="bfwi-' + k + '-out">' + s.val + s.unit + '</span>';
+      });
+      controlsHtml += '</div>';
+    }
 
-    var buttonsHtml = '<div class="bf-whatif-actions">' +
-      '<button type="button" id="bf-whatif-simulate" class="bf-whatif-btn">' + (isFR ? 'Voir l\'effet sur mon plan' : 'See the effect on my plan') + '</button>' +
+    // Action buttons.
+    //   plainReader: cards auto-fire → no "See the effect" button. Just
+    //     "Keep this alternative" + "Back to my plan" — the minimum to
+    //     allow the reader to compare and reset.
+    //   non-plain:  all 3 buttons (sliders need an explicit trigger).
+    var buttonsHtml = '<div class="bf-whatif-actions">';
+    if (!plainReader) {
+      buttonsHtml += '<button type="button" id="bf-whatif-simulate" class="bf-whatif-btn">' +
+        (isFR ? 'Voir l\'effet sur mon plan' : 'See the effect on my plan') + '</button>';
+    }
+    buttonsHtml +=
       '<button type="button" id="bf-whatif-save" class="bf-whatif-btn bf-whatif-btn-secondary" disabled>' + (isFR ? 'Conserver cette alternative' : 'Keep this alternative') + '</button>' +
       '<button type="button" id="bf-whatif-reset" class="bf-whatif-btn bf-whatif-btn-secondary">' + (isFR ? 'Revenir à mon plan' : 'Back to my plan') + '</button>' +
       '<span id="bf-whatif-status" class="bf-whatif-status"></span>' +
@@ -216,14 +315,16 @@
       })(sliderInputs[i]);
     }
 
-    // Wire preset buttons
-    var presetBtns = panel.querySelectorAll('.bf-whatif-preset');
+    // Wire L1 decision cards + L2 market-shock chips. Both share the same
+    // click semantics — apply preset overrides to the (visible or hidden)
+    // input lattice, then auto-trigger the simulation.
+    var presetBtns = panel.querySelectorAll('.bf-whatif-decision-card, .bf-whatif-shock');
     for (var p = 0; p < presetBtns.length; p++) {
       presetBtns[p].addEventListener('click', function() {
         var presetId = this.getAttribute('data-bf-preset');
         var preset = presets.filter(function(pr) { return pr.id === presetId; })[0];
         if (!preset) return;
-        // First reset all sliders to baseline
+        // Reset all inputs to baseline (visible sliders OR hidden inputs).
         Object.keys(slBase).forEach(function(k) {
           var inp = document.getElementById('bfwi-' + k);
           if (inp) {
@@ -246,7 +347,7 @@
           var out = document.getElementById('bfwi-' + k + '-out');
           if (out) out.textContent = displayV + slBase[k].unit;
         });
-        // Visual: highlight active preset
+        // Visual: highlight active card
         for (var z = 0; z < presetBtns.length; z++) presetBtns[z].classList.remove('active');
         this.classList.add('active');
         // Auto-trigger simulation
@@ -254,9 +355,9 @@
       });
     }
 
-    // Simulate button
+    // Simulate button — only present for non-plain readers.
     var simBtn = document.getElementById('bf-whatif-simulate');
-    simBtn.addEventListener('click', function() { _runWhatIf(baselineParams, slBase); });
+    if (simBtn) simBtn.addEventListener('click', function() { _runWhatIf(baselineParams, slBase); });
 
     // Save button — captures current results into _savedScenarios (max 2)
     var saveBtn = document.getElementById('bf-whatif-save');
@@ -478,7 +579,42 @@
         _kpiCard(isFR ? 'Revenu net @75 ans' : 'Net income @ age 75', fmtCompact(wiInc75), fmtDelta(dInc75, '$'), dInc75, true)
       );
       var gridClass = isBeginnerReader ? 'bf-whatif-kpis-4' : 'bf-whatif-kpis-12';
+      // Phase 2 split-pane compare strip: codex 2026-04-27 spec — keep
+      // the baseline visually anchored on the left, the explored value on
+      // the right, with the delta in the middle. Three metrics: success
+      // rate, median wealth, depletion. Supports the "your plan stays
+      // intact" promise visually, not just textually.
+      var baseSucc = Math.round((B.succ || 0) * 100);
+      var newSucc = Math.round(mc.succ * 100);
+      var baseMedF = B.rMedF || B.medF || 0;
+      var newMedF = mc.rMedF || mc.medF || 0;
+      var baseRuinDisp = (B.p5Ruin == null || B.p5Ruin >= 200)
+        ? (isFR ? 'Aucun' : 'Never')
+        : (isFR ? 'À ' : 'At ') + B.p5Ruin + (isFR ? ' ans' : '');
+      function _stripRow(label, baseStr, exploredStr, deltaStr, deltaColor) {
+        return '<div class="bf-whatif-compare-row">' +
+          '<div class="bf-whatif-compare-rowlabel">' + label + '</div>' +
+          '<div class="bf-whatif-compare-base"><span class="bf-whatif-compare-tag">' +
+            (isFR ? 'Votre plan' : 'Your plan') + '</span><span class="bf-whatif-compare-val">' + baseStr + '</span></div>' +
+          '<div class="bf-whatif-compare-arrow">→</div>' +
+          '<div class="bf-whatif-compare-explored"><span class="bf-whatif-compare-tag">' +
+            (isFR ? 'Exploré' : 'Explored') + '</span><span class="bf-whatif-compare-val">' + exploredStr + '</span></div>' +
+          '<div class="bf-whatif-compare-delta" style="color:' + deltaColor + '">' + deltaStr + '</div>' +
+        '</div>';
+      }
+      var dSuccColor = colorDelta(dSucc, true);
+      var dMedFColor = colorDelta(dMedF, true);
+      var dRuinColor = colorDelta(dRuin || 0, true);
+      var compareStripHtml = '<div class="bf-whatif-compare-strip">' +
+        _stripRow(isFR ? 'Taux de succès' : 'Success rate',
+          baseSucc + '%', newSucc + '%', fmtDelta(dSucc, 'pts'), dSuccColor) +
+        _stripRow(isFR ? 'Patrimoine médian (réel)' : 'Median wealth (real)',
+          fmtCompact(baseMedF), fmtCompact(newMedF), fmtDelta(dMedF, '$'), dMedFColor) +
+        _stripRow(isFR ? 'Épuisement épargne' : 'Savings depletion',
+          baseRuinDisp, ruinDisplay, dRuin ? fmtDelta(dRuin, 'yrs') : '—', dRuinColor) +
+        '</div>';
       var kpisHtml = '<div class="bf-whatif-summary">' + summary + '</div>' +
+        compareStripHtml +
         '<div class="bf-whatif-kpis ' + gridClass + '">' + headline + secondary + '</div>';
 
       results.innerHTML = kpisHtml;
