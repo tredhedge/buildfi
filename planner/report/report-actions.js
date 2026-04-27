@@ -112,7 +112,7 @@
       actions.push(mk('oas-clawback',
         fr ? 'Coordination des retraits pour limiter la r\u00e9cup\u00e9ration PSV' : 'Coordinate withdrawals to limit OAS clawback',
         fr
-          ? 'Le plan projette <strong>' + d.oasClbkYrs + ' ann\u00e9es</strong> de r\u00e9cup\u00e9ration PSV, pendant lesquelles chaque dollar de revenu au-del\u00e0 du seuil est taxable \u00e0 15 % additionnels. ' + (p.cOn ? 'Le fractionnement de pension entre conjoints pourrait r\u00e9partir le fardeau et r\u00e9duire la r\u00e9cup\u00e9ration.' : 'L\'\u00e9talement des retraits REER (meltdown) avant 72 ans pourrait niveler le revenu imposable et r\u00e9duire la r\u00e9cup\u00e9ration.')
+          ? 'Le plan projette <strong>' + d.oasClbkYrs + ' ann\u00e9es</strong> de r\u00e9cup\u00e9ration PSV, pendant lesquelles chaque dollar de revenu au-del\u00e0 du seuil est taxable \u00e0 15 % additionnels. ' + (p.cOn ? 'Le fractionnement de pension entre conjoints pourrait r\u00e9partir le fardeau et r\u00e9duire la r\u00e9cup\u00e9ration.' : 'L\'\u00e9talement des retraits REER avant 72 ans (d\u00e9caissement anticip\u00e9) pourrait niveler le revenu imposable et r\u00e9duire la r\u00e9cup\u00e9ration.')
           : 'The plan projects <strong>' + d.oasClbkYrs + ' years</strong> of OAS clawback, during which each dollar of income above the threshold is taxed at an additional 15%. ' + (p.cOn ? 'Pension splitting between spouses could distribute the burden and reduce clawback.' : 'Smoothing RRSP withdrawals (meltdown) before age 72 could level taxable income and reduce clawback.'),
         { dollarImpact: null, timeline: 'medium', confidence: 'high', priority: 'high', kind: 'tax', driver: p.cOn ? 'db_pension_split' : 'meltdown_window', whenLabel: 'à 65–72' }
       ));
@@ -157,9 +157,9 @@
         var deltaPct = rrspNow > 0 ? ((rrspAt72 - rrspNow) / rrspNow) * 100 : 0;
         if (deltaPct > -10) { // RRSP did not shrink meaningfully (less than 10% reduction)
           actions.push(mk('meltdown-weak',
-            fr ? 'R\u00e9vision de la cible de meltdown REER' : 'Review RRSP meltdown target',
+            fr ? 'R\u00e9vision de la cible de d\u00e9caissement anticip\u00e9 REER' : 'Review RRSP meltdown target',
             fr
-              ? 'La strat\u00e9gie meltdown actuelle avec cible de <strong>' + _fM(p.meltTgt, fr) + '/an</strong> n\'a pas d\'effet structurel sur le solde REER \u00e0 72 ans (' + (deltaPct >= 0 ? 'hausse de ' + deltaPct.toFixed(1) + ' %' : 'baisse de seulement ' + Math.abs(deltaPct).toFixed(1) + ' %') + '). Un retrait annuel plus agressif pourrait \u00eatre \u00e9valu\u00e9.'
+              ? 'La strat\u00e9gie de d\u00e9caissement anticip\u00e9 actuelle avec cible de <strong>' + _fM(p.meltTgt, fr) + '/an</strong> n\'a pas d\'effet structurel sur le solde REER \u00e0 72 ans (' + (deltaPct >= 0 ? 'hausse de ' + deltaPct.toFixed(1) + ' %' : 'baisse de seulement ' + Math.abs(deltaPct).toFixed(1) + ' %') + '). Un retrait annuel plus agressif pourrait \u00eatre \u00e9valu\u00e9.'
               : 'The current meltdown strategy with a target of <strong>' + _fM(p.meltTgt, fr) + '/yr</strong> has no structural effect on the RRSP balance at 72 (' + (deltaPct >= 0 ? 'up ' + deltaPct.toFixed(1) + '%' : 'down only ' + Math.abs(deltaPct).toFixed(1) + '%') + '). A more aggressive annual withdrawal could be evaluated.',
             { dollarImpact: null, timeline: 'short', confidence: 'medium', priority: 'medium', kind: 'tax', driver: 'meltdown_window', whenLabel: (p.retAge || 60) + '–72' }
           ));
@@ -381,7 +381,7 @@
           { dollarImpact: null, dollarImpactLabel: fr ? '4\u20138 K$/an d\'imp\u00f4t conjugal' : '$4\u20138K/yr household tax', successImpactPp: 3, timeline: 'short', confidence: 'high', priority: 'high', kind: 'tax', driver: 'db_pension_split', whenLabel: '65+' });
       case 'meltdown_window':
         return mk('cd-meltdown',
-          fr ? 'Calibrer la fen\u00eatre de meltdown REER' : 'Calibrate the RRSP meltdown window',
+          fr ? 'Calibrer la fen\u00eatre de d\u00e9caissement anticip\u00e9 REER' : 'Calibrate the RRSP meltdown window',
           fr
             ? 'Entre la retraite et 72\u00a0ans, des retraits REER acc\u00e9l\u00e9r\u00e9s peuvent r\u00e9duire la masse imposable convertie en FERR, lisser le revenu imposable et limiter la r\u00e9cup\u00e9ration PSV. La section Strat\u00e9gie fiscale d\u00e9taille le calendrier ann\u00e9e par ann\u00e9e.'
             : 'Between retirement and age 72, accelerated RRSP withdrawals can reduce the taxable mass converted to RRIF, smooth taxable income, and limit OAS clawback. The Tax Strategy section shows the year-by-year shape of this lever.',

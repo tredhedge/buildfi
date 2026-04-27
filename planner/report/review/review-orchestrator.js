@@ -59,6 +59,10 @@ var scopeReconciliationAuditor = _safeRequire('./reviewers/scope-reconciliation-
 // case-driver-required content beats. NEVER affects the orchestrator's
 // run order for the existing 14 auditors.
 var contentDepthAuditor = _safeRequire('./reviewers/content-depth-auditor.js');
+// Trust-gate (2026-04-27) — hard ship-blocking client-facing checks:
+// blank KPIs, mixed-language classifier labels, placeholder copy,
+// internal engineering vocabulary leaks. All findings are BLOCKER.
+var trustGateAuditor = _safeRequire('./reviewers/trust-gate-auditor.js');
 
 function _runAuditor(aud, pack, label) {
   if (!aud || typeof aud.audit !== 'function') return [];
@@ -95,6 +99,9 @@ function runAuditors(pack) {
   findings.push(_runAuditor(scopeReconciliationAuditor, pack, 'scope-reconciliation'));
   // Sprint 8 — content-depth runs last (intentional: needs final HTML).
   findings.push(_runAuditor(contentDepthAuditor, pack, 'content-depth'));
+  // Trust-gate runs absolutely last — it inspects the final rendered HTML
+  // for client-facing trust-breakers and blocks ship if any are present.
+  findings.push(_runAuditor(trustGateAuditor, pack, 'trust-gate'));
   return arbiter.arbitrate(findings);
 }
 

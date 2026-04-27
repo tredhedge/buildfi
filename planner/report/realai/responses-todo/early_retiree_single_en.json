@@ -1,6 +1,6 @@
 {
   "profile": "early_retiree_single_en",
-  "generated_at": "2026-04-27T03:01:04.803Z",
+  "generated_at": "2026-04-27T04:51:17.114Z",
   "canonical": {
     "success_rate": 0.3845,
     "p25_wealth_real": 0,
@@ -62,13 +62,6 @@
         "rule": "thesis-cumulative-drift",
         "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
         "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile"
-      }
-    ],
-    "narrative": [
-      {
-        "rule": "content-missing-beat-early_qpp_oas_tradeoff",
-        "message": "Required content beat \"Early-vs-deferred QPP/OAS tradeoff discussed\" is missing for case_driver=fire_bridge. No matching pattern anywhere in visible text.",
-        "evidence": "driver=fire_bridge beat=early_qpp_oas_tradeoff patterns=[\"defer.{0,20}(QPP|CPP|OAS)\",\"report(er)?.{0,20}(RRQ|SV)\",\"early.{0,15}(QPP|CPP|OAS)\",\"(QPP|CPP|OAS).{0,15}at 60\",\"(RRQ|SV).{0,15}.{0,5}60\",\"QPP at age\",\"RRQ.{0,5}65\"]"
       }
     ]
   },

@@ -1,6 +1,6 @@
 {
   "profile": "sandwich_gen_en",
-  "generated_at": "2026-04-27T03:01:08.550Z",
+  "generated_at": "2026-04-27T04:51:18.004Z",
   "canonical": {
     "success_rate": 0.4295,
     "p25_wealth_real": 0,
@@ -93,13 +93,6 @@
         "rule": "canonical-quote-success_rate-stress_interpretation",
         "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 42.95. Slot must be regenerated to match canonical.",
         "evidence": "\"…tagflation73** (success rate falls to **16%**) and to a **lostDecade** scenario (**23%**),\"  (canon=42.95, quoted=16)"
-      }
-    ],
-    "narrative": [
-      {
-        "rule": "content-missing-beat-retirement_age_lever",
-        "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
-        "evidence": "driver=gap_savings beat=retirement_age_lever patterns=[\"retire.{0,15}later\",\"retraite.{0,15}plus tard\",\"delay.{0,10}retir\",\"report(er)?.{0,15}retraite\",\"report.{0,5}de retraite\",\"extend.{0,10}working\",\"prolonger.{0,15}travail\",\"push.{0,10}retirement\",\"ajustement.{0,20}horizon\",\"horizon.{0,15}planification\"]"
       }
     ]
   },

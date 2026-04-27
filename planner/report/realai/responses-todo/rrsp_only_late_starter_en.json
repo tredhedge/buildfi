@@ -1,6 +1,6 @@
 {
   "profile": "rrsp_only_late_starter_en",
-  "generated_at": "2026-04-27T03:01:14.934Z",
+  "generated_at": "2026-04-27T04:51:18.570Z",
   "canonical": {
     "success_rate": 0.4515,
     "p25_wealth_real": 0,
@@ -50,13 +50,6 @@
         "rule": "canonical-quote-p25_wealth_real-riskInsight",
         "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
         "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)"
-      }
-    ],
-    "narrative": [
-      {
-        "rule": "content-missing-beat-shortfall_or_lifestyle_compromise",
-        "message": "Required content beat \"Shortfall or lifestyle-compromise tradeoff surfaced\" is missing for case_driver=late_start_savings. No matching pattern anywhere in visible text.",
-        "evidence": "driver=late_start_savings beat=shortfall_or_lifestyle_compromise patterns=[\"short.?fall\",\"manque.?[\\\\s-]?[àa]?[\\\\s-]?gagner\",\"lifestyle.{0,10}adjust\",\"compromis.{0,20}(train|d[ée]penses|niveau de vie)\",\"ajust(er|ement).{0,15}train de vie\",\"reduc(e|ed|ing|tion).{0,15}(spending|target spending)\",\"r[ée]du(ire|ction).{0,15}(d[ée]penses|train de vie)\",\"lower.{0,10}retirement.{0,10}income\",\"funding gap\"]"
       }
     ]
   },

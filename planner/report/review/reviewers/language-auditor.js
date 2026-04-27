@@ -66,6 +66,25 @@ var EN_LEAK = [
   '\\bMethodology\\b'
 ];
 
+// FR/EN jargon mix — terms that leak EN engineering vocabulary into FR
+// client-facing prose. These are NEVER acceptable in a client deliverable
+// and Codex flagged 'meltdown REER' explicitly. Add new entries here as
+// review batches surface them.
+var FR_EN_JARGON_MIX = [
+  '\\bMeltdown\\b',          // EN engineering term in FR copy
+  '\\bWhat[- ]If\\b',        // simulator name in FR client prose
+  '\\bDrawdown\\b',          // EN finance term in FR copy
+  '\\bSequence of returns\\b',
+  '\\bSimulator\\b',         // FR should be "simulateur"
+  '\\bDashboard\\b'          // FR should be "tableau de bord"
+];
+// EN/FR jargon mix — same in reverse for EN reports
+var EN_FR_JARGON_MIX = [
+  '\\bm\\u00e9thodologie\\b',
+  '\\bsynth\\u00e8se\\b',
+  '\\bd\\u00e9caissement\\b'
+];
+
 // Tightened patterns — catch directives addressed to the client, not generic
 // uses of "should/must/recommend" in passive or educational text. Earlier
 // version flagged "income should flow" and "not a recommendation" as defects.
@@ -129,6 +148,73 @@ function audit(pack) {
       fix_kind: 'localize_label',
       fix_target: 'global'
     });
+  }
+
+  // ─── 1.5) FR/EN jargon mix in client prose (BLOCKER) ─────────────────
+  // Codex feedback 2026-04-27: 'Stratégie Meltdown REER' must never reach
+  // a client. These terms are product-engineering vocabulary that should
+  // be translated for client deliverables.
+  var jargonList = fr ? FR_EN_JARGON_MIX : EN_FR_JARGON_MIX;
+  var jargonHits = [];
+  jargonList.forEach(function(pat) {
+    var re = new RegExp(pat, 'gi');
+    var m, c = 0, sample = '';
+    while ((m = re.exec(visible)) !== null) {
+      c++;
+      if (c === 1) {
+        var ctx = visible.substring(Math.max(0, m.index - 30), Math.min(visible.length, m.index + 50));
+        sample = ctx.trim();
+      }
+      if (c > 20) break;
+    }
+    if (c > 0) jargonHits.push({ pattern: pat, count: c, sample: sample });
+  });
+  if (jargonHits.length > 0) {
+    findings.push({
+      id: 'lang-jargon-mix',
+      reviewer: 'language',
+      severity: 'blocker',
+      category: 'language_leak',
+      section: null,
+      message: (fr ? 'EN engineering jargon in FR client report' : 'FR engineering jargon in EN client report') + ': ' + jargonHits.length + ' term(s) matched',
+      evidence: jargonHits.map(function(h) { return h.pattern + ' (\u00d7' + h.count + '): "' + h.sample + '"'; }).join(' | '),
+      fix_kind: 'localize_label',
+      fix_target: 'global'
+    });
+  }
+
+  // ─── 1.6) Name-variant inconsistency (BLOCKER) ───────────────────────
+  // Same client name spelled two different ways in the same report
+  // (Francois vs François) is a trust-breaker. Detect by checking known
+  // diacritic-stripped pairs against the visible content.
+  var clientName = (pack.profile && pack.profile.client && (pack.profile.client.firstName || pack.profile.client.name)) || '';
+  if (clientName) {
+    // Generic pair detector: if a name contains a diacritic, the bare-ASCII
+    // form is a defect when it appears alongside the diacritic form.
+    var stripped = clientName
+      .replace(/[\u00e0\u00e1\u00e2\u00e4]/g, 'a').replace(/[\u00c0\u00c1\u00c2\u00c4]/g, 'A')
+      .replace(/[\u00e7]/g, 'c').replace(/[\u00c7]/g, 'C')
+      .replace(/[\u00e8\u00e9\u00ea\u00eb]/g, 'e').replace(/[\u00c8\u00c9\u00ca\u00cb]/g, 'E')
+      .replace(/[\u00ee\u00ef]/g, 'i').replace(/[\u00ce\u00cf]/g, 'I')
+      .replace(/[\u00f4\u00f6]/g, 'o').replace(/[\u00d4\u00d6]/g, 'O')
+      .replace(/[\u00f9\u00fb\u00fc]/g, 'u').replace(/[\u00d9\u00db\u00dc]/g, 'U');
+    if (stripped !== clientName) {
+      var bareRe = new RegExp('\\b' + stripped.replace(/\s+/g, '\\s+') + '\\b', 'g');
+      var bareCount = (visible.match(bareRe) || []).length;
+      if (bareCount > 0) {
+        findings.push({
+          id: 'lang-name-variant',
+          reviewer: 'language',
+          severity: 'blocker',
+          category: 'language_leak',
+          section: null,
+          message: 'Client name "' + clientName + '" appears as bare-ASCII "' + stripped + '" \u2014 inconsistent spelling.',
+          evidence: 'Diacritic form: "' + clientName + '" \u00b7 Bare form: "' + stripped + '" found ' + bareCount + ' time(s)',
+          fix_kind: 'localize_label',
+          fix_target: 'client.name'
+        });
+      }
+    }
   }
 
   // ─── 2) Prescriptive language (AMF) ──────────────────────────────────

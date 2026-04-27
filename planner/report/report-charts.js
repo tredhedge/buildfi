@@ -291,6 +291,29 @@
   function svgTornado(factors, opts) {
     if (!factors || factors.length === 0) return "";
     opts = opts || {};
+    // Degenerate case: every factor's ±1σ swing rounds to ~$0 (e.g. when
+    // capital exhausts at the floor under the deterministic plan, returns
+    // and inflation swings can no longer move the median outcome). Drawing
+    // a tornado here produces an empty axis with row labels and nothing
+    // else — a trust-breaker. Substitute an explanatory callout instead.
+    var _maxAbs = 0;
+    factors.forEach(function(s) {
+      _maxAbs = Math.max(_maxAbs, Math.abs(s.lo || 0), Math.abs(s.hi || 0));
+    });
+    if (_maxAbs < 100) {
+      var fr = !!opts.fr;
+      var note = fr
+        ? 'Les variations de \u00b11\u202f\u00e9cart-type sur ces leviers ne d\u00e9placent plus le patrimoine final m\u00e9dian. Le plan se trouve coll\u00e9 contre une borne (\u00e9pargne \u00e9puis\u00e9e ou plafond fiscal), donc rendements et inflation cessent d\'\u00eatre les leviers dominants \u2014 la variance des d\u00e9penses et la s\u00e9quence de retraits prennent le relais.'
+        : 'A \u00b11\u03c3 swing on these levers no longer moves median final wealth. The plan is pinned against a boundary (savings exhausted or tax ceiling), so returns and inflation are no longer the dominant levers \u2014 spending variance and the withdrawal sequence become the deciding factors.';
+      return _wrapChart(
+        '<div data-bf-chart="tornado" data-bf-chart-empty="boundary" style="background:#fdfbf6;border-left:3px solid ' + C.gold + ';padding:14px 18px;margin:8px 0;font-family:Inter,sans-serif;font-size:11.5px;line-height:1.65;color:#5a5448">' +
+          '<strong style="color:' + C.gold + ';display:block;margin-bottom:4px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px">' +
+            (fr ? 'Sensibilit\u00e9 satur\u00e9e' : 'Sensitivity saturated') +
+          '</strong>' + note +
+        '</div>',
+        opts.title
+      );
+    }
     var W = opts.width || 500, _tH = 30 * factors.length + 40;
     var _tMax = 1;
     factors.forEach(function(s) { _tMax = Math.max(_tMax, Math.abs(s.lo), Math.abs(s.hi)); });

@@ -305,26 +305,16 @@
     'sec-glossary':         'std-full'
   };
   function renderTOC(sections, fr) {
+    // Per Codex feedback (2026-04-27): the density-mode coverage legend +
+    // per-row badges are PRODUCT chrome, not client material. They were also
+    // failing WCAG color-contrast (green vs blue dots indistinguishable).
+    // Both removed — clean numbered TOC, nothing else.
     var h = '<div class="toc">';
     h += '<div class="toc-title">' + (fr ? 'Table des mati\u00e8res' : 'Table of Contents') + '</div>';
-    // Coverage legend: shows the reader which icon means what.
-    h += '<div style="display:flex;gap:12px;margin:6px 0 12px;font-family:Inter,sans-serif;font-size:9.5px;color:#888;letter-spacing:0.3px">' +
-      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2a8c46;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Inclus dans Court' : 'Included in Brief') + '</span>' +
-      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c49a1a;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Standard \u00b7 Complet' : 'Standard \u00b7 Full') + '</span>' +
-      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#5b8db8;margin-right:5px;vertical-align:middle"></span>' + (fr ? 'Complet uniquement' : 'Full only') + '</span>' +
-      '</div>';
     sections.forEach(function(s) {
-      var cov = TOC_COVERAGE[s.id] || 'all';
-      var dotColor = cov === 'all' ? '#2a8c46' : (cov === 'std-full' ? '#c49a1a' : '#5b8db8');
-      var covTitle = cov === 'all'
-        ? (fr ? 'Visible en Court, Standard et Complet' : 'Visible in Brief, Standard, and Full')
-        : (cov === 'std-full'
-            ? (fr ? 'Visible en Standard et Complet' : 'Visible in Standard and Full')
-            : (fr ? 'Visible uniquement en Complet' : 'Visible in Full only'));
       h += '<div class="toc-item">' +
         '<span class="toc-n">' + s.n + '</span>' +
         '<span class="toc-label"><a href="#' + s.id + '">' + s.label + '</a></span>' +
-        '<span class="toc-coverage" data-coverage="' + cov + '" title="' + covTitle + '" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';margin-left:8px;vertical-align:middle;flex-shrink:0"></span>' +
         '</div>';
     });
     h += '</div>';
@@ -373,7 +363,7 @@
       '<div style="margin:14px 0;padding:14px 18px;background:linear-gradient(135deg,#252d39 0%,#344155 100%);border-radius:8px;border-left:4px solid #c49a1a;color:#faf8f4;display:flex;align-items:center;gap:14px;break-inside:avoid">' +
       '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:#c49a1a;flex-shrink:0;line-height:1">⚡</div>' +
       '<div style="flex:1">' +
-        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Simulateur What-If — disponible plus loin dans ce rapport' : 'What-If Simulator — available later in this report') + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' + (fr ? 'Simulateur — disponible plus loin dans ce rapport' : 'What-If Simulator — available later in this report') + '</div>' +
         '<div style="font-family:Inter,sans-serif;font-size:11.5px;color:#e8e0d4;line-height:1.55">' +
           (fr ? 'Ajustez 12 paramètres (âge de retraite, dépenses, rendement, inflation, MER, allocation…) ou choisissez un scénario rapide (Récession 2008, FIRE, Stagflation…) pour voir comment votre plan réagit. Une nouvelle simulation Monte Carlo (500 scénarios) tourne en direct dans votre navigateur.'
               : 'Adjust 12 parameters (retirement age, spending, return, inflation, MER, allocation…) or pick a quick scenario (2008 Recession, FIRE, Stagflation…) to see how your plan responds. A new Monte Carlo simulation (500 scenarios) runs live in your browser.') +
@@ -424,7 +414,7 @@
     var _plain = d.renderProfile && d.renderProfile.jargonMode === 'plain';
     var _heading = _plain
       ? (fr ? 'Essayez d\'autres sc\u00e9narios' : 'Try other scenarios')
-      : (fr ? 'Simulateur What-If' : 'What-If Simulator');
+      : (fr ? 'Simulateur de sc\u00e9narios' : 'What-If Simulator');
     h += F.Sec('?', _heading, 'sec-whatif');
     var _bannerStrong = _plain
       ? (fr ? 'Outil interactif.' : 'Interactive tool.')
@@ -587,21 +577,22 @@
     var bgArcEnd = _polar(0);
     var bgPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
                  ' A ' + R + ' ' + R + ' 0 1 1 ' + bgArcEnd.x.toFixed(1) + ' ' + bgArcEnd.y.toFixed(1);
-    // Band markers at 40, 65, 85 (the thresholds).
+    // Band markers at 40, 65, 85 (the thresholds). Tick spans from just inside
+    // the stroke ring (R-3) to just outside (R+3) — keeps it visually contained
+    // within the arc's 14px stroke band, no protruding stubs.
     function _tickMarker(pct) {
       var ang = Math.PI * (1 - pct / 100);
-      var inner = { x: CX + (R - 10) * Math.cos(ang), y: CY - (R - 10) * Math.sin(ang) };
-      var outer = { x: CX + (R + 4)  * Math.cos(ang), y: CY - (R + 4)  * Math.sin(ang) };
+      var inner = { x: CX + (R - 3) * Math.cos(ang), y: CY - (R - 3) * Math.sin(ang) };
+      var outer = { x: CX + (R + 3) * Math.cos(ang), y: CY - (R + 3) * Math.sin(ang) };
       return '<line x1="' + inner.x.toFixed(1) + '" y1="' + inner.y.toFixed(1) +
              '" x2="' + outer.x.toFixed(1) + '" y2="' + outer.y.toFixed(1) +
-             '" stroke="rgba(250,248,244,0.4)" stroke-width="1.5" />';
+             '" stroke="rgba(250,248,244,0.55)" stroke-width="1.5" stroke-linecap="round" />';
     }
-    // Geometry: arc is a semicircle with center (110, 110), radius 90. Visual
-    // midline of the arc opening sits at y ≈ (20 + 110)/2 = 65. We want the
-    // score number's optical center at y=65, which means a 36px digit baseline
-    // sits at y=65 + 36*0.36 ≈ 78. The "/100" caption tucks 16px below the
-    // score baseline. ViewBox clips just below the arc bottom (y=115) so no
-    // dead space pushes the SVG taller than the visible content.
+    // Geometry: arc center (110, 110), radius 90, stroke 14. Arc top edge at
+    // y = 110 - 90 - 7 = 13, bottom inner edge at y = 110 - 7 = 103. Visual
+    // midline of the OPENING (not the geometric centre) sits at y ≈ 65.
+    // dominant-baseline=central anchors the text's vertical centre at the
+    // given y, so y=58 puts the score visually centered inside the arc.
     var svg = '<svg viewBox="0 0 220 115" width="220" height="115" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;margin:0 auto">' +
       // Background gradient track (continuous red→amber→green→gold)
       '<defs>' +
@@ -613,13 +604,21 @@
         '</linearGradient>' +
       '</defs>' +
       '<path d="' + bgPath + '" fill="none" stroke="url(#gauge-bg)" stroke-width="14" stroke-linecap="round" opacity="0.25" />' +
-      // Active arc (score colored solid in band color, on top of gradient)
-      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="round" />' +
+      // Active arc — `butt` linecap (NOT round). The round caps were drawing
+      // half-disc bleeds at the score position and at the start, which read
+      // as two big green chunks at each end of the arc. butt = clean cuts.
+      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="butt" />' +
       // Threshold tick marks at 40 / 65 / 85
       _tickMarker(40) + _tickMarker(65) + _tickMarker(85) +
-      // Score number — visual centre of the semicircle opening (y ≈ 65)
-      '<text x="' + CX + '" y="78" text-anchor="middle" dominant-baseline="alphabetic" font-family="JetBrains Mono,monospace" font-size="36" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
-      '<text x="' + CX + '" y="94" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
+      // Score number — explicit y-baseline calculation so the rendering does
+      // NOT depend on dominant-baseline="central" (Chrome OK, but several
+      // print/PDF engines + WebKit on iOS ignore it). For a 32px font the
+      // optical centre sits ~10.5px above the alphabetic baseline. Target
+      // optical centre y=58 → baseline y=68.
+      '<text x="' + CX + '" y="68" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="32" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
+      // "/ 100" caption tucked snug under the score with the same explicit
+      // baseline approach. font-size 9 → baseline 88 so optical centre y=84.
+      '<text x="' + CX + '" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
     '</svg>';
     // Component breakdown — 5 rows showing each subscore + weight.
     var compMeta = {
@@ -807,7 +806,7 @@
     var _readFurther = _hidesSim
       ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et le plan d\'action proposent des leviers concrets.'
             : 'the advisor letter (p. 2) frames the read, and the diagnostic and action plan propose concrete levers.')
-      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur What-If permet de tester vos propres hypoth\u00e8ses.'
+      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et le simulateur de sc\u00e9narios permet de tester vos propres hypoth\u00e8ses.'
             : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and the What-If simulator lets you test your own assumptions.');
     h += '<div style="border-top:1px solid rgba(196,154,26,0.25);padding-top:14px;font-size:10.5px;color:#bccbe0;line-height:1.6">' +
       '<strong style="color:#c49a1a;letter-spacing:0.3px">' + (fr ? 'Pour aller plus loin :' : 'Read further:') + '</strong> ' +
@@ -843,33 +842,11 @@
     if (d.thesis && d.thesis.bandLabel) {
       h += '<div style="text-align:center;margin-top:8px;font-family:\"Playfair Display\",Georgia,serif;font-size:14px;font-weight:600;color:#faf8f4">' + F.esc(d.thesis.bandLabel) + '</div>';
     }
-    // Sprint 1.5 — Premium-tier badge on cover (Planner only). Visible
-    // signal that this is the $69.99 product, not the $29.99 Bilan.
-    if (d.sku === 'planner') {
-      h += '<div style="text-align:center;margin-top:12px">' +
-        '<span style="display:inline-block;padding:4px 14px;background:#c49a1a;color:#1a1f2a;font-family:Inter,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:14px">' +
-          (fr ? 'Planner \u2014 Simulateur + 5 rapports IA' : 'Planner \u2014 Simulator + 5 AI reports') +
-        '</span></div>';
-    }
+    // Per Codex feedback (2026-04-27): the Planner SKU pill and the reader-
+    // profile combo banner are PRODUCT chrome, not CLIENT deliverable. They
+    // belong in the internal review-pack metadata + dashboard, not on the
+    // cover of a report a client takes to their accountant. Both removed.
     h += '<div class="cover-date">' + F.L('prepared_on', fr) + ' ' + F.fmtDate(null, fr) + '</div>';
-    // CLASSIFIER-RENDER-PLAN: surface the reader-profile combo on the cover.
-    // Bilingual axis labels (no English leakage in FR reports). Hidden for
-    // jargonMode='plain' (beginner readers don't need classifier metadata)
-    // and when no renderProfile is present.
-    if (d.renderProfile && d.renderProfile.jargonMode !== 'plain') {
-      var _rpC = d.renderProfile;
-      var _LIT_FR = { beginner: 'd\u00e9butant', intermediate: 'interm\u00e9diaire', advanced: 'avanc\u00e9' };
-      var _STR_FR = { low: 'faible', moderate: 'mod\u00e9r\u00e9', high: '\u00e9lev\u00e9' };
-      var _DET_FR = { concise: 'concis', balanced: '\u00e9quilibr\u00e9', detailed: 'd\u00e9taill\u00e9' };
-      var _comboLine = (fr
-        ? 'Profil lecteur \u2014 Litt. fin.: <strong>' + (_LIT_FR[_rpC.finLiteracy] || _rpC.finLiteracy || 'interm\u00e9diaire') + '</strong>'
-          + ' \u00b7 Stress: <strong>' + (_STR_FR[_rpC.stressLevel] || _rpC.stressLevel || 'mod\u00e9r\u00e9') + '</strong>'
-          + ' \u00b7 D\u00e9tail: <strong>' + (_DET_FR[_rpC.detailPref] || _rpC.detailPref || '\u00e9quilibr\u00e9') + '</strong>'
-        : 'Reader profile \u2014 Lit.: <strong>' + (_rpC.finLiteracy || 'intermediate') + '</strong>'
-          + ' \u00b7 Stress: <strong>' + (_rpC.stressLevel || 'moderate') + '</strong>'
-          + ' \u00b7 Detail: <strong>' + (_rpC.detailPref || 'balanced') + '</strong>');
-      h += '<div class="cover-combo" style="margin-top:8px;font-size:10px;color:#a8b8d0;letter-spacing:0.4px;font-family:Inter,sans-serif">' + _comboLine + '</div>';
-    }
     if (d.client.advisor) h += '<div style="font-size:11px;color:#a8b8d0;margin-top:6px">' + F.esc(d.client.advisor) + (d.client.firm ? ' \u00b7 ' + F.esc(d.client.firm) : '') + '</div>';
     // Methodology line + version footer removed from the cover entirely
     // (per design review 2026-04-26): the cover should be a calm, premium
@@ -1022,7 +999,7 @@
     else if (d.gapM > 0) obs.push(fr ? '\u2192 \u00c9cart mensuel de ' + F.fmtMoney(Math.round(d.gapM), fr) + ' \u00e0 combler par les retraits d\u2019\u00e9pargne.' : '\u2192 Monthly gap of ' + F.fmtMoney(Math.round(d.gapM), fr) + ' to be funded from savings withdrawals.');
 
     if (d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 Optimisation fiscale d\u00e9tect\u00e9e \u2014 alpha fiscal de ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax optimization detected \u2014 tax alpha of ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
-    if (d.R.hasMeltdown) obs.push(fr ? '\u2192 Strat\u00e9gie meltdown REER active \u2014 d\u00e9tails en section d\u00e9di\u00e9e.' : '\u2192 RRSP meltdown strategy active \u2014 see dedicated section.');
+    if (d.R.hasMeltdown) obs.push(fr ? '\u2192 Strat\u00e9gie de d\u00e9caissement anticip\u00e9 REER active \u2014 d\u00e9tails en section d\u00e9di\u00e9e.' : '\u2192 RRSP meltdown strategy active \u2014 see dedicated section.');
     if (d.R.couple) obs.push(fr ? '\u2192 Plan de couple \u2014 les actifs des deux conjoints sont mod\u00e9lis\u00e9s explicitement.' : '\u2192 Couple plan \u2014 both partners\u2019 assets are explicitly modeled.');
 
     if (obs.length > 0) {
@@ -1256,33 +1233,48 @@
           ? 'L\'enjeu structurant de votre cas: le <strong>pi\u00e8ge SRG</strong>. Chaque dollar de revenu compt\u00e9 (RRQ + retraits REER + rente) r\u00e9duit la prestation de pr\u00e8s de 50\u00a2 ; les retraits CELI ne d\u00e9clenchent pas la r\u00e9cup\u00e9ration. L\'ordre des retraits \u00e0 partir de 65 ans peut pr\u00e9server plusieurs ann\u00e9es de SRG.'
           : 'The structural focus of your case: the <strong>GIS trap</strong>. Each dollar of counted income (CPP + RRSP withdrawals + pension) reduces the benefit by close to 50\u00a2 ; TFSA withdrawals do not trigger clawback. Withdrawal sequencing from age 65 can preserve several extra years of GIS.';
       case 'fire_bridge':
+        // BEAT: early_qpp_oas_tradeoff — must explicitly name early-vs-deferred
+        // QPP/OAS arbitrage (defer QPP/OAS, early CPP, +0.7%/mo deferral).
         return fr
-          ? 'Le levier dominant de votre plan: la <strong>zone-pont</strong> de ' + bridgeYears + ' ans entre la retraite \u00e0 ' + retAge + ' ans et le d\u00e9but du RRQ/PSV \u00e0 65 ans. C\'est la fen\u00eatre la plus expos\u00e9e au risque de s\u00e9quence ; une r\u00e9serve liquide d\u00e9di\u00e9e (\u00e9chelle d\'obligations, fonds de r\u00e9serve) isole le plan d\'une chute de march\u00e9 dans les premi\u00e8res ann\u00e9es.'
-          : 'The dominant lever of your plan: the <strong>' + bridgeYears + '-year bridge</strong> between retirement at age ' + retAge + ' and the start of CPP/OAS at 65. This is the window most exposed to sequence-of-returns risk ; a dedicated liquid reserve (bond ladder, reserve fund) isolates the plan from an early market drop.';
+          ? 'Le levier dominant de votre plan: la <strong>zone-pont</strong> de ' + bridgeYears + ' ans entre la retraite \u00e0 ' + retAge + ' ans et le d\u00e9but du RRQ/PSV \u00e0 65 ans. C\'est la fen\u00eatre la plus expos\u00e9e au risque de s\u00e9quence ; une r\u00e9serve liquide d\u00e9di\u00e9e (\u00e9chelle d\'obligations, fonds de r\u00e9serve) isole le plan d\'une chute de march\u00e9 dans les premi\u00e8res ann\u00e9es. L\'arbitrage <strong>RRQ/PSV anticip\u00e9 vs report\u00e9</strong> est central : commencer t\u00f4t (60 pour RRQ, 65 pour PSV) couvre la zone-pont avec des prestations garanties ; <strong>reporter le RRQ et la PSV</strong> jusqu\'\u00e0 70 ans ajoute jusqu\'\u00e0 +42\u202f% de RRQ et +36\u202f% de PSV \u00e0 vie au prix d\'une plus grande pression sur le portefeuille pendant la zone-pont.'
+          : 'The dominant lever of your plan: the <strong>' + bridgeYears + '-year bridge</strong> between retirement at age ' + retAge + ' and the start of CPP/OAS at 65. This is the window most exposed to sequence-of-returns risk ; a dedicated liquid reserve (bond ladder, reserve fund) isolates the plan from an early market drop. The <strong>early vs deferred CPP/OAS</strong> trade-off is central : starting early (CPP at 60, OAS at 65) covers the bridge with guaranteed income ; <strong>defer CPP and OAS</strong> to age 70 adds up to +42% lifetime CPP and +36% lifetime OAS at the cost of heavier portfolio draws during the bridge.';
       case 'db_pension_split':
+        // BEAT: db_formula_explained — must explicitly cite the DB pension
+        // formula (years × accrual × earnings, or rule of 80/85/90).
         return fr
-          ? 'Le levier conjugal central: le <strong>fractionnement de pension PD</strong> \u00e0 partir de 65 ans. Avec une pension index\u00e9e d\'un c\u00f4t\u00e9 et un revenu plus modeste de l\'autre, transmettre jusqu\'\u00e0 50\u202f% du revenu admissible peut \u00e9conomiser 4\u20138\u202fK$/an d\'imp\u00f4t conjugal et r\u00e9duire mat\u00e9riellement la r\u00e9cup\u00e9ration PSV.'
-          : 'The central spousal lever: <strong>DB pension splitting</strong> from age 65. With one indexed pension on one side and a more modest income on the other, transferring up to 50% of eligible income can save $4\u20138K/yr in household tax and materially reduce OAS clawback.';
+          ? 'Le levier conjugal central: le <strong>fractionnement de pension PD</strong> \u00e0 partir de 65 ans. La pension PD se calcule typiquement par la formule <strong>ann\u00e9es de service \u00d7 taux d\'accumulation (souvent 1,5\u20132\u202f%) \u00d7 salaire moyen des derni\u00e8res ann\u00e9es</strong>, et l\'admissibilit\u00e9 \u00e0 la retraite anticip\u00e9e suit souvent une r\u00e8gle d\'\u00e2ge\u202f+\u202fservice (r\u00e8gle de 80/85/90). Avec une pension index\u00e9e d\'un c\u00f4t\u00e9 et un revenu plus modeste de l\'autre, transmettre jusqu\'\u00e0 50\u202f% du revenu admissible peut \u00e9conomiser 4\u20138\u202fK$/an d\'imp\u00f4t conjugal et r\u00e9duire mat\u00e9riellement la r\u00e9cup\u00e9ration PSV.'
+          : 'The central spousal lever: <strong>DB pension splitting</strong> from age 65. The DB pension is typically calculated as <strong>years of service \u00d7 accrual rate (often 1.5\u20132%) \u00d7 final average earnings</strong>, with early-retirement eligibility usually governed by an age + service rule (rule of 80/85/90). With one indexed pension on one side and a more modest income on the other, transferring up to 50% of eligible income can save $4\u20138K/yr in household tax and materially reduce OAS clawback.';
       case 'meltdown_window':
         return fr
-          ? 'Le levier fiscal dominant: la <strong>fen\u00eatre de meltdown REER</strong> entre ' + retAge + ' et 72 ans. Des retraits acc\u00e9l\u00e9r\u00e9s pendant cette fen\u00eatre lissent le revenu imposable avant la conversion FERR obligatoire et r\u00e9duisent la r\u00e9cup\u00e9ration PSV viagers.'
+          ? 'Le levier fiscal dominant: la <strong>fen\u00eatre de d\u00e9caissement anticip\u00e9 du REER</strong> entre ' + retAge + ' et 72 ans. Des retraits acc\u00e9l\u00e9r\u00e9s pendant cette fen\u00eatre lissent le revenu imposable avant la conversion FERR obligatoire et r\u00e9duisent la r\u00e9cup\u00e9ration PSV viagers.'
           : 'The dominant tax lever: the <strong>RRSP meltdown window</strong> between ' + retAge + ' and 72. Accelerated withdrawals in that window smooth taxable income before mandatory RRIF conversion and reduce lifetime OAS clawback.';
       case 'debt_paydown':
+        // BEAT: debt-vs-invest tradeoff explicitly named (rembourser…investir,
+        // après-impôt return, coût d'opportunité) — required by content-depth.
         return fr
-          ? 'L\'arbitrage central de votre cas: le <strong>remboursement structur\u00e9 de ' + f$(debtTotal) + '$ de dettes</strong>. Chaque dollar rembours\u00e9 \u00e9quivaut \u00e0 un rendement garanti au taux de la dette ; tant que les soldes \u00e0 taux \u00e9lev\u00e9 ne sont pas \u00e9liminis, l\'\u00e9pargne plac\u00e9e ne compense pas le co\u00fbt d\'int\u00e9r\u00eat.'
-          : 'The central trade-off of your case: <strong>structured paydown of ' + f$(debtTotal) + '$ in debt</strong>. Each dollar repaid equals a guaranteed return at the debt rate ; until high-rate balances are cleared, invested savings do not offset interest cost.';
+          ? 'L\'arbitrage central de votre cas: le <strong>remboursement structur\u00e9 de ' + f$(debtTotal) + '$ de dettes</strong>. Chaque dollar rembours\u00e9 \u00e9quivaut \u00e0 un rendement garanti au taux de la dette. La d\u00e9cision <strong>rembourser ou investir</strong> se r\u00e9sout en comparant le rendement apr\u00e8s imp\u00f4t de l\'\u00e9pargne au taux d\'int\u00e9r\u00eat de la dette : tant que les soldes \u00e0 taux \u00e9lev\u00e9 ne sont pas \u00e9limin\u00e9s, le co\u00fbt d\'opportunit\u00e9 d\'investir d\'abord d\u00e9passe le rendement attendu.'
+          : 'The central trade-off of your case: <strong>structured paydown of ' + f$(debtTotal) + '$ in debt</strong>. Each dollar repaid equals a guaranteed return at the debt rate. The <strong>pay debt or invest</strong> decision resolves by comparing the after-tax return on savings against the debt interest rate ; until high-rate balances are cleared, the opportunity cost of investing first exceeds the expected return.';
       case 'gap_savings':
+        // BEATS: contribution_room_addressed (droits de cotisation REER/CELI),
+        // retirement_age_lever (retraite plus tard / report retraite). Both
+        // required by content-depth for case_driver=gap_savings.
         return fr
-          ? 'L\'\u00e9cart \u00e0 combler dans votre plan vient principalement du <strong>taux d\'\u00e9pargne annuel</strong>. Sur l\'horizon de ' + Math.max(0, retAge - ageNow) + ' ans avant la retraite, augmenter la cotisation annuelle de quelques milliers de dollars d\u00e9place la projection plus efficacement que tout ajustement d\'allocation.'
-          : 'The gap in your plan comes mainly from the <strong>annual savings rate</strong>. Over the ' + Math.max(0, retAge - ageNow) + '-year pre-retirement horizon, adding a few thousand dollars in annual contributions moves the projection more than any allocation tweak.';
+          ? 'L\'\u00e9cart \u00e0 combler dans votre plan vient principalement du <strong>taux d\'\u00e9pargne annuel</strong>. Sur l\'horizon de ' + Math.max(0, retAge - ageNow) + ' ans avant la retraite, augmenter la cotisation annuelle de quelques milliers de dollars (en utilisant les <strong>droits de cotisation REER inutilis\u00e9s</strong> et le plafond CELI annuel) d\u00e9place la projection plus efficacement que tout ajustement d\'allocation. Compl\u00e9mentairement, <strong>reporter la retraite</strong> de quelques ann\u00e9es (travailler plus longtemps) prolonge la phase d\'accumulation et raccourcit la phase de d\u00e9caissement \u2014 c\'est le levier structurel le plus efficace quand l\'\u00e9pargne disponible est limit\u00e9e.'
+          : 'The gap in your plan comes mainly from the <strong>annual savings rate</strong>. Over the ' + Math.max(0, retAge - ageNow) + '-year pre-retirement horizon, adding a few thousand dollars in annual contributions (using your <strong>unused RRSP contribution room</strong> and the annual TFSA limit) moves the projection more than any allocation tweak. Complementarily, choosing to <strong>retire later</strong> (extend working years by 2\u20133) shortens the drawdown horizon and grows accrued QPP/CPP \u2014 it is the strongest structural lever when available savings are limited.';
       case 'hnw_estate':
+        // BEATS: estate_freeze_or_trust (gel successoral, fiducie alter-ego,
+        // donor-advised), spousal_rollover (roulement au conjoint, surviving
+        // spouse). Both required by content-depth for hnw_estate.
         return fr
-          ? 'Sur ce patrimoine combin\u00e9, l\'<strong>imp\u00f4t au d\u00e9c\u00e8s du second conjoint</strong> sur les soldes REER\u202f/\u202fFERR et les gains accumul\u00e9s reste le co\u00fbt fiscal dominant restant. La planification successorale (don d\'actifs appr\u00e9ci\u00e9s, fiducie testamentaire, b\u00e9n\u00e9ficiaires REER, fractionnement de pension) cadre ce co\u00fbt avant qu\'il ne se cristallise.'
-          : 'On this combined estate, the <strong>tax at the second spouse\'s death</strong> on RRSP/RRIF balances and accumulated gains remains the dominant remaining tax cost. Estate planning (gifting appreciated securities, testamentary trust, RRSP beneficiary designations, pension splitting) frames that cost before it crystallizes.';
+          ? 'Sur ce patrimoine combin\u00e9, l\'<strong>imp\u00f4t au d\u00e9c\u00e8s du second conjoint</strong> sur les soldes REER\u202f/\u202fFERR et les gains accumul\u00e9s reste le co\u00fbt fiscal dominant restant. Au premier d\u00e9c\u00e8s, le <strong>roulement au conjoint</strong> (transfert au conjoint survivant) reporte la cristallisation fiscale ; au second d\u00e9c\u00e8s, sans planification, la disposition r\u00e9put\u00e9e des REER/FERR et des immobilisations frappe d\'un coup. Des strat\u00e9gies successorales avanc\u00e9es \u2014 <strong>gel successoral</strong> sur les actions de soci\u00e9t\u00e9, <strong>fiducie alter-ego</strong> apr\u00e8s 65 ans, dons \u00e0 une fondation ou don de bienfaisance d\'actifs appr\u00e9ci\u00e9s, fractionnement de pension entre conjoints \u2014 cadrent ce co\u00fbt avant qu\'il ne se cristallise.'
+          : 'On this combined estate, the <strong>tax at the second spouse\'s death</strong> on RRSP/RRIF balances and accumulated gains remains the dominant remaining tax cost. At the first death, the <strong>spousal rollover</strong> defers the tax crystallization to the surviving spouse ; at the second death, without planning, the deemed disposition of RRSP/RRIF and capital property hits all at once. Advanced estate strategies \u2014 <strong>estate freeze</strong> on private-company shares, <strong>alter-ego trust</strong> after age 65, charitable gifting of appreciated securities or a donor-advised fund, and pension splitting between spouses \u2014 frame that cost before it crystallizes.';
       case 'late_start_savings':
+        // BEAT: shortfall_or_lifestyle_compromise — must explicitly name the
+        // shortfall / lifestyle compromise tradeoff (manque-à-gagner /
+        // lifestyle adjust / shortfall).
         return fr
-          ? 'Avec un d\u00e9part tardif (\u00e9pargne disponible aujourd\'hui modeste, ' + Math.max(0, retAge - ageNow) + ' ans avant ' + retAge + ' ans), le levier dominant devient le <strong>rattrapage d\'\u00e9pargne</strong> combin\u00e9 au <strong>report du RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans</strong>. Le report PSV ajoute +36\u202f% de prestation \u00e0 vie ; c\'est l\'effet le plus puissant pour ce profil.'
-          : 'With a late start (' + Math.max(0, retAge - ageNow) + ' years before age ' + retAge + '), the dominant lever becomes <strong>catch-up savings</strong> combined with <strong>CPP/OAS deferral to age 70</strong>. Deferring OAS adds +36% to the benefit for life ; this is the strongest single effect for this profile.';
+          ? 'Avec un d\u00e9part tardif (\u00e9pargne disponible aujourd\'hui modeste, ' + Math.max(0, retAge - ageNow) + ' ans avant ' + retAge + ' ans), le levier dominant devient le <strong>rattrapage d\'\u00e9pargne</strong> combin\u00e9 au <strong>report du RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans</strong>. Le report PSV ajoute +36\u202f% de prestation \u00e0 vie ; c\'est l\'effet le plus puissant pour ce profil. Si le rattrapage et le report ne suffisent pas \u00e0 combler la cible, l\'arbitrage se d\u00e9place vers un <strong>compromis de niveau de vie</strong> : accepter un manque-\u00e0-gagner cibl\u00e9 (d\u00e9penses inf\u00e9rieures de 10\u201320\u202f%) plut\u00f4t que de prolonger excessivement la vie active.'
+          : 'With a late start (' + Math.max(0, retAge - ageNow) + ' years before age ' + retAge + '), the dominant lever becomes <strong>catch-up savings</strong> combined with <strong>CPP/OAS deferral to age 70</strong>. Deferring OAS adds +36% to the benefit for life ; this is the strongest single effect for this profile. If catch-up and deferral are not sufficient to close the gap, the trade-off shifts to a <strong>lifestyle adjustment</strong> : accepting a targeted shortfall (10\u201320% lower spending) rather than excessively prolonging working years.';
       case 'single_parent_resilience':
         return fr
           ? 'Avant l\'optimisation, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der toute autre optimisation.'
@@ -1426,7 +1418,7 @@
     h += F.Sec(secN, fr ? 'Ordre des retraits' : 'Draw-order strategy', 'sec-draworder');
 
     h += narr(fr
-      ? 'Le financement des d\u00e9penses de retraite se r\u00e9partit entre comptes selon une logique fiscale\u00a0: tirer d\'abord les sources les plus flexibles (non-enregistr\u00e9), utiliser la fen\u00eatre meltdown REER avant 72\u00a0ans pour lisser l\'imp\u00f4t, puis activer les retraits FERR minimums obligatoires en pr\u00e9servant le CELI. Cette section r\u00e9sume la r\u00e9partition viag\u00e8re et la chronologie des phases.'
+      ? 'Le financement des d\u00e9penses de retraite se r\u00e9partit entre comptes selon une logique fiscale\u00a0: tirer d\'abord les sources les plus flexibles (non-enregistr\u00e9), utiliser la fen\u00eatre de d\u00e9caissement anticip\u00e9 du REER avant 72\u00a0ans pour lisser l\'imp\u00f4t, puis activer les retraits FERR minimums obligatoires en pr\u00e9servant le CELI. Cette section r\u00e9sume la r\u00e9partition viag\u00e8re et la chronologie des phases.'
       : 'Retirement spending is funded across accounts following a tax logic: draw the most flexible sources first (non-registered), use the RRSP meltdown window before age 72 to smooth tax, then activate mandatory RRIF minimum withdrawals while preserving the TFSA. This section summarizes lifetime allocation and the phase chronology.');
 
     // ── Lifetime allocation bars ────────────────────────────────────
@@ -1459,7 +1451,7 @@
     h += _bar(
       fr ? 'REER + FERR' : 'RRSP + RRIF',
       lifetimeRrspTotal, lifetimeAll, '#c49a1a',
-      fr ? 'Inclut le meltdown comme strat\u00e9gie d\'extraction' : 'Includes meltdown as an extraction strategy'
+      fr ? 'Inclut le d\u00e9caissement anticip\u00e9 comme strat\u00e9gie d\'extraction' : 'Includes meltdown as an extraction strategy'
     );
     h += _bar(
       fr ? 'CELI / TFSA' : 'TFSA / CELI',
@@ -1471,10 +1463,10 @@
     if (sumMelt > 0) {
       h += '<div style="margin-top:10px;padding:10px 12px;background:#fdf6e3;border-left:3px solid #b89830;border-radius:0 4px 4px 0">';
       h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#7a4a00;letter-spacing:0.5px;margin-bottom:4px">' +
-        '\u25b8 ' + (fr ? 'Dont meltdown REER (recouvrement avec REER ci-dessus)' : 'Of which RRSP meltdown (overlap with RRSP above)') + '</div>';
+        '\u25b8 ' + (fr ? 'Dont d\u00e9caissement anticip\u00e9 du REER (recouvrement avec REER ci-dessus)' : 'Of which RRSP meltdown (overlap with RRSP above)') + '</div>';
       h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;color:#444;line-height:1.55">' +
         (fr
-          ? 'Le meltdown ajoute <strong>' + f$(Math.round(sumMelt)) + '</strong> de retraits REER acc\u00e9l\u00e9r\u00e9s entre <strong>' + meltAgeStart + ' et ' + meltAgeEnd + '\u00a0ans</strong> pour lisser le revenu imposable avant la conversion FERR obligatoire \u00e0 72\u00a0ans. Ce montant est compris dans le total REER + FERR ci-dessus, pas en sus.'
+          ? 'Le d\u00e9caissement anticip\u00e9 ajoute <strong>' + f$(Math.round(sumMelt)) + '</strong> de retraits REER acc\u00e9l\u00e9r\u00e9s entre <strong>' + meltAgeStart + ' et ' + meltAgeEnd + '\u00a0ans</strong> pour lisser le revenu imposable avant la conversion FERR obligatoire \u00e0 72\u00a0ans. Ce montant est compris dans le total REER + FERR ci-dessus, pas en sus.'
           : 'Meltdown adds <strong>' + f$(Math.round(sumMelt)) + '</strong> of accelerated RRSP withdrawals between ages <strong>' + meltAgeStart + ' and ' + meltAgeEnd + '</strong> to smooth taxable income before mandatory RRIF conversion at age 72. This amount is included in the RRSP + RRIF total above, not added on top.') +
         '</div></div>';
     }
@@ -1493,7 +1485,7 @@
       phases.push({
         ageA: retAge, ageB: meltStart - 1,
         title: fr ? 'NR + CELI tactique' : 'NR + tactical TFSA',
-        body: fr ? 'Retraits du non-enregistr\u00e9 (le plus flexible) en priorit\u00e9, parfois compl\u00e9t\u00e9s par des retraits CELI au besoin. Le REER reste intact pour le meltdown \u00e0 venir.'
+        body: fr ? 'Retraits du non-enregistr\u00e9 (le plus flexible) en priorit\u00e9, parfois compl\u00e9t\u00e9s par des retraits CELI au besoin. Le REER reste intact pour le d\u00e9caissement anticip\u00e9 \u00e0 venir.'
                  : 'Non-registered withdrawals (most flexible) first, sometimes supplemented by tactical TFSA draws. RRSP stays intact for the upcoming meltdown.',
         color: '#5b8db8'
       });
@@ -1501,7 +1493,7 @@
     if (meltStart != null) {
       phases.push({
         ageA: meltStart, ageB: meltEnd,
-        title: fr ? 'Fen\u00eatre meltdown REER' : 'RRSP meltdown window',
+        title: fr ? 'Fen\u00eatre de d\u00e9caissement anticip\u00e9 REER' : 'RRSP meltdown window',
         body: fr ? 'Retraits acc\u00e9l\u00e9r\u00e9s du REER pour vider une partie du solde avant la conversion FERR obligatoire \u00e0 72\u00a0ans. Lisse l\'imp\u00f4t viager en \u00e9vitant que les retraits minimums du FERR ne poussent le revenu dans des paliers sup\u00e9rieurs.'
                  : 'Accelerated RRSP withdrawals to drain part of the balance before mandatory RRIF conversion at age 72. Smooths lifetime tax by preventing forced RRIF minimums from pushing income into higher brackets.',
         color: '#c49a1a'
@@ -1551,7 +1543,7 @@
     h += '</div>';
 
     h += '<div style="font-size:9.5px;color:#888;margin-top:8px;font-style:italic;line-height:1.55">' +
-      (fr ? 'Sommes viag\u00e8res sur le chemin m\u00e9dian. Le meltdown est une strat\u00e9gie d\'extraction du REER, pas un compte distinct \u2014 son montant est inclus dans le total REER + FERR ci-dessus.'
+      (fr ? 'Sommes viag\u00e8res sur le chemin m\u00e9dian. Le d\u00e9caissement anticip\u00e9 est une strat\u00e9gie d\'extraction du REER, pas un compte distinct \u2014 son montant est inclus dans le total REER + FERR ci-dessus.'
           : 'Lifetime sums on the median path. Meltdown is an RRSP extraction strategy, not a separate account \u2014 its amount is included in the RRSP + RRIF total above.') + '</div>';
 
     h += secPageEnd();
@@ -2800,7 +2792,7 @@
     // Strategy summary card
     h += F.Card('<table>' +
       F.R(fr ? 'D\u00e9caissement' : 'Decumulation', p.wStrat === 'optimized' ? (fr ? 'Optimis\u00e9' : 'Optimized') : 'Standard') +
-      F.R('Meltdown', p.melt ? (fr ? 'Oui \u2014 cible ' : 'Yes \u2014 target ') + F.fmtCurrency(p.meltTgt) : (fr ? 'Non' : 'No')) +
+      F.R(fr ? 'D\u00e9caissement anticip\u00e9 REER' : 'Early RRSP drawdown', p.melt ? (fr ? 'Oui \u2014 cible ' : 'Yes \u2014 target ') + F.fmtCurrency(p.meltTgt) : (fr ? 'Non' : 'No')) +
       F.R(fr ? 'Fractionnement' : 'Splitting', p.split ? (fr ? 'Oui \u2014 ' : 'Yes \u2014 ') + Math.round((p.splitP || 0) * 100) + '%' : (fr ? 'Non' : 'No')) +
       F.R(fr ? 'D\u00e9penses' : 'Spending curve', 'Go-Go ' + Math.round((p.goP || 1) * 100) + '% / Slow-Go ' + Math.round((p.slP || 0.85) * 100) + '% / No-Go ' + Math.round((p.noP || 0.7) * 100) + '%') +
       '</table>');
@@ -2829,7 +2821,7 @@
 
     // Post-data narrative — AI supersedes deterministic
     var _taxDet = fr
-      ? 'La strat\u00e9gie de d\u00e9caissement ' + (p.wStrat === 'optimized' ? 'optimis\u00e9e coordonne' : 'standard r\u00e9partit') + ' les retraits entre REER, CELI et non-enregistr\u00e9 pour minimiser l\u2019imp\u00f4t viager.' + (p.melt ? ' Le meltdown REER acc\u00e9l\u00e8re les retraits avant 72 ans avec une cible de ' + F.fmtCurrency(p.meltTgt) + ' par ann\u00e9e.' : '') + (p.split ? ' Le fractionnement de revenus de pension \u00e0 ' + Math.round((p.splitP || 0) * 100) + '% r\u00e9duit l\u2019imp\u00f4t du m\u00e9nage.' : '') + ' La courbe de d\u00e9penses Go-Go/Slow-Go/No-Go refl\u00e8te un ralentissement progressif des d\u00e9penses avec l\u2019\u00e2ge.'
+      ? 'La strat\u00e9gie de d\u00e9caissement ' + (p.wStrat === 'optimized' ? 'optimis\u00e9e coordonne' : 'standard r\u00e9partit') + ' les retraits entre REER, CELI et non-enregistr\u00e9 pour minimiser l\u2019imp\u00f4t viager.' + (p.melt ? ' Le d\u00e9caissement anticip\u00e9 du REER acc\u00e9l\u00e8re les retraits avant 72 ans avec une cible de ' + F.fmtCurrency(p.meltTgt) + ' par ann\u00e9e.' : '') + (p.split ? ' Le fractionnement de revenus de pension \u00e0 ' + Math.round((p.splitP || 0) * 100) + '% r\u00e9duit l\u2019imp\u00f4t du m\u00e9nage.' : '') + ' La courbe de d\u00e9penses Go-Go/Slow-Go/No-Go refl\u00e8te un ralentissement progressif des d\u00e9penses avec l\u2019\u00e2ge.'
       : 'The ' + (p.wStrat === 'optimized' ? 'optimized withdrawal strategy coordinates' : 'standard withdrawal strategy distributes') + ' withdrawals across RRSP, TFSA, and non-registered accounts to minimize lifetime tax.' + (p.melt ? ' RRSP meltdown accelerates withdrawals before age 72 with a target of ' + F.fmtCurrency(p.meltTgt) + ' per year.' : '') + (p.split ? ' Pension income splitting at ' + Math.round((p.splitP || 0) * 100) + '% reduces household tax.' : '') + ' The Go-Go/Slow-Go/No-Go spending curve reflects a gradual decline in spending with age.';
 
     // Withdrawal detail table (expert)
@@ -3096,7 +3088,7 @@
 
     // Intro narrative
     h += narr(fr
-      ? 'Le meltdown REER consiste \u00e0 retirer du REER de fa\u00e7on acc\u00e9l\u00e9r\u00e9e avant la conversion FERR obligatoire \u00e0 72 ans. Votre REER actuel de <strong>' + f$(p.rrsp || 0) + '</strong> serait r\u00e9duit \u00e0 <strong>' + f$(Math.round(_rrspAt72)) + '</strong> \u00e0 72 ans, soit une r\u00e9duction de <strong>' + _meltPctRed + '%</strong> sur une p\u00e9riode de ' + _meltYrs + ' ans. La cible de retrait est de ' + fR(p.meltTgt || 0) + ' par ann\u00e9e.'
+      ? 'Le d\u00e9caissement anticip\u00e9 du REER consiste \u00e0 retirer du REER de fa\u00e7on acc\u00e9l\u00e9r\u00e9e avant la conversion FERR obligatoire \u00e0 72 ans. Votre REER actuel de <strong>' + f$(p.rrsp || 0) + '</strong> serait r\u00e9duit \u00e0 <strong>' + f$(Math.round(_rrspAt72)) + '</strong> \u00e0 72 ans, soit une r\u00e9duction de <strong>' + _meltPctRed + '%</strong> sur une p\u00e9riode de ' + _meltYrs + ' ans. La cible de retrait est de ' + fR(p.meltTgt || 0) + ' par ann\u00e9e.'
       : 'RRSP meltdown involves accelerated withdrawals before mandatory RRIF conversion at age 72. Your current RRSP of <strong>' + f$(p.rrsp || 0) + '</strong> would be reduced to <strong>' + f$(Math.round(_rrspAt72)) + '</strong> at age 72, a <strong>' + _meltPctRed + '%</strong> reduction over ' + _meltYrs + ' years. The withdrawal target is ' + fR(p.meltTgt || 0) + ' per year.');
 
     h += '<div class="g4" style="margin-bottom:8px">';
@@ -3136,7 +3128,7 @@
     h += F.Card('<table>' +
       F.R(fr ? 'REER initial' : 'Starting RRSP', fR(p.rrsp || 0)) +
       F.R(fr ? 'REER \u00e0 72' : 'RRSP at 72', fR(Math.round(_rrspAt72))) +
-      F.R(fr ? 'Cible meltdown' : 'Meltdown target', fR(p.meltTgt || 0) + (fr ? '/an' : '/yr')) +
+      F.R(fr ? 'Cible de d\u00e9caissement anticip\u00e9' : 'Meltdown target', fR(p.meltTgt || 0) + (fr ? '/an' : '/yr')) +
       F.R(fr ? 'P\u00e9riode' : 'Period', p.retAge + (fr ? ' \u00e0 72 (' : ' to 72 (') + _meltYrs + (fr ? ' ans)' : ' yrs)')) +
       (d._taxAlpha !== null && d._taxAlpha > 0 ? F.R(fr ? 'Alpha fiscal' : 'Tax alpha', '<strong style="color:' + C.green + '">' + fR(Math.round(d._taxAlpha)) + '</strong>') : '') +
       '</table>');
@@ -3771,7 +3763,7 @@
     if (_tornadoRepr === 'chart' && !_relevanceGate(d, 'sensitivity')) _tornadoRepr = 'omit';
     if (d.sensData.length > 0 && _tornadoRepr === 'chart') {
       h += '<div data-bf-block="tornado" data-bf-repr="chart">';
-      h += Ch.svgTornado(d.sensData, { title: fr ? 'Sensibilit\u00e9 des param\u00e8tres' : 'Parameter Sensitivity' });
+      h += Ch.svgTornado(d.sensData, { title: fr ? 'Sensibilit\u00e9 des param\u00e8tres' : 'Parameter Sensitivity', fr: fr });
       var _topLever = d.sensData.slice().sort(function(a, b) {
         return Math.abs(b.delta || b.impact || 0) - Math.abs(a.delta || a.impact || 0);
       })[0];
@@ -3915,7 +3907,7 @@
       // the reader cannot miss the disclaimer (per audit feedback).
       '<div style="font-size:10.5px;color:#7a4a00;margin-bottom:8px;line-height:1.55;background:#fff8e0;border:1px solid #d8ad33;border-left:4px solid #d8ad33;padding:8px 12px;border-radius:4px">' +
       '<strong style="color:#8a5500">⚠ ' + (fr ? 'Approximation pédagogique :' : 'Educational approximation:') + '</strong> ' +
-      (fr ? 'les pourcentages affichés ne proviennent PAS d\'une seconde simulation Monte Carlo. Ils sont estimés à partir de coefficients moyens (rendement ~6 pts/1 %, inflation ~−4 pts/1 %) appliqués au taux de succès de votre plan de base. Pour des chiffres exacts, utilisez le simulateur What-If qui rejoue 500 simulations en direct.'
+      (fr ? 'les pourcentages affichés ne proviennent PAS d\'une seconde simulation Monte Carlo. Ils sont estimés à partir de coefficients moyens (rendement ~6 pts/1 %, inflation ~−4 pts/1 %) appliqués au taux de succès de votre plan de base. Pour des chiffres exacts, utilisez le simulateur de scénarios qui rejoue 500 simulations en direct.'
           : 'percentages shown are NOT from a second Monte Carlo run. They are estimated from average coefficients (return ~6 pts/1%, inflation ~−4 pts/1%) applied to your baseline success rate. For exact figures, use the What-If simulator which replays 500 simulations live.') +
       '</div>' +
       '<div style="font-size:10.5px;color:#666;margin-bottom:6px;line-height:1.55">' +
@@ -4693,7 +4685,7 @@
       // Profile-conditional — only show when active for this profile
       { label: (fr ? 'MER d\u00e9duits' : 'MER deducted'), on: d.merWt > 0, conditional: true },
       { label: 'SRG/GIS', on: _hasGIS, conditional: true },
-      { label: 'Meltdown REER', on: !!p.melt, conditional: true },
+      { label: (fr ? 'D\u00e9caissement anticip\u00e9 REER' : 'RRSP meltdown'), on: !!p.melt, conditional: true },
       { label: (fr ? 'Fractionnement de pension' : 'Pension splitting'), on: !!p.split, conditional: true },
       { label: 'Guyton-Klinger', on: !!(mc && mc.gkOn), conditional: true },
       { label: (fr ? 'Vente forc\u00e9e immo.' : 'Forced RE sale'), on: _hasProps, conditional: true },

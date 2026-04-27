@@ -331,7 +331,7 @@
     decum:           { fr: "Strat\u00e9gie de d\u00e9caissement", en: "Withdrawal Strategy" },
     tax:             { fr: "Strat\u00e9gie fiscale", en: "Tax Strategy" },
     gis:             { fr: "Analyse SRG", en: "GIS Analysis" },
-    meltdown:        { fr: "Strat\u00e9gie Meltdown REER", en: "RRSP Meltdown Strategy" },
+    meltdown:        { fr: "Strat\u00e9gie de d\u00e9caissement anticip\u00e9 du REER", en: "Early RRSP Drawdown Strategy" },
     succession:      { fr: "Succession", en: "Estate" },
     realestate:      { fr: "Immobilier", en: "Real Estate" },
     rsu:             { fr: "Actions RSU", en: "RSU Grants" },

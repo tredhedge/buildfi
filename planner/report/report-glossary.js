@@ -76,7 +76,7 @@
       en: { label: 'Drawdown', def: 'Phase where accumulated savings fund expenses. Withdrawal order (RRSP, TFSA, non-registered) influences total lifetime tax paid.' }
     },
     meltdown: {
-      fr: { label: 'Meltdown REER', def: 'Stratégie de retraits volontaires accélérés du REER avant 72 ans pour lisser l\'impôt et réduire le solde converti en FERR (donc les retraits minimums imposés plus tard).' },
+      fr: { label: 'Décaissement anticipé du REER', def: 'Stratégie de retraits volontaires accélérés du REER avant 72 ans pour lisser l\'impôt et réduire le solde converti en FERR (donc les retraits minimums imposés plus tard).' },
       en: { label: 'RRSP meltdown', def: 'Strategy of voluntary accelerated RRSP withdrawals before 72 to smooth taxes and reduce the balance converted to RRIF (and therefore mandatory minimum withdrawals later).' }
     },
     seq_ret: {

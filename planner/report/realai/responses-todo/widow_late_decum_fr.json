@@ -1,6 +1,6 @@
 {
   "profile": "widow_late_decum_fr",
-  "generated_at": "2026-04-27T03:01:03.435Z",
+  "generated_at": "2026-04-27T04:51:16.503Z",
   "canonical": {
     "success_rate": 0.9995,
     "p25_wealth_real": 58829.049943369966,
@@ -48,18 +48,6 @@
         "rule": "canonical-quote-p25_wealth_real-estateInsight",
         "message": "AI slot \"estateInsight\" quotes dollar value 89000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical.",
         "evidence": "\"…transmise serait plutôt de l'ordre de **89K$**. Cette transmission semble couler simplemen\"  (canon=58829.049943369966, quoted=89000)"
-      }
-    ],
-    "narrative": [
-      {
-        "rule": "content-missing-beat-contribution_room_addressed",
-        "message": "Required content beat \"RRSP/TFSA contribution room or catch-up addressed\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
-        "evidence": "driver=gap_savings beat=contribution_room_addressed patterns=[\"contribution room\",\"droits de cotisation\",\"unused.{0,15}(RRSP|REER)\",\"REER.{0,15}inutilis\",\"carry.?forward\",\"report.{0,15}(REER|RRSP)\",\"catch.?up\"]"
-      },
-      {
-        "rule": "content-missing-beat-retirement_age_lever",
-        "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
-        "evidence": "driver=gap_savings beat=retirement_age_lever patterns=[\"retire.{0,15}later\",\"retraite.{0,15}plus tard\",\"delay.{0,10}retir\",\"report(er)?.{0,15}retraite\",\"report.{0,5}de retraite\",\"extend.{0,10}working\",\"prolonger.{0,15}travail\",\"push.{0,10}retirement\",\"ajustement.{0,20}horizon\",\"horizon.{0,15}planification\"]"
       }
     ]
   },

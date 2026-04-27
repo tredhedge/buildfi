@@ -1,6 +1,6 @@
 {
   "profile": "no_heir_estate_fr",
-  "generated_at": "2026-04-27T03:01:06.046Z",
+  "generated_at": "2026-04-27T04:51:17.693Z",
   "canonical": {
     "success_rate": 0.969,
     "p25_wealth_real": 399372.24141357036,
@@ -57,18 +57,6 @@
         "rule": "canonical-quote-p25_wealth_real-stress_interpretation",
         "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
         "evidence": "\"…éussite à **85%** et un P25 chutant à **247K$**, suivi de près par une hausse des dépenses\"  (canon=399372.24141357036, quoted=247000)"
-      }
-    ],
-    "narrative": [
-      {
-        "rule": "content-missing-beat-spousal_rollover",
-        "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
-        "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]"
-      },
-      {
-        "rule": "content-missing-beat-spousal_rollover",
-        "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
-        "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]"
       }
     ]
   },

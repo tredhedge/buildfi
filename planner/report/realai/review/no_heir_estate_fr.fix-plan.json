@@ -30,12 +30,6 @@
       "target": "stress_interpretation",
       "severity": "major",
       "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": null,
-      "target": "narrative",
-      "severity": "major",
-      "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text."
     }
   ],
   "recompute_from_canonical": [],

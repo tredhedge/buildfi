@@ -1,50 +1,19 @@
 {
-  "findings": [
-    {
-      "id": "content-missing-beat-retirement_age_lever",
-      "reviewer": "content-depth",
-      "severity": "major",
-      "category": "content_missing_beat",
-      "section": null,
-      "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
-      "evidence": "driver=gap_savings beat=retirement_age_lever patterns=[\"retire.{0,15}later\",\"retraite.{0,15}plus tard\",\"delay.{0,10}retir\",\"report(er)?.{0,15}retraite\",\"report.{0,5}de retraite\",\"extend.{0,10}working\",\"prolonger.{0,15}travail\",\"push.{0,10}retirement\",\"ajustement.{0,20}horizon\",\"horizon.{0,15}planification\"]",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "narrative"
-    }
-  ],
+  "findings": [],
   "blockers": [],
-  "majors": [
-    {
-      "id": "content-missing-beat-retirement_age_lever",
-      "reviewer": "content-depth",
-      "severity": "major",
-      "category": "content_missing_beat",
-      "section": null,
-      "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text.",
-      "evidence": "driver=gap_savings beat=retirement_age_lever patterns=[\"retire.{0,15}later\",\"retraite.{0,15}plus tard\",\"delay.{0,10}retir\",\"report(er)?.{0,15}retraite\",\"report.{0,5}de retraite\",\"extend.{0,10}working\",\"prolonger.{0,15}travail\",\"push.{0,10}retirement\",\"ajustement.{0,20}horizon\",\"horizon.{0,15}planification\"]",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "narrative"
-    }
-  ],
+  "majors": [],
   "minors": [],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [
-      {
-        "section": null,
-        "target": "narrative",
-        "severity": "major",
-        "message": "Required content beat \"Retirement age / work-longer lever named\" is missing for case_driver=gap_savings. No matching pattern anywhere in visible text."
-      }
-    ],
+    "rerun_ai_slot": [],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
     "manual": []
   },
-  "can_ship": false,
+  "can_ship": true,
   "blocker_count": 0,
-  "major_count": 1,
+  "major_count": 0,
   "minor_count": 0
 }

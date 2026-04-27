@@ -54,17 +54,6 @@
       "evidence": "\"…éussite à **85%** et un P25 chutant à **247K$**, suivi de près par une hausse des dépenses\"  (canon=399372.24141357036, quoted=247000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "content-missing-beat-spousal_rollover",
-      "reviewer": "content-depth",
-      "severity": "major",
-      "category": "content_missing_beat",
-      "section": null,
-      "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
-      "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "narrative"
     }
   ],
   "blockers": [],
@@ -123,17 +112,6 @@
       "evidence": "\"…éussite à **85%** et un P25 chutant à **247K$**, suivi de près par une hausse des dépenses\"  (canon=399372.24141357036, quoted=247000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "content-missing-beat-spousal_rollover",
-      "reviewer": "content-depth",
-      "severity": "major",
-      "category": "content_missing_beat",
-      "section": null,
-      "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text.",
-      "evidence": "driver=hnw_estate beat=spousal_rollover patterns=[\"spousal rollover\",\"roulement au conjoint\",\"spousal trust\",\"fiducie au profit du conjoint\",\"surviving spouse\",\"conjoint survivant\"]",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "narrative"
     }
   ],
   "minors": [],
@@ -169,12 +147,6 @@
         "target": "stress_interpretation",
         "severity": "major",
         "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": null,
-        "target": "narrative",
-        "severity": "major",
-        "message": "Required content beat \"Spousal rollover / surviving spouse treatment named\" is missing for case_driver=hnw_estate. No matching pattern anywhere in visible text."
       }
     ],
     "recompute_from_canonical": [],
@@ -185,6 +157,6 @@
   },
   "can_ship": false,
   "blocker_count": 0,
-  "major_count": 6,
+  "major_count": 5,
   "minor_count": 0
 }
