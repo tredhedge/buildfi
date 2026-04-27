@@ -1438,16 +1438,16 @@
 
     if (phase === 'decum') {
       h += narr(fr
-        ? _nmPfx + 'vous \u00eates actuellement \u00e0 la retraite. Ce rapport analyse la viabilit\u00e9 de votre plan de d\u00e9caissement sur un horizon de <strong>' + horizon + ' ans</strong>, soit jusqu\u2019\u00e0 l\u2019\u00e2ge de ' + (p.deathAge || 90) + ' ans. L\u2019analyse repose sur <strong>' + (p.nSim || 5000) + ' simulations</strong> Monte Carlo int\u00e9grant les rendements de march\u00e9, l\u2019inflation, la mortalit\u00e9 et la fiscalit\u00e9 canadienne 2026.' + _coupleNote
-        : (_nmFull ? _nmFull + ', you' : 'You') + ' are currently retired. This report analyzes the viability of your withdrawal plan over a <strong>' + horizon + '-year</strong> horizon, through age ' + (p.deathAge || 90) + '. The analysis is based on <strong>' + (p.nSim || 5000) + ' Monte Carlo simulations</strong> incorporating market returns, inflation, mortality, and 2026 Canadian taxation.' + _coupleNote);
+        ? _nmPfx + 'vous êtes maintenant à la retraite. La question centrale n\'est plus combien épargner, mais comment décaisser : dans quel ordre, à quel rythme, et avec quelle marge si les marchés déçoivent. L\'horizon évalué ici va jusqu\'à <strong>' + (p.deathAge || 90) + ' ans</strong>.' + _coupleNote
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong>' + (p.deathAge || 90) + '</strong>.' + _coupleNote);
     } else if (phase === 'transition') {
       h += narr(fr
-        ? _nmPfx + 'la retraite approche \u2014 dans <strong>' + yrsToRet + ' ans</strong>. Ce rapport \u00e9value si votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong>, combin\u00e9e \u00e0 vos cotisations et revenus gouvernementaux, suffira \u00e0 maintenir votre niveau de vie pendant ' + (horizon - yrsToRet) + ' ann\u00e9es de retraite. Chaque simulation mod\u00e9lise une s\u00e9quence unique de rendements, d\u2019inflation et de long\u00e9vit\u00e9.' + _coupleNote
-        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching \u2014 in <strong>' + yrsToRet + ' years</strong>. This report evaluates whether your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong>, combined with contributions and government income, will sustain your lifestyle through ' + (horizon - yrsToRet) + ' years of retirement. Each simulation models a unique sequence of returns, inflation, and longevity.' + _coupleNote);
+        ? _nmPfx + 'la retraite approche — dans <strong>' + yrsToRet + ' ans</strong>. Les décisions des prochaines années — date exacte de retraite, début des prestations, ajustements d\'épargne — pèsent davantage que toutes celles qui suivront. Votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong> est le point de départ.' + _coupleNote
+        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching — in <strong>' + yrsToRet + ' years</strong>. The decisions of the next few years — exact retirement date, benefit start ages, savings adjustments — matter more than every decision that comes after. Your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> is the starting point.' + _coupleNote);
     } else {
       h += narr(fr
-        ? _nmPfx + 'vous \u00eates en phase d\u2019accumulation, avec <strong>' + yrsToRet + ' ans</strong> avant la retraite pr\u00e9vue \u00e0 ' + p.retAge + ' ans. Votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong> constitue le point de d\u00e9part des ' + (p.nSim || 5000) + ' sc\u00e9narios projet\u00e9s. Ce rapport \u00e9value la trajectoire de votre patrimoine, l\u2019ad\u00e9quation de vos revenus de retraite et les leviers fiscaux \u00e0 votre disposition.' + _coupleNote
-        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in the accumulation phase, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. Your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> forms the starting point for ' + (p.nSim || 5000) + ' projected scenarios. This report evaluates your wealth trajectory, retirement income adequacy, and available tax levers.' + _coupleNote);
+        ? _nmPfx + 'vous êtes en accumulation, avec <strong>' + yrsToRet + ' ans</strong> avant la retraite prévue à ' + p.retAge + ' ans. La marge de manœuvre est encore large : votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong> sera multipliée par les cotisations à venir et la durée de placement. Les ajustements faits maintenant ont l\'effet le plus important.' + _coupleNote
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in accumulation, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. There is still wide room to act: your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> will be multiplied by future contributions and time in the markets. Adjustments made now carry the largest leverage.' + _coupleNote);
     }
 
     // Phase 1 hero KPI (codex 2026-04-27): one dominant insight per case,
@@ -1548,8 +1548,8 @@
     var h = secPage();
     h += F.Sec(secN, F.L('levers', fr), 'sec-levers');
     h += narr(fr
-      ? 'Chaque ligne compare le sc\u00e9nario de base \u00e0 deux simulations Monte Carlo additionnelles (500 chemins chacune) o\u00f9 un param\u00e8tre est perturb\u00e9 \u00e0 la hausse puis \u00e0 la baisse. Les d\u00e9ltas refl\u00e8tent l\'impact direct sur le patrimoine m\u00e9dian (P50, dollars r\u00e9els) et sur le taux de succ\u00e8s du plan.'
-      : 'Each row compares the baseline to two additional Monte Carlo runs (500 paths each) where a single parameter is perturbed up then down. Deltas show direct impact on median wealth (P50, real dollars) and on plan success rate.');
+      ? 'Voici les leviers qui ont le plus d\'effet sur votre plan. Pour chacun, le chiffre montre combien le taux de succès et le patrimoine médian bougent lorsque vous ajustez cette seule décision.'
+      : 'These are the levers with the strongest pull on your plan. For each one, the figure shows how far the success rate and median wealth move when you adjust that single decision.');
 
     h += '<table class="tbl"><thead><tr>';
     h += '<th style="text-align:left">' + (fr ? 'Facteur' : 'Factor') + '</th>';
@@ -1827,8 +1827,8 @@
     h += F.Sec(secN, fr ? 'Ordre des retraits' : 'Draw-order strategy', 'sec-draworder');
 
     h += narr(fr
-      ? 'Le financement des d\u00e9penses de retraite se r\u00e9partit entre comptes selon une logique fiscale\u00a0: tirer d\'abord les sources les plus flexibles (non-enregistr\u00e9), utiliser la fen\u00eatre de d\u00e9caissement anticip\u00e9 du REER avant 72\u00a0ans pour lisser l\'imp\u00f4t, puis activer les retraits FERR minimums obligatoires en pr\u00e9servant le CELI. Cette section r\u00e9sume la r\u00e9partition viag\u00e8re et la chronologie des phases.'
-      : 'Retirement spending is funded across accounts following a tax logic: draw the most flexible sources first (non-registered), use the RRSP meltdown window before age 72 to smooth tax, then activate mandatory RRIF minimum withdrawals while preserving the TFSA. This section summarizes lifetime allocation and the phase chronology.');
+      ? 'L\'ordre dans lequel vous puisez dans vos comptes décide d\'une grande part de votre impôt à vie. La séquence ci-dessous protège le CELI le plus longtemps possible, lisse l\'impôt avant la conversion FERR à 72\u00a0ans, et garde de la flexibilité pour les années de fort revenu.'
+      : 'The order in which you draw from your accounts decides much of your lifetime tax. The sequence below preserves the TFSA as long as possible, smooths tax before mandatory RRIF conversion at 72, and keeps flexibility for high-income years.');
 
     // ── Lifetime allocation bars ────────────────────────────────────
     function _bar(label, value, total, color, sub) {
@@ -2453,8 +2453,8 @@
     var _p75End = _endPd ? (_endPd.p75 || 0) : 0;
 
     h += narr(fr
-      ? 'Le moteur Monte Carlo projette l\u2019\u00e9volution de votre patrimoine \u00e0 travers <strong>' + (p.nSim || 5000) + ' sc\u00e9narios</strong> ind\u00e9pendants. La zone ombrée repr\u00e9sente la plage probable (P25\u2013P75) — dans la moiti\u00e9 des sc\u00e9narios, votre patrimoine se situe dans cette fourchette.'
-      : 'The Monte Carlo engine projects your wealth evolution across <strong>' + (p.nSim || 5000) + ' independent scenarios</strong>. The shaded area represents the likely range (P25\u2013P75) — in half of all scenarios, your wealth falls within this band.');
+      ? 'Voici comment votre patrimoine pourrait évoluer à travers les milliers de futurs simulés. La zone ombrée montre la plage typique : la moitié des trajectoires y restent — au-dessus tout va mieux que prévu, en-dessous, le plan demande des ajustements.'
+      : 'Here is how your wealth could evolve across the thousands of simulated futures. The shaded band shows the typical range — half the paths land inside it, while above and below sit the better and harder outcomes.');
 
     // Stacked wealth composition chart — Codex flag: previously surfaced
     // only RRSP / TFSA / NR even when 60%+ of net worth lived in RE, the
@@ -2692,8 +2692,8 @@
     var guarPct = Math.round(d.covRatio * 100);
     var wdPct = Math.max(0, 100 - guarPct);
     h += narr(fr
-      ? 'Cette section d\u00e9taille la composition des revenus de retraite. Le <strong>revenu garanti combin\u00e9</strong> (RRQ + PSV + pension d\'employeur) couvre <strong>' + guarPct + ' %</strong> des d\u00e9penses cibles.' + (wdPct > 0 ? ' Les <strong>' + wdPct + ' %</strong> restants proviennent de retraits du portefeuille.' : ' Les retraits du portefeuille ne sont pas requis pour couvrir les d\u00e9penses cibles.')
-      : 'This section details the composition of retirement income. <strong>Combined guaranteed income</strong> (CPP + OAS + employer pension) covers <strong>' + guarPct + ' %</strong> of target spending.' + (wdPct > 0 ? ' The remaining <strong>' + wdPct + ' %</strong> comes from portfolio withdrawals.' : ' Portfolio withdrawals are not needed to cover target spending.'));
+      ? 'Vos revenus de retraite mêlent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) à des retraits sur vos comptes. Le socle garanti couvre <strong>' + guarPct + ' %</strong> de vos dépenses cibles' + (wdPct > 0 ? '\u00a0; les <strong>' + wdPct + ' %</strong> restants viennent de votre patrimoine. Plus le socle est élevé, moins votre plan dépend des marchés.' : '. Votre socle garanti est suffisant — vos retraits servent surtout d\'optimisation fiscale, pas de dépendance.')
+      : 'Your retirement income blends a guaranteed floor (CPP/QPP, OAS, employer pensions) with withdrawals from your accounts. The guaranteed floor covers <strong>' + guarPct + ' %</strong> of your target spending' + (wdPct > 0 ? '; the remaining <strong>' + wdPct + ' %</strong> comes from your wealth. The taller the floor, the less your plan depends on markets.' : '. Your guaranteed floor is enough — withdrawals serve tax optimization, not dependency.'));
 
     // P1.1 — Real/nominal disclosure + scope reconciliation. Codex flagged
     // that "Annual Income Sources total = 131K$" (gross of withdrawals)
@@ -4726,8 +4726,8 @@
     h += F.Sec(secN, fr ? 'Approfondissement Planner' : 'Planner deep-dive', 'sec-premium-deepdive');
 
     h += narr(fr
-      ? 'Cette section est r\u00e9serv\u00e9e aux clients Planner. Elle pr\u00e9sente une analyse de sensibilit\u00e9 \u00e9tendue (huit leviers principaux), une comparaison de trois variantes de calendrier et un tableau de bord d\'optimisation par levier. Le simulateur live (190+ param\u00e8tres) permet d\'explorer ces leviers de mani\u00e8re interactive.'
-      : 'This section is reserved for Planner customers. It presents an extended sensitivity analysis (eight main levers), a three-variant timing comparison, and a per-lever optimization scorecard. The live simulator (190+ parameters) lets you explore these levers interactively.');
+      ? 'Une lecture plus approfondie du même plan : quels leviers comptent le plus, quelle variante de calendrier surperforme, et où il reste de la marge à optimiser. Les clients Planner peuvent prolonger cette lecture dans l\'outil interactif (190+ paramètres).'
+      : 'A deeper read on the same plan: which levers matter most, which timing variant outperforms, and where optimization headroom remains. Planner customers can extend this read in the live tool (190+ parameters).');
 
     // ── (a) Richer sensitivity tornado ──────────────────────────────────
     // Build 8 levers from heroScore components + sensData if present.
