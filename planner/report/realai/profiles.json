@@ -597,7 +597,7 @@
       "mode": "expert",
       "sku": "planner",
       "nSim": 2000,
-      "finLiteracy": "intermediate",
+      "finLiteracy": "advanced",
       "stressLevel": "low",
       "detailPref": "detailed",
       "client": {

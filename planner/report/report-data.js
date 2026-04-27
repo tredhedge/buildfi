@@ -550,11 +550,22 @@
     // BAND_VOCAB the thesis-coherence-auditor enforces, so deterministic
     // and AI text can never disagree on posture.
     function _thesisBand(s, c) {
+      // Thresholds calibrated 2026-04-27: align renderer + thesis-coherence
+      // auditor in lockstep. Earlier 0.90/0.75/0.50/0.25 was too generous on
+      // the upper end and too strict on the lower end (37% read as
+      // "at-risk" felt apocalyptic; 91% with cov<1 read as "solid" undersold
+      // a strong plan). New thresholds match user mental model:
+      //   ≥85% AND cov≥1.0 → surplus    (genuine head-room)
+      //   ≥85% but cov<1   → solid       (high success but tight cashflow)
+      //   ≥60%             → solid
+      //   ≥30%             → fragile
+      //   ≥10%             → at-risk
+      //   <10%             → failure
       if (s == null) return null;
-      if (s >= 0.90 && c >= 1.0) return 'surplus';
-      if (s >= 0.75) return 'solid';
-      if (s >= 0.50) return 'fragile';
-      if (s >= 0.25) return 'at-risk';
+      if (s >= 0.85 && c >= 1.0) return 'surplus';
+      if (s >= 0.60)             return 'solid';
+      if (s >= 0.30)             return 'fragile';
+      if (s >= 0.10)             return 'at-risk';
       return 'failure';
     }
     var _band = _thesisBand(succVal, covRatio);
@@ -618,11 +629,12 @@
         var fL = data.finLiteracy || p.finLiteracy || "intermediate";
         var sL = data.stressLevel || p.stressLevel || "moderate";
         var dP = data.detailPref || p.detailPref || "balanced";
+        var sku = data.sku || p.sku || "bilan";
         var rpMod = (typeof window !== 'undefined' && window.BFRenderProfile)
           ? window.BFRenderProfile
           : (typeof require === 'function' ? (function() { try { return require('./report-render-profile.js'); } catch (e) { return null; } })() : null);
         return rpMod && typeof rpMod.deriveRenderProfile === 'function'
-          ? rpMod.deriveRenderProfile(fL, sL, dP)
+          ? rpMod.deriveRenderProfile(fL, sL, dP, sku)
           : null;
       })(),
       fn: _fn,

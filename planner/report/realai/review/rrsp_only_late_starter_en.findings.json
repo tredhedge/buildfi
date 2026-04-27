@@ -45,6 +45,28 @@
       "fix_target": "riskInsight"
     },
     {
+      "id": "thesis-drift-overall_assessment-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-overall-assessment",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "thesis-drift-sec-assessment-deterministic-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-assessment-deterministic",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "manual",
+      "fix_target": "sec-assessment-deterministic"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -101,6 +123,28 @@
       "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "riskInsight"
+    },
+    {
+      "id": "thesis-drift-overall_assessment-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-overall-assessment",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "thesis-drift-sec-assessment-deterministic-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-assessment-deterministic",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "manual",
+      "fix_target": "sec-assessment-deterministic"
     }
   ],
   "minors": [
@@ -142,6 +186,12 @@
         "target": "riskInsight",
         "severity": "major",
         "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-overall-assessment",
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
       }
     ],
     "recompute_from_canonical": [],
@@ -149,6 +199,12 @@
     "replace_with_callout": [],
     "localize_label": [],
     "manual": [
+      {
+        "section": "sec-assessment-deterministic",
+        "target": "sec-assessment-deterministic",
+        "severity": "major",
+        "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
+      },
       {
         "section": null,
         "target": "global",
@@ -159,6 +215,6 @@
   },
   "can_ship": false,
   "blocker_count": 0,
-  "major_count": 4,
+  "major_count": 6,
   "minor_count": 1
 }

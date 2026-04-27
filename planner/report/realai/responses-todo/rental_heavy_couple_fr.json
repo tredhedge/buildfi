@@ -1,6 +1,6 @@
 {
   "profile": "rental_heavy_couple_fr",
-  "generated_at": "2026-04-27T12:16:11.279Z",
+  "generated_at": "2026-04-27T14:26:39.047Z",
   "canonical": {
     "success_rate": 0.415,
     "p25_wealth_real": 0,
@@ -29,11 +29,6 @@
         "rule": "narration-tone-paradox-overall_assessment",
         "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
         "evidence": "overall_assessment: \"renouvellement hypothécaire défavorable, une vacance prolongée ou un cycle d'entretien lou\""
-      },
-      {
-        "rule": "thesis-cumulative-drift",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-        "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile"
       }
     ],
     "verdict": [
@@ -44,8 +39,8 @@
       },
       {
         "rule": "thesis-drift-verdict-surplus",
-        "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
-        "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3"
+        "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match.",
+        "evidence": "truth_band=fragile  found_token=\"au-del\"  drift=2"
       }
     ],
     "trajectory_insight": [

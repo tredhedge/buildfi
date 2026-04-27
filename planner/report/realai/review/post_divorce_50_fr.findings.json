@@ -72,8 +72,8 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-advisor-letter",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=failure  found_token=\"stable\"  drift=3",
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"stable\"  drift=2",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "advisor_letter"
     },
@@ -83,21 +83,10 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-letter-deterministic",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=failure  found_token=\"stable\"  drift=3",
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"stable\"  drift=2",
       "fix_kind": "manual",
       "fix_target": "sec-letter-deterministic"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"failure\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=at-risk, verdict=at-risk, sec-assessment-deterministic=at-risk",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
     },
     {
       "id": "polish-debris-triple-em-dash",
@@ -186,8 +175,8 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-advisor-letter",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=failure  found_token=\"stable\"  drift=3",
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"stable\"  drift=2",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "advisor_letter"
     },
@@ -197,21 +186,10 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-letter-deterministic",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=failure  found_token=\"stable\"  drift=3",
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"stable\"  drift=2",
       "fix_kind": "manual",
       "fix_target": "sec-letter-deterministic"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"failure\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=at-risk, verdict=at-risk, sec-assessment-deterministic=at-risk",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
     }
   ],
   "minors": [
@@ -271,13 +249,7 @@
         "section": "sec-advisor-letter",
         "target": "advisor_letter",
         "severity": "major",
-        "message": "Plan posture is \"failure\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
-      },
-      {
-        "section": null,
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"failure\"). Cumulatively the report swings posture; consolidate tone."
+        "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
       }
     ],
     "recompute_from_canonical": [],
@@ -289,7 +261,7 @@
         "section": "sec-letter-deterministic",
         "target": "sec-letter-deterministic",
         "severity": "major",
-        "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
+        "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
       },
       {
         "section": null,
@@ -301,6 +273,6 @@
   },
   "can_ship": false,
   "blocker_count": 3,
-  "major_count": 6,
+  "major_count": 5,
   "minor_count": 1
 }

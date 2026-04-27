@@ -1,6 +1,6 @@
 {
   "profile": "rrsp_only_late_starter_en",
-  "generated_at": "2026-04-27T12:16:10.065Z",
+  "generated_at": "2026-04-27T14:26:37.689Z",
   "canonical": {
     "success_rate": 0.4515,
     "p25_wealth_real": 0,
@@ -50,6 +50,13 @@
         "rule": "canonical-quote-p25_wealth_real-riskInsight",
         "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
         "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)"
+      }
+    ],
+    "overall_assessment": [
+      {
+        "rule": "thesis-drift-overall_assessment-failure",
+        "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+        "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2"
       }
     ]
   },

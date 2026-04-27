@@ -42,11 +42,15 @@ function _slotText(ai, key) {
 }
 
 function _bandFromSucc(succ, covRatio) {
+  // Calibrated 2026-04-27 in lockstep with report-data.js _thesisBand.
+  // Thresholds must match exactly so the auditor and the renderer agree on
+  // which band a given (succ, cov) lands in. Drift between the two
+  // produces phantom "thesis-drift" findings.
   if (succ == null) return null;
-  if (succ >= 0.90 && (covRatio == null || covRatio >= 1.0)) return 'surplus';
-  if (succ >= 0.75) return 'solid';
-  if (succ >= 0.50) return 'fragile';
-  if (succ >= 0.25) return 'at-risk';
+  if (succ >= 0.85 && (covRatio == null || covRatio >= 1.0)) return 'surplus';
+  if (succ >= 0.60) return 'solid';
+  if (succ >= 0.30) return 'fragile';
+  if (succ >= 0.10) return 'at-risk';
   return 'failure';
 }
 

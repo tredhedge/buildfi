@@ -1,6 +1,6 @@
 {
   "profile": "late_starter_bc_fr",
-  "generated_at": "2026-04-27T12:16:02.825Z",
+  "generated_at": "2026-04-27T14:26:29.483Z",
   "canonical": {
     "success_rate": 0.2105,
     "p25_wealth_real": 0,
@@ -41,6 +41,13 @@
         "rule": "scope-lifetime-tax-drift",
         "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (68392). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
         "evidence": "sec-tax=408000 (drift 497%)"
+      }
+    ],
+    "overall_assessment": [
+      {
+        "rule": "thesis-cumulative-drift",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+        "evidence": "overall_assessment=failure, sec-assessment-deterministic=failure, sec-letter-deterministic=failure"
       }
     ]
   },

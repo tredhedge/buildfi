@@ -20,10 +20,17 @@
   'use strict';
 
   // ── Decision tree ──────────────────────────────────────────────────
-  function deriveRenderProfile(finLiteracy, stressLevel, detailPref) {
+  function deriveRenderProfile(finLiteracy, stressLevel, detailPref, sku) {
     finLiteracy = finLiteracy || 'intermediate';
     stressLevel = stressLevel || 'moderate';
     detailPref  = detailPref  || 'balanced';
+    sku         = sku         || 'bilan';
+
+    // Audit finding 2026-04-27 (#4): SKU density cap. Bilan ($29.99) MUST
+    // NOT ship 'detailed' density — fire_seeker_fr at 82K words on Bilan
+    // erodes the $40 Planner premium. Bilan caps at 'balanced' regardless
+    // of detailPref. Planner allows the full 'detailed' range.
+    if (sku === 'bilan' && detailPref === 'detailed') detailPref = 'balanced';
 
     // Axis A — chart tier (driven by finLiteracy)
     var chartTier =
@@ -95,7 +102,20 @@
     if (!hasData) return 'omit';
     if (!profile) return 'chart'; // safety: missing profile → default to chart
 
-    if (blockId === 'income_waterfall') return 'chart';
+    if (blockId === 'income_waterfall') {
+      // Universal block: every reader benefits from the income-source
+      // breakdown. lite readers get a simplified chart (no slicer chips),
+      // others get the full averaged + per-year toggle.
+      if (profile.chartTier === 'lite') return 'chart_simplified';
+      return 'chart';
+    }
+    if (blockId === 'draw_order') {
+      // Heatmap of withdrawal sequence by year. Lite readers get omit
+      // (too dense; the income waterfall already covers the same idea
+      // at a higher level). Std/full get the full table.
+      if (profile.chartTier === 'lite') return 'omit';
+      return 'chart';
+    }
 
     if (blockId === 'stress_tests' && profile.toneMode === 'calm' && profile.chartTier !== 'full') {
       return 'text';
@@ -182,6 +202,10 @@
     // dense and feel like machinery.
     if ((blockId === 'methodology' || blockId === 'assumptions' || blockId === 'glossary')
         && profile.jargonMode === 'plain') return false;
+    // Phase 2 finish: draw-order heatmap is omitted for plain readers
+    // (technical density). Income waterfall is universal — never omitted
+    // by relevance gate (resolver picks chart vs chart_simplified).
+    if (blockId === 'draw_order' && profile.jargonMode === 'plain') return false;
     return true;
   }
 

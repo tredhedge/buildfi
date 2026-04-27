@@ -56,6 +56,17 @@
       "fix_target": "taxInsight"
     },
     {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "overall_assessment=failure, sec-assessment-deterministic=failure, sec-letter-deterministic=failure",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
       "id": "scope-lifetime-tax-drift",
       "reviewer": "scope-reconciliation",
       "severity": "major",
@@ -137,6 +148,17 @@
       "fix_target": "taxInsight"
     },
     {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "overall_assessment=failure, sec-assessment-deterministic=failure, sec-letter-deterministic=failure",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
       "id": "scope-lifetime-tax-drift",
       "reviewer": "scope-reconciliation",
       "severity": "major",
@@ -190,6 +212,12 @@
         "message": "AI slot \"taxInsight\" quotes pct value 13.1 for \"lifetime_effective_tax_rate\" but canonical is 7.55. Slot must be regenerated to match canonical."
       },
       {
+        "section": null,
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
+      },
+      {
         "section": "sec-tax",
         "target": "taxInsight",
         "severity": "major",
@@ -218,6 +246,6 @@
   },
   "can_ship": false,
   "blocker_count": 2,
-  "major_count": 4,
+  "major_count": 5,
   "minor_count": 1
 }

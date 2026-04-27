@@ -42,13 +42,7 @@
       "section": "sec-advisor-letter",
       "target": "advisor_letter",
       "severity": "major",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
-    },
-    {
-      "section": null,
-      "target": "overall_assessment",
-      "severity": "major",
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"failure\"). Cumulatively the report swings posture; consolidate tone."
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
     }
   ],
   "recompute_from_canonical": [],
@@ -60,7 +54,7 @@
       "section": "sec-letter-deterministic",
       "target": "sec-letter-deterministic",
       "severity": "major",
-      "message": "Plan posture is \"failure\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match."
+      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
     },
     {
       "section": null,

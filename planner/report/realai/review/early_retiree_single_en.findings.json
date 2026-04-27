@@ -45,17 +45,6 @@
       "fix_target": "stress_interpretation"
     },
     {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
       "id": "scope-oas-clawback-drift",
       "reviewer": "scope-reconciliation",
       "severity": "major",
@@ -125,17 +114,6 @@
       "fix_target": "stress_interpretation"
     },
     {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
       "id": "scope-oas-clawback-drift",
       "reviewer": "scope-reconciliation",
       "severity": "major",
@@ -188,12 +166,6 @@
         "message": "AI slot \"stress_interpretation\" quotes pct value 9 for \"success_rate\" but canonical is 38.45. Slot must be regenerated to match canonical."
       },
       {
-        "section": null,
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
-      },
-      {
         "section": "sec-tax",
         "target": "taxInsight",
         "severity": "major",
@@ -215,6 +187,6 @@
   },
   "can_ship": false,
   "blocker_count": 0,
-  "major_count": 6,
+  "major_count": 5,
   "minor_count": 1
 }

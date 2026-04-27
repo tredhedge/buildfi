@@ -35,7 +35,10 @@ console.log('\n\u2550\u2550\u2550 RENDER PROFILE DERIVATION (27 combos) \u2550\u
 LITERACY.forEach(fL => {
   STRESS.forEach(sL => {
     DETAIL.forEach(dP => {
-      const rp = RP.deriveRenderProfile(fL, sL, dP);
+      // Pass sku='planner' so the derivation matrix tests the full
+      // 27-combo space without the Bilan density cap kicking in. SKU
+      // density cap is tested separately below.
+      const rp = RP.deriveRenderProfile(fL, sL, dP, 'planner');
       const tag = `[${fL}/${sL}/${dP}]`;
 
       // chartTier from finLiteracy
@@ -68,13 +71,28 @@ LITERACY.forEach(fL => {
 
 console.log(`\nResult: ${pass}/${pass + fail} assertions passed (${fail} failed).\n`);
 
+// SKU density cap — Bilan should cap detailed→balanced, Planner should not.
+console.log('\u2550\u2550\u2550 SKU density cap \u2550\u2550\u2550\n');
+const rpBilanDetailed = RP.deriveRenderProfile('advanced', 'low', 'detailed', 'bilan');
+const rpPlannerDetailed = RP.deriveRenderProfile('advanced', 'low', 'detailed', 'planner');
+check('Bilan caps detailed → balanced', rpBilanDetailed.densityMode, 'balanced');
+check('Planner allows detailed → deep', rpPlannerDetailed.densityMode, 'deep');
+check('Bilan caps detailed → detailPref echo balanced', rpBilanDetailed.detailPref, 'balanced');
+check('Bilan concise stays concise', RP.deriveRenderProfile('beginner', 'high', 'concise', 'bilan').densityMode, 'compact');
+check('Bilan balanced stays balanced', RP.deriveRenderProfile('intermediate', 'moderate', 'balanced', 'bilan').densityMode, 'balanced');
+
 // resolveRepresentation spot-checks
 console.log('\u2550\u2550\u2550 resolveRepresentation spot-checks \u2550\u2550\u2550\n');
-const rpLite = RP.deriveRenderProfile('beginner', 'high', 'concise');
-const rpStd = RP.deriveRenderProfile('intermediate', 'moderate', 'balanced');
-const rpFull = RP.deriveRenderProfile('advanced', 'low', 'detailed');
+const rpLite = RP.deriveRenderProfile('beginner', 'high', 'concise', 'planner');
+const rpStd = RP.deriveRenderProfile('intermediate', 'moderate', 'balanced', 'planner');
+const rpFull = RP.deriveRenderProfile('advanced', 'low', 'detailed', 'planner');
 
-check('income_waterfall always chart',     RP.resolveRepresentation('income_waterfall', rpLite, true), 'chart');
+// income_waterfall: lite → chart_simplified, std/full → chart. Universal block.
+check('income_waterfall lite \u2192 chart_simplified', RP.resolveRepresentation('income_waterfall', rpLite, true), 'chart_simplified');
+check('income_waterfall std \u2192 chart',              RP.resolveRepresentation('income_waterfall', rpStd, true), 'chart');
+check('income_waterfall full \u2192 chart',             RP.resolveRepresentation('income_waterfall', rpFull, true), 'chart');
+check('draw_order lite \u2192 omit',                    RP.resolveRepresentation('draw_order', rpLite, true), 'omit');
+check('draw_order std \u2192 chart',                    RP.resolveRepresentation('draw_order', rpStd, true), 'chart');
 check('tornado lite → omit',               RP.resolveRepresentation('tornado', rpLite, true), 'omit');
 check('tornado full → chart',              RP.resolveRepresentation('tornado', rpFull, true), 'chart');
 check('fee_impact lite → text',            RP.resolveRepresentation('fee_impact', rpLite, true), 'text');

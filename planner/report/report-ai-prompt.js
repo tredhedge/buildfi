@@ -26,7 +26,7 @@
     { key: 'income_insight', label: 'Retirement Income',
       hint: '2-3 sentences on income adequacy. Reference government coverage ratio, monthly gap, and which income sources (QPP/OAS/pension) dominate.' },
     { key: 'taxInsight', label: 'Tax Strategy',
-      hint: '2-3 sentences on tax efficiency. Reference effective rate, OAS clawback years, and tax alpha if available. Note the biggest tax lever.' },
+      hint: '4-5 sentences (80\u2013120 words) on tax efficiency. Cover ALL of: (1) effective rate vs gross income, (2) OAS clawback years and their fiscal cost, (3) tax-alpha vs naive strategy if available, (4) the dominant lever (account ordering, meltdown window, splitting, deferral), (5) one province-specific note (QC vs ROC bracket impact). Avoid the word "alpha" \u2014 use "savings" / "\u00e9conomies".' },
     { key: 'estateInsight', label: 'Estate',
       hint: '2-3 sentences on estate projection. Reference net estate value, tax at death, and spousal rollover if applicable. Only if estate data is meaningful (>$1000).' },
     { key: 'gis_insight', label: 'GIS Analysis', conditional: 'gis',
@@ -555,6 +555,63 @@
 
     // Build user prompt
     var userPrompt = '## DATA\n```json\n' + JSON.stringify(data, null, 2) + '\n```\n\n';
+
+    // ── Canonical-number pinning (Codex 2026-04-27 — anti-drift fix) ────
+    // Earlier prompt iterations let the LLM round / re-format / re-quote
+    // numbers from the DATA block, which produced canonical-quote drift
+    // (e.g. P25=$405,044 → "around $466K" in narrative). Now we list every
+    // canonical metric in BOTH the raw form AND the pre-formatted display
+    // form the renderer would emit, and instruct the AI to use ONLY those
+    // verbatim formatted strings.
+    function _fmtMoney(v) {
+      if (v == null || !isFinite(v)) return null;
+      var abs = Math.abs(v);
+      if (abs >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M$';
+      if (abs >= 1e3) return Math.round(v / 1e3) + 'K$';
+      return Math.round(v) + '$';
+    }
+    function _fmtPct(v) {
+      if (v == null || !isFinite(v)) return null;
+      return Math.round(v * 100) + '%';
+    }
+    function _fmtPct1(v) {
+      if (v == null || !isFinite(v)) return null;
+      return (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
+    }
+    var canon = data.canonical || {};
+    var canonLines = [];
+    var canonMap = {
+      success_rate:                { val: canon.success_rate,            fmt: _fmtPct,    label: 'Success rate' },
+      p25_wealth_real:             { val: canon.p25_wealth_real,         fmt: _fmtMoney,  label: 'P25 wealth (real)' },
+      p50_wealth_real:             { val: canon.p50_wealth_real,         fmt: _fmtMoney,  label: 'P50 (median) wealth (real)' },
+      p75_wealth_real:             { val: canon.p75_wealth_real,         fmt: _fmtMoney,  label: 'P75 wealth (real)' },
+      lifetime_tax_real:           { val: canon.lifetime_tax_real,       fmt: _fmtMoney,  label: 'Lifetime tax (real)' },
+      lifetime_taxable_income_real:{ val: canon.lifetime_taxable_income_real, fmt: _fmtMoney, label: 'Lifetime taxable income' },
+      lifetime_effective_tax_rate: { val: canon.lifetime_effective_tax_rate, fmt: _fmtPct1, label: 'Lifetime effective tax rate' },
+      net_estate:                  { val: canon.net_estate,              fmt: _fmtMoney,  label: 'Net estate' },
+      monthly_gap:                 { val: canon.monthly_gap,             fmt: _fmtMoney,  label: 'Monthly income gap' },
+      lifetime_gis:                { val: canon.lifetime_gis,            fmt: _fmtMoney,  label: 'Lifetime GIS' },
+      gis_years:                   { val: canon.gis_years,               fmt: function(v) { return v + ' yrs'; }, label: 'GIS years' },
+      oas_clawback_years:          { val: canon.oas_clawback_years,      fmt: function(v) { return v + ' yrs'; }, label: 'OAS clawback years' },
+      gov_coverage_only:           { val: canon.gov_coverage_only,       fmt: _fmtPct,    label: 'Gov-only coverage' },
+      guaranteed_income_coverage:  { val: canon.guaranteed_income_coverage, fmt: _fmtPct, label: 'Guaranteed income coverage' }
+    };
+    Object.keys(canonMap).forEach(function(k) {
+      var entry = canonMap[k];
+      if (entry.val == null) return;
+      var formatted = entry.fmt(entry.val);
+      if (formatted == null) return;
+      canonLines.push('  - **' + k + '** (' + entry.label + '): use **`' + formatted + '`** verbatim. Raw value = ' + entry.val + '.');
+    });
+    if (canonLines.length > 0) {
+      userPrompt += '## CANONICAL NUMBERS \u2014 QUOTE VERBATIM\n';
+      userPrompt += 'Every dollar amount, percentage, or year-count below MUST appear in your\n';
+      userPrompt += 'narrative EXACTLY in the formatted form shown. Do not round differently.\n';
+      userPrompt += 'Do not infer adjacent numbers. Do not write "around" / "roughly" / "near" forms.\n';
+      userPrompt += 'If a number is not in this list, do not invent one for that field.\n\n';
+      userPrompt += canonLines.join('\n') + '\n\n';
+    }
+
     if (data._integrity && data._integrity.coreInvalid) {
       userPrompt += '## DATA INTEGRITY WARNING\n';
       userPrompt += 'Core metrics are missing or invalid (' + data._integrity.missingCoreFields.join(', ') + '). ';

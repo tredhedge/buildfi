@@ -27,6 +27,12 @@
       "message": "AI slot \"taxInsight\" quotes pct value 13.1 for \"lifetime_effective_tax_rate\" but canonical is 7.55. Slot must be regenerated to match canonical."
     },
     {
+      "section": null,
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
+    },
+    {
       "section": "sec-tax",
       "target": "taxInsight",
       "severity": "major",

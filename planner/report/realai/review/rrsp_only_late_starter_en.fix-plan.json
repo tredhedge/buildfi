@@ -24,6 +24,12 @@
       "target": "riskInsight",
       "severity": "major",
       "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-overall-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
     }
   ],
   "recompute_from_canonical": [],
@@ -31,6 +37,12 @@
   "replace_with_callout": [],
   "localize_label": [],
   "manual": [
+    {
+      "section": "sec-assessment-deterministic",
+      "target": "sec-assessment-deterministic",
+      "severity": "major",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
+    },
     {
       "section": null,
       "target": "global",

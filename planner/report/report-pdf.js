@@ -1002,10 +1002,12 @@
 
     // Key observations bullets (deterministic, AI can override via overall_assessment)
     var obs = [];
-    if (d.succVal != null && d.succVal >= 0.90) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique une forte probabilit\u00e9 de maintenir votre niveau de vie.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates a high probability of maintaining your lifestyle.');
-    else if (d.succVal != null && d.succVal >= 0.75) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique que la trajectoire centrale tient ; la marge contre les impr\u00e9vus reste mod\u00e9r\u00e9e.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates the central trajectory holds; margin against the unexpected remains moderate.');
-    else if (d.succVal != null && d.succVal >= 0.50) obs.push(fr ? '\u26a0 Plan fragile \u2014 le taux de ' + Math.round(d.succVal * 100) + '% laisse peu de marge face aux impr\u00e9vus.' : '\u26a0 Fragile plan \u2014 the ' + Math.round(d.succVal * 100) + '% rate leaves limited margin for the unexpected.');
-    else if (d.succVal != null && d.succVal >= 0.25) obs.push(fr ? '\u26a0 Plan \u00e0 risque \u2014 un taux de ' + Math.round(d.succVal * 100) + '% sugg\u00e8re des ajustements structurels n\u00e9cessaires.' : '\u26a0 At-risk plan \u2014 a ' + Math.round(d.succVal * 100) + '% rate suggests structural adjustments are needed.');
+    // Thresholds aligned with _thesisBand in report-data.js (2026-04-27):
+    // 0.85 surplus(if cov), 0.60 solid, 0.30 fragile, 0.10 at-risk, <0.10 failure.
+    if (d.succVal != null && d.succVal >= 0.85) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique une forte probabilit\u00e9 de maintenir votre niveau de vie.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates a high probability of maintaining your lifestyle.');
+    else if (d.succVal != null && d.succVal >= 0.60) obs.push(fr ? '\u2713 Plan solide \u2014 le taux de succ\u00e8s de ' + Math.round(d.succVal * 100) + '% indique que la trajectoire centrale tient ; la marge contre les impr\u00e9vus reste mod\u00e9r\u00e9e.' : '\u2713 Solid plan \u2014 the ' + Math.round(d.succVal * 100) + '% success rate indicates the central trajectory holds; margin against the unexpected remains moderate.');
+    else if (d.succVal != null && d.succVal >= 0.30) obs.push(fr ? '\u26a0 Plan fragile \u2014 le taux de ' + Math.round(d.succVal * 100) + '% laisse peu de marge face aux impr\u00e9vus.' : '\u26a0 Fragile plan \u2014 the ' + Math.round(d.succVal * 100) + '% rate leaves limited margin for the unexpected.');
+    else if (d.succVal != null && d.succVal >= 0.10) obs.push(fr ? '\u26a0 Plan \u00e0 risque \u2014 un taux de ' + Math.round(d.succVal * 100) + '% sugg\u00e8re des ajustements structurels n\u00e9cessaires.' : '\u26a0 At-risk plan \u2014 a ' + Math.round(d.succVal * 100) + '% rate suggests structural adjustments are needed.');
     else if (d.succVal != null) obs.push(fr ? '\u26a0 Plan non viable en l\'\u00e9tat \u2014 un taux de ' + Math.round(d.succVal * 100) + '% indique qu\'une r\u00e9vision globale serait n\u00e9cessaire pour r\u00e9tablir la trajectoire.' : '\u26a0 Plan not sustainable as is \u2014 a ' + Math.round(d.succVal * 100) + '% rate indicates a global review would be necessary to restore the trajectory.');
 
     // covRatio includes pension; relabel from "government" to "guaranteed".
@@ -1396,6 +1398,15 @@
   // cell darkness encodes $ drawn that year.
   function renderDrawOrder(d, secN) {
     if (!d.mc || !d.mc._enriched || !d.mc._enriched.drawTrace || d.mc._enriched.drawTrace.length === 0) return '';
+    // Phase 2 central dispatch — route draw_order through resolveRepresentation.
+    // Resolver default: chart for std/full, hybrid (chart + caption) for lite,
+    // omit when classifier doesn't support draw-order content (plain mode
+    // without sufficient depth).
+    var _doRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+      ? BFRP.resolveRepresentation('draw_order', d.renderProfile, true)
+      : 'chart';
+    if (_doRepr !== 'omit' && !_relevanceGate(d, 'draw_order')) _doRepr = 'omit';
+    if (_doRepr === 'omit') return '';
     var fr = d.fr;
     var trace = d.mc._enriched.drawTrace;
     var f$ = F.fmtCompact;
@@ -2458,10 +2469,23 @@
       qLbl: qLbl,
       lang: fr ? 'fr' : 'en'
     }));
-    h += '<div class="bf-chart-block" data-bf-chart="income-sources" data-bf-chart-data="' + _wfDataAttr + '" data-bf-chart-mode="averaged">';
-    h += '<div class="bf-chart-svg">';
-    h += Ch.svgWaterfall(_wfClean, { title: fr ? 'Sources de revenus annuelles (moyenne sur la retraite)' : 'Annual Income Sources (averaged across retirement)', total: _wfTotal });
-    h += '</div>';
+    // Phase 2 central dispatch — route income_waterfall through resolveRepresentation.
+    // Resolver: always 'chart' for this block (every reader benefits from the
+    // income-source breakdown). Relevance gate is the only path to omission.
+    var _waterfallRepr = (BFRP && typeof BFRP.resolveRepresentation === 'function')
+      ? BFRP.resolveRepresentation('income_waterfall', d.renderProfile, _wfClean.length > 0)
+      : 'chart';
+    if (_waterfallRepr !== 'omit' && !_relevanceGate(d, 'income_waterfall')) _waterfallRepr = 'omit';
+    if (_waterfallRepr !== 'omit') {
+      h += '<div class="bf-chart-block" data-bf-block="income_waterfall" data-bf-repr="' + _waterfallRepr + '" data-bf-chart="income-sources" data-bf-chart-data="' + _wfDataAttr + '" data-bf-chart-mode="averaged">';
+      h += '<div class="bf-chart-svg">';
+      h += Ch.svgWaterfall(_wfClean, { title: fr ? 'Sources de revenus annuelles (moyenne sur la retraite)' : 'Annual Income Sources (averaged across retirement)', total: _wfTotal });
+      h += '</div>';
+    } else {
+      // Skip the entire bf-chart-block — caller's closing </div> compensated below.
+      h += '<div class="bf-chart-block" data-bf-block="income_waterfall" data-bf-repr="omit" style="display:none">';
+      h += '<div class="bf-chart-svg"></div>';
+    }
     if (_yearSnap.length > 1) {
       h += '<div class="bf-chart-slicer no-print" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fdfbf6;border:1px solid #e8e0d4;border-top:none;border-radius:0 0 6px 6px;font-family:Inter,sans-serif;font-size:11px">' +
         '<span style="font-weight:700;color:#706558;letter-spacing:0.5px;text-transform:uppercase;font-size:10px">' +
@@ -2800,7 +2824,7 @@
     }
 
     h += '<div class="' + (exp ? 'g4' : 'g3') + '" style="margin-bottom:8px">';
-    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? 'Alpha fiscal' : 'Tax alpha') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
+    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
     h += F.KPI('<span class="mono">' + Math.round(d.avgEffRate * 100) + '%</span>', fr ? 'Taux effectif moyen' : 'Avg effective rate', C.blue);
     h += F.KPI('<span class="mono">' + d.oasClbkYrs + '/' + _retLen + '</span>', fr ? 'Ann\u00e9es r\u00e9cup. PSV' : 'OAS clawback yrs', d.oasClbkYrs > _retLen * 0.5 ? C.red : d.oasClbkYrs > 0 ? C.amber : C.green);
     if (exp && d._hasNaive) h += F.KPI('<span class="mono">' + Math.round((d._naiveTax - d._optTax) / Math.max(1, d._naiveTax) * 100) + '%</span>', fr ? 'R\u00e9duction fiscale' : 'Tax reduction', C.purple);
@@ -3149,7 +3173,7 @@
       F.R(fr ? 'REER \u00e0 72' : 'RRSP at 72', fR(Math.round(_rrspAt72))) +
       F.R(fr ? 'Cible de d\u00e9caissement anticip\u00e9' : 'Meltdown target', fR(p.meltTgt || 0) + (fr ? '/an' : '/yr')) +
       F.R(fr ? 'P\u00e9riode' : 'Period', p.retAge + (fr ? ' \u00e0 72 (' : ' to 72 (') + _meltYrs + (fr ? ' ans)' : ' yrs)')) +
-      (d._taxAlpha !== null && d._taxAlpha > 0 ? F.R(fr ? 'Alpha fiscal' : 'Tax alpha', '<strong style="color:' + C.green + '">' + fR(Math.round(d._taxAlpha)) + '</strong>') : '') +
+      (d._taxAlpha !== null && d._taxAlpha > 0 ? F.R(fr ? '\u00c9conomies fiscales' : 'Tax savings', '<strong style="color:' + C.green + '">' + fR(Math.round(d._taxAlpha)) + '</strong>') : '') +
       '</table>');
 
     // Post-data narrative — AI supersedes deterministic
@@ -4882,6 +4906,13 @@
     // default when leadWith is 'projection' (neutral).
     var revenueFirst = (_leadWith === 'floor') || (_leadWith === 'projection' && isDecum);
     var riskLeads = (_leadWith === 'dispersion') && d.exp;
+    // Phase 3 extension — leadWith now reorders MORE than just risk/revenue:
+    //   leadWith='floor'      → goals + cashflow pulled UP (income-stability framing)
+    //   leadWith='dispersion' → stress tests follow risk/projection block
+    //   leadWith='projection' → default chronological order
+    var goalsLeads = _leadWith === 'floor' && d.R && d.R.hasGoals;
+    var cashflowLeads = _leadWith === 'floor' && d.mc && d.mc._enriched && d.mc._enriched.cashflow && d.mc._enriched.cashflow.length;
+    var stressFollowsDispersion = _leadWith === 'dispersion';
     // Pre-checks for conditional sections
     var _gisCheck = _getRenderableGisYears(d);
     var _hasStrats = d.R.hasSAM || (window._recos && window._recos.length > 0);
@@ -4895,6 +4926,9 @@
     var _hasStress = !!(d.mc && d.mc._stress);
     var _suppressed = d._suppressed || {};
     var _isSuppressed = function(id) { return !!_suppressed[id]; };
+    // Plain-mode (beginner+concise) reader flag — declared early so all
+    // TOC + section gating below can reference it.
+    var _isPlainReader = d.renderProfile && d.renderProfile.jargonMode === 'plain';
 
     // ── Build TOC sections array (pre-scan which sections will render) ──
     var tocSections = [];
@@ -4919,8 +4953,10 @@
     if (d.mc && d.mc._enriched && d.mc._enriched.cashflow && d.mc._enriched.cashflow.length) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-cashflow', label: d.fr ? 'Flux annuel' : 'Cash flow' }); }
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
-    if (_hasDrawTrace) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
-    var _isPlainReader = d.renderProfile && d.renderProfile.jargonMode === 'plain';
+    // Draw-order heatmap: hidden for plain-mode readers per Phase 2/5
+    // (technical density). TOC entry must mirror the renderer's gate.
+    var _drawOrderShown = _hasDrawTrace && !_isPlainReader;
+    if (_drawOrderShown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
     if (_hasStress && !_isPlainReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
     if (_gisCheck.length > 0 && !_isSuppressed('sec-gis')) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
     if (d.R.hasMeltdown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-meltdown', label: F.L('meltdown', d.fr) }); }

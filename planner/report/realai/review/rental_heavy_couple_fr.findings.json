@@ -72,21 +72,10 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-verdict",
-      "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"au-del\"  drift=2",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "verdict"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
     },
     {
       "id": "scope-oas-clawback-drift",
@@ -185,21 +174,10 @@
       "severity": "major",
       "category": "thesis_band_drift",
       "section": "sec-verdict",
-      "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
-      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"au-del\"  drift=2",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "verdict"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
     },
     {
       "id": "scope-oas-clawback-drift",
@@ -263,13 +241,7 @@
         "section": "sec-verdict",
         "target": "verdict",
         "severity": "major",
-        "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match."
-      },
-      {
-        "section": null,
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
+        "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match."
       },
       {
         "section": "sec-tax",
@@ -300,6 +272,6 @@
   },
   "can_ship": false,
   "blocker_count": 0,
-  "major_count": 9,
+  "major_count": 8,
   "minor_count": 1
 }

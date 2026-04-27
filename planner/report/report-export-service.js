@@ -39,6 +39,11 @@
     clone.stressLevel = ep.stressLevel;
     clone.detailPref  = ep.detailPref;
     clone._exportMode = true;
+    // Codex 2026-04-27 P1: PDF/print/download exports go to a client.
+    // Default clientExport=true so the simulator section + report-whatif.js
+    // runtime are stripped. Caller can opt-out via data.clientExport=false
+    // (e.g. internal advisor working copy).
+    clone.clientExport = data.clientExport !== false;
     return clone;
   }
 

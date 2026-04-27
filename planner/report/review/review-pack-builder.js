@@ -165,7 +165,7 @@ function buildReviewPack(profile, htmlPath, mcPath, responsePath, dPayload) {
     // Best-effort derive from classifiers when dPayload didn't carry it.
     var rpMod = (function() { try { return require('../report-render-profile.js'); } catch (e) { return null; } })();
     if (rpMod && typeof rpMod.deriveRenderProfile === 'function') {
-      renderProfileObj = rpMod.deriveRenderProfile(profile.finLiteracy, profile.stressLevel, profile.detailPref);
+      renderProfileObj = rpMod.deriveRenderProfile(profile.finLiteracy, profile.stressLevel, profile.detailPref, profile.sku);
     }
   }
   return {

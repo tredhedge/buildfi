@@ -1,6 +1,6 @@
 {
   "profile": "post_divorce_50_fr",
-  "generated_at": "2026-04-27T12:16:09.639Z",
+  "generated_at": "2026-04-27T14:26:37.265Z",
   "canonical": {
     "success_rate": 0.21,
     "p25_wealth_real": 0,
@@ -39,8 +39,8 @@
       },
       {
         "rule": "thesis-drift-advisor_letter-solid",
-        "message": "Plan posture is \"failure\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 3 bands away). Posture must match.",
-        "evidence": "truth_band=failure  found_token=\"stable\"  drift=3"
+        "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match.",
+        "evidence": "truth_band=at-risk  found_token=\"stable\"  drift=2"
       }
     ],
     "verdict": [
@@ -48,13 +48,6 @@
         "rule": "narration-tone-paradox-verdict",
         "message": "Success rate is 21% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band.",
         "evidence": "verdict: \"ntre les scénarios prudent et favorable demeure étroite à ce stade parce que le capital de\""
-      }
-    ],
-    "overall_assessment": [
-      {
-        "rule": "thesis-cumulative-drift",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"failure\"). Cumulatively the report swings posture; consolidate tone.",
-        "evidence": "overall_assessment=at-risk, verdict=at-risk, sec-assessment-deterministic=at-risk"
       }
     ]
   },

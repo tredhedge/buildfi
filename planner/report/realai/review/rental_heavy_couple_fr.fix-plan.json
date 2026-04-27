@@ -35,13 +35,7 @@
       "section": "sec-verdict",
       "target": "verdict",
       "severity": "major",
-      "message": "Plan posture is \"at-risk\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match."
-    },
-    {
-      "section": null,
-      "target": "overall_assessment",
-      "severity": "major",
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
+      "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match."
     },
     {
       "section": "sec-tax",

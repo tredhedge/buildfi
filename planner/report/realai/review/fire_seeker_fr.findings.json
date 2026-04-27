@@ -1,17 +1,6 @@
 {
   "findings": [
     {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -24,19 +13,7 @@
     }
   ],
   "blockers": [],
-  "majors": [
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=fragile, sec-assessment-deterministic=fragile, sec-letter-deterministic=fragile",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    }
-  ],
+  "majors": [],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -52,14 +29,7 @@
   ],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [
-      {
-        "section": null,
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone."
-      }
-    ],
+    "rerun_ai_slot": [],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
@@ -73,8 +43,8 @@
       }
     ]
   },
-  "can_ship": false,
+  "can_ship": true,
   "blocker_count": 0,
-  "major_count": 1,
+  "major_count": 0,
   "minor_count": 1
 }
