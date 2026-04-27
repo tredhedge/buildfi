@@ -686,9 +686,14 @@
     var endAngleRad = Math.PI * (1 - score / 100);
     var endPt = _polar(endAngleRad);
     var startPt = _polar(Math.PI);
-    var largeArc = score > 50 ? 1 : 0;
+    // SVG large-arc-flag MUST be 0 for any arc ≤180° (the active arc is
+    // 0–180° proportional to score). Previous value (score > 50 ? 1 : 0)
+    // flipped the flag at score=50, drawing the arc the LONG way around
+    // the full circle for higher scores — the visual we kept hitting at
+    // 67/80/91. The bg track is exactly 180° so its flag is irrelevant
+    // (both choices coincide); we leave it at 1 for compatibility.
     var arcPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
-                  ' A ' + R + ' ' + R + ' 0 ' + largeArc + ' 1 ' + endPt.x.toFixed(1) + ' ' + endPt.y.toFixed(1);
+                  ' A ' + R + ' ' + R + ' 0 0 1 ' + endPt.x.toFixed(1) + ' ' + endPt.y.toFixed(1);
     var bgArcEnd = _polar(0);
     var bgPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
                  ' A ' + R + ' ' + R + ' 0 1 1 ' + bgArcEnd.x.toFixed(1) + ' ' + bgArcEnd.y.toFixed(1);
