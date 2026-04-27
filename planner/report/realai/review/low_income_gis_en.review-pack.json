@@ -112,7 +112,7 @@
     {
       "id": "sec-projection",
       "title": "4Wealth Projection",
-      "bytes": 12409,
+      "bytes": 12721,
       "offset": 50817,
       "isThin": false,
       "isEmpty": false
@@ -121,7 +121,7 @@
       "id": "sec-revenue",
       "title": "5Retirement Income",
       "bytes": 30299,
-      "offset": 63226,
+      "offset": 63538,
       "isThin": false,
       "isEmpty": false
     },
@@ -129,7 +129,7 @@
       "id": "sec-cashflow",
       "title": "8Year-by-year cash flow",
       "bytes": 2106,
-      "offset": 93525,
+      "offset": 93837,
       "isThin": false,
       "isEmpty": false
     },
@@ -137,7 +137,7 @@
       "id": "sec-tax",
       "title": "9Tax Strategy",
       "bytes": 9082,
-      "offset": 95631,
+      "offset": 95943,
       "isThin": false,
       "isEmpty": false
     },
@@ -145,7 +145,7 @@
       "id": "sec-gis",
       "title": "11GIS Analysis",
       "bytes": 5889,
-      "offset": 104713,
+      "offset": 105025,
       "isThin": false,
       "isEmpty": false
     },
@@ -153,7 +153,7 @@
       "id": "sec-succession",
       "title": "12Estate",
       "bytes": 1736,
-      "offset": 110602,
+      "offset": 110914,
       "isThin": false,
       "isEmpty": false
     },
@@ -161,7 +161,7 @@
       "id": "sec-timeline",
       "title": "13Decision timeline",
       "bytes": 3492,
-      "offset": 112338,
+      "offset": 112650,
       "isThin": false,
       "isEmpty": false
     },
@@ -169,7 +169,7 @@
       "id": "sec-actions",
       "title": "14Action plan",
       "bytes": 7654,
-      "offset": 115830,
+      "offset": 116142,
       "isThin": false,
       "isEmpty": false
     },
@@ -177,7 +177,7 @@
       "id": "sec-closing-recap",
       "title": "15Final synthesis — what this means",
       "bytes": 5174,
-      "offset": 123484,
+      "offset": 123796,
       "isThin": false,
       "isEmpty": false
     },
@@ -185,7 +185,7 @@
       "id": "sec-whatif",
       "title": "?Explore alternatives",
       "bytes": 292,
-      "offset": 128658,
+      "offset": 128970,
       "isThin": true,
       "isEmpty": false
     },
@@ -193,7 +193,7 @@
       "id": "sec-signature",
       "title": "sec-signature",
       "bytes": 444286,
-      "offset": 128950,
+      "offset": 129262,
       "isThin": false,
       "isEmpty": false
     }
@@ -207,12 +207,12 @@
     {
       "type": "area",
       "title": "Income Sources Over Time",
-      "offset": 78712
+      "offset": 79024
     },
     {
       "type": "fan",
       "title": null,
-      "offset": 302222
+      "offset": 302534
     }
   ],
   "percentages": [
@@ -244,57 +244,57 @@
     {
       "pct": 2,
       "context": "MER deducts roughly",
-      "offset": 103955
+      "offset": 104267
     },
     {
       "pct": 98,
       "context": "guaranteed income covers",
-      "offset": 124039
+      "offset": 124351
     },
     {
       "pct": 75,
       "context": "des simulations Monte Carlo terminent sous ce niveau,",
-      "offset": 377687
+      "offset": 377999
     },
     {
       "pct": 75,
       "context": "of Monte Carlo simulations end below this level,",
-      "offset": 377866
+      "offset": 378178
     },
     {
       "pct": 25,
       "context": "des simulations terminent sous ce niveau,",
-      "offset": 378386
+      "offset": 378698
     },
     {
       "pct": 25,
       "context": "of simulations end below this level,",
-      "offset": 378553
+      "offset": 378865
     },
     {
       "pct": 60,
       "context": "à surveiller, sous",
-      "offset": 379289
+      "offset": 379601
     },
     {
       "pct": 60,
       "context": "monitor closely, under",
-      "offset": 379503
+      "offset": 379815
     },
     {
       "pct": 50,
       "context": "'Tax mechanism allowing up to",
-      "offset": 386234
+      "offset": 386546
     },
     {
       "pct": 80,
       "context": "Can refinance up to",
-      "offset": 462804
+      "offset": 463116
     },
     {
       "pct": 15,
       "context": "yrs earlier, spend",
-      "offset": 545062
+      "offset": 545374
     }
   ]
 }

@@ -844,6 +844,68 @@
     return h;
   }
 
+  // Phase 1 (premium shell): chart caption helper.
+  // Codex 2026-04-27 mandate: "Chart captions need to be truly editorial.
+  // Not 'this chart shows percentile outcomes'. More like: 'Your plan
+  // remains durable in most paths, but flexibility narrows after age 82.'"
+  // Captions read the IMPLICATION, never the mechanism. Engine output
+  // drives the values; the structure is fixed per chart type.
+  function _chartCaption(text) {
+    if (!text) return '';
+    return '<p class="bf-chart-caption" style="font-family:\"Playfair Display\",Georgia,serif;font-size:12.5px;font-style:italic;color:#5a4f3a;line-height:1.55;margin:6px auto 14px;max-width:680px;text-align:center;letter-spacing:0.1px">' +
+      F.esc(text) + '</p>';
+  }
+
+  // Caption builders — one per chart type. Read ONLY engine output (mc.pD,
+  // mc.p25F, etc.) to keep captions deterministic and synchronized with
+  // the rendered chart. Returns null when the chart's signal isn't
+  // strong enough to justify a caption (better silent than vague).
+  function _projectionCaption(d) {
+    var fr = d.fr, mc = d.mc, p = d.p;
+    if (!mc || !mc.pD || !mc.pD.length) return null;
+    var pD = mc.pD;
+    var endRow = pD[pD.length - 1];
+    var p50End = +(endRow && (endRow.p50 || endRow.rmp_total || 0));
+    var p25End = +(endRow && (endRow.p25 || endRow.p5 || 0));
+    var p5Ruin = mc.p5Ruin;
+    var deathAge = +p.deathAge || 92;
+    var f$ = F.fmtCompact;
+    if (p5Ruin != null && p5Ruin < 200 && p5Ruin < deathAge) {
+      return fr
+        ? 'Dans la majorité des trajectoires, votre patrimoine tient. Le quart prudent se rétrécit toutefois après l\'âge de ' + p5Ruin + ' ans.'
+        : 'In most paths your wealth remains durable; the cautious quarter narrows after age ' + p5Ruin + '.';
+    }
+    if (p50End >= 1000) {
+      var midText = fr
+        ? 'À la fin de l\'horizon, le scénario médian projette environ ' + f$(p50End) + ' (réel)'
+        : 'At the end of the horizon, the median scenario projects roughly ' + f$(p50End) + ' (real)';
+      var lowText = (p25End >= 1000)
+        ? (fr ? '; le quart prudent reste au-dessus de ' + f$(p25End) + '.' : '; the cautious quarter stays above ' + f$(p25End) + '.')
+        : (fr ? '.' : '.');
+      return midText + lowText;
+    }
+    return null;
+  }
+
+  function _histogramCaption(d) {
+    var fr = d.fr, mc = d.mc;
+    if (!mc) return null;
+    var p25 = +(mc.rP25F || mc.p25F || 0);
+    var p5R = mc.p5Ruin;
+    var f$ = F.fmtCompact;
+    if (p5R != null && p5R < 200) {
+      return fr
+        ? 'La majorité des avenirs simulés laissent un patrimoine résiduel; ceux qui s\'épuisent le font après l\'âge de ' + p5R + ' ans.'
+        : 'Most simulated futures leave wealth on the table; those that deplete do so after age ' + p5R + '.';
+    }
+    if (p25 >= 1000) {
+      return fr
+        ? 'Même dans le quart inférieur des résultats, votre patrimoine final reste au-dessus de ' + f$(p25) + '.'
+        : 'Even in the lower quartile of outcomes, your ending wealth stays above ' + f$(p25) + '.';
+    }
+    return null;
+  }
+
   // Phase 1 (premium shell): contextual hero KPI.
   // The codex spec calls for the first visual focal point of the diagnostic
   // to match the case, not always success-rate. Per-archetype mapping:
@@ -2458,6 +2520,9 @@
           ]
         });
         h += '</div>';
+        // Editorial caption — implication-first, derived from engine output.
+        var _projCap = _projectionCaption(d);
+        if (_projCap) h += _chartCaption(_projCap);
       } else if (_wcRepr === 'text') {
         // Lite fallback: prose summary of asset breakdown at retirement.
         var _retIdx = (mc.pD || []).findIndex(function(r) { return r.age === p.retAge; });
@@ -4338,6 +4403,9 @@
       p50: mc.rMedF || mc.medF,
       p75: mc.rP75F || mc.p75F
     });
+    // Editorial caption — derived from p5Ruin / P25 final wealth.
+    var _histCap = _histogramCaption(d);
+    if (_histCap) h += _chartCaption(_histCap);
 
     // Small legend / reading aid
     var p25 = f$(mc.rP25F || mc.p25F), p50 = f$(mc.rMedF || mc.medF), p75 = f$(mc.rP75F || mc.p75F);
