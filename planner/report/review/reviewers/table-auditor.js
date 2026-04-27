@@ -18,8 +18,23 @@ function audit(pack) {
   var presentIds = {};
   pack.sections.forEach(function(s) { presentIds[s.id] = (presentIds[s.id] || 0) + 1; });
 
+  // Plain-mode readers (jargonMode='plain') legitimately omit a small set
+  // of technical sections via the Phase 5 relevance gate: stress tests +
+  // risk dispersion are too jargon-heavy and overload the audience. The
+  // table auditor must NOT treat those omissions as blockers for plain readers.
+  var profile = (pack.profile && pack.profile.params) || {};
+  // Render profile may live on the data payload OR be inferred from the
+  // profile-level classifier axes. Either source works.
+  var jargonMode = (pack.dPayload && pack.dPayload.renderProfile && pack.dPayload.renderProfile.jargonMode)
+    || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain'
+        : pack.profile && pack.profile.finLiteracy === 'advanced' ? 'technical'
+        : 'mixed');
+  var PLAIN_OMITS = { 'sec-stress': true, 'sec-risk': true, 'sec-sensitivity': true };
+
   Contract.SECTIONS.forEach(function(spec) {
     if (spec.mandatory && !presentIds[spec.id]) {
+      // Skip blocker for plain-mode legitimately-omitted sections.
+      if (jargonMode === 'plain' && PLAIN_OMITS[spec.id]) return;
       findings.push({
         id: 'table-missing-' + spec.id,
         reviewer: 'table',

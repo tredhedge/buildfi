@@ -71,7 +71,7 @@
     {
       "id": "sec-letter",
       "title": "sec-letter",
-      "bytes": 16759,
+      "bytes": 17425,
       "offset": 14253,
       "isThin": false,
       "isEmpty": false
@@ -80,7 +80,7 @@
       "id": "sec-assessment",
       "title": "☆Your plan in 30 seconds",
       "bytes": 3337,
-      "offset": 31012,
+      "offset": 31678,
       "isThin": false,
       "isEmpty": false
     },
@@ -88,7 +88,7 @@
       "id": "sec-diagnostic",
       "title": "1Executive Summary",
       "bytes": 4326,
-      "offset": 34349,
+      "offset": 35015,
       "isThin": false,
       "isEmpty": false
     },
@@ -96,7 +96,7 @@
       "id": "sec-levers",
       "title": "2What Could Change This Plan",
       "bytes": 1504,
-      "offset": 38675,
+      "offset": 39341,
       "isThin": false,
       "isEmpty": false
     },
@@ -104,7 +104,7 @@
       "id": "sec-profile",
       "title": "3Your Profile",
       "bytes": 10668,
-      "offset": 40179,
+      "offset": 40845,
       "isThin": false,
       "isEmpty": false
     },
@@ -112,7 +112,7 @@
       "id": "sec-projection",
       "title": "4Wealth Projection",
       "bytes": 29910,
-      "offset": 50847,
+      "offset": 51513,
       "isThin": false,
       "isEmpty": false
     },
@@ -120,7 +120,7 @@
       "id": "sec-revenue",
       "title": "5Retirement Income",
       "bytes": 41297,
-      "offset": 80757,
+      "offset": 81423,
       "isThin": false,
       "isEmpty": false
     },
@@ -128,7 +128,7 @@
       "id": "sec-risk",
       "title": "6Risk & Sensitivity",
       "bytes": 4469,
-      "offset": 122054,
+      "offset": 122720,
       "isThin": false,
       "isEmpty": false
     },
@@ -136,7 +136,7 @@
       "id": "sec-stress",
       "title": "7Stress tests",
       "bytes": 2992,
-      "offset": 126523,
+      "offset": 127189,
       "isThin": false,
       "isEmpty": false
     },
@@ -144,7 +144,7 @@
       "id": "sec-cashflow",
       "title": "8Year-by-year cash flow",
       "bytes": 2138,
-      "offset": 129515,
+      "offset": 130181,
       "isThin": false,
       "isEmpty": false
     },
@@ -152,7 +152,7 @@
       "id": "sec-tax",
       "title": "9Tax Strategy",
       "bytes": 10611,
-      "offset": 131653,
+      "offset": 132319,
       "isThin": false,
       "isEmpty": false
     },
@@ -160,7 +160,7 @@
       "id": "sec-draworder",
       "title": "10Draw-order strategy",
       "bytes": 6391,
-      "offset": 142264,
+      "offset": 142930,
       "isThin": false,
       "isEmpty": false
     },
@@ -168,7 +168,7 @@
       "id": "sec-insurance",
       "title": "11Insurance — Resilience Gap",
       "bytes": 1203,
-      "offset": 148655,
+      "offset": 149321,
       "isThin": false,
       "isEmpty": false
     },
@@ -176,7 +176,7 @@
       "id": "sec-timeline",
       "title": "12Decision timeline",
       "bytes": 4459,
-      "offset": 149858,
+      "offset": 150524,
       "isThin": false,
       "isEmpty": false
     },
@@ -184,7 +184,7 @@
       "id": "sec-premium-deepdive",
       "title": "13Planner deep-dive",
       "bytes": 6790,
-      "offset": 154317,
+      "offset": 154983,
       "isThin": false,
       "isEmpty": false
     },
@@ -192,7 +192,7 @@
       "id": "sec-actions",
       "title": "14Action plan",
       "bytes": 6399,
-      "offset": 161107,
+      "offset": 161773,
       "isThin": false,
       "isEmpty": false
     },
@@ -200,7 +200,7 @@
       "id": "sec-closing-recap",
       "title": "15Final synthesis — what this means",
       "bytes": 4321,
-      "offset": 167506,
+      "offset": 168172,
       "isThin": false,
       "isEmpty": false
     },
@@ -208,7 +208,7 @@
       "id": "sec-whatif",
       "title": "?What-If Simulator",
       "bytes": 408,
-      "offset": 171827,
+      "offset": 172493,
       "isThin": true,
       "isEmpty": false
     },
@@ -216,7 +216,7 @@
       "id": "sec-methodology",
       "title": "16Methodology",
       "bytes": 3062,
-      "offset": 172235,
+      "offset": 172901,
       "isThin": false,
       "isEmpty": false
     },
@@ -224,7 +224,7 @@
       "id": "sec-assumptions",
       "title": "17Appendix — Assumptions",
       "bytes": 3108,
-      "offset": 175297,
+      "offset": 175963,
       "isThin": false,
       "isEmpty": false
     },
@@ -232,7 +232,7 @@
       "id": "sec-glossary",
       "title": "18Glossary",
       "bytes": 9187,
-      "offset": 178405,
+      "offset": 179071,
       "isThin": false,
       "isEmpty": false
     },
@@ -240,7 +240,7 @@
       "id": "sec-signature",
       "title": "sec-signature",
       "bytes": 529120,
-      "offset": 187592,
+      "offset": 188258,
       "isThin": false,
       "isEmpty": false
     }
@@ -249,22 +249,22 @@
     {
       "type": "area",
       "title": "Wealth Composition (liquid + illiquid)",
-      "offset": 51270
+      "offset": 51936
     },
     {
       "type": "fan",
       "title": "Monte Carlo Projection",
-      "offset": 63758
+      "offset": 64424
     },
     {
       "type": "area",
       "title": "Income Sources Over Time",
-      "offset": 101706
+      "offset": 102372
     },
     {
       "type": "fan",
       "title": null,
-      "offset": 447302
+      "offset": 447968
     }
   ],
   "percentages": [
@@ -276,82 +276,82 @@
     {
       "pct": 2,
       "context": "MER deducts roughly",
-      "offset": 141412
+      "offset": 142078
     },
     {
       "pct": 15,
       "context": "lar of income above the threshold is taxed at an additional",
-      "offset": 166152
+      "offset": 166818
     },
     {
       "pct": 5,
       "context": ", including the worst-case",
-      "offset": 172700
+      "offset": 173366
     },
     {
       "pct": 75,
       "context": "of Monte Carlo simulations end below this level,",
-      "offset": 184157
+      "offset": 184823
     },
     {
       "pct": 25,
       "context": "of simulations end below this level,",
-      "offset": 184645
+      "offset": 185311
     },
     {
       "pct": 50,
       "context": "Tax mechanism allowing up to",
-      "offset": 184908
+      "offset": 185574
     },
     {
       "pct": 60,
       "context": "monitor closely, under",
-      "offset": 187030
+      "offset": 187696
     },
     {
       "pct": 75,
       "context": "des simulations Monte Carlo terminent sous ce niveau,",
-      "offset": 522032
+      "offset": 522698
     },
     {
       "pct": 75,
       "context": "of Monte Carlo simulations end below this level,",
-      "offset": 522211
+      "offset": 522877
     },
     {
       "pct": 25,
       "context": "des simulations terminent sous ce niveau,",
-      "offset": 522731
+      "offset": 523397
     },
     {
       "pct": 25,
       "context": "of simulations end below this level,",
-      "offset": 522898
+      "offset": 523564
     },
     {
       "pct": 60,
       "context": "à surveiller, sous",
-      "offset": 523634
+      "offset": 524300
     },
     {
       "pct": 60,
       "context": "monitor closely, under",
-      "offset": 523848
+      "offset": 524514
     },
     {
       "pct": 50,
       "context": "'Tax mechanism allowing up to",
-      "offset": 530579
+      "offset": 531245
     },
     {
       "pct": 80,
       "context": "Can refinance up to",
-      "offset": 607149
+      "offset": 607815
     },
     {
       "pct": 15,
       "context": "yrs earlier, spend",
-      "offset": 689407
+      "offset": 690073
     }
   ]
 }

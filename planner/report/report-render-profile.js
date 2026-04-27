@@ -171,6 +171,11 @@
     // Sensitivity tornado already gated on chartTier='full' by resolveRepresentation;
     // here we add a content-relevance veto for beginner readers regardless.
     if (blockId === 'sensitivity' && profile.jargonMode === 'plain') return false;
+    // Risk dispersion narrative (sec-risk) and stress-tests (sec-stress) are
+    // technical sections per Audit 8 (2026-04-27): plain-mode readers do not
+    // benefit from "P25-P75 dispersion" or "9 named stress scenarios" — they
+    // overload the reader and undercut the beginner-friendly framing.
+    if ((blockId === 'risk' || blockId === 'stress_tests') && profile.jargonMode === 'plain') return false;
     return true;
   }
 

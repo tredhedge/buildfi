@@ -123,8 +123,13 @@ function audit(pack) {
   // when their data exists in the canonical pack. If the sensitivity
   // tornado data is in the MC payload but the section isn't rendered,
   // the report is silently shallow — a premium-quality regression.
+  // Plain-mode readers (jargonMode='plain') legitimately omit sec-risk via
+  // the Phase 5 relevance gate (technical content overload for beginners).
+  // Per Audit 8 (2026-04-27), this auditor must NOT flag those omissions.
+  var jargonMode = (pack.dPayload && pack.dPayload.renderProfile && pack.dPayload.renderProfile.jargonMode)
+    || (pack.profile && pack.profile.finLiteracy === 'beginner' ? 'plain' : 'mixed');
   var hasRiskSec = pack.sections.some(function(s) { return s.id === 'sec-risk'; });
-  if (!hasRiskSec) {
+  if (!hasRiskSec && jargonMode !== 'plain') {
     findings.push({
       id: 'visual-shallow-mode',
       reviewer: 'visual',

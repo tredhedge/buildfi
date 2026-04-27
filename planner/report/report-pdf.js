@@ -823,8 +823,18 @@
     var h = '<div class="cover">';
     h += '<div style="margin-bottom:30px;opacity:0.95">' + logoSvg.replace(/fill="[^"]*"/g, 'fill="#c49a1a"').replace('fill="#c49a1a" opacity="0.6"', 'fill="#c49a1a" opacity="0.5"').replace('fill="#c49a1a" opacity="0.8"', 'fill="#c49a1a" opacity="0.7"') + '</div>';
     h += '<div class="cover-divider"></div>';
-    h += '<div class="cover-title">' + F.L('cover_title', fr) + '</div>';
-    h += '<div class="cover-subtitle">' + F.L('cover_sub', fr) + '</div>';
+    // Beginner readers (jargonMode='plain') get a softer, friendlier cover
+    // title — "Plan financier" / "Financial Plan" — instead of the more
+    // formal "Detailed Report" reserved for intermediate / advanced readers.
+    var _isPlain = d.renderProfile && d.renderProfile.jargonMode === 'plain';
+    var _coverTitle = _isPlain
+      ? (fr ? 'Plan financier' : 'Financial Plan')
+      : F.L('cover_title', fr);
+    var _coverSub = _isPlain
+      ? (fr ? 'Aper\u00e7u personnalis\u00e9' : 'Personalized snapshot')
+      : F.L('cover_sub', fr);
+    h += '<div class="cover-title">' + _coverTitle + '</div>';
+    h += '<div class="cover-subtitle">' + _coverSub + '</div>';
     h += '<div class="cover-divider"></div>';
     h += '<div style="font-size:13px;color:#bccbe0;margin-top:10px;letter-spacing:0.4px">' + F.L('prepared_for', fr) + '</div>';
     h += '<div class="cover-client">' + F.esc(cName) + (cSpouse ? ' & ' + F.esc(cSpouse) : '') + '</div>';
@@ -1554,6 +1564,8 @@
   // Renders a one-page stress-matrix using the `mc._stress` payload populated
   // by gen-real-mc.mjs running 6 perturbed MC scenarios.
   function renderStressTests(d, secN) {
+    // Phase 5 relevance gate: hide for plain-mode readers (technical content).
+    if (!_relevanceGate(d, 'stress_tests')) return '';
     var fr = d.fr;
     // Always emit the section anchor so downstream QA (report-qa.js) can
     // verify structural presence. When enrichment is missing, render a
@@ -3643,6 +3655,8 @@
   // === SECTION: RISK & SENSITIVITY (Expert) ===
   function renderRisk(d, secN) {
     if (!d.exp) return '';
+    // Phase 5 relevance gate: plain-mode readers get this section omitted.
+    if (!_relevanceGate(d, 'risk')) return '';
     var fr = d.fr, mc = d.mc, p = d.p, revData = d.revData;
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
@@ -4878,7 +4892,8 @@
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
     if (_hasDrawTrace) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-draworder', label: d.fr ? 'Ordre des retraits' : 'Draw-order strategy' }); }
-    if (_hasStress) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
+    var _isPlainReader = d.renderProfile && d.renderProfile.jargonMode === 'plain';
+    if (_hasStress && !_isPlainReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
     if (_gisCheck.length > 0 && !_isSuppressed('sec-gis')) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-gis', label: F.L('gis', d.fr) }); }
     if (d.R.hasMeltdown) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-meltdown', label: F.L('meltdown', d.fr) }); }
     if (_grossEstateCheck >= 1000) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-succession', label: F.L('succession', d.fr) }); }
@@ -4886,11 +4901,28 @@
     if (d.R.hasRSU) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-rsu', label: F.L('rsu', d.fr) }); }
     if (d.R.ccpc) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-corp', label: F.L('corp', d.fr) }); }
     if (d.R.debt) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-debt', label: F.L('debt', d.fr) }); }
-    if (d.exp) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
+    if (d.exp && !_isPlainReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
+    // Insurance — rendered when d.R.hasInsuranceGap (resilience gap section)
+    if (d.R && d.R.hasInsuranceGap) {
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-insurance', label: d.fr ? 'Assurance \u2014 \u00c9cart de r\u00e9silience' : 'Insurance \u2014 Resilience Gap' });
+    }
+    // Premium deep-dive — Planner SKU only, surfaced when full-tier reader
+    if (d.sku === 'planner') {
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-premium-deepdive', label: d.fr ? 'Approfondissement Planner' : 'Planner deep-dive' });
+    }
     // Action plan TOC entry added only if actions will fire (simple check: assume present)
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-actions', label: d.fr ? 'Plan d\'action' : 'Action plan' });
+    // Decision timeline (renders before action plan in body — sec-timeline)
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-timeline', label: d.fr ? 'Chronologie des d\u00e9cisions' : 'Decision timeline' });
+    // Closing recap — single-thesis anchor near back-matter
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-closing-recap', label: d.fr ? 'Synth\u00e8se finale' : 'Final synthesis' });
+    // What-If simulator (Bilan SKU mainly; Planner customers get external link)
+    if (d.includeSimulator !== false) {
+      _tocN++; tocSections.push({ n: _tocN, id: 'sec-whatif', label: d.fr ? 'Simulateur de sc\u00e9narios' : 'Scenario simulator' });
+    }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Annexe \u2014 Hypoth\u00e8ses' : 'Appendix \u2014 Assumptions' });
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-glossary', label: d.fr ? 'Glossaire' : 'Glossary' });
 
     // Render TOC
     h += renderTOC(tocSections, d.fr);
