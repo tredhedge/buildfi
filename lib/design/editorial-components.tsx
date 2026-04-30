@@ -61,19 +61,34 @@ export function Section({
 
 /* ────────────────────────────────────────────────────────────────────
    ToolCard — wrapper for embedded interactive widgets inside an
-   editorial section. Cream panel with gold-tinted border + uppercase
-   gold kicker label.
+   editorial section.
+
+   Prominence pass (2026-04-29): tools are interactive value, not just
+   another callout. They get a 2px gold border, slightly warmer cream
+   background, soft gold-tinted shadow, and a kicker prefixed with an
+   "Outil interactif" / "Interactive tool" eyebrow so the reader sees
+   immediately "this is something to use, not just read."
    ──────────────────────────────────────────────────────────────────── */
 export function ToolCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{
-      background: CL.panel,
-      border: `1px solid ${CL.accentLine}`,
+      background: "rgba(255, 251, 242, 0.96)",
+      border: `2px solid ${CL.gold}`,
       borderRadius: 18,
-      padding: 22,
-      margin: "18px 0",
+      padding: "26px 26px 24px",
+      margin: "20px 0",
+      boxShadow: "0 14px 32px rgba(196, 148, 74, 0.13), 0 2px 6px rgba(56, 42, 19, 0.06)",
     }}>
-      <div className="bfe-kicker" style={{ marginBottom: 12 }}>{title}</div>
+      <div style={{
+        fontSize: 10,
+        fontWeight: 800,
+        color: CL.gold,
+        textTransform: "uppercase",
+        letterSpacing: ".22em",
+        marginBottom: 6,
+        opacity: 0.82,
+      }}>◆  Outil interactif · Interactive tool</div>
+      <div className="bfe-kicker" style={{ marginBottom: 14, fontSize: 14, letterSpacing: ".12em" }}>{title}</div>
       {children}
     </div>
   );
@@ -102,35 +117,46 @@ export function Note({
   children: React.ReactNode;
 }) {
   /*
-    Editorial restraint pass (2026-04-29): the bar carries semantic tone
-    via thin gold/ink shades (no red/green flooding). The kicker stays
-    gold across all tones — gold is the brand accent and gives the Note
-    a single calm voice. The bar uses --bf-gold for "rule" and --bfe-ink
-    for everything else (caution, info, check) so prose still distinguishes
-    serious-warning from observational without painting the page.
+    Editorial balance pass (2026-04-29 v2): all bars stay gold or ink
+    (no semantic floods), but tone now varies *weight* — bar thickness,
+    background warmth, kicker emphasis — so the visual hierarchy reads
+    again without painting the page red/green/blue.
+      caution: 5px gold bar + warm-amber tinted background + bold kicker
+      rule:    4px gold bar + cream panel
+      check:   3px gold bar + ✓ in kicker
+      info:    2px ink-soft bar + muted kicker (recedes)
   */
-  const bar = tone === "rule" ? CL.gold : CL.ink;
-  const kickerColor = CL.gold;
+  const tones = {
+    caution: { bar: CL.gold, barW: 5, bg: "rgba(196,148,74,0.07)", kicker: CL.gold, kickerW: 800 as const },
+    rule:    { bar: CL.gold, barW: 4, bg: CL.panel,                kicker: CL.gold, kickerW: 700 as const },
+    check:   { bar: CL.gold, barW: 3, bg: CL.panel,                kicker: CL.gold, kickerW: 700 as const },
+    info:    { bar: CL.ink,  barW: 2, bg: CL.panel,                kicker: CL.muted, kickerW: 600 as const },
+  } as const;
+  const t = tones[tone];
+  const kickerLabel = kicker
+    ? (tone === "check" ? `✓  ${kicker}` : kicker)
+    : null;
   return (
-    <div style={{
-      background: CL.panel,
-      borderLeft: `2px solid ${bar}`,
+    <div className={`bfe-note bfe-note--${tone}`} style={{
+      background: t.bg,
+      borderLeft: `${t.barW}px solid ${t.bar}`,
       padding: "12px 16px",
       borderRadius: "0 8px 8px 0",
       fontSize: 14,
       color: CL.text,
       lineHeight: 1.6,
       margin: "12px 0",
+      transition: "background 180ms ease, box-shadow 180ms ease",
     }}>
-      {kicker ? (
+      {kickerLabel ? (
         <div style={{
           fontSize: 11,
-          fontWeight: 700,
-          color: kickerColor,
+          fontWeight: t.kickerW,
+          color: t.kicker,
           textTransform: "uppercase",
           letterSpacing: ".18em",
           marginBottom: 4,
-        }}>{kicker}</div>
+        }}>{kickerLabel}</div>
       ) : null}
       <div>{children}</div>
     </div>

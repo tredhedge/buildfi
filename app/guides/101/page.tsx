@@ -140,8 +140,8 @@ const COPY = {
     ch6Rows: [
       ["Cotisation déductible ?", "Oui", "Non", "Oui"],
       ["Retraits imposables ?", "Oui", "Non", "Non*"],
-      ["Max annuel 2026", "33 810 $", "7 000 $", "8 000 $"],
-      ["Droit cumulatif", "Varie", "Jusqu'à 109 000 $†", "40 000 $"],
+      ["Max annuel 2026", "<span class=\"bfe-stat\">33 810 $</span>", "<span class=\"bfe-stat\">7 000 $</span>", "<span class=\"bfe-stat\">8 000 $</span>"],
+      ["Droit cumulatif", "Varie", "Jusqu'à <span class=\"bfe-stat\">109 000 $</span>†", "<span class=\"bfe-stat\">40 000 $</span>"],
       ["Limite d'âge", "71", "Aucune", "71 / 15 ans"],
       ["Affecte PSV/SRG ?", "Oui (retrait)", "Non", "Non*"],
       ["Idéal pour", "Revenu élevé maintenant → plus bas à la retraite", "Flexibilité libre d'impôt", "Première maison"],
@@ -229,13 +229,6 @@ const COPY = {
     ],
 
     quote2: "« Personne ne regrette d'avoir commencé trop tôt. Tout le monde regrette d'avoir attendu. »",
-
-    principlesTitle: "Les 3 principes BuildFi",
-    principles: [
-      "Sécurité avant rendement. Un bon fonds d'urgence vaut plus qu'un rendement de 12 % sur un portefeuille fragile.",
-      "Liquidité avant optimisation fiscale. L'argent accessible en cas d'urgence passe avant la stratégie fiscale parfaite.",
-      "Simplicité avant sophistication. Un plan simple que vous suivez bat un plan complexe que vous abandonnez.",
-    ],
 
     /* tool labels */
     tNetWorth: "Valeur nette",
@@ -399,8 +392,8 @@ const COPY = {
     ch6Rows: [
       ["Contribution deductible?", "Yes", "No", "Yes"],
       ["Withdrawals taxable?", "Yes", "No", "No*"],
-      ["Annual max 2026", "$33,810", "$7,000", "$8,000"],
-      ["Cumulative room", "Varies", "Up to $109,000†", "$40,000"],
+      ["Annual max 2026", "<span class=\"bfe-stat\">$33,810</span>", "<span class=\"bfe-stat\">$7,000</span>", "<span class=\"bfe-stat\">$8,000</span>"],
+      ["Cumulative room", "Varies", "Up to <span class=\"bfe-stat\">$109,000</span>†", "<span class=\"bfe-stat\">$40,000</span>"],
       ["Age limit", "71", "None", "71 / 15 yrs"],
       ["Affects OAS/GIS?", "Yes (withdrawal)", "No", "No*"],
       ["Ideal for", "High income now → lower at retirement", "Flexibility tax-free", "First home"],
@@ -487,13 +480,6 @@ const COPY = {
     ],
 
     quote2: "\"Nobody regrets starting too early. Everyone regrets waiting.\"",
-
-    principlesTitle: "The 3 BuildFi principles",
-    principles: [
-      "Safety before returns. A solid emergency fund is worth more than a 12% return on a fragile portfolio.",
-      "Liquidity before tax optimization. Cash you can access in an emergency comes before the perfect tax strategy.",
-      "Simplicity before sophistication. A simple plan you follow beats a complex plan you abandon.",
-    ],
 
     tNetWorth: "Net worth",
     tAssets: "Assets (what you own)",
@@ -977,7 +963,14 @@ function Guide101Inner() {
                 {t.ch6Rows.map((row, i) => (
                   <tr key={i} style={{ background: i % 2 ? CL.s2 : CL.card, borderBottom: i < t.ch6Rows.length - 1 ? `1px solid ${CL.line}` : "none" }}>
                     {row.map((cell, j) => (
-                      <td key={j} style={{ padding: "10px 14px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.muted : CL.text, fontWeight: j === 0 ? 400 : 600 }}>{cell}</td>
+                      // cell may contain <span class="bfe-stat">…</span> markup
+                      // for headline-number emphasis. Source is hardcoded copy
+                      // (no user input), so dangerouslySetInnerHTML is safe.
+                      <td
+                        key={j}
+                        style={{ padding: "10px 14px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.muted : CL.text, fontWeight: j === 0 ? 400 : 600 }}
+                        dangerouslySetInnerHTML={{ __html: cell }}
+                      />
                     ))}
                   </tr>
                 ))}
@@ -1068,14 +1061,6 @@ function Guide101Inner() {
             <a href={t.ctaHref} style={{ display: "inline-block", background: CL.gold, color: CL.ink, padding: "12px 22px", borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: "none" }}>{t.ctaBtn}</a>
           </div>
         </Section>
-
-        {/* Principles — note callout */}
-        <section className="bfe-note">
-          <div className="bfe-kicker" style={{ marginBottom: 10 }}>{t.principlesTitle}</div>
-          <ol style={{ paddingLeft: 22, margin: 0, fontSize: 15, color: CL.text, lineHeight: 1.7 }}>
-            {t.principles.map((p, i) => (<li key={i} style={{ marginBottom: 6 }}>{p}</li>))}
-          </ol>
-        </section>
 
         {/* Footer */}
         <div style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 36, padding: "20px 4px 0", lineHeight: 1.6, borderTop: `1px solid ${CL.accentLine}` }}>

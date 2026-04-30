@@ -1941,11 +1941,19 @@
     var h = secPage();
     h += F.Sec(secN, F.L('diagnostic', fr), 'sec-diagnostic');
 
-    // Phase-specific opening narrative
+    // Vars used downstream — must be assigned regardless of whether the
+    // narrative below renders (it's gated to false in 2026-04-29 because
+    // chapter 1 already shows the lifecycle frame).
     var g = F.grade(d.succVal, fr);
     var phase = d.R.phase;
     var yrsToRet = p.retAge - p.age;
     var horizon = (p.deathAge || 90) - p.age;
+
+    // 2026-04-29: phase narrative below is now suppressed at render time —
+    // chapter 1 (sec-assessment) opens with the same lifecycle frame, so
+    // re-stating it here was a duplicate. The block stays in the source
+    // for git-blame traceability but renders nothing.
+    if (false) {
 
     // Couple-aware naming + household framing — when modeled as couple, the
     // narrative needs to acknowledge both spouses or the reader can't tell
@@ -1982,6 +1990,7 @@
         ? _nmPfx + 'vous êtes en accumulation, avec <strong>' + yrsToRet + ' ans</strong> avant la retraite prévue à ' + p.retAge + ' ans. La marge de manœuvre est encore large : votre ' + _savingsLabel + ' de <strong>' + f$(d.totalBal) + '</strong> sera multipliée par les cotisations à venir et la durée de placement. Les ajustements faits maintenant ont l\'effet le plus important.' + _coupleNote
         : (_nmFull ? _nmFull + ', you' : 'You') + ' are in accumulation, with <strong>' + yrsToRet + ' years</strong> until planned retirement at age ' + p.retAge + '. There is still wide room to act: your ' + _savingsLabel + ' of <strong>' + f$(d.totalBal) + '</strong> will be multiplied by future contributions and time in the markets. Adjustments made now carry the largest leverage.' + _coupleNote);
     }
+    } // end if(false) — phase narrative now in sec-assessment, not duplicated here
 
     // Phase 1 hero KPI (codex 2026-04-27): one dominant insight per case,
     // archetype-driven. Tax/legacy/low-income tags can outrank phase. Falls
@@ -2118,11 +2127,25 @@
 
     if (rows.length === 0) return '';
 
+    // 2026-04-29 data-quality gate: only emit this section when at least
+    // one row actually moves the plan in a way the reader would care
+    // about — defined as |Δsuccess| ≥ 3 pts OR |Δmedian| ≥ 10% of base.
+    // Below those thresholds the table reads as decorative noise (two
+    // generic ±1% sweeps moving things by a rounding error), and the
+    // Watch line on the cover already surfaces the binding constraint.
+    var _meaningful = rows.some(function(r) {
+      var medMagU = baseMedF > 0 ? Math.abs(r.dMedUp) / baseMedF : 0;
+      var medMagD = baseMedF > 0 ? Math.abs(r.dMedDn) / baseMedF : 0;
+      var succMag = Math.max(Math.abs(r.dSuccUp || 0), Math.abs(r.dSuccDn || 0));
+      return succMag >= 3 || medMagU >= 0.10 || medMagD >= 0.10;
+    });
+    if (!_meaningful) return '';
+
     var h = secPage();
     h += F.Sec(secN, F.L('levers', fr), 'sec-levers');
     h += narr(fr
-      ? 'Voici les leviers qui ont le plus d\'effet sur votre plan. Pour chacun, le chiffre montre combien le taux de succès et le patrimoine médian bougent lorsque vous ajustez cette seule décision.'
-      : 'These are the levers with the strongest pull on your plan. For each one, the figure shows how far the success rate and median wealth move when you adjust that single decision.');
+      ? 'Pour chaque facteur ci-dessous, le chiffre indique combien le taux de succès et le patrimoine médian bougeraient si cette seule variable était modifiée — toutes les autres conditions tenues constantes.'
+      : 'For each factor below, the figure indicates how far the success rate and median wealth would move if that single variable were modified — all other conditions held constant.');
 
     h += '<table class="tbl"><thead><tr>';
     h += '<th style="text-align:left">' + (fr ? 'Facteur' : 'Factor') + '</th>';

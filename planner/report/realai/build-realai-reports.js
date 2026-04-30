@@ -169,8 +169,19 @@ if (cmd === 'render') {
       ' — reports will render without the rail TOC.');
   }
 
+  // Optional profile filter: `node build-realai-reports.js render <slug>`
+  // renders only matching profiles (id substring match). Used for spot
+  // testing one report without re-running the full 20-profile matrix.
+  const profileFilter = process.argv[3] || null;
+  const filteredProfiles = profileFilter
+    ? PROFILES.filter(p => p.id.indexOf(profileFilter) !== -1)
+    : PROFILES;
+  if (profileFilter) {
+    console.log('Filter "' + profileFilter + '" matched ' + filteredProfiles.length + ' profile(s).');
+  }
+
   let ok = 0, fallback = 0, errored = 0;
-  PROFILES.forEach(prof => {
+  filteredProfiles.forEach(prof => {
     let mcExists;
     try { loadRealMC(prof.id, prof.lang); mcExists = true; } catch (e) { mcExists = false; }
     if (!mcExists) {
@@ -212,7 +223,7 @@ if (cmd === 'render') {
       errored++;
     }
   });
-  console.log('\nDone. ' + ok + '/' + PROFILES.length + ' rendered (' + fallback + ' deterministic, ' + (ok - fallback) + ' with AI), ' + errored + ' errors.');
+  console.log('\nDone. ' + ok + '/' + filteredProfiles.length + ' rendered (' + fallback + ' deterministic, ' + (ok - fallback) + ' with AI), ' + errored + ' errors.');
   process.exit(errored > 0 ? 1 : 0);
 }
 
