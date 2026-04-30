@@ -42,6 +42,13 @@
 body[data-bf-system="product"] {
   margin: 0;
   font-family: var(--bf-font-sans-product);
+  /* Lateral-overflow safety on product surfaces (tools, marketing). */
+  overflow-x: hidden;
+}
+body[data-bf-system="product"] img,
+body[data-bf-system="product"] svg,
+body[data-bf-system="product"] table {
+  max-width: 100%;
 }
 
 body[data-bf-system="product"][data-theme="dark"] {

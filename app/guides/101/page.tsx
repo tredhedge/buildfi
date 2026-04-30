@@ -225,7 +225,7 @@ const COPY = {
       "Faites l'audit de vos abonnements. 3 derniers relevés. Décidez ce qui reste.",
       "Automatisez un virement. Même 50 $/paie vers un CELI ou CELIAPP.",
       "Vérifiez vos avantages employeur. Contribution équivalente REER ? Assurance invalidité ?",
-      "Vérifiez votre cote de crédit. Borrowell ou Credit Karma. Gratuit.",
+      "Vérifiez votre cote de crédit auprès d'Equifax ou TransUnion (les deux bureaux fournissent un accès gratuit selon les lois canadiennes).",
     ],
 
     quote2: "« Personne ne regrette d'avoir commencé trop tôt. Tout le monde regrette d'avoir attendu. »",
@@ -483,7 +483,7 @@ const COPY = {
       "Audit your subscriptions. Last 3 statements. Decide what stays.",
       "Automate a transfer. Even $50/paycheque into a TFSA or FHSA.",
       "Check your employer benefits. RRSP match? Disability insurance?",
-      "Check your credit score. Borrowell or Credit Karma. Free.",
+      "Check your credit score with Equifax or TransUnion (both bureaus provide free access under Canadian law).",
     ],
 
     quote2: "\"Nobody regrets starting too early. Everyone regrets waiting.\"",
@@ -638,9 +638,10 @@ function BudgetCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        {bar(t.tNeeds, t.tNeedsD, needs, CL.blue, CL.blueBg)}
+        {/* Editorial restraint: 50/30/20 buckets all gold-toned, ink ratios distinguish them. */}
+        {bar(t.tNeeds, t.tNeedsD, needs, CL.gold, CL.goldBg)}
         {bar(t.tWants, t.tWantsD, wants, CL.gold, CL.goldBg)}
-        {bar(t.tFuture, t.tFutureD, future, CL.green, CL.greenBg)}
+        {bar(t.tFuture, t.tFutureD, future, CL.gold, CL.goldBg)}
       </div>
     </div>
   );
@@ -724,8 +725,9 @@ function CardTrapCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.tCardFixed, fixed, setFixed, 10, "($)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {card(t.tMinimum, result.min, CL.red, CL.redBg)}
-        {card(t.tFixed, result.fixed, CL.green, CL.greenBg)}
+        {/* Editorial restraint: gold + ink only. Title carries semantic via wording, not color. */}
+        {card(t.tMinimum, result.min, CL.gold, CL.goldBg)}
+        {card(t.tFixed, result.fixed, CL.ink, CL.s2)}
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.tCardNote}</div>
     </div>
@@ -1044,7 +1046,7 @@ function Guide101Inner() {
           <div style={{ fontSize: 16, color: CL.muted, fontStyle: "italic", marginTop: -4, marginBottom: 18 }}>{t.mistakesIntro}</div>
           <div style={{ display: "grid", gap: 10 }}>
             {t.mistakes.map((m, i) => (
-              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.red}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m.t}</div>
                 <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m.b}</div>
               </div>

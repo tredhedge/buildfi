@@ -55,6 +55,14 @@ body[data-bf-system="editorial"] {
     linear-gradient(180deg, #f4efe6 0%, #f8f5ef 100%);
   color: var(--bfe-ink);
   font-family: var(--bf-font-sans-editorial);
+  /* Lateral-overflow safety: long words / wide tables / SVG charts that
+     escape their wrappers won't push the whole page wider than the viewport. */
+  overflow-x: hidden;
+}
+body[data-bf-system="editorial"] img,
+body[data-bf-system="editorial"] svg,
+body[data-bf-system="editorial"] table {
+  max-width: 100%;
 }
 
 a { color: inherit; }

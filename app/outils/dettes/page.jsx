@@ -303,6 +303,7 @@ export default function DebtTool() {
   const [showInfo, setShowInfo] = useState(false);
   const [infoTab, setInfoTab] = useState("notice");
   const [includePrintDetails, setIncludePrintDetails] = useState(false);
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false);
   const debtCardRefs = useRef([]);
   const debtPayRefs = useRef([]);
   const debtMinPayRefs = useRef([]);
@@ -1661,15 +1662,19 @@ export default function DebtTool() {
         }
       `}</style>
 
-      {/* Header */}
-      <div className="no-print" style={{ borderBottom: `1px solid ${DK.border}`, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", background: DK.card }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Header — simplified + responsive (Plan v2.2 followup, 2026-04-29).
+          User feedback: "the debt tool was overengineered in terms of options
+          in the header." Reset stays prominent. Save / Load / Link / PDF /
+          Info collapsed under ⋯ dropdown. flexWrap allows graceful stack on
+          narrow viewports; subtitle hides below 600px to keep the row tight. */}
+      <div className="no-print" style={{ borderBottom: `1px solid ${DK.border}`, padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", background: DK.card, flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
           <a href="/" aria-label="BuildFi home" style={{ display: "inline-flex" }}>
             <BuildFiLogo theme={theme} size="sm" accent={DK.accent} />
           </a>
-          <span style={{ fontSize: 12, color: DK.txDim, fontWeight: 500 }}>{fr ? "· Gestion de dettes" : "· Debt Management"}</span>
+          <span style={{ fontSize: 12, color: DK.txDim, fontWeight: 500, whiteSpace: "nowrap" }}>{fr ? "· Dettes" : "· Debt"}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <button onClick={() => {
               if (!confirmReset) { setConfirmReset(true); setTimeout(() => setConfirmReset(false), 3000); }
               else { setDebts([]); setMortgages([]); setIncome(0); setExtraPay(0); setSnowflakeAmt(0); setProv("QC"); setExpReturn(0.06); setCoupleOn(false); setSpouseIncome(0); setSpouseProv("QC"); setSelectedStrategy("avalanche"); setExpandedDebt(-1); setConfirmReset(false); setShowInfo(false); setIncludePrintDetails(false); setHighlightDebt(null); setFocusDebt(null); setFlash(""); localStorage.removeItem("buildfi_debts_v1"); }
@@ -1677,32 +1682,45 @@ export default function DebtTool() {
             style={{ fontSize: 12, padding: "5px 12px", background: confirmReset ? DK.red : "transparent", color: confirmReset ? "#fff" : DK.red, border: `1px solid ${DK.red}${confirmReset ? "" : "40"}`, borderRadius: 6, cursor: "pointer", transition: "all .15s" }}>
             {confirmReset ? (fr ? "Confirmer ?" : "Confirm?") : (fr ? "Réinitialiser" : "Reset")}
           </button>
-          <button onClick={exportData}
-            title={fr ? "Télécharger vos données en fichier JSON (sauvegarde)" : "Download your data as a JSON file (backup)"}
-            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
-            {fr ? "Sauvegarder" : "Save"} ↓
-          </button>
-          <button onClick={() => importRef.current?.click()}
-            title={fr ? "Charger un fichier JSON exporté précédemment" : "Load a previously exported JSON file"}
-            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
-            {fr ? "Charger" : "Load"} ↑
-          </button>
           <input ref={importRef} type="file" accept=".json" onChange={importData} style={{ display: "none" }} />
-          <button onClick={copyShareLink}
-            title={fr ? "G\u00e9n\u00e9rer un lien partageable avec vos donn\u00e9es" : "Generate a shareable link with your data"}
-            style={{ fontSize: 12, padding: "5px 12px", background: DK.accentBg, color: DK.accent, border: `1px solid ${DK.accent}40`, borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
-            {fr ? "Lien" : "Link"}
-          </button>
-          <button onClick={printPDF}
-            title={fr ? "Imprimer / exporter en PDF via le navigateur" : "Print / export to PDF via the browser"}
-            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
-            PDF
-          </button>
-          <button onClick={() => { setInfoTab("notice"); setShowInfo(true); }}
-            title={fr ? "Conformit\u00e9, hypoth\u00e8ses et confidentialit\u00e9" : "Compliance, assumptions, and privacy"}
-            style={{ fontSize: 12, padding: "5px 12px", background: "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer" }}>
-            Info
-          </button>
+          {/*
+            Simplified header (Plan v2.2 followup): Save / Load / Link / PDF /
+            Info collapsed under a single "⋯" dropdown. Reset stays prominent
+            (high-risk action). Theme + lang stay inline (frequently used).
+          */}
+          <div style={{ position: "relative", display: "inline-flex" }}>
+            <button
+              onClick={() => setShowHeaderMenu(s => !s)}
+              title={fr ? "Plus d'actions" : "More actions"}
+              aria-label={fr ? "Plus d'actions" : "More actions"}
+              aria-expanded={showHeaderMenu}
+              style={{ fontSize: 14, padding: "5px 10px", background: showHeaderMenu ? DK.accentBg : "transparent", color: DK.txDim, border: `1px solid ${DK.border}`, borderRadius: 6, cursor: "pointer", fontWeight: 700, lineHeight: 1 }}>⋯</button>
+            {showHeaderMenu ? (
+              <div role="menu" style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, background: DK.card, border: `1px solid ${DK.border}`, borderRadius: 8, padding: 6, boxShadow: "0 8px 24px rgba(0,0,0,.18)", display: "grid", gap: 2, minWidth: 200, zIndex: 30 }}>
+                <button onClick={() => { setShowHeaderMenu(false); exportData(); }}
+                  style={{ fontSize: 13, padding: "8px 12px", background: "transparent", color: DK.tx, border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left" }}>
+                  {fr ? "Sauvegarder ↓" : "Save ↓"}
+                </button>
+                <button onClick={() => { setShowHeaderMenu(false); importRef.current?.click(); }}
+                  style={{ fontSize: 13, padding: "8px 12px", background: "transparent", color: DK.tx, border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left" }}>
+                  {fr ? "Charger ↑" : "Load ↑"}
+                </button>
+                <button onClick={() => { setShowHeaderMenu(false); copyShareLink(); }}
+                  style={{ fontSize: 13, padding: "8px 12px", background: "transparent", color: DK.accent, border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left", fontWeight: 600 }}>
+                  {fr ? "Lien partageable" : "Shareable link"}
+                </button>
+                <button onClick={() => { setShowHeaderMenu(false); printPDF(); }}
+                  style={{ fontSize: 13, padding: "8px 12px", background: "transparent", color: DK.tx, border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left" }}>
+                  {fr ? "Imprimer / PDF" : "Print / PDF"}
+                </button>
+                <button onClick={() => { setShowHeaderMenu(false); setInfoTab("notice"); setShowInfo(true); }}
+                  style={{ fontSize: 13, padding: "8px 12px", background: "transparent", color: DK.tx, border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left" }}>
+                  {fr ? "Info / Conformité" : "Info / Compliance"}
+                </button>
+              </div>
+            ) : null}
+          </div>
+          {/* Lien / PDF / Info now live inside the \u22ef dropdown above. */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             title={fr ? "Changer le thème" : "Toggle theme"}

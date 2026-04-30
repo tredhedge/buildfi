@@ -213,7 +213,7 @@ const COPY = {
     ch6Why:
       "Pourquoi 2 % détruit votre patrimoine : les frais sont chargés sur le solde total, chaque année, peu importe la performance. Si le marché rend 7 % et vos frais sont 2,2 %, votre rendement net est 4,8 %. Sur 200 000 $ investis pendant 30 ans à 6 % brut : un FNB à 0,20 % produit 578 000 $, un fonds à 2,20 % produit 349 000 $. Différence : 229 000 $.",
     ch6Options:
-      "Options à faibles frais au Canada : FNB indiciels (Vanguard, iShares, BMO) 0,05 à 0,25 %. Portefeuilles tout-en-un (VBAL, XBAL, VGRO ~0,24 %) — un seul FNB, rééquilibrage automatique. Robots-conseillers (Wealthsimple Invest, Questwealth) ~0,5 % tout inclus.",
+      "Options à faibles frais au Canada : FNB indiciels (~0,05 à 0,25 % de RFG selon l'émetteur). Portefeuilles tout-en-un (FNB d'allocation) ~0,20 à 0,25 % — un seul FNB, rééquilibrage automatique. Robots-conseillers ~0,5 % tout inclus, sans toucher aux placements vous-même.",
 
     ch7Title: "Les risques qu'on ne mentionne pas",
     ch7Sub: "Longévité, inflation, séquence — les trois ennemis invisibles",
@@ -500,7 +500,7 @@ const COPY = {
     ch6Why:
       "Why 2% destroys your wealth: fees are charged on the total balance, every year, regardless of performance. If the market returns 7% and your fees are 2.2%, your net return is 4.8%. On $200,000 invested for 30 years at 6% gross: ETF at 0.20% produces $578,000, fund at 2.20% produces $349,000. Difference: $229,000.",
     ch6Options:
-      "Low-fee options in Canada: Index ETFs (Vanguard, iShares, BMO) 0.05-0.25%. All-in-one portfolios (VBAL, XBAL, VGRO ~0.24%) — one ETF, automatic rebalancing. Robo-advisors (Wealthsimple Invest, Questwealth) ~0.5% all-in.",
+      "Low-fee options in Canada: Index ETFs (~0.05-0.25% MER depending on issuer). All-in-one asset-allocation ETFs ~0.20-0.25% — one ETF, automatic rebalancing. Robo-advisors ~0.5% all-in, hands-off investing.",
 
     ch7Title: "The risks nobody mentions",
     ch7Sub: "Longevity, inflation, sequence — three invisible enemies",
@@ -717,12 +717,12 @@ function OASCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 10 }}>
-        <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASLost}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.clawback, fr)}</div>
           {data.fullyClawed ? <div style={{ fontSize: 11, color: CL.ink, fontWeight: 700, marginTop: 2 }}>{t.cOASZero}</div> : null}
         </div>
-        <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASNet}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.netOAS, fr)}</div>
         </div>
@@ -730,7 +730,7 @@ function OASCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASTotal}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.lostTotal, fr)}</div>
         </div>
-        <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASRate}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>+{data.effRateAdd}%</div>
         </div>
@@ -778,9 +778,9 @@ function QPPCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.cQPPLife, life, setLife, 1, fr ? "(ans)" : "(yrs)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 10 }}>
-        {col(t.cQPPAt60, d.m60, d.c60, CL.red, CL.redBg)}
+        {col(t.cQPPAt60, d.m60, d.c60, CL.gold, CL.goldBg)}
         {col(t.cQPPAt65, d.m65, d.c65, CL.gold, CL.goldBg)}
-        {col(t.cQPPAt70, d.m70, d.c70, CL.green, CL.greenBg)}
+        {col(t.cQPPAt70, d.m70, d.c70, CL.gold, CL.goldBg)}
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.cQPPNote}</div>
     </div>
@@ -820,15 +820,15 @@ function SplitCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.cIRateB, rateB, setRateB, 1, "(%)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWithout}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.withoutTax, fr)}</div>
         </div>
-        <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWith}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.withTax, fr)}</div>
         </div>
-        <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cISaving}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.savings, fr)}</div>
         </div>
@@ -875,11 +875,11 @@ function MERCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.cMHigh, high, setHigh, 0.05, "(%)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMLowFV}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(lowFV, fr)}</div>
         </div>
-        <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMHighFV}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(highFV, fr)}</div>
         </div>
@@ -937,7 +937,7 @@ function MeltdownCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.cMDTarget, "md-target", target, setTarget, 500, "($)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 10 }}>
-        <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDYears}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{sim.yearsUsed}{sim.yearsUsed < years ? <span style={{ fontSize: 12, fontWeight: 400, color: CL.dim }}> / {years}</span> : null}</div>
         </div>
@@ -945,17 +945,17 @@ function MeltdownCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDBudget}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(budget, fr)}</div>
         </div>
-        <div style={{ background: sim.feasible ? CL.greenBg : CL.redBg, border: `1px solid ${sim.feasible ? CL.green : CL.red}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: sim.feasible ? CL.green : CL.red, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDTotal}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: sim.feasible ? CL.green : CL.red, marginTop: 4 }}>{fCAD(sim.totalWd, fr)}</div>
+        <div style={{ background: CL.s2, border: `1px solid ${CL.line}`, borderRadius: 10, padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDTotal}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(sim.totalWd, fr)}</div>
         </div>
         <div style={{ background: CL.s2, border: `1px solid ${CL.line2}`, borderRadius: 10, padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: CL.dim, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDRemain}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(sim.remaining, fr)}</div>
         </div>
       </div>
-      <div style={{ marginTop: 10, padding: "8px 12px", background: sim.feasible ? CL.greenBg : CL.redBg, borderLeft: `3px solid ${sim.feasible ? CL.green : CL.red}`, borderRadius: 6, fontSize: 12, color: CL.text }}>
-        <strong style={{ color: sim.feasible ? CL.green : CL.red }}>{sim.feasible ? t.cMDFeasible : t.cMDNotFeasible}</strong>
+      <div style={{ marginTop: 10, padding: "8px 12px", background: CL.panel, borderLeft: `3px solid ${CL.gold}`, borderRadius: 6, fontSize: 12, color: CL.text }}>
+        <strong style={{ color: CL.ink }}>{sim.feasible ? t.cMDFeasible : t.cMDNotFeasible}</strong>
       </div>
       <div style={{ marginTop: 8, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.cMDNote}</div>
     </div>
@@ -1241,7 +1241,7 @@ function Guide201Inner() {
           <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
           <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
             {t.mistakes.map((m, i) => (
-              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.red}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m[0]}</div>
                 <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m[1]}</div>
               </div>
