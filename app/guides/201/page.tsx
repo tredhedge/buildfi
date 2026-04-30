@@ -1116,12 +1116,13 @@ function Guide201Inner() {
           <h3 style={{ fontSize: 15, fontWeight: 700, color: CL.ink, margin: "18px 0 10px" }}>{t.ch3Strategies}</h3>
           {/* Numbered strategy cards — gold mono numerals + body. Replaces
               the prior 5-identical-Callout smear with a list that has
-              actual visual rhythm. */}
+              actual visual rhythm. Strip any leading "N. " from the
+              source string since the gold chip already provides the index. */}
           <div style={{ display: "grid", gap: 10 }}>
             {[t.ch3S1, t.ch3S2, t.ch3S3, t.ch3S4, t.ch3S5].map((s, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
                 <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
-                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s}</div>
+                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s.replace(/^\s*\d+\.\s*/, "")}</div>
               </div>
             ))}
           </div>
@@ -1164,7 +1165,7 @@ function Guide201Inner() {
             {[t.ch7Longevity, t.ch7Inflation, t.ch7Sequence].map((s, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
                 <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
-                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s}</div>
+                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s.replace(/^\s*\d+\.\s*/, "")}</div>
               </div>
             ))}
           </div>
