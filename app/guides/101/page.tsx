@@ -12,9 +12,21 @@ import {
   useEditorialBody,
   useEditorialRailScrollSpy,
 } from "@/lib/design/editorial-components";
+import { FISCAL_2026 } from "@/lib/constants/fiscal-2026";
 
 /* Palette + components: shared Editorial system. See docs/DESIGN-SYSTEM.md. */
 const CL = getEditorialPalette();
+
+/*
+  Drift-prone 2026 fiscal numbers come from the verified central source
+  (lib/constants/fiscal-2026.ts). When CRA / Service Canada updates the
+  annual figures, only that file changes — the guides re-render with
+  the new values automatically. f2 = formatted FR with non-breaking
+  spaces and trailing $; f2en = formatted EN with $ prefix.
+*/
+const F2 = FISCAL_2026.federal;
+const f2 = (n: number) => `${Math.round(n).toLocaleString("fr-CA").replace(/[  ]/g, " ")} $`;
+const f2en = (n: number) => `$${Math.round(n).toLocaleString("en-CA")}`;
 
 const fCAD = (v: number, fr: boolean) =>
   new Intl.NumberFormat(fr ? "fr-CA" : "en-CA", {
@@ -47,8 +59,7 @@ const COPY = {
       { n: 5, t: "L'épargne", s: "La cascade pour vos dollars" },
       { n: 6, t: "Vos comptes expliqués", s: "REER, CELI, CELIAPP" },
       { n: 7, t: "Le gouvernement et vous", s: "RRQ, PSV, SRG" },
-      { n: 8, t: "Protéger votre plan", s: "Les assurances essentielles" },
-      { n: 9, t: "Vos prochains repères", s: "5 leviers concrets" },
+      { n: 8, t: "Vos prochains repères", s: "5 leviers concrets" },
     ],
     whereStart: "Où commencer ?",
     whereStartBody:
@@ -73,7 +84,7 @@ const COPY = {
       "Le mot « budget » n'emballe personne. Mais un budget n'est pas une liste de restrictions — c'est un plan qui vous permet de choisir consciemment où va votre argent. La méthode la plus simple : diviser votre revenu net en trois catégories.",
     ch2Tool: "Calculateur — répartition 50/30/20",
     ch2Caution:
-      "ATTENTION — La fuite silencieuse : Le Canadien moyen paie 100 à 200 $/mois en abonnements récurrents (streaming, gym, apps, cloud). C'est 1 200 à 2 400 $/an — l'équivalent de vacances ou d'une année de contribution CELI.",
+      "La fuite silencieuse : le Canadien moyen paie 100 à 200 $/mois en abonnements récurrents (streaming, gym, apps, cloud). C'est 1 200 à 2 400 $/an — l'équivalent de vacances ou d'une année de contribution CELI.",
 
     ch3Title: "La dette — le mur avant l'épargne",
     ch3Sub: "Chaque dollar sur la carte coûte double",
@@ -101,9 +112,9 @@ const COPY = {
       "L'impact en dollars : une différence de cote entre 650 et 760 sur une hypothèque de 400 000 $ peut signifier 0,5 % de plus — soit plus de 45 000 $ en intérêts sur 25 ans.",
     ch4FactorsTitle: "Ce qui fait monter (ou descendre) votre score",
     ch4F1T: "Historique de paiement (~35 %)",
-    ch4F1B: "Payer à temps, toujours. Un retard de 30+ jours peut coûter 50 à 100 points et rester au dossier jusqu'à 6 ans.",
+    ch4F1B: "Un paiement à temps protège la cote ; un retard de 30+ jours peut coûter 50 à 100 points et rester au dossier jusqu'à 6 ans.",
     ch4F2T: "Utilisation du crédit (~30 %)",
-    ch4F2B: "Gardez les soldes sous 30 % de la limite. Carte 10 000 $ → solde sous 3 000 $.",
+    ch4F2B: "Un solde sous 30 % de la limite est typiquement vu favorablement par les bureaux de crédit. Sur une carte de 10 000 $, ça correspond à un solde inférieur à 3 000 $.",
     ch4F3T: "Autres facteurs (~35 %)",
     ch4F3B: "Âge des comptes (ne fermez pas vos plus vieilles cartes), diversité du crédit, enquêtes récentes.",
     ch4Myth: "MYTHE COMMUN — « Maintenir un solde améliore le score. » FAUX. Vous n'avez jamais besoin de payer de l'intérêt pour bâtir du crédit. Payez en entier chaque mois — c'est la meilleure stratégie.",
@@ -125,7 +136,10 @@ const COPY = {
     ch5Emergency:
       "Étape 1 — le fonds d'urgence est la fondation : 3 mois de dépenses essentielles dans un compte facilement accessible (CELI à intérêt élevé). Ce n'est pas un placement — c'est un filet de sécurité qui vous empêche de retomber dans la dette à 20 % quand un imprévu frappe.",
     ch5Stat:
-      "LE SAVIEZ-VOUS ? La moitié des Canadiens (51 %) disent ne pas pouvoir couvrir une dépense imprévue de 1 000 $ sans emprunter (Angus Reid, 2022). Le fonds d'urgence est ce qui sépare la stabilité d'une spirale vers le bas.",
+      "La moitié des Canadiens (51 %) disent ne pas pouvoir couvrir une dépense imprévue de 1 000 $ sans emprunter (Angus Reid, 2022). Le fonds d'urgence est ce qui sépare la stabilité d'une spirale vers le bas.",
+    ch5Protection:
+      "Une protection de revenu complète la cascade : un Canadien sur trois sera invalide 90 jours ou plus avant 65 ans. L'assurance invalidité collective de l'employeur couvre typiquement 60–70 % du salaire ; elle est souvent en place sans que l'employé le sache. Une couverture individuelle complète si le revenu est sous-couvert ou si le statut est travailleur autonome.",
+    ch5ProtectionLink: "Approfondir la protection du revenu (à venir)",
 
     ch6Title: "Vos comptes expliqués",
     ch6Sub: "REER, CELI, CELIAPP — sans jargon",
@@ -134,19 +148,19 @@ const COPY = {
     ch6Tfsa:
       "CELI — Pas de déduction à l'entrée, mais tout ce qui sort est 100 % libre d'impôt. Les retraits ne comptent pas comme revenu — ils n'affectent pas votre PSV, votre SRG, ni vos prestations gouvernementales.",
     ch6Fhsa:
-      "CELIAPP — Combine les avantages du REER et du CELI pour une première maison. Déduction fiscale comme le REER + retraits libres d'impôt comme le CELI. 8 000 $/an, 40 000 $ à vie.",
+      `CELIAPP — Combine les avantages du REER et du CELI pour une première maison. Déduction fiscale comme le REER + retraits libres d'impôt comme le CELI. ${f2(F2.FHSA_ANNUAL)}/an, ${f2(F2.FHSA_LIFETIME)} à vie.`,
     ch6TableTitle: "REER vs CELI vs CELIAPP — l'essentiel",
     ch6TH: ["", "REER", "CELI", "CELIAPP"],
     ch6Rows: [
       ["Cotisation déductible ?", "Oui", "Non", "Oui"],
       ["Retraits imposables ?", "Oui", "Non", "Non*"],
-      ["Max annuel 2026", "<span class=\"bfe-stat\">33 810 $</span>", "<span class=\"bfe-stat\">7 000 $</span>", "<span class=\"bfe-stat\">8 000 $</span>"],
-      ["Droit cumulatif", "Varie", "Jusqu'à <span class=\"bfe-stat\">109 000 $</span>†", "<span class=\"bfe-stat\">40 000 $</span>"],
+      ["Max annuel 2026", `<span class="bfe-stat">${f2(F2.RRSP_LIMIT)}</span>`, `<span class="bfe-stat">${f2(F2.TFSA_LIMIT)}</span>`, `<span class="bfe-stat">${f2(F2.FHSA_ANNUAL)}</span>`],
+      ["Droit cumulatif", "Varie", `Jusqu'à <span class="bfe-stat">${f2(F2.TFSA_CUMULATIVE_MAX)}</span>†`, `<span class="bfe-stat">${f2(F2.FHSA_LIFETIME)}</span>`],
       ["Limite d'âge", "71", "Aucune", "71 / 15 ans"],
       ["Affecte PSV/SRG ?", "Oui (retrait)", "Non", "Non*"],
       ["Idéal pour", "Revenu élevé maintenant → plus bas à la retraite", "Flexibilité libre d'impôt", "Première maison"],
     ],
-    ch6TableNote: "* Retraits CELIAPP libres d'impôt seulement pour l'achat d'une première maison admissible.  † 109 000 $ est le plafond cumulatif maximal — atteint uniquement si vous aviez 18 ans ou plus en 2009 (lancement du CELI). Sinon votre droit personnel est inférieur. Votre droit exact figure dans votre dossier de l'ARC (Mon dossier).",
+    ch6TableNote: `* Retraits CELIAPP libres d'impôt seulement pour l'achat d'une première maison admissible.  † ${f2(F2.TFSA_CUMULATIVE_MAX)} est le plafond cumulatif maximal — atteint uniquement si vous aviez 18 ans ou plus en 2009 (lancement du CELI). Sinon votre droit personnel est inférieur. Votre droit exact figure dans votre dossier de l'ARC (Mon dossier).`,
     ch6QTitle: "REER ou CELI en premier ?",
     ch6QBody:
       "La réponse dépend d'une seule variable : votre taux d'imposition maintenant vs à la retraite.",
@@ -158,60 +172,21 @@ const COPY = {
     ch6Practice:
       "En pratique : si vous gagnez plus de ~55 000 $/an, le REER est généralement avantageux. Sous ce seuil, le CELI est souvent préférable. En cas de doute, le CELI est un bon point de départ — sa flexibilité (retraits libres d'impôt, aucun impact sur les prestations gouvernementales) en fait le compte le plus polyvalent.",
     ch6Trap:
-      "ATTENTION — Le piège du REER démesuré : un REER de 2 M$ à 71 ans = retraits FERR obligatoires d'environ 106 000 $/an. Ce revenu peut déclencher la récupération de la PSV et vous pousser dans un palier fiscal élevé. Le Guide 201 couvre les stratégies pour éviter ce piège.",
+      "Le piège du REER démesuré : un REER de 2 M$ à 71 ans déclenche des retraits FERR minimums d'environ 106 000 $/an (5,28 % à 71 ans). Ce revenu peut suffire à enclencher la récupération de la PSV et à pousser le revenu dans un palier fiscal élevé. Le Guide 201 couvre les stratégies pour gérer ce profil.",
 
     ch7Title: "Le gouvernement et vous",
     ch7Sub: "Ce que vous recevrez — et quand",
     ch7Body:
       "Le système de retraite canadien repose sur trois piliers : le gouvernement, votre employeur (s'il y a lieu), et vous. Commençons par le premier — celui que tout le monde reçoit mais que peu comprennent.",
-    ch7Qpp: "RRQ/RPC — À 60 ans : 640 $/mois. À 65 ans : 1 000 $/mois. À 70 ans : 1 420 $/mois. Le choix est permanent.",
-    ch7Oas: "PSV — Universelle à 65 ans (742 $/mois en 2026). Indexée. Récupérée si le revenu dépasse 95 323 $.",
-    ch7Gis: "SRG — Supplément non imposable pour retraités à faible revenu (jusqu'à 1 109 $/mois). Les retraits CELI ne l'affectent pas. Les retraits REER le réduisent.",
+    ch7Qpp: "RRQ/RPC — Moyenne à 60 ans : ~640 $/mois. À 65 ans : ~1 000 $/mois. À 70 ans : ~1 420 $/mois. Ces chiffres sont des moyennes pour de nouveaux retraités, pas des maximums. Le choix d'âge est permanent.",
+    ch7Oas: `PSV — Universelle à 65 ans (${f2(F2.OAS_MAX_MONTHLY)}/mois en 2026). Indexée trimestriellement. Récupérée si le revenu dépasse ${f2(F2.OAS_CLAWBACK_THR)}.`,
+    ch7Gis: `SRG — Supplément non imposable pour retraités à faible revenu (jusqu'à ${f2(F2.GIS_MAX_SINGLE)}/mois pour une personne seule). Les retraits CELI ne l'affectent pas. Les retraits REER le réduisent.`,
     ch7Quebec:
-      "QUÉBEC vs RESTE DU CANADA — Au Québec : Régime de rentes du Québec (RRQ). Ailleurs : Régime de pensions du Canada (RPC). Les règles sont similaires, mais les montants et les calculs diffèrent légèrement. Si vous avez cotisé dans les deux, vos contributions sont consolidées.",
+      "Québec vs reste du Canada — Au Québec : Régime de rentes du Québec (RRQ). Ailleurs : Régime de pensions du Canada (RPC). Les règles sont similaires, mais les montants et les calculs diffèrent légèrement. Les contributions versées dans les deux régimes sont consolidées au moment de la rente.",
     ch7Nuance:
-      "Le maximum en 2026 à 65 ans est 1 508 $/mois. Mais la moyenne réelle pour les nouveaux retraités est d'environ 900 $/mois. Le choix 60/65/70 est permanent — il affecte votre revenu pour le reste de votre vie. Depuis 2019, le RRQ/RPC est bonifié graduellement — les cohortes plus jeunes recevront davantage.",
+      `Le maximum en 2026 à 65 ans est ${f2(F2.QPP_MAX_MONTHLY)}/mois. La moyenne réelle pour de nouveaux retraités est d'environ 900 $/mois — peu de Canadiens atteignent le maximum (il faut 40 ans de cotisation au plafond). Le choix 60/65/70 est permanent. Depuis 2019, le RRQ/RPC est bonifié graduellement — les cohortes plus jeunes recevront davantage.`,
     ch7OasCaution:
-      "ATTENTION — Récupération de la PSV : revenu net au-delà de 95 323 $ en 2026 ? Le gouvernement récupère 15 ¢ par dollar excédentaire. À ~152 000 $, votre PSV tombe à zéro. Sur 20-25 ans = potentiellement 100 000 $+ en prestations perdues. Le Guide 201 couvre les stratégies de protection.",
-
-    ch8Title: "Protéger votre plan",
-    ch8Sub: "L'assurance qu'on ne peut ignorer",
-    ch8Body:
-      "Un plan financier sans protection est un château de cartes. Si votre revenu disparaissait demain, tout s'effondre. Un Canadien sur trois sera invalide 90 jours ou plus avant 65 ans. L'invalidité est le risque le plus sous-estimé.",
-    ch8DisT: "1. Assurance invalidité",
-    ch8DisB: "Remplace une portion de votre revenu si vous ne pouvez plus travailler. Vérifiez la couverture de votre employeur. Si vous êtes travailleur autonome : priorité absolue.",
-    ch8LifeT: "2. Assurance vie",
-    ch8LifeB: "Essentielle si quelqu'un dépend de votre revenu (conjoint, enfants). Assurance temporaire simple (10 ou 20 ans) = abordable et suffisante pour la plupart des familles. Exemple : homme non-fumeur de 35 ans, 500 000 $ sur 20 ans ≈ 30-45 $/mois.",
-    ch8CritT: "3. Maladies graves",
-    ch8CritB: "Somme forfaitaire si diagnostiqué avec une condition couverte (cancer, AVC, infarctus). Couvre les dépenses non-médicales : hypothèque, épicerie, transport durant le rétablissement.",
-    ch8Check:
-      "BON À SAVOIR — Vérifiez avant d'acheter : de nombreux Canadiens sont déjà couverts par leur employeur sans le savoir. Avant d'acheter une assurance individuelle, vérifiez votre couverture collective — elle pourrait couvrir 60-70 % de votre salaire en cas d'invalidité.",
-
-    /* 5 costliest mistakes */
-    mistakesTitle: "Les 5 erreurs les plus coûteuses",
-    mistakesIntro: "Communes, coûteuses et évitables. Si vous ne retenez qu'une chose de ce guide, retenez cette liste.",
-    mistakes: [
-      {
-        t: "1. Ignorer la contribution équivalente de l'employeur",
-        b: "Si votre employeur offre 50 % d'équivalence sur votre REER, ne pas cotiser c'est abandonner un rendement instantané de 50 %. Un des rares avantages financiers sans risque de marché.",
-      },
-      {
-        t: "2. Payer seulement le minimum sur la carte de crédit",
-        b: "Sur 5 000 $ à 19,99 %, le paiement minimum coûte 12 000 $ en intérêts et 30 ans. Un 200 $/mois fixe : 1 500 $ en intérêts et 2 ans 8 mois. L'écart est énorme.",
-      },
-      {
-        t: "3. Attendre « le bon moment » pour investir",
-        b: "Le meilleur moment était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui. Chronométrer le bas du marché est impossible — même les pros n'y arrivent pas. Un virement automatique mensuel élimine la décision.",
-      },
-      {
-        t: "4. Oublier les abonnements récurrents",
-        b: "Le Canadien moyen dépense plus de 200 $/mois en abonnements. Parcourez vos 3 derniers relevés. Chaque 15 $/mois éliminé = 180 $/an → investi 30 ans à 7 % = 17 000 $.",
-      },
-      {
-        t: "5. Garder un fonds à 2,2 % de frais pendant 30 ans",
-        b: "Sur 200 000 $, l'écart entre 0,25 % (FNB indiciel) et 2,20 % (fonds commun) sur 30 ans représente plus de 200 000 $. Vos frais de gestion sont le facteur le plus prévisible de votre rendement à long terme — et le seul que vous contrôlez entièrement.",
-      },
-    ],
+      `Récupération de la PSV : un revenu net au-delà de ${f2(F2.OAS_CLAWBACK_THR)} en 2026 déclenche une récupération de 15 ¢ par dollar excédentaire. Autour de ${f2(F2.OAS_ZERO_POINT_65)}, la PSV tombe à zéro. Sur 20-25 ans, l'enjeu peut dépasser 100 000 $ en prestations perdues. Le Guide 201 couvre les stratégies de protection.`,
 
     ctaTitle: "Vous connaissez les règles. Comment s'appliquent-elles à votre situation ?",
     ctaBody:
@@ -299,8 +274,7 @@ const COPY = {
       { n: 5, t: "Savings", s: "The cascade for your dollars" },
       { n: 6, t: "Your accounts explained", s: "RRSP, TFSA, FHSA" },
       { n: 7, t: "The government and you", s: "CPP, OAS, GIS" },
-      { n: 8, t: "Protecting your plan", s: "Insurance you can't ignore" },
-      { n: 9, t: "Your next markers", s: "5 concrete levers" },
+      { n: 8, t: "Your next markers", s: "5 concrete levers" },
     ],
     whereStart: "Where to start?",
     whereStartBody:
@@ -325,7 +299,7 @@ const COPY = {
       "The word 'budget' doesn't excite anyone. But a budget isn't a list of restrictions — it's a plan that lets you consciously choose where your money goes. The simplest method: split your net income into three categories.",
     ch2Tool: "Calculator — 50/30/20 allocation",
     ch2Caution:
-      "CAUTION — The silent leak: The average Canadian pays $100 to $200/month in recurring subscriptions. That's $1,200 to $2,400/year — the equivalent of a vacation or a year of TFSA contributions.",
+      "The silent leak: the average Canadian pays $100 to $200/month in recurring subscriptions. That's $1,200 to $2,400/year — the equivalent of a vacation or a year of TFSA contributions.",
 
     ch3Title: "Debt — the wall before savings",
     ch3Sub: "Every dollar on your card costs double",
@@ -353,9 +327,9 @@ const COPY = {
       "The dollar impact: a score difference between 650 and 760 on a $400,000 mortgage can mean 0.5% higher rate — over $45,000 in extra interest over 25 years.",
     ch4FactorsTitle: "What makes your score go up (or down)",
     ch4F1T: "Payment history (~35%)",
-    ch4F1B: "Pay on time, always. A 30+ day late payment can cost 50-100 points and stay on file for up to 6 years.",
+    ch4F1B: "Paying on time protects the score; a 30+ day late payment can cost 50–100 points and stay on file for up to 6 years.",
     ch4F2T: "Credit utilization (~30%)",
-    ch4F2B: "Keep balances under 30% of the limit. $10,000 card → keep balance under $3,000.",
+    ch4F2B: "A balance below 30% of the limit is typically viewed favourably by credit bureaus. On a $10,000 card, that means keeping the balance under $3,000.",
     ch4F3T: "Other factors (~35%)",
     ch4F3B: "Account age (don't close your oldest cards), credit mix, number of recent inquiries.",
     ch4Myth: "COMMON MYTH — \"Carrying a balance improves your score.\" FALSE. You never need to pay interest to build credit. Pay your balance in full every month — that's the best strategy.",
@@ -377,7 +351,10 @@ const COPY = {
     ch5Emergency:
       "Step 1 — the emergency fund is the foundation: 3 months of essential expenses in a readily accessible account (TFSA high-interest savings). This isn't an investment — it's a safety net that keeps you from falling back into 20% debt when an emergency hits.",
     ch5Stat:
-      "DID YOU KNOW? Half of Canadians (51%) say they can't cover an unexpected $1,000 expense without borrowing (Angus Reid, 2022). The emergency fund is what separates stability from a downward spiral.",
+      "Half of Canadians (51%) say they can't cover an unexpected $1,000 expense without borrowing (Angus Reid, 2022). The emergency fund is what separates stability from a downward spiral.",
+    ch5Protection:
+      "Income protection completes the cascade: one in three Canadians will be disabled 90 days or more before age 65. Group disability insurance from an employer typically covers 60–70% of salary; many workers carry it without knowing. Individual coverage fills the gap if income is under-protected or if the status is self-employed.",
+    ch5ProtectionLink: "More on income protection (coming soon)",
 
     ch6Title: "Your accounts explained",
     ch6Sub: "RRSP, TFSA, FHSA — no jargon",
@@ -386,19 +363,19 @@ const COPY = {
     ch6Tfsa:
       "TFSA — No tax deduction going in, but everything that comes out is 100% tax-free. Withdrawals don't count as income — they don't affect your OAS, your GIS, or your government benefits.",
     ch6Fhsa:
-      "FHSA — Combines the advantages of the RRSP and TFSA for a first home. Tax deduction like the RRSP + tax-free withdrawals like the TFSA. $8,000/year, $40,000 lifetime.",
+      `FHSA — Combines the advantages of the RRSP and TFSA for a first home. Tax deduction like the RRSP + tax-free withdrawals like the TFSA. ${f2en(F2.FHSA_ANNUAL)}/year, ${f2en(F2.FHSA_LIFETIME)} lifetime.`,
     ch6TableTitle: "RRSP vs TFSA vs FHSA — the essentials",
     ch6TH: ["", "RRSP", "TFSA", "FHSA"],
     ch6Rows: [
       ["Contribution deductible?", "Yes", "No", "Yes"],
       ["Withdrawals taxable?", "Yes", "No", "No*"],
-      ["Annual max 2026", "<span class=\"bfe-stat\">$33,810</span>", "<span class=\"bfe-stat\">$7,000</span>", "<span class=\"bfe-stat\">$8,000</span>"],
-      ["Cumulative room", "Varies", "Up to <span class=\"bfe-stat\">$109,000</span>†", "<span class=\"bfe-stat\">$40,000</span>"],
+      ["Annual max 2026", `<span class="bfe-stat">${f2en(F2.RRSP_LIMIT)}</span>`, `<span class="bfe-stat">${f2en(F2.TFSA_LIMIT)}</span>`, `<span class="bfe-stat">${f2en(F2.FHSA_ANNUAL)}</span>`],
+      ["Cumulative room", "Varies", `Up to <span class="bfe-stat">${f2en(F2.TFSA_CUMULATIVE_MAX)}</span>†`, `<span class="bfe-stat">${f2en(F2.FHSA_LIFETIME)}</span>`],
       ["Age limit", "71", "None", "71 / 15 yrs"],
       ["Affects OAS/GIS?", "Yes (withdrawal)", "No", "No*"],
       ["Ideal for", "High income now → lower at retirement", "Flexibility tax-free", "First home"],
     ],
-    ch6TableNote: "* FHSA withdrawals are tax-free only for the purchase of a qualifying first home.  † $109,000 is the maximum cumulative room — only reached if you were 18 or older in 2009 (the year the TFSA launched). Otherwise your personal room is lower. Your exact room is in your CRA file (My Account).",
+    ch6TableNote: `* FHSA withdrawals are tax-free only for the purchase of a qualifying first home.  † ${f2en(F2.TFSA_CUMULATIVE_MAX)} is the maximum cumulative room — only reached if you were 18 or older in 2009 (the year the TFSA launched). Otherwise your personal room is lower. Your exact room is in your CRA file (My Account).`,
     ch6QTitle: "RRSP or TFSA first?",
     ch6QBody:
       "The answer depends on a single variable: your tax rate now vs at retirement.",
@@ -410,59 +387,21 @@ const COPY = {
     ch6Practice:
       "In practice: if you earn more than ~$55,000/year, the RRSP is generally advantageous. Below that, the TFSA is often preferable. When in doubt: the TFSA is often a good starting point — its flexibility (tax-free withdrawals, no impact on government benefits) makes it the most versatile account.",
     ch6Trap:
-      "CAUTION — The oversized RRSP trap: a $2M RRSP at age 71 = mandatory RRIF withdrawals of ~$106,000/year. This income can trigger OAS clawback and push you into a high tax bracket. Guide 201 covers strategies to avoid this trap.",
+      "The oversized RRSP trap: a $2M RRSP at age 71 triggers mandatory minimum RRIF withdrawals of ~$106,000/year (5.28% at 71). This income alone can be enough to enclench OAS clawback and push the reader into a high tax bracket. Guide 201 covers strategies for managing this profile.",
 
     ch7Title: "The government and you",
     ch7Sub: "What you'll receive — and when",
     ch7Body:
       "Canada's retirement system rests on three pillars: the government, your employer (if applicable), and you. Let's start with the first — the one everyone receives but few understand.",
-    ch7Qpp: "QPP/CPP — At 60: $640/mo. At 65: $1,000/mo. At 70: $1,420/mo. The choice is permanent.",
-    ch7Oas: "OAS — Universal at 65 ($742/month in 2026). Indexed. Clawed back if income exceeds $95,323.",
-    ch7Gis: "GIS — Non-taxable supplement for low-income retirees (up to $1,109/month). TFSA withdrawals don't affect it. RRSP withdrawals reduce it.",
+    ch7Qpp: "QPP/CPP — Average at 60: ~$640/mo. At 65: ~$1,000/mo. At 70: ~$1,420/mo. These are averages for new retirees, not maximums. The age choice is permanent.",
+    ch7Oas: `OAS — Universal at 65 (${f2en(F2.OAS_MAX_MONTHLY)}/month in 2026). Indexed quarterly. Clawed back if net income exceeds ${f2en(F2.OAS_CLAWBACK_THR)}.`,
+    ch7Gis: `GIS — Non-taxable supplement for low-income retirees (up to ${f2en(F2.GIS_MAX_SINGLE)}/month for a single person). TFSA withdrawals don't affect it. RRSP withdrawals reduce it.`,
     ch7Quebec:
-      "QUEBEC vs REST OF CANADA — In Quebec: Quebec Pension Plan (QPP). Elsewhere: Canada Pension Plan (CPP). The rules are similar, but amounts and calculations differ slightly. If you've worked in both places, your contributions are consolidated.",
+      "Quebec vs rest of Canada — In Quebec: Quebec Pension Plan (QPP). Elsewhere: Canada Pension Plan (CPP). The rules are similar, but amounts and calculations differ slightly. Contributions paid into both plans are consolidated when the pension begins.",
     ch7Nuance:
-      "The maximum pension in 2026 at age 65 is $1,508/month. But the actual average for new retirees is about $900/month. The choice of 60/65/70 is permanent — it affects your income for the rest of your life. Since 2019, the QPP/CPP has been gradually enhanced — younger generations will receive more.",
+      `The 2026 maximum at age 65 is ${f2en(F2.QPP_MAX_MONTHLY)}/month. The actual average for new retirees is around $900/month — few Canadians reach the maximum (it requires 40 years of contribution at the ceiling). The 60/65/70 choice is permanent. Since 2019, the QPP/CPP has been gradually enhanced — younger cohorts will receive more.`,
     ch7OasCaution:
-      "CAUTION — OAS clawback: Net income above $95,323 in 2026? The government claws back 15¢ per dollar above. Around $152,000, your OAS drops to zero. Over 20-25 years = potentially $100,000+ in lost benefits. Guide 201 covers protection strategies.",
-
-    ch8Title: "Protecting your plan",
-    ch8Sub: "The insurance you can't ignore",
-    ch8Body:
-      "A financial plan without protection is a house of cards. If your income disappeared tomorrow, everything collapses. One in three Canadians will be disabled for 90 days or more before age 65. Disability is the most underestimated risk.",
-    ch8DisT: "1. Disability insurance",
-    ch8DisB: "Replaces part of your income if you can no longer work. Check your employer coverage. If you're self-employed: this should be a top priority.",
-    ch8LifeT: "2. Life insurance",
-    ch8LifeB: "Essential if someone depends on your income (spouse, children). Simple term (10 or 20 years) = affordable and sufficient for most families. Example: 35-year-old non-smoking male, $500,000 over 20 years ≈ $30-45/month.",
-    ch8CritT: "3. Critical illness",
-    ch8CritB: "Lump sum if diagnosed with a covered condition (cancer, stroke, heart attack). Covers non-medical expenses: mortgage, groceries, transportation during recovery.",
-    ch8Check:
-      "GOOD TO KNOW — Check before you buy: many Canadians are already covered by their employer without knowing. Before buying individual insurance, check your group coverage — it could cover 60-70% of your salary in case of disability.",
-
-    mistakesTitle: "The 5 most costly mistakes",
-    mistakesIntro: "Common, expensive, avoidable. If you remember just one thing from this guide, make it this list.",
-    mistakes: [
-      {
-        t: "1. Ignoring the employer match",
-        b: "If your employer offers 50% match on your RRSP contributions, not contributing means giving up an instant 50% return. One of the few financial advantages with zero market risk.",
-      },
-      {
-        t: "2. Paying only the minimum on credit cards",
-        b: "On $5,000 at 19.99%, the minimum payment costs you $12,000 in interest and 30 years. A fixed $200/month: $1,500 in interest and 2 years 8 months. The difference is enormous.",
-      },
-      {
-        t: "3. Waiting for \"the right time\" to invest",
-        b: "The best time to invest was 20 years ago. The second best time is today. Timing the market bottom is impossible — even professionals can't do it. An automatic monthly transfer eliminates the decision.",
-      },
-      {
-        t: "4. Forgetting recurring subscriptions",
-        b: "The average Canadian spends over $200/month on subscriptions. Go through your last 3 statements. Every $15/month eliminated = $180/year → invested 30 years at 7% = $17,000.",
-      },
-      {
-        t: "5. Keeping a 2.2% fee portfolio for 30 years",
-        b: "On $200,000, the difference between 0.25% (index ETF) and 2.20% (mutual fund) over 30 years represents over $200,000. Your management fees are the most predictable factor in your long-term return — and the only one you fully control.",
-      },
-    ],
+      `OAS clawback: net income above ${f2en(F2.OAS_CLAWBACK_THR)} in 2026 triggers a 15¢-per-extra-dollar clawback. Around ${f2en(F2.OAS_ZERO_POINT_65)}, OAS drops to zero. Over 20-25 years, the cumulative loss can exceed $100,000. Guide 201 covers protection strategies.`,
 
     ctaTitle: "You know the rules. How do they apply to YOUR situation?",
     ctaBody:
@@ -817,8 +756,6 @@ function Guide101Inner() {
           {t.toc.map((item) => (
             <a key={item.n} href={`#ch${item.n}`}>{item.n}. {item.t}</a>
           ))}
-          <a href="#mistakes">{fr ? "Erreurs coûteuses" : "Costly mistakes"}</a>
-          <a href="#ch9">{fr ? "Plan d'action" : "Action plan"}</a>
         </nav>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
           <a className="bfe-btn-glass" href={t.pdfHref}>📄 {t.pdfLabel}</a>
@@ -836,7 +773,7 @@ function Guide101Inner() {
           <p style={{ fontSize: 19, lineHeight: 1.5, color: CL.muted, maxWidth: 640, margin: 0, fontFamily: 'var(--font-playfair),Georgia,serif', fontStyle: "italic" }}>{t.tagline}</p>
           <div className="bfe-cover-actions" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a className="bfe-btn-gold" href="#ch1">{fr ? "Commencer la lecture" : "Start reading"}</a>
-            <a className="bfe-btn-glass" href="#ch9">{fr ? "Voir le plan d'action" : "See action plan"}</a>
+            <a className="bfe-btn-glass" href="#ch8">{fr ? "Voir les leviers concrets" : "See concrete levers"}</a>
           </div>
         </section>
 
@@ -938,6 +875,15 @@ function Guide101Inner() {
           <ToolCard title={t.ch5Tool}>
             <CompoundCalc fr={fr} t={t} />
           </ToolCard>
+          {/* Income protection — observational paragraph absorbed into ch5
+              after the standalone insurance ch8 was retired. A dedicated
+              /guides/protection page is the future home for the deep dive. */}
+          <Note tone="info" kicker={fr ? "Protection du revenu" : "Income protection"}>
+            <div>{t.ch5Protection}</div>
+            <div style={{ marginTop: 8 }}>
+              <Link href="/guides/protection" style={{ color: CL.gold, textDecoration: "underline", fontSize: 13 }}>{t.ch5ProtectionLink}</Link>
+            </div>
+          </Note>
         </Section>
 
         {/* Ch 6 */}
@@ -1010,53 +956,13 @@ function Guide101Inner() {
           <Note tone="caution" kicker={fr ? "Récupération PSV" : "OAS clawback"}>{t.ch7OasCaution}</Note>
         </Section>
 
-        {/* Ch 8 */}
-        <Section fr={fr} num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub}>
-          <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch8Body}</p>
-
-          <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
-            <div style={{ background: CL.s2, borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{t.ch8DisT}</div>
-              <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.5 }}>{t.ch8DisB}</div>
-            </div>
-            <div style={{ background: CL.s2, borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{t.ch8LifeT}</div>
-              <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.5 }}>{t.ch8LifeB}</div>
-            </div>
-            <div style={{ background: CL.s2, borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{t.ch8CritT}</div>
-              <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.5 }}>{t.ch8CritB}</div>
-            </div>
-          </div>
-
-          <Note tone="rule" kicker={fr ? "Vérification" : "Check"}>{t.ch8Check}</Note>
-        </Section>
-
-        {/* Costliest mistakes — single voice, paper cards with thin red bar */}
-        <section id="mistakes" className="bfe-section">
-          <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
-          <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
-          <div style={{ fontSize: 16, color: CL.muted, fontStyle: "italic", marginTop: -4, marginBottom: 18 }}>{t.mistakesIntro}</div>
-          {/* Numbered mistake cards — gold mono chip + title + body. Strip
-              any leading "N. " from m.t since the chip already provides
-              the index. Matches the pattern used by guide 201 ch3/ch7. */}
-          <div style={{ display: "grid", gap: 10 }}>
-            {t.mistakes.map((m, i) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "14px 18px" }}>
-                <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m.t.replace(/^\s*\d+\.\s*/, "")}</div>
-                  <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m.b}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Ch 9 — Action + CTA */}
-        <Section fr={fr} num={9} id="ch9" title={t.actionsTitle} sub={t.quote2}>
+        {/* Ch 8 — observational levers (was ch9 before insurance + mistakes
+            sections were retired). Insurance now lives as a paragraph in
+            ch5; mistakes block dropped (chapter cautions already cover
+            the same content, redundancy was a real issue). */}
+        <Section fr={fr} num={8} id="ch8" title={t.actionsTitle} sub={t.quote2}>
           {/* Numbered lever cards — matches the gold-chip pattern used in
-              guide 201 ch3/ch7 and the mistakes block above. */}
+              guide 201 ch3/ch7. */}
           <div style={{ display: "grid", gap: 10, margin: "6px 0 18px" }}>
             {t.actions.map((a, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
