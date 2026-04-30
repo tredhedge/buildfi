@@ -250,7 +250,7 @@ const COPY = {
     ch9Body:
       "La règle du 4 % est connue : retirer 4 % du portefeuille la première année, puis ajuster à l'inflation. Simple mais rigide. Basée sur des données américaines (1926-1995) — des décennies où les taux obligataires étaient plus élevés et les valorisations boursières plus basses. Plusieurs chercheurs estiment le taux sécuritaire actuel à 3,3-3,8 %. Si le marché chute de 40 % et que vous retirez le même montant, vous épuisez votre portefeuille plus vite.",
     ch9Principle:
-      "Le principe des guardrails : fixez une bande autour de votre taux de retrait cible. Par exemple cible 4,5 %, plancher 3,5 %, plafond 5,5 %. Si votre portefeuille performe bien et que le taux effectif tombe sous 3,5 %, vous augmentez les retraits. S'il dépasse 5,5 %, vous réduisez temporairement.",
+      "Le principe des guardrails : une bande autour du taux de retrait cible. Par exemple cible 4,5 %, plancher 3,5 %, plafond 5,5 %. Si le portefeuille performe bien et que le taux effectif tombe sous 3,5 %, les retraits peuvent augmenter. S'il dépasse 5,5 %, ils peuvent être réduits temporairement. La méthode reste flexible : aucun seuil n'est imposé.",
     ch9Example:
       "EXEMPLE — Portefeuille 800 k$. Retrait initial 36 k$/an (4,5 %). Après krach de 25 %, portefeuille à 600 k$. Taux effectif : 6,0 % (au-dessus du plafond). Action : réduire à 33 k$/an. Quand le portefeuille remonte à 800 k$+, retour à la normale.",
 
@@ -261,11 +261,11 @@ const COPY = {
     ch10DPA:
       "DPA — Avantage à double tranchant : la DPA réduit votre revenu imposable chaque année, typiquement 4 % du solde déclinant (catégorie 1). Mais à la vente, toute la DPA accumulée est « récupérée » et imposée comme revenu ordinaire — pas comme gain en capital. 100 % d'inclusion, à votre taux marginal complet.",
     ch10Timing:
-      "Vendre avant la retraite (salaire comme seul revenu) garde le gain dans un palier prévisible. Vendre après, quand RRQ + PSV + FERR s'empilent, pousse le revenu dans les plus hauts paliers et déclenche la récupération PSV. Stratégie optimale : planifier la vente dans une année « creuse fiscale » — entre la fin de l'emploi et le début de la RRQ/RPC, ou durant la fenêtre de meltdown REER.",
+      "Vendre avant la retraite (salaire comme seul revenu) garde le gain dans un palier prévisible. Vendre après, quand RRQ + PSV + FERR s'empilent, pousse le revenu dans les plus hauts paliers et peut déclencher la récupération PSV. Une avenue qui minimise typiquement la facture fiscale : une vente cadrée dans une année « creuse fiscale » — entre la fin de l'emploi et le début de la RRQ/RPC, ou durant la fenêtre de meltdown REER.",
     ch10Capital:
       "À NOTER — Taux d'inclusion des gains en capital : depuis juin 2024, le taux passe de 50 % à 66,67 % au-delà de 250 000 $ de gains annuels pour les particuliers. Pour les sociétés, 66,67 % dès le premier dollar.",
     ch10Smith:
-      "La manoeuvre Smith — transformer un prêt hypothécaire en déduction : vous remboursez votre hypothèque normalement. Chaque paiement libère de la place sur votre marge de crédit hypothécaire (HELOC). Vous remboursez immédiatement le même montant sur la HELOC. Vous investissez dans des placements produisant un revenu imposable. L'intérêt HELOC devient déductible. RISQUES : levier financier, dépendance aux marchés, possible contestation ARC si le lien n'est pas clair.",
+      "La manoeuvre Smith — transformer un prêt hypothécaire en déduction. Mécanique : l'hypothèque est remboursée normalement. Chaque paiement libère de la place sur la marge de crédit hypothécaire (HELOC). Le même montant est immédiatement réemprunté sur la HELOC et investi dans des placements produisant un revenu imposable. L'intérêt HELOC devient alors déductible. RISQUES : levier financier, dépendance aux marchés, possible contestation ARC si le lien revenu-emprunt n'est pas clair.",
 
     ch11Title: "La société par actions et la retraite",
     ch11Sub: "CCPC, extraction et optimisation",
@@ -298,8 +298,8 @@ const COPY = {
       "Ce guide vous a donné le cadre conceptuel. Votre Rapport transforme ça en plan numéroté, adapté à votre province, vos comptes, votre couple et vos propriétés. Retrait optimisé, timing RRQ/PSV, impact des frais, tests de stress, 5 000 simulations Monte Carlo.",
     ctaBtn: "Obtenir mon Bilan 360 — 29,99 $",
     ctaHref: "/bilan-360",
-    ctaBundle: "Bundle Bilan + Planner — 49,99 $",
-    ctaBundleHref: "/bilan-360?bundle=1",
+    ctaPlanner: "Planner + 5 rapports — 69,99 $",
+    ctaPlannerHref: "/acheter-planner",
 
     quote:
       "« Optimiser, ce n'est pas spéculer. C'est payer le juste impôt — pas un dollar de plus. »",
@@ -530,7 +530,7 @@ const COPY = {
     ch9Body:
       "The 4% rule is well known: withdraw 4% of your portfolio the first year, then adjust for inflation. Simple but rigid. Based on US historical data (1926-1995) — decades when bond yields were higher and stock valuations lower than today. Several researchers estimate a safe current rate at 3.3-3.8%. If the market drops 40% and you withdraw the same amount, you deplete your portfolio faster.",
     ch9Principle:
-      "The guardrails principle: set a band around your target withdrawal rate. For example: target 4.5%, floor 3.5%, ceiling 5.5%. If your portfolio performs well and the effective rate drops below 3.5%, increase withdrawals. If above 5.5%, temporarily reduce.",
+      "The guardrails principle: a band around the target withdrawal rate. For example, target 4.5%, floor 3.5%, ceiling 5.5%. If the portfolio performs well and the effective rate drops below 3.5%, withdrawals can increase. If it climbs above 5.5%, they can be reduced temporarily. The method stays flexible: no threshold is imposed.",
     ch9Example:
       "EXAMPLE — Portfolio $800K. Initial withdrawal $36K/year (4.5%). After a 25% crash, portfolio at $600K. Effective rate: 6.0% (above ceiling). Action: reduce to $33K/year. When portfolio recovers to $800K+, return to normal.",
 
@@ -541,11 +541,11 @@ const COPY = {
     ch10DPA:
       "CCA — Double-edged tax advantage: CCA reduces your taxable income each year, typically at 4% of declining balance (Class 1). But upon sale, all accumulated CCA is \"recaptured\" and taxed as ordinary income — not capital gain. 100% inclusion, at your full marginal rate.",
     ch10Timing:
-      "Selling before retirement (salary as only income) keeps the gain in a predictable bracket. Selling after, when QPP + OAS + RRIF stack, pushes income into top brackets and triggers OAS clawback. Optimal: plan the sale in a \"tax trough\" year — between end of employment and start of QPP/CPP, or during the RRSP meltdown window.",
+      "Selling before retirement (salary as the only income) keeps the gain in a predictable bracket. Selling after, when QPP + OAS + RRIF stack, pushes income into top brackets and can trigger OAS clawback. An avenue that typically minimizes the tax bill: framing the sale in a \"tax-trough\" year — between end of employment and start of QPP/CPP, or during the RRSP meltdown window.",
     ch10Capital:
       "NOTE — Capital gains inclusion rate: since June 2024, the rate rises from 50% to 66.67% above $250,000 in annual gains for individuals. For corporations, 66.67% from the first dollar.",
     ch10Smith:
-      "Smith Manoeuvre — converting your mortgage into a deduction: you repay your mortgage normally. Each payment frees room on your home equity line of credit (HELOC). You immediately re-borrow on the HELOC. You invest in income-producing investments. HELOC interest becomes deductible. RISKS: leverage, market dependency, CRA may challenge if income link isn't clear.",
+      "Smith Manoeuvre — converting a mortgage into a deduction. Mechanics: the mortgage is repaid normally. Each payment frees room on the home equity line of credit (HELOC). The same amount is immediately re-borrowed on the HELOC and invested in income-producing investments. HELOC interest then becomes deductible. RISKS: leverage, market dependency, CRA may challenge if the income link isn't clear.",
 
     ch11Title: "The incorporated business and retirement",
     ch11Sub: "CCPC, extraction and optimization",
@@ -578,8 +578,8 @@ const COPY = {
       "This guide gave you the conceptual framework. Your Report turns it into a numbered plan, tailored to your province, your accounts, your couple and your properties. Optimized withdrawal, QPP/OAS timing, fee impact, stress tests, 5,000 Monte Carlo simulations.",
     ctaBtn: "Get my Bilan 360 — $29.99",
     ctaHref: "/bilan-360",
-    ctaBundle: "Bundle Bilan + Planner — $49.99",
-    ctaBundleHref: "/bilan-360?bundle=1",
+    ctaPlanner: "Planner + 5 reports — $69.99",
+    ctaPlannerHref: "/acheter-planner",
 
     quote:
       "\"Optimization isn't speculation. It's paying the right amount of tax — not a dollar more.\"",
@@ -1102,10 +1102,10 @@ function Guide201Inner() {
           </div>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6 }}>{t.ch2Sources}</p>
           <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-            <Callout color="red">{t.ch2Dividend}</Callout>
-            <Callout color="green">{t.ch2Credit}</Callout>
-            <Callout color="gold">{t.ch2Effective}</Callout>
-            <Callout color="red">{t.ch2GISTrap}</Callout>
+            <Note tone="caution" kicker={fr ? "Dividendes — piège de la majoration" : "Dividends — gross-up trap"}>{t.ch2Dividend}</Note>
+            <Note tone="check" kicker={fr ? "Crédit pour revenu de pension" : "Pension income credit"}>{t.ch2Credit}</Note>
+            <Note tone="rule" kicker={fr ? "Taux marginal effectif" : "Effective marginal rate"}>{t.ch2Effective}</Note>
+            <Note tone="caution" kicker={fr ? "Zone SRG — piège fiscal" : "GIS zone — tax trap"}>{t.ch2GISTrap}</Note>
           </div>
         </Section>
 
@@ -1207,24 +1207,24 @@ function Guide201Inner() {
           <Callout color="gold">{t.ch9Example}</Callout>
         </Section>
 
-        {/* Ch 10 */}
+        {/* Ch 10 — kickered Notes for visual rhythm (was 4-Callout smear). */}
         <Section fr={fr} num={10} id="ch10" title={t.ch10Title} sub={t.ch10Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 10` : `Bonus 301 · Chapter 10`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch10Body}</p>
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            <Callout color="red">{t.ch10DPA}</Callout>
-            <Callout color="gold">{t.ch10Timing}</Callout>
-            <Callout color="green">{t.ch10Capital}</Callout>
-            <Callout color="blue">{t.ch10Smith}</Callout>
+            <Note tone="caution" kicker={fr ? "DPA — récupération à la vente" : "CCA — recapture on sale"}>{t.ch10DPA}</Note>
+            <Note tone="rule" kicker={fr ? "Timing de vente" : "Sale timing"}>{t.ch10Timing}</Note>
+            <Note tone="info" kicker={fr ? "Gains en capital — taux d'inclusion" : "Capital gains — inclusion rate"}>{t.ch10Capital}</Note>
+            <Note tone="caution" kicker={fr ? "Manoeuvre Smith — risques" : "Smith Manoeuvre — risks"}>{t.ch10Smith}</Note>
           </div>
         </Section>
 
-        {/* Ch 11 */}
+        {/* Ch 11 — kickered Notes for visual rhythm. */}
         <Section fr={fr} num={11} id="ch11" title={t.ch11Title} sub={t.ch11Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 11` : `Bonus 301 · Chapter 11`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch11Body}</p>
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            <Callout color="red">{t.ch11SBD}</Callout>
-            <Callout color="gold">{t.ch11Extract}</Callout>
-            <Callout color="blue">{t.ch11RDTOH}</Callout>
+            <Note tone="caution" kicker={fr ? "Limite SBD — palier" : "SBD limit — bracket"}>{t.ch11SBD}</Note>
+            <Note tone="rule" kicker={fr ? "Extraction — trois couches" : "Extraction — three layers"}>{t.ch11Extract}</Note>
+            <Note tone="info" kicker={fr ? "IMRTD — récupération différée" : "RDTOH — deferred refund"}>{t.ch11RDTOH}</Note>
           </div>
         </Section>
 
@@ -1251,7 +1251,7 @@ function Guide201Inner() {
 
         {/* Pull quote */}
         <section className="bfe-section" style={{ textAlign: "center", border: "none", boxShadow: "none", background: "transparent", padding: "8px 20px" }}>
-          <div style={{ fontSize: 22, fontStyle: "italic", color: CL.ink, maxWidth: 720, margin: "0 auto", lineHeight: 1.5, fontFamily: 'var(--font-playfair),Georgia,serif' }}>"{t.quote}"</div>
+          <div style={{ fontSize: 22, fontStyle: "italic", color: CL.ink, maxWidth: 720, margin: "0 auto", lineHeight: 1.5, fontFamily: 'var(--font-playfair),Georgia,serif' }}>{t.quote}</div>
         </section>
 
         {/* CTA — single dark island */}
@@ -1261,7 +1261,7 @@ function Guide201Inner() {
           <p style={{ fontSize: 15, color: "rgba(255,255,255,.78)", margin: "0 0 18px", lineHeight: 1.55 }}>{t.ctaBody}</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <a href={t.ctaHref} className="bfe-btn-gold">{t.ctaBtn}</a>
-            <a href={t.ctaBundleHref} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 46, padding: "0 18px", borderRadius: 999, color: "#fff", border: "1px solid rgba(255,255,255,.35)", textDecoration: "none", fontWeight: 700 }}>{t.ctaBundle}</a>
+            <a href={t.ctaPlannerHref} className="bfe-btn-glass">{t.ctaPlanner}</a>
           </div>
         </section>
 

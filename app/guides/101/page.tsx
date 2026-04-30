@@ -48,7 +48,7 @@ const COPY = {
       { n: 6, t: "Vos comptes expliqués", s: "REER, CELI, CELIAPP" },
       { n: 7, t: "Le gouvernement et vous", s: "RRQ, PSV, SRG" },
       { n: 8, t: "Protéger votre plan", s: "Les assurances essentielles" },
-      { n: 9, t: "Votre prochaine étape", s: "5 actions concrètes" },
+      { n: 9, t: "Vos prochains repères", s: "5 leviers concrets" },
     ],
     whereStart: "Où commencer ?",
     whereStartBody:
@@ -219,13 +219,13 @@ const COPY = {
     ctaBtn: "Obtenir mon Bilan 360 — 29,99 $",
     ctaHref: "/bilan-360",
 
-    actionsTitle: "Vos 5 actions — cette semaine",
+    actionsTitle: "Cinq leviers concrets",
     actions: [
-      "Calculez votre valeur nette. 5 minutes. Écrivez le chiffre.",
-      "Faites l'audit de vos abonnements. 3 derniers relevés. Décidez ce qui reste.",
-      "Automatisez un virement. Même 50 $/paie vers un CELI ou CELIAPP.",
-      "Vérifiez vos avantages employeur. Contribution équivalente REER ? Assurance invalidité ?",
-      "Vérifiez votre cote de crédit auprès d'Equifax ou TransUnion (les deux bureaux fournissent un accès gratuit selon les lois canadiennes).",
+      "La valeur nette se calcule en 5 minutes (actifs − passifs). Mettre le chiffre par écrit rend l'état actuel concret et mesurable.",
+      "Un audit des abonnements sur les trois derniers relevés révèle souvent 100 à 200 $/mois de dépenses oubliées — l'équivalent d'une cotisation CELI annuelle.",
+      "Un virement automatique vers un CELI ou CELIAPP, même de 50 $/paie, retire la décision répétée et installe l'habitude sans friction.",
+      "La contribution équivalente REER et l'assurance invalidité collective sont des avantages employeur sous-utilisés par environ un employé sur trois.",
+      "La cote de crédit est consultable gratuitement chez Equifax et TransUnion — un droit garanti par la législation canadienne.",
     ],
 
     quote2: "« Personne ne regrette d'avoir commencé trop tôt. Tout le monde regrette d'avoir attendu. »",
@@ -300,7 +300,7 @@ const COPY = {
       { n: 6, t: "Your accounts explained", s: "RRSP, TFSA, FHSA" },
       { n: 7, t: "The government and you", s: "CPP, OAS, GIS" },
       { n: 8, t: "Protecting your plan", s: "Insurance you can't ignore" },
-      { n: 9, t: "Your next step", s: "5 concrete actions" },
+      { n: 9, t: "Your next markers", s: "5 concrete levers" },
     ],
     whereStart: "Where to start?",
     whereStartBody:
@@ -470,13 +470,13 @@ const COPY = {
     ctaBtn: "Get my Bilan 360 — $29.99",
     ctaHref: "/bilan-360",
 
-    actionsTitle: "Your 5 actions — this week",
+    actionsTitle: "Five concrete levers",
     actions: [
-      "Calculate your net worth. 5 minutes. Write the number down.",
-      "Audit your subscriptions. Last 3 statements. Decide what stays.",
-      "Automate a transfer. Even $50/paycheque into a TFSA or FHSA.",
-      "Check your employer benefits. RRSP match? Disability insurance?",
-      "Check your credit score with Equifax or TransUnion (both bureaus provide free access under Canadian law).",
+      "Net worth can be calculated in 5 minutes (assets − liabilities). Writing the number down makes the current state concrete and measurable.",
+      "A subscription audit across the last three statements typically reveals $100–200/month of forgotten spending — the equivalent of a year's TFSA contribution.",
+      "An automated transfer to a TFSA or FHSA, even $50/paycheque, removes the repeated decision and builds the habit without friction.",
+      "RRSP-match contributions and group disability insurance are employer benefits underused by roughly one employee in three.",
+      "Credit scores are accessible free of charge at Equifax and TransUnion — a right protected under Canadian legislation.",
     ],
 
     quote2: "\"Nobody regrets starting too early. Everyone regrets waiting.\"",
@@ -848,7 +848,7 @@ function Guide101Inner() {
 
         {/* Pull quote */}
         <section className="bfe-section" style={{ textAlign: "center", border: "none", boxShadow: "none", background: "transparent", padding: "8px 20px" }}>
-          <div style={{ fontSize: 22, fontStyle: "italic", color: CL.ink, maxWidth: 720, margin: "0 auto", lineHeight: 1.5, fontFamily: 'var(--font-playfair),Georgia,serif' }}>"{t.quote}"</div>
+          <div style={{ fontSize: 22, fontStyle: "italic", color: CL.ink, maxWidth: 720, margin: "0 auto", lineHeight: 1.5, fontFamily: 'var(--font-playfair),Georgia,serif' }}>{t.quote}</div>
           <div style={{ fontSize: 14, color: CL.muted, marginTop: 12 }}>— {t.quoteAttr}</div>
         </section>
 
@@ -1037,11 +1037,17 @@ function Guide101Inner() {
           <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
           <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
           <div style={{ fontSize: 16, color: CL.muted, fontStyle: "italic", marginTop: -4, marginBottom: 18 }}>{t.mistakesIntro}</div>
+          {/* Numbered mistake cards — gold mono chip + title + body. Strip
+              any leading "N. " from m.t since the chip already provides
+              the index. Matches the pattern used by guide 201 ch3/ch7. */}
           <div style={{ display: "grid", gap: 10 }}>
             {t.mistakes.map((m, i) => (
-              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m.t}</div>
-                <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m.b}</div>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "14px 18px" }}>
+                <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m.t.replace(/^\s*\d+\.\s*/, "")}</div>
+                  <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m.b}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -1049,11 +1055,16 @@ function Guide101Inner() {
 
         {/* Ch 9 — Action + CTA */}
         <Section fr={fr} num={9} id="ch9" title={t.actionsTitle} sub={t.quote2}>
-          <ol style={{ paddingLeft: 22, margin: "6px 0 18px", fontSize: 14, color: CL.text, lineHeight: 1.7 }}>
+          {/* Numbered lever cards — matches the gold-chip pattern used in
+              guide 201 ch3/ch7 and the mistakes block above. */}
+          <div style={{ display: "grid", gap: 10, margin: "6px 0 18px" }}>
             {t.actions.map((a, i) => (
-              <li key={i} style={{ marginBottom: 6 }}>{a}</li>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+                <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
+                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{a}</div>
+              </div>
             ))}
-          </ol>
+          </div>
           <div style={{ background: CL.ink, color: "#fff", borderRadius: 14, padding: "22px 24px" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Bilan 360</div>
             <h3 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 10px", lineHeight: 1.3 }}>{t.ctaTitle}</h3>
