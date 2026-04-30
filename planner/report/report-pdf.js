@@ -1870,13 +1870,23 @@
     // posture word didn't already say. Cover now shows the success
     // rate inside the circle and the band-anchored thesis posture
     // word below — single, defendable, non-judgemental.
+    // 2026-04-30: cover grade circle retired — the success rate now
+    // lives on the Sommaire exécutif KPI strip. Duplicating it on the
+    // cover added a verdict-on-page-1 competing with verdict-on-page-2.
+    if (false) {
     h += '<div class="cover-grade-circle" style="border-color:' + sC + ';color:' + sC + '">';
     h += '<div class="cover-grade-letter">' + _fmtSucc(d.succVal) + '</div>';
     h += '</div>';
+    } // end if(false) — cover grade circle retired
+    if (false) {
     h += '<div style="text-align:center;margin-top:14px;font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;letter-spacing:1px">' +
       (fr ? 'Taux de succ\u00e8s sur ' + ((d.p.deathAge || 90) - (d.p.age || 35)) + '\u00a0ans' : 'Success rate over ' + ((d.p.deathAge || 90) - (d.p.age || 35)) + ' years') +
       '</div>';
-    if (d.thesis && d.thesis.bandLabel) {
+    } // end if(false) — caption retired
+    // 2026-04-30: thesis bandLabel + success-rate caption retired from
+    // the cover along with the grade circle. The Sommaire exécutif on
+    // the next page carries those.
+    if (false && d.thesis && d.thesis.bandLabel) {
       h += '<div style="text-align:center;margin-top:8px;font-family:\"Playfair Display\",Georgia,serif;font-size:14px;font-weight:600;color:#faf8f4">' + F.esc(d.thesis.bandLabel) + '</div>';
     }
     // Per Codex feedback (2026-04-27): the Planner SKU pill and the reader-
@@ -2222,6 +2232,16 @@
         color: d._taxAlpha != null && d._taxAlpha > 0 ? '#2a8c46' : '#a85a3a'
       });
     }
+    // 2026-04-30: support strip retired from the head of Chapter I.
+    // The Sommaire exécutif already carries a Style 1 KPI strip with
+    // the 4 primary metrics (succès, médian, impôt, épuisement); the
+    // head-of-Ch.I strip used to add P25, durability, withdrawal-rate,
+    // and tax-alpha as supporting metrics — but the visual register was
+    // identical to the ES strip and read as a duplicate. Those extra
+    // metrics now surface in their dedicated sections (sec-risk for
+    // P25 + durability, sec-tax for tax savings) where they earn full
+    // narrative context, not as a parallel header strip.
+    if (false) {
     h += '<div class="bf-support-strip">';
     _stripTiles.forEach(function(t) {
       h += '<div class="bf-support-tile">' +
@@ -2230,6 +2250,7 @@
         '</div>';
     });
     h += '</div>';
+    } // end if(false) — Ch.I head support strip retired (duplicate of ES Style 1)
 
     // Cohort percentile — adds professional context to the success rate.
     // Indicative only; uses BData.COHORT_BENCHMARKS lookup by age decade × asset bucket.
@@ -2945,17 +2966,25 @@
     // Personal info
     if (d.R.couple) {
       h += '<div class="g2">';
+      // 2026-04-30 \u2014 couple cards now mirror each other on every field
+      // (age, retirement, salary, spending, longevity). The spouse card
+      // previously omitted Province + Longevity, making the spouse read
+      // as "data lite". Now both spouses get the full identity card.
       h += F.Card('<div style="font-weight:700;color:' + C.gold + ';margin-bottom:4px">' + (_nm2 || (fr ? 'Titulaire' : 'Primary')) + '</div><table>' +
         F.R(fr ? '\u00c2ge' : 'Age', p.age) + F.R(fr ? 'Retraite' : 'Retirement', p.retAge) + F.R(fr ? 'Salaire' : 'Salary', fR(p.sal)) +
         F.R(fr ? 'D\u00e9penses retraite' : 'Ret. spending', fR((p.retSpM || 0) * 12) + (fr ? '/an' : '/yr')) +
+        F.R(fr ? 'Long\u00e9vit\u00e9 mod\u00e9lis\u00e9e' : 'Modeled longevity', (p.deathAge || 90) + (fr ? ' ans' : ' yrs')) +
         F.R('Province', p.prov || 'QC') + '</table>');
       h += F.Card('<div style="font-weight:700;color:' + C.gold + ';margin-bottom:4px">' + (_snm2 || (fr ? 'Conjoint(e)' : 'Spouse')) + '</div><table>' +
         F.R(fr ? '\u00c2ge' : 'Age', p.cAge || '\u2014') + F.R(fr ? 'Retraite' : 'Retirement', p.cRetAge || '\u2014') + F.R(fr ? 'Salaire' : 'Salary', fR(p.cSal || 0)) +
-        F.R(fr ? 'D\u00e9penses retraite' : 'Ret. spending', fR((p.cRetSpM || 0) * 12) + (fr ? '/an' : '/yr')) + '</table>');
+        F.R(fr ? 'D\u00e9penses retraite' : 'Ret. spending', fR((p.cRetSpM || 0) * 12) + (fr ? '/an' : '/yr')) +
+        F.R(fr ? 'Long\u00e9vit\u00e9 mod\u00e9lis\u00e9e' : 'Modeled longevity', (p.cDeathAge || p.deathAge || 90) + (fr ? ' ans' : ' yrs')) +
+        F.R('Province', p.prov || 'QC') + '</table>');
       h += '</div>';
     } else {
-      h += F.Card('<table>' + F.R(fr ? '\u00c2ge' : 'Age', p.age) + F.R(fr ? 'Retraite' : 'Retirement', p.retAge) + F.R(fr ? 'Horizon' : 'Horizon', p.deathAge) +
+      h += F.Card('<table>' + F.R(fr ? '\u00c2ge' : 'Age', p.age) + F.R(fr ? 'Retraite' : 'Retirement', p.retAge) +
         F.R(fr ? 'Salaire' : 'Salary', fR(p.sal)) + F.R(fr ? 'D\u00e9penses retraite' : 'Ret. spending', fR((p.retSpM || 0) * 12) + (fr ? '/an' : '/yr')) +
+        F.R(fr ? 'Long\u00e9vit\u00e9 mod\u00e9lis\u00e9e' : 'Modeled longevity', (p.deathAge || 90) + (fr ? ' ans' : ' yrs')) +
         F.R('Province', p.prov || 'QC') + '</table>');
     }
 
