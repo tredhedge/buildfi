@@ -209,6 +209,16 @@ a { color: inherit; }
   border: 1px solid rgba(196, 148, 74, 0.16);
   border-radius: var(--bf-radius-md);
   background: var(--bfe-panel);
+  /* Editorial balance pass (2026-04-29 v2): hover lift restores a
+     small "this is a link" affordance without color floods. */
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.bfe-toc-item:hover,
+a:hover > .bfe-toc-item,
+a:focus-visible > .bfe-toc-item {
+  transform: translateY(-1px);
+  border-color: rgba(196, 148, 74, 0.40);
+  box-shadow: var(--bfe-shadow-soft);
 }
 
 .bfe-toc-item strong {
@@ -410,6 +420,65 @@ body[data-bf-system="editorial"] [style*="background:rgba(59, 121, 182"] {
 
 /* ── Mono utility ──────────────────────────────────────────────────────── */
 .bfe-mono { font-family: var(--bf-font-mono); }
+
+/*
+  ── Stat highlight ────────────────────────────────────────────────────
+  Editorial balance pass (2026-04-29 v2). Apply selectively to headline
+  numbers (1–2 per chapter max) so they read as anchored facts, not
+  body prose. Gold-on-cream with a thin gold underline accent.
+
+  Use as: <strong className="bfe-stat">109 000 $</strong>
+*/
+.bfe-stat {
+  font-family: var(--bf-font-mono);
+  font-weight: 700;
+  color: var(--bf-gold);
+  background-image: linear-gradient(transparent 92%, rgba(196, 148, 74, 0.45) 92%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  padding: 0 1px;
+  white-space: nowrap;
+}
+
+/*
+  ── Internal link hover (anchors, footnote refs, etc.) ────────────
+  A subtle gold underline that draws in left-to-right on hover.
+  Scoped to .bfe-body / .bfe-chapter-frame so it doesn't affect rail
+  nav or buttons (which already have their own hover affordance).
+*/
+.bfe-body a:not(.bfe-btn-gold):not(.bfe-btn-glass),
+.bfe-chapter-frame a,
+.bfe-section a:not(.bfe-btn-gold):not(.bfe-btn-glass) {
+  color: var(--bfe-ink);
+  text-decoration: none;
+  background-image: linear-gradient(var(--bf-gold), var(--bf-gold));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 220ms ease, color 180ms ease;
+  padding-bottom: 1px;
+}
+.bfe-body a:not(.bfe-btn-gold):not(.bfe-btn-glass):hover,
+.bfe-chapter-frame a:hover,
+.bfe-section a:not(.bfe-btn-gold):not(.bfe-btn-glass):hover {
+  background-size: 100% 1px;
+  color: var(--bf-gold);
+}
+
+/*
+  ── Card hover (chapters + sections) ──────────────────────────────
+  Soft shadow upgrade only — no scale, no border change. The whole
+  page is built of cards; a scale would feel gimmicky. A shadow lift
+  reads as "this is a surface" without animation noise.
+*/
+.bfe-chapter,
+.bfe-section {
+  transition: box-shadow 220ms ease;
+}
+.bfe-chapter:hover,
+.bfe-section:hover {
+  box-shadow: 0 18px 38px rgba(56, 42, 19, 0.11);
+}
 
 /* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 1180px) {

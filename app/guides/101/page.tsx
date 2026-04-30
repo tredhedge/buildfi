@@ -140,8 +140,8 @@ const COPY = {
     ch6Rows: [
       ["Cotisation déductible ?", "Oui", "Non", "Oui"],
       ["Retraits imposables ?", "Oui", "Non", "Non*"],
-      ["Max annuel 2026", "33 810 $", "7 000 $", "8 000 $"],
-      ["Droit cumulatif", "Varie", "Jusqu'à 109 000 $†", "40 000 $"],
+      ["Max annuel 2026", "<span class=\"bfe-stat\">33 810 $</span>", "<span class=\"bfe-stat\">7 000 $</span>", "<span class=\"bfe-stat\">8 000 $</span>"],
+      ["Droit cumulatif", "Varie", "Jusqu'à <span class=\"bfe-stat\">109 000 $</span>†", "<span class=\"bfe-stat\">40 000 $</span>"],
       ["Limite d'âge", "71", "Aucune", "71 / 15 ans"],
       ["Affecte PSV/SRG ?", "Oui (retrait)", "Non", "Non*"],
       ["Idéal pour", "Revenu élevé maintenant → plus bas à la retraite", "Flexibilité libre d'impôt", "Première maison"],
@@ -399,8 +399,8 @@ const COPY = {
     ch6Rows: [
       ["Contribution deductible?", "Yes", "No", "Yes"],
       ["Withdrawals taxable?", "Yes", "No", "No*"],
-      ["Annual max 2026", "$33,810", "$7,000", "$8,000"],
-      ["Cumulative room", "Varies", "Up to $109,000†", "$40,000"],
+      ["Annual max 2026", "<span class=\"bfe-stat\">$33,810</span>", "<span class=\"bfe-stat\">$7,000</span>", "<span class=\"bfe-stat\">$8,000</span>"],
+      ["Cumulative room", "Varies", "Up to <span class=\"bfe-stat\">$109,000</span>†", "<span class=\"bfe-stat\">$40,000</span>"],
       ["Age limit", "71", "None", "71 / 15 yrs"],
       ["Affects OAS/GIS?", "Yes (withdrawal)", "No", "No*"],
       ["Ideal for", "High income now → lower at retirement", "Flexibility tax-free", "First home"],
@@ -977,7 +977,14 @@ function Guide101Inner() {
                 {t.ch6Rows.map((row, i) => (
                   <tr key={i} style={{ background: i % 2 ? CL.s2 : CL.card, borderBottom: i < t.ch6Rows.length - 1 ? `1px solid ${CL.line}` : "none" }}>
                     {row.map((cell, j) => (
-                      <td key={j} style={{ padding: "10px 14px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.muted : CL.text, fontWeight: j === 0 ? 400 : 600 }}>{cell}</td>
+                      // cell may contain <span class="bfe-stat">…</span> markup
+                      // for headline-number emphasis. Source is hardcoded copy
+                      // (no user input), so dangerouslySetInnerHTML is safe.
+                      <td
+                        key={j}
+                        style={{ padding: "10px 14px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.muted : CL.text, fontWeight: j === 0 ? 400 : 600 }}
+                        dangerouslySetInnerHTML={{ __html: cell }}
+                      />
                     ))}
                   </tr>
                 ))}
