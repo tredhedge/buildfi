@@ -88,7 +88,19 @@ let _codexScriptCache = null;
 function getCodexRailScript() {
   if (_codexScriptCache !== null) return _codexScriptCache;
   try {
-    _codexScriptCache = '\n<script data-bf-codex-rail="1">\n' +
+    /*
+      The realai renderer marks the in-document <div class="toc"> as
+      bf-toc-print-only, which has @media screen { display:none !important }.
+      The codex script clones that TOC into the rail, so the cloned copy
+      inherits the hide rule. Prepend an override that re-shows the cloned
+      TOC inside the rail and the source TOC when it's swapped in on mobile.
+    */
+    const railOverrides = '\n<style data-bf-codex-rail-overrides="1">\n' +
+      '.bf-pageify-rail .toc.bf-toc-print-only { display: block !important; }\n' +
+      '.bf-pageify-source-toc.bf-toc-print-only { display: block !important; }\n' +
+      'body[data-codex-view-toggle="1"] .bf-pageify-source-toc--hidden { display: none !important; }\n' +
+      '</style>\n';
+    _codexScriptCache = railOverrides + '<script data-bf-codex-rail="1">\n' +
       fs.readFileSync(codexInjectionPath, 'utf8') +
       '\n</script>\n';
   } catch (e) {

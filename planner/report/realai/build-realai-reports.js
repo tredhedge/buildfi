@@ -148,7 +148,20 @@ if (cmd === 'render') {
     'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
   let codexScript = '';
   try {
-    codexScript = '\n<script data-bf-codex-rail="1">\n' +
+    /*
+      The realai renderer marks the in-document <div class="toc"> as
+      bf-toc-print-only, which has @media screen { display:none !important }
+      (set in report-interactive.js). The codex script CLONES that TOC
+      into the rail, so the cloned copy inherits the hide rule and the
+      rail comes up empty. We prepend a small CSS override that re-shows
+      the cloned TOC when it's inside the rail or the source-toc swap-in.
+    */
+    const codexRailOverrides = '\n<style data-bf-codex-rail-overrides="1">\n' +
+      '.bf-pageify-rail .toc.bf-toc-print-only { display: block !important; }\n' +
+      '.bf-pageify-source-toc.bf-toc-print-only { display: block !important; }\n' +
+      'body[data-codex-view-toggle="1"] .bf-pageify-source-toc--hidden { display: none !important; }\n' +
+      '</style>\n';
+    codexScript = codexRailOverrides + '<script data-bf-codex-rail="1">\n' +
       fs.readFileSync(codexInjectionPath, 'utf8') +
       '\n</script>\n';
   } catch (e) {
