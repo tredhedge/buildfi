@@ -78,6 +78,28 @@
     '.bf-support-tile-label{font-family:Inter,sans-serif;font-size:9.5px;font-weight:600;color:#8a7a5c;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;line-height:1.3}',
     '.bf-support-tile-value{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:600;line-height:1.1;letter-spacing:-0.3px}',
     '@media (max-width:760px){.bf-support-strip{flex-wrap:wrap;gap:0}.bf-support-tile{flex-basis:50%;padding:8px 10px;border-right:none;border-bottom:1px solid #ece4d4}.bf-support-tile:nth-child(2n){border-right:none}.bf-support-tile:nth-last-child(-n+2){border-bottom:none}}',
+    // 2026-04-30: mobile responsive rules for the new cream Sommaire
+    // exécutif card. Inline grids in the slate card need to collapse
+    // on narrow screens so the 3-up Profil grid + 2-up key-value
+    // tables don't overflow.
+    '@media (max-width:760px){',
+    '.exec-summary{padding:24px 20px 22px !important;border-radius:6px !important}',
+    /* 4-up KPI strip: stack to 2-up on mobile (matches bf-support-strip pattern) */
+    '.exec-summary > div[style*="border-top:1px solid #e8e0d4"][style*="border-bottom:1px solid #e8e0d4"]{flex-wrap:wrap !important;padding:14px 0 !important}',
+    '.exec-summary > div[style*="border-top:1px solid #e8e0d4"][style*="border-bottom:1px solid #e8e0d4"] > div{flex-basis:50% !important;padding:10px 8px !important;border-right:none !important;border-bottom:1px solid #ece4d4 !important}',
+    '.exec-summary > div[style*="border-top:1px solid #e8e0d4"][style*="border-bottom:1px solid #e8e0d4"] > div:nth-child(2n){border-right:none !important}',
+    '.exec-summary > div[style*="border-top:1px solid #e8e0d4"][style*="border-bottom:1px solid #e8e0d4"] > div:nth-last-child(-n+2){border-bottom:none !important}',
+    /* 3-up Profil grid → 1-up on mobile */
+    '.exec-summary div[style*="grid-template-columns:repeat(3,1fr)"]{grid-template-columns:1fr !important;gap:10px !important}',
+    /* 2-up Inputs/Hypothèses → stacked on mobile */
+    '.exec-summary div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important;gap:18px !important}',
+    /* Verdict + AI lead Playfair tighten */
+    '.exec-summary div[style*="font-size:24px"][style*="italic"]{font-size:20px !important;margin:6px 0 22px !important}',
+    '.exec-summary div[style*="font-size:21px"][style*="italic"]{font-size:18px !important}',
+    '.exec-summary div[style*="font-size:20px"][style*="italic"]{font-size:17px !important;padding:6px 0 6px 18px !important}',
+    /* Movement break: lighter spacing on mobile */
+    '.exec-summary div[style*="margin:36px 0 32px"]{margin:24px 0 22px !important;gap:10px !important}',
+    '}',
     '.grade-ring{display:inline-flex;align-items:center;justify-content:center;width:90px;height:90px;border-radius:50%;font-size:30px;font-weight:900;font-family:"JetBrains Mono",monospace}',
     '.grade-pill{display:inline-block;padding:4px 18px;border-radius:16px;font-weight:800;font-size:13px;color:#fff;margin-top:6px}',
     // Callouts
@@ -2261,8 +2283,16 @@
           : coh.percentile >= 50 ? (fr ? 'dans la moyenne' : 'around average')
           : coh.percentile >= 25 ? (fr ? 'en dessous de la moyenne' : 'below average')
           : (fr ? 'nettement inf\u00e9rieur' : 'well below typical');
-        h += '<div style="background:#f5f8fc;border:1px solid #d8e4f0;border-radius:6px;padding:8px 12px;margin:4px 0 10px;font-size:10.5px;color:#456">' +
-          '<strong>' + (fr ? 'Contexte cohorte:' : 'Cohort context:') + '</strong> ' +
+        // 2026-04-30: cohort callout restyled to cream/gold palette.
+        // Was a blue-tinted card (#f5f8fc / #d8e4f0) that visually jarred
+        // against the rest of the cream/stone/gold report system. Now a
+        // hairline rule above + below with the body in warm grey — same
+        // editorial register as the inflation-bridge note already in
+        // renderProfile. No box, no colored background.
+        h += '<div style="border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:12px 0;margin:8px 0 14px;font-size:10.5px;color:#3a322a;line-height:1.7">' +
+          '<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#8a7a5c;letter-spacing:1.8px;text-transform:uppercase;margin-right:10px">' +
+            (fr ? 'Contexte cohorte' : 'Cohort context') +
+          '</span>' +
           (fr
             ? 'Pour votre tranche d\'\u00e2ge (' + (Math.floor(p.age / 10) * 10) + '-' + (Math.floor(p.age / 10) * 10 + 9) + ' ans) et niveau d\'\u00e9pargne, le taux de succ\u00e8s typique observ\u00e9 est d\'environ <strong>' + Math.round(coh.typical * 100) + '%</strong>. Votre <strong>' + Math.round(d.succVal * 100) + '%</strong> est ' + cohPctileLbl + ' (~' + coh.percentile + '<sup>e</sup> percentile estim\u00e9).'
             : 'For your age band (' + (Math.floor(p.age / 10) * 10) + '-' + (Math.floor(p.age / 10) * 10 + 9) + ') and savings level, the typical observed success rate is approximately <strong>' + Math.round(coh.typical * 100) + '%</strong>. Your <strong>' + Math.round(d.succVal * 100) + '%</strong> is ' + cohPctileLbl + ' (~' + coh.percentile + '<sup>th</sup> percentile estimated).') +
@@ -2529,18 +2559,42 @@
       var phase = d.R.phase;
       var yrsToRet = Math.max(0, (d.p.retAge || 65) - (d.p.age || 0));
       var body = '';
+      // 2026-04-30: deterministic letter fallback now spouse-aware. When
+      // a couple plan is rendered without an AI letter, the body now
+      // names both partners and acknowledges the household frame, so
+      // the deterministic text doesn't silently drop the spouse.
+      var _bodyNm = d.fn ? F.esc(d.fn) : '';
+      var _bodySn = d.sfn ? F.esc(d.sfn) : '';
+      var _coupleAddrFr = (d.R.couple && _bodyNm && _bodySn)
+        ? _bodyNm + ' et ' + _bodySn + ', ce rapport examine '
+        : 'Ce rapport examine ';
+      var _coupleAddrEn = (d.R.couple && _bodyNm && _bodySn)
+        ? _bodyNm + ' and ' + _bodySn + ', this report examines '
+        : 'This report examines ';
       if (phase === 'decum') {
         body = fr
-          ? 'Ce rapport examine la viabilit\u00e9 de votre plan de d\u00e9caissement sur les ann\u00e9es \u00e0 venir. Nous avons mod\u00e9lis\u00e9 ' + (d.p.nSim || 5000) + ' trajectoires en int\u00e9grant les rendements, l\'inflation et la long\u00e9vit\u00e9. Les pages qui suivent pr\u00e9sentent ce que les chiffres indiquent, les sensibilit\u00e9s principales, et les points qui m\u00e9ritent votre attention.'
-          : 'This report examines the viability of your retirement drawdown over the years ahead. We modelled ' + (d.p.nSim || 5000) + ' trajectories integrating returns, inflation, and longevity. The pages that follow set out what the numbers show, the main sensitivities, and the points that merit your attention.';
+          ? _coupleAddrFr + 'la viabilit\u00e9 de votre plan de d\u00e9caissement sur les ann\u00e9es \u00e0 venir. Nous avons mod\u00e9lis\u00e9 ' + (d.p.nSim || 5000) + ' trajectoires en int\u00e9grant les rendements, l\'inflation et la long\u00e9vit\u00e9. Les pages qui suivent pr\u00e9sentent ce que les chiffres indiquent, les sensibilit\u00e9s principales, et les points qui m\u00e9ritent votre attention.'
+          : _coupleAddrEn + 'the viability of your retirement drawdown over the years ahead. We modelled ' + (d.p.nSim || 5000) + ' trajectories integrating returns, inflation, and longevity. The pages that follow set out what the numbers show, the main sensitivities, and the points that merit your attention.';
       } else if (phase === 'transition') {
+        var _transAddrFr = (d.R.couple && _bodyNm && _bodySn)
+          ? _bodyNm + ' et ' + _bodySn + ', la retraite approche'
+          : 'La retraite approche';
+        var _transAddrEn = (d.R.couple && _bodyNm && _bodySn)
+          ? _bodyNm + ' and ' + _bodySn + ', retirement is approaching'
+          : 'Retirement is approaching';
         body = fr
-          ? 'La retraite approche \u2014 dans environ ' + yrsToRet + ' ans. Ce rapport \u00e9value si votre trajectoire actuelle soutiendrait le niveau de vie projet\u00e9 et identifie les leviers qui auraient le plus d\'effet sur la probabilit\u00e9 de succ\u00e8s. Je vous invite \u00e0 lire en particulier les sections objectifs, revenus et fiscalit\u00e9.'
-          : 'Retirement is approaching \u2014 approximately ' + yrsToRet + ' years away. This report evaluates whether your current trajectory would support the projected lifestyle, and identifies the levers with the largest effect on success probability. I encourage particular attention to the goals, income, and tax sections.';
+          ? _transAddrFr + ' \u2014 dans environ ' + yrsToRet + ' ans. Ce rapport \u00e9value si votre trajectoire actuelle soutiendrait le niveau de vie projet\u00e9 et identifie les leviers qui auraient le plus d\'effet sur la probabilit\u00e9 de succ\u00e8s. Je vous invite \u00e0 lire en particulier les sections objectifs, revenus et fiscalit\u00e9.'
+          : _transAddrEn + ' \u2014 approximately ' + yrsToRet + ' years away. This report evaluates whether your current trajectory would support the projected lifestyle, and identifies the levers with the largest effect on success probability. I encourage particular attention to the goals, income, and tax sections.';
       } else {
+        var _accAddrFr = (d.R.couple && _bodyNm && _bodySn)
+          ? _bodyNm + ' et ' + _bodySn + ', vous \u00eates en phase d\'accumulation'
+          : 'Vous \u00eates en phase d\'accumulation';
+        var _accAddrEn = (d.R.couple && _bodyNm && _bodySn)
+          ? _bodyNm + ' and ' + _bodySn + ', you are in the accumulation phase'
+          : 'You are in the accumulation phase';
         body = fr
-          ? 'Vous \u00eates en phase d\'accumulation, avec ' + yrsToRet + ' ans devant vous avant la retraite pr\u00e9vue. Les projections ' + (d.p.nSim || 5000) + ' sc\u00e9narios mod\u00e9lisent comment votre \u00e9pargne actuelle, combin\u00e9e \u00e0 vos cotisations et aux rendements de march\u00e9, pourrait \u00e9voluer. Les sections fiscalit\u00e9 et leviers r\u00e9v\u00e8lent les d\u00e9cisions qui auraient le plus de poids sur le long terme.'
-          : 'You are in the accumulation phase, with ' + yrsToRet + ' years until planned retirement. The projections across ' + (d.p.nSim || 5000) + ' scenarios model how your current savings, combined with contributions and market returns, might evolve. The tax and levers sections highlight the decisions with the largest long-term weight.';
+          ? _accAddrFr + ', avec ' + yrsToRet + ' ans devant vous avant la retraite pr\u00e9vue. Les projections ' + (d.p.nSim || 5000) + ' sc\u00e9narios mod\u00e9lisent comment votre \u00e9pargne actuelle, combin\u00e9e \u00e0 vos cotisations et aux rendements de march\u00e9, pourrait \u00e9voluer. Les sections fiscalit\u00e9 et leviers r\u00e9v\u00e8lent les d\u00e9cisions qui auraient le plus de poids sur le long terme.'
+          : _accAddrEn + ', with ' + yrsToRet + ' years until planned retirement. The projections across ' + (d.p.nSim || 5000) + ' scenarios model how your current savings, combined with contributions and market returns, might evolve. The tax and levers sections highlight the decisions with the largest long-term weight.';
       }
       h += '<p class="narr">' + body + '</p>';
     }
@@ -5046,9 +5100,20 @@
         ? 'La trajectoire centrale projette un patrimoine final tr\u00e8s faible ou nul. Les revenus garantis (RRQ + PSV + pension) couvriraient toujours une part des d\u00e9penses, mais le portefeuille serait \u00e9puis\u00e9 dans la majorit\u00e9 des sc\u00e9narios. Le levier dominant pour \u00e9largir cette fourchette se trouve dans la section Plan d\'action.'
         : 'The central trajectory projects very low or zero final wealth. Guaranteed income (CPP + OAS + pension) would still cover a share of spending, but the portfolio would be depleted in most scenarios. The dominant lever to widen this range lives in the Action plan section.');
     } else {
+      // 2026-04-30: spouse-aware framing. Couple plans now name both
+      // partners in the dispersion narrative \u2014 the range reflects the
+      // HOUSEHOLD'S exposure, not just the primary's.
+      var _riskNm = d.fn ? F.esc(d.fn) : '';
+      var _riskSn = d.sfn ? F.esc(d.sfn) : '';
+      var _riskOpenFr = (d.R.couple && _riskNm && _riskSn)
+        ? '<strong>' + _riskNm + '</strong> et <strong>' + _riskSn + '</strong>, l\'analyse de risque mesure la fourchette des r\u00e9sultats du m\u00e9nage. '
+        : 'L\'analyse de risque mesure la fourchette des r\u00e9sultats possibles. ';
+      var _riskOpenEn = (d.R.couple && _riskNm && _riskSn)
+        ? '<strong>' + _riskNm + '</strong> and <strong>' + _riskSn + '</strong>, the risk analysis measures the household\'s range of possible outcomes. '
+        : 'Risk analysis measures the range of possible outcomes. ';
       h += narr(fr
-        ? 'L\u2019analyse de risque mesure la fourchette des r\u00e9sultats possibles. Dans un sc\u00e9nario prudent (P25), le patrimoine final serait de <strong>' + f$(_p25W) + '</strong>, contre <strong>' + f$(_p75W) + '</strong> dans un sc\u00e9nario favorable (P75). Cette fourchette de <strong>' + f$(Math.round(_spread25)) + '</strong> refl\u00e8te l\u2019incertitude normale li\u00e9e aux march\u00e9s, \u00e0 l\u2019inflation et \u00e0 la long\u00e9vit\u00e9.'
-        : 'Risk analysis measures the range of possible outcomes. In a cautious scenario (P25), final wealth would be <strong>' + f$(_p25W) + '</strong>, compared to <strong>' + f$(_p75W) + '</strong> in a favorable scenario (P75). This range of <strong>' + f$(Math.round(_spread25)) + '</strong> reflects normal uncertainty from markets, inflation, and longevity.');
+        ? _riskOpenFr + 'Dans un sc\u00e9nario prudent (P25), le patrimoine final serait de <strong>' + f$(_p25W) + '</strong>, contre <strong>' + f$(_p75W) + '</strong> dans un sc\u00e9nario favorable (P75). Cette fourchette de <strong>' + f$(Math.round(_spread25)) + '</strong> refl\u00e8te l\'incertitude normale li\u00e9e aux march\u00e9s, \u00e0 l\'inflation et \u00e0 la long\u00e9vit\u00e9.'
+        : _riskOpenEn + 'In a cautious scenario (P25), final wealth would be <strong>' + f$(_p25W) + '</strong>, compared to <strong>' + f$(_p75W) + '</strong> in a favorable scenario (P75). This range of <strong>' + f$(Math.round(_spread25)) + '</strong> reflects normal uncertainty from markets, inflation, and longevity.');
     }
 
     h += '<div class="g4" style="margin-bottom:8px">';
