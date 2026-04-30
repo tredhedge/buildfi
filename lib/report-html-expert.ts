@@ -272,11 +272,63 @@ function renderExpertReport(
   let h = '';
 
   /*
-    Plan v2.2 / Phase 4b: hybrid sheet shell.
-    Single-column .bfe-shell at editorial reading width. Phase 4c will
-    add the sticky .bfe-rail in a wider grid.
+    Plan v2.2 / Phase 4b + 4c: hybrid sheet shell with sticky rail TOC.
+    .bfe-shell--guide is the 2-col editorial grid (300px rail + main).
+    Mobile collapses to single-column via editorial.css media query.
+    The rail content is built below from activeSections; it lives BEFORE
+    <main> in DOM order so the editorial.css grid places it on the left.
   */
-  h += '<div class="bfe-shell" style="grid-template-columns:1fr;max-width:1080px;padding:32px 28px 80px">';
+
+  // Build TOC entries from activeSections — needed for both the rail and
+  // the inline (post-cover) TOC card. Computed up here so the rail can
+  // be emitted before <main> in DOM order.
+  const sectionLabels: Record<string, { fr: string; en: string }> = {
+    sommaire_executif: { fr: "Sommaire exécutif", en: "Executive summary" },
+    diagnostic_robustesse: { fr: "Diagnostic de robustesse", en: "Robustness diagnostic" },
+    revenus_retraite: { fr: "Revenus à la retraite", en: "Retirement income" },
+    projection_patrimoine: { fr: "Projection du patrimoine", en: "Wealth projection" },
+    analyse_fiscale: { fr: "Analyse fiscale", en: "Tax analysis" },
+    couple: { fr: "Analyse du ménage", en: "Household analysis" },
+    immobilier: { fr: "Analyse immobilière", en: "Real estate analysis" },
+    pension_db: { fr: "Pension à prestations déterminées", en: "Defined benefit pension" },
+    corporatif: { fr: "Planification corporative", en: "Corporate planning" },
+    remuneration: { fr: "Stratégie de rémunération", en: "Compensation strategy" },
+    dettes: { fr: "Impact des dettes", en: "Debt impact" },
+    decaissement: { fr: "Séquence de décaissement", en: "Withdrawal sequencing" },
+    stress_tests: { fr: "Tests de résistance", en: "Stress tests" },
+    assurance: { fr: "Analyse d'assurance", en: "Insurance analysis" },
+    resp: { fr: "Régime enregistré d'épargne-études", en: "Registered Education Savings Plan" },
+    priorites_action: { fr: "Leviers identifiés", en: "Identified levers" },
+    observations_detaillees: { fr: "Observations détaillées", en: "Detailed observations" },
+    comparaison_scenarios: { fr: "Comparaison de scénarios", en: "Scenario comparison" },
+    driver_attribution: { fr: "Attribution des facteurs", en: "Driver attribution" },
+    pour_professionnel: { fr: "Pour votre professionnel", en: "For your professional" },
+    questions_fiscaliste: { fr: "Questions pour votre fiscaliste", en: "Questions for your tax advisor" },
+    historique_modifications: { fr: "Historique des modifications", en: "Change history" },
+    hypotheses_methodo: { fr: "Hypothèses et méthodologie", en: "Assumptions and methodology" },
+    disclaimers: { fr: "Avertissements légaux", en: "Legal disclaimers" },
+  };
+  const tocSections: { key: ExpertSectionKey; label: string }[] = [];
+  for (const s of activeSections) {
+    const lbl = sectionLabels[s];
+    if (lbl) tocSections.push({ key: s, label: fr ? lbl.fr : lbl.en });
+  }
+
+  h += '<div class="bfe-shell bfe-shell--guide" style="max-width:1380px;padding:28px 24px 80px">';
+
+  // ── Sticky rail TOC (Plan v2.2 / Phase 4c) ─────────────────────────
+  h += '<aside class="bfe-rail" data-bf-print-hide="1">'
+    + '<div class="bfe-kicker" style="margin-bottom:14px">' + t("Plan du rapport", "Report outline") + '</div>'
+    + '<nav class="bfe-nav" aria-label="' + t("Table des matières", "Table of contents") + '">';
+  tocSections.forEach((s, i) => {
+    h += '<a href="#sec-' + (i + 1) + '" data-bf-rail-link="' + (i + 1) + '">'
+      + '<span style="font-family:var(--font-jetbrains-mono);font-size:11px;color:var(--bf-gold);font-weight:700;margin-right:8px;letter-spacing:0.04em">' + String(i + 1).padStart(2, '0') + '</span>'
+      + '<span style="font-size:13px;line-height:1.4">' + s.label + '</span>'
+      + '</a>';
+  });
+  h += '</nav>'
+    + '</aside>';
+
   h += '<main style="min-width:0">';
 
   // ═══ HEADER ═══
@@ -308,51 +360,22 @@ function renderExpertReport(
     + '</div></div>'
     + '</section>';
 
-  // ═══ TABLE OF CONTENTS ═══
-  const tocSections: { key: ExpertSectionKey; label: string }[] = [];
-  const sectionLabels: Record<string, { fr: string; en: string }> = {
-    sommaire_executif: { fr: "Sommaire ex\u00e9cutif", en: "Executive summary" },
-    diagnostic_robustesse: { fr: "Diagnostic de robustesse", en: "Robustness diagnostic" },
-    revenus_retraite: { fr: "Revenus \u00e0 la retraite", en: "Retirement income" },
-    projection_patrimoine: { fr: "Projection du patrimoine", en: "Wealth projection" },
-    analyse_fiscale: { fr: "Analyse fiscale", en: "Tax analysis" },
-    couple: { fr: "Analyse du m\u00e9nage", en: "Household analysis" },
-    immobilier: { fr: "Analyse immobili\u00e8re", en: "Real estate analysis" },
-    pension_db: { fr: "Pension \u00e0 prestations d\u00e9termin\u00e9es", en: "Defined benefit pension" },
-    corporatif: { fr: "Planification corporative", en: "Corporate planning" },
-    remuneration: { fr: "Strat\u00e9gie de r\u00e9mun\u00e9ration", en: "Compensation strategy" },
-    dettes: { fr: "Impact des dettes", en: "Debt impact" },
-    decaissement: { fr: "S\u00e9quence de d\u00e9caissement", en: "Withdrawal sequencing" },
-    stress_tests: { fr: "Tests de r\u00e9sistance", en: "Stress tests" },
-    assurance: { fr: "Analyse d'assurance", en: "Insurance analysis" },
-    resp: { fr: "R\u00e9gime enregistr\u00e9 d'\u00e9pargne-\u00e9tudes", en: "Registered Education Savings Plan" },
-    priorites_action: { fr: "Leviers identifi\u00e9s", en: "Identified levers" },
-    observations_detaillees: { fr: "Observations d\u00e9taill\u00e9es", en: "Detailed observations" },
-    comparaison_scenarios: { fr: "Comparaison de sc\u00e9narios", en: "Scenario comparison" },
-    driver_attribution: { fr: "Attribution des facteurs", en: "Driver attribution" },
-    pour_professionnel: { fr: "Pour votre professionnel", en: "For your professional" },
-    questions_fiscaliste: { fr: "Questions pour votre fiscaliste", en: "Questions for your tax advisor" },
-    historique_modifications: { fr: "Historique des modifications", en: "Change history" },
-    hypotheses_methodo: { fr: "Hypoth\u00e8ses et m\u00e9thodologie", en: "Assumptions and methodology" },
-    disclaimers: { fr: "Avertissements l\u00e9gaux", en: "Legal disclaimers" },
-  };
-
-  for (const s of activeSections) {
-    const lbl = sectionLabels[s];
-    if (lbl) tocSections.push({ key: s, label: fr ? lbl.fr : lbl.en });
-  }
-
-  h += '<div style="background:#ffffff;border:1px solid #d4cec4;border-radius:12px;padding:22px 24px;margin-bottom:32px">'
-    + '<div style="font-family:var(--font-playfair);font-size:16px;font-weight:700;color:#1a2744;margin-bottom:14px">'
-    + t("Table des mati\u00e8res", "Table of contents") + '</div>'
-    + '<div style="columns:2;column-gap:24px">';
+  // ═══ INLINE TOC (collapsed by default; mobile + print fallback) ═══
+  // Sticky .bfe-rail above is canonical TOC on desktop. This <details>
+  // is collapsed; user expands for outline overview below cover. Mobile
+  // gets it as the only TOC since the rail collapses to a static block.
+  h += '<details class="bf-inline-toc" style="margin-bottom:32px;border:1px solid var(--bfe-line);border-radius:var(--bf-radius-md);background:var(--bfe-panel);padding:18px 22px">'
+    + '<summary style="cursor:pointer;font-family:var(--font-playfair);font-size:16px;font-weight:700;color:var(--bfe-ink);list-style:none">'
+    + t("Table des matières", "Table of contents") + '</summary>'
+    + '<div style="margin-top:14px;columns:2;column-gap:24px">';
   tocSections.forEach((s, i) => {
-    h += '<div style="font-size:12px;padding:4px 0;break-inside:avoid;color:#666">'
-      + '<span style="font-family:var(--font-jetbrains-mono),monospace;color:var(--bf-gold);font-weight:700;margin-right:6px">' + (i + 1) + '</span>'
-      + s.label + '</div>';
+    h += '<div style="font-size:12px;padding:4px 0;break-inside:avoid;color:var(--bfe-muted)">'
+      + '<a href="#sec-' + (i + 1) + '" style="text-decoration:none;color:inherit;display:flex;gap:8px;align-items:baseline">'
+      + '<span style="font-family:var(--font-jetbrains-mono);color:var(--bf-gold);font-weight:700">' + String(i + 1).padStart(2, '0') + '</span>'
+      + '<span>' + s.label + '</span>'
+      + '</a></div>';
   });
-  h += '</div></div>';
-
+  h += '</div></details>';
   // ═══ SECTIONS ═══
 
   // S1: Sommaire executif
@@ -977,9 +1000,21 @@ export function renderReportHTMLExpert(
     + '  .rpt-grid2{grid-template-columns:1fr!important}'
     + '}'
     + 'svg{shape-rendering:geometricPrecision}'
+    /* Phase 4c: hide rail in print, ensure inline TOC is visible. */
+    + '@media print{.bfe-rail{display:none !important}.bf-inline-toc{break-inside:avoid}.bf-inline-toc[open]>summary{margin-bottom:8px}}'
     + '</style>'
     + '</head>'
-    + '<body data-bf-system="editorial">' + reportBody + '</body></html>';
+    + '<body data-bf-system="editorial">' + reportBody
+    /*
+      Plan v2.2 / Phase 4c: rail TOC scroll-spy.
+      Vanilla JS (no framework). Highlights the rail link for the section
+      currently visible at 28% from the top of the viewport. Updates URL
+      hash via replaceState so refresh keeps the user in place. Click on
+      a rail link activates immediately so the bold doesn't lag the
+      smooth-scroll animation.
+    */
+    + '<script>(function(){var rail=document.querySelector(".bfe-rail");if(!rail)return;var links=Array.prototype.slice.call(rail.querySelectorAll(\'a[href^="#"]\'));var records=[];for(var i=0;i<links.length;i++){var a=links[i];var id=a.getAttribute("href").slice(1);var t=document.getElementById(id);if(t)records.push({id:id,target:t,link:a})}if(!records.length)return;var current="";var ticking=false;function activate(id){for(var j=0;j<records.length;j++){records[j].link.classList.toggle("is-active",records[j].id===id)}}function compute(){var line=window.innerHeight*0.28;var chosen=records[0];for(var k=0;k<records.length;k++){var rect=records[k].target.getBoundingClientRect();if(rect.top<=line)chosen=records[k]}return chosen.id}function sync(){if(ticking)return;ticking=true;requestAnimationFrame(function(){ticking=false;var next=compute();if(next===current)return;current=next;activate(next);try{history.replaceState(null,"","#"+next)}catch(e){}})}function onClick(e){var href=this.getAttribute("href");if(!href||href.charAt(0)!=="#")return;current=href.slice(1);activate(current)}for(var m=0;m<records.length;m++){records[m].link.addEventListener("click",onClick)}activate(records[0].id);sync();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync)})();</script>'
+    + '</body></html>';
 
   function t(f: string, e: string) { return fr ? f : e; }
 }
