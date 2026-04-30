@@ -926,10 +926,158 @@
       depAge ? (fr ? 'scénario prudent' : 'cautious scenario')
              : (fr ? 'l\'épargne ne s\'épuise pas' : 'savings do not run out'));
     h += '</div>';
-    // Sprint 0.3: bullets must be SIMULATION-DERIVED, not input-derived.
-    // "Couple plan available" was a fact about the user, not a strength
-    // of the plan. "TFSA > $50K" is a balance, not a result. Replaced
-    // with bullets that surface what the SIMULATION revealed.
+    // 2026-04-29 — Profil signals + Watch line replaces strengths/risks
+    // bullets and the trailing "Pour aller plus loin" footer. The score
+    // gauge above (now removed) was a composite that contradicted the
+    // success rate; the strengths/risks bullets below overlapped chapter
+    // 1's AI assessment. Profil signals stay observational and
+    // context-aware. Watch line surfaces the binding sensitivity from
+    // mc._sweeps as one conditional sentence.
+    function _signalRow(label, headline, body) {
+      return '<div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;margin-bottom:12px">' +
+        '<div style="color:#c49a1a;font-size:14px;line-height:1.4;margin-top:1px">◆</div>' +
+        '<div>' +
+          '<div style="font-family:Inter,sans-serif;font-size:11.5px;font-weight:700;color:#faf8f4;margin-bottom:3px;letter-spacing:0.2px">' +
+            F.esc(label) + (headline ? ' <span style="color:#bccbe0;font-weight:500">· ' + F.esc(headline) + '</span>' : '') +
+          '</div>' +
+          '<div style="font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;line-height:1.55">' + body + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    var _accBalances = {
+      tfsa: (p.tfsa || 0) + (p.cTfsa || 0),
+      rrsp: (p.rrsp || 0) + (p.cRrsp || 0),
+      nr:   (p.nr || 0)   + (p.cNr || 0),
+      lira: (p.lira || 0) + (p.cLira || 0),
+      corp: p.bizRetainedEarnings || 0
+    };
+    var _accTotal = _accBalances.tfsa + _accBalances.rrsp + _accBalances.nr + _accBalances.lira + _accBalances.corp;
+    var _profilHtml = '';
+    if (_accTotal > 0) {
+      var _shareTfsa = _accBalances.tfsa / _accTotal;
+      var _shareRrsp = _accBalances.rrsp / _accTotal;
+      var _shareCorp = _accBalances.corp / _accTotal;
+      var _concHead, _concBody;
+      if (_shareCorp >= 0.40) {
+        _concHead = fr ? 'patrimoine corporatif (' + Math.round(_shareCorp * 100) + ' %)' : 'corporate wealth (' + Math.round(_shareCorp * 100) + '%)';
+        _concBody = fr
+          ? 'La cadence d\'extraction (salaire / dividende / vente d\'actifs) déterminerait l\'impôt viager intégré ; voir la section Corporation.'
+          : 'The extraction cadence (salary / dividend / asset sale) would drive lifetime integrated tax; see the Corporation section.';
+      } else if (_shareTfsa >= 0.50) {
+        _concHead = fr ? 'CELI dominant (' + Math.round(_shareTfsa * 100) + ' %)' : 'TFSA-dominant (' + Math.round(_shareTfsa * 100) + '%)';
+        _concBody = fr
+          ? 'Fiscalement efficace en décaissement (retraits non imposés, n\'affecte pas la PSV) ; surveillez la concentration chez un seul fournisseur.'
+          : 'Tax-efficient in decumulation (withdrawals untaxed, no OAS clawback impact); monitor concentration with a single provider.';
+      } else if (_shareRrsp >= 0.55) {
+        _concHead = fr ? 'REER dominant (' + Math.round(_shareRrsp * 100) + ' %)' : 'RRSP-dominant (' + Math.round(_shareRrsp * 100) + '%)';
+        _concBody = fr
+          ? 'Masse imposable concentrée à la conversion FERR (72 ans) ; un retrait anticipé (meltdown) pourrait lisser l\'impôt viager.'
+          : 'Taxable mass concentrated at RRIF conversion (age 72); an early drawdown (meltdown) could smooth lifetime tax.';
+      } else {
+        _concHead = fr ? 'répartition équilibrée' : 'balanced allocation';
+        _concBody = fr
+          ? 'Aucun compte ne dépasse 55 % du patrimoine — flexibilité d\'ordre de retrait préservée d\'année en année.'
+          : 'No single account exceeds 55% of wealth — withdrawal-order flexibility preserved year over year.';
+      }
+      _profilHtml += _signalRow(fr ? 'Concentration' : 'Concentration', _concHead, _concBody);
+    }
+    if (d.avgEffRate != null && isFinite(d.avgEffRate)) {
+      var _ratePct = Math.round(d.avgEffRate * 100);
+      var _fiscHead = (fr ? 'taux effectif ~' : 'effective rate ~') + _ratePct + ' %';
+      var _fiscBody;
+      if (d.avgEffRate < 0.15) {
+        _fiscBody = fr
+          ? 'Charge fiscale faible — bénéficie probablement du fractionnement de pension et du retrait CELI ; surveiller un revenu inattendu (héritage, vente) qui pousserait au-delà du seuil PSV.'
+          : 'Light tax burden — likely benefits from pension splitting and TFSA withdrawals; monitor an unexpected income (inheritance, asset sale) that would push past the OAS threshold.';
+      } else if (d.avgEffRate < 0.25) {
+        _fiscBody = fr
+          ? 'Charge fiscale dans la fourchette typique pour ce niveau de revenu ; un ordre de retrait optimisé pourrait réduire la facture viagère.'
+          : 'Tax burden within the typical range for this income level; an optimized withdrawal order could reduce the lifetime bill.';
+      } else {
+        _fiscBody = fr
+          ? 'Charge fiscale élevée — masse imposable concentrée (REER/FERR/SPCC). La section fiscale identifie les leviers (meltdown, fractionnement, report PSV) qui pourraient lisser l\'impôt.'
+          : 'High tax burden — taxable mass concentrated (RRSP/RRIF/CCPC). The tax section identifies levers (meltdown, splitting, OAS deferral) that could smooth the bill.';
+      }
+      _profilHtml += _signalRow(fr ? 'Posture fiscale' : 'Tax posture', _fiscHead, _fiscBody);
+    }
+    var _annualSpend = (p.retSpM || 0) * 12;
+    if (_annualSpend > 0) {
+      var _liquid = (p.tfsa || 0) + (p.cTfsa || 0) + (p.nr || 0) + (p.cNr || 0);
+      var _yrsBuf = _liquid / _annualSpend;
+      var _liqHead, _liqBody;
+      if (_yrsBuf >= 5) {
+        _liqHead = '~' + (_yrsBuf >= 10 ? '10+ ' : _yrsBuf.toFixed(1) + ' ') + (fr ? 'ans hors enregistré' : 'yrs outside registered');
+        _liqBody = fr
+          ? 'Tampon confortable — le ménage pourrait absorber un creux de marché prolongé sans toucher au REER/FERR.'
+          : 'Comfortable buffer — the household could absorb a prolonged market drawdown without touching RRSP/RRIF.';
+      } else if (_yrsBuf >= 2) {
+        _liqHead = '~' + _yrsBuf.toFixed(1) + (fr ? ' ans hors enregistré' : ' yrs outside registered');
+        _liqBody = fr
+          ? 'Tampon raisonnable — quelques années de dépenses couvertes par CELI + non-enregistré si les marchés décevaient.'
+          : 'Reasonable buffer — a few years of spending covered by TFSA + non-registered if markets disappoint.';
+      } else {
+        _liqHead = '~' + _yrsBuf.toFixed(1) + (fr ? ' ans hors enregistré' : ' yrs outside registered');
+        _liqBody = fr
+          ? 'Liquidité serrée — un creux de marché imposerait probablement de retirer du REER/FERR au moment le moins favorable.'
+          : 'Tight liquidity — a market drawdown would likely force RRSP/RRIF withdrawals at the least favorable moment.';
+      }
+      _profilHtml += _signalRow(fr ? 'Liquidité' : 'Liquidity', _liqHead, _liqBody);
+    }
+    if (_profilHtml) {
+      h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:14px;margin-bottom:14px">';
+      h += '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px">' +
+        (fr ? 'Profil du plan' : 'Plan profile') + '</div>';
+      h += _profilHtml;
+      h += '</div>';
+    }
+    if (mc && mc._sweeps) {
+      var _sw = mc._sweeps;
+      var _baseMed = mc.rMedF || mc.medF || 0;
+      function _swDelta(swPair) {
+        if (!swPair || !swPair.down) return null;
+        var dn = (swPair.down.medF || 0) - _baseMed;
+        return { abs: Math.abs(dn), signed: dn, succPts: Math.round(((swPair.down.succ || 0) - (mc.succ || 0)) * 100) };
+      }
+      var _retDelta = _swDelta(_sw.returns);
+      var _infDelta = _swDelta(_sw.inflation);
+      var _winner = null, _kind = null;
+      if (_retDelta && _infDelta) {
+        if (_retDelta.abs >= _infDelta.abs) { _winner = _retDelta; _kind = 'returns'; }
+        else { _winner = _infDelta; _kind = 'inflation'; }
+      } else if (_retDelta) { _winner = _retDelta; _kind = 'returns'; }
+      else if (_infDelta) { _winner = _infDelta; _kind = 'inflation'; }
+      if (_winner && _baseMed > 0 && (_winner.abs / _baseMed) >= 0.10) {
+        var _newMed = _baseMed + _winner.signed;
+        var _succTxt = _winner.succPts === 0
+          ? (fr ? 'le taux de succès resterait essentiellement inchangé' : 'the success rate would stay essentially unchanged')
+          : (fr ? 'le taux de succès ' + (_winner.succPts < 0 ? 'baisserait de ' + Math.abs(_winner.succPts) : 'monterait de ' + _winner.succPts) + ' points' : 'the success rate would ' + (_winner.succPts < 0 ? 'drop ' + Math.abs(_winner.succPts) : 'rise ' + _winner.succPts) + ' points');
+        var _condFr = _kind === 'returns'
+          ? 'Si les rendements réels se situaient à 1 % de moins par an sur l\'horizon, '
+          : 'Si l\'inflation se situait à 1 % de plus par an sur l\'horizon, ';
+        var _condEn = _kind === 'returns'
+          ? 'If real returns were 1% lower per year over the horizon, '
+          : 'If inflation were 1% higher per year over the horizon, ';
+        var _watchSentence = (fr ? _condFr : _condEn) +
+          (fr ? 'le patrimoine médian passerait de ' + f$(_baseMed) + ' à ' + f$(_newMed) + ' et ' + _succTxt + '.'
+              : 'median wealth would move from ' + f$(_baseMed) + ' to ' + f$(_newMed) + ' and ' + _succTxt + '.');
+        h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:14px;font-size:11px;color:#bccbe0;line-height:1.6">' +
+          '<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-right:10px">' +
+          (fr ? 'Point à surveiller' : 'Watch point') + '</span>' +
+          _watchSentence +
+        '</div>';
+      }
+    }
+    h += '</div>';
+    return h;
+  }
+
+  /* OLD_STRENGTHS_RISKS_BLOCK_RETIRED_2026_04_29 — kept commented for git-blame
+     traceability; the live cover hero now uses Profil signals + Watch line.
+  function _legacyStrengthsRisks(d) {
+    var fr = d.fr, p = d.p, mc = d.mc;
+    var f$ = F.fmtCompact;
+    var horizonYrs = (p.deathAge || 90) - (p.age || 35);
+    var depAge = (mc && mc.p5Ruin != null && mc.p5Ruin < 200) ? mc.p5Ruin : null;
     var strengths = [];
     var risks = [];
     // Codex 2026-04-27: don't surface tax-optimization / estate-residual
@@ -1010,6 +1158,7 @@
     h += '</div>';
     return h;
   }
+  END_OLD_STRENGTHS_RISKS_BLOCK */
 
   // Phase 1 (premium shell): chart caption helper.
   // Codex 2026-04-27 mandate: "Chart captions need to be truly editorial.
@@ -1625,7 +1774,44 @@
     var h = secPage();
     h += '<h3 class="sec" id="sec-assessment" style="border-bottom-color:' + sC + '">' +
       '<span class="sec-n" style="background:' + sC + '">\u2606</span>' +
-      (fr ? 'Votre plan en 30 secondes' : 'Your plan in 30 seconds') + '</h3>';
+      (fr ? 'Votre plan, en d\u00e9tail' : 'Your plan, in detail') + '</h3>';
+
+    // 2026-04-29: phase-specific opening narrative \u2014 moved here from
+    // sec-diagnostic. Chapter 1 establishes the lifecycle frame before
+    // the inputs/hypoth\u00e8ses recap. sec-diagnostic now opens directly on
+    // strengths.
+    var _yrsToRet_a = (p.retAge || 65) - (p.age || 0);
+    var _phase_a = (d.R && d.R.phase) || 'accum';
+    var _nm_a = d.fn ? '<strong>' + F.esc(d.fn) + '</strong>' : '';
+    var _sn_a = d.sfn ? '<strong>' + F.esc(d.sfn) + '</strong>' : '';
+    var _coupleLabel_a = '';
+    if (d.R && d.R.couple) {
+      _coupleLabel_a = _sn_a ? (fr ? ' et ' + _sn_a : ' and ' + _sn_a)
+                             : (fr ? ' et votre conjoint(e)' : ' and your spouse');
+    }
+    var _nmFull_a = _nm_a ? (_nm_a + _coupleLabel_a) : '';
+    var _nmPfx_a = _nmFull_a ? (_nmFull_a + ', ') : '';
+    var _savingsLabel_a = (d.R && d.R.couple)
+      ? (fr ? '\u00e9pargne du m\u00e9nage' : 'household savings')
+      : (fr ? '\u00e9pargne actuelle' : 'current savings');
+    var _coupleNote_a = (d.R && d.R.couple)
+      ? (fr
+          ? ' Tous les chiffres ci-dessous refl\u00e8tent le m\u00e9nage combin\u00e9 (vous + ' + (d.sfn ? F.esc(d.sfn) : 'conjoint(e)') + (p.cAge ? ', ' + p.cAge + ' ans' : '') + (p.cRetAge ? ', retraite \u00e0 ' + p.cRetAge : '') + ').'
+          : ' All figures below reflect the combined household (you + ' + (d.sfn ? F.esc(d.sfn) : 'spouse') + (p.cAge ? ', age ' + p.cAge : '') + (p.cRetAge ? ', retiring at ' + p.cRetAge : '') + ').')
+      : '';
+    if (_phase_a === 'decum') {
+      h += narr(fr
+        ? _nmPfx_a + 'vous \u00eates maintenant \u00e0 la retraite. La question centrale n\'est plus combien \u00e9pargner, mais comment d\u00e9caisser : dans quel ordre, \u00e0 quel rythme, et avec quelle marge si les march\u00e9s d\u00e9\u00e7oivent. L\'horizon \u00e9valu\u00e9 ici va jusqu\'\u00e0 <strong>' + (p.deathAge || 90) + ' ans</strong>.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong>' + (p.deathAge || 90) + '</strong>.' + _coupleNote_a);
+    } else if (_phase_a === 'transition') {
+      h += narr(fr
+        ? _nmPfx_a + 'la retraite approche \u2014 dans <strong>' + _yrsToRet_a + ' ans</strong>. Les d\u00e9cisions des prochaines ann\u00e9es \u2014 date exacte de retraite, d\u00e9but des prestations, ajustements d\'\u00e9pargne \u2014 p\u00e8sent davantage que toutes celles qui suivront. Votre ' + _savingsLabel_a + ' de <strong>' + f$(d.totalBal) + '</strong> est le point de d\u00e9part.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', retirement' : 'Retirement') + ' is approaching \u2014 in <strong>' + _yrsToRet_a + ' years</strong>. The decisions of the next few years \u2014 exact retirement date, benefit start ages, savings adjustments \u2014 matter more than every decision that comes after. Your ' + _savingsLabel_a + ' of <strong>' + f$(d.totalBal) + '</strong> is the starting point.' + _coupleNote_a);
+    } else {
+      h += narr(fr
+        ? _nmPfx_a + 'vous \u00eates en accumulation, avec <strong>' + _yrsToRet_a + ' ans</strong> avant la retraite pr\u00e9vue \u00e0 ' + p.retAge + ' ans. La marge de man\u0153uvre est encore large : votre ' + _savingsLabel_a + ' de <strong>' + f$(d.totalBal) + '</strong> sera multipli\u00e9e par les cotisations \u00e0 venir et la dur\u00e9e de placement. Les ajustements faits maintenant ont l\'effet le plus important.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', you' : 'You') + ' are in accumulation, with <strong>' + _yrsToRet_a + ' years</strong> until planned retirement at age ' + p.retAge + '. There is still wide room to act: your ' + _savingsLabel_a + ' of <strong>' + f$(d.totalBal) + '</strong> will be multiplied by future contributions and time in the markets. Adjustments made now carry the largest leverage.' + _coupleNote_a);
+    }
 
     // ── Stated inputs / suitability frame ───────────────────────────
     // Re-anchors the report on what the client told us, so they can
@@ -1663,19 +1849,18 @@
       h += '</div>';
     }
 
-    // Grade + key metrics row
-    h += '<div style="display:flex;align-items:center;gap:20px;margin:14px 0">';
-    h += '<div style="text-align:center;flex-shrink:0">';
-    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + _fmtSucc(d.succVal) + '</span></div>';
-    h += '<div><span class="grade-pill" style="background:' + sC + '">' + g.letter + '</span></div>';
-    h += '</div>';
+    // 2026-04-29: removed the grade-ring + 4-up KPI block \u2014 those numbers
+    // already live on the cover hero. The AI overall assessment below
+    // opens the chapter without competing with its own metric badge.
     var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
-    h += '<div class="g4" style="flex:1">';
+    if (false) {
+    h += '<div style="display:none">';
     h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue);
     h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Revenu garanti / dépenses' : 'Guaranteed income / spending') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green);
     h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', (fr ? 'H\u00e9ritage net' : 'Net estate') + _scopeAss, C.gold);
     h += '</div></div>';
+    } // end if(false) — duplicate KPI block retired 2026-04-29
 
     // Overall AI assessment — synthesizes everything
     if (d.ai.overall_assessment) {
