@@ -1941,16 +1941,19 @@
     var h = secPage();
     h += F.Sec(secN, F.L('diagnostic', fr), 'sec-diagnostic');
 
+    // Vars used downstream — must be assigned regardless of whether the
+    // narrative below renders (it's gated to false in 2026-04-29 because
+    // chapter 1 already shows the lifecycle frame).
+    var g = F.grade(d.succVal, fr);
+    var phase = d.R.phase;
+    var yrsToRet = p.retAge - p.age;
+    var horizon = (p.deathAge || 90) - p.age;
+
     // 2026-04-29: phase narrative below is now suppressed at render time —
     // chapter 1 (sec-assessment) opens with the same lifecycle frame, so
     // re-stating it here was a duplicate. The block stays in the source
     // for git-blame traceability but renders nothing.
     if (false) {
-    // Phase-specific opening narrative
-    var g = F.grade(d.succVal, fr);
-    var phase = d.R.phase;
-    var yrsToRet = p.retAge - p.age;
-    var horizon = (p.deathAge || 90) - p.age;
 
     // Couple-aware naming + household framing — when modeled as couple, the
     // narrative needs to acknowledge both spouses or the reader can't tell
