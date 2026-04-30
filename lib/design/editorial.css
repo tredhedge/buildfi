@@ -409,14 +409,56 @@ body[data-bf-system="editorial"][data-bf-mode="pdf"] .bf-inline-toc[open] > div 
   .bf-inline-toc:not([open]) > summary::after { content: '' !important; }
 }
 
+/* Tablet: keep generous padding but tighten cover title (Plan v2.2 followup). */
+@media (max-width: 1024px) and (min-width: 761px) {
+  .bfe-title-cover { font-size: 48px; }
+}
+
+/* Phone: tighter padding + headings + grid collapse for embedded calculators. */
 @media (max-width: 760px) {
   .bfe-shell { padding: 16px; }
   .bfe-hero,
   .bfe-cover,
   .bfe-note,
   .bfe-chapter,
-  .bfe-section { padding: 24px 20px; }
-  .bfe-title-cover { font-size: 42px; }
-  .bfe-title-chapter { font-size: 34px; }
+  .bfe-section { padding: 22px 18px; }
+  .bfe-title-cover { font-size: 36px; line-height: 1.05; }
+  .bfe-title-chapter { font-size: 30px; line-height: 1.08; }
+  .bfe-title-section { font-size: 24px; line-height: 1.1; }
+  .bfe-chapter-frame { font-size: 16px; }
   .bfe-toc-item { grid-template-columns: 1fr; }
+  /*
+    Calculator widgets nested in editorial chapters — collapse 2-col and
+    label/value grids to single column on phones. Targets the inline
+    style="grid-template-columns:..." patterns used by guide 101's row()
+    helper and other calculator forms.
+  */
+  body[data-bf-system="editorial"] [style*="grid-template-columns:1fr 1fr"],
+  body[data-bf-system="editorial"] [style*="grid-template-columns: 1fr 1fr"],
+  body[data-bf-system="editorial"] [style*="grid-template-columns:1fr 1fr 1fr"],
+  body[data-bf-system="editorial"] [style*="grid-template-columns: 1fr 1fr 1fr"],
+  body[data-bf-system="editorial"] [style*="grid-template-columns:1fr 140px"],
+  body[data-bf-system="editorial"] [style*="grid-template-columns: 1fr 140px"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Inputs in calculators: enforce 44px touch target + readable size. */
+  body[data-bf-system="editorial"] input[type="number"],
+  body[data-bf-system="editorial"] input[type="text"],
+  body[data-bf-system="editorial"] select {
+    min-height: 40px;
+    font-size: 15px;
+  }
+  /* Bump SVG text on phone so embedded chart labels stay legible. */
+  body[data-bf-system="editorial"] svg text { font-size: 11px; }
+}
+
+/* Very narrow phone (iPhone SE 1st gen): even more padding reduction. */
+@media (max-width: 380px) {
+  .bfe-shell { padding: 12px; }
+  .bfe-hero,
+  .bfe-cover,
+  .bfe-note,
+  .bfe-chapter,
+  .bfe-section { padding: 18px 14px; }
+  .bfe-title-cover { font-size: 30px; }
 }

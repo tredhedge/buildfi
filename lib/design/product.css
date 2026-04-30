@@ -328,8 +328,30 @@ body[data-bf-system="product"] th {
   .bfp-rail { position: relative; top: auto; }
 }
 
+/* Phone (Plan v2.2 followup): tighter padding + grid collapse + touch targets. */
 @media (max-width: 760px) {
-  .bfp-shell { padding: 16px; }
-  .bfp-title-xl { font-size: 32px; }
-  .bfp-title-lg { font-size: 26px; }
+  .bfp-shell { padding: 14px; }
+  .bfp-title-xl { font-size: 28px; line-height: 1.1; }
+  .bfp-title-lg { font-size: 22px; line-height: 1.15; }
+  .bfp-title { font-size: 19px; }
+  .bfp-panel,
+  .bfp-hero,
+  .bfp-summary { padding: 16px; }
+  .bfp-mini-card,
+  .bfp-summary-card,
+  .bfp-compare-card,
+  .bfp-hint-card { padding: 14px; }
+  /* Touch target minimum (WCAG 2.5.5): chips + button rows clear 44px. */
+  .bfp-chip { min-height: 40px; padding: 10px 14px; }
+  .bfp-btn-row button,
+  .bfp-btn-row a { min-height: 44px; padding: 0 16px; }
+}
+
+/* Very narrow phone. */
+@media (max-width: 380px) {
+  .bfp-shell { padding: 10px; }
+  .bfp-title-xl { font-size: 24px; }
+  .bfp-grid-2,
+  .bfp-grid-3,
+  .bfp-grid-4 { gap: 10px; }
 }
