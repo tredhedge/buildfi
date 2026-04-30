@@ -6297,30 +6297,38 @@ function runMC(pInput, N, _progressCb) {
           var cstI = (rp.ox + rp.pt + rp.ins) * Math.pow(1 + (p.reCostInf || 0.03), y);
           reNet += rntI - cstI - dpaDed;
         }
-        // Downsizing / sale \u2014 with DPA recapture
+        // Downsizing / sale \u2014 routes net proceeds to NR cash, NOT reNet,
+        // because reNet later flows into OAS / GIS / taxable-income tests
+        // (lines ~6482, 6871, 6883, 7058, 7214). Sale proceeds are *capital*,
+        // not recurring income; mixing them inflates clawback and tax in the
+        // sale year. Reconciled audit P1 (2026-04-30 \u2014 user explicit:
+        // "sales of principal house is not taxable").
+        //   Principal residence: CRA s.40(2)(b) exemption \u2014 no taxable
+        //     gain; full net proceeds move to nr (ACB = cash).
+        //   Rental: recapture + CG inclusion enter reNet so the engine taxes
+        //     them this year via calcTax (recapture 100%, CG at rp.cg
+        //     inclusion rate). After-tax cash moves to nr. The prior in-branch
+        //     _propMarg pre-tax was double-taxing once reNet flowed through
+        //     calcTax.
         var doSell = (rp.dsAge > 0 && age === rp.dsAge && rp.v > 0) || (rp.sa > 0 && age >= rp.sa && rp.v > 0 && rp.dsAge === 0);
         if (doSell) {
           var grossProc = rp.v;
           var netProc = grossProc - rp.m - rp.heloc;
           if (rp.pri) {
-            // Principal residence: CG exempt, no DPA (shouldn't have DPA)
-            reNet += netProc;
+            // Principal residence \u2014 CRA principal-residence exemption.
+            // Cash transfer only; no income event.
+            nr += netProc;
+            nrACB += netProc;
           } else {
-            // Rental: compute recapture + capital gain separately
+            // Rental: split into recapture (100% taxable) + capital gain.
             var bldgPortion = grossProc * (1 - rp.landPct);
-            var landPortion = grossProc * rp.landPct;
-            // Recapture: min(totalDPA, bldgSalePrice - UCC) \u2014 taxed at 100%
             var recapture = Math.min(rp.totalDpa, Math.max(0, bldgPortion - rp.ucc));
-            // Capital gain: salePrice - originalCost (land + bldg original)
-            var origCost = rp.origV;
-            var capitalGain = Math.max(0, grossProc - origCost);
-            // Tax: recapture at marginal rate, CG at inclusion rate * marginal
-            var _propRetInc = retired ? (qpp||0) + (oas||0) + (penMonth||0)*12 + (ptInc||0) : p.sal * infM;
-            var _propMarg = (calcTax(Math.max(1, _propRetInc), 0, p.prov || 'QC').marg || 0.42);
-            var recapTax = recapture * _propMarg; // recapture taxed at marginal rate
-            var cgTax = capitalGain * (rp.cg || 0.5) * _propMarg; // CG inclusion ÃƒÆ’Ã¢â‚¬â€ marginal
-            var totalTax = recapTax + cgTax;
-            reNet += netProc - totalTax;
+            var capitalGain = Math.max(0, grossProc - rp.origV);
+            // Engine taxes these via reNet -> calcTax in the sale year.
+            reNet += recapture + capitalGain * (rp.cg || 0.5);
+            // Cash transfer; ACB = net cash (gain already recognized).
+            nr += netProc;
+            nrACB += netProc;
           }
           rp.v = 0; rp.m = 0; rp.rm = 0; rp.heloc = 0; rp.ucc = 0;
         }
@@ -6868,7 +6876,12 @@ function runMC(pInput, N, _progressCb) {
       }
       // OAS pass 2: recalculate with actual taxable income (withdrawals + meltdown)
       if (retired && age >= p.oasAge) {
-        var _oasFullInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + (rrifMin || 0) + (cRrifMin || 0) + (meltAmt || 0) + (_wFromRR || 0) + (reNet || 0) + (liraWith || 0);
+        // OAS clawback is per-individual income. cRrifMin (spouse RRIF
+        // minimum) was incorrectly included here \u2014 the primary\u2019s
+        // OAS does not flow to the spouse\u2019s tax return. GIS, by
+        // contrast, does combine couple income (handled in pass 2 below).
+        // Reconciled audit P1 (2026-04-30).
+        var _oasFullInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + (rrifMin || 0) + (meltAmt || 0) + (_wFromRR || 0) + (reNet || 0) + (liraWith || 0);
         var oasNew = calcOAS(p.oasAge, _oasFullInc, y, p.inf, age) * 12;
         if (oasNew !== oas) {
           govInc += (oasNew - oas); // adjust govInc with the OAS delta
