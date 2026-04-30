@@ -102,14 +102,16 @@ export const CPP_QPP = {
 // ── OAS ──────────────────────────────────────────────────────────
 
 export const OAS = {
-  maxMonthly: 742.31,
+  maxMonthly: 743.05,
+  /** Q2 2026 monthly amount for recipients aged 75+ (10% top-up over base). */
+  maxMonthly75: 817.36,
   clawbackThreshold: 95323,
   clawbackRate: 0.15,
   deferralBonusPerMonth: 0.006,
   maxDeferralFactor: 1.36,
   bonus75Plus: 1.10,
   department: "Service Canada / ESDC",
-  source: "Service Canada OAS payment amounts Q1 2026 (updated quarterly Jan/Apr/Jul/Oct)",
+  source: "Service Canada OAS payment amounts Q2 2026 (April–June; updated quarterly Jan/Apr/Jul/Oct)",
   sourceUrl: "canada.ca/en/services/benefits/publicpensions/cpp/old-age-security/payments.html",
   engineLines: "engine/index.js:20-21, 228-234",
 } as const;

@@ -7,7 +7,7 @@
 // annual-update pipeline, validation tooling, and future migration.
 //
 // Sources: CRA T1 General, Retraite Quebec, Service Canada, provincial tax acts
-// Last verified: 2026-02-27
+// Last verified: 2026-04-30 (Service Canada Q2 2026 OAS/GIS publication)
 // ══════════════════════════════════════════════════════════════════════
 
 // ---------------------------------------------------------------------------
@@ -79,9 +79,9 @@ const federal: FederalConstants = {
   FED_RATES: [0.14, 0.205, 0.26, 0.29, 0.33],
   FED_PERSONAL: 16452,
   OAS_CLAWBACK_THR: 95323,
-  OAS_MAX_MONTHLY: 742.31,
-  OAS_MAX_MONTHLY_75: 816.55, // Q1 2026; 10% boost over base for 75+
-  OAS_ZERO_POINT_65: 154708,  // 95323 + (742.31 * 12) / 0.15 ≈ 154,708
+  OAS_MAX_MONTHLY: 743.05,    // Q2 2026 (April–June); +0.10% from Q1 ($742.31)
+  OAS_MAX_MONTHLY_75: 817.36, // Q2 2026; 10% boost over base for 75+
+  OAS_ZERO_POINT_65: 154767,  // 95323 + (743.05 * 12) / 0.15 ≈ 154,767
   GIS_MAX_SINGLE: 1105.43,
   GIS_MAX_COUPLE: 667.41,
   QPP_MAX_MONTHLY: 1507.65,
@@ -122,11 +122,11 @@ const provincial: Record<ProvinceCode, ProvincialTax> = {
 
 const metadata: FiscalMetadata = {
   year: 2026,
-  verifiedDate: "2026-02-27",
+  verifiedDate: "2026-04-30",
   sources: [
     "CRA T1 General 2026 — federal brackets, rates, personal amount",
-    "Service Canada — OAS recovery threshold, OAS max monthly, GIS max (2026 Q1)",
-    "Retraite Quebec / Service Canada — QPP/CPP max monthly, YMPE, YAMPE, CPP2 enhancement",
+    "Service Canada — OAS recovery threshold + Q2 2026 (April–June) max monthly: $743.05 (65–74), $817.36 (75+); GIS max (2026 Q1)",
+    "Retraite Quebec / Service Canada — QPP/CPP max monthly $1,507.65, YMPE $74,600, YAMPE $85,000, CPP2 enhancement",
     "CRA — TFSA annual limit, pension income credit",
     "Provincial tax acts (QC, ON, BC, AB, SK, MB, NB, NS, PE, NL, NT, YT, NU)",
     "RCGT / EY 2025-2026 tables — provincial dividend tax credit rates",

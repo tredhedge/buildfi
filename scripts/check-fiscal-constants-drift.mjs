@@ -8,7 +8,7 @@
 //   * 95323                — OAS_CLAWBACK_THR
 //   * 1105.43              — GIS_MAX_SINGLE
 //   * 665.41               — GIS_MAX_COUPLE  (was drift target 667.41)
-//   * 742.31               — OAS_MAX_MONTHLY
+//   * 743.05               — OAS_MAX_MONTHLY (Q2 2026; was 742.31 in Q1)
 //   * 1507.65              — QPP_MAX_MONTHLY
 //   * 16452                — FED_PERSONAL
 //   * 74600                — QPP_MGA
@@ -42,7 +42,8 @@ const SACRED_LITERALS = [
   ['1105.43', 'GIS_MAX_SINGLE'],
   ['665.41', 'GIS_MAX_COUPLE'],
   ['667.41', 'GIS_MAX_COUPLE_LEGACY_DRIFT'],
-  ['742.31', 'OAS_MAX_MONTHLY'],
+  ['743.05', 'OAS_MAX_MONTHLY'],
+  ['742.31', 'OAS_MAX_MONTHLY_LEGACY_Q1_2026_DRIFT'],
   ['1507.65', 'QPP_MAX_MONTHLY'],
   ['74600', 'QPP_MGA'],
   ['108730', 'QC_BRACKET_2'],

@@ -1776,7 +1776,7 @@ var C = {
   RDTOH_REFUND_RATE: 0.3833,
   LCGE: 1250000,
   OAS_CLAWBACK_THRESHOLD: 95323,
-  OAS_MAX_MONTHLY: 742.31,
+  OAS_MAX_MONTHLY: 743.05,
   OAS_DEFERRAL_BONUS_PER_MONTH: 0.006,
   OAS_MAX_DEFERRAL_FACTOR: 1.36,
   OAS_75_PLUS_BONUS: 1.1,
@@ -2436,11 +2436,11 @@ function runTestSuite() {
   T("QPP","Partial",calcQPP(65,50000,30),757.87,5);
   T("QPP","Zero",calcQPP(65,0,0),0,0);
   T("QPP","RRQ2>MGA",calcQPP(65,80000,40)>1441?1:0,1,0);
-  T("OAS","Max@65",calcOAS(65,0,0,0),742.31,1);
-  T("OAS","Late@70",calcOAS(70,0,0,0),1009.54,2);
-  T("OAS","Clawback@100K",calcOAS(65,100000,0,0),683.85,2);
+  T("OAS","Max@65",calcOAS(65,0,0,0),743.05,1);
+  T("OAS","Late@70",calcOAS(70,0,0,0),1010.55,2);
+  T("OAS","Clawback@100K",calcOAS(65,100000,0,0),684.59,2);
   T("OAS","Full claw@200K",calcOAS(65,200000,0,0),0,1);
-  T("OAS","Indexed",calcOAS(65,0,10,0.02)>742.31?1:0,1,0);
+  T("OAS","Indexed",calcOAS(65,0,10,0.02)>743.05?1:0,1,0);
   T("GIS","Max single",calcGIS(65,0,0,0,false),1105.43,1);
   T("GIS","Max couple",calcGIS(65,0,0,0,true),665.41,1);
   T("GIS","Reduced",calcGIS(65,20000,0,0,false)<1105.43?1:0,1,0);
