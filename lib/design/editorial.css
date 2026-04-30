@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   BuildFi Editorial System
+   ═══════════════════════════════════════════════════════════════════════
+   For: guides (101, 201, meltdown, RRQ), AI reports, publication-style
+        reading experiences.
+   Voice: warm cream/gold, calmer reading rhythm, serif headings,
+          chapter pacing, print-ready.
+   Promoted from design-lab/experiments/round-2-8-guide-system/guide-system.css
+   (2026-04-28).
+
+   Consumers:
+   - Import via globals.css for utility classes (.bfe-shell, .bfe-chapter, ...)
+   - Import editorialTokens from editorial.tokens.ts for inline-style consumers.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Editorial palette — single mode (cream paper). No dark mode. */
+  --bfe-paper: #faf7f1;
+  --bfe-paper-2: #f3ede2;
+  --bfe-panel: #fffdf9;
+  --bfe-ink: #1f2840;
+  --bfe-text: #2a2520;
+  --bfe-muted: #5d6480;
+  --bfe-line: #ddd1be;
+  --bfe-gold-soft: #e4d0b2;
+  /*
+    Warm-tinted shadow (Plan v2.2 / Phase 0, 2026-04-29).
+    Replaces the previous navy-tinted rgba(31,40,64,.10). On a cream-paper
+    system, a navy shadow reads as a system mismatch — the codex round-3-7
+    experiment uses a warm-amber shadow that integrates into the page tone.
+  */
+  --bfe-shadow: 0 14px 34px rgba(56, 42, 19, 0.09);
+  --bfe-shadow-soft: 0 8px 18px rgba(53, 40, 20, 0.05);
+}
+
+body[data-bf-system="editorial"] {
+  margin: 0;
+  background:
+    radial-gradient(circle at top right, rgba(196, 148, 74, 0.12), transparent 26%),
+    linear-gradient(180deg, #f4efe6 0%, #f8f5ef 100%);
+  color: var(--bfe-ink);
+  font-family: var(--bf-font-sans-editorial);
+}
+
+a { color: inherit; }
+
+/* ── Shells ────────────────────────────────────────────────────────────── */
+.bfe-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px;
+  display: grid;
+  gap: 24px;
+}
+
+.bfe-shell--overview { grid-template-columns: 320px minmax(0, 1fr); }
+.bfe-shell--guide    { grid-template-columns: 300px minmax(0, 1fr); }
+
+/* ── Rail ──────────────────────────────────────────────────────────────── */
+.bfe-rail {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 26px 24px;
+  border: 1px solid rgba(196, 148, 74, 0.24);
+  border-radius: 26px;
+  background: rgba(255, 252, 247, 0.88);
+  box-shadow: var(--bfe-shadow);
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 148, 74, 0.35) transparent;
+}
+.bfe-rail::-webkit-scrollbar { width: 8px; }
+.bfe-rail::-webkit-scrollbar-track { background: transparent; }
+.bfe-rail::-webkit-scrollbar-thumb {
+  background: rgba(196, 148, 74, 0.35);
+  border-radius: 999px;
+}
+
+/* ── Eyebrow / kicker ──────────────────────────────────────────────────── */
+.bfe-kicker {
+  color: var(--bf-gold);
+  text-transform: uppercase;
+  letter-spacing: var(--bf-eyebrow-tracking);
+  font-size: var(--bf-eyebrow-size);
+  font-weight: var(--bf-eyebrow-weight);
+}
+
+/* ── Headings (serif) ──────────────────────────────────────────────────── */
+.bfe-title-rail,
+.bfe-title-cover,
+.bfe-title-chapter,
+.bfe-title-section {
+  font-family: var(--bf-font-serif-editorial);
+  line-height: 0.98;
+  margin: 0;
+}
+
+.bfe-title-rail   { margin: 10px 0 14px; font-size: 34px; }
+.bfe-title-cover  { font-size: 58px; }
+.bfe-title-chapter { font-size: 44px; }
+.bfe-title-section { font-size: 28px; }
+
+/* ── Copy ──────────────────────────────────────────────────────────────── */
+.bfe-copy,
+.bfe-rail p,
+.bfe-body p {
+  line-height: 1.65;
+  color: var(--bfe-muted);
+}
+
+/* ── Nav rails ─────────────────────────────────────────────────────────── */
+.bfe-nav { display: grid; gap: 8px; margin: 22px 0; }
+
+.bfe-nav a {
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: var(--bf-radius-pill);
+  color: #4c5570;
+  transition: all 0.18s ease;
+}
+.bfe-nav a:hover {
+  background: rgba(196, 148, 74, 0.10);
+  color: var(--bfe-ink);
+}
+.bfe-nav a.is-active {
+  background: rgba(196, 148, 74, 0.16);
+  box-shadow: inset 3px 0 0 var(--bf-gold);
+  color: var(--bfe-ink);
+  font-weight: 700;
+}
+
+/* Reduce visual weight of inactive items so the active one stands out */
+.bfe-nav:has(a.is-active) a:not(.is-active) {
+  opacity: 0.72;
+}
+
+/* ── Cards / panels ────────────────────────────────────────────────────── */
+.bfe-hero,
+.bfe-cover,
+.bfe-chapter,
+.bfe-section,
+.bfe-architecture {
+  border: 1px solid rgba(196, 148, 74, 0.18);
+  border-radius: var(--bf-radius-lg);
+  background: rgba(255, 252, 248, 0.92);
+  box-shadow: var(--bfe-shadow);
+}
+
+.bfe-hero,
+.bfe-cover { padding: 46px 44px; display: grid; gap: 22px; }
+
+.bfe-chapter,
+.bfe-section { margin-top: 22px; padding: 30px 32px; }
+
+/* ── Note callout ──────────────────────────────────────────────────────── */
+.bfe-note {
+  margin-top: 22px;
+  padding: 30px 32px;
+  border-left: 4px solid var(--bf-gold);
+  background: rgba(255, 251, 242, 0.92);
+  border-radius: var(--bf-radius-md);
+  box-shadow: var(--bfe-shadow);
+}
+
+/* ── TOC ───────────────────────────────────────────────────────────────── */
+.bfe-toc { display: grid; gap: 14px; margin-top: 18px; }
+
+.bfe-toc-item {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(196, 148, 74, 0.16);
+  border-radius: var(--bf-radius-md);
+  background: var(--bfe-panel);
+}
+
+.bfe-toc-item strong {
+  font: 700 16px var(--bf-font-mono);
+  color: var(--bf-gold);
+}
+
+.bfe-toc-item h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+/* ── Chapter header ────────────────────────────────────────────────────── */
+.bfe-chapter-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.bfe-chapter-frame {
+  max-width: 720px;
+  font-size: 19px;
+  line-height: 1.55;
+  color: #3f4761;
+}
+
+.bfe-chapter-meta {
+  padding: 10px 14px;
+  border-radius: var(--bf-radius-pill);
+  border: 1px solid rgba(196, 148, 74, 0.18);
+  background: rgba(255, 252, 246, 0.8);
+  color: var(--bfe-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.bfe-btn-gold,
+.bfe-btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: var(--bf-radius-pill);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.bfe-btn-gold { background: var(--bf-gold); color: #fff; }
+
+.bfe-btn-glass {
+  border: 1px solid rgba(196, 148, 74, 0.28);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--bfe-ink);
+}
+
+/* ── Mode switch (interactive vs PDF) ──────────────────────────────────── */
+.bfe-mode-switch {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(196, 148, 74, 0.18);
+  display: grid;
+  gap: 10px;
+}
+
+.bfe-mode-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.bfe-mode-buttons button {
+  appearance: none;
+  border: 1px solid rgba(196, 148, 74, 0.26);
+  background: #fffaf2;
+  color: var(--bfe-ink);
+  padding: 10px 14px;
+  border-radius: var(--bf-radius-pill);
+  font: 600 14px var(--bf-font-sans-editorial);
+  cursor: pointer;
+}
+
+body[data-bf-system="editorial"][data-bf-mode="interactive"] .bfe-mode-buttons button[data-bf-mode-set="interactive"],
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-mode-buttons button[data-bf-mode-set="pdf"] {
+  background: var(--bfe-ink);
+  color: #fff;
+  border-color: var(--bfe-ink);
+}
+
+body[data-bf-system="editorial"][data-bf-mode="interactive"] .bfe-pdf-only { display: none; }
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-interactive-only { display: none; }
+
+/* ── Mono utility ──────────────────────────────────────────────────────── */
+.bfe-mono { font-family: var(--bf-font-mono); }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  .bfe-shell--overview,
+  .bfe-shell--guide { grid-template-columns: 1fr; }
+  .bfe-rail { position: relative; top: auto; }
+}
+
+@media print {
+  body[data-bf-system="editorial"] { background: #fff !important; }
+  .bfe-rail,
+  .bfe-cover-actions,
+  .bfe-mode-switch { display: none !important; }
+  .bfe-shell--overview,
+  .bfe-shell--guide { display: block !important; max-width: none !important; padding: 0 !important; }
+  .bfe-hero,
+  .bfe-cover,
+  .bfe-chapter,
+  .bfe-section,
+  .bfe-note { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: transparent !important; padding: 12px 0 !important; }
+}
+
+@media (max-width: 760px) {
+  .bfe-shell { padding: 16px; }
+  .bfe-hero,
+  .bfe-cover,
+  .bfe-note,
+  .bfe-chapter,
+  .bfe-section { padding: 24px 20px; }
+  .bfe-title-cover { font-size: 42px; }
+  .bfe-title-chapter { font-size: 34px; }
+  .bfe-toc-item { grid-template-columns: 1fr; }
+}
