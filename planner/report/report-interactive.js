@@ -202,12 +202,21 @@
     // Scenario badge (sticky bar)
     _updateScenarioBadge();
 
-    // Fan chart marker — vertical line at selected year + bold trace
-    // re-drawn along the selected percentile (p25/p50/p75).
+    // Fan chart marker — vertical line at selected year only.
+    // Codex 2026-04-27: removed _redrawFanBoldTrace call. That helper
+    // grabs the FIRST .bf-fan-trace (which happens to be .bf-fan-p25 in
+    // document order) and rewrites its `d` attribute to follow whichever
+    // percentile state.scenario points at. With the default scenario='p50'
+    // running at boot, the P25 trace was clobbered to trace P50 coords —
+    // so when the user clicked the "Prudent (P25)" chip later, setActive
+    // would dim P50 and reveal P25, but P25's path was now identical to
+    // P50. Result: clicking P25 visibly toggled the highlight but the
+    // line + end-badge value still represented P50. The scenario chips
+    // are the single source of truth now; setActive in
+    // _bindFanScenarioChips handles emphasis via opacity, not d-rewrite.
     var fanCharts = document.querySelectorAll('[data-bf-chart="fan"]');
     for (var f = 0; f < fanCharts.length; f++) {
       _redrawFanMarker(fanCharts[f]);
-      _redrawFanBoldTrace(fanCharts[f]);
     }
 
     // Fire custom event so tooltip/other modules can react
@@ -861,7 +870,61 @@
       '.bf-whatif-compare-metric{font-weight:600;color:#4a3f33}',
       '.bf-whatif-compare-val{font-family:"JetBrains Mono",monospace;font-weight:600;color:#1a1610}',
       '.bf-whatif-compare-hint{font-size:9.5px;color:#888;margin-top:6px;font-style:italic}',
-      '@media print{.bf-whatif-panel,.bf-whatif-banner{display:none}}',
+      // ── Tabs (Stress vs What-If) ── codex 2026-04-27 split-tool edition.
+      '.bf-whatif-tabs{display:flex;gap:0;margin:6px 0 14px;border-bottom:1px solid #e8e0d4}',
+      '.bf-whatif-tab{background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 18px 12px;font-family:Inter,sans-serif;font-size:11.5px;font-weight:700;color:#706558;letter-spacing:0.4px;cursor:pointer;transition:color 0.15s,border-color 0.15s;text-align:left}',
+      '.bf-whatif-tab:hover{color:#252d39}',
+      '.bf-whatif-tab.active{color:#252d39;border-bottom-color:#c4944a}',
+      '.bf-whatif-tab-hint{font-weight:400;color:#9a9488;font-size:10.5px;margin-left:4px}',
+      '.bf-whatif-tab.active .bf-whatif-tab-hint{color:#a89460}',
+      '.bf-whatif-tabpanel[hidden]{display:none}',
+      // ── Stress tab — scenario cards with return-matrix preview.
+      '.bf-stress-agebar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0 14px;padding:10px 14px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px}',
+      '.bf-stress-agebar-label{font-size:11px;font-weight:600;color:#5a4f3a;letter-spacing:0.3px;white-space:nowrap}',
+      '.bf-stress-agebar-buttons{display:flex;flex-wrap:wrap;gap:6px;flex:1}',
+      '.bf-stress-age-btn{background:transparent;border:1px solid #e8e0d4;color:#5a4f3a;padding:4px 12px;border-radius:14px;font-size:10.5px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:Inter,sans-serif}',
+      '.bf-stress-age-btn:hover{border-color:#c4944a;color:#252d39}',
+      '.bf-stress-age-btn.active{background:#c4944a;color:#fff;border-color:#c4944a;font-weight:700}',
+      '.bf-stress-age-input{width:60px;padding:4px 6px;font-family:"JetBrains Mono",monospace;font-size:11px;background:#fff;color:#252d39;border:1px solid #e8e0d4;border-radius:4px;text-align:center}',
+      '.bf-stress-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px}',
+      '.bf-stress-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;background:#fff;border:1px solid #e8e0d4;border-radius:6px;padding:14px 16px;cursor:pointer;transition:all 0.15s;font-family:Inter,sans-serif;color:#252d39}',
+      '.bf-stress-card:hover{border-color:#c4944a;background:#fdfbf6;box-shadow:0 1px 4px rgba(196,154,74,0.12)}',
+      '.bf-stress-card.active{border-color:#c4944a;border-width:2px;padding:13px 15px;background:#fdf9ee;box-shadow:0 2px 6px rgba(196,154,74,0.18)}',
+      '.bf-stress-card-head{display:flex;align-items:center;justify-content:space-between;width:100%}',
+      '.bf-stress-card-label{font-family:"Playfair Display",Georgia,serif;font-size:14px;font-weight:600;color:#252d39;line-height:1.25;letter-spacing:-0.1px}',
+      '.bf-stress-card-desc{font-family:Inter,sans-serif;font-size:10.5px;color:#6a6155;line-height:1.5;font-weight:400}',
+      '.bf-stress-matrix{width:100%;display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:#f9f7f2;border-radius:4px;border:1px solid #f0ece4}',
+      '.bf-stress-matrix-header{font-size:9.5px;font-weight:700;color:#a89460;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;font-family:Inter,sans-serif}',
+      '.bf-stress-matrix-extra{font-size:11px;color:#5a4f3a;font-style:italic;padding:6px 10px;background:#f9f7f2;border-radius:4px;width:100%}',
+      '.bf-stress-row{display:flex;align-items:center;gap:6px}',
+      '.bf-stress-rowlabel{font-size:9.5px;color:#706558;font-weight:600;min-width:48px;font-family:Inter,sans-serif}',
+      '.bf-stress-cell{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:600;min-width:32px;text-align:right}',
+      '.bf-whatif-empty{padding:14px;text-align:center;color:#888;font-style:italic;font-size:11px}',
+      // Compact card grid + shared detail panel (codex 2026-04-27).
+      '.bf-stress-cards-compact{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-bottom:10px}',
+      '.bf-stress-card-compact{background:#fff;border:1px solid #e8e0d4;border-radius:6px;padding:10px 12px;text-align:left;cursor:pointer;transition:all 0.15s;font-family:Inter,sans-serif;color:#252d39}',
+      '.bf-stress-card-compact:hover{border-color:#c4944a;background:#fdfbf6}',
+      '.bf-stress-card-compact.active{border-color:#c4944a;border-width:2px;padding:9px 11px;background:#fdf9ee;box-shadow:0 2px 6px rgba(196,154,74,0.18)}',
+      '.bf-stress-card-compact .bf-stress-card-label{font-family:"Playfair Display",Georgia,serif;font-size:13px;font-weight:600;letter-spacing:-0.1px}',
+      '.bf-stress-detail{margin:10px 0 14px;padding:14px 18px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px}',
+      '.bf-stress-detail-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}',
+      '.bf-stress-detail-label{font-family:"Playfair Display",Georgia,serif;font-size:16px;font-weight:600;color:#252d39}',
+      '.bf-stress-detail-tag{font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#a89460;text-transform:uppercase;letter-spacing:0.6px}',
+      '.bf-stress-detail-desc{font-family:Inter,sans-serif;font-size:11px;color:#5a4f3a;line-height:1.6;margin-bottom:10px}',
+      '.bf-stress-detail-matrix{margin-top:6px}',
+      '.bf-stress-empty-hint{padding:12px 16px;background:#f9f7f2;border:1px dashed #e0d8c8;border-radius:6px;font-family:Inter,sans-serif;font-size:11px;font-style:italic;color:#888;text-align:center;margin:10px 0 14px}',
+      // Compact decision cards (What-If tab) — same selection model.
+      '.bf-whatif-card-grid-compact{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px}',
+      '.bf-whatif-decision-card-compact{background:#fff;border:1px solid #e8e0d4;border-radius:6px;padding:10px 12px;text-align:left;cursor:pointer;transition:all 0.15s;font-family:Inter,sans-serif;color:#252d39}',
+      '.bf-whatif-decision-card-compact:hover{border-color:#c4944a;background:#fdfbf6}',
+      '.bf-whatif-decision-card-compact.active{border-color:#c4944a;border-width:2px;padding:9px 11px;background:#fdf9ee;box-shadow:0 2px 6px rgba(196,154,74,0.18)}',
+      '.bf-whatif-decision-card-compact .bf-whatif-card-label{font-family:"Playfair Display",Georgia,serif;font-size:13px;font-weight:600;letter-spacing:-0.1px}',
+      '.bf-whatif-decision-detail{margin:10px 0 14px;padding:14px 18px;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px}',
+      // Codex 2026-04-27 audit fix E: hide front TOC page in web mode (chip
+      // dropdown handles navigation) but keep it for print/PDF.
+      '@media screen{.bf-toc-print-only{display:none !important}}',
+      '@media print{.bf-toc-print-only{display:block !important}}',
+      '@media print{.bf-whatif-panel,.bf-whatif-banner,.bf-stress-detail,.bf-whatif-decision-detail,.bf-stress-empty-hint{display:none}}',
       ''
     ].join('\n');
     document.head.appendChild(style);
@@ -984,12 +1047,12 @@
           var items = [];
           if ((rows.rrq || 0) > 0)    items.push({ label: qLbl,                                  value: rows.rrq,  color: '#5b8db8' });
           if ((rows.psv || 0) > 0)    items.push({ label: 'PSV/OAS',                             value: rows.psv,  color: '#2a8c46' });
-          if ((rows.pen || 0) > 0)    items.push({ label: 'Pension',                             value: rows.pen,  color: '#7c60b8' });
+          if ((rows.pen || 0) > 0)    items.push({ label: 'Pension',                             value: rows.pen,  color: '#4a4858' });
           if ((rows.srg || 0) > 0)    items.push({ label: 'SRG/GIS',                             value: rows.srg,  color: '#a07a3a' });
-          if ((rows.corp || 0) > 0)   items.push({ label: fr ? 'Dividendes / salaire corp.' : 'Corp dividends / salary', value: rows.corp, color: '#7c60b8' });
+          if ((rows.corp || 0) > 0)   items.push({ label: fr ? 'Dividendes / salaire corp.' : 'Corp dividends / salary', value: rows.corp, color: '#4a4858' });
           if ((rows.rental || 0) > 0) items.push({ label: fr ? 'Revenu locatif net' : 'Net rental cash flow', value: rows.rental, color: '#3aa39c' });
           if ((rows.pt || 0) > 0)     items.push({ label: fr ? 'Travail à temps partiel' : 'Part-time work', value: rows.pt, color: '#5a87b3' });
-          if ((rows.lira || 0) > 0)   items.push({ label: fr ? 'Retraits CRI/LIRA' : 'LIRA withdrawals', value: rows.lira, color: '#7C60B8' });
+          if ((rows.lira || 0) > 0)   items.push({ label: fr ? 'Retraits CRI/LIRA' : 'LIRA withdrawals', value: rows.lira, color: '#4a4858' });
           if ((rows.ret || 0) > 0)    items.push({ label: fr ? 'Retraits portefeuille (REER + CELI + NR)' : 'Portfolio withdrawals (RRSP + TFSA + NR)', value: rows.ret, color: '#c49a1a' });
           if (data.isCouple) {
             if ((rows.cRrq || 0) > 0) items.push({ label: qLbl + (fr ? ' conj.' : ' sp.'),         value: rows.cRrq, color: '#7390b8' });
@@ -1205,7 +1268,15 @@
   function boot() {
     _injectRuntimeStyles();
     _tagSectionPages();
-    _buildStickyBar();
+    // Codex 2026-04-27: top sticky bar (Dollars Real/Nominal toggle +
+    // Reset) removed. Per-chart interactivity now lives next to each
+    // chart (year slicer under income, scenario chips under MC fan).
+    // The global Real/Nominal toggle was the only remaining control,
+    // and only ~6 KPIs actually responded to it — false promise of
+    // interactivity. Hidden DOM hooks (#bf-year-slider, #bf-year-out,
+    // #bf-scenario-badge) are no longer emitted; updateLiveValues is
+    // tolerant of their absence (early-returns on null lookup).
+    // _buildStickyBar();
     // 2026-04-28: floating Court / Standard / Complet toggle removed.
     // Classifier is now the source of truth for report length — a reader
     // who chose "concise" gets the brief render at generate-time. The

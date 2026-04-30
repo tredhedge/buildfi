@@ -2526,5 +2526,7 @@ function runMC(p, N, _progressCb) {
       calcOAS: typeof calcOAS === "function" ? calcOAS : null,
       calcGIS: typeof calcGIS === "function" ? calcGIS : null
     };
+    // Stress-scenario catalog needed by report-whatif's Stress tab.
+    window.STR = STR;
   }
 })();
