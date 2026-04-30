@@ -879,6 +879,52 @@
     return h;
   }
 
+  // 2026-04-30 — "Comment lire ce rapport" preface.
+  // Names what each piece delivers in plain language so the reader
+  // knows where to look for what they need. Cream/gold palette, no
+  // boxes, hairline rules — quiet editorial register. Sits between
+  // the letter and the Sommaire exécutif.
+  function _renderHowToRead(d) {
+    var fr = d.fr;
+    var rows = fr ? [
+      { label: 'Sommaire exécutif',          desc: 'Le verdict en 30 secondes — taux de succès, patrimoine médian, points à surveiller.' },
+      { label: 'Chapitre I',                  desc: 'Les fondations — votre profil, vos comptes, vos revenus de retraite, la projection.' },
+      { label: 'Chapitre II',                 desc: 'Les risques — fourchette de résultats, tests de stress, sensibilités du plan.' },
+      { label: 'Chapitre III',                desc: 'Les stratégies — fiscalité, ordre de retrait, succession, plan d\'action.' },
+      { label: 'Chapitre IV',                 desc: 'Explorer — un simulateur interactif pour tester vos propres hypothèses.' },
+      { label: 'Annexe',                      desc: 'Méthodologie, hypothèses détaillées, glossaire des termes utilisés.' }
+    ] : [
+      { label: 'Executive summary',           desc: 'The 30-second verdict — success rate, median wealth, watch points.' },
+      { label: 'Chapter I',                   desc: 'The foundations — your profile, your accounts, your retirement income, the projection.' },
+      { label: 'Chapter II',                  desc: 'The risks — outcome range, stress tests, plan sensitivities.' },
+      { label: 'Chapter III',                 desc: 'The strategies — tax, withdrawal order, succession, action plan.' },
+      { label: 'Chapter IV',                  desc: 'Explore — an interactive simulator to test your own assumptions.' },
+      { label: 'Appendix',                    desc: 'Methodology, detailed assumptions, glossary of terms used.' }
+    ];
+    var h = '<div class="how-to-read sec-page" id="how-to-read" style="background:#fefcf9;padding:36px 40px 32px;margin-bottom:24px;border:1px solid #e8e0d4;border-radius:8px">';
+    h += '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px">' +
+      (fr ? 'Comment lire ce rapport' : 'How to read this report') + '</div>';
+    h += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:19px;font-style:italic;font-weight:500;color:#1a1610;line-height:1.5;margin-bottom:24px;max-width:680px">' +
+      (fr
+        ? 'Ce rapport est organisé pour deux types de lecture : un survol de 30 secondes, ou une lecture en profondeur. Voici ce que chaque section vous donne.'
+        : 'This report is organized for two reading speeds: a 30-second skim, or a deep read. Here is what each piece delivers.') + '</div>';
+    rows.forEach(function(r) {
+      h += '<div style="display:grid;grid-template-columns:160px 1fr;gap:18px;padding:10px 0;border-bottom:1px solid #ece4d4">' +
+        '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#8a7a5c;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4">' +
+          F.esc(r.label) + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:12px;color:#3a322a;line-height:1.7">' +
+          F.esc(r.desc) + '</div>' +
+      '</div>';
+    });
+    h += '<div style="margin-top:22px;padding-top:14px;border-top:2px solid #c49a1a;font-family:Inter,sans-serif;font-size:11px;color:#5a4f3a;line-height:1.7;font-style:italic">' +
+      (fr
+        ? 'Les chiffres et tableaux proviennent du moteur de simulation BuildFi (5 000 trajectoires). Le contenu narratif est rédigé par Claude Opus 4 à partir des résultats du moteur, puis vérifié par les contrôles AMF de la plateforme.'
+        : 'Figures and tables come from the BuildFi simulation engine (5 000 trajectories). The narrative content is drafted by Claude Opus 4 from engine outputs, then validated by the platform\'s AMF compliance checks.') +
+      '</div>';
+    h += '</div>';
+    return h;
+  }
+
   function _renderExecSummary(d) {
     var fr = d.fr, p = d.p, mc = d.mc;
     var f$ = F.fmtCompact;
@@ -2896,6 +2942,47 @@
       ? 'Six sc\u00e9narios nomm\u00e9s ont \u00e9t\u00e9 rejou\u00e9s en Monte Carlo (500 simulations chacun). Sauf indication contraire, le choc d\u00e9bute au d\u00e9but de la retraite (' + _stressStartAge + ' ans, 1<sup>re</sup> ann\u00e9e). Le tableau montre le taux de succ\u00e8s, l\'\u00e9cart vs le sc\u00e9nario de base et le patrimoine m\u00e9dian final. Ces tests ne sont pas additifs et se lisent ind\u00e9pendamment.'
       : 'Six named scenarios were re-run in Monte Carlo (500 simulations each). Unless otherwise noted, the shock starts at retirement (age ' + _stressStartAge + ', year 1). The table shows the resulting success rate, the delta vs baseline, and median final wealth. Tests are not additive and read best independently.');
 
+    // 2026-04-30 \u2014 Binding-stress synthesis line. Picks the worst-case
+    // scenario (lowest success rate, ties broken by lowest median) and
+    // names it in one editorial sentence BEFORE the data table. The
+    // table proves it; the line tells the story.
+    var _worstK = null;
+    var _worstSucc = Infinity;
+    var _worstMed = Infinity;
+    Object.keys(META).forEach(function(k) {
+      var run = s[k];
+      if (!run) return;
+      var sc = run.succ != null ? run.succ : 1;
+      var md = run.medF != null ? run.medF : 0;
+      if (sc < _worstSucc || (sc === _worstSucc && md < _worstMed)) {
+        _worstSucc = sc;
+        _worstMed = md;
+        _worstK = k;
+      }
+    });
+    if (_worstK && isFinite(_worstSucc) && _worstSucc < 1) {
+      var _worstMeta = META[_worstK];
+      var _worstSuccPct = Math.round(_worstSucc * 100);
+      var _worstDelta = Math.round((_worstSucc - baseSucc) * 100);
+      var _worstName = fr ? _worstMeta.fr : _worstMeta.en;
+      var _bindStr = '';
+      if (_worstDelta <= -10) {
+        _bindStr = fr
+          ? 'Le sc\u00e9nario qui p\u00e8se le plus sur le plan est <strong>' + _worstName + '</strong> : le taux de succ\u00e8s passerait de ' + Math.round(baseSucc * 100) + ' % \u00e0 <strong>' + _worstSuccPct + ' %</strong> (' + _worstDelta + ' pts).'
+          : 'The scenario that weighs most on the plan is <strong>' + _worstName + '</strong>: the success rate would move from ' + Math.round(baseSucc * 100) + ' % to <strong>' + _worstSuccPct + ' %</strong> (' + _worstDelta + ' pts).';
+      } else if (_worstDelta <= -3) {
+        _bindStr = fr
+          ? 'Le sc\u00e9nario \u00e0 plus fort impact reste <strong>' + _worstName + '</strong>, mais le mouvement est mod\u00e9r\u00e9 : ' + Math.round(baseSucc * 100) + ' % \u2192 <strong>' + _worstSuccPct + ' %</strong> (' + _worstDelta + ' pts).'
+          : 'The highest-impact scenario remains <strong>' + _worstName + '</strong>, though the move is modest: ' + Math.round(baseSucc * 100) + ' % \u2192 <strong>' + _worstSuccPct + ' %</strong> (' + _worstDelta + ' pts).';
+      } else {
+        _bindStr = fr
+          ? 'Aucun des six sc\u00e9narios ne d\u00e9place mat\u00e9riellement le plan : tous restent dans une fourchette de ' + Math.abs(_worstDelta) + ' points du taux de succ\u00e8s de base. La structure absorbe les chocs simul\u00e9s.'
+          : 'None of the six scenarios materially displaces the plan: all stay within ' + Math.abs(_worstDelta) + ' points of the baseline success rate. The structure absorbs the simulated shocks.';
+      }
+      h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 18px;margin:8px 0 14px;font-family:\'Playfair Display\',Georgia,serif;font-size:14px;font-style:italic;color:#3a322a;line-height:1.6;max-width:680px">' +
+        _bindStr + '</div>';
+    }
+
     h += '<table class="tbl"><thead><tr>';
     h += '<th style="text-align:left">' + (fr ? 'Sc\u00e9nario' : 'Scenario') + '</th>';
     h += '<th style="text-align:left">' + (fr ? 'Description' : 'Description') + '</th>';
@@ -3579,8 +3666,14 @@
     var guarPct = Math.round(d.covRatio * 100);
     var wdPct = Math.max(0, 100 - guarPct);
     h += narr(fr
-      ? 'Vos revenus de retraite mêlent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) à des retraits sur vos comptes. Le socle garanti couvre <strong>' + guarPct + ' %</strong> de vos dépenses cibles' + (wdPct > 0 ? '\u00a0; les <strong>' + wdPct + ' %</strong> restants viennent de votre patrimoine. Plus le socle est élevé, moins votre plan dépend des marchés.' : '. Votre socle garanti est suffisant — vos retraits servent surtout d\'optimisation fiscale, pas de dépendance.')
-      : 'Your retirement income blends a guaranteed floor (CPP/QPP, OAS, employer pensions) with withdrawals from your accounts. The guaranteed floor covers <strong>' + guarPct + ' %</strong> of your target spending' + (wdPct > 0 ? '; the remaining <strong>' + wdPct + ' %</strong> comes from your wealth. The taller the floor, the less your plan depends on markets.' : '. Your guaranteed floor is enough — withdrawals serve tax optimization, not dependency.'));
+      ? (d.R.couple && d.fn && d.sfn
+          ? '<strong>' + F.esc(d.fn) + '</strong> et <strong>' + F.esc(d.sfn) + '</strong>, vos revenus de retraite combinent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) — versé à chacun selon ses droits — à des retraits sur les comptes du ménage.'
+          : 'Vos revenus de retraite mêlent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) à des retraits sur vos comptes.'
+        ) + ' Le socle garanti couvre <strong>' + guarPct + ' %</strong> des dépenses cibles' + (wdPct > 0 ? '\u00a0; les <strong>' + wdPct + ' %</strong> restants viennent du patrimoine. Plus le socle est élevé, moins le plan dépend des marchés.' : '. Le socle garanti suffit — les retraits servent surtout d\'optimisation fiscale, pas de dépendance.')
+      : (d.R.couple && d.fn && d.sfn
+          ? '<strong>' + F.esc(d.fn) + '</strong> and <strong>' + F.esc(d.sfn) + '</strong>, your retirement income combines a guaranteed floor (CPP/QPP, OAS, employer pensions) — paid to each according to their entitlements — with withdrawals from household accounts.'
+          : 'Your retirement income blends a guaranteed floor (CPP/QPP, OAS, employer pensions) with withdrawals from your accounts.'
+        ) + ' The guaranteed floor covers <strong>' + guarPct + ' %</strong> of target spending' + (wdPct > 0 ? '; the remaining <strong>' + wdPct + ' %</strong> comes from wealth. The taller the floor, the less the plan depends on markets.' : '. The guaranteed floor is enough — withdrawals serve tax optimization, not dependency.'));
 
     // P1.1 — Real/nominal disclosure + scope reconciliation. Codex flagged
     // that "Annual Income Sources total = 131K$" (gross of withdrawals)
@@ -4066,6 +4159,29 @@
     var h = secPage();
     h += F.Sec(secN, F.L('tax', fr), 'sec-tax');
 
+    // 2026-04-30 — Editorial pull-quote opener. Names the SHAPE of the
+    // tax problem before delivering numbers. Pulls from avgEffRate +
+    // taxAlpha to land on the right framing for THIS plan: low-rate
+    // surplus → emphasis shifts to legacy planning; mid-rate → cadence
+    // is the lever; high-rate → meltdown / draw-order is the lever.
+    var _txEff = d.avgEffRate || 0;
+    var _txQuote;
+    if (_txEff > 0 && _txEff < 0.15) {
+      _txQuote = fr
+        ? 'L\'impôt n\'est pas le problème de ce plan — la cadence et la transmission le sont.'
+        : 'Tax is not the problem in this plan — cadence and succession are.';
+    } else if (_txEff < 0.25) {
+      _txQuote = fr
+        ? 'L\'impôt n\'est pas le problème — la cadence l\'est.'
+        : 'Tax is not the problem — cadence is.';
+    } else {
+      _txQuote = fr
+        ? 'L\'impôt est le levier le plus tangible de ce plan : sa cadence change la trajectoire viagère.'
+        : 'Tax is the most tangible lever in this plan: its cadence changes the lifetime trajectory.';
+    }
+    h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 22px;margin:8px 0 18px;font-family:\'Playfair Display\',Georgia,serif;font-size:18px;font-style:italic;font-weight:500;color:#1a1610;line-height:1.5;max-width:680px">' +
+      _txQuote + '</div>';
+
     // Intro narrative — Phase 8 adds a province-specific fiscal reference
     // so the tax section reads as tailored to the client's actual jurisdiction.
     var _retLen = revData.filter(function(r) { return r.age >= p.retAge; }).length;
@@ -4442,6 +4558,14 @@
     var fR = function(v) { return F.fmtMoney(v, fr); }, f$ = F.fmtCompact;
     var h = secPage();
     h += F.Sec(secN, F.L('meltdown', fr), 'sec-meltdown');
+
+    // 2026-04-30 — Editorial pull-quote opener. Frames the meltdown
+    // strategy as a CADENCE move, not a tax dodge. AMF-safe phrasing.
+    h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 22px;margin:8px 0 18px;font-family:\'Playfair Display\',Georgia,serif;font-size:18px;font-style:italic;font-weight:500;color:#1a1610;line-height:1.5;max-width:680px">' +
+      (fr
+        ? 'Le décaissement anticipé du REER ne réduit pas l\'impôt total — il en lisse la cadence avant que la conversion FERR ne l\'impose.'
+        : 'Early RRSP drawdown does not reduce total tax — it smooths the cadence before mandatory RRIF conversion forces the timing.') +
+      '</div>';
 
     var _pd72 = mc.pD ? mc.pD.find(function(d2) { return d2.age === 72; }) : null;
     var _rrspAt72 = _pd72 ? (_pd72.mp_rr || 0) : 0;
@@ -6403,6 +6527,12 @@ h += secPageEnd();
     // Advisor letter — first content page so the human framing comes before
     // any numbers. Sets the emotional lens for the report.
     h += renderAdvisorLetter(d);
+
+    // 2026-04-30 — "Comment lire ce rapport" preface. Sits between the
+    // letter and the Sommaire exécutif so the reader has a 30-second
+    // map of what each piece delivers before encountering numbers.
+    // Calm editorial register — hairline rules, no boxes, no badges.
+    h += _renderHowToRead(d);
 
     // Executive summary — 1-page TL;DR right after the warm opening, so a
     // reader who only flips through still gets the verdict in 30 seconds
