@@ -37,7 +37,7 @@
     { id: "sec-cashflow",    label: "Year-by-year cash flow",   fr: "Flux",             en: "cash flow" },
     { id: "sec-tax",         label: "Tax strategy",             fr: "Fiscalit",         en: "Tax" },
     { id: "sec-stress",      label: "Stress-test scenarios",    fr: "stress",           en: "Stress" },
-    { id: "sec-actions",     label: "Action plan",              fr: "Plan d'action",    en: "Action plan" },
+    { id: "sec-actions",     label: "Levers by horizon",        fr: "Leviers par horizon", en: "Levers by horizon" },
     { id: "sec-methodology", label: "Methodology",              fr: "Méthodologie",     en: "Methodology" },
     { id: "sec-assumptions", label: "Assumptions appendix",     fr: "Hypoth\u00e8ses",  en: "Assumptions" },
     { id: "sec-signature",   label: "Signature page",           fr: "Accus\u00e9",       en: "Acknowledgment" }

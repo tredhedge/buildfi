@@ -436,7 +436,7 @@
     { id: 'sec-profile',     mandatory: true,  name: 'Profile' },
     { id: 'sec-family',      mandatory: false, name: 'Family' },
     { id: 'sec-goals',       mandatory: false, name: 'Goals' },
-    { id: 'sec-real-estate', mandatory: false, name: 'Real estate' },
+    { id: 'sec-realestate', mandatory: false, name: 'Real estate' },
     { id: 'sec-corp',        mandatory: false, name: 'Corporation' },
     { id: 'sec-rsu',         mandatory: false, name: 'RSU' },
     { id: 'sec-debt',        mandatory: false, name: 'Debts' },

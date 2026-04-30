@@ -684,7 +684,7 @@
       // on the .sec-page wrapper itself so display:none hides everything.
       '.bf-print-exec [data-section-id="sec-profile"],',
       '.bf-print-exec [data-section-id="sec-family"],',
-      '.bf-print-exec [data-section-id="sec-real-estate"],',
+      '.bf-print-exec [data-section-id="sec-realestate"],',
       '.bf-print-exec [data-section-id="sec-realestate"],',
       '.bf-print-exec [data-section-id="sec-rsu"],',
       '.bf-print-exec [data-section-id="sec-debt"],',

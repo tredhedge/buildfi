@@ -208,6 +208,7 @@ if (cmd === 'render') {
       ok++;
     } catch (e) {
       console.log('  ⨯ ' + prof.id + '_' + prof.lang + ' — render error: ' + e.message);
+      if (process.env.BF_TRACE) console.log(e.stack);
       errored++;
     }
   });

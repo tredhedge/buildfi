@@ -60,7 +60,6 @@ function applyFixPlan(data, fixPlan) {
     'sec-gis': 'gis_insight',
     'sec-meltdown': 'meltdown_insight',
     'sec-debt': 'debt_insight',
-    'sec-real-estate': 'real_estate_insight',
     'sec-realestate': 'real_estate_insight',
     'sec-rsu': 'rsu_insight',
     'sec-risk': 'riskInsight',

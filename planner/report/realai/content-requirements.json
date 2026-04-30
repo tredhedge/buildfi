@@ -59,7 +59,7 @@
           "id": "cap_rate_or_cashflow",
           "label": "Cap rate or net rental cashflow named",
           "patterns": ["cap rate", "taux de capitalisation", "net.{0,8}cash[\\s-]?flow", "flux net", "rendement net.{0,15}location", "net rental.{0,10}(income|yield)"],
-          "section": "sec-real-estate",
+          "section": "sec-realestate",
           "min_section": "any"
         },
         {

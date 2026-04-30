@@ -90,7 +90,7 @@
     {
       "id": "sec-letter",
       "title": "sec-letter",
-      "bytes": 20408,
+      "bytes": 20414,
       "offset": 16448,
       "isThin": false,
       "isEmpty": false
@@ -99,7 +99,7 @@
       "id": "sec-assessment",
       "title": "☆Votre plan en 30 secondes",
       "bytes": 3796,
-      "offset": 36856,
+      "offset": 36862,
       "isThin": false,
       "isEmpty": false
     },
@@ -107,7 +107,7 @@
       "id": "sec-diagnostic",
       "title": "1Sommaire exécutif",
       "bytes": 4928,
-      "offset": 40652,
+      "offset": 40658,
       "isThin": false,
       "isEmpty": false
     },
@@ -115,7 +115,7 @@
       "id": "sec-levers",
       "title": "2Ce qui pourrait changer le plan",
       "bytes": 2488,
-      "offset": 45580,
+      "offset": 45586,
       "isThin": false,
       "isEmpty": false
     },
@@ -123,7 +123,7 @@
       "id": "sec-profile",
       "title": "3Votre profil",
       "bytes": 9857,
-      "offset": 48068,
+      "offset": 48074,
       "isThin": false,
       "isEmpty": false
     },
@@ -131,7 +131,7 @@
       "id": "sec-family",
       "title": "4Votre famille",
       "bytes": 1423,
-      "offset": 57925,
+      "offset": 57931,
       "isThin": false,
       "isEmpty": false
     },
@@ -139,7 +139,7 @@
       "id": "sec-goals",
       "title": "5Vos objectifs",
       "bytes": 3301,
-      "offset": 59348,
+      "offset": 59354,
       "isThin": false,
       "isEmpty": false
     },
@@ -147,7 +147,7 @@
       "id": "sec-projection",
       "title": "6Projection du patrimoine",
       "bytes": 17363,
-      "offset": 62649,
+      "offset": 62655,
       "isThin": false,
       "isEmpty": false
     },
@@ -155,7 +155,7 @@
       "id": "sec-revenue",
       "title": "7Revenus de retraite",
       "bytes": 33120,
-      "offset": 80012,
+      "offset": 80018,
       "isThin": false,
       "isEmpty": false
     },
@@ -163,7 +163,7 @@
       "id": "sec-risk",
       "title": "8Risque & sensibilité",
       "bytes": 3645,
-      "offset": 113132,
+      "offset": 113138,
       "isThin": false,
       "isEmpty": false
     },
@@ -171,7 +171,7 @@
       "id": "sec-stress",
       "title": "9Tests de stress",
       "bytes": 4794,
-      "offset": 116777,
+      "offset": 116783,
       "isThin": false,
       "isEmpty": false
     },
@@ -179,7 +179,7 @@
       "id": "sec-cashflow",
       "title": "10Flux de trésorerie annuel",
       "bytes": 3137,
-      "offset": 121571,
+      "offset": 121577,
       "isThin": false,
       "isEmpty": false
     },
@@ -187,7 +187,7 @@
       "id": "sec-tax",
       "title": "11Stratégie fiscale",
       "bytes": 6092,
-      "offset": 124708,
+      "offset": 124714,
       "isThin": false,
       "isEmpty": false
     },
@@ -195,7 +195,7 @@
       "id": "sec-draworder",
       "title": "12Ordre des retraits",
       "bytes": 6509,
-      "offset": 130800,
+      "offset": 130806,
       "isThin": false,
       "isEmpty": false
     },
@@ -203,7 +203,7 @@
       "id": "sec-gis",
       "title": "13Analyse SRG",
       "bytes": 5115,
-      "offset": 137309,
+      "offset": 137315,
       "isThin": false,
       "isEmpty": false
     },
@@ -211,7 +211,7 @@
       "id": "sec-insurance",
       "title": "14Assurance — Écart de résilience",
       "bytes": 1422,
-      "offset": 142424,
+      "offset": 142430,
       "isThin": false,
       "isEmpty": false
     },
@@ -219,15 +219,15 @@
       "id": "sec-timeline",
       "title": "15Chronologie des décisions",
       "bytes": 4578,
-      "offset": 143846,
+      "offset": 143852,
       "isThin": false,
       "isEmpty": false
     },
     {
       "id": "sec-actions",
-      "title": "16Plan d'action",
-      "bytes": 6366,
-      "offset": 148424,
+      "title": "16Leviers par horizon",
+      "bytes": 6372,
+      "offset": 148430,
       "isThin": false,
       "isEmpty": false
     },
@@ -235,7 +235,7 @@
       "id": "sec-closing-recap",
       "title": "17Conclusion — ce que cela signifie",
       "bytes": 3945,
-      "offset": 154790,
+      "offset": 154802,
       "isThin": false,
       "isEmpty": false
     },
@@ -243,7 +243,7 @@
       "id": "sec-fees",
       "title": "18Frais & coûts du portefeuille",
       "bytes": 5931,
-      "offset": 158735,
+      "offset": 158747,
       "isThin": false,
       "isEmpty": false
     },
@@ -251,15 +251,15 @@
       "id": "sec-whatif",
       "title": "sec-whatif",
       "bytes": 83,
-      "offset": 164666,
+      "offset": 164678,
       "isThin": true,
       "isEmpty": true
     },
     {
       "id": "sec-signature",
       "title": "sec-signature",
-      "bytes": 578985,
-      "offset": 164749,
+      "bytes": 579271,
+      "offset": 164761,
       "isThin": false,
       "isEmpty": false
     }
@@ -268,17 +268,17 @@
     {
       "type": "area",
       "title": "Composition du patrimoine (actifs liquides + illiquides)",
-      "offset": 63184
+      "offset": 63190
     },
     {
       "type": "area",
       "title": "Sources de revenus dans le temps",
-      "offset": 96568
+      "offset": 96574
     },
     {
       "type": "fan",
       "title": null,
-      "offset": 427340
+      "offset": 427352
     }
   ],
   "percentages": [
@@ -295,72 +295,72 @@
     {
       "pct": 4,
       "context": "Inflation persistante",
-      "offset": 119110
+      "offset": 119116
     },
     {
       "pct": 75,
       "context": "des simulations Monte Carlo terminent sous ce niveau,",
-      "offset": 514776
+      "offset": 514787
     },
     {
       "pct": 75,
       "context": "of Monte Carlo simulations end below this level,",
-      "offset": 514955
+      "offset": 514966
     },
     {
       "pct": 25,
       "context": "des simulations terminent sous ce niveau,",
-      "offset": 515475
+      "offset": 515486
     },
     {
       "pct": 25,
       "context": "of simulations end below this level,",
-      "offset": 515642
+      "offset": 515653
     },
     {
       "pct": 60,
       "context": "à surveiller, sous",
-      "offset": 516378
+      "offset": 516389
     },
     {
       "pct": 60,
       "context": "monitor closely, under",
-      "offset": 516592
+      "offset": 516603
     },
     {
       "pct": 50,
       "context": "'Tax mechanism allowing up to",
-      "offset": 523323
+      "offset": 523334
     },
     {
       "pct": 80,
       "context": "Can refinance up to",
-      "offset": 599893
+      "offset": 599904
     },
     {
       "pct": 10,
       "context": "'Réduire les dépenses de",
-      "offset": 686301
+      "offset": 686312
     },
     {
       "pct": 90,
       "context": "'Train de vie ajusté à",
-      "offset": 686372
+      "offset": 686383
     },
     {
       "pct": 90,
       "context": "'Lifestyle adjusted to",
-      "offset": 686445
+      "offset": 686456
     },
     {
       "pct": 50,
       "context": "'Cotisations REER majorées de",
-      "offset": 687565
+      "offset": 687576
     },
     {
       "pct": 50,
       "context": "'RRSP contributions raised",
-      "offset": 687656
+      "offset": 687667
     }
   ]
 }

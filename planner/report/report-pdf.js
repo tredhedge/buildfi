@@ -4209,8 +4209,13 @@
     var _bizDiv = _bizRow.corpDiv || 0;
     var _bizRev = (_bizRow.bizGross != null) ? _bizRow.bizGross : (p.bizRevenue || 0);
     var _bizTaxRate = (_bizRev > 0 && _bizRow.corpTax != null) ? Math.max(0, Math.min(1, _bizRow.corpTax / _bizRev)) : 0.125;
-    var _ptInfo = D.PROV_TAX[p.prov || 'QC'] || D.PROV_TAX.QC;
-    var _persBase = D.FED_RATES[0] * _ptInfo.abate + _ptInfo.r[0];
+    // Bug fix (audit 2026-04-29 / P0): D.PROV_TAX / D.FED_RATES were
+    // never properties on the data object — those constants live as
+    // top-level vars exported by report-engine.js. Crashed renderCorp
+    // for ccpc_owner_en + any other ccpc-tagged profile.
+    var _ptInfo = (typeof PROV_TAX !== 'undefined' && PROV_TAX) ? (PROV_TAX[p.prov || 'QC'] || PROV_TAX.QC) : { abate: 1, r: [0.15] };
+    var _fedRate0 = (typeof FED_RATES !== 'undefined' && FED_RATES && FED_RATES[0] != null) ? FED_RATES[0] : 0.15;
+    var _persBase = _fedRate0 * _ptInfo.abate + _ptInfo.r[0];
     var _intRate = Math.round((_bizTaxRate || 0.125) * 100 + _persBase * 70);
 
     var h = secPage();
@@ -5051,7 +5056,10 @@ h += secPageEnd();
     var TL = window.BActions.TL;
 
     var h = secPage();
-    h += F.Sec(secN, fr ? 'Plan d\'action' : 'Action plan', 'sec-actions');
+    /* AMF rename (audit 2026-04-29 / P0): "Plan d'action" was prescriptive
+       per CLAUDE.md. Reframed as observational. Id preserved to avoid
+       breaking data-bf-leadwith hooks. */
+    h += F.Sec(secN, fr ? 'Leviers par horizon' : 'Levers by horizon', 'sec-actions');
     h += narr(fr
       ? 'Le plan ci-dessous regroupe les leviers selon la fen\u00eatre o\u00f9 ils ont le plus d\'effet : Maintenant, 12 mois, Pr\u00e9retraite, Retraite active. La logique est s\u00e9quentielle \u2014 ce qui est plac\u00e9 en \u00ab Maintenant \u00bb conditionne souvent ce qui devient pertinent ensuite. Chaque point est observationnel et m\u00e9rite discussion avec un planificateur financier agr\u00e9\u00e9.'
       : 'The plan below groups levers by the window in which they have the most impact: Now, Next 12 months, Pre-retirement, In retirement. The logic is sequential — what sits in "Now" often conditions what becomes relevant later. Each point is observational and warrants discussion with a certified financial planner.');
@@ -6009,7 +6017,7 @@ h += secPageEnd();
     if (d.sku === 'planner') {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-premium-deepdive', label: d.fr ? 'Approfondissement Planner' : 'Planner deep-dive' });
     }
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-actions', label: d.fr ? 'Plan d\'action' : 'Action plan' });
+    _tocN++; tocSections.push({ n: _tocN, id: 'sec-actions', label: d.fr ? 'Leviers par horizon' : 'Levers by horizon' });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-closing-recap', label: d.fr ? 'Conclusion' : 'Conclusion' });
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-fees', label: d.fr ? 'Frais & co\u00fbts du portefeuille' : 'Portfolio fees & costs' });
     // ─ Ch.5 — Explore alternatives ──────────────
