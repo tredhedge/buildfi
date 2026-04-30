@@ -204,14 +204,28 @@ function renderExpertReport(
     if (fallback) return '<div style="font-size:13px;color:#666;line-height:1.7;margin:10px 0;font-style:italic">' + fallback + '</div>';
     return '';
   };
+  /*
+    Plan v2.2 / Phase 4b (2026-04-29): chapter sheet structure.
+    secH() now emits <section class="bfe-chapter" id="sec-N"> with the
+    editorial chapter-header pattern (kicker + Playfair title + sub).
+    The id="sec-N" anchor enables Phase 4c rail-TOC scroll-spy.
+    Callers unchanged — the inline-style version is replaced 1:1 with
+    the editorial class equivalent. The gold "#N" badge stays as a
+    small JetBrainsMono pill inside the kicker line.
+  */
   const secH = (n: number, title: string, sub?: string): string =>
-    '<div style="margin-bottom:48px;page-break-inside:avoid">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--bf-gold)">'
-    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--bf-gold);color:#fff;font-size:13px;font-weight:800;flex-shrink:0;font-family:var(--font-jetbrains-mono),monospace">' + n + '</span>'
-    + '<div><div style="font-family:var(--font-playfair);font-size:18px;font-weight:700;color:#1a2744">' + title + '</div>'
-    + (sub ? '<div style="font-size:11px;color:#666;margin-top:2px">' + sub + '</div>' : '')
-    + '</div></div>';
-  const secEnd = () => '</div>';
+    '<section class="bfe-chapter" id="sec-' + n + '" style="page-break-inside:avoid">'
+    + '<div class="bfe-chapter-header">'
+    + '<div>'
+    + '<div class="bfe-kicker" style="display:flex;align-items:center;gap:10px">'
+    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;background:var(--bf-gold);color:#fff;font-size:11px;font-weight:800;font-family:var(--font-jetbrains-mono),monospace">' + n + '</span>'
+    + '<span>' + (fr ? "Chapitre " : "Chapter ") + n + '</span>'
+    + '</div>'
+    + '<h2 class="bfe-title-chapter" style="font-size:32px;margin-top:10px">' + title + '</h2>'
+    + (sub ? '<div style="font-size:14px;color:var(--bfe-muted);margin-top:6px;font-style:italic;font-family:var(--font-playfair)">' + sub + '</div>' : '')
+    + '</div>'
+    + '</div>';
+  const secEnd = () => '</section>';
   const card = (inner: string, s?: string): string =>
     '<div style="background:#ffffff;border:1px solid #d4cec4;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.03);' + (s || '') + '">' + inner + '</div>';
   const kp = (v: string, l: string, c?: string, sub?: string): string =>
@@ -257,32 +271,42 @@ function renderExpertReport(
   let secN = 0;
   let h = '';
 
-  h += '<div style="max-width:780px;margin:0 auto;padding:0 24px 60px">';
+  /*
+    Plan v2.2 / Phase 4b: hybrid sheet shell.
+    Single-column .bfe-shell at editorial reading width. Phase 4c will
+    add the sticky .bfe-rail in a wider grid.
+  */
+  h += '<div class="bfe-shell" style="grid-template-columns:1fr;max-width:1080px;padding:32px 28px 80px">';
+  h += '<main style="min-width:0">';
 
   // ═══ HEADER ═══
-  h += '<div style="text-align:center;margin-bottom:36px;padding:32px 24px;background:linear-gradient(135deg,#1a2744,#2a3a5c);border-radius:16px;color:#ffffff">'
-    + '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">buildfi.ca</div>'
-    + '<div style="font-family:var(--font-playfair);font-size:24px;font-weight:700;margin-bottom:4px">'
-    + t("Bilan Expert", "Expert Assessment") + '</div>'
-    + '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:18px">'
-    + REPORT_VERSION_EXPERT + ' \u2014 ' + (D.nSim || 5000).toLocaleString() + ' simulations \u2014 ' + D.prov
-    + ' \u2014 ' + new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA") + '</div>'
-    + '<div style="display:flex;justify-content:center;gap:36px;align-items:center;flex-wrap:wrap">'
+  h += '<section class="bfe-cover" style="text-align:left;display:grid;gap:18px">'
+    + '<div class="bfe-kicker">buildfi.ca \u00b7 ' + REPORT_VERSION_EXPERT + ' \u00b7 ' + (D.nSim || 5000).toLocaleString() + ' simulations \u00b7 ' + D.prov + ' \u00b7 ' + new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA") + '</div>'
+    + '<h1 class="bfe-title-cover" style="font-size:clamp(36px,5vw,54px);max-width:780px">'
+    + t("Bilan Expert", "Expert Assessment") + '</h1>'
+    + '<p class="bfe-chapter-frame" style="margin:0;color:var(--bfe-muted);max-width:760px">'
+    + t(
+        "Une analyse personnalis\u00e9e de votre plan de retraite, test\u00e9e contre des milliers de trajectoires de march\u00e9.",
+        "A personalized analysis of your retirement plan, stress-tested against thousands of market trajectories."
+      )
+    + '</p>'
+    + '<div style="display:flex;gap:36px;align-items:center;flex-wrap:wrap;margin-top:6px">'
     + '<svg width="120" height="120" viewBox="0 0 120 120">'
-    + '<circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="10"/>'
+    + '<circle cx="60" cy="60" r="48" fill="none" stroke="var(--bfe-line)" stroke-width="10"/>'
     + '<circle cx="60" cy="60" r="48" fill="none" stroke="' + sC + '" stroke-width="10" stroke-dasharray="' + Math.round(circ) + '" stroke-dashoffset="' + Math.round(dashVal) + '" stroke-linecap="round" transform="rotate(-90 60 60)"/>'
-    + '<text x="60" y="53" text-anchor="middle" font-size="28" font-weight="800" fill="#ffffff" font-family="var(--font-playfair)">' + D.grade + '</text>'
-    + '<text x="60" y="72" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.7)" font-family="var(--font-jetbrains-mono),monospace">' + D.successPct + '%</text></svg>'
-    + '<div style="text-align:left">'
-    + '<div style="font-size:14px;font-weight:600;margin-bottom:10px;color:rgba(255,255,255,0.8)">'
-    + t("Probabilit\u00e9 de succ\u00e8s", "Success probability") + ': <span style="color:#ffffff;font-size:22px;font-family:var(--font-jetbrains-mono),monospace">' + D.successPct + '%</span></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">'
-    + t("Patrimoine m\u00e9dian estim\u00e9", "Est. median wealth") + ': <strong style="color:#fff">' + f$(D.rMedF) + '</strong></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">'
-    + t("Revenu cible", "Target income") + ': <strong style="color:#fff">' + f$(D.retSpM) + t("/mois", "/mo") + '</strong></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7)">'
-    + t("Retraite cible", "Target retirement") + ': <strong style="color:#fff">' + D.retAge + '</strong></div>'
-    + '</div></div></div>';
+    + '<text x="60" y="55" text-anchor="middle" font-size="32" font-weight="800" fill="var(--bfe-ink)" font-family="var(--font-playfair)">' + D.grade + '</text>'
+    + '<text x="60" y="74" text-anchor="middle" font-size="13" fill="var(--bfe-muted)" font-family="var(--font-jetbrains-mono),monospace">' + D.successPct + '%</text></svg>'
+    + '<div style="text-align:left;display:grid;gap:8px">'
+    + '<div style="font-size:14px;color:var(--bfe-muted)">'
+    + t("Probabilit\u00e9 de succ\u00e8s", "Success probability") + ': <span style="color:var(--bfe-ink);font-size:22px;font-family:var(--font-jetbrains-mono),monospace;font-weight:700">' + D.successPct + '%</span></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Patrimoine m\u00e9dian estim\u00e9", "Est. median wealth") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + f$(D.rMedF) + '</strong></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Revenu cible", "Target income") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + f$(D.retSpM) + t("/mois", "/mo") + '</strong></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Retraite cible", "Target retirement") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + D.retAge + '</strong></div>'
+    + '</div></div>'
+    + '</section>';
 
   // ═══ TABLE OF CONTENTS ═══
   const tocSections: { key: ExpertSectionKey; label: string }[] = [];
@@ -889,7 +913,8 @@ function renderExpertReport(
     + ' · <a href="https://www.buildfi.ca/avis-legal" style="color:var(--bf-gold);text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
     + '</div></div>';
 
-  h += '</div>'; // end report body
+  h += '</main>'; // close .bfe-shell main column (Plan v2.2 / Phase 4b)
+  h += '</div>'; // close .bfe-shell wrapper
   return h;
 }
 
