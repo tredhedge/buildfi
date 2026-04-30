@@ -6,13 +6,16 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
+import { getProductPalette } from "@/lib/design/product.tokens";
 
-// ── Planner palette (aligned with landing CL_LIGHT planner_v3) ────────
+// Palette: shared Product system (light-only static page).
+// See docs/DESIGN-SYSTEM.md.
+const _cl = getProductPalette("light");
 const EK = {
-  bg: "#f5f8fc", card: "#fcfdff", sable: "#eef3f9",
-  border: "#d6e0ec", marine: "#172332", gold: "#8f6d2f",
-  tx: "#2a3442", txDim: "#5d7085", txMuted: "#85919f",
-  green: "#2f8a4a", red: "#b93f43", cream: "#f5f8fc",
+  bg: _cl.bg, card: _cl.card, sable: _cl.s2,
+  border: _cl.border, marine: "#172332", gold: _cl.accent,
+  tx: _cl.tx, txDim: _cl.txDim, txMuted: _cl.txMuted,
+  green: _cl.green, red: _cl.red, cream: _cl.bg,
 };
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -92,11 +95,11 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
 
   return (
     <div style={{ minHeight: "100vh", background: EK.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Newsreader:wght@400;600;700&display=swap');`}</style>
+      {/* Fonts come from app/layout.tsx via next/font; no @import needed (Plan v2.2 / Phase 7). */}
       <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 16, padding: 40, maxWidth: 480, width: "100%", textAlign: "center" }}>
         {/* Logo + lang toggle */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, color: EK.marine }}>
+          <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 18, fontWeight: 700, color: EK.marine }}>
             buildfi.ca <span style={{ fontSize: 11, color: EK.txMuted, fontFamily: "'DM Sans', sans-serif", fontWeight: 600, marginLeft: 6 }}>Planner</span>
           </div>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "4px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
@@ -111,7 +114,7 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
           </svg>
         </div>
 
-        <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
+        <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, lineHeight: 1.3 }}>
           {t("Le Planner est réservé aux membres.", "The Planner is for members only.")}
         </div>
         <div style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, marginBottom: 28 }}>
@@ -374,13 +377,13 @@ function PortalContent() {
     <div style={{ minHeight: "100vh", background: EK.bg }}>
       {/* Font imports */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:wght@400;600;700&display=swap');
+/* Fonts come from app/layout.tsx via next/font; no @import needed. */
         @keyframes spin{to{transform:rotate(360deg)}}
       `}</style>
 
       {/* Header */}
       <header style={{ background: EK.marine, padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, color: "#fff" }}>
+        <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 18, fontWeight: 700, color: "#fff" }}>
           buildfi.ca
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>Planner</span>
         </div>
@@ -400,7 +403,7 @@ function PortalContent() {
 
         {/* Welcome */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 28, fontWeight: 700, color: EK.marine, marginBottom: 6 }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 28, fontWeight: 700, color: EK.marine, marginBottom: 6 }}>
             {t("Votre Planner", "Your Planner Portal")}
           </h1>
           <p style={{ fontSize: 14, color: EK.txDim }}>
@@ -472,7 +475,18 @@ function PortalContent() {
                         const res = await fetch("/api/checkout", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: profile.email, type: "report-pack", lang }),
+                          body: JSON.stringify({
+                            email: profile.email,
+                            type: "report-pack",
+                            lang,
+                            termsAccepted: true,
+                            // Loi 25 / LPRPDE — re-affirm at purchase. Must match
+                            // CURRENT_POLICY_VERSION in /lib/consent.ts.
+                            consent: {
+                              policyVersion: "2026-04-26-v1",
+                              acceptedAt: new Date().toISOString(),
+                            },
+                          }),
                         });
                         const d = await res.json();
                         if (d.url) window.location.href = d.url;
@@ -491,7 +505,7 @@ function PortalContent() {
 
         {/* Reports history */}
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
             {t("Historique des bilans", "Assessment history")}
           </h2>
           {reports.length === 0 ? (
@@ -561,7 +575,7 @@ function PortalContent() {
 
         {/* Saved profiles */}
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
             {t("Profils sauvegardés", "Saved profiles")}
           </h2>
           {profiles.length === 0 ? (
@@ -682,7 +696,7 @@ function PortalContent() {
           <div style={{
             background: `linear-gradient(135deg, ${EK.marine}, #2a3a5c)`, borderRadius: 14, padding: "24px 28px", color: "#fff",
           }}>
-            <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
+            <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
               {t("Partagez BuildFi", "Share BuildFi")}
             </div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, marginBottom: 16 }}>
@@ -718,7 +732,7 @@ function PortalContent() {
         {/* Satisfaction */}
         {reports.length > 0 && (
           <section style={{ marginBottom: 32 }}>
-            <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
               {t("Satisfaction", "Satisfaction")}
             </h2>
             <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: "20px 24px" }}>
@@ -784,7 +798,7 @@ function PortalContent() {
 
         {/* Account details */}
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 16 }}>
             {t("Détails du compte", "Account details")}
           </h2>
           <div style={{ background: EK.card, border: `1px solid ${EK.border}`, borderRadius: 12, padding: 20 }}>

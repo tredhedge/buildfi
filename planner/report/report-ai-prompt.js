@@ -26,7 +26,7 @@
     { key: 'income_insight', label: 'Retirement Income',
       hint: '2-3 sentences on income adequacy. Reference government coverage ratio, monthly gap, and which income sources (QPP/OAS/pension) dominate.' },
     { key: 'taxInsight', label: 'Tax Strategy',
-      hint: '2-3 sentences on tax efficiency. Reference effective rate, OAS clawback years, and tax alpha if available. Note the biggest tax lever.' },
+      hint: '4-5 sentences (80\u2013120 words) on tax efficiency. Cover ALL of: (1) effective rate vs gross income, (2) OAS clawback years and their fiscal cost, (3) tax-alpha vs naive strategy if available, (4) the dominant lever (account ordering, meltdown window, splitting, deferral), (5) one province-specific note (QC vs ROC bracket impact). Avoid the word "alpha" \u2014 use "savings" / "\u00e9conomies".' },
     { key: 'estateInsight', label: 'Estate',
       hint: '2-3 sentences on estate projection. Reference net estate value, tax at death, and spousal rollover if applicable. Only if estate data is meaningful (>$1000).' },
     { key: 'gis_insight', label: 'GIS Analysis', conditional: 'gis',
@@ -85,11 +85,95 @@
     '- "concise": MAX 2 sentences per slot. Strip qualifying clauses. Use short sentences.\n' +
     '- "balanced": 2-3 sentences per slot.\n' +
     '- "detailed": 2-4 sentences per slot (max 5 for overall_assessment).\n\n' +
+    '## RENDER PROFILE & OMITTED BLOCKS — CLASSIFIER-RENDER-PLAN Phase 5\n' +
+    'The DATA section contains `renderProfile` (chart_tier, tone_mode, density_mode, jargon_mode) and `omittedBlocks` (an array of section IDs the renderer hid for this reader).\n' +
+    '- Do NOT reference any block listed in `omittedBlocks`. The reader will not see it.\n' +
+    '- Examples: if `omittedBlocks` contains `tornado`, do not write "as the sensitivity tornado shows". If it contains `oas_clawback`, do not mention OAS clawback at all.\n' +
+    '- Do NOT reference "the percentile fan above" or "the chart at the top" if `chart_tier=\'lite\'` — those visuals are replaced by prose.\n' +
+    '- If `jargon_mode=\'plain\'`, never use: alpha, t-Student, P25/P50/P75, Monte Carlo (use "simulated futures"), engine output, sequence-of-returns (use "order of returns").\n\n' +
     '## STYLE\n' +
     '- Professional but warm. Not robotic.\n' +
     '- Use bold (**text**) for key numbers — and only for numbers that appear in DATA verbatim.\n' +
     '- Bilingual: respond in the language specified in the DATA section.\n' +
     '- Use client first name and goal descriptions verbatim when relevant.\n\n' +
+    '## ANTI-REPETITION DOCTRINE — CRITICAL\n' +
+    'The reader sees ALL slots in sequence. Each slot must ADVANCE the reasoning, not restate it. Reference the same fact at most ONCE across these opening slots:\n' +
+    '- advisor_letter: WHY this report matters to THIS person — frame their concern, set the lens. NO success rate, NO P50/P25, NO mention of depletion or GIS. Human situation only.\n' +
+    '- overall_assessment: STATE the verdict using the success rate ONCE, name the SINGLE biggest risk and SINGLE biggest strength. Do not re-explain what the success rate means.\n' +
+    '- verdict: ANALYZE the dispersion — why the spread is wide or tight, what that implies. Do NOT repeat the success rate number a second time.\n' +
+    '- page_zero_verdict: MIRROR the client\'s emotional starting point in one sentence. Cannot say "your plan has X% success" — that\'s overall_assessment\'s job.\n' +
+    'If you are about to write a sentence whose meaning was already in a previous slot, REPLACE IT with new information. Slots are coordinated, not redundant.\n\n' +
+    '## SEQUENTIAL ACTION ARC\n' +
+    'When writing best_move_explainer or any action-oriented slot, structure the levers as a SEQUENCE, not a list:\n' +
+    '- Identify ONE primary lever — the action that, if not done, makes the rest pointless. Name it first and explain why it is structural.\n' +
+    '- Identify ONE secondary lever that depends on or amplifies the primary.\n' +
+    '- Optionally mention ONE tertiary lever as nice-to-have.\n' +
+    '- Use connecting phrases: "Once X is done, Y becomes feasible" / "Une fois X enclenché, Y devient pertinent". Do NOT say "do A, B, C" without ordering.\n' +
+    '- A reader should be able to write down a numbered to-do list from your text.\n\n' +
+    '## STRESS-CALIBRATED TONE\n' +
+    'When stressLevel is "high" or finLiteracy is "beginner":\n' +
+    '- Open with reassurance about what is in their control. ("Several elements work in your favor" / "Plusieurs éléments jouent en votre faveur") before naming any risk.\n' +
+    '- Break complex ideas into 2 short sentences. Plain everyday vocabulary.\n' +
+    '- Avoid catastrophic phrasing ("plan unsustainable", "ruin", "exhausted savings") — prefer "the plan would benefit from adjustments" / "le plan gagnerait à être ajusté".\n' +
+    '- Frame risks as PROGRESSIVE: most actionable lever first, harder ones later.\n' +
+    'When stressLevel is "low" and finLiteracy is "advanced": deliver the verdict directly without softening.\n\n' +
+    '## SENSITIVE TOPICS — GIS / OAS / DEPLETION\n' +
+    '- NEVER write "your plan works because you become eligible for GIS" or any equivalent. That phrasing implies impoverishment is the strategy.\n' +
+    '- DO write: "Public benefits (CPP/OAS, and possibly GIS at certain income levels) form the backbone of your retirement income, with personal savings as a complement" / "Les prestations publiques forment l\'ossature du revenu et l\'épargne personnelle s\'ajoute en complément".\n' +
+    '- Mention GIS WITH the eligibility threshold context, not as a destination.\n' +
+    '- Depletion: name the AGE conditionally and what would prevent it. Prefer: "In a cautious scenario, savings could be depleted near age X if spending is not adjusted; in the typical scenario this does not occur" / "Dans un scénario prudent, l\'épargne pourrait s\'épuiser vers X ans si les dépenses ne sont pas ajustées".\n' +
+    '- OAS clawback: explain it ONCE if the client crosses the threshold. Don\'t name the same percentage clawback in 3 slots.\n\n' +
+    '## TONE BY GRADE — MANDATORY\n' +
+    'Match the rhetorical posture to the success rate:\n' +
+    '- **A / A+** (90 %+): solidity with blind spots. NEVER write a glowing report. ALWAYS name at least ONE concrete zone the reader could not improve trivially (sequence-of-returns near retirement, OAS clawback if portfolio outperforms, longevity beyond projection, inflation persistence, single-asset concentration). A rating of 100 % without a named blind spot reads simplistic.\n' +
+    '- **A-** (80-89): solid plan, success likely. Identify the one or two zones where discipline matters. Do NOT call this "fragile" — it is solid. Tone: confident with realistic caveat.\n' +
+    '- **B+ / B** (60-79): robust if discipline holds. The plan works under expected behavior; departures (overspending, retiring earlier, carrying unexpected debt) erode the margin. Frame the lever that protects the most.\n' +
+    '- **C** (45-59): under strain. Adjustments are needed but not catastrophic. Identify the structural lever (spending, retirement age, savings rate) whose change moves the rate the most.\n' +
+    '- **D / F** (under 45 %): mandatory recovery trajectory. Open with reassurance about what is in their control. Then structure the path in 4 phases (stabilize → priority lever → rebuild → re-plan). DO NOT just diagnose failure. The reader must finish the report seeing a path forward, not an obituary.\n\n' +
+    '## PER-ARCHETYPE NARRATIVE ARC\n' +
+    'Detect the archetype from the data and shape the report\'s arc:\n' +
+    '- CCPC owner: structural lens. The corporation is the centerpiece. Hierarchy: corporate extraction → tax integration → personal RRSP/TFSA → public benefits. Make the order of decisions explicit.\n' +
+    '- HNW couple: tension between "solid plan if discipline maintained" and "zones that could derail" (sequence-of-returns near retirement, OAS clawback if portfolio outperforms). Find the one or two zones that matter; do not list everything.\n' +
+    '- Low-income / GIS-eligible: the engine is public income, not accumulation. Be empathetic. Identify what would BREAK the plan. Don\'t leave the reader with false comfort.\n' +
+    '- FIRE-seeker: focus on the "hinge age" — earliest age the plan holds. Discuss the 2-3 adjustments that buy the most freedom. Sequence-of-returns over a 50-year horizon.\n' +
+    '- Debt-heavy / young: do NOT just diagnose failure. Frame a recovery trajectory: phase 1 stabilize cash flow; phase 2 deleverage high-rate debt; phase 3 rebuild savings capacity; phase 4 re-plan goals. The reader should feel a path forward, not an obituary.\n' +
+    'Each archetype has its own RHYTHM. Do not write the same arc for all.\n\n' +
+    '## CASE-DRIVER MANDATE (P1.6) — MANDATORY\n' +
+    'The DATA block carries a `case_driver` field. This is the SINGLE MOST CASE-DEFINING LEVER for this profile, set by the pipeline. The auditors will verify two things:\n' +
+    '1. The `advisor_letter` AND/OR `overall_assessment` slot must explicitly NAME the concept this case_driver represents. Use one of the natural-language tokens listed below in at least one of those two slots.\n' +
+    '2. The first lever in the action plan section will be enforced by the renderer to align with the case_driver. Your `best_move_explainer` (or equivalent action-oriented slot) must lead with that same case_driver lever.\n\n' +
+    'CASE_DRIVER TOKEN MAP (use any natural form, not literal):\n' +
+    '- **ccpc_extraction** → "extraction order", "salary vs dividend", "CCPC integration", "corp distributions" / "ordre d\'extraction", "salaire vs dividende", "intégration CCPC".\n' +
+    '- **rental_cashflow** → "rental cash flow", "tenant strategy", "property maintenance window", "duplex/plex" / "flux locatif", "loyer", "renouvellement hypothécaire".\n' +
+    '- **gis_trap** → "GIS trap", "50¢-per-dollar clawback", "eligibility threshold" / "piège SRG", "récupération à 50 ¢", "seuil d\'admissibilité".\n' +
+    '- **fire_bridge** → "bridge years", "pre-CPP horizon", "sequence-of-returns window" / "zone-pont", "horizon avant 65 ans", "fenêtre séquentielle".\n' +
+    '- **db_pension_split** → "DB pension splitting", "indexed pension", "couple income shifting" / "fractionnement pension PD", "indexée à vie", "transfert conjugal".\n' +
+    '- **meltdown_window** → "meltdown window", "RRIF conversion at 72", "accelerated RRSP withdrawal" / "fenêtre de meltdown", "conversion FERR à 72", "retraits accélérés".\n' +
+    '- **debt_paydown** → "high-rate debt", "structured paydown", "guaranteed return" / "remboursement structuré", "taux élevé", "rendement garanti".\n' +
+    '- **gap_savings** → "savings rate", "annual contribution gap", "pre-retirement runway" / "taux d\'épargne", "écart de cotisation".\n' +
+    '- **hnw_estate** → "estate transfer", "second-spouse death tax", "RRSP-on-death deemed disposition" / "transmission successorale", "imp\u00f4t au d\u00e9c\u00e8s du second conjoint".\n' +
+    '- **late_start_savings** → "catch-up program", "delay retirement window", "deferred CPP/OAS to 70" / "rattrapage", "report RRQ\u202f/\u202fPSV jusqu\'\u00e0 70 ans".\n' +
+    '- **single_parent_resilience** → "emergency fund", "term life coverage", "disability insurance", "single-income resilience" / "fonds d\'urgence", "assurance vie temporaire", "r\u00e9silience monoparentale".\n' +
+    'Without naming the case_driver concept in the opening slots, the entire report thesis lacks case-specific framing. The narration-auditor flags this; the report does not ship.\n\n' +
+    '## TONE-vs-SUCCESS GUARD (Codex review pattern) — MANDATORY\n' +
+    'A reader who sees "solid plan / strong fundamentals" in the opening slots while the success rate is 7 % loses trust immediately. The grade band drives the rhetorical posture (already detailed in TONE BY GRADE above), but in addition:\n' +
+    '- When `successRate < 50 %`: NEVER use the words "solid", "robust", "strong", "fort", "robuste", "solide", "fiable", "stable", "sain" in advisor_letter / overall_assessment / verdict / page_zero_verdict slots without an explicit qualifier ("solid X but fragile Y", "robuste sur le plan X, à risque sur le plan Y").\n' +
+    '- When `successRate < 25 %`: open the assessment with the diagnosis, not reassurance. "This plan faces significant challenges" is appropriate; "solid plan" is not.\n' +
+    '- When `successRate ≥ 90 %`: still name at least one zone of vigilance per the A/A+ rule. A glowing report reads simplistic and erodes trust as much as a paradox.\n\n' +
+    '## SUCCESS-RATE DISPLAY GUARD\n' +
+    'Use the SAME success-rate string the renderer surfaces (the DATA block "successRate" field). The renderer applies <1% / ≥99% boundaries — so when DATA says "<1%" or "≥99%", quote that wording, not "0%" or "100%". Numeric rounding errors in narration break the cover/section reconciliation.\n\n' +
+    '## DISPERSION DRIVER MANDATE (B7) — when |dispersion_pts| ≥ 15\n' +
+    'When the DATA block reports `dispersion_pts ≥ 15`, the risk narration must NAME the dominant driver of the spread. Allowed drivers (use one or two): sequence-of-returns / inflation / longevity / spending variance / allocation choice / market volatility. Pure number-quoting without naming a driver gets flagged as narration_dispersion_driver_missing.\n\n' +
+    '## COVERAGE METRIC GUARD — NEVER INTRODUCE COMPETING DEFINITIONS\n' +
+    '- The DATA section provides ONE coverage number: `guaranteed_income_coverage`. It includes CPP/QPP + OAS + GIS + employer pension. It EXCLUDES portfolio withdrawals.\n' +
+    '- DO NOT compute or quote any other coverage percentage. NEVER write "government coverage X%" or "couverture gouvernementale Y%" with a different number than `guaranteed_income_coverage`.\n' +
+    '- If you want to describe the "public-only" share (CPP/OAS/GIS without pension), say so explicitly: "Public benefits alone (CPP/OAS) cover roughly..." but do NOT attach a percentage that contradicts the canonical one.\n' +
+    '- Past reports failed because the AI introduced a "government coverage 27%" while the section KPI showed "guaranteed income 41%". Same concept, two numbers, reader loses trust. NEVER again.\n\n' +
+    '## FEES / MER GUARD\n' +
+    '- DO NOT quote a MER percentage or absolute fee cost in the narrative. The report shows a dedicated MER impact table elsewhere with explicit assumptions.\n' +
+    '- If discussing fees, refer the reader to the fee comparison table.\n' +
+    '- Never write "your MER is 1.5%" or "frais de 1,5%" — these unattributed numbers confuse readers.\n' +
+    '- NEVER invent a MER percentage. Only the table is allowed to surface MER values.\n\n' +
     '## CROSS-SECTION SYNTHESIS\n' +
     '- An "adjacent_findings" object provides numbers from neighboring sections.\n' +
     '- For each slot, weave in ONE relevant adjacent finding (not all of them).\n' +
@@ -126,6 +210,13 @@
     var _missingCore = Object.keys(_coreFields).filter(function(k) { return _coreFields[k] === null; });
     var _coreInvalid = _missingCore.length > 0;
 
+    // P1.6/B7 — surface the case_driver and dispersion to the AI so it can
+    // honor the CASE-DRIVER and DISPERSION DRIVER mandates in the system prompt.
+    var _caseDriver = d.caseDriver || (d.profile && d.profile.case_driver) || null;
+    var _dispPts = (mc && mc.succP75 != null && mc.succP25 != null)
+      ? Math.round((mc.succP75 - mc.succP25) * 100)
+      : null;
+
     var data = {
       lang: fr ? 'fr' : 'en',
       phase: d.R.phase,
@@ -138,11 +229,25 @@
       province: p.prov || 'QC',
       yearsToRetirement: Math.max(0, p.retAge - p.age),
       horizon: (p.deathAge || 90) - p.age,
+      // CLASSIFIER-RENDER-PLAN Phase 5: surface renderProfile + omitted
+      // blocks so the AI never references analyses the renderer hid.
+      // The system prompt's anti-repetition + per-archetype arc rules
+      // already key off finLiteracy/stress/detail — adding renderProfile
+      // and omittedBlocks lets the prompt strictly enforce "do not
+      // mention these blocks: [list]" when the renderer omits them.
+      renderProfile: d.renderProfile || null,
+      omittedBlocks: d._omittedBlocks || [],
       narrativePreferences: {
         finLiteracy: d.finLiteracy || p.finLiteracy || 'intermediate',
         stressLevel: d.stressLevel || p.stressLevel || 'moderate',
         detailPreference: d.detailPref || p.detailPref || 'balanced'
       },
+      // P1.6 — case_driver mandate. AI must name this concept in advisor_letter
+      // OR overall_assessment. Auditor verifies post-render.
+      case_driver: _caseDriver,
+      // B7 — dispersion driver mandate. When |dispersion_pts| >= 15, the AI
+      // must name a driver (sequence/inflation/longevity/spending/allocation/markets).
+      dispersion_pts: _dispPts,
 
       // Savings
       totalSavings: f$(d.totalBal),
@@ -151,7 +256,19 @@
       nr: f$(p.nr || 0),
 
       // MC results
-      successRate: _coreFields.succVal == null ? 'pending' : Math.round(_coreFields.succVal * 100) + '%',
+      successRate: (function() {
+        // Mirror the renderer's _fmtSucc helper so the AI quotes the same
+        // boundary-aware string the reader will see: "<1%" / "≥99%" /
+        // "100%" / nearest whole percent. Eliminates the 0.8% → "1%"
+        // rounding mismatch the user audit flagged.
+        var v = _coreFields.succVal;
+        if (v == null) return 'pending';
+        var pct = v * 100;
+        if (pct > 0 && pct < 1) return '<1%';
+        if (pct >= 99 && pct < 100) return '≥99%';
+        if (pct >= 100) return '100%';
+        return Math.round(pct) + '%';
+      })(),
       grade: window.BFmt.grade(_coreFields.succVal, fr).letter,
       gradeLabel: window.BFmt.grade(_coreFields.succVal, fr).label,
       p50Wealth: _finStr(f$, _coreFields.medF),
@@ -165,7 +282,13 @@
       nSim: p.nSim || 5000,
 
       // Income
-      govCoverageRatio: _coreFields.covRatio == null ? null : Math.round(_coreFields.covRatio * 100) + '%',
+      // Canonical coverage metric: percent of target spending covered by
+      // guaranteed income (CPP + OAS + employer pension), excluding portfolio
+      // withdrawals. The label "guaranteed_income_coverage" is mandated; AI
+      // must NOT introduce a separate "government coverage" number that
+      // omits pension — that's how 41/27, 48/33, 110/84 contradictions were
+      // produced in earlier rendered reports.
+      guaranteed_income_coverage: _coreFields.covRatio == null ? null : Math.round(_coreFields.covRatio * 100) + '%',
       monthlyGap: _finStr(fM, d.gapM),
       qppMonthly: _finStr(fM, d.qppM),
       oasMonthly: _finStr(fM, d.oasM),
@@ -185,8 +308,10 @@
       oasClawbackYears: _fin(d.oasClbkYrs),
 
       // Fees
-      weightedMER: _fin(d.merWt) == null ? null : (d.merWt * 100).toFixed(2) + '%',
-      lifetimeFeeCost: _finStr(f$, d.feeCost),
+      // Fees intentionally omitted from AI data — MER values surface only via
+      // the dedicated MER impact comparison table (with explicit assumptions),
+      // so the AI cannot quote unattributed percentages.
+      // weightedMER / lifetimeFeeCost removed by design.
 
       // Estate
       netEstate: _finStr(f$, mc && mc.medEstateNet),
@@ -306,7 +431,7 @@
     // document reads as one continuous analysis, not N disconnected sections.
     data.adjacent_findings = {
       income: {
-        coverage: data.govCoverageRatio,
+        guaranteed_income_coverage: data.guaranteed_income_coverage,
         gap_monthly: data.monthlyGap,
         dominant_source: (function() {
           var q = _fin(d.qppM) || 0, o = _fin(d.oasM) || 0, pen = (p.penM || 0);
@@ -430,6 +555,63 @@
 
     // Build user prompt
     var userPrompt = '## DATA\n```json\n' + JSON.stringify(data, null, 2) + '\n```\n\n';
+
+    // ── Canonical-number pinning (Codex 2026-04-27 — anti-drift fix) ────
+    // Earlier prompt iterations let the LLM round / re-format / re-quote
+    // numbers from the DATA block, which produced canonical-quote drift
+    // (e.g. P25=$405,044 → "around $466K" in narrative). Now we list every
+    // canonical metric in BOTH the raw form AND the pre-formatted display
+    // form the renderer would emit, and instruct the AI to use ONLY those
+    // verbatim formatted strings.
+    function _fmtMoney(v) {
+      if (v == null || !isFinite(v)) return null;
+      var abs = Math.abs(v);
+      if (abs >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M$';
+      if (abs >= 1e3) return Math.round(v / 1e3) + 'K$';
+      return Math.round(v) + '$';
+    }
+    function _fmtPct(v) {
+      if (v == null || !isFinite(v)) return null;
+      return Math.round(v * 100) + '%';
+    }
+    function _fmtPct1(v) {
+      if (v == null || !isFinite(v)) return null;
+      return (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
+    }
+    var canon = data.canonical || {};
+    var canonLines = [];
+    var canonMap = {
+      success_rate:                { val: canon.success_rate,            fmt: _fmtPct,    label: 'Success rate' },
+      p25_wealth_real:             { val: canon.p25_wealth_real,         fmt: _fmtMoney,  label: 'P25 wealth (real)' },
+      p50_wealth_real:             { val: canon.p50_wealth_real,         fmt: _fmtMoney,  label: 'P50 (median) wealth (real)' },
+      p75_wealth_real:             { val: canon.p75_wealth_real,         fmt: _fmtMoney,  label: 'P75 wealth (real)' },
+      lifetime_tax_real:           { val: canon.lifetime_tax_real,       fmt: _fmtMoney,  label: 'Lifetime tax (real)' },
+      lifetime_taxable_income_real:{ val: canon.lifetime_taxable_income_real, fmt: _fmtMoney, label: 'Lifetime taxable income' },
+      lifetime_effective_tax_rate: { val: canon.lifetime_effective_tax_rate, fmt: _fmtPct1, label: 'Lifetime effective tax rate' },
+      net_estate:                  { val: canon.net_estate,              fmt: _fmtMoney,  label: 'Net estate' },
+      monthly_gap:                 { val: canon.monthly_gap,             fmt: _fmtMoney,  label: 'Monthly income gap' },
+      lifetime_gis:                { val: canon.lifetime_gis,            fmt: _fmtMoney,  label: 'Lifetime GIS' },
+      gis_years:                   { val: canon.gis_years,               fmt: function(v) { return v + ' yrs'; }, label: 'GIS years' },
+      oas_clawback_years:          { val: canon.oas_clawback_years,      fmt: function(v) { return v + ' yrs'; }, label: 'OAS clawback years' },
+      gov_coverage_only:           { val: canon.gov_coverage_only,       fmt: _fmtPct,    label: 'Gov-only coverage' },
+      guaranteed_income_coverage:  { val: canon.guaranteed_income_coverage, fmt: _fmtPct, label: 'Guaranteed income coverage' }
+    };
+    Object.keys(canonMap).forEach(function(k) {
+      var entry = canonMap[k];
+      if (entry.val == null) return;
+      var formatted = entry.fmt(entry.val);
+      if (formatted == null) return;
+      canonLines.push('  - **' + k + '** (' + entry.label + '): use **`' + formatted + '`** verbatim. Raw value = ' + entry.val + '.');
+    });
+    if (canonLines.length > 0) {
+      userPrompt += '## CANONICAL NUMBERS \u2014 QUOTE VERBATIM\n';
+      userPrompt += 'Every dollar amount, percentage, or year-count below MUST appear in your\n';
+      userPrompt += 'narrative EXACTLY in the formatted form shown. Do not round differently.\n';
+      userPrompt += 'Do not infer adjacent numbers. Do not write "around" / "roughly" / "near" forms.\n';
+      userPrompt += 'If a number is not in this list, do not invent one for that field.\n\n';
+      userPrompt += canonLines.join('\n') + '\n\n';
+    }
+
     if (data._integrity && data._integrity.coreInvalid) {
       userPrompt += '## DATA INTEGRITY WARNING\n';
       userPrompt += 'Core metrics are missing or invalid (' + data._integrity.missingCoreFields.join(', ') + '). ';

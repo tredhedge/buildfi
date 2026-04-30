@@ -16,8 +16,34 @@
 import { calcTax } from "./engine";
 import type { ExpertSectionKey, ExpertAINarration } from "./ai-constants";
 import { buildStarRatingBlock } from "./feedback-stars";
+import {
+  getCanonicalEditorialBundleCSS,
+  getEditorialFontBootstrapLink,
+} from "./report-canonical-css";
 
-const REPORT_VERSION_EXPERT = "v1";
+const REPORT_VERSION_EXPERT = "v2";
+
+/*
+  Report renderer color tokens (Plan v2.2 / Phase 4a, 2026-04-29).
+  AI reports belong to the Editorial system. The hardcoded gold var(--bf-gold)
+  variant has been retired across the renderer in favor of the canonical
+  --bf-gold (#c4944a) defined in lib/design/tokens.css. Semantic state
+  colors mirror SEMANTIC.{green,red}Light from product.tokens.ts so the
+  same green/red appears across guides, reports, and product surfaces.
+*/
+const RPT_COLORS = {
+  goldVar: "var(--bf-gold, #c4944a)",
+  goldLighter: "#dab47a", // top of the gold gradient pair (was #d4a85a)
+  inkLegacy: "#1a2744",   // BuildFi navy — preserved as report ink
+  paperLegacy: "#faf8f4", // matches editorial paper but slightly off — TODO converge
+  textBody: "#1a1208",
+  textMuted: "#666",
+  textDim: "#999",
+  borderSoft: "#e8e4db",
+  borderMid: "#d4cec4",
+  successGreen: "#2f8a4a",  // matches SEMANTIC.greenLight
+  dangerRed: "#b93f43",     // matches SEMANTIC.redLight
+} as const;
 
 // ── Format helpers ──────────────────────────────────────────────────
 
@@ -30,7 +56,7 @@ function fPct(n: number | null | undefined): string {
   return Math.round(n) + "\u00a0%";
 }
 function gCol(s: number): string {
-  return s >= 0.9 ? "#1a7a4c" : s >= 0.75 ? "#c49a1a" : "#b91c1c";
+  return s >= 0.9 ? RPT_COLORS.successGreen : s >= 0.75 ? RPT_COLORS.goldVar : RPT_COLORS.dangerRed;
 }
 
 // ── extractReportDataExpert ─────────────────────────────────────────
@@ -174,36 +200,50 @@ function renderExpertReport(
   // HTML helpers
   const aiSlot = (key: ExpertSectionKey, fallback?: string): string => {
     const text = ai[key];
-    if (text) return '<div style="font-size:14px;color:#1a1208;line-height:1.85;margin:14px 0;padding:16px 20px;background:#faf8f4;border-radius:10px;border-left:3px solid #c49a1a">' + text + '</div>';
+    if (text) return '<div style="font-size:14px;color:#1a1208;line-height:1.85;margin:14px 0;padding:16px 20px;background:#faf8f4;border-radius:10px;border-left:3px solid var(--bf-gold)">' + text + '</div>';
     if (fallback) return '<div style="font-size:13px;color:#666;line-height:1.7;margin:10px 0;font-style:italic">' + fallback + '</div>';
     return '';
   };
+  /*
+    Plan v2.2 / Phase 4b (2026-04-29): chapter sheet structure.
+    secH() now emits <section class="bfe-chapter" id="sec-N"> with the
+    editorial chapter-header pattern (kicker + Playfair title + sub).
+    The id="sec-N" anchor enables Phase 4c rail-TOC scroll-spy.
+    Callers unchanged — the inline-style version is replaced 1:1 with
+    the editorial class equivalent. The gold "#N" badge stays as a
+    small JetBrainsMono pill inside the kicker line.
+  */
   const secH = (n: number, title: string, sub?: string): string =>
-    '<div style="margin-bottom:48px;page-break-inside:avoid">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #c49a1a">'
-    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#c49a1a,#d4a85a);color:#fff;font-size:13px;font-weight:800;flex-shrink:0;font-family:\'JetBrains Mono\',monospace">' + n + '</span>'
-    + '<div><div style="font-family:Newsreader,Georgia,serif;font-size:18px;font-weight:700;color:#1a2744">' + title + '</div>'
-    + (sub ? '<div style="font-size:11px;color:#666;margin-top:2px">' + sub + '</div>' : '')
-    + '</div></div>';
-  const secEnd = () => '</div>';
+    '<section class="bfe-chapter" id="sec-' + n + '" style="page-break-inside:avoid">'
+    + '<div class="bfe-chapter-header">'
+    + '<div>'
+    + '<div class="bfe-kicker" style="display:flex;align-items:center;gap:10px">'
+    + '<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;background:var(--bf-gold);color:#fff;font-size:11px;font-weight:800;font-family:var(--font-jetbrains-mono),monospace">' + n + '</span>'
+    + '<span>' + (fr ? "Chapitre " : "Chapter ") + n + '</span>'
+    + '</div>'
+    + '<h2 class="bfe-title-chapter" style="font-size:32px;margin-top:10px">' + title + '</h2>'
+    + (sub ? '<div style="font-size:14px;color:var(--bfe-muted);margin-top:6px;font-style:italic;font-family:var(--font-playfair)">' + sub + '</div>' : '')
+    + '</div>'
+    + '</div>';
+  const secEnd = () => '</section>';
   const card = (inner: string, s?: string): string =>
     '<div style="background:#ffffff;border:1px solid #d4cec4;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.03);' + (s || '') + '">' + inner + '</div>';
   const kp = (v: string, l: string, c?: string, sub?: string): string =>
-    '<div style="text-align:center;padding:18px 14px 14px;border:1px solid #d4cec4;border-radius:12px;background:#ffffff;border-top:3px solid ' + (c || '#c49a1a') + '">'
-    + '<div style="font-family:\'JetBrains Mono\',monospace;font-size:20px;font-weight:800;color:' + (c || '#c49a1a') + '">' + v + '</div>'
-    + '<div style="font-family:\'DM Sans\',sans-serif;font-size:11px;color:#666;margin-top:5px;font-weight:600;line-height:1.3">' + l + '</div>'
+    '<div style="text-align:center;padding:18px 14px 14px;border:1px solid #d4cec4;border-radius:12px;background:#ffffff;border-top:3px solid ' + (c || 'var(--bf-gold)') + '">'
+    + '<div style="font-family:var(--font-jetbrains-mono),monospace;font-size:20px;font-weight:800;color:' + (c || 'var(--bf-gold)') + '">' + v + '</div>'
+    + '<div style="font-family:var(--font-inter);font-size:11px;color:#666;margin-top:5px;font-weight:600;line-height:1.3">' + l + '</div>'
     + (sub ? '<div style="font-size:10px;color:#999;margin-top:2px">' + sub + '</div>' : '')
     + '</div>';
   const kvr = (k: string, v: string): string =>
     '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e8e4db;font-size:13px">'
     + '<span style="color:#666">' + k + '</span>'
-    + '<span style="font-family:\'JetBrains Mono\',monospace;font-weight:600">' + v + '</span></div>';
+    + '<span style="font-family:var(--font-jetbrains-mono),monospace;font-weight:600">' + v + '</span></div>';
   const obs = (title: string, text: string, type: "insight" | "watch" | "info" | "risk"): string => {
     const c: Record<string, [string, string]> = {
-      insight: ["rgba(26,122,76,0.06)", "#1a7a4c"],
-      watch: ["rgba(196,154,26,0.06)", "#c49a1a"],
+      insight: ["rgba(26,122,76,0.06)", "#2f8a4a"],
+      watch: ["rgba(196,154,26,0.06)", "var(--bf-gold)"],
       info: ["rgba(26,39,68,0.04)", "#1a2744"],
-      risk: ["rgba(185,28,28,0.06)", "#b91c1c"],
+      risk: ["rgba(185,28,28,0.06)", "#b93f43"],
     };
     const [bg, fg] = c[type] || c.info;
     return '<div style="background:' + bg + ';border:1px solid ' + fg + ';border-left:4px solid ' + fg + ';border-radius:8px;padding:14px 16px;margin:12px 0">'
@@ -231,78 +271,127 @@ function renderExpertReport(
   let secN = 0;
   let h = '';
 
-  h += '<div style="max-width:780px;margin:0 auto;padding:0 24px 60px">';
+  /*
+    Plan v2.2 / Phase 4b + 4c: hybrid sheet shell with sticky rail TOC.
+    .bfe-shell--guide is the 2-col editorial grid (300px rail + main).
+    Mobile collapses to single-column via editorial.css media query.
+    The rail content is built below from activeSections; it lives BEFORE
+    <main> in DOM order so the editorial.css grid places it on the left.
+  */
 
-  // ═══ HEADER ═══
-  h += '<div style="text-align:center;margin-bottom:36px;padding:32px 24px;background:linear-gradient(135deg,#1a2744,#2a3a5c);border-radius:16px;color:#ffffff">'
-    + '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">buildfi.ca</div>'
-    + '<div style="font-family:Newsreader,Georgia,serif;font-size:24px;font-weight:700;margin-bottom:4px">'
-    + t("Bilan Expert", "Expert Assessment") + '</div>'
-    + '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:18px">'
-    + REPORT_VERSION_EXPERT + ' \u2014 ' + (D.nSim || 5000).toLocaleString() + ' simulations \u2014 ' + D.prov
-    + ' \u2014 ' + new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA") + '</div>'
-    + '<div style="display:flex;justify-content:center;gap:36px;align-items:center;flex-wrap:wrap">'
-    + '<svg width="120" height="120" viewBox="0 0 120 120">'
-    + '<circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="10"/>'
-    + '<circle cx="60" cy="60" r="48" fill="none" stroke="' + sC + '" stroke-width="10" stroke-dasharray="' + Math.round(circ) + '" stroke-dashoffset="' + Math.round(dashVal) + '" stroke-linecap="round" transform="rotate(-90 60 60)"/>'
-    + '<text x="60" y="53" text-anchor="middle" font-size="28" font-weight="800" fill="#ffffff" font-family="Newsreader,Georgia,serif">' + D.grade + '</text>'
-    + '<text x="60" y="72" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.7)" font-family="\'JetBrains Mono\',monospace">' + D.successPct + '%</text></svg>'
-    + '<div style="text-align:left">'
-    + '<div style="font-size:14px;font-weight:600;margin-bottom:10px;color:rgba(255,255,255,0.8)">'
-    + t("Probabilit\u00e9 de succ\u00e8s", "Success probability") + ': <span style="color:#ffffff;font-size:22px;font-family:\'JetBrains Mono\',monospace">' + D.successPct + '%</span></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">'
-    + t("Patrimoine m\u00e9dian estim\u00e9", "Est. median wealth") + ': <strong style="color:#fff">' + f$(D.rMedF) + '</strong></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px">'
-    + t("Revenu cible", "Target income") + ': <strong style="color:#fff">' + f$(D.retSpM) + t("/mois", "/mo") + '</strong></div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,0.7)">'
-    + t("Retraite cible", "Target retirement") + ': <strong style="color:#fff">' + D.retAge + '</strong></div>'
-    + '</div></div></div>';
-
-  // ═══ TABLE OF CONTENTS ═══
-  const tocSections: { key: ExpertSectionKey; label: string }[] = [];
+  // Build TOC entries from activeSections — needed for both the rail and
+  // the inline (post-cover) TOC card. Computed up here so the rail can
+  // be emitted before <main> in DOM order.
   const sectionLabels: Record<string, { fr: string; en: string }> = {
-    sommaire_executif: { fr: "Sommaire ex\u00e9cutif", en: "Executive summary" },
+    sommaire_executif: { fr: "Sommaire exécutif", en: "Executive summary" },
     diagnostic_robustesse: { fr: "Diagnostic de robustesse", en: "Robustness diagnostic" },
-    revenus_retraite: { fr: "Revenus \u00e0 la retraite", en: "Retirement income" },
+    revenus_retraite: { fr: "Revenus à la retraite", en: "Retirement income" },
     projection_patrimoine: { fr: "Projection du patrimoine", en: "Wealth projection" },
     analyse_fiscale: { fr: "Analyse fiscale", en: "Tax analysis" },
-    couple: { fr: "Analyse du m\u00e9nage", en: "Household analysis" },
-    immobilier: { fr: "Analyse immobili\u00e8re", en: "Real estate analysis" },
-    pension_db: { fr: "Pension \u00e0 prestations d\u00e9termin\u00e9es", en: "Defined benefit pension" },
+    couple: { fr: "Analyse du ménage", en: "Household analysis" },
+    immobilier: { fr: "Analyse immobilière", en: "Real estate analysis" },
+    pension_db: { fr: "Pension à prestations déterminées", en: "Defined benefit pension" },
     corporatif: { fr: "Planification corporative", en: "Corporate planning" },
-    remuneration: { fr: "Strat\u00e9gie de r\u00e9mun\u00e9ration", en: "Compensation strategy" },
+    remuneration: { fr: "Stratégie de rémunération", en: "Compensation strategy" },
     dettes: { fr: "Impact des dettes", en: "Debt impact" },
-    decaissement: { fr: "S\u00e9quence de d\u00e9caissement", en: "Withdrawal sequencing" },
-    stress_tests: { fr: "Tests de r\u00e9sistance", en: "Stress tests" },
+    decaissement: { fr: "Séquence de décaissement", en: "Withdrawal sequencing" },
+    stress_tests: { fr: "Tests de résistance", en: "Stress tests" },
     assurance: { fr: "Analyse d'assurance", en: "Insurance analysis" },
-    resp: { fr: "R\u00e9gime enregistr\u00e9 d'\u00e9pargne-\u00e9tudes", en: "Registered Education Savings Plan" },
-    priorites_action: { fr: "Leviers identifi\u00e9s", en: "Identified levers" },
-    observations_detaillees: { fr: "Observations d\u00e9taill\u00e9es", en: "Detailed observations" },
-    comparaison_scenarios: { fr: "Comparaison de sc\u00e9narios", en: "Scenario comparison" },
+    resp: { fr: "Régime enregistré d'épargne-études", en: "Registered Education Savings Plan" },
+    priorites_action: { fr: "Leviers identifiés", en: "Identified levers" },
+    observations_detaillees: { fr: "Observations détaillées", en: "Detailed observations" },
+    comparaison_scenarios: { fr: "Comparaison de scénarios", en: "Scenario comparison" },
     driver_attribution: { fr: "Attribution des facteurs", en: "Driver attribution" },
     pour_professionnel: { fr: "Pour votre professionnel", en: "For your professional" },
     questions_fiscaliste: { fr: "Questions pour votre fiscaliste", en: "Questions for your tax advisor" },
     historique_modifications: { fr: "Historique des modifications", en: "Change history" },
-    hypotheses_methodo: { fr: "Hypoth\u00e8ses et m\u00e9thodologie", en: "Assumptions and methodology" },
-    disclaimers: { fr: "Avertissements l\u00e9gaux", en: "Legal disclaimers" },
+    hypotheses_methodo: { fr: "Hypothèses et méthodologie", en: "Assumptions and methodology" },
+    disclaimers: { fr: "Avertissements légaux", en: "Legal disclaimers" },
   };
-
+  const tocSections: { key: ExpertSectionKey; label: string }[] = [];
   for (const s of activeSections) {
     const lbl = sectionLabels[s];
     if (lbl) tocSections.push({ key: s, label: fr ? lbl.fr : lbl.en });
   }
 
-  h += '<div style="background:#ffffff;border:1px solid #d4cec4;border-radius:12px;padding:22px 24px;margin-bottom:32px">'
-    + '<div style="font-family:Newsreader,Georgia,serif;font-size:16px;font-weight:700;color:#1a2744;margin-bottom:14px">'
-    + t("Table des mati\u00e8res", "Table of contents") + '</div>'
-    + '<div style="columns:2;column-gap:24px">';
-  tocSections.forEach((s, i) => {
-    h += '<div style="font-size:12px;padding:4px 0;break-inside:avoid;color:#666">'
-      + '<span style="font-family:\'JetBrains Mono\',monospace;color:#c49a1a;font-weight:700;margin-right:6px">' + (i + 1) + '</span>'
-      + s.label + '</div>';
-  });
-  h += '</div></div>';
+  h += '<div class="bfe-shell bfe-shell--guide" style="max-width:1380px;padding:28px 24px 80px">';
 
+  // ── Sticky rail TOC (Plan v2.2 / Phase 4c) ─────────────────────────
+  h += '<aside class="bfe-rail" data-bf-print-hide="1">'
+    + '<div class="bfe-kicker" style="margin-bottom:14px">' + t("Plan du rapport", "Report outline") + '</div>'
+    + '<nav class="bfe-nav" aria-label="' + t("Table des matières", "Table of contents") + '">';
+  tocSections.forEach((s, i) => {
+    h += '<a href="#sec-' + (i + 1) + '" data-bf-rail-link="' + (i + 1) + '">'
+      + '<span style="font-family:var(--font-jetbrains-mono);font-size:11px;color:var(--bf-gold);font-weight:700;margin-right:8px;letter-spacing:0.04em">' + String(i + 1).padStart(2, '0') + '</span>'
+      + '<span style="font-size:13px;line-height:1.4">' + s.label + '</span>'
+      + '</a>';
+  });
+  h += '</nav>'
+    /*
+      Plan v2.2 / Phase 4d: Interactive / PDF mode switch.
+      Same content, two presentations. Interactive mode shows the rail,
+      mode-switch UI, feedback stars, referral block. PDF mode previews
+      what print would look like — hides interactive-only chrome and
+      flattens the chapter-sheet shadows. Persisted to localStorage
+      under bf_report_view_mode.
+    */
+    + '<div class="bfe-mode-switch bfe-interactive-only">'
+    + '<div class="bfe-kicker">' + t("Présentation", "Presentation") + '</div>'
+    + '<div class="bfe-mode-buttons">'
+    + '<button type="button" data-bf-mode-set="interactive" aria-pressed="true">' + t("Interactive", "Interactive") + '</button>'
+    + '<button type="button" data-bf-mode-set="pdf" aria-pressed="false">' + t("Aperçu PDF", "PDF preview") + '</button>'
+    + '</div>'
+    + '<div style="font:500 11px/1.4 var(--font-inter);color:var(--bfe-muted);padding-left:2px">' + t("Même contenu, deux présentations.", "Same content, two presentations.") + '</div>'
+    + '</div>'
+    + '</aside>';
+
+  h += '<main style="min-width:0">';
+
+  // ═══ HEADER ═══
+  h += '<section class="bfe-cover" style="text-align:left;display:grid;gap:18px">'
+    + '<div class="bfe-kicker">buildfi.ca \u00b7 ' + REPORT_VERSION_EXPERT + ' \u00b7 ' + (D.nSim || 5000).toLocaleString() + ' simulations \u00b7 ' + D.prov + ' \u00b7 ' + new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA") + '</div>'
+    + '<h1 class="bfe-title-cover" style="font-size:clamp(36px,5vw,54px);max-width:780px">'
+    + t("Bilan Expert", "Expert Assessment") + '</h1>'
+    + '<p class="bfe-chapter-frame" style="margin:0;color:var(--bfe-muted);max-width:760px">'
+    + t(
+        "Une analyse personnalis\u00e9e de votre plan de retraite, test\u00e9e contre des milliers de trajectoires de march\u00e9.",
+        "A personalized analysis of your retirement plan, stress-tested against thousands of market trajectories."
+      )
+    + '</p>'
+    + '<div style="display:flex;gap:36px;align-items:center;flex-wrap:wrap;margin-top:6px">'
+    + '<svg width="120" height="120" viewBox="0 0 120 120">'
+    + '<circle cx="60" cy="60" r="48" fill="none" stroke="var(--bfe-line)" stroke-width="10"/>'
+    + '<circle cx="60" cy="60" r="48" fill="none" stroke="' + sC + '" stroke-width="10" stroke-dasharray="' + Math.round(circ) + '" stroke-dashoffset="' + Math.round(dashVal) + '" stroke-linecap="round" transform="rotate(-90 60 60)"/>'
+    + '<text x="60" y="55" text-anchor="middle" font-size="32" font-weight="800" fill="var(--bfe-ink)" font-family="var(--font-playfair)">' + D.grade + '</text>'
+    + '<text x="60" y="74" text-anchor="middle" font-size="13" fill="var(--bfe-muted)" font-family="var(--font-jetbrains-mono),monospace">' + D.successPct + '%</text></svg>'
+    + '<div style="text-align:left;display:grid;gap:8px">'
+    + '<div style="font-size:14px;color:var(--bfe-muted)">'
+    + t("Probabilit\u00e9 de succ\u00e8s", "Success probability") + ': <span style="color:var(--bfe-ink);font-size:22px;font-family:var(--font-jetbrains-mono),monospace;font-weight:700">' + D.successPct + '%</span></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Patrimoine m\u00e9dian estim\u00e9", "Est. median wealth") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + f$(D.rMedF) + '</strong></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Revenu cible", "Target income") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + f$(D.retSpM) + t("/mois", "/mo") + '</strong></div>'
+    + '<div style="font-size:13px;color:var(--bfe-muted)">'
+    + t("Retraite cible", "Target retirement") + ': <strong style="color:var(--bfe-ink);font-family:var(--font-jetbrains-mono),monospace">' + D.retAge + '</strong></div>'
+    + '</div></div>'
+    + '</section>';
+
+  // ═══ INLINE TOC (collapsed by default; mobile + print fallback) ═══
+  // Sticky .bfe-rail above is canonical TOC on desktop. This <details>
+  // is collapsed; user expands for outline overview below cover. Mobile
+  // gets it as the only TOC since the rail collapses to a static block.
+  h += '<details class="bf-inline-toc" style="margin-bottom:32px;border:1px solid var(--bfe-line);border-radius:var(--bf-radius-md);background:var(--bfe-panel);padding:18px 22px">'
+    + '<summary style="cursor:pointer;font-family:var(--font-playfair);font-size:16px;font-weight:700;color:var(--bfe-ink);list-style:none">'
+    + t("Table des matières", "Table of contents") + '</summary>'
+    + '<div style="margin-top:14px;columns:2;column-gap:24px">';
+  tocSections.forEach((s, i) => {
+    h += '<div style="font-size:12px;padding:4px 0;break-inside:avoid;color:var(--bfe-muted)">'
+      + '<a href="#sec-' + (i + 1) + '" style="text-decoration:none;color:inherit;display:flex;gap:8px;align-items:baseline">'
+      + '<span style="font-family:var(--font-jetbrains-mono);color:var(--bf-gold);font-weight:700">' + String(i + 1).padStart(2, '0') + '</span>'
+      + '<span>' + s.label + '</span>'
+      + '</a></div>';
+  });
+  h += '</div></details>';
   // ═══ SECTIONS ═══
 
   // S1: Sommaire executif
@@ -348,39 +437,39 @@ function renderExpertReport(
       for (let g = 0; g <= 4; g++) {
         const yy = PT + CH - CH * g / 4;
         svg += '<line x1="' + PL + '" x2="' + (W - PR) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e8e4db" stroke-width="0.5"/>';
-        svg += '<text x="' + (PL - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="9" fill="#999" font-family="\'JetBrains Mono\',monospace">' + Math.round(mx * g / 4 / 1000) + 'K</text>';
+        svg += '<text x="' + (PL - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="9" fill="#999" font-family="var(--font-jetbrains-mono),monospace">' + Math.round(mx * g / 4 / 1000) + 'K</text>';
       }
       // P5-P95 band
       svg += '<polygon points="' + pts("rp95") + ' ' + ptsRev("rp5") + '" fill="rgba(196,154,26,0.08)"/>';
       // P25-P75 band
       svg += '<polygon points="' + pts("rp75") + ' ' + ptsRev("rp25") + '" fill="rgba(196,154,26,0.2)"/>';
       // Median line
-      svg += '<polyline points="' + pts("rp50") + '" fill="none" stroke="#c49a1a" stroke-width="2.5" stroke-linejoin="round"/>';
+      svg += '<polyline points="' + pts("rp50") + '" fill="none" stroke="var(--bf-gold)" stroke-width="2.5" stroke-linejoin="round"/>';
       // Retirement marker
       const retIdx = ages.indexOf(D.retAge);
       if (retIdx >= 0) {
         svg += '<line x1="' + sx(retIdx) + '" x2="' + sx(retIdx) + '" y1="' + PT + '" y2="' + (PT + CH) + '" stroke="#1a2744" stroke-dasharray="4,3" stroke-width="1"/>';
-        svg += '<text x="' + (sx(retIdx) + 4) + '" y="' + (PT + 12) + '" font-size="9" fill="#1a2744" font-weight="700" font-family="\'DM Sans\',sans-serif">' + t("Retraite", "Ret.") + '</text>';
+        svg += '<text x="' + (sx(retIdx) + 4) + '" y="' + (PT + 12) + '" font-size="9" fill="#1a2744" font-weight="700" font-family="var(--font-inter)">' + t("Retraite", "Ret.") + '</text>';
       }
       // Age labels
       ages.forEach((a: number, i: number) => {
         if (i % Math.ceil(ages.length / 8) === 0 || i === ages.length - 1)
-          svg += '<text x="' + sx(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="8" fill="#999" font-family="\'JetBrains Mono\',monospace">' + a + '</text>';
+          svg += '<text x="' + sx(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="8" fill="#999" font-family="var(--font-jetbrains-mono),monospace">' + a + '</text>';
       });
       // Legend
-      svg += '<rect x="' + PL + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.08)" rx="2"/><text x="' + (PL + 13) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P5\u2013P95</text>';
-      svg += '<rect x="' + (PL + 65) + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.2)" rx="2"/><text x="' + (PL + 78) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">P25\u2013P75</text>';
-      svg += '<line x1="' + (PL + 140) + '" x2="' + (PL + 155) + '" y1="8" y2="8" stroke="#c49a1a" stroke-width="2.5"/><text x="' + (PL + 158) + '" y="12" font-size="9" fill="#666" font-family="\'DM Sans\',sans-serif">' + t("M\u00e9diane", "Median") + '</text>';
+      svg += '<rect x="' + PL + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.08)" rx="2"/><text x="' + (PL + 13) + '" y="12" font-size="9" fill="#666" font-family="var(--font-inter)">P5\u2013P95</text>';
+      svg += '<rect x="' + (PL + 65) + '" y="3" width="10" height="10" fill="rgba(196,154,26,0.2)" rx="2"/><text x="' + (PL + 78) + '" y="12" font-size="9" fill="#666" font-family="var(--font-inter)">P25\u2013P75</text>';
+      svg += '<line x1="' + (PL + 140) + '" x2="' + (PL + 155) + '" y1="8" y2="8" stroke="var(--bf-gold)" stroke-width="2.5"/><text x="' + (PL + 158) + '" y="12" font-size="9" fill="#666" font-family="var(--font-inter)">' + t("M\u00e9diane", "Median") + '</text>';
       svg += '</svg>';
       h += card(svg);
     }
 
     // KPI row
     h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px" class="rpt-grid2">';
-    h += kp(f$(D.rP5F), "P5", "#b91c1c", t("Sc\u00e9nario pessimiste", "Pessimistic scenario"));
-    h += kp(f$(D.rP25F), "P25", "#c49a1a");
-    h += kp(f$(D.rP75F), "P75", "#1a7a4c");
-    h += kp(f$(D.rP95F), "P95", "#1a7a4c", t("Sc\u00e9nario optimiste", "Optimistic scenario"));
+    h += kp(f$(D.rP5F), "P5", "#b93f43", t("Sc\u00e9nario pessimiste", "Pessimistic scenario"));
+    h += kp(f$(D.rP25F), "P25", "var(--bf-gold)");
+    h += kp(f$(D.rP75F), "P75", "#2f8a4a");
+    h += kp(f$(D.rP95F), "P95", "#2f8a4a", t("Sc\u00e9nario optimiste", "Optimistic scenario"));
     h += '</div>';
 
     // Ruin risk
@@ -401,10 +490,10 @@ function renderExpertReport(
     h += secH(secN, t("Revenus \u00e0 la retraite", "Retirement income"), t("Sources et couverture", "Sources and coverage"));
     h += badgeEstimation();
     const items = [
-      { v: D.qppMonthly, c: "#1a7a4c", l: gP },
+      { v: D.qppMonthly, c: "#2f8a4a", l: gP },
       { v: D.oasMonthly, c: "#4680C0", l: oN },
       { v: D.dbPensionMonthly, c: "#4680C0", l: t("Pension employeur", "Employer pension") },
-      { v: D.gapMonthly, c: "#c49a1a", l: t("\u00c9pargne personnelle", "Personal savings") },
+      { v: D.gapMonthly, c: "var(--bf-gold)", l: t("\u00c9pargne personnelle", "Personal savings") },
     ].filter(i => i.v > 0);
     const total = Math.max(1, items.reduce((s, i) => s + i.v, 0));
 
@@ -457,12 +546,12 @@ function renderExpertReport(
       for (let g = 0; g <= 4; g++) {
         const yy = PT2 + CH2 - CH2 * g / 4;
         svg2 += '<line x1="' + PL + '" x2="' + (W - PR2) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e8e4db" stroke-width="0.5"/>';
-        svg2 += '<text x="' + (PL - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="9" fill="#999" font-family="\'JetBrains Mono\',monospace">' + Math.round(maxV * g / 4 / 1000) + 'K</text>';
+        svg2 += '<text x="' + (PL - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="9" fill="#999" font-family="var(--font-jetbrains-mono),monospace">' + Math.round(maxV * g / 4 / 1000) + 'K</text>';
       }
       // Total line
       const ptsStr = data.map((d, i) => sx2(i) + "," + sy2(d.tot)).join(" ");
       svg2 += '<polygon points="' + ptsStr + ' ' + sx2(data.length - 1) + ',' + (PT2 + CH2) + ' ' + PL + ',' + (PT2 + CH2) + '" fill="rgba(196,154,26,0.12)"/>';
-      svg2 += '<polyline points="' + ptsStr + '" fill="none" stroke="#c49a1a" stroke-width="2" stroke-linejoin="round"/>';
+      svg2 += '<polyline points="' + ptsStr + '" fill="none" stroke="var(--bf-gold)" stroke-width="2" stroke-linejoin="round"/>';
       // Retirement marker
       const ri = ages.indexOf(D.retAge);
       if (ri >= 0) {
@@ -470,7 +559,7 @@ function renderExpertReport(
       }
       ages.forEach((a, i) => {
         if (i % 10 === 0 || a === D.retAge || a === D.deathAge)
-          svg2 += '<text x="' + sx2(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="8" fill="#999" font-family="\'JetBrains Mono\',monospace">' + a + '</text>';
+          svg2 += '<text x="' + sx2(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="8" fill="#999" font-family="var(--font-jetbrains-mono),monospace">' + a + '</text>';
       });
       svg2 += '</svg>';
       h += card(svg2);
@@ -487,10 +576,10 @@ function renderExpertReport(
         + '</tr></thead><tbody>';
       D.projTable.forEach((row: any) => {
         h += '<tr style="border-bottom:1px solid #e8e4db">'
-          + '<td style="padding:8px;font-family:\'JetBrains Mono\',monospace;font-weight:600">' + row.age + '</td>'
-          + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#b91c1c">' + f$(row.p25) + '</td>'
-          + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#c49a1a">' + f$(row.p50) + '</td>'
-          + '<td style="padding:8px;text-align:right;font-family:\'JetBrains Mono\',monospace;color:#1a7a4c">' + f$(row.p75) + '</td>'
+          + '<td style="padding:8px;font-family:var(--font-jetbrains-mono),monospace;font-weight:600">' + row.age + '</td>'
+          + '<td style="padding:8px;text-align:right;font-family:var(--font-jetbrains-mono),monospace;color:#b93f43">' + f$(row.p25) + '</td>'
+          + '<td style="padding:8px;text-align:right;font-family:var(--font-jetbrains-mono),monospace;color:var(--bf-gold)">' + f$(row.p50) + '</td>'
+          + '<td style="padding:8px;text-align:right;font-family:var(--font-jetbrains-mono),monospace;color:#2f8a4a">' + f$(row.p75) + '</td>'
           + '</tr>';
       });
       h += '</tbody></table></div>';
@@ -630,7 +719,7 @@ function renderExpertReport(
       h += '<div style="background:rgba(185,28,28,0.04);border:1px solid rgba(185,28,28,.15);border-radius:10px;padding:16px">'
         + '<div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:6px">' + s.t2 + '</div>'
         + '<div style="font-size:11px;color:#666;line-height:1.5;margin-bottom:10px">' + s.d2 + '</div>'
-        + '<div style="font-family:\'JetBrains Mono\',monospace;font-size:18px;font-weight:800;color:#b91c1c">' + s.delta + '%</div></div>';
+        + '<div style="font-family:var(--font-jetbrains-mono),monospace;font-size:18px;font-weight:800;color:#b93f43">' + s.delta + '%</div></div>';
     });
     h += '</div>';
     h += '<div style="font-size:10px;color:#888;font-style:italic;margin:-6px 0 12px;padding-left:2px">' + t("Estimations basées sur des coefficients historiques, pas des simulations additionnelles.", "Estimates based on historical coefficients, not additional simulations.") + '</div>';
@@ -708,12 +797,12 @@ function renderExpertReport(
         + '</tr></thead><tbody>';
       comparisonData.forEach((row, i) => {
         const bg = i % 2 === 0 ? '#ffffff' : '#faf8f4';
-        const deltaColor = row.wealthDelta >= 0 ? '#1a7a4c' : '#b91c1c';
+        const deltaColor = row.wealthDelta >= 0 ? '#2f8a4a' : '#b93f43';
         const deltaSign = row.wealthDelta >= 0 ? '+' : '';
         h += '<tr style="background:' + bg + '">'
           + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;font-weight:600;color:#1a2744">' + row.label + '</td>'
-          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:center;font-family:\'JetBrains Mono\',monospace;font-weight:600;color:' + gCol(row.successPct / 100) + '">' + row.successPct + '\u00a0%</td>'
-          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:right;font-family:\'JetBrains Mono\',monospace;font-weight:600;color:' + deltaColor + '">' + deltaSign + f$(row.wealthDelta) + '</td>'
+          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:center;font-family:var(--font-jetbrains-mono),monospace;font-weight:600;color:' + gCol(row.successPct / 100) + '">' + row.successPct + '\u00a0%</td>'
+          + '<td style="padding:10px 14px;border-bottom:1px solid #e8e4db;text-align:right;font-family:var(--font-jetbrains-mono),monospace;font-weight:600;color:' + deltaColor + '">' + deltaSign + f$(row.wealthDelta) + '</td>'
           + '</tr>';
       });
       h += '</tbody></table>';
@@ -833,24 +922,24 @@ function renderExpertReport(
 
   // ── Estate summary ──────────────────────────────────────────────
   h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px" class="rpt-grid2">';
-  h += kp(f$(D.medEstateNet), t("Succession nette estim\u00e9e", "Est. net estate"), "#1a7a4c", t("Sc\u00e9nario m\u00e9dian", "Median scenario"));
-  h += kp(f$(D.medEstateTax), t("Imp\u00f4t estim\u00e9 au d\u00e9c\u00e8s", "Est. tax at death"), "#b91c1c", t("Sc\u00e9nario m\u00e9dian", "Median scenario"));
+  h += kp(f$(D.medEstateNet), t("Succession nette estim\u00e9e", "Est. net estate"), "#2f8a4a", t("Sc\u00e9nario m\u00e9dian", "Median scenario"));
+  h += kp(f$(D.medEstateTax), t("Imp\u00f4t estim\u00e9 au d\u00e9c\u00e8s", "Est. tax at death"), "#b93f43", t("Sc\u00e9nario m\u00e9dian", "Median scenario"));
   h += '</div>';
 
   // ── Print button ────────────────────────────────────────────────
-  h += '<div style="margin-top:16px" class="no-print">'
+  h += '<div style="margin-top:16px" class="no-print bfe-interactive-only">'
     + '<div style="display:flex;align-items:center;gap:12px;padding:16px;border-radius:10px;border:1px solid #d4cec4;background:#ffffff;cursor:pointer" onclick="window.print()">'
     + '<span style="font-size:18px;color:#1a2744">&#128424;</span>'
     + '<div><div style="font-size:13px;font-weight:600;color:#1a2744">' + t("Imprimer ou sauvegarder en PDF", "Print or save as PDF") + '</div>'
     + '<div style="font-size:11px;color:#666">' + t("Conservez une copie de votre bilan", "Keep a copy of your assessment") + '</div></div></div></div>';
 
   // ═══ FEEDBACK STARS (injected by outer function if feedbackToken provided) ═══
-  h += '<!-- FEEDBACK_STARS -->';
+  h += '<div class="bfe-interactive-only"><!-- FEEDBACK_STARS --></div>';
 
-  // ═══ REFERRAL ═══
-  h += '<div style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
+  // ═══ REFERRAL (interactive-only — share link doesn't belong in PDF) ═══
+  h += '<div class="bfe-interactive-only" style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
   h += t("Partagez BuildFi avec un proche \u2014 15\u00a0% de rabais appliqu\u00e9 automatiquement via votre lien.", "Share BuildFi with someone you know \u2014 15% off applied automatically through your link.");
-  h += ' <a href="https://www.buildfi.ca" style="color:#c49a1a;text-decoration:none;font-weight:600">buildfi.ca</a>';
+  h += ' <a href="https://www.buildfi.ca" style="color:var(--bf-gold);text-decoration:none;font-weight:600">buildfi.ca</a>';
   h += '</div>';
 
   // ── Footer ──────────────────────────────────────────────────────
@@ -858,12 +947,13 @@ function renderExpertReport(
     + 'buildfi.ca \u2014 ' + t("\u00c0 titre informatif seulement", "For informational purposes only")
     + ' \u2014 ' + REPORT_VERSION_EXPERT
     + '<div style="margin-top:6px;font-size:10px">'
-    + '<a href="https://www.buildfi.ca/conditions" style="color:#c49a1a;text-decoration:none">' + t("Conditions","Terms") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/confidentialite" style="color:#c49a1a;text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
-    + ' · <a href="https://www.buildfi.ca/avis-legal" style="color:#c49a1a;text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
+    + '<a href="https://www.buildfi.ca/conditions" style="color:var(--bf-gold);text-decoration:none">' + t("Conditions","Terms") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/confidentialite" style="color:var(--bf-gold);text-decoration:none">' + t("Confidentialit\u00e9","Privacy") + '</a>'
+    + ' · <a href="https://www.buildfi.ca/avis-legal" style="color:var(--bf-gold);text-decoration:none">' + t("Avis l\u00e9gal","Legal") + '</a>'
     + '</div></div>';
 
-  h += '</div>'; // end report body
+  h += '</main>'; // close .bfe-shell main column (Plan v2.2 / Phase 4b)
+  h += '</div>'; // close .bfe-shell wrapper
   return h;
 }
 
@@ -893,18 +983,26 @@ export function renderReportHTMLExpert(
     reportBody = reportBody.replace('<!-- FEEDBACK_STARS -->', '');
   }
 
+  /*
+    Plan v2.2 / Phase 4a (2026-04-29): Standalone reports inject the
+    canonical Editorial bundle (tokens.css + editorial.css) plus the
+    Google-Fonts <link> for Inter + Playfair Display + JetBrains Mono.
+    The previous DM Sans + Newsreader font stack was a Product/legacy
+    pairing \u2014 reports belong to the Editorial system.
+  */
   return '<!DOCTYPE html>'
-    + '<html lang="' + lang + '">'
+    + '<html lang="' + lang + '" data-bf-system="editorial">'
     + '<head>'
     + '<meta charset="UTF-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>buildfi.ca \u2014 ' + t("Bilan Expert", "Expert Assessment") + ' \u2014 ' + date + '</title>'
-    + '<link rel="preconnect" href="https://fonts.googleapis.com">'
-    + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    + '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">'
-    + '<style>'
+    + getEditorialFontBootstrapLink()
+    + '<style data-bf-canonical="editorial">'
+    + getCanonicalEditorialBundleCSS()
+    + '</style>'
+    + '<style data-bf-report-overrides="expert">'
     + '*{margin:0;padding:0;box-sizing:border-box}'
-    + 'body{font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#1a1208;background:#faf8f4;'
+    + 'body{font-family:var(--font-inter);color:#1a1208;background:#faf8f4;'
     + '  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;'
     + '  -webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + '@media print{body{background:#fff !important}.no-print{display:none!important}'
@@ -918,9 +1016,30 @@ export function renderReportHTMLExpert(
     + '  .rpt-grid2{grid-template-columns:1fr!important}'
     + '}'
     + 'svg{shape-rendering:geometricPrecision}'
+    /* Phase 4c: hide rail in print, ensure inline TOC is visible. */
+    + '@media print{.bfe-rail{display:none !important}.bf-inline-toc{break-inside:avoid}.bf-inline-toc[open]>summary{margin-bottom:8px}}'
     + '</style>'
     + '</head>'
-    + '<body>' + reportBody + '</body></html>';
+    + '<body data-bf-system="editorial" data-bf-mode="interactive">' + reportBody
+    /*
+      Plan v2.2 / Phase 4c: rail TOC scroll-spy.
+      Vanilla JS (no framework). Highlights the rail link for the section
+      currently visible at 28% from the top of the viewport. Updates URL
+      hash via replaceState so refresh keeps the user in place. Click on
+      a rail link activates immediately so the bold doesn't lag the
+      smooth-scroll animation.
+    */
+    + '<script>(function(){var rail=document.querySelector(".bfe-rail");if(!rail)return;var links=Array.prototype.slice.call(rail.querySelectorAll(\'a[href^="#"]\'));var records=[];for(var i=0;i<links.length;i++){var a=links[i];var id=a.getAttribute("href").slice(1);var t=document.getElementById(id);if(t)records.push({id:id,target:t,link:a})}if(!records.length)return;var current="";var ticking=false;function activate(id){for(var j=0;j<records.length;j++){records[j].link.classList.toggle("is-active",records[j].id===id)}}function compute(){var line=window.innerHeight*0.28;var chosen=records[0];for(var k=0;k<records.length;k++){var rect=records[k].target.getBoundingClientRect();if(rect.top<=line)chosen=records[k]}return chosen.id}function sync(){if(ticking)return;ticking=true;requestAnimationFrame(function(){ticking=false;var next=compute();if(next===current)return;current=next;activate(next);try{history.replaceState(null,"","#"+next)}catch(e){}})}function onClick(e){var href=this.getAttribute("href");if(!href||href.charAt(0)!=="#")return;current=href.slice(1);activate(current)}for(var m=0;m<records.length;m++){records[m].link.addEventListener("click",onClick)}activate(records[0].id);sync();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync)})();</script>'
+    /*
+      Plan v2.2 / Phase 4d: Interactive / PDF mode switch.
+      Restores last mode from localStorage. Toggle buttons swap
+      body[data-bf-mode] between "interactive" and "pdf"; editorial.css
+      gates .bfe-interactive-only / .bfe-pdf-only on that attribute, so
+      the user can preview what print would look like without leaving
+      the browser.
+    */
+    + '<script>(function(){var KEY="bf_report_view_mode";var body=document.body;var btns=document.querySelectorAll(".bfe-mode-buttons button[data-bf-mode-set]");if(!btns.length)return;function apply(mode){var m=mode==="pdf"?"pdf":"interactive";body.setAttribute("data-bf-mode",m);for(var i=0;i<btns.length;i++){var b=btns[i];var on=b.getAttribute("data-bf-mode-set")===m;b.setAttribute("aria-pressed",on?"true":"false")}try{localStorage.setItem(KEY,m)}catch(e){}}for(var i=0;i<btns.length;i++){btns[i].addEventListener("click",function(){apply(this.getAttribute("data-bf-mode-set"))})}var saved="interactive";try{saved=localStorage.getItem(KEY)||"interactive"}catch(e){}apply(saved)})();</script>'
+    + '</body></html>';
 
   function t(f: string, e: string) { return fr ? f : e; }
 }

@@ -1,0 +1,76 @@
+{
+  "profile": "govt_db_couple_ab_en",
+  "generated_at": "2026-04-30T02:40:06.405Z",
+  "canonical": {
+    "success_rate": 0.9985,
+    "p25_wealth_real": 205590.61624512862,
+    "p50_wealth_real": 321498.81999912,
+    "p75_wealth_real": 498587.45645149786,
+    "gov_coverage_only": 0.6431318248207788,
+    "guaranteed_income_coverage": 1.1268616244136125,
+    "monthly_gap": 0,
+    "oas_clawback_years": 2,
+    "lifetime_tax_real": 394794,
+    "lifetime_taxable_income_real": 2839977,
+    "lifetime_effective_tax_rate": 0.13901295870284935,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 570777.9568301641,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 3,
+    "top_sensitivity_lever": null,
+    "case_driver": "db_pension_split"
+  },
+  "case_driver": "db_pension_split",
+  "slots": {
+    "tone-pass": [
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      },
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      }
+    ],
+    "income_insight": [
+      {
+        "rule": "canonical-quote-guaranteed_income_coverage-income_insight",
+        "message": "AI slot \"income_insight\" quotes pct value 111 for \"guaranteed_income_coverage\" but canonical is 112.69. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Guaranteed income coverage reaches **111%**, with a monthly gap of **$0** — combined CP\"  (canon=112.68616244136125, quoted=111)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 670000 for \"lifetime_tax_real\" but canonical is 394794. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Lifetime tax registers at **670K$** with an average effective rate of **14.7%*\"  (canon=394794, quoted=670000)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-net_estate-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 44000 for \"net_estate\" but canonical is 570777.96. Slot must be regenerated to match canonical.",
+        "evidence": "\"…cond death projects at **580K$**, with **44K$** in tax at death and Alberta probate capped\"  (canon=570777.9568301641, quoted=44000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 501000 for \"p25_wealth_real\" but canonical is 205590.62. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The dispersion from **208K$** to **501K$** at the P25-P75 boundaries is concentrated\"  (canon=205590.61624512862, quoted=501000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-success_rate-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 98 for \"success_rate\" but canonical is 99.85. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ss scenarios, success rates range from **98%** under longevityPlus5 to **100%** under both\"  (canon=99.85000000000001, quoted=98)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/govt_db_couple_ab_en.json and re-run the pipeline."
+}

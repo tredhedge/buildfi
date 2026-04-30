@@ -7,13 +7,13 @@
 import { useState, FormEvent } from "react";
 
 const MARINE = "#1a2744";
-const GOLD = "#c49a1a";
+const GOLD = "#c4944a";
 const BG = "#faf8f4";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";
 const GRAY = "#666666";
 const DARK = "#1A1208";
-const GOLD_LIGHT = "#c49a1a";
+const GOLD_LIGHT = "#c4944a";
 
 export default function AccesPage() {
   const [email, setEmail] = useState("");
@@ -77,7 +77,7 @@ export default function AccesPage() {
     <div style={{
       minHeight: "100vh",
       backgroundColor: BG,
-      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+      fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -168,7 +168,7 @@ export default function AccesPage() {
               fontWeight: 700,
               color: MARINE,
               marginBottom: 12,
-              fontFamily: "Newsreader, Georgia, serif",
+              fontFamily: 'var(--font-playfair), Georgia, serif',
             }}>
               {t.successTitle}
             </h2>
@@ -208,7 +208,7 @@ export default function AccesPage() {
               color: MARINE,
               marginBottom: 10,
               textAlign: "center",
-              fontFamily: "Newsreader, Georgia, serif",
+              fontFamily: 'var(--font-playfair), Georgia, serif',
             }}>
               {t.title}
             </h1>

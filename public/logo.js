@@ -6,14 +6,14 @@
 //
 // Logo: 3 stacking blocks (foundation → building → independence)
 // Font: Plus Jakarta Sans 700
-// Colors: navy #1a2744, gold #c49a1a, cream #faf8f4
+// Colors: navy #1a2744, gold #c4944a (canonical, matches lib/design/tokens.css), cream #faf8f4
 
 function logoSVG(size, context) {
   var isDark = context === "dark";
   var blockFill = isDark ? "#faf8f4" : "#1a2744";
   var midOpacity = isDark ? "0.40" : "0.50";
   var textFill = isDark ? "#faf8f4" : "#1a2744";
-  var goldFill = "#c49a1a";
+  var goldFill = "#c4944a";
 
   // Scale factors
   var s = size === "lg" ? 1.4 : size === "md" ? 1.0 : 0.7;
@@ -28,7 +28,7 @@ function logoSVG(size, context) {
     + '<rect x="4" y="22" width="26" height="8" rx="2" fill="' + blockFill + '" opacity="' + midOpacity + '"/>'
     + '<rect x="8" y="12" width="24" height="8" rx="2" fill="' + goldFill + '"/>'
     + '</g>'
-    + '<text x="40" y="38" font-family="\'Plus Jakarta Sans\',sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5">'
+    + '<text x="40" y="38" font-family="\'DM Sans\',\'Segoe UI\',Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5">'
     + '<tspan fill="' + textFill + '">build</tspan><tspan fill="' + goldFill + '">fi</tspan>'
     + '</text></svg>';
 }

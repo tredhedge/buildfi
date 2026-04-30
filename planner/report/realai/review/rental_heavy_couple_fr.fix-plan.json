@@ -1,0 +1,66 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "Success rate is 42% but slot \"overall_assessment\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 42% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-trajectory-insight",
+      "target": "trajectory_insight",
+      "severity": "major",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes pct value 15.8 for \"lifetime_effective_tax_rate\" but canonical is 9.33. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-riskInsight",
+      "target": "riskInsight",
+      "severity": "major",
+      "message": "AI slot \"riskInsight\" quotes dollar value 240000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Plan posture is \"fragile\" (succ=42%) but slot \"verdict\" uses \"au-del\" (band=\"surplus\", 2 bands away). Posture must match."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (10 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "major",
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
+    }
+  ],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

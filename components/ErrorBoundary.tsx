@@ -1,6 +1,6 @@
 "use client";
 // /components/ErrorBoundary.tsx — Reusable React error boundary
-// BuildFi brand: #faf8f4, #1a2744, #c49a1a
+// BuildFi brand: #faf8f4, #1a2744, #c4944a
 
 import { Component, ReactNode } from "react";
 
@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div style={{
           minHeight: "60vh",
           background: "#FEFCF9",
-          fontFamily: "'DM Sans', -apple-system, sans-serif",
+          fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -42,7 +42,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         }}>
           <h2 style={{
             fontSize: 20, fontWeight: 700, color: "#1a2744", marginBottom: 12,
-            fontFamily: "Newsreader, Georgia, serif",
+            fontFamily: 'var(--font-playfair), Georgia, serif',
           }}>
             Oups, quelque chose s&apos;est mal passé.
           </h2>
@@ -51,7 +51,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           </p>
           <p style={{ fontSize: 13, color: "#888", marginBottom: 24 }}>
             Rechargez la page ou contactez-nous à{" "}
-            <a href="mailto:support@buildfi.ca" style={{ color: "#c49a1a", textDecoration: "none" }}>
+            <a href="mailto:support@buildfi.ca" style={{ color: "#c4944a", textDecoration: "none" }}>
               support@buildfi.ca
             </a>
           </p>
@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             onClick={() => window.location.reload()}
             style={{
               padding: "10px 24px",
-              background: "#c49a1a",
+              background: "#c4944a",
               color: "#fff",
               fontSize: 14,
               fontWeight: 600,

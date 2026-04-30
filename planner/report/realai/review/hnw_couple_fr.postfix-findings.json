@@ -1,0 +1,50 @@
+{
+  "findings": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": true,
+  "blocker_count": 0,
+  "major_count": 0,
+  "minor_count": 1
+}

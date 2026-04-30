@@ -1,0 +1,50 @@
+{
+  "profile": "hnw_couple_fr",
+  "generated_at": "2026-04-30T02:39:58.551Z",
+  "canonical": {
+    "success_rate": 0.886,
+    "p25_wealth_real": 405044.6398872129,
+    "p50_wealth_real": 1027608.2692283468,
+    "p75_wealth_real": 2047657.5227458547,
+    "gov_coverage_only": 0.444566366806477,
+    "guaranteed_income_coverage": 0.5889772360811889,
+    "monthly_gap": 5123.166827882363,
+    "oas_clawback_years": 24,
+    "lifetime_tax_real": 959880,
+    "lifetime_taxable_income_real": 4223023,
+    "lifetime_effective_tax_rate": 0.22729684467680383,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 1721667.5754676417,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 22,
+    "top_sensitivity_lever": null,
+    "case_driver": "hnw_estate"
+  },
+  "case_driver": "hnw_estate",
+  "slots": {
+    "overall_assessment": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-overall_assessment",
+        "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
+        "evidence": "\"…comprimerait le scénario prudent vers **466K$** d'actifs résiduels. À l'inverse, la durabi\"  (canon=405044.6398872129, quoted=466000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Le taux effectif moyen projeté à **24.3%** sur un fardeau fiscal viager de **1.9M$**\"  (canon=22.729684467680382, quoted=24.3)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
+        "evidence": "\"…nt, la succession nette descendrait à **822K$**, ce qui circonscrit l'amplitude du transfe\"  (canon=405044.6398872129, quoted=822000)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/hnw_couple_fr.json and re-run the pipeline."
+}

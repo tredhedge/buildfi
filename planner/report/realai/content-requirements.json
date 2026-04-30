@@ -1,0 +1,328 @@
+{
+  "_schema": "BuildFi content-requirements registry v1 — consumed by review/reviewers/content-depth-auditor.js",
+  "_doc": {
+    "purpose": "Maps each profile case_driver to the content beats that MUST appear in the rendered report's visible text. The structural auditors (data, table, chart, etc.) confirm the section exists; this registry confirms the section actually discusses the case-defining mechanism.",
+    "schema": {
+      "required_beats": "array of beat specs",
+      "beat": {
+        "id": "stable identifier — finding.id derives from this",
+        "label": "human-readable description for finding.message",
+        "patterns": "array of regex strings (case-insensitive). Beat is PRESENT iff at least one pattern matches the visible text of the target section (or full report when section='*').",
+        "section": "section ID where the beat must appear, OR '*' to mean any visible body text. If the section is not rendered at all, the beat is SKIPPED (no finding) — structural auditors handle missing-section cases.",
+        "min_section": "anchor — currently advisory only. Reserved for future use ('any' = appears anywhere in section, 'narrative' = must appear inside an AI narration block)."
+      }
+    }
+  },
+  "drivers": {
+    "ccpc_extraction": {
+      "required_beats": [
+        {
+          "id": "cda_rdtoh_split",
+          "label": "CDA / RDTOH split is named explicitly",
+          "patterns": ["\\bCDA\\b", "\\bRDTOH\\b", "capital dividend account", "compte de dividendes en capital", "refundable dividend tax on hand", "imp[oô]t en main remboursable"],
+          "section": "sec-corp",
+          "min_section": "any"
+        },
+        {
+          "id": "eligible_dividend_treatment",
+          "label": "Eligible vs non-eligible dividend treatment is discussed",
+          "patterns": ["eligible dividend", "non-eligible dividend", "dividende d[ée]termin[ée]", "dividende non d[ée]termin[ée]", "\\bGRIP\\b", "\\bLRIP\\b"],
+          "section": "sec-corp",
+          "min_section": "any"
+        },
+        {
+          "id": "integration_rate_named",
+          "label": "Corporate-personal integration rate is quantified",
+          "patterns": ["integrated rate", "taux int[ée]gr[ée]", "tax integration", "int[ée]gration fiscale", "corporate.{0,15}personal"],
+          "section": "sec-corp",
+          "min_section": "any"
+        },
+        {
+          "id": "lcge_named",
+          "label": "Lifetime Capital Gains Exemption named",
+          "patterns": ["\\bLCGE\\b", "lifetime capital gains exemption", "exon[ée]ration cumulative des gains", "\\bDDPE\\b"],
+          "section": "sec-corp",
+          "min_section": "any"
+        },
+        {
+          "id": "extraction_order_explained",
+          "label": "Extraction order (salary vs dividend vs sale) is mapped",
+          "patterns": ["salary.{0,15}dividend", "dividend.{0,15}salary", "salaire.{0,15}dividende", "dividende.{0,15}salaire", "extraction order", "ordre d['’]extraction", "extraction strategy", "strat[ée]gie d['’]extraction"],
+          "section": "sec-corp",
+          "min_section": "any"
+        }
+      ]
+    },
+    "rental_cashflow": {
+      "required_beats": [
+        {
+          "id": "cap_rate_or_cashflow",
+          "label": "Cap rate or net rental cashflow named",
+          "patterns": ["cap rate", "taux de capitalisation", "net.{0,8}cash[\\s-]?flow", "flux net", "rendement net.{0,15}location", "net rental.{0,10}(income|yield)"],
+          "section": "sec-realestate",
+          "min_section": "any"
+        },
+        {
+          "id": "leverage_or_mortgage_risk",
+          "label": "Leverage / mortgage renewal risk surfaced",
+          "patterns": ["leverage", "endettement", "loan.to.value", "\\bLTV\\b", "mortgage renewal", "renouvellement.{0,15}hypoth", "interest.rate.risk", "risque de taux"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "vacancy_or_concentration",
+          "label": "Vacancy assumption or concentration risk named",
+          "patterns": ["vacancy", "vacance", "inoccupation", "concentration risk", "risque de concentration", "single.tenant", "locataire unique"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "depreciation_or_cca",
+          "label": "Depreciation / CCA / recapture treatment surfaced",
+          "patterns": ["\\bCCA\\b", "capital cost allowance", "d[ée]duction pour amortissement", "\\bDPA\\b", "recapture", "r[ée]cup[ée]ration"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "gis_trap": {
+      "required_beats": [
+        {
+          "id": "gis_clawback_named",
+          "label": "GIS clawback / 50¢ rule named",
+          "patterns": ["\\bGIS\\b", "guaranteed income supplement", "suppl[ée]ment de revenu garanti", "\\bSRG\\b", "50.{0,5}cent", "0\\.50.{0,15}dollar", "claw.?back", "r[ée]cup[ée]ration"],
+          "section": "sec-gis",
+          "min_section": "any"
+        },
+        {
+          "id": "tfsa_vs_rrsp_for_gis",
+          "label": "TFSA-vs-RRSP sequencing for GIS preservation named",
+          "patterns": ["\\bTFSA\\b.{0,40}\\bRRSP\\b", "\\bRRSP\\b.{0,40}\\bTFSA\\b", "\\bCELI\\b.{0,40}\\bREER\\b", "\\bREER\\b.{0,40}\\bCELI\\b", "tax.free.{0,15}withdrawal", "retrait non imposable"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "oas_gis_interaction",
+          "label": "OAS / GIS interaction surfaced",
+          "patterns": ["\\bOAS\\b.{0,30}\\bGIS\\b", "\\bSV\\b.{0,30}\\bSRG\\b", "OAS.{0,30}supplement", "pension de la s[ée]curit[ée]"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "fire_bridge": {
+      "required_beats": [
+        {
+          "id": "bridge_period_named",
+          "label": "Bridge period (retirement to QPP/OAS) is sized",
+          "patterns": ["bridge.{0,15}(period|years|gap)", "p[ée]riode.{0,15}(pont|bridge|transition)", "ann[ée]es.{0,15}avant.{0,15}(RRQ|QPP|OAS|SV)", "years.{0,10}before.{0,10}(QPP|CPP|OAS)", "pont de revenus", "income gap"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "early_qpp_oas_tradeoff",
+          "label": "Early-vs-deferred QPP/OAS tradeoff discussed",
+          "patterns": ["defer.{0,20}(QPP|CPP|OAS)", "report(er)?.{0,20}(RRQ|SV)", "early.{0,15}(QPP|CPP|OAS)", "(QPP|CPP|OAS).{0,15}at 60", "(RRQ|SV).{0,15}.{0,5}60", "QPP at age", "RRQ.{0,5}65"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "fire_sequence_risk",
+          "label": "Sequence-of-returns risk for early retirement named",
+          "patterns": ["sequence.of.returns?", "ordre des rendements", "s[ée]quence des rendements", "early.{0,15}drawdown", "retrait pr[ée]coce"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "db_pension_split": {
+      "required_beats": [
+        {
+          "id": "db_formula_explained",
+          "label": "DB pension formula sized (years × accrual × earnings, OR rule of 80/85, OR bridge benefit)",
+          "patterns": ["years of service", "ann[ée]es de service", "accrual rate", "taux d['’]accumulation", "rule of 80", "rule of 85", "r[èe]gle (du|de) 80", "r[èe]gle (du|de) 85", "bridge benefit", "prestation de raccordement", "\\bYMPE\\b", "\\bMGAP\\b", "pension formula", "formule.{0,20}pension", "(1\\.[0-9]|2\\.0)\\s?%.{0,30}(service|year|ann[ée]e)"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "pension_splitting_50_50",
+          "label": "Pension income splitting (50/50 election) named",
+          "patterns": ["pension.{0,15}split", "fractionnement.{0,15}revenu de pension", "fractionnement de pension", "50.?[/-]?50", "split eligible pension"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "indexation_or_purchasing_power",
+          "label": "DB indexation / purchasing power risk addressed",
+          "patterns": ["indexation", "index[ée]e?", "inflation.adjusted", "purchasing power", "pouvoir d['’]achat", "non.indexed", "non[\\s-]indexée?"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "survivor_benefit",
+          "label": "Survivor / joint-life option named",
+          "patterns": ["survivor benefit", "rente de conjoint survivant", "joint.life", "joint and survivor", "rente r[ée]versible", "r[ée]versibilit[ée]"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "meltdown_window": {
+      "required_beats": [
+        {
+          "id": "meltdown_window_named",
+          "label": "Meltdown window (years between retirement and OAS/RRIF) sized",
+          "patterns": ["meltdown.{0,10}window", "fen[êe]tre.{0,15}d[ée]cumulation", "fen[êe]tre.{0,15}retrait", "low.tax.window", "fen[êe]tre fiscale", "RRIF conversion", "conversion.{0,10}FERR", "before.{0,15}(OAS|RRIF)", "avant.{0,15}(SV|FERR)"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "oas_clawback_named",
+          "label": "OAS clawback threshold / 15% recovery tax named",
+          "patterns": ["OAS.{0,15}claw.?back", "claw.?back.{0,15}OAS", "SV.{0,15}r[ée]cup[ée]ration", "r[ée]cup[ée]ration.{0,15}SV", "15\\s*%", "0?\\.15.{0,20}OAS", "recovery tax", "imp[oô]t de r[ée]cup[ée]ration"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "marginal_rate_target",
+          "label": "Target marginal bracket / withdrawal rate quantified",
+          "patterns": ["marginal.{0,10}(rate|bracket|tax)", "taux marginal", "tax bracket", "tranche d['’]imposition", "withdraw.{0,30}\\$\\d", "retir(er|ait).{0,30}\\$\\d"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "debt_paydown": {
+      "required_beats": [
+        {
+          "id": "avalanche_or_rate_priority",
+          "label": "Highest-rate-first / avalanche priority surfaced",
+          "patterns": ["avalanche", "highest[\\s-]rate", "taux le plus [ée]lev[ée]", "remboursement par taux", "interest.rate.priority", "priorit[ée].{0,15}taux"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "interest_savings_quantified",
+          "label": "Interest cost or savings quantified ($ or %)",
+          "patterns": ["int[ée]r[êe]ts? (cumul[ée]s?|total|pay[ée]s?)", "total interest", "save.{0,10}\\$\\d", "[ée]conomis(er|e).{0,15}\\$\\d", "interest cost.{0,10}\\$\\d", "co[uû]t en int[ée]r[êe]ts"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "debt_vs_invest_tradeoff",
+          "label": "Debt-paydown vs invest tradeoff named",
+          "patterns": ["pay.{0,10}debt.{0,15}invest", "rembourser.{0,15}investir", "investir.{0,15}rembourser", "after.tax return", "rendement apr[èe]s imp[oô]t", "opportunity cost", "co[uû]t d['’]opportunit[ée]"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "gap_savings": {
+      "required_beats": [
+        {
+          "id": "savings_gap_quantified",
+          "label": "Savings shortfall / gap is quantified ($ or %)",
+          "patterns": ["short.?fall", "manque.?[\\s-]?[àa]?[\\s-]?gagner", "[ée]cart d['’][ée]pargne", "savings gap", "additional.{0,15}\\$\\d.{0,30}(month|year|ann)", "\\$\\d.{0,15}per (month|year)", "par mois", "par ann[ée]e"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "contribution_room_addressed",
+          "label": "RRSP/TFSA contribution room or catch-up addressed",
+          "patterns": ["contribution room", "droits de cotisation", "unused.{0,15}(RRSP|REER)", "REER.{0,15}inutilis", "carry.?forward", "report.{0,15}(REER|RRSP)", "catch.?up"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "retirement_age_lever",
+          "label": "Retirement age / work-longer lever named",
+          "patterns": ["retire.{0,15}later", "retraite.{0,15}plus tard", "delay.{0,10}retir", "report(er)?.{0,15}retraite", "report.{0,5}de retraite", "extend.{0,10}working", "prolonger.{0,15}travail", "push.{0,10}retirement", "ajustement.{0,20}horizon", "horizon.{0,15}planification"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "hnw_estate": {
+      "required_beats": [
+        {
+          "id": "tax_at_death_quantified",
+          "label": "Tax at death / final RRIF deemed disposition quantified",
+          "patterns": ["tax (at|on) death", "imp[oô]t au d[ée]c[èe]s", "deemed disposition", "disposition pr[ée]sum[ée]e", "final return", "d[ée]claration finale", "RRIF.{0,15}death", "FERR.{0,15}d[ée]c[èe]s"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "estate_freeze_or_trust",
+          "label": "Estate freeze, alter-ego trust, or charitable strategy named",
+          "patterns": ["estate freeze", "gel successoral", "alter.?ego.?trust", "fiducie.{0,10}alter.?ego", "fiducie en faveur de soi", "charitable", "don de bienfaisance", "donor.advised", "fondation"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "spousal_rollover",
+          "label": "Spousal rollover / surviving spouse treatment named",
+          "patterns": ["spousal rollover", "roulement au conjoint", "spousal trust", "fiducie au profit du conjoint", "surviving spouse", "conjoint survivant"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "late_start_savings": {
+      "required_beats": [
+        {
+          "id": "shortfall_or_lifestyle_compromise",
+          "label": "Shortfall or lifestyle-compromise tradeoff surfaced",
+          "patterns": ["short.?fall", "manque.?[\\s-]?[àa]?[\\s-]?gagner", "lifestyle.{0,10}adjust", "compromis.{0,20}(train|d[ée]penses|niveau de vie)", "ajust(er|ement).{0,15}train de vie", "reduc(e|ed|ing|tion).{0,15}(spending|target spending)", "r[ée]du(ire|ction).{0,15}(d[ée]penses|train de vie)", "lower.{0,10}retirement.{0,10}income", "funding gap"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "delayed_retirement_lever",
+          "label": "Delayed retirement / work-longer lever quantified",
+          "patterns": ["retire.{0,15}(at|by) (67|68|69|70)", "retraite.{0,15}(67|68|69|70)", "delay.{0,10}retir", "report(er)?.{0,15}retraite", "work.{0,10}(longer|past)", "prolonger.{0,15}travail"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "qpp_oas_deferral_premium",
+          "label": "QPP/OAS deferral premium quantified",
+          "patterns": ["defer.{0,15}(OAS|QPP|CPP).{0,30}\\d", "report.{0,15}(SV|RRQ).{0,30}\\d", "0\\.[67]\\s*%.{0,15}(month|mois)", "8\\.4\\s*%", "7\\.2\\s*%", "0\\.6\\s*%.{0,10}(month|mois)", "increase.{0,15}(OAS|QPP|CPP).{0,15}defer"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    },
+    "single_parent_resilience": {
+      "required_beats": [
+        {
+          "id": "ccb_solidarite_disclosure",
+          "label": "CCB / Solidarité / family benefits surfaced (FR profiles)",
+          "patterns": ["\\bCCB\\b", "allocation canadienne pour enfants", "Canada Child Benefit", "solidarit[ée]", "soutien aux enfants", "family benefit", "prestation pour enfants", "prime au travail"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "single_income_concentration",
+          "label": "Single-income concentration / disability risk named",
+          "patterns": ["single.income", "revenu unique", "un seul revenu", "disability.{0,15}(insurance|coverage)", "assurance invalidit[ée]", "concentration du revenu", "perte de revenu"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "resp_resp_or_education",
+          "label": "RESP / education funding lever named",
+          "patterns": ["\\bRESP\\b", "\\bREEE\\b", "education savings", "[ée]pargne.{0,15}[ée]tudes", "CESG", "SCEE", "\\bIQEE\\b", "subvention.{0,20}(canadienne|qu[ée]b[ée]coise)"],
+          "section": "*",
+          "min_section": "any"
+        },
+        {
+          "id": "emergency_fund_floor",
+          "label": "Emergency fund / liquidity floor named",
+          "patterns": ["emergency fund", "fonds d['’]urgence", "liquidity buffer", "coussin (de )?liquidit[ée]", "fonds de secours", "\\d months? (of )?expenses", "\\d mois.{0,15}d[ée]penses"],
+          "section": "*",
+          "min_section": "any"
+        }
+      ]
+    }
+  }
+}

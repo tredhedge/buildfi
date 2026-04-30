@@ -14,6 +14,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getExpertProfile, getReferral, generateReferralCode, getFeedbackByEmail, redis } from "@/lib/kv";
+import {
+  CURRENT_POLICY_VERSION,
+  validateConsentPayload,
+  recordConsent,
+} from "@/lib/consent";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -101,6 +106,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Loi 25 / LPRPDE: server-side consent enforcement. The addon path
+    // skips this — those buyers consented at their original checkout and
+    // the consent record (90d TTL) is renewed on the addon's webhook.
+    // For all other paid types, the client MUST send a consent payload
+    // with the current policy version and a fresh acceptedAt timestamp.
+    let consentValidated:
+      | { policyVersion: string; acceptedAt: string }
+      | null = null;
+    if (checkoutType !== "addon") {
+      try {
+        consentValidated = validateConsentPayload(body.consent);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "consent invalid";
+        return NextResponse.json(
+          {
+            error: "consent_required",
+            message: msg,
+            requiredPolicyVersion: CURRENT_POLICY_VERSION,
+          },
+          { status: 400 }
+        );
+      }
+      // Record server-side. We hash the email + IP before storage so the
+      // audit log doesn't carry raw PII. UA is truncated to 200 chars.
+      try {
+        await recordConsent({
+          email,
+          policyVersion: consentValidated.policyVersion,
+          acceptedAt: consentValidated.acceptedAt,
+          ip,
+          userAgent: req.headers.get("user-agent") || "",
+          context: { checkoutType, tier: String(body.tier || "") },
+        });
+      } catch (e) {
+        console.error("[checkout] consent record failed:", e);
+        // Block the checkout — without a consent record, we cannot ship.
+        return NextResponse.json(
+          { error: "consent_record_failed" },
+          { status: 500 }
+        );
+      }
+    }
+
     // ── Export AI addon ($14.99) ─────────────────────────
     if (checkoutType === "addon") {
       const priceId = process.env.STRIPE_PRICE_EXPORT_ADDON;
@@ -118,7 +166,13 @@ export async function POST(req: NextRequest) {
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
-        metadata: { type: "addon", email, tier: "expert" },
+        metadata: {
+          type: "addon",
+          email,
+          tier: "expert",
+          liability_scope: "informational_only",
+          policyVersion: CURRENT_POLICY_VERSION,
+        },
         success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=expert&lang=${body.lang || "fr"}&ref=${addonRefCode}`,
         cancel_url: `${BASE_URL}/expert`,
       });
@@ -178,6 +232,8 @@ export async function POST(req: NextRequest) {
           tier,
           type: "second",
           userRefCode: secondRefCode,
+          liability_scope: "informational_only",
+          policyVersion: CURRENT_POLICY_VERSION,
         },
         success_url: `${BASE_URL}/merci?session_id={CHECKOUT_SESSION_ID}&tier=${tier}&lang=${lang || "fr"}&ref=${secondRefCode}`,
         cancel_url: `${BASE_URL}/`,
@@ -204,7 +260,14 @@ export async function POST(req: NextRequest) {
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "payment",
         customer_email: email,
-        metadata: { type: "report-pack", email, tier: "planner", creditsToAdd: "4" },
+        metadata: {
+          type: "report-pack",
+          email,
+          tier: "planner",
+          creditsToAdd: "4",
+          liability_scope: "informational_only",
+          policyVersion: CURRENT_POLICY_VERSION,
+        },
         success_url: `${BASE_URL}/expert?pack=ok&lang=${body.lang || "fr"}`,
         cancel_url: `${BASE_URL}/expert`,
       });
@@ -246,6 +309,8 @@ export async function POST(req: NextRequest) {
       tier: selectedTier,
       type: "report",
       userRefCode,
+      liability_scope: "informational_only",
+      policyVersion: CURRENT_POLICY_VERSION,
     };
 
     // Attach quiz data only when present (Bilan path)

@@ -1,0 +1,54 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-trajectory-insight",
+      "target": "trajectory_insight",
+      "severity": "major",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes pct value 14.9 for \"lifetime_effective_tax_rate\" but canonical is 12.77. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-estateInsight",
+      "target": "estateInsight",
+      "severity": "major",
+      "message": "AI slot \"estateInsight\" quotes dollar value 40000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (263590). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "major",
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
+    }
+  ],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

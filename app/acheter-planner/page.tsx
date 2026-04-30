@@ -3,10 +3,13 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
+import { getProductPalette, PRODUCT_DARK, THEME_STORAGE_KEY } from "@/lib/design/product.tokens";
+import { BuildFiLogo } from "@/lib/design/components";
 
-/* Palette aligned with landing + planner_v3 */
-const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", gn: "#48a66d", rd: "#cf6060" };
-const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", tx: "#2a3442", al: "#172332", dm: "#4a5a6e", ac: "#8f6d2f", gn: "#2f8a4a", rd: "#b93f43" };
+/* Palette: shared Product system. See docs/DESIGN-SYSTEM.md. */
+
+// Loi 25 / LPRPDE — must match CURRENT_POLICY_VERSION in /lib/consent.ts.
+const CLIENT_POLICY_VERSION = "2026-04-26-v1";
 
 const COPY = {
   fr: {
@@ -28,10 +31,13 @@ const COPY = {
     termsLink: "Conditions d'utilisation",
     andAvis: "et l'",
     avisLink: "Avis légal",
+    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mon rapport. Conservation : 90 jours. Suppression sur demande.",
+    consentLink: "Politique de confidentialité",
     cta: "Continuer vers le paiement sécurisé Stripe",
     ctaLoading: "Redirection en cours…",
     errorEmail: "Veuillez entrer une adresse courriel valide.",
     errorTerms: "Vous devez accepter les conditions.",
+    errorConsent: "Vous devez autoriser le traitement des données pour générer le rapport.",
     errorGeneric: "Erreur lors de la création de la session. Réessayez.",
     secure: "Paiement sécurisé · Stripe · Aucun abonnement",
     backHome: "← Retour à l'accueil",
@@ -55,10 +61,13 @@ const COPY = {
     termsLink: "Terms of Service",
     andAvis: "and ",
     avisLink: "Legal Notice",
+    consentLabel: "I authorize BuildFi to process my financial data to generate my report. Retention: 90 days. Deletion on request.",
+    consentLink: "Privacy Policy",
     cta: "Continue to secure Stripe payment",
     ctaLoading: "Redirecting…",
     errorEmail: "Please enter a valid email address.",
     errorTerms: "You must accept the terms.",
+    errorConsent: "You must authorize data processing to generate the report.",
     errorGeneric: "Error creating session. Please try again.",
     secure: "Secure payment · Stripe · No subscription",
     backHome: "← Back to home",
@@ -72,20 +81,21 @@ function PageInner() {
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [terms, setTerms] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setMounted(true);
     try {
-      const savedTheme = localStorage.getItem("buildfi_theme");
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme === "dark" || savedTheme === "light") setTheme(savedTheme);
       const p = params?.get("lang");
       if (p === "en" || p === "fr") setLang(p);
     } catch {}
   }, [params]);
 
-  const cl = mounted && theme === "light" ? CL_LIGHT : CL_DARK;
+  const cl = getProductPalette(mounted && theme === "light" ? "light" : "dark");
   const t = lang === "fr" ? COPY.fr : COPY.en;
 
   const emailOK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && email.length < 254;
@@ -94,6 +104,7 @@ function PageInner() {
     setError("");
     if (!emailOK) { setError(t.errorEmail); return; }
     if (!terms) { setError(t.errorTerms); return; }
+    if (!consent) { setError(t.errorConsent); return; }
     setSubmitting(true);
     trackEvent(EVENTS.PLANNER_CHECKOUT_STARTED, { tier: "planner" });
     try {
@@ -106,6 +117,11 @@ function PageInner() {
           tier: "planner",
           lang,
           termsAccepted: true,
+          // Loi 25 / LPRPDE — server validates policyVersion + acceptedAt freshness.
+          consent: {
+            policyVersion: CLIENT_POLICY_VERSION,
+            acceptedAt: new Date().toISOString(),
+          },
         }),
       });
       const data = await resp.json();
@@ -122,20 +138,10 @@ function PageInner() {
   };
 
   return (
-    <div style={{ background: cl.bg, minHeight: "100vh", color: cl.tx, fontFamily: '"Avenir Next","Segoe UI",Arial,sans-serif' }}>
+    <div style={{ background: cl.bg, minHeight: "100vh", color: cl.tx, fontFamily: 'var(--font-dm-sans),"Segoe UI",Arial,sans-serif' }}>
       <main style={{ maxWidth: 560, margin: "0 auto", padding: "48px 20px" }}>
         <a href={`/${lang === "en" ? "?lang=en" : ""}`} style={{ textDecoration: "none", display: "inline-block", marginBottom: 20 }} aria-label="BuildFi home">
-          <svg width={154} height={34} viewBox="0 0 220 48" style={{ display: "block" }}>
-            <g>
-              <rect x="0" y="32" width="28" height="8" rx="2" fill={theme === "dark" ? "#faf8f4" : "#1a2744"} />
-              <rect x="4" y="22" width="26" height="8" rx="2" fill={theme === "dark" ? "#faf8f4" : "#1a2744"} opacity={theme === "dark" ? 0.4 : 0.5} />
-              <rect x="8" y="12" width="24" height="8" rx="2" fill={cl.ac} />
-            </g>
-            <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight={700} letterSpacing="-0.5">
-              <tspan fill={theme === "dark" ? "#faf8f4" : "#1a2744"}>build</tspan>
-              <tspan fill={cl.ac}>fi</tspan>
-            </text>
-          </svg>
+          <BuildFiLogo theme={theme} size="sm" accent={cl.ac} />
         </a>
         <div style={{ color: cl.dm, fontSize: 13, marginBottom: 20 }}>{t.backHome}</div>
 
@@ -165,13 +171,22 @@ function PageInner() {
           />
           <div style={{ fontSize: 11, color: cl.dm, marginBottom: 16 }}>{t.emailNote}</div>
 
-          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 13, color: cl.tx, marginBottom: 16, cursor: "pointer" }}>
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 13, color: cl.tx, marginBottom: 10, cursor: "pointer" }}>
             <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} style={{ marginTop: 3, accentColor: cl.ac }} />
             <span>
               {t.termsLabel}{" "}
               <a href="/conditions" target="_blank" rel="noopener" style={{ color: cl.ac }}>{t.termsLink}</a>{" "}
               {t.andAvis}
               <a href="/avis-legal" target="_blank" rel="noopener" style={{ color: cl.ac }}>{t.avisLink}</a>.
+            </span>
+          </label>
+
+          {/* Loi 25 / LPRPDE consent — server validates and stores a versioned consent receipt */}
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 13, color: cl.tx, marginBottom: 16, cursor: "pointer" }}>
+            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 3, accentColor: cl.ac }} />
+            <span>
+              {t.consentLabel}{" "}
+              <a href="/confidentialite" target="_blank" rel="noopener" style={{ color: cl.ac }}>{t.consentLink}</a>.
             </span>
           </label>
 
@@ -196,7 +211,7 @@ function PageInner() {
 
 export default function AcheterPlannerPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: CL_DARK.bg }} />}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: PRODUCT_DARK.bg }} />}>
       <PageInner />
     </Suspense>
   );

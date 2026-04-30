@@ -1,0 +1,55 @@
+{
+  "profile": "late_starter_bc_fr",
+  "generated_at": "2026-04-30T02:40:07.533Z",
+  "canonical": {
+    "success_rate": 0.2105,
+    "p25_wealth_real": 0,
+    "p50_wealth_real": 0,
+    "p75_wealth_real": 0,
+    "gov_coverage_only": 0.5347224560360966,
+    "guaranteed_income_coverage": 0.5347224560360966,
+    "monthly_gap": 3889.2252479759227,
+    "oas_clawback_years": 0,
+    "lifetime_tax_real": 68392,
+    "lifetime_taxable_income_real": 905352,
+    "lifetime_effective_tax_rate": 0.07554142183954521,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 0,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 11,
+    "top_sensitivity_lever": null,
+    "case_driver": "late_start_savings"
+  },
+  "case_driver": "late_start_savings",
+  "slots": {
+    "gis_insight": [
+      {
+        "rule": "data-gis-ai-mismatch",
+        "message": "AI GIS narrative does not appear to match the rendered GIS total.",
+        "evidence": "visible=12493, ai_amounts=351000"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes pct value 13.1 for \"lifetime_effective_tax_rate\" but canonical is 7.55. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ux effectif moyen projeté s'établit à **13.1%** pour un impôt à vie de **408K$**, niveau q\"  (canon=7.554142183954521, quoted=13.1)"
+      },
+      {
+        "rule": "scope-lifetime-tax-drift",
+        "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (68392). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+        "evidence": "sec-tax=408000 (drift 497%)"
+      }
+    ],
+    "overall_assessment": [
+      {
+        "rule": "thesis-cumulative-drift",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"at-risk\"). Cumulatively the report swings posture; consolidate tone.",
+        "evidence": "overall_assessment=failure, sec-assessment-deterministic=failure, sec-letter-deterministic=failure"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/late_starter_bc_fr.json and re-run the pipeline."
+}

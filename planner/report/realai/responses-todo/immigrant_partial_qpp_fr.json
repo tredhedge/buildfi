@@ -1,0 +1,62 @@
+{
+  "profile": "immigrant_partial_qpp_fr",
+  "generated_at": "2026-04-30T02:40:09.625Z",
+  "canonical": {
+    "success_rate": 0.8015,
+    "p25_wealth_real": 26981.120475824966,
+    "p50_wealth_real": 156654.0651256693,
+    "p75_wealth_real": 318842.52253171924,
+    "gov_coverage_only": 0.7428815949006036,
+    "guaranteed_income_coverage": 0.7428815949006036,
+    "monthly_gap": 2081.1100206982214,
+    "oas_clawback_years": 0,
+    "lifetime_tax_real": 263590,
+    "lifetime_taxable_income_real": 2063626,
+    "lifetime_effective_tax_rate": 0.1277316452453462,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 323022.12076493807,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 28,
+    "top_sensitivity_lever": null,
+    "case_driver": "gap_savings"
+  },
+  "case_driver": "gap_savings",
+  "slots": {
+    "verdict": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+        "evidence": "\"…dispersion entre le scénario prudent à **20K$** et le scénario favorable à **316K$** reste\"  (canon=26981.120475824966, quoted=20000)"
+      }
+    ],
+    "trajectory_insight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-trajectory_insight",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+        "evidence": "\"…iane termine à **150K$**, encadrée par **20K$** dans le scénario prudent et **316K$** dans\"  (canon=26981.120475824966, quoted=20000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes pct value 14.9 for \"lifetime_effective_tax_rate\" but canonical is 12.77. Slot must be regenerated to match canonical.",
+        "evidence": "\"…Le taux effectif moyen ressort à **14.9%** sur la durée, avec un impôt à vie de **706\"  (canon=12.77316452453462, quoted=14.9)"
+      },
+      {
+        "rule": "scope-lifetime-tax-drift",
+        "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (263590). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+        "evidence": "sec-tax=706000 (drift 168%)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 40000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+        "evidence": "\"…io prudent, la succession se réduit à **40K$**, ce qui rappelle que la valeur transmise dé\"  (canon=26981.120475824966, quoted=40000)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/immigrant_partial_qpp_fr.json and re-run the pipeline."
+}

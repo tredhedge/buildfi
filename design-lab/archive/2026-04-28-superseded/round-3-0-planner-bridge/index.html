@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BuildFi Round 3.0 Planner Bridge</title>
+  <link rel="stylesheet" href="./planner-bridge.css">
+  <script defer src="./planner-bridge.js"></script>
+</head>
+<body data-planner-theme="light" data-planner-view="builder">
+  <div class="overview-shell">
+    <aside class="overview-rail">
+      <div class="kicker">BuildFi Lab</div>
+      <h1>Round 3.0</h1>
+      <p>This beta asks whether the planner can become the bridge between BuildFi Product and BuildFi Reading instead of behaving like only a simulator or only a report shell.</p>
+      <nav class="nav-links">
+        <a class="is-active" href="./index.html">Overview</a>
+        <a href="./planner-beta.html">Planner bridge beta</a>
+      </nav>
+      <div class="theme-switch">
+        <div>Theme and view toggle are part of the beta, not an afterthought.</div>
+        <div class="button-row">
+          <button type="button" data-set-theme="light">Light</button>
+          <button type="button" data-set-theme="dark">Dark</button>
+        </div>
+      </div>
+      <div class="mode-switch">
+        <div>The planner should hold both building and reading.</div>
+        <div class="button-row">
+          <button type="button" data-set-view="builder">Builder view</button>
+          <button type="button" data-set-view="reading">Reading view</button>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <section class="hero">
+        <div class="kicker">Planner Bridge</div>
+        <h1>The planner should feel like the place where tools turn into understanding.</h1>
+        <p>This beta is not a production planner rebuild. It is an isolated attempt to combine the Product family’s control logic with the Reading family’s interpretation logic so the planner can become the real center of the portfolio.</p>
+        <div class="three-grid">
+          <article class="mini-card">
+            <div class="kicker">Product side</div>
+            <p>Inputs, presets, compare logic, dark/light persistence, quick what-if testing.</p>
+          </article>
+          <article class="mini-card">
+            <div class="kicker">Bridge role</div>
+            <p>Shared baseline, calmer explanation, chapter-like plan readout, visible next actions.</p>
+          </article>
+          <article class="mini-card">
+            <div class="kicker">Reading side</div>
+            <p>Interpretive pacing, plan-at-a-glance framing, and a path toward report handoff.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="overview-section">
+        <h2>What this beta is testing</h2>
+        <div class="dual-grid">
+          <article class="mini-card">
+            <h3>1. Shared planner spine</h3>
+            <p>Setup, baseline plan, explored alternative, and action guidance in one continuous shell.</p>
+          </article>
+          <article class="mini-card">
+            <h3>2. Two views, one planner</h3>
+            <p>Builder view emphasizes controls. Reading view emphasizes explanation. The underlying plan stays the same.</p>
+          </article>
+          <article class="mini-card">
+            <h3>3. Report handoff logic</h3>
+            <p>The planner should already teach the user how to read the future report instead of feeling like an unrelated tool.</p>
+          </article>
+          <article class="mini-card">
+            <h3>4. Website can wait</h3>
+            <p>If the planner bridge works, the website can follow it later. It does not need to lead.</p>
+          </article>
+        </div>
+        <div class="cover-actions">
+          <a class="btn-gold" href="./planner-beta.html">Open planner beta</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -7,7 +7,7 @@
 import { useState } from "react";
 
 const MARINE = "#1a2744";
-const GOLD = "#c49a1a";
+const GOLD = "#c4944a";
 const BG = "#faf8f4";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";
@@ -49,7 +49,7 @@ export default function MisesAJourPage() {
   const fr = lang === "fr";
 
   return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: BG, fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif' }}>
       {/* Header */}
       <header style={{
         background: MARINE,
@@ -90,7 +90,7 @@ export default function MisesAJourPage() {
       {/* Content */}
       <main style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 80px" }}>
         <h1 style={{
-          fontFamily: "Newsreader, Georgia, serif",
+          fontFamily: 'var(--font-playfair), Georgia, serif',
           fontSize: 28,
           fontWeight: 700,
           color: MARINE,

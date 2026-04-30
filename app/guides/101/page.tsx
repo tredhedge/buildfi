@@ -3,29 +3,18 @@
 import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getEditorialPalette } from "@/lib/design/editorial.tokens";
+import {
+  Section,
+  ToolCard,
+  Note,
+  CompareRow,
+  useEditorialBody,
+  useEditorialRailScrollSpy,
+} from "@/lib/design/editorial-components";
 
-/* ═══════════════════════════════════════════════════════
-   Design tokens — aligned with BuildFi brand
-   ═══════════════════════════════════════════════════════ */
-const CL = {
-  bg: "#faf8f4",
-  card: "#ffffff",
-  s2: "#f3efe6",
-  line: "#e8e0d4",
-  line2: "#d4cec4",
-  ink: "#1a2744",
-  text: "#2a2520",
-  dim: "#6e6458",
-  muted: "#9a8e80",
-  gold: "#c49a1a",
-  goldBg: "rgba(196,154,26,.10)",
-  blue: "#2c6fb5",
-  blueBg: "rgba(44,111,181,.08)",
-  green: "#1a7a4c",
-  greenBg: "rgba(26,122,76,.08)",
-  red: "#b91c1c",
-  redBg: "rgba(185,28,28,.08)",
-};
+/* Palette + components: shared Editorial system. See docs/DESIGN-SYSTEM.md. */
+const CL = getEditorialPalette();
 
 const fCAD = (v: number, fr: boolean) =>
   new Intl.NumberFormat(fr ? "fr-CA" : "en-CA", {
@@ -152,19 +141,19 @@ const COPY = {
       ["Cotisation déductible ?", "Oui", "Non", "Oui"],
       ["Retraits imposables ?", "Oui", "Non", "Non*"],
       ["Max annuel 2026", "33 810 $", "7 000 $", "8 000 $"],
-      ["Droit cumulatif", "Varie", "109 000 $", "40 000 $"],
+      ["Droit cumulatif", "Varie", "Jusqu'à 109 000 $†", "40 000 $"],
       ["Limite d'âge", "71", "Aucune", "71 / 15 ans"],
       ["Affecte PSV/SRG ?", "Oui (retrait)", "Non", "Non*"],
       ["Idéal pour", "Revenu élevé maintenant → plus bas à la retraite", "Flexibilité libre d'impôt", "Première maison"],
     ],
-    ch6TableNote: "* Retraits CELIAPP libres d'impôt seulement pour l'achat d'une première maison admissible.",
+    ch6TableNote: "* Retraits CELIAPP libres d'impôt seulement pour l'achat d'une première maison admissible.  † 109 000 $ est le plafond cumulatif maximal — atteint uniquement si vous aviez 18 ans ou plus en 2009 (lancement du CELI). Sinon votre droit personnel est inférieur. Votre droit exact figure dans votre dossier de l'ARC (Mon dossier).",
     ch6QTitle: "REER ou CELI en premier ?",
     ch6QBody:
       "La réponse dépend d'une seule variable : votre taux d'imposition maintenant vs à la retraite.",
     ch6Scenarios: [
-      { label: "Taux BAISSE à la retraite (45 % → 30 %)", winner: "REER gagne", color: "blue" },
-      { label: "Taux STABLE (35 % → 35 %)", winner: "Match nul", color: "gold" },
-      { label: "Taux MONTE à la retraite (30 % → 45 %)", winner: "CELI gagne", color: "green" },
+      { label: "Taux BAISSE à la retraite (45 % → 30 %)", winner: "REER gagne" },
+      { label: "Taux STABLE (35 % → 35 %)", winner: "Match nul" },
+      { label: "Taux MONTE à la retraite (30 % → 45 %)", winner: "CELI gagne" },
     ],
     ch6Practice:
       "En pratique : si vous gagnez plus de ~55 000 $/an, le REER est généralement avantageux. Sous ce seuil, le CELI est souvent préférable. En cas de doute, le CELI est un bon point de départ — sa flexibilité (retraits libres d'impôt, aucun impact sur les prestations gouvernementales) en fait le compte le plus polyvalent.",
@@ -236,7 +225,7 @@ const COPY = {
       "Faites l'audit de vos abonnements. 3 derniers relevés. Décidez ce qui reste.",
       "Automatisez un virement. Même 50 $/paie vers un CELI ou CELIAPP.",
       "Vérifiez vos avantages employeur. Contribution équivalente REER ? Assurance invalidité ?",
-      "Vérifiez votre cote de crédit. Borrowell ou Credit Karma. Gratuit.",
+      "Vérifiez votre cote de crédit auprès d'Equifax ou TransUnion (les deux bureaux fournissent un accès gratuit selon les lois canadiennes).",
     ],
 
     quote2: "« Personne ne regrette d'avoir commencé trop tôt. Tout le monde regrette d'avoir attendu. »",
@@ -411,19 +400,19 @@ const COPY = {
       ["Contribution deductible?", "Yes", "No", "Yes"],
       ["Withdrawals taxable?", "Yes", "No", "No*"],
       ["Annual max 2026", "$33,810", "$7,000", "$8,000"],
-      ["Cumulative room", "Varies", "$109,000", "$40,000"],
+      ["Cumulative room", "Varies", "Up to $109,000†", "$40,000"],
       ["Age limit", "71", "None", "71 / 15 yrs"],
       ["Affects OAS/GIS?", "Yes (withdrawal)", "No", "No*"],
       ["Ideal for", "High income now → lower at retirement", "Flexibility tax-free", "First home"],
     ],
-    ch6TableNote: "* FHSA withdrawals are tax-free only for the purchase of a qualifying first home.",
+    ch6TableNote: "* FHSA withdrawals are tax-free only for the purchase of a qualifying first home.  † $109,000 is the maximum cumulative room — only reached if you were 18 or older in 2009 (the year the TFSA launched). Otherwise your personal room is lower. Your exact room is in your CRA file (My Account).",
     ch6QTitle: "RRSP or TFSA first?",
     ch6QBody:
       "The answer depends on a single variable: your tax rate now vs at retirement.",
     ch6Scenarios: [
-      { label: "Rate DROPS at retirement (45% → 30%)", winner: "RRSP wins", color: "blue" },
-      { label: "Rate STABLE (35% → 35%)", winner: "Tie", color: "gold" },
-      { label: "Rate RISES at retirement (30% → 45%)", winner: "TFSA wins", color: "green" },
+      { label: "Rate DROPS at retirement (45% → 30%)", winner: "RRSP wins" },
+      { label: "Rate STABLE (35% → 35%)", winner: "Tie" },
+      { label: "Rate RISES at retirement (30% → 45%)", winner: "TFSA wins" },
     ],
     ch6Practice:
       "In practice: if you earn more than ~$55,000/year, the RRSP is generally advantageous. Below that, the TFSA is often preferable. When in doubt: the TFSA is often a good starting point — its flexibility (tax-free withdrawals, no impact on government benefits) makes it the most versatile account.",
@@ -494,7 +483,7 @@ const COPY = {
       "Audit your subscriptions. Last 3 statements. Decide what stays.",
       "Automate a transfer. Even $50/paycheque into a TFSA or FHSA.",
       "Check your employer benefits. RRSP match? Disability insurance?",
-      "Check your credit score. Borrowell or Credit Karma. Free.",
+      "Check your credit score with Equifax or TransUnion (both bureaus provide free access under Canadian law).",
     ],
 
     quote2: "\"Nobody regrets starting too early. Everyone regrets waiting.\"",
@@ -592,7 +581,7 @@ function NetWorthCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
       <div>
-        <div style={{ fontSize: 12, fontWeight: 700, color: CL.green, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tAssets}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tAssets}</div>
         {row(t.tBank, bank, setBank)}
         {row(t.tSavings, savings, setSavings)}
         {row(t.tRRSP, rrsp, setRrsp)}
@@ -600,23 +589,23 @@ function NetWorthCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.tOther, other, setOther)}
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${CL.line2}`, fontSize: 13, display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: CL.dim }}>Total</span>
-          <strong style={{ color: CL.green }}>{fCAD(assets, fr)}</strong>
+          <strong style={{ color: CL.ink }}>{fCAD(assets, fr)}</strong>
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 12, fontWeight: 700, color: CL.red, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tLiab}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tLiab}</div>
         {row(t.tMortgage, mortgage, setMortgage)}
         {row(t.tCards, cards, setCards)}
         {row(t.tLoans, loans, setLoans)}
         {row(t.tOtherDebt, otherDebt, setOtherDebt)}
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${CL.line2}`, fontSize: 13, display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: CL.dim }}>Total</span>
-          <strong style={{ color: CL.red }}>{fCAD(liab, fr)}</strong>
+          <strong style={{ color: CL.ink }}>{fCAD(liab, fr)}</strong>
         </div>
       </div>
       <div style={{ gridColumn: "1 / -1", background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 14, color: CL.ink, fontWeight: 600 }}>{t.tNetWorth}</span>
-        <strong style={{ fontSize: 28, color: net >= 0 ? CL.green : CL.red, fontWeight: 800 }}>{fCAD(net, fr)}</strong>
+        <strong style={{ fontSize: 28, color: CL.ink, fontWeight: 800 }}>{fCAD(net, fr)}</strong>
       </div>
     </div>
   );
@@ -649,9 +638,10 @@ function BudgetCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-        {bar(t.tNeeds, t.tNeedsD, needs, CL.blue, CL.blueBg)}
+        {/* Editorial restraint: 50/30/20 buckets all gold-toned, ink ratios distinguish them. */}
+        {bar(t.tNeeds, t.tNeedsD, needs, CL.gold, CL.goldBg)}
         {bar(t.tWants, t.tWantsD, wants, CL.gold, CL.goldBg)}
-        {bar(t.tFuture, t.tFutureD, future, CL.green, CL.greenBg)}
+        {bar(t.tFuture, t.tFutureD, future, CL.gold, CL.goldBg)}
       </div>
     </div>
   );
@@ -735,8 +725,9 @@ function CardTrapCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.tCardFixed, fixed, setFixed, 10, "($)")}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {card(t.tMinimum, result.min, CL.red, CL.redBg)}
-        {card(t.tFixed, result.fixed, CL.green, CL.greenBg)}
+        {/* Editorial restraint: gold + ink only. Title carries semantic via wording, not color. */}
+        {card(t.tMinimum, result.min, CL.gold, CL.goldBg)}
+        {card(t.tFixed, result.fixed, CL.ink, CL.s2)}
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.tCardNote}</div>
     </div>
@@ -797,9 +788,9 @@ function CompoundCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
             <strong style={{ color: CL.ink }}>{fCAD(startBal, fr)}</strong> {t.tInitial}
             {" + "}
           </>) : null}
-          <strong style={{ color: CL.blue }}>{fCAD(contrib, fr)}</strong> {t.tContribs}
+          <strong style={{ color: CL.ink }}>{fCAD(contrib, fr)}</strong> {t.tContribs}
           {" + "}
-          <strong style={{ color: CL.green }}>{fCAD(growth, fr)}</strong> {t.tGrowth}
+          <strong style={{ color: CL.ink }}>{fCAD(growth, fr)}</strong> {t.tGrowth}
         </div>
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.tCompNote}</div>
@@ -810,29 +801,8 @@ function CompoundCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
 /* ═══════════════════════════════════════════════════════
    Reusable section
    ═══════════════════════════════════════════════════════ */
-function Section({ num, title, sub, children, id }: { num: number; title: string; sub: string; children: React.ReactNode; id: string }) {
-  return (
-    <section id={id} style={{ background: CL.card, border: `1px solid ${CL.line}`, borderRadius: 16, padding: "26px 28px", marginBottom: 18 }}>
-      <div style={{ display: "flex", gap: 14, alignItems: "baseline", marginBottom: 16 }}>
-        <div style={{ fontSize: 42, fontWeight: 900, color: CL.line2, lineHeight: 1 }}>{num}</div>
-        <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: CL.ink, margin: 0 }}>{title}</h2>
-          <div style={{ fontSize: 14, color: CL.dim, fontStyle: "italic", marginTop: 4 }}>{sub}</div>
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function ToolCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: CL.s2, border: `1px solid ${CL.line2}`, borderRadius: 14, padding: 18, margin: "16px 0" }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 10 }}>{title}</div>
-      {children}
-    </div>
-  );
-}
+/* Section, ToolCard, Note, CompareRow are imported from
+   @/lib/design/editorial-components — one source of truth for all guides. */
 
 /* ═══════════════════════════════════════════════════════
    Page
@@ -847,72 +817,75 @@ function Guide101Inner() {
   const t = fr ? COPY.fr : COPY.en;
   const toggleLang = () => setLang(fr ? "en" : "fr");
 
+  useEditorialBody();
+  useEditorialRailScrollSpy();
+
   return (
-    <div style={{ background: CL.bg, minHeight: "100vh", color: CL.text, fontFamily: '"Avenir Next","Segoe UI",Arial,sans-serif' }}>
-      <main style={{ maxWidth: 960, margin: "0 auto", padding: "24px 18px 60px" }}>
-        {/* Header / Hero */}
-        <div style={{ background: CL.ink, color: "#fff", borderRadius: 20, padding: "30px 32px", position: "relative", overflow: "hidden", marginBottom: 20 }}>
-          <div aria-hidden style={{ position: "absolute", right: 24, top: 16, fontSize: 120, fontWeight: 900, color: "rgba(255,255,255,.08)", lineHeight: 1, letterSpacing: -4 }}>101</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>BuildFi · {t.eyebrow}</div>
-          <h1 style={{ fontSize: 38, fontWeight: 800, margin: 0, lineHeight: 1.1, maxWidth: 640 }}>{t.title}</h1>
-          <div style={{ fontSize: 16, color: "rgba(255,255,255,.72)", marginTop: 10, maxWidth: 600 }}>{t.tagline}</div>
-          <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
-            <a href={t.pdfHref} style={{ background: CL.gold, color: CL.ink, padding: "9px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>📄 {t.pdfLabel}</a>
-            <button onClick={toggleLang} style={{ background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,.35)", padding: "9px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>🌐 {t.langSwitch}</button>
-          </div>
+    <div className="bfe-shell bfe-shell--guide">
+      {/* ── Sticky chapter rail ──────────────────────────────── */}
+      <aside className="bfe-rail">
+        <div className="bfe-kicker">{fr ? "Guide 101" : "Guide 101"}</div>
+        <h1 className="bfe-title-rail">{fr ? "Les bases" : "Foundations"}</h1>
+        <p>{t.tagline}</p>
+        <nav className="bfe-nav">
+          {t.toc.map((item) => (
+            <a key={item.n} href={`#ch${item.n}`}>{item.n}. {item.t}</a>
+          ))}
+          <a href="#mistakes">{fr ? "Erreurs coûteuses" : "Costly mistakes"}</a>
+          <a href="#ch9">{fr ? "Plan d'action" : "Action plan"}</a>
+        </nav>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
+          <a className="bfe-btn-glass" href={t.pdfHref}>📄 {t.pdfLabel}</a>
+          <button className="bfe-btn-glass" onClick={toggleLang} style={{ cursor: "pointer", border: `1px solid ${CL.accentLine}` }}>🌐 {t.langSwitch}</button>
         </div>
+      </aside>
 
-        {/* Intro */}
-        <div style={{ background: CL.card, border: `1px solid ${CL.line}`, borderRadius: 16, padding: "22px 28px", marginBottom: 18 }}>
-          <p style={{ fontSize: 16, color: CL.text, lineHeight: 1.6, margin: 0 }}>{t.intro}</p>
-        </div>
+      {/* ── Main reading column ──────────────────────────────── */}
+      <main className="bfe-main">
 
-        {/* TOC */}
-        <div style={{ background: CL.card, border: `1px solid ${CL.line}`, borderRadius: 16, padding: "22px 28px", marginBottom: 18 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: CL.ink, marginBottom: 14 }}>{t.tocTitle}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 10 }}>
-            {t.toc.map((item) => (
-              <a key={item.n} href={`#ch${item.n}`} style={{ display: "flex", gap: 12, alignItems: "baseline", padding: "8px 10px", borderRadius: 8, textDecoration: "none", color: CL.text, border: `1px solid ${CL.line}` }}>
-                <span style={{ fontSize: 18, fontWeight: 800, color: CL.gold, minWidth: 22 }}>{item.n}</span>
-                <span>
-                  <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: CL.ink }}>{item.t}</span>
-                  <span style={{ display: "block", fontSize: 12, color: CL.dim }}>{item.s}</span>
-                </span>
-              </a>
-            ))}
+        {/* Cover — title + 1-line tagline + actions. Intentionally short. */}
+        <section className="bfe-cover" id="cover">
+          <div className="bfe-kicker">BuildFi · {t.eyebrow}</div>
+          <h1 className="bfe-title-cover">{t.title}</h1>
+          <p style={{ fontSize: 19, lineHeight: 1.5, color: CL.muted, maxWidth: 640, margin: 0, fontFamily: 'var(--font-playfair),Georgia,serif', fontStyle: "italic" }}>{t.tagline}</p>
+          <div className="bfe-cover-actions" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a className="bfe-btn-gold" href="#ch1">{fr ? "Commencer la lecture" : "Start reading"}</a>
+            <a className="bfe-btn-glass" href="#ch9">{fr ? "Voir le plan d'action" : "See action plan"}</a>
           </div>
-          <div style={{ marginTop: 14, background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: "10px 14px" }}>
-            <strong style={{ fontSize: 12, color: CL.blue, textTransform: "uppercase", letterSpacing: 0.7 }}>{t.whereStart}</strong>
-            <div style={{ fontSize: 13, color: CL.text, marginTop: 4 }}>{t.whereStartBody}</div>
-          </div>
-        </div>
+        </section>
 
-        {/* Quote */}
-        <div style={{ textAlign: "center", padding: "18px 20px", margin: "14px 0 18px" }}>
-          <div style={{ fontSize: 18, fontStyle: "italic", color: CL.ink, maxWidth: 640, margin: "0 auto", lineHeight: 1.5 }}>{t.quote}</div>
-          <div style={{ fontSize: 13, color: CL.dim, marginTop: 8 }}>{t.quoteAttr}</div>
-        </div>
+        {/* Where to start — note callout */}
+        <section className="bfe-note" id="orientation">
+          <div className="bfe-kicker" style={{ marginBottom: 6 }}>{t.whereStart}</div>
+          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: CL.text }}>{t.whereStartBody}</p>
+        </section>
+
+        {/* Pull quote */}
+        <section className="bfe-section" style={{ textAlign: "center", border: "none", boxShadow: "none", background: "transparent", padding: "8px 20px" }}>
+          <div style={{ fontSize: 22, fontStyle: "italic", color: CL.ink, maxWidth: 720, margin: "0 auto", lineHeight: 1.5, fontFamily: 'var(--font-playfair),Georgia,serif' }}>"{t.quote}"</div>
+          <div style={{ fontSize: 14, color: CL.muted, marginTop: 12 }}>— {t.quoteAttr}</div>
+        </section>
 
         {/* Ch 1 */}
-        <Section num={1} id="ch1" title={t.ch1Title} sub={t.ch1Sub}>
+        <Section fr={fr} num={1} id="ch1" title={t.ch1Title} sub={t.ch1Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch1Body}</p>
           <ToolCard title={t.ch1Tool}>
             <NetWorthCalc fr={fr} t={t} />
           </ToolCard>
-          <div style={{ background: CL.greenBg, borderLeft: `3px solid ${CL.green}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch1Note}</div>
+          <Note tone="rule" kicker={fr ? "À retenir" : "Takeaway"}>{t.ch1Note}</Note>
         </Section>
 
         {/* Ch 2 */}
-        <Section num={2} id="ch2" title={t.ch2Title} sub={t.ch2Sub}>
+        <Section fr={fr} num={2} id="ch2" title={t.ch2Title} sub={t.ch2Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch2Body}</p>
           <ToolCard title={t.ch2Tool}>
             <BudgetCalc fr={fr} t={t} />
           </ToolCard>
-          <div style={{ background: CL.redBg, borderLeft: `3px solid ${CL.red}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch2Caution}</div>
+          <Note tone="caution" kicker={fr ? "Attention" : "Caution"}>{t.ch2Caution}</Note>
         </Section>
 
         {/* Ch 3 */}
-        <Section num={3} id="ch3" title={t.ch3Title} sub={t.ch3Sub}>
+        <Section fr={fr} num={3} id="ch3" title={t.ch3Title} sub={t.ch3Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch3Body}</p>
           <ToolCard title={t.ch3Tool}>
             <CardTrapCalc fr={fr} t={t} />
@@ -923,32 +896,14 @@ function Guide101Inner() {
             <h3 style={{ fontSize: 16, fontWeight: 700, color: CL.ink, margin: "0 0 6px" }}>{t.ch3StratTitle}</h3>
             <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6, margin: "0 0 12px" }}>{t.ch3StratBody}</p>
             <div style={{ fontSize: 12, color: CL.dim, textAlign: "center", marginBottom: 8, fontStyle: "italic" }}>{t.ch3Scenario}</div>
-            <div style={{ display: "grid", gap: 8 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: CL.green }}>{t.ch3Avalanche}</div>
-                  <div style={{ fontSize: 11, color: CL.dim }}>{t.ch3AvalancheSub}</div>
-                </div>
-                <strong style={{ fontSize: 16, color: CL.green }}>3 200 $</strong>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: CL.gold }}>{t.ch3Snowball}</div>
-                  <div style={{ fontSize: 11, color: CL.dim }}>{t.ch3SnowballSub}</div>
-                </div>
-                <strong style={{ fontSize: 16, color: CL.gold }}>4 100 $</strong>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: CL.red }}>{t.ch3Min}</div>
-                  <div style={{ fontSize: 11, color: CL.dim }}>{t.ch3MinSub}</div>
-                </div>
-                <strong style={{ fontSize: 16, color: CL.red }}>4 800 $</strong>
-              </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <CompareRow tone="good"    label={t.ch3Avalanche} sublabel={t.ch3AvalancheSub} value="3 200 $" />
+              <CompareRow tone="neutral" label={t.ch3Snowball}  sublabel={t.ch3SnowballSub}  value="4 100 $" />
+              <CompareRow tone="bad"     label={t.ch3Min}       sublabel={t.ch3MinSub}       value="4 800 $" />
             </div>
           </div>
 
-          <div style={{ background: CL.greenBg, borderLeft: `3px solid ${CL.green}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text, marginTop: 16 }}>{t.ch3Rule}</div>
+          <Note tone="rule" kicker={fr ? "Règle" : "Rule"}>{t.ch3Rule}</Note>
           <div style={{ marginTop: 12 }}>
             <a href={fr ? "/outils/dettes" : "/outils/dettes?lang=en"} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: CL.ink, color: "#fff", padding: "9px 14px", borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
               {fr ? "Calculateur complet de dettes →" : "Full debt calculator →"}
@@ -957,7 +912,7 @@ function Guide101Inner() {
         </Section>
 
         {/* Ch 4 */}
-        <Section num={4} id="ch4" title={t.ch4Title} sub={t.ch4Sub}>
+        <Section fr={fr} num={4} id="ch4" title={t.ch4Title} sub={t.ch4Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch4Body}</p>
           <div style={{ background: CL.s2, borderRadius: 12, padding: 14, margin: "14px 0", fontSize: 13, color: CL.text }}>
             <strong>300 — 600 — 650 — 700 — 760 — 900</strong> · Equifax / TransUnion
@@ -980,12 +935,12 @@ function Guide101Inner() {
             </div>
           </div>
 
-          <div style={{ background: CL.redBg, borderLeft: `3px solid ${CL.red}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text, marginBottom: 10 }}>{t.ch4Myth}</div>
-          <div style={{ background: CL.goldBg, borderLeft: `3px solid ${CL.gold}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch4Impact}</div>
+          <Note tone="caution" kicker={fr ? "Mythe" : "Myth"}>{t.ch4Myth}</Note>
+          <Note tone="rule" kicker={fr ? "Impact réel" : "Real impact"}>{t.ch4Impact}</Note>
         </Section>
 
         {/* Ch 5 */}
-        <Section num={5} id="ch5" title={t.ch5Title} sub={t.ch5Sub}>
+        <Section fr={fr} num={5} id="ch5" title={t.ch5Title} sub={t.ch5Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch5Body}</p>
           <div style={{ background: CL.s2, borderRadius: 12, padding: 14, margin: "14px 0" }}>
             {t.ch5Cascade.map((line, i) => (
@@ -993,14 +948,14 @@ function Guide101Inner() {
             ))}
           </div>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6 }}>{t.ch5Emergency}</p>
-          <div style={{ background: CL.blueBg, borderLeft: `3px solid ${CL.blue}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text, marginBottom: 14 }}>{t.ch5Stat}</div>
+          <Note tone="info" kicker={fr ? "Statistique" : "Stat"}>{t.ch5Stat}</Note>
           <ToolCard title={t.ch5Tool}>
             <CompoundCalc fr={fr} t={t} />
           </ToolCard>
         </Section>
 
         {/* Ch 6 */}
-        <Section num={6} id="ch6" title={t.ch6Title} sub={t.ch6Sub}>
+        <Section fr={fr} num={6} id="ch6" title={t.ch6Title} sub={t.ch6Sub}>
           <div style={{ display: "grid", gap: 10, marginBottom: 16 }}>
             <div style={{ background: CL.s2, borderRadius: 10, padding: 14, fontSize: 14, color: CL.text, lineHeight: 1.6 }}><strong style={{ color: CL.ink }}>REER / RRSP</strong> — {t.ch6Rrsp}</div>
             <div style={{ background: CL.s2, borderRadius: 10, padding: 14, fontSize: 14, color: CL.text, lineHeight: 1.6 }}><strong style={{ color: CL.ink }}>CELI / TFSA</strong> — {t.ch6Tfsa}</div>
@@ -1009,20 +964,20 @@ function Guide101Inner() {
 
           {/* Comparison table */}
           <h3 style={{ fontSize: 16, fontWeight: 700, color: CL.ink, margin: "18px 0 10px" }}>{t.ch6TableTitle}</h3>
-          <div style={{ overflow: "auto", marginBottom: 10 }}>
+          <div style={{ overflow: "auto", marginBottom: 10, border: `1px solid ${CL.line}`, borderRadius: 12 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 520 }}>
               <thead>
-                <tr style={{ background: CL.ink, color: "#fff" }}>
+                <tr style={{ background: CL.s2 }}>
                   {t.ch6TH.map((h, i) => (
-                    <th key={i} style={{ padding: "9px 12px", textAlign: i === 0 ? "left" : "center", fontWeight: 700, fontSize: 12 }}>{h}</th>
+                    <th key={i} style={{ padding: "12px 14px", textAlign: i === 0 ? "left" : "center", fontWeight: 700, fontSize: 11, color: CL.gold, textTransform: "uppercase", letterSpacing: ".14em", borderBottom: `1px solid ${CL.line}` }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {t.ch6Rows.map((row, i) => (
-                  <tr key={i} style={{ background: i % 2 ? CL.s2 : CL.card, borderBottom: `1px solid ${CL.line}` }}>
+                  <tr key={i} style={{ background: i % 2 ? CL.s2 : CL.card, borderBottom: i < t.ch6Rows.length - 1 ? `1px solid ${CL.line}` : "none" }}>
                     {row.map((cell, j) => (
-                      <td key={j} style={{ padding: "9px 12px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.dim : CL.text, fontWeight: j === 0 ? 400 : 600 }}>{cell}</td>
+                      <td key={j} style={{ padding: "10px 14px", textAlign: j === 0 ? "left" : "center", color: j === 0 ? CL.muted : CL.text, fontWeight: j === 0 ? 400 : 600 }}>{cell}</td>
                     ))}
                   </tr>
                 ))}
@@ -1034,40 +989,36 @@ function Guide101Inner() {
           {/* RRSP vs TFSA scenarios */}
           <h3 style={{ fontSize: 16, fontWeight: 700, color: CL.ink, margin: "18px 0 6px" }}>{t.ch6QTitle}</h3>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6, margin: "0 0 12px" }}>{t.ch6QBody}</p>
-          <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
-            {t.ch6Scenarios.map((s, i) => {
-              const c = s.color === "blue" ? CL.blue : s.color === "gold" ? CL.gold : CL.green;
-              const bg = s.color === "blue" ? CL.blueBg : s.color === "gold" ? CL.goldBg : CL.greenBg;
-              return (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", background: bg, border: `1px solid ${c}`, borderRadius: 10, padding: "10px 14px" }}>
-                  <div style={{ fontSize: 13, color: CL.text }}>{s.label}</div>
-                  <strong style={{ fontSize: 13, color: c }}>{s.winner}</strong>
-                </div>
-              );
-            })}
+          <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
+            {t.ch6Scenarios.map((s, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", background: CL.panel, border: `1px solid ${CL.line}`, borderRadius: 8, padding: "12px 16px" }}>
+                <div style={{ fontSize: 14, color: CL.text }}>{s.label}</div>
+                <strong style={{ fontSize: 12, color: CL.gold, textTransform: "uppercase", letterSpacing: ".18em" }}>{s.winner}</strong>
+              </div>
+            ))}
           </div>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6 }}>{t.ch6Practice}</p>
-          <div style={{ background: CL.redBg, borderLeft: `3px solid ${CL.red}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text, marginTop: 12 }}>{t.ch6Trap}</div>
+          <Note tone="caution" kicker={fr ? "Piège" : "Pitfall"}>{t.ch6Trap}</Note>
         </Section>
 
         {/* Ch 7 */}
-        <Section num={7} id="ch7" title={t.ch7Title} sub={t.ch7Sub}>
+        <Section fr={fr} num={7} id="ch7" title={t.ch7Title} sub={t.ch7Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch7Body}</p>
 
-          <div style={{ background: CL.goldBg, borderLeft: `3px solid ${CL.gold}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text, margin: "14px 0" }}>{t.ch7Quebec}</div>
+          <Note tone="rule" kicker={fr ? "Spécificité Québec" : "Quebec specifics"}>{t.ch7Quebec}</Note>
 
-          <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
-            <div style={{ background: CL.blueBg, borderLeft: `3px solid ${CL.blue}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch7Qpp}</div>
-            <div style={{ background: CL.blueBg, borderLeft: `3px solid ${CL.blue}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch7Oas}</div>
-            <div style={{ background: CL.blueBg, borderLeft: `3px solid ${CL.blue}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch7Gis}</div>
+          <div style={{ display: "grid", gap: 10, marginBottom: 14, marginTop: 14 }}>
+            <Note tone="info" kicker="RRQ / QPP">{t.ch7Qpp}</Note>
+            <Note tone="info" kicker={fr ? "PSV / OAS" : "OAS"}>{t.ch7Oas}</Note>
+            <Note tone="info" kicker={fr ? "SRG / GIS" : "GIS"}>{t.ch7Gis}</Note>
           </div>
 
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6 }}>{t.ch7Nuance}</p>
-          <div style={{ background: CL.redBg, borderLeft: `3px solid ${CL.red}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch7OasCaution}</div>
+          <Note tone="caution" kicker={fr ? "Récupération PSV" : "OAS clawback"}>{t.ch7OasCaution}</Note>
         </Section>
 
         {/* Ch 8 */}
-        <Section num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub}>
+        <Section fr={fr} num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch8Body}</p>
 
           <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
@@ -1085,19 +1036,18 @@ function Guide101Inner() {
             </div>
           </div>
 
-          <div style={{ background: CL.greenBg, borderLeft: `3px solid ${CL.green}`, padding: "10px 14px", borderRadius: 6, fontSize: 13, color: CL.text }}>{t.ch8Check}</div>
+          <Note tone="rule" kicker={fr ? "Vérification" : "Check"}>{t.ch8Check}</Note>
         </Section>
 
-        {/* 5 costliest mistakes */}
-        <section id="mistakes" style={{ background: CL.card, border: `1px solid ${CL.line}`, borderRadius: 16, padding: "26px 28px", marginBottom: 18 }}>
-          <div style={{ display: "flex", flexDirection: "column", marginBottom: 14 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: CL.red, margin: 0 }}>{t.mistakesTitle}</h2>
-            <div style={{ fontSize: 14, color: CL.dim, fontStyle: "italic", marginTop: 4 }}>{t.mistakesIntro}</div>
-          </div>
+        {/* Costliest mistakes — single voice, paper cards with thin red bar */}
+        <section id="mistakes" className="bfe-section">
+          <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
+          <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
+          <div style={{ fontSize: 16, color: CL.muted, fontStyle: "italic", marginTop: -4, marginBottom: 18 }}>{t.mistakesIntro}</div>
           <div style={{ display: "grid", gap: 10 }}>
             {t.mistakes.map((m, i) => (
-              <div key={i} style={{ background: CL.redBg, borderLeft: `3px solid ${CL.red}`, borderRadius: 8, padding: "12px 16px" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: CL.red, marginBottom: 4 }}>{m.t}</div>
+              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m.t}</div>
                 <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m.b}</div>
               </div>
             ))}
@@ -1105,7 +1055,7 @@ function Guide101Inner() {
         </section>
 
         {/* Ch 9 — Action + CTA */}
-        <Section num={9} id="ch9" title={t.actionsTitle} sub={t.quote2}>
+        <Section fr={fr} num={9} id="ch9" title={t.actionsTitle} sub={t.quote2}>
           <ol style={{ paddingLeft: 22, margin: "6px 0 18px", fontSize: 14, color: CL.text, lineHeight: 1.7 }}>
             {t.actions.map((a, i) => (
               <li key={i} style={{ marginBottom: 6 }}>{a}</li>
@@ -1119,20 +1069,20 @@ function Guide101Inner() {
           </div>
         </Section>
 
-        {/* Principles */}
-        <div style={{ background: CL.card, border: `1px solid ${CL.line}`, borderRadius: 16, padding: "22px 28px", marginBottom: 18 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 12 }}>{t.principlesTitle}</div>
-          <ol style={{ paddingLeft: 22, margin: 0, fontSize: 14, color: CL.text, lineHeight: 1.7 }}>
+        {/* Principles — note callout */}
+        <section className="bfe-note">
+          <div className="bfe-kicker" style={{ marginBottom: 10 }}>{t.principlesTitle}</div>
+          <ol style={{ paddingLeft: 22, margin: 0, fontSize: 15, color: CL.text, lineHeight: 1.7 }}>
             {t.principles.map((p, i) => (<li key={i} style={{ marginBottom: 6 }}>{p}</li>))}
           </ol>
-        </div>
+        </section>
 
         {/* Footer */}
-        <footer style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 26, padding: "0 20px", lineHeight: 1.6 }}>
-          <div style={{ marginBottom: 10 }}>{t.sources}</div>
+        <div style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 36, padding: "20px 4px 0", lineHeight: 1.6, borderTop: `1px solid ${CL.accentLine}` }}>
+          <div style={{ marginBottom: 10, marginTop: 18 }}>{t.sources}</div>
           <div style={{ marginBottom: 10 }}>{t.disclaimer}</div>
           <div>© 2026 BuildFi · <Link href="/" style={{ color: CL.muted }}>buildfi.ca</Link></div>
-        </footer>
+        </div>
       </main>
     </div>
   );

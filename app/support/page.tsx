@@ -8,8 +8,8 @@ import { useState, useEffect, FormEvent } from "react";
 
 // ── Colors (BuildFi palette) ───────────────────────────────────────
 const MARINE = "#1a2744";
-const GOLD = "#c49a1a";
-const GOLD_LIGHT = "#c49a1a";
+const GOLD = "#c4944a";
+const GOLD_LIGHT = "#c4944a";
 const BG = "#FEFCF9";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";
@@ -436,12 +436,13 @@ export default function SupportPage() {
         minHeight: "100vh",
         background: BG,
         fontFamily:
-          "'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+          'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',
       }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Newsreader:wght@400;600;700&display=swap');
-      `}</style>
+      {/*
+        Fonts come from app/layout.tsx via next/font (DM Sans, Inter,
+        Playfair, JetBrains Mono); no @import needed here.
+      */}
 
       {/* ── Header bar ───────────────────────────────────────────── */}
       <header
@@ -495,7 +496,7 @@ export default function SupportPage() {
       >
         <h1
           style={{
-            fontFamily: "Newsreader, Georgia, serif",
+            fontFamily: 'var(--font-playfair), Georgia, serif',
             fontSize: 32,
             fontWeight: 700,
             color: MARINE,
@@ -574,7 +575,7 @@ export default function SupportPage() {
         >
           <h2
             style={{
-              fontFamily: "Newsreader, Georgia, serif",
+              fontFamily: 'var(--font-playfair), Georgia, serif',
               fontSize: 24,
               fontWeight: 700,
               color: MARINE,

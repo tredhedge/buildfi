@@ -1,0 +1,80 @@
+{
+  "findings": [
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "advisor_letter"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "thesis-cumulative-drift",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": null,
+      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
+      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "advisor_letter"
+    }
+  ],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "advisor_letter",
+        "severity": "major",
+        "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 1,
+  "minor_count": 1
+}

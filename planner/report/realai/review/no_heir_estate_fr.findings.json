@@ -1,0 +1,192 @@
+{
+  "findings": [
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ntre **396K$** au scénario prudent et **1.1M$** au scénario favorable reflète principaleme\"  (canon=399372.24141357036, quoted=1100000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 715000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…oniale présente une médiane finale de **715K$**, encadrée par un scénario prudent à **396K\"  (canon=399372.24141357036, quoted=715000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 622000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ent, le net successoral descendrait à **622K$**. En l'absence de conjoint, le REER/FERR ne\"  (canon=399372.24141357036, quoted=622000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ntre **396K$** au scénario prudent et **1.1M$** au scénario favorable, avec une durabilité\"  (canon=399372.24141357036, quoted=1100000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…éussite à **85%** et un P25 chutant à **247K$**, suivi de près par une hausse des dépenses\"  (canon=399372.24141357036, quoted=247000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ntre **396K$** au scénario prudent et **1.1M$** au scénario favorable reflète principaleme\"  (canon=399372.24141357036, quoted=1100000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 715000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…oniale présente une médiane finale de **715K$**, encadrée par un scénario prudent à **396K\"  (canon=399372.24141357036, quoted=715000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 622000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ent, le net successoral descendrait à **622K$**. En l'absence de conjoint, le REER/FERR ne\"  (canon=399372.24141357036, quoted=622000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ntre **396K$** au scénario prudent et **1.1M$** au scénario favorable, avec une durabilité\"  (canon=399372.24141357036, quoted=1100000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical.",
+      "evidence": "\"…éussite à **85%** et un P25 chutant à **247K$**, suivi de près par une hausse des dépenses\"  (canon=399372.24141357036, quoted=247000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    }
+  ],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": "sec-verdict",
+        "target": "verdict",
+        "severity": "major",
+        "message": "AI slot \"verdict\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-trajectory-insight",
+        "target": "trajectory_insight",
+        "severity": "major",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 715000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-estateInsight",
+        "target": "estateInsight",
+        "severity": "major",
+        "message": "AI slot \"estateInsight\" quotes dollar value 622000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
+        "severity": "major",
+        "message": "AI slot \"riskInsight\" quotes dollar value 1100000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-stress-interpretation",
+        "target": "stress_interpretation",
+        "severity": "major",
+        "message": "AI slot \"stress_interpretation\" quotes dollar value 247000 for \"p25_wealth_real\" but canonical is 399372.24. Slot must be regenerated to match canonical."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 5,
+  "minor_count": 1
+}

@@ -1,0 +1,220 @@
+{
+  "findings": [
+    {
+      "id": "narration-tone-paradox-verdict",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 45% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
+      "evidence": "verdict: \"us scenario at **0$** and the favourable scenario at **44K$** is wide because savings sit \"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-gov_coverage_only-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 67 for \"gov_coverage_only\" but canonical is 63.54. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Public benefits would cover roughly **67%** of needs, leaving a monthly gap of **$1,977*\"  (canon=63.53560881694411, quoted=67)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 191000 for \"lifetime_tax_real\" but canonical is 82403. Slot must be regenerated to match canonical.",
+      "evidence": "\"…The lifetime tax bill would land near **191K$** at an average effective rate of **11.0%**,\"  (canon=82403, quoted=191000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "thesis-drift-overall_assessment-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-overall-assessment",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "thesis-drift-sec-assessment-deterministic-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-assessment-deterministic",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "manual",
+      "fix_target": "sec-assessment-deterministic"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "narration-tone-paradox-verdict",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "narration_generic",
+      "section": "sec-assessment",
+      "message": "Success rate is 45% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
+      "evidence": "verdict: \"us scenario at **0$** and the favourable scenario at **44K$** is wide because savings sit \"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-gov_coverage_only-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 67 for \"gov_coverage_only\" but canonical is 63.54. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Public benefits would cover roughly **67%** of needs, leaving a monthly gap of **$1,977*\"  (canon=63.53560881694411, quoted=67)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 191000 for \"lifetime_tax_real\" but canonical is 82403. Slot must be regenerated to match canonical.",
+      "evidence": "\"…The lifetime tax bill would land near **191K$** at an average effective rate of **11.0%**,\"  (canon=82403, quoted=191000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ourable spread (P25 at **0$**, P75 at **44K$**) is narrow because the underlying capital i\"  (canon=0, quoted=44000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "thesis-drift-overall_assessment-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-overall-assessment",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "thesis-drift-sec-assessment-deterministic-failure",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-assessment-deterministic",
+      "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match.",
+      "evidence": "truth_band=fragile  found_token=\"failure\"  drift=2",
+      "fix_kind": "manual",
+      "fix_target": "sec-assessment-deterministic"
+    }
+  ],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": "sec-assessment",
+        "target": "verdict",
+        "severity": "major",
+        "message": "Success rate is 45% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+      },
+      {
+        "section": "sec-income-insight",
+        "target": "income_insight",
+        "severity": "major",
+        "message": "AI slot \"income_insight\" quotes pct value 67 for \"gov_coverage_only\" but canonical is 63.54. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes dollar value 191000 for \"lifetime_tax_real\" but canonical is 82403. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
+        "severity": "major",
+        "message": "AI slot \"riskInsight\" quotes dollar value 44000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-overall-assessment",
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "Plan posture is \"fragile\" (succ=45%) but slot \"overall_assessment\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": "sec-assessment-deterministic",
+        "target": "sec-assessment-deterministic",
+        "severity": "major",
+        "message": "Plan posture is \"fragile\" (succ=45%) but slot \"sec-assessment-deterministic\" uses \"failure\" (band=\"failure\", 2 bands away). Posture must match."
+      },
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 6,
+  "minor_count": 1
+}

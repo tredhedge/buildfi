@@ -1,0 +1,59 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "Success rate is 28% but slot \"overall_assessment\" describes the plan with positive framing (\"work in your favour\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 28% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+    },
+    {
+      "section": null,
+      "target": "tone-pass",
+      "severity": "minor",
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+    },
+    {
+      "section": "sec-overall-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "AI slot \"overall_assessment\" quotes pct value 1 for \"success_rate\" but canonical is 28.15. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes pct value 1 for \"success_rate\" but canonical is 28.15. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 418000 for \"lifetime_tax_real\" but canonical is 346436. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (6 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "findings": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 111 for \"guaranteed_income_coverage\" but canonical is 112.69. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Guaranteed income coverage reaches **111%**, with a monthly gap of **$0** — combined CP\"  (canon=112.68616244136125, quoted=111)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 670000 for \"lifetime_tax_real\" but canonical is 394794. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Lifetime tax registers at **670K$** with an average effective rate of **14.7%*\"  (canon=394794, quoted=670000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 44000 for \"net_estate\" but canonical is 570777.96. Slot must be regenerated to match canonical.",
+      "evidence": "\"…cond death projects at **580K$**, with **44K$** in tax at death and Alberta probate capped\"  (canon=570777.9568301641, quoted=44000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 501000 for \"p25_wealth_real\" but canonical is 205590.62. Slot must be regenerated to match canonical.",
+      "evidence": "\"…The dispersion from **208K$** to **501K$** at the P25-P75 boundaries is concentrated\"  (canon=205590.61624512862, quoted=501000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 98 for \"success_rate\" but canonical is 99.85. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ss scenarios, success rates range from **98%** under longevityPlus5 to **100%** under both\"  (canon=99.85000000000001, quoted=98)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 111 for \"guaranteed_income_coverage\" but canonical is 112.69. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Guaranteed income coverage reaches **111%**, with a monthly gap of **$0** — combined CP\"  (canon=112.68616244136125, quoted=111)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 670000 for \"lifetime_tax_real\" but canonical is 394794. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Lifetime tax registers at **670K$** with an average effective rate of **14.7%*\"  (canon=394794, quoted=670000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 44000 for \"net_estate\" but canonical is 570777.96. Slot must be regenerated to match canonical.",
+      "evidence": "\"…cond death projects at **580K$**, with **44K$** in tax at death and Alberta probate capped\"  (canon=570777.9568301641, quoted=44000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 501000 for \"p25_wealth_real\" but canonical is 205590.62. Slot must be regenerated to match canonical.",
+      "evidence": "\"…The dispersion from **208K$** to **501K$** at the P25-P75 boundaries is concentrated\"  (canon=205590.61624512862, quoted=501000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 98 for \"success_rate\" but canonical is 99.85. Slot must be regenerated to match canonical.",
+      "evidence": "\"…ss scenarios, success rates range from **98%** under longevityPlus5 to **100%** under both\"  (canon=99.85000000000001, quoted=98)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    }
+  ],
+  "minors": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      },
+      {
+        "section": "sec-income-insight",
+        "target": "income_insight",
+        "severity": "major",
+        "message": "AI slot \"income_insight\" quotes pct value 111 for \"guaranteed_income_coverage\" but canonical is 112.69. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes dollar value 670000 for \"lifetime_tax_real\" but canonical is 394794. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-estateInsight",
+        "target": "estateInsight",
+        "severity": "major",
+        "message": "AI slot \"estateInsight\" quotes dollar value 44000 for \"net_estate\" but canonical is 570777.96. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
+        "severity": "major",
+        "message": "AI slot \"riskInsight\" quotes dollar value 501000 for \"p25_wealth_real\" but canonical is 205590.62. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-stress-interpretation",
+        "target": "stress_interpretation",
+        "severity": "major",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 98 for \"success_rate\" but canonical is 99.85. Slot must be regenerated to match canonical."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 5,
+  "minor_count": 2
+}

@@ -38,6 +38,40 @@ import { randomUUID } from "crypto";
 import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
 import { buildMagicLinkUrl, maskEmail } from "@/lib/auth";
+import { getValidConsent, hashEmail, CURRENT_POLICY_VERSION } from "@/lib/consent";
+
+// ── Loi 25 / LPRPDE: pre-flight consent verification ──────
+// Looks up the consent record (90d TTL) before report generation.
+// Missing record = log structured warning, but DON'T block — paid customers
+// must not be denied their product because of a KV write that didn't land
+// during checkout. The checkout route is the authoritative gate; this is a
+// defense-in-depth audit hook.
+async function verifyConsentOrWarn(
+  email: string,
+  context: { tier: string; sessionId: string }
+): Promise<void> {
+  try {
+    const record = await getValidConsent(email);
+    if (!record) {
+      const emailHashed = hashEmail(email);
+      console.warn(
+        JSON.stringify({
+          level: "warn",
+          event: "consent_record_missing",
+          policyVersion: CURRENT_POLICY_VERSION,
+          emailHashed,
+          tier: context.tier,
+          sessionId: context.sessionId,
+          message:
+            "Webhook proceeding without consent record — checkout route should have written one. Investigate KV connectivity.",
+        })
+      );
+    }
+  } catch (e) {
+    // Don't let a consent-lookup failure block the report.
+    console.warn("[webhook] consent lookup failed:", e);
+  }
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -224,6 +258,9 @@ async function handleBilan360Purchase(
 
     console.log(`[webhook] Processing Bilan 360 (${phase}) for ${maskEmail(email)} (${lang})`);
 
+    // Loi 25 — defensive consent verification (does not block on miss)
+    await verifyConsentOrWarn(email, { tier: "bilan360", sessionId });
+
     const params = translateBilan360(quiz, phase);
     const mcStart = Date.now();
 
@@ -372,6 +409,9 @@ async function handleExpertPurchase(
     const quizAnswers = reassembleQuizAnswers(metadata);
 
     console.log(`[webhook] Processing Expert purchase for ${maskEmail(email)}`);
+
+    // Loi 25 — defensive consent verification (does not block on miss)
+    await verifyConsentOrWarn(email, { tier: "planner", sessionId });
 
     // Check if profile already exists (upgrade scenario)
     const existing = await getExpertProfile(email);
@@ -535,7 +575,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
     // Verify profile exists before incrementing
     const profile = await getExpertProfile(email);
     if (!profile) {
-      console.error(`[webhook] Export addon: no profile for ${email}`);
+      console.error(`[webhook] Export addon: no profile for emailHashed=${hashEmail(email)}`);
       return NextResponse.json(
         { received: true, error: "No expert profile" },
         { status: 400 }
@@ -699,7 +739,7 @@ async function handleSubscriptionUpdated(
     }
 
     if (subscription.status === "active") {
-      console.log(`[webhook] Renewal successful for ${email}`);
+      console.log(`[webhook] Renewal successful emailHashed=${hashEmail(email)}`);
       const renewed = await renewExpertProfile(email);
 
       if (renewed) {
@@ -711,7 +751,7 @@ async function handleSubscriptionUpdated(
           token: renewed.token,
           isNewAccount: false,
         });
-        console.log(`[webhook] Renewal magic link sent to ${email}`);
+        console.log(`[webhook] Renewal magic link sent emailHashed=${hashEmail(email)}`);
       }
     }
 

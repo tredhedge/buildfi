@@ -7,7 +7,7 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
-const GOLD = "#c49a1a";
+const GOLD = "#c4944a";
 const DARK = "#1a2744";
 const BG = "#FEFCF9";
 const CARD = "#ffffff";
@@ -134,7 +134,7 @@ function FeedbackContent() {
       <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: "24px" }}>
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#9733;</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 12, fontFamily: "Newsreader, Georgia, serif" }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 12, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
             {fr ? "Merci pour votre avis\u00a0!" : "Thank you for your feedback!"}
           </div>
           <div style={{ fontSize: 14, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
@@ -194,7 +194,7 @@ function FeedbackContent() {
                   border: "none",
                   cursor: "pointer",
                   fontSize: 36,
-                  color: n <= rating ? "#c49a1a" : "#d4cec4",
+                  color: n <= rating ? "#c4944a" : "#d4cec4",
                   transition: "color 0.15s",
                   padding: "0 4px",
                   lineHeight: 1,

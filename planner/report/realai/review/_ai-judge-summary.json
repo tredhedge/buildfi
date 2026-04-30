@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-04-26T23:35:55.003Z",
+  "model": "claude-opus-4-5-20251015",
+  "threshold": 3.5,
+  "profiles_total": 3,
+  "profiles_scored": 0,
+  "profiles_below_threshold": 0,
+  "overall_avg": null,
+  "failing_profiles": []
+}

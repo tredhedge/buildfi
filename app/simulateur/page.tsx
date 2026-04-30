@@ -15,7 +15,7 @@ const EK = {
   sable: "#e8e4db",
   border: "#d4cec4",
   marine: "#1a2744",
-  gold: "#c49a1a",
+  gold: "#c4944a",
   tx: "#1a1208",
   txDim: "#666666",
   txMuted: "#999999",
@@ -298,7 +298,7 @@ function GradeRing({ grade, succ }: { grade: string; succ: number }) {
         transform={`rotate(-90 ${cx} ${cy})`}
         style={{ transition: "stroke-dashoffset 0.8s ease" }}
       />
-      <text x={cx} y={cy - 6} textAnchor="middle" dominantBaseline="central" fontSize={28} fontWeight={800} fill={EK.marine} fontFamily="'Newsreader', serif">{grade}</text>
+      <text x={cx} y={cy - 6} textAnchor="middle" dominantBaseline="central" fontSize={28} fontWeight={800} fill={EK.marine} fontFamily='var(--font-playfair), Georgia, serif'>{grade}</text>
       <text x={cx} y={cy + 20} textAnchor="middle" fontSize={13} fill={EK.txDim} fontFamily="'JetBrains Mono', monospace">{(pct * 100).toFixed(0)}%</text>
     </svg>
   );
@@ -630,7 +630,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
       <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine, fontFamily: "'Newsreader', serif" }}>buildfi.ca</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: EK.marine, fontFamily: 'var(--font-playfair), Georgia, serif' }}>buildfi.ca</div>
             <div style={{ fontSize: 11, color: EK.gold, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 2 }}>{fr ? "Laboratoire" : "Lab"}</div>
           </div>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(26,39,68,.08)", border: "none", borderRadius: 6, color: EK.marine, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
@@ -644,7 +644,7 @@ function SimulateurDeniedScreen({ lang, setLang }: { lang: Lang; setLang: (l: La
           </svg>
         </div>
 
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, fontFamily: "'Newsreader', serif" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 10, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {fr ? "Accès réservé aux membres Laboratoire" : "Access reserved for Lab members"}
         </h1>
         <p style={{ fontSize: 15, color: EK.txDim, lineHeight: 1.7, marginBottom: 24 }}>
@@ -968,7 +968,7 @@ function SimulateurContent() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: EK.bg }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>buildfi.ca</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: EK.marine, marginBottom: 8, fontFamily: 'var(--font-playfair), Georgia, serif' }}>buildfi.ca</div>
           <div style={{ fontSize: 14, color: EK.txDim }}>Chargement...</div>
         </div>
       </div>
@@ -985,10 +985,12 @@ function SimulateurContent() {
   // ══════════════════════════════════════════════════════════════
 
   return (
-    <div style={{ minHeight: "100vh", background: EK.bg, fontFamily: "'DM Sans', sans-serif", color: EK.tx }}>
-      {/* Google Fonts */}
+    <div style={{ minHeight: "100vh", background: EK.bg, fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif', color: EK.tx }}>
+      {/*
+        Fonts come from app/layout.tsx via next/font (DM Sans, Inter,
+        Playfair, JetBrains Mono); no @import needed here.
+      */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,700;0,6..72,800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -1016,7 +1018,7 @@ function SimulateurContent() {
       {/* ── Header ── */}
       <header style={{ background: EK.marine, padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <a href={`/expert?token=${token}`} style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'Newsreader', serif", textDecoration: "none" }}>buildfi.ca</a>
+          <a href={`/expert?token=${token}`} style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: 'var(--font-playfair), Georgia, serif', textDecoration: "none" }}>buildfi.ca</a>
           <span style={{ fontSize: 13, color: EK.gold, fontWeight: 600 }}>
             {T("Laboratoire", "Lab", lang)}
           </span>
@@ -1588,7 +1590,7 @@ function SimulateurContent() {
       {showPorteB && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 24 }}>
           <div style={{ background: EK.card, borderRadius: 12, maxWidth: 560, width: "100%", padding: "28px 24px", maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
               {fr ? "Choisissez un profil" : "Choose a profile"}
             </h2>
             <p style={{ fontSize: 13, color: EK.txDim, marginBottom: 20, lineHeight: 1.5 }}>
@@ -1871,7 +1873,7 @@ function DiagnosticTab({ results, simStatus, simError, params, lang }: {
 
       {/* ── Fan chart ── */}
       <Card>
-        <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: "'Newsreader', serif" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {fr ? "Projection du patrimoine ($ réels)" : "Wealth projection (real $)"}
         </div>
         {results.yearByYear && results.yearByYear.length > 0 ? (
@@ -1937,7 +1939,7 @@ function renderTab(
 
 type TabProps = { results: SimResults; params: Record<string, unknown>; lang: Lang };
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: "'Newsreader', serif" }}>{children}</div>
+  <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 12, fontFamily: 'var(--font-playfair), Georgia, serif' }}>{children}</div>
 );
 
 // ══════════════════════════════════════════════════════════════
@@ -2802,7 +2804,7 @@ function OptimiseurTab({ results, params, lang }: TabProps) {
 
       {/* Call to action */}
       <Card style={{ textAlign: "center", padding: 32, background: `linear-gradient(135deg, rgba(26,39,68,0.03), rgba(196,154,26,0.05))` }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {fr ? "Optimiseur automatique" : "Automatic optimizer"}
         </div>
         <p style={{ fontSize: 14, color: EK.txDim, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 16px" }}>
@@ -2830,7 +2832,7 @@ function TesterPanel({ decisions, selectedDecision, compareResults, compareStatu
   const fr = lang === "fr";
   return (
     <div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
         {fr ? "Tester une décision" : "Test a decision"}
       </div>
       <p style={{ fontSize: 13, color: EK.txDim, marginBottom: 12, lineHeight: 1.5 }}>
@@ -2942,7 +2944,7 @@ function OptimiserPanel({ optimizeResults, optimizeStatus, onRun, onExplore, lan
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, fontFamily: "'Newsreader', serif" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: EK.marine, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {fr ? "Optimiser automatiquement" : "Auto-optimize"}
         </div>
         <button
@@ -3135,7 +3137,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
         <div style={{ width: 56, height: 56, borderRadius: "50%", background: EK.green, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
-        <h3 style={{ fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: "'Newsreader', serif" }}>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: EK.marine, marginBottom: 8, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {fr ? "Bilan Annuel généré" : "Annual Assessment generated"}
         </h3>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
@@ -3172,7 +3174,7 @@ function BilanPanel({ lang, token, params, profile, onClose }: {
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "8px 0" }}>
-      <h3 style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: EK.marine, marginBottom: 4, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
         {fr ? "Bilan Annuel — Mise à jour" : "Annual Assessment — Update"}
       </h3>
       <p style={{ fontSize: 13, color: EK.txDim, lineHeight: 1.6, marginBottom: 16 }}>
@@ -3405,7 +3407,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: EK.txMuted, letterSpacing: 2, textTransform: "uppercase" }}>buildfi.ca</div>
-            <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 22, fontWeight: 700, color: EK.marine, marginTop: 2 }}>
+            <div style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 22, fontWeight: 700, color: EK.marine, marginTop: 2 }}>
               {fr ? "Résumé 1 page" : "1-Page Summary"}
             </div>
             <div style={{ fontSize: 11, color: EK.txMuted, marginTop: 2 }}>
@@ -3418,7 +3420,7 @@ function ResumeOverlay({ results, params, lang, onClose }: {
             <circle cx="40" cy="40" r="38" fill="none" stroke={sC} strokeWidth="6"
               strokeDasharray={Math.round(circ)} strokeDashoffset={Math.round(dashVal)}
               strokeLinecap="round" transform="rotate(-90 40 40)"/>
-            <text x="40" y="37" textAnchor="middle" fontSize="22" fontWeight="800" fill={sC} fontFamily="Newsreader, Georgia, serif">{grade}</text>
+            <text x="40" y="37" textAnchor="middle" fontSize="22" fontWeight="800" fill={sC} fontFamily='var(--font-playfair), Georgia, serif'>{grade}</text>
             <text x="40" y="52" textAnchor="middle" fontSize="11" fill={EK.txDim} fontFamily="'JetBrains Mono', monospace">{succPct}%</text>
           </svg>
         </div>

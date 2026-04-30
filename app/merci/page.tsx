@@ -7,7 +7,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 
-const GOLD = "#c49a1a";
+const GOLD = "#c4944a";
 const GREEN = "#2A8C46";
 const MARINE = "#1a2744";
 
@@ -168,12 +168,16 @@ function ConfirmationContent() {
   return (
     <div style={{
       minHeight: "100vh", background: "#FEFCF9",
-      fontFamily: "'DM Sans', -apple-system, sans-serif",
+      fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',
       display: "flex", flexDirection: "column", alignItems: "center",
       padding: "48px 24px",
     }}>
+      {/*
+        Fonts come from app/layout.tsx via next/font (DM Sans, Inter,
+        Playfair, JetBrains Mono); no @import needed here. The legacy
+        Newsreader serif has been replaced by Playfair across the app.
+      */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Newsreader:wght@400;600;700&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
@@ -204,7 +208,7 @@ function ConfirmationContent() {
         </div>
 
         {/* Title */}
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1A1208", marginBottom: 8, fontFamily: "Newsreader, Georgia, serif" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1A1208", marginBottom: 8, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {done
             ? (fr ? "Merci pour votre achat!" : "Thank you for your purchase!")
             : (fr ? "Préparation en cours..." : "Preparing your assessment...")}

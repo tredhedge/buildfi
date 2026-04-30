@@ -1,0 +1,221 @@
+{
+  "findings": [
+    {
+      "id": "lang-leak",
+      "reviewer": "language",
+      "severity": "major",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences",
+      "evidence": "\\bclawback\\b (×1): \"39;est observée ( 0 années de clawback), ce qui indique que le reven\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…dispersion entre le scénario prudent à **20K$** et le scénario favorable à **316K$** reste\"  (canon=26981.120475824966, quoted=20000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…iane termine à **150K$**, encadrée par **20K$** dans le scénario prudent et **316K$** dans\"  (canon=26981.120475824966, quoted=20000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes pct value 14.9 for \"lifetime_effective_tax_rate\" but canonical is 12.77. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Le taux effectif moyen ressort à **14.9%** sur la durée, avec un impôt à vie de **706\"  (canon=12.77316452453462, quoted=14.9)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 40000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…io prudent, la succession se réduit à **40K$**, ce qui rappelle que la valeur transmise dé\"  (canon=26981.120475824966, quoted=40000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "scope-lifetime-tax-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (263590). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+      "evidence": "sec-tax=706000 (drift 168%)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "lang-leak",
+      "reviewer": "language",
+      "severity": "major",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences",
+      "evidence": "\\bclawback\\b (×1): \"39;est observée ( 0 années de clawback), ce qui indique que le reven\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…dispersion entre le scénario prudent à **20K$** et le scénario favorable à **316K$** reste\"  (canon=26981.120475824966, quoted=20000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…iane termine à **150K$**, encadrée par **20K$** dans le scénario prudent et **316K$** dans\"  (canon=26981.120475824966, quoted=20000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes pct value 14.9 for \"lifetime_effective_tax_rate\" but canonical is 12.77. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Le taux effectif moyen ressort à **14.9%** sur la durée, avec un impôt à vie de **706\"  (canon=12.77316452453462, quoted=14.9)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 40000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical.",
+      "evidence": "\"…io prudent, la succession se réduit à **40K$**, ce qui rappelle que la valeur transmise dé\"  (canon=26981.120475824966, quoted=40000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "scope-lifetime-tax-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (263590). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+      "evidence": "sec-tax=706000 (drift 168%)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    }
+  ],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": "sec-verdict",
+        "target": "verdict",
+        "severity": "major",
+        "message": "AI slot \"verdict\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-trajectory-insight",
+        "target": "trajectory_insight",
+        "severity": "major",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 20000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes pct value 14.9 for \"lifetime_effective_tax_rate\" but canonical is 12.77. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-estateInsight",
+        "target": "estateInsight",
+        "severity": "major",
+        "message": "AI slot \"estateInsight\" quotes dollar value 40000 for \"p25_wealth_real\" but canonical is 26981.12. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-tax",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (263590). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "major",
+        "message": "EN tokens in FR report: 1 patterns matched, 1 total occurrences"
+      }
+    ],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 6,
+  "minor_count": 1
+}

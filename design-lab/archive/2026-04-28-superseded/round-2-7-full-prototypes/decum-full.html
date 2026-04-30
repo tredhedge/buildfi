@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decumulation Tool Full Prototype</title>
+  <link rel="stylesheet" href="./full-prototypes.css">
+  <script defer src="./full-prototypes.js"></script>
+</head>
+<body class="full-page product-page" data-theme="dark">
+  <div class="product-shell">
+    <div class="product-topbar">
+      <div class="product-brand">BuildFi Product</div>
+      <div class="product-links">
+        <a href="./index.html">Back to Round 2.7</a>
+        <button type="button" data-set-theme="dark">Dark</button>
+        <button type="button" data-set-theme="light">Light</button>
+      </div>
+    </div>
+
+    <section class="product-cover">
+      <div class="product-cover-grid">
+        <div>
+          <div class="kicker">Product · Decumulation</div>
+          <h1>A calmer product shell for retirement drawdown planning.</h1>
+          <p>This first full prototype treats decumulation as the most thoughtful Product surface: still a tool, still clearly interactive, but with enough structure and explanation that it can eventually bridge toward planner and report experiences.</p>
+          <div class="cover-actions">
+            <a class="btn-gold" href="#plan">See the plan</a>
+            <a class="btn-outline" href="#explore">Explore alternatives</a>
+          </div>
+        </div>
+        <div class="hero-metric">
+          <div class="kicker">Theme check</div>
+          <div class="metric-value" data-theme-readout>Dark product mode</div>
+          <div class="metric-copy">Same Product family as debt, but with more planning composure and longer-form explanation blocks.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="product-summary">
+      <div class="summary-card"><div class="value">$1.48M</div><div class="label">Start assets</div><div class="copy">RRSP, TFSA, non-reg, and cash reserve.</div></div>
+      <div class="summary-card"><div class="value">91%</div><div class="label">Plan resilience</div><div class="copy">Across the current baseline assumptions.</div></div>
+      <div class="summary-card"><div class="value">Age 87</div><div class="label">Median endpoint</div><div class="copy">Portfolio still intact in the central path.</div></div>
+      <div class="summary-card"><div class="value">$74k</div><div class="label">Annual spending</div><div class="copy">Before tax, indexed at 2.2%.</div></div>
+    </section>
+
+    <div class="product-layout">
+      <aside class="product-sidebar">
+        <section class="product-card">
+          <h2>Profile inputs</h2>
+          <p>This is still a tool first. The shell has to feel coherent when real controls and assumptions show up.</p>
+          <div class="control-grid">
+            <div class="control"><label>Retirement age</label><input value="61" readonly></div>
+            <div class="control"><label>Spending target</label><input value="$74,000" readonly></div>
+            <div class="control"><label>CPP/QPP start</label><select><option>70</option></select></div>
+            <div class="control"><label>Province</label><select><option>Quebec</option></select></div>
+          </div>
+        </section>
+
+        <section class="product-card" id="explore">
+          <h2>Scenario presets</h2>
+          <p>These are product-level scenario cards, not report chapters. They should feel direct and useful.</p>
+          <div class="chip-row" data-scenario-group data-scenario-target="decum-scenario-readout">
+            <button class="chip is-active" data-scenario data-payload='{"label":"Baseline plan","score":"91%","effect":"Current baseline keeps taxes moderate and protects late-life income."}'>Baseline</button>
+            <button class="chip" data-scenario data-payload='{"label":"Delay CPP/QPP to 70","score":"94%","effect":"Later guaranteed income improves longevity protection but raises bridge pressure."}'>Delay benefits</button>
+            <button class="chip" data-scenario data-payload='{"label":"Spend 10% more","score":"83%","effect":"Higher early spending narrows late-retirement margin quickly."}'>Spend +10%</button>
+            <button class="chip" data-scenario data-payload='{"label":"Reduce fees to 0.6%","score":"93%","effect":"Fee savings preserve more optionality without changing lifestyle."}'>Lower fees</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="product-main-panel">
+        <section class="product-card" id="plan">
+          <h2>Baseline vs explored</h2>
+          <div class="compare-strip">
+            <div class="compare-card">
+              <div class="heading">Your plan</div>
+              <div class="score">91%</div>
+              <div class="detail">Balanced withdrawals, later CPP/QPP start, and room to protect OAS exposure.</div>
+            </div>
+            <div class="compare-card" id="decum-scenario-readout">
+              <div class="heading" data-bind="label">Baseline plan</div>
+              <div class="score" data-bind="score">91%</div>
+              <div class="detail" data-bind="effect">Current baseline keeps taxes moderate and protects late-life income.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="product-card">
+          <h2>Trajectory</h2>
+          <div class="chart-shell">
+            <div class="chart-area">
+              <div class="chart-line"></div>
+              <div class="chart-line alt"></div>
+            </div>
+            <div class="chart-caption">The more report-friendly touch here is not removing the chart. It’s pairing the chart with a calmer explanatory caption so the tool still teaches while it simulates.</div>
+          </div>
+        </section>
+
+        <section class="product-card">
+          <h2>Drawdown structure</h2>
+          <table class="table">
+            <thead>
+              <tr><th>Phase</th><th>Primary source</th><th>Target draw</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Bridge years</td><td>RRSP + cash</td><td class="mono">$58k</td></tr>
+              <tr><td>Government live</td><td>TFSA support</td><td class="mono">$34k</td></tr>
+              <tr><td>Later retirement</td><td>Mixed withdrawals</td><td class="mono">$22k</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="product-card">
+          <h2>Action guidance</h2>
+          <div class="action-list">
+            <div class="action-item"><strong>Protect the bridge</strong><p>Keep 2–3 years of spending in safe assets so market shocks do not force bad sales early in retirement.</p></div>
+            <div class="action-item"><strong>Use tax bands deliberately</strong><p>Pull enough from registered assets to avoid a large forced spike later, but not so much that you trigger unnecessary clawbacks now.</p></div>
+            <div class="action-item"><strong>Keep optionality visible</strong><p>The shell should make it easy to compare a stable baseline with a tested alternative without confusing the two.</p></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

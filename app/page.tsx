@@ -3,15 +3,17 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
+import {
+  getProductPalette,
+  PRODUCT_DARK,
+  type ProductPalette,
+  THEME_STORAGE_KEY,
+} from "@/lib/design/product.tokens";
+import { BuildFiLogo } from "@/lib/design/components";
 
-/* ═══════════════════════════════════════════════════════════
-   Palette — planner_v3 verbatim
-   ═══════════════════════════════════════════════════════════ */
-const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", bd2: "#677b98", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", bl: "#6aa6de", gn: "#48a66d", rd: "#cf6060", or: "#cf9850" };
-// CL_LIGHT: bumped `dm` from #5d7085 (~3.5:1 on #f5f8fc) to #4a5a6e (~5.4:1) for WCAG AA compliance.
-const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", bd2: "#c2cfde", tx: "#2a3442", al: "#172332", dm: "#4a5a6e", ac: "#8f6d2f", bl: "#3b79b6", gn: "#2f8a4a", rd: "#b93f43", or: "#b5772f" };
-const acBg = (c: typeof CL_DARK) => c.ac + "18";
-const acBgStrong = (c: typeof CL_DARK) => c.ac + "30";
+/* Palette: shared Product system. See docs/DESIGN-SYSTEM.md. */
+const acBg = (c: ProductPalette) => c.ac + "18";
+const acBgStrong = (c: ProductPalette) => c.ac + "30";
 
 /* ═══════════════════════════════════════════════════════════
    Bilingual copy
@@ -392,36 +394,19 @@ const COPY = {
 /* ═══════════════════════════════════════════════════════════
    Section components
    ═══════════════════════════════════════════════════════════ */
-function BuildFiLogo({ cl, theme, size = "md" }: { cl: any; theme: "dark" | "light"; size?: "sm" | "md" | "lg" }) {
-  const isDark = theme === "dark";
-  const blockFill = isDark ? "#faf8f4" : "#1a2744";
-  const midOpacity = isDark ? 0.4 : 0.5;
-  const textFill = isDark ? "#faf8f4" : "#1a2744";
-  const goldFill = cl.ac;
-  const s = size === "lg" ? 1.4 : size === "md" ? 1.0 : 0.7;
-  const w = Math.round(220 * s);
-  const h = Math.round(48 * s);
-  return (
-    <svg width={w} height={h} viewBox="0 0 220 48" style={{ display: "block" }} aria-label="BuildFi">
-      <g>
-        <rect x="0" y="32" width="28" height="8" rx="2" fill={blockFill} />
-        <rect x="4" y="22" width="26" height="8" rx="2" fill={blockFill} opacity={midOpacity} />
-        <rect x="8" y="12" width="24" height="8" rx="2" fill={goldFill} />
-      </g>
-      <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight={700} letterSpacing="-0.5">
-        <tspan fill={textFill}>build</tspan>
-        <tspan fill={goldFill}>fi</tspan>
-      </text>
-    </svg>
-  );
-}
+/*
+  BuildFiLogo: now imported from lib/design/components (Plan v2.2 / Phase 0).
+  The previous inline copy used Plus Jakarta Sans (unregistered → silent
+  system fallback). The shared primitive normalizes the wordmark to DM
+  Sans and reads as one identity across marketing + tools + chrome.
+*/
 
 function Nav({ cl, lang, setLang, theme, toggleTheme, t }: any) {
   return (
     <header style={{ background: cl.cd, borderBottom: `1px solid ${cl.bd}`, position: "sticky", top: 0, zIndex: 50 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
         <a href="#top" style={{ textDecoration: "none", display: "flex", alignItems: "center" }} aria-label="BuildFi home">
-          <BuildFiLogo cl={cl} theme={theme} size="md" />
+          <BuildFiLogo theme={theme} size="md" accent={cl.ac} />
         </a>
         <nav style={{ display: "flex", gap: 20, alignItems: "center", fontSize: 13 }}>
           <a href="#tools" style={{ color: cl.dm, textDecoration: "none", fontWeight: 600 }}>{t.navTools}</a>
@@ -863,7 +848,7 @@ function HomeInner() {
   useEffect(() => {
     setMounted(true);
     try {
-      const savedTheme = localStorage.getItem("buildfi_theme");
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme === "dark" || savedTheme === "light") setTheme(savedTheme);
       const p = params?.get("lang");
       if (p === "en" || p === "fr") setLang(p);
@@ -873,15 +858,15 @@ function HomeInner() {
       }
     } catch {}
   }, [params]);
-  useEffect(() => { try { localStorage.setItem("buildfi_theme", theme); } catch {} }, [theme]);
+  useEffect(() => { try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch {} }, [theme]);
 
   // Default to light palette. Switch to dark only when user explicitly opted in AFTER mount.
-  const cl = mounted && theme === "dark" ? CL_DARK : CL_LIGHT;
+  const cl = getProductPalette(mounted && theme === "dark" ? "dark" : "light");
   const t = lang === "fr" ? COPY.fr : COPY.en;
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
-    <div suppressHydrationWarning style={{ background: cl.bg, color: cl.tx, fontFamily: '"Avenir Next","Segoe UI",Arial,sans-serif', minHeight: "100vh" }}>
+    <div suppressHydrationWarning style={{ background: cl.bg, color: cl.tx, fontFamily: 'var(--font-dm-sans),"Segoe UI",Arial,sans-serif', minHeight: "100vh" }}>
       <Nav cl={cl} lang={lang} setLang={setLang} theme={theme} toggleTheme={toggleTheme} t={t} />
       <Hero cl={cl} theme={theme} t={t} />
       <StatsBar cl={cl} t={t} />
@@ -908,7 +893,7 @@ function HomeInner() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: CL_DARK.bg }} />}>
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: PRODUCT_DARK.bg }} />}>
       <HomeInner />
     </Suspense>
   );

@@ -1,0 +1,83 @@
+{
+  "profile": "rental_landlord_on_en",
+  "generated_at": "2026-04-30T02:40:04.329Z",
+  "canonical": {
+    "success_rate": 0.9995,
+    "p25_wealth_real": 1487242.9340943866,
+    "p50_wealth_real": 1702136.8252610012,
+    "p75_wealth_real": 2093303.00390178,
+    "gov_coverage_only": 0.49519794338933804,
+    "guaranteed_income_coverage": 0.49519794338933804,
+    "monthly_gap": 6010.895224011291,
+    "oas_clawback_years": 19,
+    "lifetime_tax_real": 553288,
+    "lifetime_taxable_income_real": 3351079,
+    "lifetime_effective_tax_rate": 0.16510757378478208,
+    "lifetime_gis": 0,
+    "gis_years": 0,
+    "net_estate": 3460384.7546698046,
+    "gis_plausibility": false,
+    "dispersion_pts": null,
+    "stress_pts": 0,
+    "top_sensitivity_lever": null,
+    "case_driver": "rental_cashflow"
+  },
+  "case_driver": "rental_cashflow",
+  "slots": {
+    "tone-pass": [
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      },
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      }
+    ],
+    "verdict": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 1700000 for \"p25_wealth_real\" but canonical is 1487242.93. Slot must be regenerated to match canonical.",
+        "evidence": "\"…A+** with the median ending wealth at **1.7M$** and the cautious P25 path at **1.5M$**, wh\"  (canon=1487242.9340943866, quoted=1700000)"
+      }
+    ],
+    "trajectory_insight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-trajectory_insight",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 1700000 for \"p25_wealth_real\" but canonical is 1487242.93. Slot must be regenerated to match canonical.",
+        "evidence": "\"…h projects a median terminal value of **1.7M$**, with the cautious P25 outcome at **1.5M$*\"  (canon=1487242.9340943866, quoted=1700000)"
+      }
+    ],
+    "taxInsight": [
+      {
+        "rule": "canonical-quote-lifetime_tax_real-taxInsight",
+        "message": "AI slot \"taxInsight\" quotes dollar value 1200000 for \"lifetime_tax_real\" but canonical is 553288. Slot must be regenerated to match canonical.",
+        "evidence": "\"…The lifetime tax projection of **1.2M$** at an average effective rate of **17.4%**\"  (canon=553288, quoted=1200000)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-net_estate-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 86000 for \"net_estate\" but canonical is 3460384.75. Slot must be regenerated to match canonical.",
+        "evidence": "\"…ed net estate sits at **3.5M$**, with **86K$** of tax at death and a cautious-scenario est\"  (canon=3460384.7546698046, quoted=86000)"
+      }
+    ],
+    "riskInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-riskInsight",
+        "message": "AI slot \"riskInsight\" quotes dollar value 2100000 for \"p25_wealth_real\" but canonical is 1487242.93. Slot must be regenerated to match canonical.",
+        "evidence": "\"…75 wealth band runs from **1.5M$** to **2.1M$**, which is a relatively contained spread fo\"  (canon=1487242.9340943866, quoted=2100000)"
+      }
+    ],
+    "stress_interpretation": [
+      {
+        "rule": "canonical-quote-p50_wealth_real-stress_interpretation",
+        "message": "AI slot \"stress_interpretation\" quotes dollar value 3100000 for \"p50_wealth_real\" but canonical is 1702136.83. Slot must be regenerated to match canonical.",
+        "evidence": "\"… in the **stagflation73** scenario at **3.1M$** and the highest in **longevityPlus5** at *\"  (canon=1702136.8252610012, quoted=3100000)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/rental_landlord_on_en.json and re-run the pipeline."
+}

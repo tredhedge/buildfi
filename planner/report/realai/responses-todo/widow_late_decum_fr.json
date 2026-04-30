@@ -1,0 +1,55 @@
+{
+  "profile": "widow_late_decum_fr",
+  "generated_at": "2026-04-30T02:40:08.303Z",
+  "canonical": {
+    "success_rate": 0.9995,
+    "p25_wealth_real": 58829.049943369966,
+    "p50_wealth_real": 79330.87456817708,
+    "p75_wealth_real": 105714.21607747952,
+    "gov_coverage_only": 0.7534597226217078,
+    "guaranteed_income_coverage": 1.0219571010964674,
+    "monthly_gap": 0,
+    "oas_clawback_years": 0,
+    "lifetime_tax_real": 7104,
+    "lifetime_taxable_income_real": 568741,
+    "lifetime_effective_tax_rate": 0.01249001270859423,
+    "lifetime_gis": 130899.27924176298,
+    "gis_years": 17,
+    "net_estate": 119014.5635009688,
+    "gis_plausibility": true,
+    "dispersion_pts": null,
+    "stress_pts": 1,
+    "top_sensitivity_lever": null,
+    "case_driver": "gap_savings"
+  },
+  "case_driver": "gap_savings",
+  "slots": {
+    "verdict": [
+      {
+        "rule": "canonical-quote-p50_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 60000 for \"p50_wealth_real\" but canonical is 79330.87. Slot must be regenerated to match canonical.",
+        "evidence": "\"… **80K$** dans le scénario typique et **60K$** dans le scénario prudent, l'épargne ne s'ép\"  (canon=79330.87456817708, quoted=60000)"
+      },
+      {
+        "rule": "canonical-quote-p25_wealth_real-verdict",
+        "message": "AI slot \"verdict\" quotes dollar value 108000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical.",
+        "evidence": "\"…io prudent et le scénario favorable à **108K$** demeure modérée, ce qui reflète une alloca\"  (canon=58829.049943369966, quoted=108000)"
+      }
+    ],
+    "trajectory_insight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-trajectory_insight",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 108000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical.",
+        "evidence": "\"…à **60K$** et le scénario favorable à **108K$** encadrent cette trajectoire de manière rel\"  (canon=58829.049943369966, quoted=108000)"
+      }
+    ],
+    "estateInsight": [
+      {
+        "rule": "canonical-quote-p25_wealth_real-estateInsight",
+        "message": "AI slot \"estateInsight\" quotes dollar value 89000 for \"p25_wealth_real\" but canonical is 58829.05. Slot must be regenerated to match canonical.",
+        "evidence": "\"…transmise serait plutôt de l'ordre de **89K$**. Cette transmission semble couler simplemen\"  (canon=58829.049943369966, quoted=89000)"
+      }
+    ]
+  },
+  "instructions": "For each slot, regenerate the AI text using the canonical values in this file. The new text MUST quote canonical metrics within rounding tolerance, match the success-rate posture band, and route every recommendation through \"consult a Pl.Fin.\" (AMF compliance). After regeneration, save into report/realai/responses/widow_late_decum_fr.json and re-run the pipeline."
+}

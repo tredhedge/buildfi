@@ -3,6 +3,14 @@
 // 34 slots matching report-html-360.js renderer expectations
 // Ports quality patterns from ai-prompt-inter.ts + ai-prompt-decum.ts
 //
+// PII AUDIT (2026-04-26 — Sprint 4 Loi 25 review):
+//   This prompt MUST NOT contain raw email, last name, or any direct
+//   identifier. The current quiz schema (lib/wizard/blocks.ts) collects
+//   no name field, so no first names are passed either. Verified: zero
+//   email-like substrings in this file (no email leaks).
+//   If a future change adds a name field to the wizard, scrub here before
+//   inserting into prompt strings.
+//
 // Slots: biggest_risk, best_lever, snapshot_intro, mirror_block,
 //   revenue_analysis, savings_analysis, gov_explanation, cpp_timing,
 //   longevity_analysis, spending_flex, what_if_analysis, strategy_comparison,

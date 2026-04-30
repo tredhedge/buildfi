@@ -16,12 +16,42 @@
   }
 
   // Compact money: 485K$, 1.2M$
+  // Codex MED-1 fix: EN reports were rendering "346K$" (FR convention)
+  // instead of "$346K" (EN convention). The formatter now reads the
+  // rendering-scope language flag set in window.__bfLang at top of
+  // buildReport. FR keeps suffixed `K$` / `M$`; EN uses prefix `$`.
+  function _isEN() { return typeof window !== 'undefined' && window.__bfLang === 'en'; }
+
   function fmtCompact(v) {
     if (v === void 0 || v === null || isNaN(v)) return "\u2014";
     var a = Math.abs(v);
-    if (a >= 1e6) return (v < 0 ? "\u2212" : "") + (a / 1e6).toFixed(1) + "M$";
-    if (a >= 1e3) return (v < 0 ? "\u2212" : "") + Math.round(a / 1e3) + "K$";
-    return Math.round(v) + "$";
+    var sign = v < 0 ? "\u2212" : "";
+    var en = _isEN();
+    if (a >= 1e6) {
+      var m = (a / 1e6).toFixed(1);
+      return en ? sign + "$" + m + "M" : sign + m + "M$";
+    }
+    if (a >= 1e3) {
+      var k = Math.round(a / 1e3);
+      return en ? sign + "$" + k + "K" : sign + k + "K$";
+    }
+    return en ? sign + "$" + Math.round(a) : sign + Math.round(a) + "$";
+  }
+
+  // Table money: intentionally coarse to avoid false precision in projected
+  // yearly flows / withdrawals. Always expresses amounts in K$ once non-zero.
+  function fmtTableK(v) {
+    if (v === void 0 || v === null || isNaN(v)) return "\u2014";
+    var a = Math.abs(v);
+    var sign = v < 0 ? "\u2212" : "";
+    var en = _isEN();
+    if (a === 0) return en ? "$0K" : "0K$";
+    if (a >= 1e6) {
+      var m = (a / 1e6).toFixed(1);
+      return en ? sign + "$" + m + "M" : sign + m + "M$";
+    }
+    var k = Math.max(1, Math.round(a / 1e3));
+    return en ? sign + "$" + k + "K" : sign + k + "K$";
   }
 
   // Full money with locale: FR "485 000 $" / EN "$485,000"
@@ -98,16 +128,27 @@
   // GRADE & COLOR SYSTEM
   // ══════════════════════════════════════════════════════════════
 
+  // Grade calibration — recalibrated per codex audit. Previous version called
+  // 89% "Solide" but the verdict text read "Fragile" — internally inconsistent.
+  // New scheme:
+  //   95-100 → A+ Excellent (with mandatory blind-spots)
+  //   90-94  → A  Très solide
+  //   80-89  → A- Solide (no longer "Acceptable" or "Fragile" in this band)
+  //   70-79  → B+ Robuste avec discipline
+  //   60-69  → B  À surveiller
+  //   45-59  → C  Sous tension
+  //   30-44  → D  Fragile (with explicit recovery path)
+  //   0-29   → F  À reconstruire
   function grade(succVal, fr) {
     if (succVal == null) return { letter: "\u2014", label: fr ? "En attente" : "Pending", color: "#b89830" };
     if (succVal >= 0.95) return { letter: "A+", label: fr ? "Excellent" : "Excellent", color: "#2a8c46" };
     if (succVal >= 0.90) return { letter: "A",  label: fr ? "Tr\u00e8s solide" : "Very solid", color: "#2a8c46" };
-    if (succVal >= 0.85) return { letter: "A-", label: fr ? "Solide" : "Solid", color: "#2a8c46" };
-    if (succVal >= 0.80) return { letter: "B+", label: fr ? "Acceptable" : "Acceptable", color: "#b89830" };
-    if (succVal >= 0.70) return { letter: "B",  label: fr ? "Fragile" : "Fragile", color: "#b89830" };
-    if (succVal >= 0.50) return { letter: "C",  label: fr ? "Risqu\u00e9" : "At risk", color: "#cc4444" };
-    if (succVal >= 0.30) return { letter: "D",  label: fr ? "Critique" : "Critical", color: "#cc4444" };
-    return { letter: "F", label: fr ? "Critique" : "Critical", color: "#cc4444" };
+    if (succVal >= 0.80) return { letter: "A-", label: fr ? "Solide" : "Solid", color: "#2a8c46" };
+    if (succVal >= 0.70) return { letter: "B+", label: fr ? "Robuste avec discipline" : "Robust with discipline", color: "#b89830" };
+    if (succVal >= 0.60) return { letter: "B",  label: fr ? "\u00c0 surveiller" : "Monitor closely", color: "#b89830" };
+    if (succVal >= 0.45) return { letter: "C",  label: fr ? "Sous tension" : "Under strain", color: "#cc8844" };
+    if (succVal >= 0.30) return { letter: "D",  label: fr ? "Fragile" : "Fragile", color: "#cc4444" };
+    return { letter: "F", label: fr ? "\u00c0 reconstruire" : "To rebuild", color: "#cc4444" };
   }
 
   // Color for a success rate value
@@ -152,10 +193,15 @@
     return '<tr><td class="rl">' + l + '</td><td class="rv">' + v + '</td></tr>';
   }
 
-  // KPI card with colored top border
+  // Sprint 0.9: KPI cards default to NAVY (#252d39), not gold. Gold is
+  // restricted to the hero gauge + verdict line + cover so it carries
+  // signal ("this is the premium element"). Previous overuse made gold
+  // wallpaper. Per-KPI color override still works for risk (red) /
+  // success (green) coding via explicit color arg.
   function KPI(v, l, c) {
-    return '<div class="kpi" style="border-top:3px solid ' + (c || COLORS.gold) + '">' +
-      '<div class="kpi-v" style="color:' + (c || COLORS.gold) + '">' + v + '</div>' +
+    var defaultC = '#252d39';
+    return '<div class="kpi" style="border-top:3px solid ' + (c || defaultC) + '">' +
+      '<div class="kpi-v" style="color:' + (c || defaultC) + '">' + v + '</div>' +
       '<div class="kpi-l">' + l + '</div></div>';
   }
 
@@ -273,10 +319,10 @@
   var LABELS = {
     // Section titles
     cover_title:     { fr: "Rapport d\u00e9taill\u00e9", en: "Detailed Report" },
-    cover_sub:       { fr: "Plan de retraite", en: "Retirement Plan" },
+    cover_sub:       { fr: "Plan financier personnalis\u00e9", en: "Personalized Financial Plan" },
     toc:             { fr: "Table des mati\u00e8res", en: "Table of Contents" },
-    page_zero:       { fr: "Votre plan en 30 secondes", en: "Your plan in 30 seconds" },
-    diagnostic:      { fr: "Sommaire ex\u00e9cutif", en: "Executive Summary" },
+    page_zero:       { fr: "Votre plan, en d\u00e9tail", en: "Your plan, in detail" },
+    diagnostic:      { fr: "Forces et points d'attention", en: "Strengths & watch points" },
     profile:         { fr: "Votre profil", en: "Your Profile" },
     family:          { fr: "Votre famille", en: "Your Family" },
     goals:           { fr: "Vos objectifs", en: "Your Goals" },
@@ -285,7 +331,7 @@
     decum:           { fr: "Strat\u00e9gie de d\u00e9caissement", en: "Withdrawal Strategy" },
     tax:             { fr: "Strat\u00e9gie fiscale", en: "Tax Strategy" },
     gis:             { fr: "Analyse SRG", en: "GIS Analysis" },
-    meltdown:        { fr: "Strat\u00e9gie Meltdown REER", en: "RRSP Meltdown Strategy" },
+    meltdown:        { fr: "Strat\u00e9gie de d\u00e9caissement anticip\u00e9 du REER", en: "Early RRSP Drawdown Strategy" },
     succession:      { fr: "Succession", en: "Estate" },
     realestate:      { fr: "Immobilier", en: "Real Estate" },
     rsu:             { fr: "Actions RSU", en: "RSU Grants" },
@@ -295,7 +341,7 @@
     risk:            { fr: "Risque & sensibilit\u00e9", en: "Risk & Sensitivity" },
     strategies:      { fr: "Strat\u00e9gies observ\u00e9es", en: "Observed Strategies" },
     methodology:     { fr: "M\u00e9thodologie", en: "Methodology" },
-    levers:          { fr: "Ce qui pourrait changer le plan", en: "What Could Change This Plan" },
+    levers:          { fr: "Sensibilités du plan", en: "Plan sensitivities" },
     glance:          { fr: "Votre plan en bref", en: "Your Plan at a Glance" },
     // Common labels
     age:             { fr: "\u00c2ge", en: "Age" },
@@ -343,6 +389,7 @@
   window.BFmt = Object.freeze({
     // Number formatters
     fmtCompact: fmtCompact,
+    fmtTableK: fmtTableK,
     fmtMoney: fmtMoney,
     fmtCurrency: fmtCurrency,
     fmtInt: fmtInt,

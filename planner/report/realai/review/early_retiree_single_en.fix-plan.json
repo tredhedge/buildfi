@@ -1,0 +1,47 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 38% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-income-insight",
+      "target": "income_insight",
+      "severity": "major",
+      "message": "AI slot \"income_insight\" quotes pct value 28 for \"guaranteed_income_coverage\" but canonical is 30.84. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 804000 for \"lifetime_tax_real\" but canonical is 386417. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-stress-interpretation",
+      "target": "stress_interpretation",
+      "severity": "major",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 9 for \"success_rate\" but canonical is 38.45. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "OAS clawback years mentioned across sections drifts from canonical (7 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}
