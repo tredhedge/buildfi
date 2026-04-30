@@ -20,6 +20,10 @@ export const EDITORIAL = {
   text: "#2a2520",
   muted: "#5d6480",
   line: "#ddd1be",
+  /** Prose body color — between ink and muted (Plan v2.2 / Phase 3). */
+  prose: "#3f4761",
+  /** Nav link rest color — slightly cooler than muted (Plan v2.2 / Phase 3). */
+  navRest: "#4c5570",
   goldSoft: "#e4d0b2",
   /*
     Warm-tinted shadows (Plan v2.2 / Phase 0, 2026-04-29).
@@ -27,6 +31,8 @@ export const EDITORIAL = {
   */
   shadow: "0 14px 34px rgba(56,42,19,0.09)",
   shadowSoft: "0 8px 18px rgba(53,40,20,0.05)",
+  /** Scroll-margin for #sec-N anchors so they don't land flush at top. */
+  scrollMargin: 28,
 } as const;
 
 /**

@@ -24,6 +24,19 @@
   --bfe-line: #ddd1be;
   --bfe-gold-soft: #e4d0b2;
   /*
+    Prose body color — between --bfe-ink (deep navy) and --bfe-muted
+    (mid-grey). Used for chapter-frame paragraphs and long-form body
+    text where pure ink would feel too heavy on cream paper.
+    Promoted from inline #3f4761 (Plan v2.2 / Phase 3).
+  */
+  --bfe-prose: #3f4761;
+  /*
+    Nav link color (rest state) — slightly cooler than --bfe-muted so
+    inactive rail items recede without becoming illegible. Promoted from
+    inline #4c5570.
+  */
+  --bfe-nav-rest: #4c5570;
+  /*
     Warm-tinted shadow (Plan v2.2 / Phase 0, 2026-04-29).
     Replaces the previous navy-tinted rgba(31,40,64,.10). On a cream-paper
     system, a navy shadow reads as a system mismatch — the codex round-3-7
@@ -31,6 +44,8 @@
   */
   --bfe-shadow: 0 14px 34px rgba(56, 42, 19, 0.09);
   --bfe-shadow-soft: 0 8px 18px rgba(53, 40, 20, 0.05);
+  /* Scroll margin for #sec-N anchors so they don't land flush at top */
+  --bfe-scroll-margin: 28px;
 }
 
 body[data-bf-system="editorial"] {
@@ -118,7 +133,7 @@ a { color: inherit; }
   text-decoration: none;
   padding: 12px 14px;
   border-radius: var(--bf-radius-pill);
-  color: #4c5570;
+  color: var(--bfe-nav-rest);
   transition: all 0.18s ease;
 }
 .bfe-nav a:hover {
@@ -154,6 +169,16 @@ a { color: inherit; }
 
 .bfe-chapter,
 .bfe-section { margin-top: 22px; padding: 30px 32px; }
+
+/*
+  Scroll margin for chapter anchors (Plan v2.2 / Phase 3).
+  When the rail TOC scroll-spy clicks a section link, the section's
+  top edge would land flush at the viewport top without this. The
+  scroll-margin gives a small visual cushion AND pushes the heading
+  past the focus line so the rail correctly highlights the new section.
+*/
+.bfe-chapter[id],
+.bfe-section[id] { scroll-margin-top: var(--bfe-scroll-margin); }
 
 /* ── Note callout ──────────────────────────────────────────────────────── */
 .bfe-note {
@@ -201,7 +226,7 @@ a { color: inherit; }
   max-width: 720px;
   font-size: 19px;
   line-height: 1.55;
-  color: #3f4761;
+  color: var(--bfe-prose);
 }
 
 .bfe-chapter-meta {
@@ -267,6 +292,40 @@ body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-mode-buttons button[da
 body[data-bf-system="editorial"][data-bf-mode="interactive"] .bfe-pdf-only { display: none; }
 body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-interactive-only { display: none; }
 
+/* ── Inline TOC (collapsed details, mobile + print fallback) ───────────── */
+/*
+  Used by the AI report renderer (Phase 4c) and forthcoming guide ports
+  (Phase 6) as a static collapsed outline below the cover. The sticky
+  rail is the canonical TOC on desktop; this details element is what
+  mobile users see (and what shows in print since the rail is hidden).
+*/
+.bf-inline-toc {
+  margin-bottom: 32px;
+  border: 1px solid var(--bfe-line);
+  border-radius: var(--bf-radius-md);
+  background: var(--bfe-panel);
+  padding: 18px 22px;
+}
+.bf-inline-toc > summary {
+  cursor: pointer;
+  font-family: var(--bf-font-serif-editorial);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bfe-ink);
+  list-style: none;
+}
+.bf-inline-toc > summary::-webkit-details-marker { display: none; }
+.bf-inline-toc > summary::marker { content: ''; }
+.bf-inline-toc > summary::after {
+  content: '+';
+  float: right;
+  color: var(--bf-gold);
+  font-family: var(--bf-font-mono);
+  font-weight: 700;
+  margin-left: 12px;
+}
+.bf-inline-toc[open] > summary::after { content: '–'; }
+
 /* ── Mono utility ──────────────────────────────────────────────────────── */
 .bfe-mono { font-family: var(--bf-font-mono); }
 
@@ -284,11 +343,22 @@ body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-interactive-only { dis
   .bfe-mode-switch { display: none !important; }
   .bfe-shell--overview,
   .bfe-shell--guide { display: block !important; max-width: none !important; padding: 0 !important; }
+  /*
+    Print refinement (Plan v2.2 / Phase 3): keep meaningful padding so
+    chapter sheets retain visual rhythm in PDF. The previous 12px 0
+    collapsed all whitespace and crammed sections together.
+  */
   .bfe-hero,
-  .bfe-cover,
+  .bfe-cover { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: transparent !important; padding: 24px 0 32px !important; break-after: page; }
   .bfe-chapter,
   .bfe-section,
-  .bfe-note { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: transparent !important; padding: 12px 0 !important; }
+  .bfe-note { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: transparent !important; padding: 18px 0 !important; }
+  .bfe-chapter { break-inside: avoid-page; }
+  /* Auto-open inline TOC when printing so users see the outline. */
+  .bf-inline-toc { box-shadow: none !important; border: 1px solid var(--bfe-line) !important; }
+  .bf-inline-toc > div { display: block !important; }
+  .bf-inline-toc[open] > summary::after,
+  .bf-inline-toc:not([open]) > summary::after { content: '' !important; }
 }
 
 @media (max-width: 760px) {
