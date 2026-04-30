@@ -931,12 +931,12 @@
     if (p.cOn && !p.qppShare) actions.push(fr ? "Le partage de la rente RRQ entre conjoints est disponible et peut lisser l'imp\u00f4t." : "QPP benefit sharing between spouses is available and can smooth tax.");
     if (existingLife < annualSpend * 5 && p.cOn) actions.push(fr ? "Un conseiller en s\u00e9curit\u00e9 financi\u00e8re (AMF) pourrait quantifier une couverture temporaire pour combler l'\u00e9cart." : "A licensed financial security advisor (AMF) could quantify term coverage to fill the gap.");
     if (!p.fatT) actions.push(fr ? "L'activation de la distribution \u00e0 queues \u00e9paisses (fat-tail) testerait la robustesse face aux krachs rares." : "Enabling fat-tail distribution would test robustness against rare crashes.");
-    if (actions.length === 0) actions.push(fr ? "Aucune action critique d\u00e9tect\u00e9e. R\u00e9visez le plan annuellement." : "No critical action detected. Review plan annually.");
+    if (actions.length === 0) actions.push(fr ? "Aucun levier critique d\u00e9tect\u00e9. Une r\u00e9vision annuelle reste une bonne pratique." : "No critical lever detected. An annual review is good practice.");
 
     // Headers (merged gold bars for each of 3 columns)
     wsDiag.mergeCells(5, 2, 5, 3); set(wsDiag, wsDiag.getCell(5, 2), fr ? "\u2714 FORCES" : "\u2714 STRENGTHS");
     wsDiag.mergeCells(5, 4, 5, 5); set(wsDiag, wsDiag.getCell(5, 4), fr ? "\u26a0 VULN\u00c9RABILIT\u00c9S" : "\u26a0 WEAKNESSES");
-    wsDiag.mergeCells(5, 6, 5, 7); set(wsDiag, wsDiag.getCell(5, 6), fr ? "\u2192 ACTIONS PRIORITAIRES" : "\u2192 PRIORITY ACTIONS");
+    wsDiag.mergeCells(5, 6, 5, 7); set(wsDiag, wsDiag.getCell(5, 6), fr ? "\u2192 LEVIERS \u00c0 EXPLORER" : "\u2192 LEVERS TO EXPLORE");
     [2, 4, 6].forEach(function (cc, ii) {
       var c = wsDiag.getCell(5, cc);
       c.font = { name: "Calibri", size: 12, bold: true, color: { argb: ii === 0 ? CL.green : ii === 1 ? CL.red : CL.gold } };
@@ -2491,8 +2491,8 @@
       [fr ? "Frais CELI (MER)" : "TFSA fees (MER)", toNum(p.merT), "", "pct"],
       [fr ? "Frais NR (MER)" : "Non-reg fees (MER)", toNum(p.merN), "", "pct"],
       [fr ? "Drag fiscal NR" : "NR tax drag", toNum(p.nrTaxDrag), fr ? "Dividendes + int\u00e9r\u00eats annuels" : "Annual dividend + interest", "pct"],
-      [fr ? "Inclusion gains en capital (sous seuil)" : "CG inclusion (below threshold)", toNum(p.cgIncLo), "50% (2024)", "pct"],
-      [fr ? "Inclusion gains en capital (au-dessus)" : "CG inclusion (above threshold)", toNum(p.cgIncHi), "66,67% (2024)", "pct"],
+      [fr ? "Inclusion gains en capital (sous seuil)" : "CG inclusion (below threshold)", toNum(p.cgIncLo), fr ? "50% (en vigueur 2026)" : "50% (in effect 2026)", "pct"],
+      [fr ? "Inclusion gains en capital (au-dessus)" : "CG inclusion (above threshold)", toNum(p.cgIncHi), fr ? "66,67% — hausse 2024 reportée puis abandonnée; valeur conservée si annoncée à nouveau" : "66.67% — 2024 increase deferred then shelved; retained for potential re-announcement", "pct"],
       [fr ? "Seuil annuel gain en capital" : "CG annual threshold", toNum(p.cgThresh), fr ? "250 000 $/an" : "$250,000/yr", "money"],
       [fr ? "Multiplicateur Go-Go" : "Go-Go multiplier", toNum(p.goP), fr ? "D\u00e9penses tranche 1" : "Spending phase 1", "ratio"],
       [fr ? "Multiplicateur Slow-Go" : "Slow-Go multiplier", toNum(p.slP), fr ? "D\u00e9penses tranche 2" : "Spending phase 2", "ratio"],
