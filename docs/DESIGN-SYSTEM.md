@@ -230,6 +230,48 @@ Status of each surface after Phase B:
 | AI report renderer 360 ([lib/report-html-360.js](../lib/report-html-360.js)) | ✅ Clean | 0 inline gold hexes. |
 | `lib/report-shared.ts` | ✅ Clean | Uses helper getters for grade color, not raw hexes. |
 
+## Plan v2.2 final state (2026-04-29) — 12 commits, ~80% complete
+
+Final state of the standardization push as of session F. Twelve commits
+on `codex-report-premium-rebuild` branch covering Phase 0 through Phase
+4e + Phase 7 cleanup.
+
+| Phase | Status | Notes |
+|---|---|---|
+| 0 — Foundation primitives | ✅ | Logo, headers, footers, editorial.css promote, warm shadow, chart palette |
+| 1 — Color normalization | ✅ | 24 files, `#c49a1a` → `#c4944a` |
+| 2 — Secondary surfaces port | ✅ | 9 surfaces, font + wordmark norm |
+| 3 — Editorial CSS hardening | ✅ | New tokens (`--bfe-prose`, `--bfe-nav-rest`, `--bfe-scroll-margin`), inline-toc utility, print refinements |
+| 4a — Report renderer canonical injection | ✅ | tokens.css + editorial.css + Google Fonts bootstrap; fixed `+`-prefix patch leak in report-html-360.js |
+| 4b — Hybrid sheet shell (expert) | ✅ | `.bfe-shell--guide` + `.bfe-cover` + chapter sheets via secH/secEnd |
+| 4c — Sticky rail TOC + scroll-spy (expert) | ✅ | Vanilla JS, ~1.5KB, no framework |
+| 4d — Interactive/PDF mode switch | ✅ | localStorage `bf_report_view_mode`, body[data-bf-mode] gate |
+| 4e — Print/PDF visual parity | ✅ | PDF mode CSS mirrors @media print rules |
+| 4f — Re-render 20 finals | ⏳ deferred | Needs npm install reset (node_modules OneDrive-corrupted) |
+| 5 — Tools polish (BuildFiLogo unify) | ✅ | landing, debt, decum, acheter-planner, wizard |
+| 6a — Article guides (meltdown + rrq) | ✅ | Real substrate work — section IDs, RAIL_TOC, EditorialHeader |
+| 6b/6c — Guides 101 + 201 | ✅ no-op | Already aligned from prior Phase B port (verified) |
+| 7 — Cross-surface cleanup | ✅ | Final residual cleanup of expert, wizard, ErrorBoundary, bilan-annuel email template |
+
+### Hard-locked invariants
+- Zero `#c49a1a` / `#d2a764` in production code paths (`app/`, `lib/`, `components/`)
+- Zero `Newsreader` font references in production code (only doc-comments mentioning the migration)
+- Zero `Plus Jakarta Sans` references in production code
+- Zero `Avenir Next` references (Apple-only paid font)
+- One canonical wordmark via `<BuildFiLogo>` from `lib/design/components`
+- AI report renderer = canonical Editorial reference (Inter + Playfair + JetBrains Mono via Google Fonts bootstrap; tokens.css + editorial.css inlined)
+- All chapter anchors carry scroll-margin for clean rail-click landing
+- Mode switch and rail are `.bfe-interactive-only` — vanish in PDF preview and actual print
+
+### Out of scope (deliberate)
+- `public/*.html` legacy standalone files (avis-legal, bilan-360, conditions, confidentialite, expert-landing, index, quiz-*) — deprecated, not routed from app/.
+- `planner/planner_v3.html` — 22 600-line standalone, separately scheduled for round-3-2-planner-v3-polish.
+- AI report renderer's `report-html-360.js` rail TOC — it's a dashboard view (single screen with KPI grid + charts), not a long-form report; rail would be incongruent.
+
+### Known deferred work
+- **Phase 4f re-render 20 finals**: requires `rm -rf node_modules && npm install` to fix the OneDrive-corrupted install (lib.dom.d.ts missing), then `npm run report:fr-en` to regenerate the canonical 20 outputs under `planner/report/realai/{corrected,final}/`.
+- **Visual smoke test on `buildfi-rho.vercel.app`**: defer until DNS un-blocks `buildfi.ca` (Cloudflare ticket pending) AND `npm install` reset.
+
 ## Phase B addendum (2026-04-29) — Plan v2.2 corrections
 
 **Reference: `design-lab/experiments/round-3-7-reading-real-clones/`** is now
