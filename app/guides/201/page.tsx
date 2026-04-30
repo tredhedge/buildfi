@@ -304,13 +304,6 @@ const COPY = {
     quote:
       "« Optimiser, ce n'est pas spéculer. C'est payer le juste impôt — pas un dollar de plus. »",
 
-    principlesTitle: "Les 3 principes BuildFi",
-    principles: [
-      "Sécurité avant rendement. Un bon fonds d'urgence vaut plus qu'un rendement de 12 % sur un portefeuille fragile.",
-      "Liquidité avant optimisation fiscale. L'argent accessible en cas d'urgence passe avant la stratégie fiscale parfaite.",
-      "Simplicité avant sophistication. Un plan simple que vous suivez bat un plan complexe que vous abandonnez.",
-    ],
-
     /* calculator labels */
     cOASIncome: "Votre revenu net estimé",
     cOASAge: "Âge",
@@ -590,13 +583,6 @@ const COPY = {
 
     quote:
       "\"Optimization isn't speculation. It's paying the right amount of tax — not a dollar more.\"",
-
-    principlesTitle: "The 3 BuildFi principles",
-    principles: [
-      "Safety before returns. A solid emergency fund is worth more than a 12% return on a fragile portfolio.",
-      "Liquidity before tax optimization. Cash you can access in an emergency comes before the perfect tax strategy.",
-      "Simplicity before sophistication. A simple plan you follow beats a complex plan you abandon.",
-    ],
 
     cOASIncome: "Your estimated net income",
     cOASAge: "Age",
@@ -1127,13 +1113,17 @@ function Guide201Inner() {
         <Section fr={fr} num={3} id="ch3" title={t.ch3Title} sub={t.ch3Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch3Body}</p>
           <ToolCard title={t.ch3Tool}><OASCalc fr={fr} t={t} /></ToolCard>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: CL.ink, margin: "16px 0 8px" }}>{t.ch3Strategies}</h3>
-          <div style={{ display: "grid", gap: 8 }}>
-            <Callout color="blue">{t.ch3S1}</Callout>
-            <Callout color="blue">{t.ch3S2}</Callout>
-            <Callout color="blue">{t.ch3S3}</Callout>
-            <Callout color="blue">{t.ch3S4}</Callout>
-            <Callout color="blue">{t.ch3S5}</Callout>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: CL.ink, margin: "18px 0 10px" }}>{t.ch3Strategies}</h3>
+          {/* Numbered strategy cards — gold mono numerals + body. Replaces
+              the prior 5-identical-Callout smear with a list that has
+              actual visual rhythm. */}
+          <div style={{ display: "grid", gap: 10 }}>
+            {[t.ch3S1, t.ch3S2, t.ch3S3, t.ch3S4, t.ch3S5].map((s, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+                <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
+                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s}</div>
+              </div>
+            ))}
           </div>
         </Section>
 
@@ -1169,10 +1159,16 @@ function Guide201Inner() {
         {/* Ch 7 */}
         <Section fr={fr} num={7} id="ch7" title={t.ch7Title} sub={t.ch7Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch7Body}</p>
-          <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            <Callout color="blue">{t.ch7Longevity}</Callout>
-            <Callout color="blue">{t.ch7Inflation}</Callout>
-            <Callout color="blue">{t.ch7Sequence}</Callout>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: CL.gold, margin: "16px 0 8px", textTransform: "uppercase", letterSpacing: ".18em" }}>{fr ? "Trois risques observés" : "Three observed risks"}</h3>
+          <div style={{ display: "grid", gap: 10 }}>
+            {[t.ch7Longevity, t.ch7Inflation, t.ch7Sequence].map((s, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "44px minmax(0,1fr)", gap: 14, alignItems: "start", background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+                <div style={{ fontFamily: "var(--bf-font-mono)", fontSize: 22, fontWeight: 800, color: CL.gold, lineHeight: 1, textAlign: "right" }}>{i + 1}</div>
+                <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 14 }}>
             <Callout color="green">{t.ch7Protect}</Callout>
           </div>
         </Section>
@@ -1267,13 +1263,6 @@ function Guide201Inner() {
             <a href={t.ctaBundleHref} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 46, padding: "0 18px", borderRadius: 999, color: "#fff", border: "1px solid rgba(255,255,255,.35)", textDecoration: "none", fontWeight: 700 }}>{t.ctaBundle}</a>
           </div>
         </section>
-
-        {/* Principles — note callout */}
-        <Note tone="rule" kicker={t.principlesTitle}>
-          <ol style={{ paddingLeft: 22, margin: 0, fontSize: 15, color: CL.text, lineHeight: 1.7 }}>
-            {t.principles.map((p, i) => <li key={i} style={{ marginBottom: 6 }}>{p}</li>)}
-          </ol>
-        </Note>
 
         <div style={{ textAlign: "center", fontSize: 11, color: CL.muted, marginTop: 36, padding: "20px 4px 0", lineHeight: 1.6, borderTop: `1px solid ${CL.accentLine}` }}>
           <div style={{ marginBottom: 10, marginTop: 18 }}>{t.sources}</div>

@@ -61,19 +61,34 @@ export function Section({
 
 /* ────────────────────────────────────────────────────────────────────
    ToolCard — wrapper for embedded interactive widgets inside an
-   editorial section. Cream panel with gold-tinted border + uppercase
-   gold kicker label.
+   editorial section.
+
+   Prominence pass (2026-04-29): tools are interactive value, not just
+   another callout. They get a 2px gold border, slightly warmer cream
+   background, soft gold-tinted shadow, and a kicker prefixed with an
+   "Outil interactif" / "Interactive tool" eyebrow so the reader sees
+   immediately "this is something to use, not just read."
    ──────────────────────────────────────────────────────────────────── */
 export function ToolCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{
-      background: CL.panel,
-      border: `1px solid ${CL.accentLine}`,
+      background: "rgba(255, 251, 242, 0.96)",
+      border: `2px solid ${CL.gold}`,
       borderRadius: 18,
-      padding: 22,
-      margin: "18px 0",
+      padding: "26px 26px 24px",
+      margin: "20px 0",
+      boxShadow: "0 14px 32px rgba(196, 148, 74, 0.13), 0 2px 6px rgba(56, 42, 19, 0.06)",
     }}>
-      <div className="bfe-kicker" style={{ marginBottom: 12 }}>{title}</div>
+      <div style={{
+        fontSize: 10,
+        fontWeight: 800,
+        color: CL.gold,
+        textTransform: "uppercase",
+        letterSpacing: ".22em",
+        marginBottom: 6,
+        opacity: 0.82,
+      }}>◆  Outil interactif · Interactive tool</div>
+      <div className="bfe-kicker" style={{ marginBottom: 14, fontSize: 14, letterSpacing: ".12em" }}>{title}</div>
       {children}
     </div>
   );
