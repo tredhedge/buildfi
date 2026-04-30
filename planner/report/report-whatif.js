@@ -552,10 +552,13 @@
       '<span id="bf-stress-status" class="bf-whatif-status"></span>' +
       '</div>';
 
-    return '<div class="bf-whatif-banner">' +
-        '<strong>' + bannerStrong + '</strong> ' + bannerBody +
-      '</div>' +
-      ageBarHtml +
+    // 2026-04-30: instructional banner removed — it duplicated the
+    // chapter cover frame ("Explorer des alternatives") and the tab
+    // labels themselves. The age picker + scenario cards are
+    // self-explanatory. Kept the strong+body strings live for the
+    // tab tooltip but no longer rendered above the age bar.
+    void bannerStrong; void bannerBody;
+    return ageBarHtml +
       cardsHtml +
       detailHtml +
       actionsHtml +
@@ -670,11 +673,10 @@
       '<span id="bf-whatif-status" class="bf-whatif-status"></span>' +
       '</div>';
 
+    // 2026-04-30: banner removed (duplicates chapter cover + tab label).
+    void bannerStrong; void bannerBody;
     return {
       html:
-        '<div class="bf-whatif-banner">' +
-          '<strong>' + bannerStrong + '</strong> ' + bannerBody +
-        '</div>' +
         presetsHtml + controlsHtml + buttonsHtml +
         '<div id="bf-whatif-results" class="bf-whatif-results"></div>',
       slBase: slBase,
