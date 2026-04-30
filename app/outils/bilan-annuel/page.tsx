@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { BuildFiLogo } from "@/lib/design/components";
 
 // ═══════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -979,9 +980,14 @@ export default function BilanAnnuel() {
   // MAIN LAYOUT
   // ═══════════════════════════════════════════════════
   return (
-    <div style={{fontFamily:"'DM Sans',-apple-system,system-ui,sans-serif",background:CL.bg,color:CL.tx,minHeight:"100vh",WebkitFontSmoothing:"antialiased"}}>
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@700&family=Newsreader:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <div style={{fontFamily:'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',background:CL.bg,color:CL.tx,minHeight:"100vh",WebkitFontSmoothing:"antialiased"}}>
+      {/*
+        Plan v2.2 / Phase 2 (2026-04-29): legacy <link> Google Fonts
+        removed. Fonts come from app/layout.tsx via next/font (DM Sans,
+        Inter, Playfair, JetBrains Mono). The unregistered Plus Jakarta
+        Sans + Newsreader references this <link> was loading have been
+        retired across the app — wordmark uses DM Sans now.
+      */}
       <style>{`
         .ba-fi{animation:bafi .25s ease both}
         @keyframes bafi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -1007,11 +1013,9 @@ export default function BilanAnnuel() {
 
       <div style={{padding:"12px 16px",borderBottom:`1px solid ${CL.bd}`,display:"flex",justifyContent:"space-between",alignItems:"center",background:CL.cd,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          {/* BA-FEAT-06: BuildFi logo (inline SVG matching logo.js) */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="110" height="24" viewBox="0 0 220 48">
-            <g><rect x="0" y="32" width="28" height="8" rx="2" fill="#1a2744"/><rect x="4" y="22" width="26" height="8" rx="2" fill="#1a2744" opacity="0.5"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c4944a"/></g>
-            <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill="#1a2744">build</tspan><tspan fill="#c4944a">fi</tspan></text>
-          </svg>
+          {/* BA-FEAT-06: BuildFi wordmark — shared <BuildFiLogo> primitive (Plan v2.2 / Phase 2). */}
+          <BuildFiLogo theme="light" size="sm" accent={CL.ac} />
+
           <div style={{borderLeft:`1px solid ${CL.bd}`,paddingLeft:10,marginLeft:2}}><div style={{fontSize:FS.sm,fontWeight:FW.bold,color:CL.al,letterSpacing:-.3}}>{fr?"Bilan Annuel":"Balance Sheet"}</div></div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>

@@ -134,7 +134,7 @@ function FeedbackContent() {
       <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: "24px" }}>
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#9733;</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 12, fontFamily: "Newsreader, Georgia, serif" }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 12, fontFamily: 'var(--font-playfair), Georgia, serif' }}>
             {fr ? "Merci pour votre avis\u00a0!" : "Thank you for your feedback!"}
           </div>
           <div style={{ fontSize: 14, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>

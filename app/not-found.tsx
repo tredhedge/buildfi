@@ -6,7 +6,7 @@ export default function NotFound() {
     <div style={{
       minHeight: "100vh",
       background: "#FEFCF9",
-      fontFamily: "'DM Sans', -apple-system, sans-serif",
+      fontFamily: 'var(--font-dm-sans), "Segoe UI", Arial, sans-serif',
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -29,7 +29,7 @@ export default function NotFound() {
       </div>
       <h1 style={{
         fontSize: 22, fontWeight: 700, color: "#1a2744", marginBottom: 12,
-        fontFamily: "Newsreader, Georgia, serif",
+        fontFamily: 'var(--font-playfair), Georgia, serif',
       }}>
         Page introuvable
       </h1>
