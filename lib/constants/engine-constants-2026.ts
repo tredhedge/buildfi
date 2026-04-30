@@ -575,7 +575,7 @@ const ENGINE_CONSTANTS_2026: EngineConstants = {
   // Service Canada — 2026 values
   // ─────────────────────────────────────────────────────────────────────────
   OAS_CLAWBACK_THRESHOLD: 95323,
-  OAS_MAX_MONTHLY: 742.31,
+  OAS_MAX_MONTHLY: 743.05,  // Q2 2026 (April–June). Q1 was 742.31.
   OAS_DEFERRAL_BONUS_PER_MONTH: 0.006,  // 0.6% per month deferred past 65
   OAS_MAX_DEFERRAL_FACTOR: 1.36,         // max adj = min(1.36, 1 + 0.006 * (age-65) * 12)
   OAS_75_PLUS_BONUS: 1.10,              // 10% enhancement at 75+ (since July 2022)
