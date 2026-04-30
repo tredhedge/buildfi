@@ -188,7 +188,11 @@
     '}',
     '@page :first{@top-center{content:""}@bottom-right{content:""}@bottom-left{content:""}}',
     'h3.sec{page-break-after:avoid}',
-    '.cd,.kpi,table,.callout,.reco-card,.chart-block{break-inside:avoid;page-break-inside:avoid}',
+    '.cd,.kpi,table,.callout,.reco-card,.chart-block,.bf-support-strip,.bf-support-tile,.bf-chart-figure,figure,svg,.bf-pull-quote{break-inside:avoid;page-break-inside:avoid}',
+    // 2026-04-30: paragraph widows/orphans + chart+caption coupling.
+    'p,.narr{widows:3;orphans:3}',
+    '.bf-chart-figure,.bf-chart-figure+.bf-chart-caption{break-inside:avoid;page-break-inside:avoid}',
+    'h3.sec,h4{break-after:avoid;page-break-after:avoid}',
     'body{padding:0;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
     '.narr{font-size:11px;line-height:1.7}',
     '.sec-page{page-break-before:always}',
@@ -886,17 +890,17 @@
       ? d.thesis.oneLiner
       : (fr ? 'Plan en cours d\'analyse.' : 'Plan under analysis.');
 
-    var h = '<div class="exec-summary" id="exec-summary" style="page-break-after:always;background:linear-gradient(180deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:8px;padding:32px 36px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:780px">';
-    h += '<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
+    var h = '<div class="exec-summary" id="exec-summary" style="page-break-after:always;background:#fefcf9;color:#1a1610;border:1px solid #e8e0d4;border-radius:8px;padding:36px 40px 32px;margin-bottom:24px;position:relative;overflow:hidden">';
+    h += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
     h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
       '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Sommaire exécutif' : 'Executive summary') + '</div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;letter-spacing:0.5px">' + (fr ? 'En 30 secondes' : 'In 30 seconds') + '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:11px;color:#8a7a5c;letter-spacing:0.5px">' + (fr ? 'En 30 secondes' : 'In 30 seconds') + '</div>' +
     '</div>';
-    h += '<div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#faf8f4;margin-bottom:6px;letter-spacing:0.2px">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
+    h += '<div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#5a4f3a;margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
     // 2026-04-30 — verdict promoted to Playfair italic lead for the
     // receipt half. Owns its space; one of the three Playfair moments
     // in the card (verdict · phase opener · AI lead clause).
-    h += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:22px;font-weight:500;font-style:italic;line-height:1.4;color:#faf8f4;margin:6px 0 24px;max-width:680px">' + verdictText + '</div>';
+    h += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:24px;font-weight:500;font-style:italic;line-height:1.4;color:#1a1610;margin:8px 0 28px;max-width:680px">' + verdictText + '</div>';
     // 2026-04-29: removed _renderScoreGauge(d) call. The composite
     // structural score conflated context-dependent components (savings
     // rate is meaningless in decum, diversification penalizes the
@@ -904,30 +908,46 @@
     // contradicted the success rate. Replaced below the KPI grid by
     // observational Profil signals + a Watch line.
     // Headline metrics (4-up)
-    function _execKPI(label, value, color, sub) {
-      return '<div style="background:rgba(250,248,244,0.06);border:1px solid rgba(196,154,26,0.25);border-radius:6px;padding:14px 12px;text-align:center">' +
-        '<div style="font-size:9px;color:#bccbe0;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:6px">' + label + '</div>' +
-        '<div style="font-family:\"JetBrains Mono\",monospace;font-size:24px;font-weight:700;color:' + (color || '#c49a1a') + ';line-height:1">' + value + '</div>' +
-        (sub ? '<div style="font-size:9.5px;color:#8a9bb0;margin-top:6px">' + sub + '</div>' : '') +
+    // 2026-04-30 — Style 1 editorial KPI strip (matches Ch.I support strip).
+    // Playfair values, hairline rules above + below, no card boxes. The
+    // 4 receipt metrics live here in the same register the rest of the
+    // report uses for supporting evidence — brings the exec summary
+    // into the same editorial system as the body chapters.
+    var _kpiTiles = [
+      {
+        label: fr ? 'Taux de succès' : 'Success rate',
+        value: pct,
+        color: sC,
+        sub:   d.thesis && d.thesis.bandLabel ? F.esc(d.thesis.bandLabel) : ''
+      },
+      {
+        label: fr ? 'Patrimoine médian' : 'Median wealth',
+        value: medW,
+        color: '#1a1610',
+        sub:   (fr ? 'scénario typique (réel)' : 'typical scenario (real)') + medSubExtra
+      },
+      {
+        label: fr ? 'Impôt à vie (réel)' : 'Lifetime tax (real)',
+        value: d._optTaxReal ? f$(d._optTaxReal) : '—',
+        color: '#5a4f3a',
+        sub:   fr ? 'ménage, horizon modélisé' : 'household, modeled horizon'
+      },
+      {
+        label: fr ? 'Épuisement épargne' : 'Savings depletion',
+        value: depAge ? depAge + (fr ? ' ans' : ' yr') : (fr ? 'Jamais' : 'Never'),
+        color: depAge ? '#cc4444' : '#2a8c46',
+        sub:   depAge ? (fr ? 'scénario prudent' : 'cautious scenario')
+                      : (fr ? 'l\'épargne ne s\'épuise pas' : 'savings do not run out')
+      }
+    ];
+    h += '<div style="display:flex;align-items:stretch;border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:18px 0;margin-bottom:28px">';
+    _kpiTiles.forEach(function(t, i) {
+      h += '<div style="flex:1;padding:0 16px;text-align:center;' + (i < _kpiTiles.length - 1 ? 'border-right:1px solid #ece4d4' : '') + '">' +
+        '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:600;color:#8a7a5c;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;line-height:1.3">' + t.label + '</div>' +
+        '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:24px;font-weight:600;line-height:1.1;letter-spacing:-0.3px;color:' + t.color + '">' + t.value + '</div>' +
+        (t.sub ? '<div style="font-family:Inter,sans-serif;font-size:10px;color:#8a7a5c;margin-top:6px;line-height:1.4">' + t.sub + '</div>' : '') +
       '</div>';
-    }
-    // Sprint 0.2: replaced the standalone "Cautious wealth (P25)" KPI
-    // with "Lifetime tax (real)" — defendable, ties to canonical
-    // d._optTaxReal, and ranks among the top concrete decision-relevant
-    // numbers a buyer cares about. P25 wealth without spending context
-    // was meaningless on its own and lived elsewhere in the report.
-    h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">';
-    h += _execKPI(fr ? 'Taux de succès' : 'Success rate', pct, sC, d.thesis && d.thesis.bandLabel ? F.esc(d.thesis.bandLabel) : '');
-    h += _execKPI(fr ? 'Patrimoine médian' : 'Median wealth', medW, '#c49a1a', (fr ? 'scénario typique (réel)' : 'typical scenario (real)') + medSubExtra);
-    h += _execKPI(fr ? 'Impôt à vie (réel)' : 'Lifetime tax (real)',
-      d._optTaxReal ? f$(d._optTaxReal) : '\u2014',
-      '#bccbe0',
-      fr ? 'm\u00e9nage, horizon mod\u00e9lis\u00e9' : 'household, modeled horizon');
-    h += _execKPI(fr ? 'Épuisement épargne' : 'Savings depletion',
-      depAge ? depAge + (fr ? ' ans' : ' yr') : (fr ? 'Jamais' : 'Never'),
-      depAge ? '#cf6060' : '#48a66d',
-      depAge ? (fr ? 'scénario prudent' : 'cautious scenario')
-             : (fr ? 'l\'épargne ne s\'épuise pas' : 'savings do not run out'));
+    });
     h += '</div>';
     // 2026-04-29 — Profil signals + Watch line replaces strengths/risks
     // bullets and the trailing "Pour aller plus loin" footer. The score
@@ -939,13 +959,19 @@
     // 2026-04-30 — 3-column grid card per signal (was stacked rows).
     // Each cell: tiny gold label · bold gold headline · light body. Reads
     // laterally instead of as a vertical wall of bullet rows.
-    function _signalCard(label, headline, body) {
-      return '<div style="background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.20);border-radius:6px;padding:14px 14px 16px">' +
-        '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#a89460;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">' +
+    // 2026-04-30 — Style 2 boxed card (matches Ch.II risks pattern).
+    // Each Profil signal carries a categorical character (concentration,
+    // fiscalité, liquidité), so the boxed-with-colored-top-border
+    // treatment is the right register — mirrors the report's other
+    // "named outcome" KPI cards.
+    function _signalCard(label, headline, body, accent) {
+      var topColor = accent || '#c49a1a';
+      return '<div style="background:#fdfbf6;border:1px solid #e8e0d4;border-top:3px solid ' + topColor + ';border-radius:6px;padding:14px 14px 16px">' +
+        '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#8a7a5c;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">' +
           F.esc(label) + '</div>' +
-        '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:14px;font-weight:600;font-style:italic;color:#c49a1a;line-height:1.35;margin-bottom:8px">' +
+        '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:600;font-style:italic;color:' + topColor + ';line-height:1.35;margin-bottom:8px">' +
           F.esc(headline) + '</div>' +
-        '<div style="font-family:Inter,sans-serif;font-size:11px;color:#bccbe0;line-height:1.6">' + body + '</div>' +
+        '<div style="font-family:Inter,sans-serif;font-size:11px;color:#3a322a;line-height:1.6">' + body + '</div>' +
       '</div>';
     }
     var _accBalances = {
@@ -983,7 +1009,7 @@
           ? 'Aucun compte ne dépasse 55 % du patrimoine — flexibilité d\'ordre de retrait préservée d\'année en année.'
           : 'No single account exceeds 55% of wealth — withdrawal-order flexibility preserved year over year.';
       }
-      _profilHtml += _signalCard(fr ? 'Concentration' : 'Concentration', _concHead, _concBody);
+      _profilHtml += _signalCard(fr ? 'Concentration' : 'Concentration', _concHead, _concBody, '#c49a1a');
     }
     if (d.avgEffRate != null && isFinite(d.avgEffRate)) {
       var _ratePct = Math.round(d.avgEffRate * 100);
@@ -1002,7 +1028,7 @@
           ? 'Charge fiscale élevée — masse imposable concentrée (REER/FERR/SPCC). La section fiscale identifie les leviers (meltdown, fractionnement, report PSV) qui pourraient lisser l\'impôt.'
           : 'High tax burden — taxable mass concentrated (RRSP/RRIF/CCPC). The tax section identifies levers (meltdown, splitting, OAS deferral) that could smooth the bill.';
       }
-      _profilHtml += _signalCard(fr ? 'Posture fiscale' : 'Tax posture', _fiscHead, _fiscBody);
+      _profilHtml += _signalCard(fr ? 'Posture fiscale' : 'Tax posture', _fiscHead, _fiscBody, '#4680c0');
     }
     var _annualSpend = (p.retSpM || 0) * 12;
     if (_annualSpend > 0) {
@@ -1025,13 +1051,12 @@
           ? 'Liquidité serrée — un creux de marché imposerait probablement de retirer du REER/FERR au moment le moins favorable.'
           : 'Tight liquidity — a market drawdown would likely force RRSP/RRIF withdrawals at the least favorable moment.';
       }
-      _profilHtml += _signalCard(fr ? 'Liquidité' : 'Liquidity', _liqHead, _liqBody);
+      _profilHtml += _signalCard(fr ? 'Liquidité' : 'Liquidity', _liqHead, _liqBody, '#2a8c46');
     }
     if (_profilHtml) {
-      h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:18px;margin-bottom:18px">';
-      h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px">' +
+      h += '<div style="margin-bottom:24px">';
+      h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#8a7a5c;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px">' +
         (fr ? 'Profil du plan' : 'Plan profile') + '</div>';
-      // 2026-04-30 — 3-column grid (lateral scan) instead of stacked rows.
       h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">' + _profilHtml + '</div>';
       h += '</div>';
     }
@@ -1065,8 +1090,8 @@
         var _watchSentence = (fr ? _condFr : _condEn) +
           (fr ? 'le patrimoine médian passerait de ' + f$(_baseMed) + ' à ' + f$(_newMed) + ' et ' + _succTxt + '.'
               : 'median wealth would move from ' + f$(_baseMed) + ' to ' + f$(_newMed) + ' and ' + _succTxt + '.');
-        h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:14px;font-size:11px;color:#bccbe0;line-height:1.6">' +
-          '<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-right:10px">' +
+        h += '<div style="border-top:1px solid #e8e0d4;padding-top:16px;font-size:11.5px;color:#3a322a;line-height:1.7">' +
+          '<span style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#8a7a5c;letter-spacing:2.5px;text-transform:uppercase;margin-right:10px">' +
           (fr ? 'Point à surveiller' : 'Watch point') + '</span>' +
           _watchSentence +
         '</div>';
@@ -1077,19 +1102,19 @@
     // read (below). Strong typographic divider so the eye recognizes
     // two distinct rhythms inside one slate panel.
     // ════════════════════════════════════════════════════════════════
-    h += '<div style="margin:32px 0 28px;display:flex;align-items:center;gap:14px">' +
-      '<div style="flex:1;height:1px;background:rgba(196,154,26,0.30)"></div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#a89460;letter-spacing:3px;text-transform:uppercase">' +
+    h += '<div style="margin:36px 0 32px;display:flex;align-items:center;gap:16px">' +
+      '<div style="flex:1;height:1px;background:#e8e0d4"></div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#8a7a5c;letter-spacing:3px;text-transform:uppercase">' +
         (fr ? 'En détail · le cadre et le verdict' : 'In detail · frame and verdict') + '</div>' +
-      '<div style="flex:1;height:1px;background:rgba(196,154,26,0.30)"></div>' +
+      '<div style="flex:1;height:1px;background:#e8e0d4"></div>' +
     '</div>';
 
     // Phase opener — Playfair italic pull-quote with gold rule. Owns
     // its space; one of the three Playfair moments in the card.
     var _ph = (d.R && d.R.phase) || 'accum';
     var _yrs = (p.retAge || 65) - (p.age || 0);
-    var _nm = d.fn ? '<strong style="color:#faf8f4;font-weight:600">' + F.esc(d.fn) + '</strong>' : '';
-    var _sn = d.sfn ? '<strong style="color:#faf8f4;font-weight:600">' + F.esc(d.sfn) + '</strong>' : '';
+    var _nm = d.fn ? '<strong style="color:#0f0d09;font-weight:700">' + F.esc(d.fn) + '</strong>' : '';
+    var _sn = d.sfn ? '<strong style="color:#0f0d09;font-weight:700">' + F.esc(d.sfn) + '</strong>' : '';
     var _coupleLbl = (d.R && d.R.couple)
       ? (_sn ? (fr ? ' et ' + _sn : ' and ' + _sn)
              : (fr ? ' et votre conjoint(e)' : ' and your spouse'))
@@ -1099,19 +1124,19 @@
     var _phaseOpener;
     if (_ph === 'decum') {
       _phaseOpener = fr
-        ? _nmPfx + 'vous êtes maintenant à la retraite. La question centrale n\'est plus combien épargner, mais comment décaisser : dans quel ordre, à quel rythme, et avec quelle marge si les marchés déçoivent. L\'horizon évalué ici va jusqu\'à <strong style="color:#faf8f4;font-weight:600">' + (p.deathAge || 90) + ' ans</strong>.'
-        : (_nmFull ? _nmFull + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong style="color:#faf8f4;font-weight:600">' + (p.deathAge || 90) + '</strong>.';
+        ? _nmPfx + 'vous êtes maintenant à la retraite. La question centrale n\'est plus combien épargner, mais comment décaisser : dans quel ordre, à quel rythme, et avec quelle marge si les marchés déçoivent. L\'horizon évalué ici va jusqu\'à <strong style="color:#0f0d09;font-weight:700">' + (p.deathAge || 90) + ' ans</strong>.'
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong style="color:#0f0d09;font-weight:700">' + (p.deathAge || 90) + '</strong>.';
     } else if (_ph === 'transition') {
       _phaseOpener = fr
-        ? _nmPfx + 'la retraite approche — dans <strong style="color:#faf8f4;font-weight:600">' + _yrs + ' ans</strong>. Les décisions des prochaines années pèsent davantage que toutes celles qui suivront.'
-        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching — in <strong style="color:#faf8f4;font-weight:600">' + _yrs + ' years</strong>. The next few years carry more weight than every decision that follows.';
+        ? _nmPfx + 'la retraite approche — dans <strong style="color:#0f0d09;font-weight:700">' + _yrs + ' ans</strong>. Les décisions des prochaines années pèsent davantage que toutes celles qui suivront.'
+        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching — in <strong style="color:#0f0d09;font-weight:700">' + _yrs + ' years</strong>. The next few years carry more weight than every decision that follows.';
     } else {
       _phaseOpener = fr
-        ? _nmPfx + 'vous êtes en accumulation, avec <strong style="color:#faf8f4;font-weight:600">' + _yrs + ' ans</strong> avant la retraite prévue. Les ajustements faits maintenant ont l\'effet le plus important.'
-        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in accumulation, with <strong style="color:#faf8f4;font-weight:600">' + _yrs + ' years</strong> until planned retirement. Adjustments made now carry the largest leverage.';
+        ? _nmPfx + 'vous êtes en accumulation, avec <strong style="color:#0f0d09;font-weight:700">' + _yrs + ' ans</strong> avant la retraite prévue. Les ajustements faits maintenant ont l\'effet le plus important.'
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in accumulation, with <strong style="color:#0f0d09;font-weight:700">' + _yrs + ' years</strong> until planned retirement. Adjustments made now carry the largest leverage.';
     }
-    h += '<div style="border-left:3px solid #c49a1a;padding:6px 0 6px 22px;margin:0 0 28px 0;max-width:680px">' +
-      '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:18px;font-style:italic;font-weight:500;color:#e8e0d4;line-height:1.55">' +
+    h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 24px;margin:0 0 32px 0;max-width:700px">' +
+      '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:20px;font-style:italic;font-weight:500;color:#1a1610;line-height:1.55">' +
         _phaseOpener +
       '</div>' +
     '</div>';
@@ -1121,9 +1146,9 @@
     // reader's eye sweeps left-to-right and recognizes their plan.
     var _fM = function(v) { return F.fmtMoney(v, fr); };
     function _kvRow(label, value) {
-      return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(250,248,244,0.06)">' +
-        '<span style="font-family:Inter,sans-serif;font-size:11px;color:#9aabc7">' + F.esc(label) + '</span>' +
-        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;font-weight:500;color:#e8e0d4">' + value + '</span>' +
+      return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #ece4d4">' +
+        '<span style="font-family:Inter,sans-serif;font-size:11.5px;color:#5a4f3a">' + F.esc(label) + '</span>' +
+        '<span style="font-family:Inter,sans-serif;font-size:11.5px;font-weight:600;color:#1a1610">' + value + '</span>' +
       '</div>';
     }
     var _inputRows = '';
@@ -1145,11 +1170,11 @@
 
     h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">';
     h += '<div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#a89460;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(196,154,26,0.30)">' +
+      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#8a7a5c;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #c49a1a">' +
         (fr ? 'Ce que vous nous avez dit' : 'What you told us') + '</div>' +
       _inputRows + '</div>';
     h += '<div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#a89460;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(196,154,26,0.30)">' +
+      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#8a7a5c;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #c49a1a">' +
         (fr ? 'Hypothèses du modèle' : 'Model assumptions') + '</div>' +
       _assumpRows + '</div>';
     h += '</div>';
@@ -1159,11 +1184,11 @@
     // the magazine "this is the verdict" move, replacing the badge.
     if (d.ai && d.ai.overall_assessment) {
       // ✦ ornament between Movement 2 frame and the synthesis.
-      h += '<div style="text-align:center;margin:28px 0 20px;color:#a89460;font-size:14px;letter-spacing:8px;opacity:0.7">✦</div>';
+      h += '<div style="text-align:center;margin:32px 0 22px;color:#c49a1a;font-size:14px;letter-spacing:8px;opacity:0.6">✦</div>';
       var _safe = String(d.ai.overall_assessment).replace(/\r\n?/g, '\n');
       _safe = F.esc(_safe)
-        .replace(/\*\*([^*\n][^*\n]*?)\*\*/g, '<strong style="color:#faf8f4">$1</strong>')
-        .replace(/(^|[^*])\*([^*\n][^*\n]*?)\*(?!\*)/g, '$1<em style="color:#e8e0d4">$2</em>');
+        .replace(/\*\*([^*\n][^*\n]*?)\*\*/g, '<strong style="color:#0f0d09">$1</strong>')
+        .replace(/(^|[^*])\*([^*\n][^*\n]*?)\*(?!\*)/g, '$1<em style="color:#3a322a;font-style:italic">$2</em>');
       var _segments = _safe.split(/\n\n+/);
       // Try to lift the FIRST sentence of the first paragraph as the lead
       // clause. If the AI delivered short crisp first paragraph, use the
@@ -1178,7 +1203,7 @@
         _leadHtml = _leadMatch[1].trim();
         var _firstRest = (_leadMatch[3] || '').trim();
         if (_firstRest) {
-          _bodyHtml += '<p style="margin:0 0 14px;font-family:Inter,sans-serif;font-size:12.5px;color:#cfd8e4;line-height:1.8">' +
+          _bodyHtml += '<p style="margin:0 0 16px;font-family:Inter,sans-serif;font-size:13px;color:#2a2420;line-height:1.85">' +
             _firstRest.replace(/\n/g, '<br/>') + '</p>';
         }
       } else {
@@ -1187,16 +1212,16 @@
         if (_firstSeg.length <= 240) {
           _leadHtml = _firstSeg;
         } else {
-          _bodyHtml += '<p style="margin:0 0 14px;font-family:Inter,sans-serif;font-size:12.5px;color:#cfd8e4;line-height:1.8">' +
+          _bodyHtml += '<p style="margin:0 0 16px;font-family:Inter,sans-serif;font-size:13px;color:#2a2420;line-height:1.85">' +
             _firstSeg.replace(/\n/g, '<br/>') + '</p>';
         }
       }
       _restSegs.forEach(function(seg) {
-        _bodyHtml += '<p style="margin:0 0 14px;font-family:Inter,sans-serif;font-size:12.5px;color:#cfd8e4;line-height:1.8">' +
+        _bodyHtml += '<p style="margin:0 0 16px;font-family:Inter,sans-serif;font-size:13px;color:#2a2420;line-height:1.85">' +
           seg.replace(/\n/g, '<br/>') + '</p>';
       });
       if (_leadHtml) {
-        h += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:19px;font-style:italic;font-weight:500;color:#faf8f4;line-height:1.5;margin:0 0 22px;max-width:680px">' +
+        h += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:21px;font-style:italic;font-weight:500;color:#1a1610;line-height:1.5;margin:0 0 24px;max-width:700px">' +
           _leadHtml + '</div>';
       }
       if (_bodyHtml) h += _bodyHtml;
