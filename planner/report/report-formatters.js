@@ -231,10 +231,14 @@
     if (!t) return "";
     var safe = _renderAiInlineMarkup(
       esc(String(t).replace(/\r\n?/g, '\n'))
-    ).replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br/>');
-    return '<div class="callout callout-ai"><span class="ai-badge">' +
-      (fr ? "Analyse assist\u00e9e par IA" : "AI-assisted analysis") +
-      '</span><p>' + safe + '</p></div>';
+    ).replace(/\n\n+/g, '</p><p class="narr">').replace(/\n/g, '<br/>');
+    // 2026-04-29: AI prose now flows as body voice. The badged callout
+    // box ("Analyse assist\u00e9e par IA") on every AI block read as defensive
+    // and broke the editorial flow \u2014 a single AI disclosure under the
+    // letter + in the methodology covers the integrity question once.
+    // No badge, no border, no colored background \u2014 the prose IS the
+    // report's voice.
+    return '<p class="narr">' + safe + '</p>';
   }
 
   // Callout with label + value + description (for cost-of-inaction, tipping point, etc.)

@@ -11,10 +11,21 @@ import {
   useEditorialBody,
   useEditorialRailScrollSpy,
 } from "@/lib/design/editorial-components";
+import { FISCAL_2026 } from "@/lib/constants/fiscal-2026";
 
 // Palette: shared Editorial system. Guide 201 follows the gold + ink + cream
 // restraint rule — no purple/red/green/blue accents. See docs/DESIGN-SYSTEM.md.
 const CL = getEditorialPalette();
+
+/*
+  Drift-prone 2026 fiscal numbers come from the verified central source
+  (lib/constants/fiscal-2026.ts). When CRA / Service Canada updates the
+  annual figures, only that file changes — the guide re-renders with
+  the new values automatically.
+*/
+const F2 = FISCAL_2026.federal;
+const f2 = (n: number) => `${Math.round(n).toLocaleString("fr-CA").replace(/[  ]/g, " ")} $`;
+const f2en = (n: number) => `$${Math.round(n).toLocaleString("en-CA")}`;
 
 /**
  * Local Callout — preserves the existing `<Callout color="X">` call sites
@@ -159,7 +170,7 @@ const COPY = {
     ch2Sources:
       "FERR/REER — 100 % imposable. RRQ/RPC — imposable, mais admissible au crédit pour revenu de pension (2 000 $ à 65+). PSV — imposable, avec taux marginal effectif jusqu'à 15 % plus élevé (récupération). CELI — jamais imposable. Gains en capital — imposés à 50 % d'inclusion. Dividendes canadiens — crédit attrayant, mais la majoration gonfle le revenu net (affecte la PSV).",
     ch2Dividend:
-      "ATTENTION — Le piège de la majoration : un dividende éligible de 50 000 $ devient 69 000 $ en revenu imposable après majoration. Même si le crédit réduit l'impôt réel, ce revenu majoré peut déclencher la récupération PSV.",
+      "Le piège de la majoration : un dividende éligible de 50 000 $ devient 69 000 $ en revenu imposable après majoration. Même si le crédit réduit l'impôt réel, ce revenu majoré peut déclencher la récupération PSV.",
     ch2Credit:
       "Crédit pour revenu de pension : à partir de 65 ans, les premiers 2 000 $ de revenu de pension admissible (FERR, rente à PD) donnent droit à un crédit fédéral de 15 % + crédit provincial. Au Québec, environ 300 $ d'économies par personne. Pour un couple, ça double.",
     ch2Effective:
@@ -170,8 +181,9 @@ const COPY = {
     ch3Title: "Protéger votre PSV",
     ch3Sub: "La récupération — et comment l'éviter",
     ch3Body:
-      "La Pension de la sécurité de la vieillesse (PSV) vaut 742 $/mois en 2026 (65-74 ans) ou 817 $/mois (75+). Sur 25 ans, c'est plus de 220 000 $. Mais si votre revenu net dépasse 95 323 $, le gouvernement récupère 15 ¢ par dollar excédentaire. Autour de 155 000 $, votre PSV tombe à zéro.",
+      `La Pension de la sécurité de la vieillesse (PSV) vaut ${f2(F2.OAS_MAX_MONTHLY)}/mois en 2026 (65-74 ans) ou ${f2(F2.OAS_MAX_MONTHLY_75)}/mois (75+). Sur 25 ans, c'est plus de 220 000 $. Mais si le revenu net dépasse ${f2(F2.OAS_CLAWBACK_THR)}, le gouvernement récupère 15 ¢ par dollar excédentaire. Autour de ${f2(F2.OAS_ZERO_POINT_65)}, la PSV tombe à zéro.`,
     ch3Tool: "Calculateur — combien la récupération PSV vous coûte",
+    ch3CalcNote: "Une projection complète relie la PSV au profil familial, à la province et aux retraits réels année par année — c'est ce que calcule un Bilan 360.",
     ch3Strategies: "Cinq stratégies pour protéger votre PSV",
     ch3S1: "1. Meltdown REER avant 72 ans — retirez graduellement entre 60 et 72 ans pour éviter les retraits FERR forcés qui gonflent le revenu après 72 ans.",
     ch3S2: "2. Prioriser le CELI — les retraits CELI ne comptent pas dans le revenu net pour la PSV. Choix stratégique pendant l'accumulation.",
@@ -184,6 +196,7 @@ const COPY = {
     ch4Body:
       "La décision est irréversible. À 60 ans, vous recevez 36 % de moins qu'à 65. À 70 ans, vous recevez 42 % de plus. La bonne réponse dépend de votre santé, vos autres revenus et votre espérance de vie.",
     ch4Tool: "Calculateur — point d'équilibre RRQ/RPC",
+    ch4CalcNote: "Le 60/65/70 ne se décide pas en isolation : il interagit avec la PSV, le décaissement REER, la mortalité et le revenu du conjoint. Le Bilan 360 traite ces variables ensemble.",
     ch4Break:
       "Si vous différez de 65 à 70, vous renoncez à 5 ans de pension (~90 k$ cumulatif au max). En échange, chaque paiement mensuel est 42 % plus élevé. Le point d'équilibre est autour de 82 ans. Espérance de vie d'un Canadien de 65 ans : ~87 (hommes) / ~89 (femmes). La probabilité de dépasser 82 ans est élevée.",
     ch4Early:
@@ -194,6 +207,7 @@ const COPY = {
     ch5Body:
       "À partir de 65 ans, vous pouvez transférer jusqu'à 50 % de votre revenu de pension admissible à votre conjoint sur vos déclarations. Revenu admissible : retraits FERR, rentes de pension à PD, certaines rentes viagères. RRQ/RPC, PSV et retraits REER (avant conversion en FERR) ne sont pas admissibles.",
     ch5Tool: "Calculateur — économie du fractionnement de pension",
+    ch5CalcNote: "Le fractionnement optimal varie d'une année à l'autre avec les revenus et l'âge des conjoints — un Bilan 360 modélise les 25 années pour identifier la séquence.",
     ch5Why:
       "Pourquoi c'est puissant : le système canadien est progressif. Si un conjoint est à 45 % et l'autre à 27 %, transférer 50 % de la pension du premier fait passer chaque dollar transféré d'un palier à 45 % à un palier à 27 % — soit 18 ¢ économisés par dollar. Sur 60 000 $ de pension, le fractionnement de 30 000 $ peut économiser 3 000 à 5 000 $ par année.",
     ch5Quebec:
@@ -206,8 +220,9 @@ const COPY = {
     ch6Body:
       "Les frais de gestion (MER — Management Expense Ratio) sont le prédateur silencieux de votre retraite. Un fonds commun canadien moyen charge environ 2,2 % par an. Ça paraît petit. Sur 30 ans, c'est la différence entre prendre sa retraite à 60 ans ou à 67 ans.",
     ch6Tool: "Calculateur — impact des frais sur 30 ans",
+    ch6CalcNote: "L'impact réel des frais dépend des contributions, des retraits et de la séquence des marchés — le Planner permet de tester une réduction de RFG sur le plan complet, pas seulement sur 30 ans linéaires.",
     ch6Why:
-      "Pourquoi 2 % détruit votre patrimoine : les frais sont chargés sur le solde total, chaque année, peu importe la performance. Si le marché rend 7 % et vos frais sont 2,2 %, votre rendement net est 4,8 %. Sur 200 000 $ investis pendant 30 ans à 6 % brut : un FNB à 0,20 % produit 578 000 $, un fonds à 2,20 % produit 349 000 $. Différence : 229 000 $.",
+      "Pourquoi 2 % détruit le patrimoine : les frais sont chargés sur le solde total chaque année, peu importe la performance. Si le marché rend 7 % et les frais sont 2,2 %, le rendement net est 4,8 %. Sur 200 000 $ investis pendant 30 ans à 6 % brut : un FNB à 0,20 % de RFG laisse environ 1 080 000 $ de solde final ; un fonds à 2,20 % de RFG laisse environ 615 000 $. Différence : ~465 000 $ — l'équivalent d'une retraite alternative entière, perdue silencieusement en frais.",
     ch6Options:
       "Options à faibles frais au Canada : FNB indiciels (~0,05 à 0,25 % de RFG selon l'émetteur). Portefeuilles tout-en-un (FNB d'allocation) ~0,20 à 0,25 % — un seul FNB, rééquilibrage automatique. Robots-conseillers ~0,5 % tout inclus, sans toucher aux placements vous-même.",
 
@@ -234,16 +249,17 @@ const COPY = {
     ch8Body:
       "Le « meltdown » REER consiste à retirer volontairement de votre REER avant 72 ans pour rester dans un palier d'imposition bas et éviter les retraits FERR forcés qui pourraient déclencher la récupération PSV. Contre-intuitif — on vous a dit toute votre vie de ne pas toucher au REER. Mais en décaissement, les règles changent.",
     ch8Tool: "Calculateur — votre fenêtre de meltdown REER",
+    ch8CalcNote: "Le meltdown optimal dépend du palier fiscal cible, des autres revenus et du timing PSV — le Planner permet d'itérer plusieurs scénarios de meltdown sur la même base de données.",
     ch8Steps: [
-      ["Étape 1", "Identifiez votre palier fiscal cible. Au Québec 2026, le premier palier fédéral se termine à 57 375 $. Le taux marginal combiné reste autour de 27-32 % sous ce seuil."],
+      ["Étape 1", `Identifier le palier fiscal cible. Au Québec 2026, le premier palier fédéral se termine à ${f2(F2.FED_BRACKETS[0])}. Le taux marginal combiné reste autour de 27-32 % sous ce seuil.`],
       ["Étape 2", "Calculez votre revenu fixe (RRQ/RPC, rente à PD, travail à temps partiel). La place restante dans le palier cible est votre « budget meltdown » annuel."],
       ["Étape 3", "Retirez ce montant de votre REER chaque année. Déposez le net dans votre CELI (si place) ou dans un NE."],
       ["Étape 4", "À 72 ans, votre REER converti en FERR sera beaucoup plus petit — les retraits minimums ne gonfleront plus votre revenu au-dessus du seuil PSV."],
     ],
     ch8Golden:
-      "STRATÉGIE AVANCÉE — Meltdown pré-RRQ agressif : si vous prenez votre retraite avant 60 ans et que votre revenu est très bas, vous pouvez remplir les paliers fiscaux bas avec de gros retraits REER à un taux de 15-20 %. C'est la « zone dorée du meltdown » — entre la retraite et 65 ans.",
+      "Meltdown pré-RRQ agressif — un cas particulier : pour quelqu'un qui prend sa retraite avant 60 ans avec un revenu très bas, les paliers fiscaux les plus bas peuvent être remplis avec de gros retraits REER à un taux marginal de 15-20 %. C'est la « zone dorée du meltdown » — entre la retraite et 65 ans, avant que la RRQ et la PSV ne s'ajoutent.",
     ch8NotOptimal:
-      "ATTENTION — Quand le meltdown n'est pas optimal : si votre REER est modeste (moins de 200 k$), les retraits FERR obligatoires à 72 ans ne dépasseront probablement pas le seuil PSV. Le meltdown ne vaut alors pas la complexité.",
+      "Quand le meltdown n'a pas d'avantage clair : pour un REER modeste (moins de 200 k$), les retraits FERR obligatoires à 72 ans ne dépassent généralement pas le seuil PSV. La complexité du meltdown n'est alors pas justifiée.",
 
     ch9Title: "Guardrails — dépenser sans tomber",
     ch9Sub: "Ajuster vos retraits au marché",
@@ -263,7 +279,7 @@ const COPY = {
     ch10Timing:
       "Vendre avant la retraite (salaire comme seul revenu) garde le gain dans un palier prévisible. Vendre après, quand RRQ + PSV + FERR s'empilent, pousse le revenu dans les plus hauts paliers et peut déclencher la récupération PSV. Une avenue qui minimise typiquement la facture fiscale : une vente cadrée dans une année « creuse fiscale » — entre la fin de l'emploi et le début de la RRQ/RPC, ou durant la fenêtre de meltdown REER.",
     ch10Capital:
-      "À NOTER — Taux d'inclusion des gains en capital : depuis juin 2024, le taux passe de 50 % à 66,67 % au-delà de 250 000 $ de gains annuels pour les particuliers. Pour les sociétés, 66,67 % dès le premier dollar.",
+      "Taux d'inclusion des gains en capital — état actuel (2026) : le taux d'inclusion reste à 50 % pour les particuliers et les sociétés. La hausse à 66,67 % au-delà de 250 000 $ annoncée dans le budget fédéral 2024 a été reportée puis effectivement abandonnée par le gouvernement libéral en 2025. Toute planification doit suivre les annonces budgétaires futures, le sujet pouvant ressurgir.",
     ch10Smith:
       "La manoeuvre Smith — transformer un prêt hypothécaire en déduction. Mécanique : l'hypothèque est remboursée normalement. Chaque paiement libère de la place sur la marge de crédit hypothécaire (HELOC). Le même montant est immédiatement réemprunté sur la HELOC et investi dans des placements produisant un revenu imposable. L'intérêt HELOC devient alors déductible. RISQUES : levier financier, dépendance aux marchés, possible contestation ARC si le lien revenu-emprunt n'est pas clair.",
 
@@ -274,18 +290,9 @@ const COPY = {
     ch11SBD:
       "Le grind de la DPE — le piège de 50 000 $ : si votre société génère plus de 50 000 $ de revenu de placement passif annuel (intérêts, dividendes, gains en capital), la DPE est progressivement réduite. À 150 000 $ de revenu passif, la DPE tombe à zéro — votre taux corporatif saute de ~12 % à ~26 % sur le revenu actif.",
     ch11Extract:
-      "Extraction à 3 couches : (1) Salaire minimal (~15 000 $) pour cotiser à la RRQ et protéger vos droits. Crée ~2 700 $ de place REER. (2) Dividendes en capital (CDC) — entièrement libres d'impôt. Votre CDC se bâtit chaque fois que la société réalise un gain en capital. (3) Dividendes imposables pour couvrir le reste, en visant le seuil PSV de 95 323 $.",
+      `Extraction à 3 couches : (1) Salaire minimal (~15 000 $) pour cotiser à la RRQ et protéger les droits. Crée ~2 700 $ de place REER. (2) Dividendes en capital (CDC) — entièrement libres d'impôt. Le CDC se bâtit chaque fois que la société réalise un gain en capital. (3) Dividendes imposables pour couvrir le reste, en visant le seuil PSV de ${f2(F2.OAS_CLAWBACK_THR)}.`,
     ch11RDTOH:
-      "Le compte IMRTDD — l'impôt remboursable caché : quand votre société gagne du revenu de placement, elle paie un impôt plus élevé (~50 %), dont une partie est « remboursable » lors du paiement de dividendes. Pour chaque 2,61 $ de dividende éligible versé, la société récupère 1 $ de l'IMRTDD.",
-
-    mistakesTitle: "Les 5 erreurs de décaissement les plus coûteuses",
-    mistakes: [
-      ["1. Réclamer la RRQ à 60 ans sans analyse", "La réduction de 36 % est permanente. Si vous vivez jusqu'à 85 ans, différer à 65 ou 70 peut représenter plus de 100 000 $ de revenu à vie supplémentaire."],
-      ["2. Ignorer la récupération PSV", "Chaque dollar au-dessus de 95 323 $ coûte 15 ¢ en PSV récupérée — en plus de l'impôt régulier. Sur 20 ans, la perte peut dépasser 85 000 $."],
-      ["3. Retirer du CELI en premier", "Le CELI est votre compte de retraite le plus précieux — les retraits n'affectent ni impôt, ni PSV, ni SRG. Retirer en premier est presque toujours sous-optimal."],
-      ["4. Garder un portefeuille à 2 % de frais pendant 30 ans de retraite", "Sur 500 000 $, l'écart entre 0,25 % et 2,20 % représente plus de 350 000 $ sur 30 ans — l'équivalent de 5 années complètes de dépenses perdues en frais invisibles."],
-      ["5. Ne pas fractionner le revenu de pension", "Un couple où un seul conjoint a une rente peut économiser 3 000 à 5 000 $ d'impôt par an en transférant jusqu'à 50 %. T1032 + TP-1012.A. Zéro coût. Zéro risque. Juste un formulaire à remplir."],
-    ],
+      "Le compte IMRTDD — l'impôt remboursable caché : quand la société gagne du revenu de placement, elle paie un impôt plus élevé (~50 %), dont une partie est « remboursable » lors du paiement de dividendes. Pour chaque 2,61 $ de dividende éligible versé, la société récupère 1 $ de l'IMRTDD.",
 
     simTitle: "Bonus — Simulateur interactif de décaissement",
     simBody:
@@ -439,7 +446,7 @@ const COPY = {
     ch2Sources:
       "RRIF/RRSP — 100% taxable. QPP/CPP — taxable, eligible for pension income credit ($2,000 at 65+). OAS — taxable, with effective marginal rate up to 15% higher (clawback). TFSA — never taxable. Capital gains — 50% inclusion. Canadian dividends — attractive credit, but the gross-up inflates net income (affects OAS).",
     ch2Dividend:
-      "CAUTION — The gross-up trap: a $50,000 eligible dividend becomes $69,000 in taxable income after gross-up. Even though the credit reduces actual tax, this grossed-up income can trigger OAS clawback.",
+      "The gross-up trap: a $50,000 eligible dividend becomes $69,000 in taxable income after gross-up. Even though the credit reduces actual tax, this grossed-up income can trigger OAS clawback.",
     ch2Credit:
       "Pension income credit: starting at age 65, the first $2,000 of eligible pension income (RRIF, DB pension annuity) qualifies for a 15% federal credit + provincial credit. In Quebec, about $300 in savings per person. For a couple, it doubles.",
     ch2Effective:
@@ -450,8 +457,9 @@ const COPY = {
     ch3Title: "Protecting your OAS",
     ch3Sub: "The clawback — and how to avoid it",
     ch3Body:
-      "Old Age Security (OAS) is worth $742/month in 2026 (ages 65-74) or $817/month (75+). Over 25 years, that's more than $220,000. But if your net income exceeds $95,323, the government claws back 15¢ per dollar above. Around $155,000, your OAS drops to zero.",
+      `Old Age Security (OAS) is worth ${f2en(F2.OAS_MAX_MONTHLY)}/month in 2026 (ages 65-74) or ${f2en(F2.OAS_MAX_MONTHLY_75)}/month (75+). Over 25 years, that's more than $220,000. But if net income exceeds ${f2en(F2.OAS_CLAWBACK_THR)}, the government claws back 15¢ per dollar above. Around ${f2en(F2.OAS_ZERO_POINT_65)}, OAS drops to zero.`,
     ch3Tool: "Calculator — how much OAS clawback costs you",
+    ch3CalcNote: "A full projection ties OAS to the family profile, the province and real year-by-year withdrawals — that's what a Bilan 360 computes.",
     ch3Strategies: "Five strategies to protect your OAS",
     ch3S1: "1. RRSP meltdown before 72 — gradually withdraw between 60 and 72 to avoid forced RRIF withdrawals that inflate income after 72.",
     ch3S2: "2. Prioritize the TFSA — TFSA withdrawals don't count toward net income for OAS. Strategic choice during accumulation.",
@@ -464,6 +472,7 @@ const COPY = {
     ch4Body:
       "The decision is irreversible. At 60, you receive 36% less than at 65. At 70, you receive 42% more. The right answer depends on your health, other income and life expectancy.",
     ch4Tool: "Calculator — QPP/CPP break-even point",
+    ch4CalcNote: "The 60/65/70 choice doesn't sit alone: it interacts with OAS, RRSP decum, mortality and a spouse's income. Bilan 360 handles these variables together.",
     ch4Break:
       "If you defer from 65 to 70, you forgo 5 years of pension (~$90K cumulative at max). In exchange, every monthly payment is 42% higher. Break-even is around age 82. Life expectancy for a 65-year-old Canadian: ~87 (men) / ~89 (women). Probability of exceeding 82 is high.",
     ch4Early:
@@ -474,6 +483,7 @@ const COPY = {
     ch5Body:
       "Starting at age 65, you can transfer up to 50% of your eligible pension income to your spouse on your tax returns. Eligible income: RRIF withdrawals, DB pension annuities, certain life annuities. QPP/CPP, OAS and RRSP withdrawals (before conversion to RRIF) are not eligible.",
     ch5Tool: "Calculator — pension splitting savings",
+    ch5CalcNote: "Optimal splitting changes year-to-year as incomes and ages shift — a Bilan 360 models all 25 years to find the sequence.",
     ch5Why:
       "Why it's powerful: the Canadian system is progressive. If one spouse is at 45% and the other at 27%, transferring 50% moves every dollar from a 45% bracket to a 27% bracket — saving 18¢ per dollar. On $60,000 of pension, splitting $30,000 can save $3,000 to $5,000 per year.",
     ch5Quebec:
@@ -486,8 +496,9 @@ const COPY = {
     ch6Body:
       "Management fees (MER) are the silent predator of your retirement. An average Canadian mutual fund charges about 2.2% per year. It seems small. Over 30 years, it's the difference between retiring at 60 or at 67.",
     ch6Tool: "Calculator — fee impact over 30 years",
+    ch6CalcNote: "Real fee drag depends on contributions, withdrawals and market sequence — the Planner tests an MER reduction across the full plan, not just 30 linear years.",
     ch6Why:
-      "Why 2% destroys your wealth: fees are charged on the total balance, every year, regardless of performance. If the market returns 7% and your fees are 2.2%, your net return is 4.8%. On $200,000 invested for 30 years at 6% gross: ETF at 0.20% produces $578,000, fund at 2.20% produces $349,000. Difference: $229,000.",
+      "Why 2% destroys wealth: fees are charged on the total balance every year, regardless of performance. If the market returns 7% and fees are 2.2%, the net return is 4.8%. On $200,000 invested for 30 years at 6% gross: an ETF at 0.20% MER leaves about $1,080,000 ending balance; a fund at 2.20% MER leaves about $615,000. Difference: ~$465,000 — the equivalent of an entire alternate retirement, lost silently to fees.",
     ch6Options:
       "Low-fee options in Canada: Index ETFs (~0.05-0.25% MER depending on issuer). All-in-one asset-allocation ETFs ~0.20-0.25% — one ETF, automatic rebalancing. Robo-advisors ~0.5% all-in, hands-off investing.",
 
@@ -514,16 +525,17 @@ const COPY = {
     ch8Body:
       "The RRSP \"meltdown\" means voluntarily withdrawing from your RRSP before age 72 to stay in a low tax bracket and avoid forced RRIF withdrawals that could trigger OAS clawback. Counterintuitive — you've been told your whole life not to touch your RRSP. But in drawdown, the rules change.",
     ch8Tool: "Calculator — your RRSP meltdown window",
+    ch8CalcNote: "Optimal meltdown depends on the target tax bracket, other income and OAS timing — the Planner lets you iterate multiple meltdown scenarios on the same data.",
     ch8Steps: [
-      ["Step 1", "Identify your target tax bracket. In Quebec 2026, the first federal bracket ends at $57,375. Combined marginal rate stays around 27-32% below that threshold."],
+      ["Step 1", `Identify the target tax bracket. In Quebec 2026, the first federal bracket ends at ${f2en(F2.FED_BRACKETS[0])}. Combined marginal rate stays around 27-32% below that threshold.`],
       ["Step 2", "Calculate your fixed income (QPP/CPP, DB pension, part-time work). The remaining room in the target bracket is your annual \"meltdown budget\"."],
       ["Step 3", "Withdraw that amount from your RRSP each year. Deposit the net into your TFSA (if room) or a non-registered account."],
       ["Step 4", "At 72, your RRSP converted to RRIF will be much smaller — mandatory withdrawals will no longer inflate your income beyond the OAS threshold."],
     ],
     ch8Golden:
-      "ADVANCED — Aggressive pre-QPP meltdown: if you retire before 60 and your income is very low, you can fill the lowest tax brackets with massive RRSP withdrawals at a 15-20% rate. This is the \"golden meltdown zone\" — between retirement and 65.",
+      "Aggressive pre-QPP meltdown — a special case: for someone retiring before 60 with very low income, the lowest tax brackets can be filled with large RRSP withdrawals at a 15-20% marginal rate. This is the \"golden meltdown zone\" — between retirement and 65, before QPP and OAS stack on top.",
     ch8NotOptimal:
-      "CAUTION — When the meltdown is not optimal: if your RRSP is modest (under $200K), mandatory RRIF withdrawals at 72+ likely won't exceed the OAS threshold. The meltdown isn't worth the complexity.",
+      "When the meltdown has no clear advantage: for a modest RRSP (under $200K), mandatory RRIF withdrawals at 72+ generally don't exceed the OAS threshold. The complexity of the meltdown isn't justified in that profile.",
 
     ch9Title: "Guardrails — spend without falling",
     ch9Sub: "Adjusting your withdrawals to the market",
@@ -543,7 +555,7 @@ const COPY = {
     ch10Timing:
       "Selling before retirement (salary as the only income) keeps the gain in a predictable bracket. Selling after, when QPP + OAS + RRIF stack, pushes income into top brackets and can trigger OAS clawback. An avenue that typically minimizes the tax bill: framing the sale in a \"tax-trough\" year — between end of employment and start of QPP/CPP, or during the RRSP meltdown window.",
     ch10Capital:
-      "NOTE — Capital gains inclusion rate: since June 2024, the rate rises from 50% to 66.67% above $250,000 in annual gains for individuals. For corporations, 66.67% from the first dollar.",
+      "Capital gains inclusion rate — current state (2026): the inclusion rate remains 50% for both individuals and corporations. The proposed increase to 66.67% above $250,000 (Federal Budget 2024) was deferred and effectively shelved by the Liberal government in 2025. Planning should track future budget announcements — the topic may return.",
     ch10Smith:
       "Smith Manoeuvre — converting a mortgage into a deduction. Mechanics: the mortgage is repaid normally. Each payment frees room on the home equity line of credit (HELOC). The same amount is immediately re-borrowed on the HELOC and invested in income-producing investments. HELOC interest then becomes deductible. RISKS: leverage, market dependency, CRA may challenge if the income link isn't clear.",
 
@@ -554,18 +566,9 @@ const COPY = {
     ch11SBD:
       "The SBD grind — the $50,000 trap: if your corporation generates more than $50,000 in annual passive investment income, the SBD is gradually reduced. At $150,000 passive, SBD drops to zero — your corporate rate jumps from ~12% to ~26% on active income.",
     ch11Extract:
-      "3-layer extraction: (1) Minimal salary (~$15,000) to contribute to QPP/CPP and protect your rights. Creates ~$2,700 RRSP room. (2) Capital dividends (CDA) — entirely tax-free. CDA builds each time the corporation realizes a capital gain. (3) Taxable dividends to cover the rest, targeting OAS threshold of $95,323.",
+      `3-layer extraction: (1) Minimal salary (~$15,000) to contribute to QPP/CPP and protect rights. Creates ~$2,700 RRSP room. (2) Capital dividends (CDA) — entirely tax-free. CDA builds each time the corporation realizes a capital gain. (3) Taxable dividends to cover the rest, targeting the OAS threshold of ${f2en(F2.OAS_CLAWBACK_THR)}.`,
     ch11RDTOH:
-      "RDTOH account — the hidden refundable tax: when your corporation earns investment income, it pays a higher tax (~50%), part of which is \"refundable\" when dividends are paid. For every $2.61 of eligible dividend paid, the corporation recovers $1 of RDTOH.",
-
-    mistakesTitle: "The 5 costliest withdrawal errors",
-    mistakes: [
-      ["1. Claiming QPP/CPP at 60 without analysis", "The 36% reduction is permanent. If you live to 85, deferring to 65 or 70 can represent $100,000+ in additional lifetime income."],
-      ["2. Ignoring OAS clawback", "Every dollar above $95,323 costs 15¢ in clawed-back OAS — on top of regular tax. Over 20 years, the loss can exceed $85,000."],
-      ["3. Withdrawing from the TFSA first", "The TFSA is your most valuable retirement account — withdrawals don't affect tax, OAS, or GIS. Touching it first is almost always suboptimal."],
-      ["4. Keeping a 2% fee portfolio for 30 years of retirement", "On $500,000, the difference between 0.25% and 2.20% over 30 years is $350,000+ — equivalent of 5 full years of spending lost in invisible fees."],
-      ["5. Not splitting pension income", "A couple where only one spouse has a pension can save $3,000-5,000 in tax per year by transferring up to 50%. T1032 + TP-1012.A. No cost. No risk. Just a form."],
-    ],
+      "RDTOH account — the hidden refundable tax: when the corporation earns investment income, it pays a higher tax (~50%), part of which is \"refundable\" when dividends are paid. For every $2.61 of eligible dividend paid, the corporation recovers $1 of RDTOH.",
 
     simTitle: "Bonus — Interactive withdrawal simulator",
     simBody:
@@ -1113,6 +1116,7 @@ function Guide201Inner() {
         <Section fr={fr} num={3} id="ch3" title={t.ch3Title} sub={t.ch3Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch3Body}</p>
           <ToolCard title={t.ch3Tool}><OASCalc fr={fr} t={t} /></ToolCard>
+          <div style={{ fontSize: 13, color: CL.muted, fontStyle: "italic", margin: "-6px 0 14px", paddingLeft: 4 }}>{t.ch3CalcNote}</div>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: CL.ink, margin: "18px 0 10px" }}>{t.ch3Strategies}</h3>
           {/* Numbered strategy cards — gold mono numerals + body. Replaces
               the prior 5-identical-Callout smear with a list that has
@@ -1132,6 +1136,7 @@ function Guide201Inner() {
         <Section fr={fr} num={4} id="ch4" title={t.ch4Title} sub={t.ch4Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch4Body}</p>
           <ToolCard title={t.ch4Tool}><QPPCalc fr={fr} t={t} /></ToolCard>
+          <div style={{ fontSize: 13, color: CL.muted, fontStyle: "italic", margin: "-6px 0 14px", paddingLeft: 4 }}>{t.ch4CalcNote}</div>
           <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
             <Callout color="gold">{t.ch4Break}</Callout>
             <Callout color="blue">{t.ch4Early}</Callout>
@@ -1142,6 +1147,7 @@ function Guide201Inner() {
         <Section fr={fr} num={5} id="ch5" title={t.ch5Title} sub={t.ch5Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch5Body}</p>
           <ToolCard title={t.ch5Tool}><SplitCalc fr={fr} t={t} /></ToolCard>
+          <div style={{ fontSize: 13, color: CL.muted, fontStyle: "italic", margin: "-6px 0 14px", paddingLeft: 4 }}>{t.ch5CalcNote}</div>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6, margin: "12px 0" }}>{t.ch5Why}</p>
           <div style={{ display: "grid", gap: 10 }}>
             <Callout color="blue">{t.ch5Quebec}</Callout>
@@ -1153,6 +1159,7 @@ function Guide201Inner() {
         <Section fr={fr} num={6} id="ch6" title={t.ch6Title} sub={t.ch6Sub}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch6Body}</p>
           <ToolCard title={t.ch6Tool}><MERCalc fr={fr} t={t} /></ToolCard>
+          <div style={{ fontSize: 13, color: CL.muted, fontStyle: "italic", margin: "-6px 0 14px", paddingLeft: 4 }}>{t.ch6CalcNote}</div>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6, margin: "12px 0" }}>{t.ch6Why}</p>
           <Callout color="green">{t.ch6Options}</Callout>
         </Section>
@@ -1186,6 +1193,7 @@ function Guide201Inner() {
         <Section fr={fr} num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 8` : `Bonus 301 · Chapter 8`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch8Body}</p>
           <ToolCard title={t.ch8Tool}><MeltdownCalc fr={fr} t={t} /></ToolCard>
+          <div style={{ fontSize: 13, color: CL.muted, fontStyle: "italic", margin: "-6px 0 14px", paddingLeft: 4 }}>{t.ch8CalcNote}</div>
           <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
             {t.ch8Steps.map((s, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: 14, alignItems: "start", background: CL.panel, border: `1px solid ${CL.line}`, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
@@ -1228,19 +1236,9 @@ function Guide201Inner() {
           </div>
         </Section>
 
-        {/* Costliest errors — single voice, paper cards with thin red bar */}
-        <section id="mistakes" className="bfe-section">
-          <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
-          <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
-          <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
-            {t.mistakes.map((m, i) => (
-              <div key={i} style={{ background: CL.panel, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: CL.ink, marginBottom: 4 }}>{m[0]}</div>
-                <div style={{ fontSize: 13, color: CL.text, lineHeight: 1.55 }}>{m[1]}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Mistakes summary block dropped 2026-04-30: chapter cautions
+            already cover the same ground; redundancy was real. The
+            individual cautions stay where the reader meets the topic. */}
 
         {/* Bonus — link to existing decum simulator */}
         <Note tone="rule" kicker="BONUS">

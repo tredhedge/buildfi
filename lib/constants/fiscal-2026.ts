@@ -21,6 +21,11 @@ export interface FederalConstants {
   FED_PERSONAL: number;
   OAS_CLAWBACK_THR: number;
   OAS_MAX_MONTHLY: number;
+  /** OAS Q1 2026 monthly amount for recipients aged 75+ (10% top-up). */
+  OAS_MAX_MONTHLY_75: number;
+  /** Net income at which OAS is fully clawed back, age 65–74. Computed:
+      OAS_CLAWBACK_THR + (OAS_MAX_MONTHLY * 12) / 0.15. */
+  OAS_ZERO_POINT_65: number;
   GIS_MAX_SINGLE: number;
   GIS_MAX_COUPLE: number;
   QPP_MAX_MONTHLY: number;
@@ -29,6 +34,11 @@ export interface FederalConstants {
   QPP2_MAX_MONTHLY: number;
   PENSION_CREDIT_MAX: number;
   TFSA_LIMIT: number;
+  /** TFSA cumulative room for someone 18+ in 2009 through 2026 inclusive. */
+  TFSA_CUMULATIVE_MAX: number;
+  RRSP_LIMIT: number;
+  FHSA_ANNUAL: number;
+  FHSA_LIFETIME: number;
 }
 
 export interface ProvincialTax {
@@ -70,6 +80,8 @@ const federal: FederalConstants = {
   FED_PERSONAL: 16452,
   OAS_CLAWBACK_THR: 95323,
   OAS_MAX_MONTHLY: 742.31,
+  OAS_MAX_MONTHLY_75: 816.55, // Q1 2026; 10% boost over base for 75+
+  OAS_ZERO_POINT_65: 154708,  // 95323 + (742.31 * 12) / 0.15 ≈ 154,708
   GIS_MAX_SINGLE: 1105.43,
   GIS_MAX_COUPLE: 667.41,
   QPP_MAX_MONTHLY: 1507.65,
@@ -78,6 +90,10 @@ const federal: FederalConstants = {
   QPP2_MAX_MONTHLY: 81.00,
   PENSION_CREDIT_MAX: 2000,
   TFSA_LIMIT: 7000,
+  TFSA_CUMULATIVE_MAX: 109000, // sum 2009-2026 for someone 18+ in 2009
+  RRSP_LIMIT: 33810,
+  FHSA_ANNUAL: 8000,
+  FHSA_LIFETIME: 40000,
 };
 
 // ---------------------------------------------------------------------------
