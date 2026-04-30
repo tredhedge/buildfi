@@ -789,6 +789,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 <script src="report/report-formatters.js"></script>
 <script src="report/report-data.js"></script>
 <script src="report/report-charts.js"></script>
+<script src="report/report-ai-prompt.js"></script>
 <script src="report/report-pdf.js"></script>
 <script src="report/report-excel.js"></script>
 <script src="report/report-export-service.js"></script>
@@ -8837,7 +8838,12 @@ function App() {
   // retirement spending; "ep" (Savings) surfaces accounts + RSU + special.
   var _moduleAliases = {
     rev: ["rev", "budget", "dep"],
-    ep: ["ep", "equity", "special"]
+    ep: ["ep", "equity", "special"],
+    // Mobile More: opens the secondary modules the bottom-nav primary
+    // tabs (Profil/Cashflow/Épargne/Pension/Modèle) do not surface.
+    // Reconciled audit P1 (2026-04-30): without this alias, the More
+    // button opened an empty sheet because no section uses secVis("more").
+    more: ["more", "conj", "fisc", "immo", "debt", "biz", "ins", "alt"]
   };
   var secVis = function(s) {
     var aliases = _moduleAliases[openSec] || [openSec];
@@ -9664,7 +9670,22 @@ function App() {
       if (Array.isArray(p3.props)) setProps(p3.props);
       if (Array.isArray(p3.debts)) setDebts(p3.debts);
       if (Array.isArray(p3.goals)) setGoals(p3.goals);
-      if (Array.isArray(p3.rsuGrants)) setRsuGrants(p3.rsuGrants);
+      // RSU field-name harmonization — reconciled audit P1 (2026-04-30).
+      // planner_longform.html (v4) writes {shares, price, vestYrs, growth};
+      // planner_v3 reads {totalShares, currentPrice, vestingYears, expectedGrowth}.
+      // Translate at the handoff so v4 edits flow through; legacy names
+      // (already in v3 form) pass through unchanged.
+      if (Array.isArray(p3.rsuGrants)) {
+        setRsuGrants(p3.rsuGrants.map(function (g) {
+          if (!g || typeof g !== "object") return g;
+          return Object.assign({}, g, {
+            totalShares: (g.totalShares != null ? g.totalShares : (g.shares != null ? g.shares : 0)),
+            currentPrice: (g.currentPrice != null ? g.currentPrice : (g.price != null ? g.price : 0)),
+            vestingYears: (g.vestingYears != null ? g.vestingYears : (g.vestYrs != null ? g.vestYrs : 4)),
+            expectedGrowth: (g.expectedGrowth != null ? g.expectedGrowth : (g.growth != null ? g.growth : 0.05))
+          });
+        }));
+      }
       if (p3.globalAlloc && typeof p3.globalAlloc === "object") setGlobalAlloc(p3.globalAlloc);
       if (p3.multiAsset != null) setMultiAsset(!!p3.multiAsset);
       if (p3.glide != null) setGlide(!!p3.glide);
@@ -9908,12 +9929,18 @@ function App() {
         // Longform user clicked "✓ Fermer et simuler". Unpack profile,
         // close the drawer, THEN trigger the MC sim automatically so the
         // button label ("Fermer et simuler") actually honors what it says.
+        // Reconciled audit P1 (2026-04-30): _applyProfileFromV4 only fires
+        // setState calls; window._mcLatestParams is rebuilt on the next render.
+        // Mark dirty so the render-body guard (line ~10462) does not overwrite
+        // params with a stale baseline, and give React a longer window to
+        // flush state before the simulate button click reads from it.
         if (ev.data.profile) _applyProfileFromV4(ev.data.profile);
+        window._mcProfileDirty = true;
         setDrawerOpen(false);
         setTimeout(function () {
           var sb = document.querySelector("[data-sim-btn]");
           if (sb) sb.click();
-        }, 150);
+        }, 500);
       }
     };
     window.addEventListener("message", onMsg);
@@ -10579,7 +10606,20 @@ var _collectExportData = function() {
       lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium,
       disabProb: disabProb, disabMo: disabMo,
       cPenType: cPenType, cPenM: cPenM, cLiraBal: cLiraBal,
-      bizOn: bizOn,
+      // CCPC fields — reconciled audit P1 (2026-04-30): forwarding
+      // only bizOn caused report sections to find empty bizRevenue /
+      // bizRetainedEarnings / bizSaleAge etc., zeroing out corporate
+      // analysis even when MC ran the corporate branch.
+      bizOn: bizOn, bizType: bizType, bizRevenue: bizRevenue,
+      bizVolatility: bizVolatility, bizGrowth: bizGrowth,
+      bizExpenses: bizExpenses, bizRemun: bizRemun,
+      bizSalaryPct: bizSalaryPct, bizRetainedEarnings: bizRetainedEarnings,
+      bizInvAlloc: bizInvAlloc, bizExtractMode: bizExtractMode,
+      bizExtractYrs: bizExtractYrs, bizOasOptim: bizOasOptim,
+      bizSaleAge: bizSaleAge, bizSalePrice: bizSalePrice,
+      bizSaleACB: bizSaleACB, bizLCGE: bizLCGE,
+      bizDebtBal: bizDebtBal, bizDebtRate: bizDebtRate,
+      bizDebtAmort: bizDebtAmort,
       props: props, debts: debts, strs: stressResults,
       goals: goals, family: family, rsuGrants: rsuGrants,
       samResults: samResults,
@@ -11709,7 +11749,7 @@ var reportHTML = useMemo(function() {
 
   // === Save/Load JSON helpers ===
   var _saveToFile = function() {
-    var state = { _v: "11.11", mode: mode, age: age, sex: sex, prov: prov, retAge: retAge, deathAge: deathAge, sal: sal, retSpM: retSpM, rrsp: rrsp, tfsa: tfsa, nr: nr, rrspC: rrspC, tfsaC: tfsaC, nrC: nrC, liraBal: liraBal, allocR: allocR, allocT: allocT, allocN: allocN, merR: merR, merT: merT, merN: merN, wStrat: wStrat, melt: melt, meltTgt: meltTgt, split: split, splitP: splitP, qppAge: qppAge, avgE: avgE, qppYrs: qppYrs, qppShare: qppShare, oasAge: oasAge, penType: penType, penM: penM, nSim: nSim, glide: glide, cOn: cOn, cAge: cAge, cSex: cSex, cRetAge: cRetAge, cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR, cLiraBal: cLiraBal, cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge, cRetSpM: cRetSpM, cSpouseName: cSpouseName, cName: cName, firstName: firstName, lastName: lastName, stochMort: stochMort, props: props, peBal: peBal, pmBal: pmBal, respOn: respOn, respContrib: respContrib, respYrsLeft: respYrsLeft, respReturnAge: respReturnAge, respKids: respKids, respAlready: respAlready, debts: debts, bndRetS: bndRetS, bndVolS: bndVolS, eqRetS: eqRetS, eqVolS: eqVolS, cDCBal: cDCBal2, cDeath: cDeath, cNRC: cNRC, cPenM: cPenM, cPenType: cPenType, cRRSPC: cRRSPC, cTFSAC: cTFSAC, cgIncHi: cgIncHi, cgIncLo: cgIncLo, cgThresh: cgThresh, costBase: costBase, contGr: contGr, inf: inf, infHealth: infHealth, infHousing: infHousing, cvAmount: cvAmount, cvAnalysis: cvAnalysis, cvTransferMax: cvTransferMax, dbSurvivorPct: dbSurvivorPct, dc2Bal: dc2Bal, dcBal: dcBal, dcY: dcY, ev1Age: ev1Age, ev1Amt: ev1Amt, ev1Name: ev1Name, ev2Age: ev2Age, ev2Amt: ev2Amt, ev2Name: ev2Name, inc1Age: inc1Age, inc1Amt: inc1Amt, inc1Name: inc1Name, inc2Age: inc2Age, inc2Amt: inc2Amt, inc2Name: inc2Name, inc3Age: inc3Age, inc3Amt: inc3Amt, inc3Name: inc3Name, fatT: fatT, strs: strs, strs2: strs2, stWhen: stWhen, stAge: stAge, stWhen2: stWhen2, stAge2: stAge2, stochInf: stochInf, goP: goP, slP: slP, noP: noP, healthMul: healthMul, healthAge: healthAge, smileSlAge: smileSlAge, smileNoAge: smileNoAge, ptM: ptM, ptYrs: ptYrs, glideSpd: glideSpd, ftqAmt: ftqAmt, ftqOn: ftqOn, fxVol: fxVol, peExit: peExit, peExitStrat: peExitStrat, peExitYrs: peExitYrs, peFee: peFee, peLock: peLock, peV: peV, peY: peY, pmExit: pmExit, pmExitStrat: pmExitStrat, pmExitYrs: pmExitYrs, pmV: pmV, pmY: pmY, pen2EE: pen2EE, pen2ER: pen2ER, pen2Idx: pen2Idx, pen2M: pen2M, pen2Type: pen2Type, penEE: penEE, penER: penER, penIdx: penIdx, penMER: penMER, penAlim: penAlim, nrTaxDrag: nrTaxDrag, rrifTax: rrifTax, rrspRoom: rrspRoom, reCostInf: reCostInf, reRntInf: reRntInf, lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal: cSal, cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cEv1Age: cEv1Age, cEv1Amt: cEv1Amt, cEv1Name: cEv1Name, cEv2Age: cEv2Age, cEv2Amt: cEv2Amt, cEv2Name: cEv2Name, cInc1Age: cInc1Age, cInc1Amt: cInc1Amt, cInc1Name: cInc1Name, insViePrime: insViePrime, insVieCov: insVieCov, insVieType: insVieType, insVieDur: insVieDur, insInvPrime: insInvPrime, insInvCov: insInvCov, insColPrime: insColPrime, insMGPrime: insMGPrime, insMGCov: insMGCov, budgetMode: budgetMode, revSec: revSec, bLogement: bLogement, bTransport: bTransport, bAlim: bAlim, bFamille: bFamille, bTelecom: bTelecom, bLoisirs: bLoisirs, bAssur: bAssur, bAutre: bAutre, dark: dark, lang: lang, mobSbOpen: mobSbOpen, fhsaBal: fhsaBal, cFhsaBal: cFhsaBal, fhsaContrib: fhsaContrib, gkOn: gkOn, gkCeil: gkCeil, gkFloor: gkFloor, gkCut: gkCut, gkRaise: gkRaise, gkMaxCut: gkMaxCut, bizOn: bizOn, bizType: bizType, bizRevenue: bizRevenue, bizVolatility: bizVolatility, bizGrowth: bizGrowth, bizExpenses: bizExpenses, bizRemun: bizRemun, bizSalaryPct: bizSalaryPct, bizRetainedEarnings: bizRetainedEarnings, bizInvAlloc: bizInvAlloc, bizExtractMode: bizExtractMode, bizExtractYrs: bizExtractYrs, bizOasOptim: bizOasOptim, bizSaleAge: bizSaleAge, bizSalePrice: bizSalePrice, bizSaleACB: bizSaleACB, bizLCGE: bizLCGE, bizDebtBal: bizDebtBal, bizDebtRate: bizDebtRate, bizDebtAmort: bizDebtAmort, ippOn: ippOn, ippBal: ippBal2, goals: goals, family: family, rsuGrants: rsuGrants, stressLevel: stressLevel, finLiteracy: finLiteracy, detailPref: detailPref, multiAsset: multiAsset, globalAlloc: globalAlloc, allocOverride: allocOverride };
+    var state = { _v: "11.11", mode: mode, age: age, sex: sex, prov: prov, retAge: retAge, deathAge: deathAge, sal: sal, retSpM: retSpM, rrsp: rrsp, tfsa: tfsa, nr: nr, rrspC: rrspC, tfsaC: tfsaC, nrC: nrC, liraBal: liraBal, allocR: allocR, allocT: allocT, allocN: allocN, merR: merR, merT: merT, merN: merN, wStrat: wStrat, melt: melt, meltTgt: meltTgt, split: split, splitP: splitP, qppAge: qppAge, avgE: avgE, qppYrs: qppYrs, qppShare: qppShare, oasAge: oasAge, penType: penType, penM: penM, nSim: nSim, glide: glide, cOn: cOn, cAge: cAge, cSex: cSex, cRetAge: cRetAge, cRRSP: cRRSP, cTFSA: cTFSA, cNR: cNR, cLiraBal: cLiraBal, cQppAge: cQppAge, cAvgE: cAvgE, cQppYrs: cQppYrs, cOasAge: cOasAge, cRetSpM: cRetSpM, cSpouseName: cSpouseName, cName: cName, firstName: firstName, lastName: lastName, stochMort: stochMort, props: props, peBal: peBal, pmBal: pmBal, respOn: respOn, respContrib: respContrib, respYrsLeft: respYrsLeft, respReturnAge: respReturnAge, respKids: respKids, respAlready: respAlready, debts: debts, bndRetS: bndRetS, bndVolS: bndVolS, eqRetS: eqRetS, eqVolS: eqVolS, cDCBal: cDCBal2, cDeath: cDeath, cNRC: cNRC, cPenM: cPenM, cPenType: cPenType, cRRSPC: cRRSPC, cTFSAC: cTFSAC, cgIncHi: cgIncHi, cgIncLo: cgIncLo, cgThresh: cgThresh, costBase: costBase, contGr: contGr, inf: inf, infHealth: infHealth, infHousing: infHousing, cvAmount: cvAmount, cvAnalysis: cvAnalysis, cvTransferMax: cvTransferMax, dbSurvivorPct: dbSurvivorPct, dc2Bal: dc2Bal, dcBal: dcBal, dcY: dcY, ev1Age: ev1Age, ev1Amt: ev1Amt, ev1Name: ev1Name, ev2Age: ev2Age, ev2Amt: ev2Amt, ev2Name: ev2Name, inc1Age: inc1Age, inc1Amt: inc1Amt, inc1Name: inc1Name, inc2Age: inc2Age, inc2Amt: inc2Amt, inc2Name: inc2Name, inc3Age: inc3Age, inc3Amt: inc3Amt, inc3Name: inc3Name, fatT: fatT, strs: strs, strs2: strs2, stWhen: stWhen, stAge: stAge, stWhen2: stWhen2, stAge2: stAge2, stochInf: stochInf, goP: goP, slP: slP, noP: noP, healthMul: healthMul, healthAge: healthAge, smileSlAge: smileSlAge, smileNoAge: smileNoAge, ptM: ptM, ptYrs: ptYrs, glideSpd: glideSpd, ftqAmt: ftqAmt, ftqOn: ftqOn, fxVol: fxVol, peExit: peExit, peExitStrat: peExitStrat, peExitYrs: peExitYrs, peFee: peFee, peLock: peLock, peV: peV, peY: peY, pmExit: pmExit, pmExitStrat: pmExitStrat, pmExitYrs: pmExitYrs, pmV: pmV, pmY: pmY, pen2EE: pen2EE, pen2ER: pen2ER, pen2Idx: pen2Idx, pen2M: pen2M, pen2Type: pen2Type, penEE: penEE, penER: penER, penIdx: penIdx, penMER: penMER, penAlim: penAlim, nrTaxDrag: nrTaxDrag, rrifTax: rrifTax, rrspRoom: rrspRoom, reCostInf: reCostInf, reRntInf: reRntInf, lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal: cSal, cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cEv1Age: cEv1Age, cEv1Amt: cEv1Amt, cEv1Name: cEv1Name, cEv2Age: cEv2Age, cEv2Amt: cEv2Amt, cEv2Name: cEv2Name, cInc1Age: cInc1Age, cInc1Amt: cInc1Amt, cInc1Name: cInc1Name, insViePrime: insViePrime, insVieCov: insVieCov, insVieType: insVieType, insVieDur: insVieDur, insInvPrime: insInvPrime, insInvCov: insInvCov, insColPrime: insColPrime, insMGPrime: insMGPrime, insMGCov: insMGCov, budgetMode: budgetMode, revSec: revSec, bLogement: bLogement, bTransport: bTransport, bAlim: bAlim, bFamille: bFamille, bTelecom: bTelecom, bLoisirs: bLoisirs, bAssur: bAssur, bAutre: bAutre, dark: dark, lang: lang, mobSbOpen: mobSbOpen, fhsaBal: fhsaBal, cFhsaBal: cFhsaBal, gkOn: gkOn, gkCeil: gkCeil, gkFloor: gkFloor, gkCut: gkCut, gkRaise: gkRaise, gkMaxCut: gkMaxCut, bizOn: bizOn, bizType: bizType, bizRevenue: bizRevenue, bizVolatility: bizVolatility, bizGrowth: bizGrowth, bizExpenses: bizExpenses, bizRemun: bizRemun, bizSalaryPct: bizSalaryPct, bizRetainedEarnings: bizRetainedEarnings, bizInvAlloc: bizInvAlloc, bizExtractMode: bizExtractMode, bizExtractYrs: bizExtractYrs, bizOasOptim: bizOasOptim, bizSaleAge: bizSaleAge, bizSalePrice: bizSalePrice, bizSaleACB: bizSaleACB, bizLCGE: bizLCGE, bizDebtBal: bizDebtBal, bizDebtRate: bizDebtRate, bizDebtAmort: bizDebtAmort, ippOn: ippOn, ippBal: ippBal2, goals: goals, family: family, rsuGrants: rsuGrants, stressLevel: stressLevel, finLiteracy: finLiteracy, detailPref: detailPref, multiAsset: multiAsset, globalAlloc: globalAlloc, allocOverride: allocOverride };
     var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     var a = document.createElement("a"); a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
     a.download = (cName || "plan") + "-" + new Date().toISOString().slice(0,10) + ".json";
@@ -14402,7 +14442,7 @@ React.createElement("div", { className: "bf-bottom-nav" },
     ["ep", "\ud83d\udcc8", lang==="fr"?"\u00c9pargne":"Savings"],
     ["gov", "\ud83c\udfdb\ufe0f", lang==="fr"?"Pension":"Pension"],
     ["model", "\u2699\ufe0f", lang==="fr"?"Mod\u00e8le":"Model"],
-    ["modules", "\u2795", lang==="fr"?"Plus":"More"]
+    ["more", "\u2795", lang==="fr"?"Plus":"More"]
   ].map(function(item) {
     return React.createElement("button", {
       key: item[0],
@@ -14632,7 +14672,8 @@ React.createElement("div", { style: sty.head },
               if (!_vs.ok) {
                 console.warn("[v3 schema] errors on import:", _vs.errors);
                 alert((lang === "fr" ? "Erreurs de schéma détectées — voir la console.\n• " : "Schema errors detected — see console.\n• ") + _vs.errors.join("\n• "));
-              } else if ((_vs.warnings || []).length > 0) {
+                return; // reconciled audit P1 (2026-04-30): block import on schema failure
+                            } else if ((_vs.warnings || []).length > 0) {
                 console.info("[v3 schema] warnings on import (" + _schemaTag + "):", _vs.warnings);
               }
             }
