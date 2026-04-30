@@ -292,6 +292,46 @@ body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-mode-buttons button[da
 body[data-bf-system="editorial"][data-bf-mode="interactive"] .bfe-pdf-only { display: none; }
 body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-interactive-only { display: none; }
 
+/*
+  PDF mode = visual preview of what the print output looks like
+  (Plan v2.2 / Phase 4e, 2026-04-29). Applies the same flattening as
+  @media print but on screen, so the user can preview before pressing
+  Cmd/Ctrl+P. Mirrors the @media print rule block below.
+*/
+body[data-bf-system="editorial"][data-bf-mode="pdf"] {
+  background: #fff !important;
+}
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-rail {
+  display: none !important;
+}
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-shell--overview,
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-shell--guide {
+  display: block !important;
+  max-width: 880px !important;
+  margin: 0 auto !important;
+  padding: 32px 24px !important;
+}
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-hero,
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-cover {
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 24px 0 32px !important;
+}
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-chapter,
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-section,
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bfe-note {
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 18px 0 !important;
+}
+body[data-bf-system="editorial"][data-bf-mode="pdf"] .bf-inline-toc[open] > div {
+  display: block !important;
+}
+
 /* ── Inline TOC (collapsed details, mobile + print fallback) ───────────── */
 /*
   Used by the AI report renderer (Phase 4c) and forthcoming guide ports

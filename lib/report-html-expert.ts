@@ -327,6 +327,22 @@ function renderExpertReport(
       + '</a>';
   });
   h += '</nav>'
+    /*
+      Plan v2.2 / Phase 4d: Interactive / PDF mode switch.
+      Same content, two presentations. Interactive mode shows the rail,
+      mode-switch UI, feedback stars, referral block. PDF mode previews
+      what print would look like — hides interactive-only chrome and
+      flattens the chapter-sheet shadows. Persisted to localStorage
+      under bf_report_view_mode.
+    */
+    + '<div class="bfe-mode-switch bfe-interactive-only">'
+    + '<div class="bfe-kicker">' + t("Présentation", "Presentation") + '</div>'
+    + '<div class="bfe-mode-buttons">'
+    + '<button type="button" data-bf-mode-set="interactive" aria-pressed="true">' + t("Interactive", "Interactive") + '</button>'
+    + '<button type="button" data-bf-mode-set="pdf" aria-pressed="false">' + t("Aperçu PDF", "PDF preview") + '</button>'
+    + '</div>'
+    + '<div style="font:500 11px/1.4 var(--font-inter);color:var(--bfe-muted);padding-left:2px">' + t("Même contenu, deux présentations.", "Same content, two presentations.") + '</div>'
+    + '</div>'
     + '</aside>';
 
   h += '<main style="min-width:0">';
@@ -911,17 +927,17 @@ function renderExpertReport(
   h += '</div>';
 
   // ── Print button ────────────────────────────────────────────────
-  h += '<div style="margin-top:16px" class="no-print">'
+  h += '<div style="margin-top:16px" class="no-print bfe-interactive-only">'
     + '<div style="display:flex;align-items:center;gap:12px;padding:16px;border-radius:10px;border:1px solid #d4cec4;background:#ffffff;cursor:pointer" onclick="window.print()">'
     + '<span style="font-size:18px;color:#1a2744">&#128424;</span>'
     + '<div><div style="font-size:13px;font-weight:600;color:#1a2744">' + t("Imprimer ou sauvegarder en PDF", "Print or save as PDF") + '</div>'
     + '<div style="font-size:11px;color:#666">' + t("Conservez une copie de votre bilan", "Keep a copy of your assessment") + '</div></div></div></div>';
 
   // ═══ FEEDBACK STARS (injected by outer function if feedbackToken provided) ═══
-  h += '<!-- FEEDBACK_STARS -->';
+  h += '<div class="bfe-interactive-only"><!-- FEEDBACK_STARS --></div>';
 
-  // ═══ REFERRAL ═══
-  h += '<div style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
+  // ═══ REFERRAL (interactive-only — share link doesn't belong in PDF) ═══
+  h += '<div class="bfe-interactive-only" style="text-align:center;margin:16px 0;padding:12px;border:1px solid #e8e4db;border-radius:8px;font-size:12px;color:#999;line-height:1.8">';
   h += t("Partagez BuildFi avec un proche \u2014 15\u00a0% de rabais appliqu\u00e9 automatiquement via votre lien.", "Share BuildFi with someone you know \u2014 15% off applied automatically through your link.");
   h += ' <a href="https://www.buildfi.ca" style="color:var(--bf-gold);text-decoration:none;font-weight:600">buildfi.ca</a>';
   h += '</div>';
@@ -1004,7 +1020,7 @@ export function renderReportHTMLExpert(
     + '@media print{.bfe-rail{display:none !important}.bf-inline-toc{break-inside:avoid}.bf-inline-toc[open]>summary{margin-bottom:8px}}'
     + '</style>'
     + '</head>'
-    + '<body data-bf-system="editorial">' + reportBody
+    + '<body data-bf-system="editorial" data-bf-mode="interactive">' + reportBody
     /*
       Plan v2.2 / Phase 4c: rail TOC scroll-spy.
       Vanilla JS (no framework). Highlights the rail link for the section
@@ -1014,6 +1030,15 @@ export function renderReportHTMLExpert(
       smooth-scroll animation.
     */
     + '<script>(function(){var rail=document.querySelector(".bfe-rail");if(!rail)return;var links=Array.prototype.slice.call(rail.querySelectorAll(\'a[href^="#"]\'));var records=[];for(var i=0;i<links.length;i++){var a=links[i];var id=a.getAttribute("href").slice(1);var t=document.getElementById(id);if(t)records.push({id:id,target:t,link:a})}if(!records.length)return;var current="";var ticking=false;function activate(id){for(var j=0;j<records.length;j++){records[j].link.classList.toggle("is-active",records[j].id===id)}}function compute(){var line=window.innerHeight*0.28;var chosen=records[0];for(var k=0;k<records.length;k++){var rect=records[k].target.getBoundingClientRect();if(rect.top<=line)chosen=records[k]}return chosen.id}function sync(){if(ticking)return;ticking=true;requestAnimationFrame(function(){ticking=false;var next=compute();if(next===current)return;current=next;activate(next);try{history.replaceState(null,"","#"+next)}catch(e){}})}function onClick(e){var href=this.getAttribute("href");if(!href||href.charAt(0)!=="#")return;current=href.slice(1);activate(current)}for(var m=0;m<records.length;m++){records[m].link.addEventListener("click",onClick)}activate(records[0].id);sync();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync)})();</script>'
+    /*
+      Plan v2.2 / Phase 4d: Interactive / PDF mode switch.
+      Restores last mode from localStorage. Toggle buttons swap
+      body[data-bf-mode] between "interactive" and "pdf"; editorial.css
+      gates .bfe-interactive-only / .bfe-pdf-only on that attribute, so
+      the user can preview what print would look like without leaving
+      the browser.
+    */
+    + '<script>(function(){var KEY="bf_report_view_mode";var body=document.body;var btns=document.querySelectorAll(".bfe-mode-buttons button[data-bf-mode-set]");if(!btns.length)return;function apply(mode){var m=mode==="pdf"?"pdf":"interactive";body.setAttribute("data-bf-mode",m);for(var i=0;i<btns.length;i++){var b=btns[i];var on=b.getAttribute("data-bf-mode-set")===m;b.setAttribute("aria-pressed",on?"true":"false")}try{localStorage.setItem(KEY,m)}catch(e){}}for(var i=0;i<btns.length;i++){btns[i].addEventListener("click",function(){apply(this.getAttribute("data-bf-mode-set"))})}var saved="interactive";try{saved=localStorage.getItem(KEY)||"interactive"}catch(e){}apply(saved)})();</script>'
     + '</body></html>';
 
   function t(f: string, e: string) { return fr ? f : e; }
