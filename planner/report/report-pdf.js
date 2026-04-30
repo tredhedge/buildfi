@@ -1774,7 +1774,44 @@
     var h = secPage();
     h += '<h3 class="sec" id="sec-assessment" style="border-bottom-color:' + sC + '">' +
       '<span class="sec-n" style="background:' + sC + '">\u2606</span>' +
-      (fr ? 'Votre plan en 30 secondes' : 'Your plan in 30 seconds') + '</h3>';
+      (fr ? 'Votre plan, en d\u00e9tail' : 'Your plan, in detail') + '</h3>';
+
+    // 2026-04-29: phase-specific opening narrative \u2014 moved here from
+    // sec-diagnostic. Chapter 1 establishes the lifecycle frame before
+    // the inputs/hypoth\u00e8ses recap. sec-diagnostic now opens directly on
+    // strengths.
+    var _yrsToRet_a = (p.retAge || 65) - (p.age || 0);
+    var _phase_a = (d.R && d.R.phase) || 'accum';
+    var _nm_a = d.fn ? '<strong>' + F.esc(d.fn) + '</strong>' : '';
+    var _sn_a = d.sfn ? '<strong>' + F.esc(d.sfn) + '</strong>' : '';
+    var _coupleLabel_a = '';
+    if (d.R && d.R.couple) {
+      _coupleLabel_a = _sn_a ? (fr ? ' et ' + _sn_a : ' and ' + _sn_a)
+                             : (fr ? ' et votre conjoint(e)' : ' and your spouse');
+    }
+    var _nmFull_a = _nm_a ? (_nm_a + _coupleLabel_a) : '';
+    var _nmPfx_a = _nmFull_a ? (_nmFull_a + ', ') : '';
+    var _savingsLabel_a = (d.R && d.R.couple)
+      ? (fr ? '\u00e9pargne du m\u00e9nage' : 'household savings')
+      : (fr ? '\u00e9pargne actuelle' : 'current savings');
+    var _coupleNote_a = (d.R && d.R.couple)
+      ? (fr
+          ? ' Tous les chiffres ci-dessous refl\u00e8tent le m\u00e9nage combin\u00e9 (vous + ' + (d.sfn ? F.esc(d.sfn) : 'conjoint(e)') + (p.cAge ? ', ' + p.cAge + ' ans' : '') + (p.cRetAge ? ', retraite \u00e0 ' + p.cRetAge : '') + ').'
+          : ' All figures below reflect the combined household (you + ' + (d.sfn ? F.esc(d.sfn) : 'spouse') + (p.cAge ? ', age ' + p.cAge : '') + (p.cRetAge ? ', retiring at ' + p.cRetAge : '') + ').')
+      : '';
+    if (_phase_a === 'decum') {
+      h += narr(fr
+        ? _nmPfx_a + 'vous \u00eates maintenant \u00e0 la retraite. La question centrale n\'est plus combien \u00e9pargner, mais comment d\u00e9caisser : dans quel ordre, \u00e0 quel rythme, et avec quelle marge si les march\u00e9s d\u00e9\u00e7oivent. L\'horizon \u00e9valu\u00e9 ici va jusqu\'\u00e0 <strong>' + (p.deathAge || 90) + ' ans</strong>.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong>' + (p.deathAge || 90) + '</strong>.' + _coupleNote_a);
+    } else if (_phase_a === 'transition') {
+      h += narr(fr
+        ? _nmPfx_a + 'la retraite approche \u2014 dans <strong>' + _yrsToRet_a + ' ans</strong>. Les d\u00e9cisions des prochaines ann\u00e9es \u2014 date exacte de retraite, d\u00e9but des prestations, ajustements d\'\u00e9pargne \u2014 p\u00e8sent davantage que toutes celles qui suivront. Votre ' + _savingsLabel_a + ' de <strong>' + f$(d.totalBal) + '</strong> est le point de d\u00e9part.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', retirement' : 'Retirement') + ' is approaching \u2014 in <strong>' + _yrsToRet_a + ' years</strong>. The decisions of the next few years \u2014 exact retirement date, benefit start ages, savings adjustments \u2014 matter more than every decision that comes after. Your ' + _savingsLabel_a + ' of <strong>' + f$(d.totalBal) + '</strong> is the starting point.' + _coupleNote_a);
+    } else {
+      h += narr(fr
+        ? _nmPfx_a + 'vous \u00eates en accumulation, avec <strong>' + _yrsToRet_a + ' ans</strong> avant la retraite pr\u00e9vue \u00e0 ' + p.retAge + ' ans. La marge de man\u0153uvre est encore large : votre ' + _savingsLabel_a + ' de <strong>' + f$(d.totalBal) + '</strong> sera multipli\u00e9e par les cotisations \u00e0 venir et la dur\u00e9e de placement. Les ajustements faits maintenant ont l\'effet le plus important.' + _coupleNote_a
+        : (_nmFull_a ? _nmFull_a + ', you' : 'You') + ' are in accumulation, with <strong>' + _yrsToRet_a + ' years</strong> until planned retirement at age ' + p.retAge + '. There is still wide room to act: your ' + _savingsLabel_a + ' of <strong>' + f$(d.totalBal) + '</strong> will be multiplied by future contributions and time in the markets. Adjustments made now carry the largest leverage.' + _coupleNote_a);
+    }
 
     // ── Stated inputs / suitability frame ───────────────────────────
     // Re-anchors the report on what the client told us, so they can
@@ -1812,19 +1849,18 @@
       h += '</div>';
     }
 
-    // Grade + key metrics row
-    h += '<div style="display:flex;align-items:center;gap:20px;margin:14px 0">';
-    h += '<div style="text-align:center;flex-shrink:0">';
-    h += '<div class="grade-ring" style="border:6px solid ' + sC + ';color:' + sC + '"><span class="mono">' + _fmtSucc(d.succVal) + '</span></div>';
-    h += '<div><span class="grade-pill" style="background:' + sC + '">' + g.letter + '</span></div>';
-    h += '</div>';
+    // 2026-04-29: removed the grade-ring + 4-up KPI block \u2014 those numbers
+    // already live on the cover hero. The AI overall assessment below
+    // opens the chapter without competing with its own metric badge.
     var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
-    h += '<div class="g4" style="flex:1">';
+    if (false) {
+    h += '<div style="display:none">';
     h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue);
     h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Revenu garanti / dépenses' : 'Guaranteed income / spending') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
     h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green);
     h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', (fr ? 'H\u00e9ritage net' : 'Net estate') + _scopeAss, C.gold);
     h += '</div></div>';
+    } // end if(false) — duplicate KPI block retired 2026-04-29
 
     // Overall AI assessment — synthesizes everything
     if (d.ai.overall_assessment) {
