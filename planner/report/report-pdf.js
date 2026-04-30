@@ -894,10 +894,12 @@
     '</div>';
     h += '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:22px;font-weight:600;line-height:1.35;color:#faf8f4;margin-bottom:8px">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
     h += '<div style="font-family:Inter,sans-serif;font-size:13px;color:#bccbe0;line-height:1.6;margin-bottom:18px">' + verdictText + '</div>';
-    // Hero score gauge — cover-page anchor visual. Renders BEFORE the
-    // 4-up KPI grid so the reader sees the composite at-a-glance score
-    // first, then drills into the components.
-    h += _renderScoreGauge(d);
+    // 2026-04-29: removed _renderScoreGauge(d) call. The composite
+    // structural score conflated context-dependent components (savings
+    // rate is meaningless in decum, diversification penalizes the
+    // tax-efficient single-CELI strategy) into a single number that
+    // contradicted the success rate. Replaced below the KPI grid by
+    // observational Profil signals + a Watch line.
     // Headline metrics (4-up)
     function _execKPI(label, value, color, sub) {
       return '<div style="background:rgba(250,248,244,0.06);border:1px solid rgba(196,154,26,0.25);border-radius:6px;padding:14px 12px;text-align:center">' +
