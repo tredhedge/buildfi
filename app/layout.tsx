@@ -1,16 +1,39 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import PostHogProvider from "./components/PostHogProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/*
+  BuildFi font stack (2026-04-28 design-system unification):
+  - DM Sans      → Product surfaces (marketing, tools, planner, dashboard)
+  - Inter        → Editorial surfaces (guides, AI reports)
+  - Playfair     → Editorial serif headings
+  - JetBrains Mono → numbers everywhere (both systems)
+
+  Each font registers a CSS variable consumed by lib/design/{product,editorial}.css.
+*/
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -66,7 +89,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${dmSans.variable} ${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <PostHogProvider>{children}</PostHogProvider>
       </body>

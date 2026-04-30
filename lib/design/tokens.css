@@ -1,0 +1,40 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   BuildFi Design Tokens — shared layer
+   ═══════════════════════════════════════════════════════════════════════
+   Cross-cutting tokens used by both Product and Editorial systems.
+   - Gold (single canonical accent)
+   - Mono (single typographic family for numbers)
+   - Radius scale, semantic states
+   Surface-specific palettes live in product.css and editorial.css.
+   Source of truth promoted from design-lab/round-2-8 + round-3-3 (2026-04-28).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Brand accent — single value across the portfolio */
+  --bf-gold: #c4944a;
+  --bf-gold-soft: rgba(196, 148, 74, 0.12);
+  --bf-gold-line: rgba(196, 148, 74, 0.18);
+
+  /* Semantic state colors (shared) */
+  --bf-blue: #5090c8;
+  --bf-green: #69be81;
+  --bf-red: #d87373;
+  --bf-orange: #d88a42;
+
+  /* Radius scale */
+  --bf-radius-lg: 28px;
+  --bf-radius-md: 18px;
+  --bf-radius-sm: 12px;
+  --bf-radius-pill: 999px;
+
+  /* Type families — wired by next/font in app/layout.tsx */
+  --bf-font-sans-product: var(--font-dm-sans), "Segoe UI", Arial, sans-serif;
+  --bf-font-sans-editorial: var(--font-inter), "Segoe UI", Arial, sans-serif;
+  --bf-font-serif-editorial: var(--font-playfair), Georgia, serif;
+  --bf-font-mono: var(--font-jetbrains-mono), "Courier New", monospace;
+
+  /* Eyebrow — shared kicker treatment */
+  --bf-eyebrow-size: 12px;
+  --bf-eyebrow-tracking: 0.20em;
+  --bf-eyebrow-weight: 700;
+}

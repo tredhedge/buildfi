@@ -1,0 +1,328 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   BuildFi Product System
+   ═══════════════════════════════════════════════════════════════════════
+   For: marketing site, pricing, debt tool, decumulation tool, planner,
+        future dashboard / app shell.
+   Voice: tool-first, slate/navy, dense, slightly lab-like.
+   Promoted from design-lab/experiments/round-3-3-tools-approved/tools-approved.css
+   (2026-04-28).
+
+   Consumers:
+   - Import via globals.css for utility classes (.tool-shell, .mini-card, etc.)
+   - Import productTokens from product.tokens.ts for inline-style consumers
+     that build palettes via JS (debt/decum/page.tsx).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Product dark palette */
+  --bfp-bg-dark: #0f1520;
+  --bfp-bg-dark-2: #151c28;
+  --bfp-surface-dark: #181f2d;
+  --bfp-surface-dark-2: #20293a;
+  --bfp-surface-dark-3: #283246;
+  --bfp-line-dark: #364259;
+  --bfp-text-dark: #edf2fb;
+  --bfp-muted-dark: #98a6c2;
+
+  /* Product light palette */
+  --bfp-bg-light: #f5f6fa;
+  --bfp-bg-light-2: #edf1f8;
+  --bfp-surface-light: #ffffff;
+  --bfp-surface-light-2: #f3f6fb;
+  --bfp-surface-light-3: #e9eef6;
+  --bfp-line-light: #d7deeb;
+  --bfp-text-light: #182236;
+  --bfp-muted-light: #5f6b87;
+
+  /* Shadows */
+  --bfp-shadow-dark: 0 12px 28px rgba(0, 0, 0, 0.22);
+  --bfp-shadow-light: 0 12px 26px rgba(20, 30, 50, 0.08);
+}
+
+body[data-bf-system="product"] {
+  margin: 0;
+  font-family: var(--bf-font-sans-product);
+}
+
+body[data-bf-system="product"][data-theme="dark"] {
+  background:
+    radial-gradient(circle at top right, rgba(196, 148, 74, 0.08), transparent 20%),
+    linear-gradient(180deg, var(--bfp-bg-dark) 0%, var(--bfp-bg-dark-2) 100%);
+  color: var(--bfp-text-dark);
+}
+
+body[data-bf-system="product"][data-theme="light"] {
+  background:
+    radial-gradient(circle at top right, rgba(196, 148, 74, 0.10), transparent 22%),
+    linear-gradient(180deg, var(--bfp-bg-light-2) 0%, var(--bfp-bg-light) 100%);
+  color: var(--bfp-text-light);
+}
+
+/* ── Shells ────────────────────────────────────────────────────────────── */
+.bfp-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.bfp-shell--two-col {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+}
+
+/* ── Panels ────────────────────────────────────────────────────────────── */
+.bfp-panel,
+.bfp-rail,
+.bfp-hero,
+.bfp-header,
+.bfp-summary,
+.bfp-layout,
+.bfp-sidebar {
+  border-radius: var(--bf-radius-lg);
+}
+
+body[data-bf-system="product"][data-theme="dark"] .bfp-panel,
+body[data-bf-system="product"][data-theme="dark"] .bfp-rail,
+body[data-bf-system="product"][data-theme="dark"] .bfp-hero,
+body[data-bf-system="product"][data-theme="dark"] .bfp-header,
+body[data-bf-system="product"][data-theme="dark"] .bfp-summary,
+body[data-bf-system="product"][data-theme="dark"] .bfp-layout,
+body[data-bf-system="product"][data-theme="dark"] .bfp-sidebar {
+  background: rgba(24, 31, 44, 0.90);
+  border: 1px solid rgba(196, 148, 74, 0.10);
+  box-shadow: var(--bfp-shadow-dark);
+}
+
+body[data-bf-system="product"][data-theme="light"] .bfp-panel,
+body[data-bf-system="product"][data-theme="light"] .bfp-rail,
+body[data-bf-system="product"][data-theme="light"] .bfp-hero,
+body[data-bf-system="product"][data-theme="light"] .bfp-header,
+body[data-bf-system="product"][data-theme="light"] .bfp-summary,
+body[data-bf-system="product"][data-theme="light"] .bfp-layout,
+body[data-bf-system="product"][data-theme="light"] .bfp-sidebar {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(196, 148, 74, 0.12);
+  box-shadow: var(--bfp-shadow-light);
+}
+
+.bfp-rail {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  padding: 24px;
+}
+
+.bfp-hero,
+.bfp-panel,
+.bfp-header,
+.bfp-summary,
+.bfp-layout,
+.bfp-sidebar {
+  padding: 22px;
+}
+
+/* ── Eyebrow / kicker ──────────────────────────────────────────────────── */
+.bfp-kicker {
+  color: var(--bf-gold);
+  text-transform: uppercase;
+  letter-spacing: var(--bf-eyebrow-tracking);
+  font-size: var(--bf-eyebrow-size);
+  font-weight: var(--bf-eyebrow-weight);
+}
+
+/* ── Headings ──────────────────────────────────────────────────────────── */
+.bfp-title-xl,
+.bfp-title-lg,
+.bfp-title {
+  margin: 10px 0 14px;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.bfp-title-xl { font-size: 40px; }
+.bfp-title-lg { font-size: 30px; font-weight: 700; }
+.bfp-title    { font-size: 24px; font-weight: 700; }
+
+/* ── Copy ──────────────────────────────────────────────────────────────── */
+.bfp-copy { line-height: 1.65; }
+
+body[data-bf-system="product"][data-theme="dark"] .bfp-copy,
+body[data-bf-system="product"][data-theme="dark"] .bfp-muted { color: var(--bfp-muted-dark); }
+body[data-bf-system="product"][data-theme="light"] .bfp-copy,
+body[data-bf-system="product"][data-theme="light"] .bfp-muted { color: var(--bfp-muted-light); }
+
+/* ── Nav rails ─────────────────────────────────────────────────────────── */
+.bfp-nav { display: grid; gap: 8px; margin: 20px 0; }
+.bfp-nav a {
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: var(--bf-radius-pill);
+}
+.bfp-nav a.is-active {
+  background: var(--bf-gold-soft);
+  box-shadow: inset 3px 0 0 var(--bf-gold);
+  font-weight: 700;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.bfp-btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+.bfp-btn-row button,
+.bfp-btn-row a {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--bf-radius-pill);
+  border: 1px solid var(--bf-gold-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font: 700 14px var(--bf-font-sans-product);
+  cursor: pointer;
+}
+
+body[data-bf-system="product"][data-theme="dark"] .bfp-btn-row button,
+body[data-bf-system="product"][data-theme="dark"] .bfp-btn-row a {
+  background: #171d2a;
+  color: #fff;
+}
+
+body[data-bf-system="product"][data-theme="light"] .bfp-btn-row button,
+body[data-bf-system="product"][data-theme="light"] .bfp-btn-row a {
+  background: #fff;
+  color: var(--bfp-text-light);
+}
+
+.bfp-btn-row button.is-active,
+.bfp-btn-row a.is-active {
+  background: var(--bf-gold) !important;
+  color: #fff !important;
+}
+
+/* ── Cards / mini-cards ────────────────────────────────────────────────── */
+.bfp-mini-card,
+.bfp-summary-card,
+.bfp-compare-card,
+.bfp-hint-card {
+  padding: 16px;
+  border-radius: var(--bf-radius-md);
+}
+
+body[data-bf-system="product"][data-theme="dark"] .bfp-mini-card,
+body[data-bf-system="product"][data-theme="dark"] .bfp-summary-card,
+body[data-bf-system="product"][data-theme="dark"] .bfp-compare-card,
+body[data-bf-system="product"][data-theme="dark"] .bfp-hint-card {
+  background: rgba(31, 39, 55, 0.92);
+  border: 1px solid rgba(196, 148, 74, 0.08);
+}
+
+body[data-bf-system="product"][data-theme="light"] .bfp-mini-card,
+body[data-bf-system="product"][data-theme="light"] .bfp-summary-card,
+body[data-bf-system="product"][data-theme="light"] .bfp-compare-card,
+body[data-bf-system="product"][data-theme="light"] .bfp-hint-card {
+  background: #f8fbff;
+  border: 1px solid rgba(196, 148, 74, 0.10);
+}
+
+.bfp-summary-card .bfp-value,
+.bfp-compare-card .bfp-value {
+  font: 700 24px/1 var(--bf-font-mono);
+  color: var(--bf-gold);
+  margin-bottom: 8px;
+}
+
+.bfp-summary-card .bfp-label,
+.bfp-compare-card .bfp-label {
+  margin-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* ── Grids ─────────────────────────────────────────────────────────────── */
+.bfp-grid-2,
+.bfp-grid-3,
+.bfp-grid-4 { display: grid; gap: 14px; }
+.bfp-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bfp-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bfp-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+.bfp-control label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--bf-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 700;
+}
+.bfp-control input,
+.bfp-control select {
+  width: 100%;
+  border-radius: var(--bf-radius-sm);
+  padding: 11px 13px;
+  border: 1px solid;
+  font: 600 14px var(--bf-font-sans-product);
+}
+body[data-bf-system="product"][data-theme="dark"] .bfp-control input,
+body[data-bf-system="product"][data-theme="dark"] .bfp-control select {
+  background: #121927; color: #fff; border-color: #34425c;
+}
+body[data-bf-system="product"][data-theme="light"] .bfp-control input,
+body[data-bf-system="product"][data-theme="light"] .bfp-control select {
+  background: #fff; color: var(--bfp-text-light); border-color: #d7deeb;
+}
+
+/* ── Chips ─────────────────────────────────────────────────────────────── */
+.bfp-chip {
+  appearance: none;
+  border-radius: var(--bf-radius-pill);
+  padding: 10px 14px;
+  border: 1px solid rgba(196, 148, 74, 0.16);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: 700 12px var(--bf-font-sans-product);
+}
+body[data-bf-system="product"][data-theme="dark"] .bfp-chip { background: #1a2231; color: #c4d0e6; }
+body[data-bf-system="product"][data-theme="light"] .bfp-chip { background: #fff; color: #46516b; }
+.bfp-chip.is-active {
+  background: var(--bf-gold) !important;
+  color: #fff !important;
+}
+
+/* ── Mono utility ──────────────────────────────────────────────────────── */
+.bfp-mono { font-family: var(--bf-font-mono); }
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+body[data-bf-system="product"] table { width: 100%; border-collapse: collapse; }
+body[data-bf-system="product"] th,
+body[data-bf-system="product"] td {
+  text-align: left;
+  padding: 11px 10px;
+  border-bottom: 1px solid rgba(196, 148, 74, 0.10);
+}
+body[data-bf-system="product"] th {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bf-gold);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  .bfp-shell--two-col,
+  .bfp-grid-2,
+  .bfp-grid-3,
+  .bfp-grid-4 { grid-template-columns: 1fr; }
+  .bfp-rail { position: relative; top: auto; }
+}
+
+@media (max-width: 760px) {
+  .bfp-shell { padding: 16px; }
+  .bfp-title-xl { font-size: 32px; }
+  .bfp-title-lg { font-size: 26px; }
+}
