@@ -12,13 +12,9 @@ import {
   useEditorialRailScrollSpy,
 } from "@/lib/design/editorial-components";
 
-// Palette: shared Editorial system + local `purple` extension for advanced
-// 301-chapter kickers (guide-201-specific). See docs/DESIGN-SYSTEM.md.
-const CL = {
-  ...getEditorialPalette(),
-  purple: "#6b4fa0",
-  purpleBg: "rgba(107,79,160,.08)",
-};
+// Palette: shared Editorial system. Guide 201 follows the gold + ink + cream
+// restraint rule — no purple/red/green/blue accents. See docs/DESIGN-SYSTEM.md.
+const CL = getEditorialPalette();
 
 /**
  * Local Callout — preserves the existing `<Callout color="X">` call sites
@@ -1181,8 +1177,8 @@ function Guide201Inner() {
           </div>
         </Section>
 
-        {/* Bonus 301 banner — calmer cover-style break, purple kicker for stage */}
-        <section className="bfe-cover" style={{ background: "rgba(107,79,160,0.06)", borderColor: "rgba(107,79,160,0.20)" }}>
+        {/* Bonus 301 banner — cover-style break, gold kicker (editorial restraint). */}
+        <section className="bfe-cover">
           <div className="bfe-kicker" style={{ color: CL.gold }}>BONUS · 301</div>
           <h2 className="bfe-title-cover" style={{ fontSize: 44, color: CL.ink }}>{t.bonus301Title}</h2>
           <div style={{ fontSize: 18, color: CL.muted, fontStyle: "italic", fontFamily: 'var(--font-playfair),Georgia,serif', maxWidth: 720 }}>{t.bonus301Sub}</div>
