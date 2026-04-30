@@ -1,6 +1,6 @@
 {
   "profile": "sandwich_gen_en",
-  "generated_at": "2026-04-27T17:53:04.506Z",
+  "generated_at": "2026-04-28T02:40:06.590Z",
   "canonical": {
     "success_rate": 0.4295,
     "p25_wealth_real": 0,
@@ -46,6 +46,18 @@
         "rule": "canonical-quote-p75_wealth_real-verdict",
         "message": "AI slot \"verdict\" quotes dollar value 0 for \"p75_wealth_real\" but canonical is 256136.7. Slot must be regenerated to match canonical.",
         "evidence": "\"…$**, with the typical scenario also at **0$**. That spread reflects how sensitive the plan\"  (canon=256136.7002946958, quoted=0)"
+      }
+    ],
+    "tone-pass": [
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      },
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
       }
     ],
     "overall_assessment": [

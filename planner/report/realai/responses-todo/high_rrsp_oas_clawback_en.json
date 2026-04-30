@@ -1,6 +1,6 @@
 {
   "profile": "high_rrsp_oas_clawback_en",
-  "generated_at": "2026-04-27T17:53:08.586Z",
+  "generated_at": "2026-04-28T02:40:12.313Z",
   "canonical": {
     "success_rate": 0.949,
     "p25_wealth_real": 266979.45035169367,
@@ -24,6 +24,18 @@
   },
   "case_driver": "meltdown_window",
   "slots": {
+    "tone-pass": [
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      },
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      }
+    ],
     "verdict": [
       {
         "rule": "canonical-quote-p25_wealth_real-verdict",

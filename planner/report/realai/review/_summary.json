@@ -113,17 +113,17 @@
     "pre": {
       "blockers": 0,
       "majors": 6,
-      "minors": 1
+      "minors": 2
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 1
+      "minors": 2
     },
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 6
+    "ai_regen_slots": 7
   },
   {
     "profile": "single_parent_qc_fr",
@@ -151,17 +151,17 @@
     "pre": {
       "blockers": 0,
       "majors": 5,
-      "minors": 1
+      "minors": 2
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 1
+      "minors": 2
     },
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 5
+    "ai_regen_slots": 6
   },
   {
     "profile": "late_starter_bc_fr",
@@ -279,17 +279,17 @@
     "pre": {
       "blockers": 0,
       "majors": 11,
-      "minors": 1
+      "minors": 2
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 1
+      "minors": 2
     },
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 8
+    "ai_regen_slots": 9
   },
   {
     "profile": "post_divorce_50_fr",
@@ -353,16 +353,16 @@
     "pre": {
       "blockers": 0,
       "majors": 5,
-      "minors": 1
+      "minors": 2
     },
     "post": {
       "blockers": 0,
       "majors": 0,
-      "minors": 1
+      "minors": 2
     },
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 5
+    "ai_regen_slots": 6
   }
 ]

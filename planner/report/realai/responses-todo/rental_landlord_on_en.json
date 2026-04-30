@@ -1,6 +1,6 @@
 {
   "profile": "rental_landlord_on_en",
-  "generated_at": "2026-04-27T17:52:54.491Z",
+  "generated_at": "2026-04-28T02:39:51.543Z",
   "canonical": {
     "success_rate": 0.9995,
     "p25_wealth_real": 1487242.9340943866,
@@ -24,6 +24,18 @@
   },
   "case_driver": "rental_cashflow",
   "slots": {
+    "tone-pass": [
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      },
+      {
+        "rule": "compliance-prescriptive-tight",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+        "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\""
+      }
+    ],
     "verdict": [
       {
         "rule": "canonical-quote-p25_wealth_real-verdict",

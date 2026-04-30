@@ -23,6 +23,17 @@
       "fix_target": "verdict"
     },
     {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
       "id": "canonical-quote-success_rate-overall_assessment",
       "reviewer": "canonical",
       "severity": "major",
@@ -259,6 +270,17 @@
   ],
   "minors": [
     {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -284,6 +306,12 @@
         "target": "verdict",
         "severity": "major",
         "message": "Success rate is 43% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
+      },
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
       },
       {
         "section": "sec-overall-assessment",
@@ -356,5 +384,5 @@
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 11,
-  "minor_count": 1
+  "minor_count": 2
 }

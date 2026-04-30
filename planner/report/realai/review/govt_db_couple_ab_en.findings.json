@@ -1,6 +1,17 @@
 {
   "findings": [
     {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
       "id": "canonical-quote-guaranteed_income_coverage-income_insight",
       "reviewer": "canonical",
       "severity": "major",
@@ -127,6 +138,17 @@
   ],
   "minors": [
     {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -141,6 +163,12 @@
   "fix_plan": {
     "remove_section": [],
     "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      },
       {
         "section": "sec-income-insight",
         "target": "income_insight",
@@ -188,5 +216,5 @@
   "can_ship": false,
   "blocker_count": 0,
   "major_count": 5,
-  "minor_count": 1
+  "minor_count": 2
 }

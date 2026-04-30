@@ -14,6 +14,12 @@
       "message": "Success rate is 43% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
     },
     {
+      "section": null,
+      "target": "tone-pass",
+      "severity": "minor",
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+    },
+    {
       "section": "sec-overall-assessment",
       "target": "overall_assessment",
       "severity": "major",
