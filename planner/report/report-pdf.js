@@ -886,7 +886,7 @@
       ? d.thesis.oneLiner
       : (fr ? 'Plan en cours d\'analyse.' : 'Plan under analysis.');
 
-    var h = '<div class="exec-summary" style="page-break-after:always;background:linear-gradient(180deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:8px;padding:32px 36px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:780px">';
+    var h = '<div class="exec-summary" id="exec-summary" style="page-break-after:always;background:linear-gradient(180deg,#252d39 0%,#344155 100%);color:#faf8f4;border-radius:8px;padding:32px 36px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:780px">';
     h += '<div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
     h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
       '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Sommaire exécutif' : 'Executive summary') + '</div>' +
@@ -1066,6 +1066,69 @@
           _watchSentence +
         '</div>';
       }
+    }
+    // 2026-04-29 — phase opener + inputs/hypothèses + AI synthesis appended
+    // here so the dark Sommaire card carries the full at-a-glance read.
+    // Standalone Chapter 1 retired; this card replaces it.
+    var _ph = (d.R && d.R.phase) || 'accum';
+    var _yrs = (p.retAge || 65) - (p.age || 0);
+    var _nm = d.fn ? '<strong style="color:#faf8f4">' + F.esc(d.fn) + '</strong>' : '';
+    var _sn = d.sfn ? '<strong style="color:#faf8f4">' + F.esc(d.sfn) + '</strong>' : '';
+    var _coupleLbl = (d.R && d.R.couple)
+      ? (_sn ? (fr ? ' et ' + _sn : ' and ' + _sn)
+             : (fr ? ' et votre conjoint(e)' : ' and your spouse'))
+      : '';
+    var _nmFull = _nm ? (_nm + _coupleLbl) : '';
+    var _nmPfx = _nmFull ? (_nmFull + ', ') : '';
+    var _phaseOpener;
+    if (_ph === 'decum') {
+      _phaseOpener = fr
+        ? _nmPfx + 'vous êtes maintenant à la retraite. La question centrale n\'est plus combien épargner, mais comment décaisser : dans quel ordre, à quel rythme, et avec quelle marge si les marchés déçoivent. L\'horizon évalué ici va jusqu\'à <strong style="color:#faf8f4">' + (p.deathAge || 90) + ' ans</strong>.'
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are now retired. The central question is no longer how much to save, but how to draw down: in what order, at what pace, and with what margin if markets disappoint. The horizon evaluated here runs to age <strong style="color:#faf8f4">' + (p.deathAge || 90) + '</strong>.';
+    } else if (_ph === 'transition') {
+      _phaseOpener = fr
+        ? _nmPfx + 'la retraite approche — dans <strong style="color:#faf8f4">' + _yrs + ' ans</strong>. Les décisions des prochaines années pèsent davantage que toutes celles qui suivront.'
+        : (_nmFull ? _nmFull + ', retirement' : 'Retirement') + ' is approaching — in <strong style="color:#faf8f4">' + _yrs + ' years</strong>. The next few years carry more weight than every decision that follows.';
+    } else {
+      _phaseOpener = fr
+        ? _nmPfx + 'vous êtes en accumulation, avec <strong style="color:#faf8f4">' + _yrs + ' ans</strong> avant la retraite prévue. Les ajustements faits maintenant ont l\'effet le plus important.'
+        : (_nmFull ? _nmFull + ', you' : 'You') + ' are in accumulation, with <strong style="color:#faf8f4">' + _yrs + ' years</strong> until planned retirement. Adjustments made now carry the largest leverage.';
+    }
+    h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:18px;margin-top:18px;font-size:12.5px;color:#e8e0d4;line-height:1.65">' + _phaseOpener + '</div>';
+    // Inputs / hypothèses cards (compact, dark-themed)
+    var _inputBits = [];
+    var _fM = function(v) { return F.fmtMoney(v, fr); };
+    _inputBits.push((fr ? 'Âge ' : 'Age ') + (p.age || '—'));
+    _inputBits.push((fr ? 'retraite ' : 'retire at ') + (p.retAge || '—'));
+    _inputBits.push((fr ? 'dépenses ' : 'spending ') + _fM((p.retSpM || 0) * 12) + (fr ? '/an' : '/yr'));
+    _inputBits.push((fr ? 'horizon ' : 'horizon ') + ((p.deathAge || 90) - (p.age || 0)) + (fr ? ' ans' : ' yrs'));
+    _inputBits.push((fr ? 'province ' : 'province ') + (p.prov || 'QC'));
+    if (p.cOn) _inputBits.push(fr ? 'plan de couple' : 'couple plan');
+    var _assumpBits = [];
+    _assumpBits.push((fr ? 'rendement ' : 'return ') + Math.round((p.eqRet || p.eqRetS || 0.06) * 1000) / 10 + '%');
+    _assumpBits.push((fr ? 'inflation ' : 'inflation ') + Math.round((p.inf || 0.02) * 1000) / 10 + '%');
+    _assumpBits.push((fr ? 'longévité ' : 'longevity ') + (p.deathAge || 90) + (fr ? ' ans' : ' yrs'));
+    _assumpBits.push((fr ? 'simulations ' : 'simulations ') + (p.nSim || 5000));
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;font-size:10.5px;color:#bccbe0">';
+    h += '<div style="background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.20);padding:10px 12px;border-radius:6px;line-height:1.7">' +
+      '<div style="font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' +
+      (fr ? 'Ce que vous nous avez dit' : 'What you told us') + '</div>' + _inputBits.join(' · ') + '</div>';
+    h += '<div style="background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.20);padding:10px 12px;border-radius:6px;line-height:1.7">' +
+      '<div style="font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">' +
+      (fr ? 'Hypothèses du modèle' : 'Model assumptions') + '</div>' + _assumpBits.join(' · ') + '</div>';
+    h += '</div>';
+    // AI synthesis paragraph (the merged overall_assessment) — flows
+    // as body voice, no badge, dark-themed.
+    if (d.ai && d.ai.overall_assessment) {
+      var _safe = String(d.ai.overall_assessment).replace(/\r\n?/g, '\n');
+      _safe = F.esc(_safe)
+        .replace(/\*\*([^*\n][^*\n]*?)\*\*/g, '<strong style="color:#faf8f4">$1</strong>')
+        .replace(/(^|[^*])\*([^*\n][^*\n]*?)\*(?!\*)/g, '$1<em style="color:#e8e0d4">$2</em>');
+      var _paragraphs = _safe.split(/\n\n+/).map(function(seg) {
+        return '<p style="margin:0 0 12px;font-family:Inter,sans-serif;font-size:12px;color:#e8e0d4;line-height:1.75">' +
+          seg.replace(/\n/g, '<br/>') + '</p>';
+      }).join('');
+      h += '<div style="border-top:1px solid rgba(196,154,26,0.18);padding-top:18px;margin-top:18px">' + _paragraphs + '</div>';
     }
     h += '</div>';
     return h;
@@ -2384,6 +2447,13 @@
     h += '<p class="narr" style="margin-top:18px;color:#555">' + (fr
       ? 'Les projections sont conditionnelles et non garanties.'
       : 'Projections are conditional and not guaranteed.') + '</p>';
+    // 2026-04-29: single, calm AI disclosure under the letter. Replaces
+    // the per-block "Analyse assistée par IA" badges that used to appear
+    // throughout the report. One global note here, repeated in the
+    // methodology section; nowhere else.
+    h += '<p class="narr" style="margin-top:8px;color:#888;font-size:10.5px;font-style:italic">' + (fr
+      ? 'Le contenu narratif de ce rapport est rédigé par Claude Opus 4 (Anthropic) à partir des résultats du moteur de simulation BuildFi, puis vérifié par les contrôles AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
+      : 'The narrative content in this report is drafted by Claude Opus 4 (Anthropic) from the BuildFi simulation engine outputs, then validated by the platform\'s AMF compliance checks. Figures and tables come from the engine, never from the language model.') + '</p>';
     h += '<div style="margin-top:30px;padding-top:12px;border-top:1px solid ' + C.border + ';font-size:11px;color:#666">' + today + '<br/><span style="font-size:10px">BuildFi Technologies inc.</span></div>';
     h += '</div></div>';
     return h;
@@ -6208,7 +6278,7 @@ h += secPageEnd();
     // 2026-04-29: collapsed to ONE entry. sec-assessment + sec-diagnostic
     // are now one continuous chapter under one cover; sec-levers moved
     // to Ch.3 next to risk + stress where sensitivity belongs.
-    tocSections.push({ n: '\u2606', id: 'sec-assessment', label: F.L('page_zero', d.fr) });
+    tocSections.push({ n: '\u2606', id: 'exec-summary', label: d.fr ? 'Sommaire ex\u00e9cutif' : 'Executive summary' });
     // ─ Ch.2 — Why this plan works ────────────────
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
@@ -6295,38 +6365,35 @@ h += secPageEnd();
     // optimize for page count. Soft inline behavior inside chapters.
     var _arch = d._archetype || _inferArchetype(d);
     var _isMinReader = _isPlainReader && d.renderProfile && d.renderProfile.densityMode === 'compact';
-    var _ch1 = _chapterCopy(1, d.fr, _arch, d.succVal);
-    h += _renderChapterCover(1, _ch1.title, _ch1.frame, d.fr);
-
-    // 0. Overall Assessment (always, before numbered sections)
-    h += renderOverallAssessment(d);
-
-    // 1. Diagnostic / Executive Summary (always)
-    secN++;
-    h += renderDiagnostic(d, secN);
+    // 2026-04-29 RESTRUCTURE: the standalone "Chapitre 1 — Plan at a glance"
+    // is gone. The dark Sommaire exécutif card before the letter now owns
+    // the at-a-glance receipt; renderOverallAssessment + renderDiagnostic
+    // are stripped of their independent visual frames and their content
+    // distributes:
+    //   - phase opener + inputs/hypothèses + AI synthesis → exec summary
+    //   - hero KPI + support strip + cohort context → head of new Ch.I
+    // Subsequent chapter covers renumber 2→I, 3→II, 4→III, 5→IV.
+    // var _ch1 = _chapterCopy(1, d.fr, _arch, d.succVal);  // retired
+    // h += _renderChapterCover(1, _ch1.title, _ch1.frame, d.fr);  // retired
 
     // 1.bis Teaser — Bilan readers see the What-If simulator pointer; Planner
     // readers get an upsell-style note pointing them back to the live tool.
-    // The actual mount point at the end is gated identically.
-    // What-If teaser: hidden for compact+plain readers + ALL clientExport
-    // deliveries (Codex 2026-04-27 P1: client artifact must not point at
-    // a simulator section that is stripped from the same artifact).
     var _showTeaser = d.includeSimulator !== false && !d.clientExport &&
       !(d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
     h += _showTeaser ? _renderWhatIfTeaser(d) : '';
 
-    // 2026-04-29: sec-levers (Sensibilités) moved to Chapter 3 (Risks &
-    // tradeoffs) where sensitivity analysis logically belongs alongside
-    // risk dispersion + stress tests. It used to render here at the tail
-    // of Chapter 1, which made the chapter sprawl across 3 sections.
-
-    // ─── CH.2 — POURQUOI CE PLAN TIENT LA ROUTE ─────────────────────────
+    // ─── CH.I — LES FONDATIONS (formerly Ch.2) ─────────────────────────
     // Profile + family + goals + asset-class deep dives + projection + revenue.
     // Asset deep dives (real estate, corp, RSU, debts) sit before trajectory
     // so the archetype's structural pillars appear *before* the projection.
     // CCPC owners especially benefit: corporation reads as the centerpiece.
     var _ch2 = _chapterCopy(2, d.fr, _arch, d.succVal);
-    h += _renderChapterCover(2, _ch2.title, _ch2.frame, d.fr);
+    // Renumbered 2→I after standalone Ch.1 retired.
+    h += _renderChapterCover(1, _ch2.title, _ch2.frame, d.fr);
+    // 2026-04-29: head of new Ch.I gets the hero KPI + support strip +
+    // cohort context that used to live in renderDiagnostic. They earn
+    // the verdict that the exec summary delivered upstream.
+    h += renderDiagnostic(d, 0);
     secN++;
     h += renderProfile(d, secN);
     if (d.R.hasFamily) { secN++; h += renderFamily(d, secN); }
@@ -6387,7 +6454,7 @@ h += secPageEnd();
     // Codex 2026-04-27 audit: render Ch.3 cover for ALL readers,
     // including minimal cells, so the chapter rhythm stays consistent.
     var _ch3 = _chapterCopy(3, d.fr, _arch, d.succVal);
-    h += _renderChapterCover(3, _ch3.title, _ch3.frame, d.fr);
+    h += _renderChapterCover(2, _ch3.title, _ch3.frame, d.fr);  // renumbered 3→II
     // Risk + dispersion narrative (expert only) — when leadWith='dispersion'
     // it was already rendered above; otherwise it lands here.
     if (d.exp && !riskLeads) { secN++; h += renderRisk(d, secN); }
@@ -6442,7 +6509,7 @@ h += secPageEnd();
     // Minimal cells (beg+con) skip both the cover AND most cluster
     // sections, so the cover is gated on _isMinReader.
     var _ch4 = _chapterCopy(4, d.fr, _arch, d.succVal);
-    h += _renderChapterCover(4, _ch4.title, _ch4.frame, d.fr);
+    h += _renderChapterCover(3, _ch4.title, _ch4.frame, d.fr);  // renumbered 4→III
     if (_hasStrats) { secN++; h += renderStrategies(d, secN); }
     secN++;
     h += renderTax(d, secN);
@@ -6505,7 +6572,7 @@ h += secPageEnd();
     // when the mount itself is suppressed — no orphan cover.
     if (d.includeSimulator !== false) {
       var _ch5 = _chapterCopy(5, d.fr, _arch, d.succVal);
-      h += _renderChapterCover(5, _ch5.title, _ch5.frame, d.fr);
+      h += _renderChapterCover(4, _ch5.title, _ch5.frame, d.fr);  // renumbered 5→IV
       d._suppressWhatIfHeading = true;
       h += _renderWhatIfMount(d);
     }
