@@ -73,6 +73,38 @@ const finalDir = path.join(outDir, 'final');
 const todoDir = path.join(outDir, 'responses-todo');
 [draftDir, reviewDir, correctedDir, finalDir, todoDir].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
 
+/*
+  Codex rail TOC + Reading/Explore toggle injection (Plan v2.2 followup,
+  2026-04-29). The codex view-toggle script transforms the in-document
+  .toc into a sticky .bf-pageify-rail with scroll-spy. Inject it into
+  every rendered draft + corrected + final output so the rail experience
+  ships with every report, not as a manual after-the-fact decoration.
+
+  Reference: design-lab/experiments/report-view-toggle/_codex_view_toggle.js
+*/
+const codexInjectionPath = path.join(__dirname, '..', '..', '..',
+  'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
+let _codexScriptCache = null;
+function getCodexRailScript() {
+  if (_codexScriptCache !== null) return _codexScriptCache;
+  try {
+    _codexScriptCache = '\n<script data-bf-codex-rail="1">\n' +
+      fs.readFileSync(codexInjectionPath, 'utf8') +
+      '\n</script>\n';
+  } catch (e) {
+    console.warn('[run-pipeline] codex rail script not found at ' +
+      codexInjectionPath + ' — reports will render without rail TOC.');
+    _codexScriptCache = '';
+  }
+  return _codexScriptCache;
+}
+function withCodexRail(html) {
+  const script = getCodexRailScript();
+  if (!script) return html;
+  if (html.indexOf('</body>') === -1) return html;
+  return html.replace('</body>', script + '</body>');
+}
+
 function preparePayload(prof, ai) {
   const mcPath = path.join(mcDir, prof.id + '_' + prof.lang + '.json');
   const mc = JSON.parse(fs.readFileSync(mcPath, 'utf8'));
@@ -128,7 +160,7 @@ SELECTED.forEach(prof => {
 
   // ─── Pass 1: DRAFT ────────────────────────────────────────────────
   const data1 = preparePayload(prof, aiResp);
-  const draftHtml = buildReport(data1);
+  const draftHtml = withCodexRail(buildReport(data1));
   const draftPath = path.join(draftDir, outTag + '.html');
   fs.writeFileSync(draftPath, draftHtml, 'utf8');
 
@@ -149,7 +181,7 @@ SELECTED.forEach(prof => {
   corrector.applyFixPlan(data2, arbResult.fix_plan);
 
   // ─── Pass 4: CORRECTED render ─────────────────────────────────────
-  const correctedHtml = buildReport(data2);
+  const correctedHtml = withCodexRail(buildReport(data2));
   const correctedPath = path.join(correctedDir, outTag + '.html');
   fs.writeFileSync(correctedPath, correctedHtml, 'utf8');
 

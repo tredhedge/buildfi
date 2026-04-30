@@ -135,6 +135,27 @@ if (cmd === 'dump') {
 
 if (cmd === 'render') {
   console.log('Rendering reports...');
+  /*
+    Codex rail TOC + Reading/Explore toggle (Plan v2.2 followup, 2026-04-29).
+    The codex view-toggle script (design-lab/experiments/report-view-toggle/
+    _codex_view_toggle.js) was authored against rendered realai reports —
+    it transforms the in-document .toc into a sticky .bf-pageify-rail with
+    scroll-spy and adds a Reading/Explore mode toggle. Injecting it into
+    every rendered report so the rail experience travels with the build,
+    not as a manual after-the-fact decoration.
+  */
+  const codexInjectionPath = path.join(__dirname, '..', '..', '..',
+    'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
+  let codexScript = '';
+  try {
+    codexScript = '\n<script data-bf-codex-rail="1">\n' +
+      fs.readFileSync(codexInjectionPath, 'utf8') +
+      '\n</script>\n';
+  } catch (e) {
+    console.log('  ⚠ codex rail script not found at ' + codexInjectionPath +
+      ' — reports will render without the rail TOC.');
+  }
+
   let ok = 0, fallback = 0, errored = 0;
   PROFILES.forEach(prof => {
     let mcExists;
@@ -160,7 +181,12 @@ if (cmd === 'render') {
     try {
       const data = preparePayload(prof);
       data.ai = responseJson;
-      const html = buildReport(data);
+      let html = buildReport(data);
+      // Inject codex rail TOC + Reading/Explore toggle script before </body>.
+      // Falls back to no-op if injection content unavailable (logged at start).
+      if (codexScript && html.indexOf('</body>') !== -1) {
+        html = html.replace('</body>', codexScript + '</body>');
+      }
       const fname = prof.id + '_' + prof.lang + '.html';
       fs.writeFileSync(path.join(__dirname, 'output', fname), html, 'utf8');
       const tag = usedFallback ? ' (deterministic fallback)' : '';
