@@ -7,7 +7,7 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
-const GOLD = "#c49a1a";
+const GOLD = "#c4944a";
 const DARK = "#1a2744";
 const BG = "#FEFCF9";
 const CARD = "#ffffff";
@@ -194,7 +194,7 @@ function FeedbackContent() {
                   border: "none",
                   cursor: "pointer",
                   fontSize: 36,
-                  color: n <= rating ? "#c49a1a" : "#d4cec4",
+                  color: n <= rating ? "#c4944a" : "#d4cec4",
                   transition: "color 0.15s",
                   padding: "0 4px",
                   lineHeight: 1,

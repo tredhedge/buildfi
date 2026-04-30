@@ -144,7 +144,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     <h1 style="font-size:20px;color:#1A1208;margin:0 0 16px;">${subject}</h1>
     <p style="font-size:14px;color:#444;line-height:1.6;">${intro}</p>
     <p style="text-align:center;margin:28px 0;">
-      <a href="${link}" style="background:#c49a1a;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;">${cta}</a>
+      <a href="${link}" style="background:#c4944a;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;">${cta}</a>
     </p>
     <p style="font-size:12px;color:#888;line-height:1.6;">
       ${fr ? "Si vous n'avez pas fait cette demande, ignorez ce courriel." : "If you did not request this, ignore this email."}

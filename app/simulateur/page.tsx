@@ -15,7 +15,7 @@ const EK = {
   sable: "#e8e4db",
   border: "#d4cec4",
   marine: "#1a2744",
-  gold: "#c49a1a",
+  gold: "#c4944a",
   tx: "#1a1208",
   txDim: "#666666",
   txMuted: "#999999",

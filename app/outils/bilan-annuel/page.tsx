@@ -9,7 +9,7 @@ const FS = { xxs: 11, xs: 12, sm: 13, base: 14, md: 15, lg: 20, xl: 26, xxl: 32 
 const FW = { normal: 400, medium: 600, bold: 700 };
 const SP: Record<number, number> = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 };
 const RAD = { sm: 8, md: 14, lg: 20 };
-const CL = { bg: "#faf8f4", cd: "#ffffff", s2: "#f0ece4", bd: "#e8e0d4", bd2: "#d4cec4", tx: "#333333", al: "#1a2744", dm: "#777777", ac: "#c49a1a", bl: "#2c6fb5", gn: "#1a7a4c", rd: "#b91c1c", or: "#b89830", go: "#b89830", pr: "#6b4fa0", tl: "#2a8a7a" };
+const CL = { bg: "#faf8f4", cd: "#ffffff", s2: "#f0ece4", bd: "#e8e0d4", bd2: "#d4cec4", tx: "#333333", al: "#1a2744", dm: "#777777", ac: "#c4944a", bl: "#2c6fb5", gn: "#1a7a4c", rd: "#b91c1c", or: "#b89830", go: "#b89830", pr: "#6b4fa0", tl: "#2a8a7a" };
 
 const f$ = (v: number | null | undefined) => { if (v == null || isNaN(v)) return "—"; return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v); };
 const f$k = (v: number | null | undefined) => { if (v == null || isNaN(v)) return "—"; const a = Math.abs(v); if (a >= 1e6) return (v < 0 ? "-" : "") + (a / 1e6).toFixed(1) + " M$"; if (a >= 1e3) return (v < 0 ? "-" : "") + Math.round(a / 1e3) + " K$"; return Math.round(v) + " $"; };
@@ -806,7 +806,7 @@ export default function BilanAnnuel() {
       <div style={{marginTop:SP[4],padding:"16px",background:"linear-gradient(135deg,rgba(196,154,26,0.06),rgba(196,154,26,0.02))",borderRadius:RAD.md,border:"1px solid rgba(196,154,26,0.15)",textAlign:"center"}}>
         <div style={{fontSize:FS.md,fontWeight:FW.bold,color:CL.al,marginBottom:4}}>{fr?"Votre plan de remboursement optimal":"Your optimal repayment plan"}</div>
         <div style={{fontSize:FS.sm,color:CL.dm,lineHeight:1.6,marginBottom:SP[3]}}>{fr?"Le Bilan Pro inclut un outil de stratégie dette (avalanche vs boule de neige) avec vos vrais soldes et taux.":"Bilan Pro includes a debt strategy tool (avalanche vs snowball) with your real balances and rates."}</div>
-        <button style={{padding:"10px 24px",background:"linear-gradient(135deg,#c49a1a,#d4af37)",color:"#fff",border:"none",borderRadius:RAD.sm,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer",boxShadow:"0 2px 8px rgba(196,154,26,0.2)"}}>{fr?"Bilan Pro — 19,99 $":"Bilan Pro — $19.99"}</button>
+        <button style={{padding:"10px 24px",background:"linear-gradient(135deg,#c4944a,#d4af37)",color:"#fff",border:"none",borderRadius:RAD.sm,fontSize:FS.sm,fontWeight:FW.bold,cursor:"pointer",boxShadow:"0 2px 8px rgba(196,154,26,0.2)"}}>{fr?"Bilan Pro — 19,99 $":"Bilan Pro — $19.99"}</button>
       </div>
     </div>);
   }
@@ -997,7 +997,7 @@ export default function BilanAnnuel() {
       {showConsent && (
         <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:9998,background:"rgba(26,39,68,.97)",backdropFilter:"blur(8px)",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"center",gap:16,flexWrap:"wrap",fontSize:14,color:"rgba(255,255,255,.85)",borderTop:`1px solid ${CL.bd}`}}>
           <span>{fr?"Ce site utilise des témoins analytiques pour améliorer l'expérience.":"This site uses analytics cookies to improve the experience."}</span>
-          <button onClick={acceptConsent} style={{padding:"8px 20px",border:"none",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:`linear-gradient(135deg,#c49a1a,#d4af37)`,color:"#fff"}}>{fr?"Accepter":"Accept"}</button>
+          <button onClick={acceptConsent} style={{padding:"8px 20px",border:"none",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:`linear-gradient(135deg,#c4944a,#d4af37)`,color:"#fff"}}>{fr?"Accepter":"Accept"}</button>
           <button onClick={declineConsent} style={{padding:"8px 20px",border:"1px solid rgba(255,255,255,.25)",borderRadius:8,fontWeight:700,fontSize:13,cursor:"pointer",background:"transparent",color:"rgba(255,255,255,.7)"}}>{fr?"Refuser":"Decline"}</button>
         </div>
       )}
@@ -1009,8 +1009,8 @@ export default function BilanAnnuel() {
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           {/* BA-FEAT-06: BuildFi logo (inline SVG matching logo.js) */}
           <svg xmlns="http://www.w3.org/2000/svg" width="110" height="24" viewBox="0 0 220 48">
-            <g><rect x="0" y="32" width="28" height="8" rx="2" fill="#1a2744"/><rect x="4" y="22" width="26" height="8" rx="2" fill="#1a2744" opacity="0.5"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c49a1a"/></g>
-            <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill="#1a2744">build</tspan><tspan fill="#c49a1a">fi</tspan></text>
+            <g><rect x="0" y="32" width="28" height="8" rx="2" fill="#1a2744"/><rect x="4" y="22" width="26" height="8" rx="2" fill="#1a2744" opacity="0.5"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c4944a"/></g>
+            <text x="40" y="38" fontFamily="'Plus Jakarta Sans',sans-serif" fontSize="34" fontWeight="700" letterSpacing="-0.5"><tspan fill="#1a2744">build</tspan><tspan fill="#c4944a">fi</tspan></text>
           </svg>
           <div style={{borderLeft:`1px solid ${CL.bd}`,paddingLeft:10,marginLeft:2}}><div style={{fontSize:FS.sm,fontWeight:FW.bold,color:CL.al,letterSpacing:-.3}}>{fr?"Bilan Annuel":"Balance Sheet"}</div></div>
         </div>

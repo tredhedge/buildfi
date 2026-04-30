@@ -8,8 +8,8 @@ import { useState, useEffect, FormEvent } from "react";
 
 // ── Colors (BuildFi palette) ───────────────────────────────────────
 const MARINE = "#1a2744";
-const GOLD = "#c49a1a";
-const GOLD_LIGHT = "#c49a1a";
+const GOLD = "#c4944a";
+const GOLD_LIGHT = "#c4944a";
 const BG = "#FEFCF9";
 const CARD_BG = "#ffffff";
 const BORDER = "#d4cec4";

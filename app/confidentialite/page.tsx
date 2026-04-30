@@ -24,20 +24,20 @@ export default function PrivacyPage() {
         <div className="mb-8 flex items-center justify-between">
           <Link
             href="/"
-            className="text-sm text-[#bccbe0] hover:text-[#c49a1a] transition"
+            className="text-sm text-[#bccbe0] hover:text-[#c4944a] transition"
           >
             ← {fr ? "Retour à BuildFi" : "Back to BuildFi"}
           </Link>
           <button
             onClick={() => setLang(fr ? "en" : "fr")}
-            className="text-xs uppercase tracking-wide text-[#c49a1a] border border-[#c49a1a]/40 rounded px-3 py-1 hover:bg-[#c49a1a]/10 transition"
+            className="text-xs uppercase tracking-wide text-[#c4944a] border border-[#c4944a]/40 rounded px-3 py-1 hover:bg-[#c4944a]/10 transition"
           >
             {fr ? "English" : "Français"}
           </button>
         </div>
 
         <header className="mb-10">
-          <div className="text-xs uppercase tracking-[0.2em] text-[#c49a1a] mb-3">
+          <div className="text-xs uppercase tracking-[0.2em] text-[#c4944a] mb-3">
             {fr ? "Politique de confidentialité" : "Privacy policy"}
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-semibold leading-tight mb-2">
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
               : "For any question or request regarding your personal information:"}{" "}
             <a
               href="mailto:support@buildfi.ca"
-              className="text-[#c49a1a] underline"
+              className="text-[#c4944a] underline"
             >
               support@buildfi.ca
             </a>
@@ -89,7 +89,7 @@ function Section({
   return (
     <section>
       <h2 className="font-serif text-xl font-semibold text-[#faf8f4] mb-3">
-        <span className="text-[#c49a1a] mr-2">{n}.</span>
+        <span className="text-[#c4944a] mr-2">{n}.</span>
         {title}
       </h2>
       <div className="space-y-3 text-[#bccbe0]">{children}</div>
@@ -204,7 +204,7 @@ function FrenchPolicy() {
           <li>
             <strong>Droit d&apos;accès</strong> : recevoir une copie de vos
             renseignements. Endpoint :{" "}
-            <code className="text-[#c49a1a]">/api/data/export</code>{" "}
+            <code className="text-[#c4944a]">/api/data/export</code>{" "}
             (authentification par lien magique).
           </li>
           <li>
@@ -214,7 +214,7 @@ function FrenchPolicy() {
           <li>
             <strong>Droit à l&apos;effacement</strong> : demander la
             suppression. Endpoint :{" "}
-            <code className="text-[#c49a1a]">/api/data/delete</code>. La
+            <code className="text-[#c4944a]">/api/data/delete</code>. La
             suppression est traitée dans les 30 jours.
           </li>
           <li>
@@ -224,7 +224,7 @@ function FrenchPolicy() {
           <li>
             <strong>Droit au remboursement</strong> : remboursement intégral
             sur demande sous <strong>30 jours</strong>, sans justification.
-            Endpoint : <code className="text-[#c49a1a]">/api/refund</code> (le
+            Endpoint : <code className="text-[#c4944a]">/api/refund</code> (le
             remboursement déclenche automatiquement la suppression complète
             de vos données).
           </li>
@@ -235,7 +235,7 @@ function FrenchPolicy() {
             l&apos;information du Québec</strong> ({" "}
             <a
               href="https://www.cai.gouv.qc.ca"
-              className="text-[#c49a1a] underline"
+              className="text-[#c4944a] underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -291,7 +291,7 @@ function FrenchPolicy() {
 
       <Section n={12} title="Contact">
         <p>
-          <a href="mailto:support@buildfi.ca" className="text-[#c49a1a] underline">
+          <a href="mailto:support@buildfi.ca" className="text-[#c4944a] underline">
             support@buildfi.ca
           </a>
           {" "}— BuildFi Technologies inc., Québec, Canada.
@@ -404,7 +404,7 @@ function EnglishPolicy() {
           <li>
             <strong>Right of access</strong>: receive a copy of your
             information. Endpoint:{" "}
-            <code className="text-[#c49a1a]">/api/data/export</code> (magic
+            <code className="text-[#c4944a]">/api/data/export</code> (magic
             link authentication).
           </li>
           <li>
@@ -413,7 +413,7 @@ function EnglishPolicy() {
           </li>
           <li>
             <strong>Right to erasure</strong>: request deletion. Endpoint:{" "}
-            <code className="text-[#c49a1a]">/api/data/delete</code>. Deletion
+            <code className="text-[#c4944a]">/api/data/delete</code>. Deletion
             is processed within 30 days.
           </li>
           <li>
@@ -423,7 +423,7 @@ function EnglishPolicy() {
           <li>
             <strong>Right to refund</strong>: full refund on request within{" "}
             <strong>30 days</strong>, no justification needed. Endpoint:{" "}
-            <code className="text-[#c49a1a]">/api/refund</code> (the refund
+            <code className="text-[#c4944a]">/api/refund</code> (the refund
             automatically triggers complete deletion of your data).
           </li>
           <li>Response time: 30 days.</li>
@@ -433,7 +433,7 @@ function EnglishPolicy() {
             Québec</strong> (
             <a
               href="https://www.cai.gouv.qc.ca"
-              className="text-[#c49a1a] underline"
+              className="text-[#c4944a] underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -486,7 +486,7 @@ function EnglishPolicy() {
 
       <Section n={12} title="Contact">
         <p>
-          <a href="mailto:support@buildfi.ca" className="text-[#c49a1a] underline">
+          <a href="mailto:support@buildfi.ca" className="text-[#c4944a] underline">
             support@buildfi.ca
           </a>
           {" "}— BuildFi Technologies inc., Québec, Canada.

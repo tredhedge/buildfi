@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
               <p style="color:#444;line-height:1.7">${fr
                 ? "Vos comptes ont bougé depuis votre dernier bilan. Mettez à jour vos chiffres pour suivre votre progression."
                 : "Your accounts have changed since your last snapshot. Update your numbers to track your progress."}</p>
-              <a href="https://buildfi.ca/outils/bilan-annuel" style="display:inline-block;padding:12px 24px;background:#c49a1a;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">
+              <a href="https://buildfi.ca/outils/bilan-annuel" style="display:inline-block;padding:12px 24px;background:#c4944a;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">
                 ${fr ? "Mettre à jour mon bilan" : "Update my balance sheet"}
               </a>
               <p style="font-size:12px;color:#999;margin-top:24px">${fr
