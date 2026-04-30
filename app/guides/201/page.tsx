@@ -718,12 +718,12 @@ function OASCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 10 }}>
         <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.red, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASLost}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASLost}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.clawback, fr)}</div>
-          {data.fullyClawed ? <div style={{ fontSize: 11, color: CL.red, fontWeight: 700, marginTop: 2 }}>{t.cOASZero}</div> : null}
+          {data.fullyClawed ? <div style={{ fontSize: 11, color: CL.ink, fontWeight: 700, marginTop: 2 }}>{t.cOASZero}</div> : null}
         </div>
         <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.green, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASNet}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASNet}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.netOAS, fr)}</div>
         </div>
         <div style={{ background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 10, padding: 12 }}>
@@ -731,7 +731,7 @@ function OASCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(data.lostTotal, fr)}</div>
         </div>
         <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.blue, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASRate}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cOASRate}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>+{data.effRateAdd}%</div>
         </div>
       </div>
@@ -821,16 +821,16 @@ function SplitCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
         <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.red, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWithout}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWithout}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.withoutTax, fr)}</div>
         </div>
         <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.blue, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWith}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cIWith}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.withTax, fr)}</div>
         </div>
         <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.green, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cISaving}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: CL.green, marginTop: 4 }}>{fCAD(d.savings, fr)}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cISaving}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(d.savings, fr)}</div>
         </div>
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.cINote}</div>
@@ -876,11 +876,11 @@ function MERCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
         <div style={{ background: CL.greenBg, border: `1px solid ${CL.green}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.green, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMLowFV}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMLowFV}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(lowFV, fr)}</div>
         </div>
         <div style={{ background: CL.redBg, border: `1px solid ${CL.red}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.red, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMHighFV}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMHighFV}</div>
           <div style={{ fontSize: 20, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{fCAD(highFV, fr)}</div>
         </div>
         <div style={{ background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 10, padding: 12 }}>
@@ -938,7 +938,7 @@ function MeltdownCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 10 }}>
         <div style={{ background: CL.blueBg, border: `1px solid ${CL.blue}`, borderRadius: 10, padding: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: CL.blue, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDYears}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5 }}>{t.cMDYears}</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: CL.ink, marginTop: 4 }}>{sim.yearsUsed}{sim.yearsUsed < years ? <span style={{ fontSize: 12, fontWeight: 400, color: CL.dim }}> / {years}</span> : null}</div>
         </div>
         <div style={{ background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 10, padding: 12 }}>
@@ -1028,7 +1028,7 @@ function Guide201Inner() {
           {t.toc.map((item) => (
             <a key={item.n} href={`#ch${item.n}`}>{item.n}. {item.t}</a>
           ))}
-          <div className="bfe-kicker" style={{ color: CL.purple, marginTop: 14, marginBottom: 6 }}>{t.toc301}</div>
+          <div className="bfe-kicker" style={{ color: CL.gold, marginTop: 14, marginBottom: 6 }}>{t.toc301}</div>
           {t.toc2.map((item) => (
             <a key={item.n} href={`#ch${item.n}`}>{item.n}. {item.t}</a>
           ))}
@@ -1183,20 +1183,20 @@ function Guide201Inner() {
 
         {/* Bonus 301 banner — calmer cover-style break, purple kicker for stage */}
         <section className="bfe-cover" style={{ background: "rgba(107,79,160,0.06)", borderColor: "rgba(107,79,160,0.20)" }}>
-          <div className="bfe-kicker" style={{ color: CL.purple }}>BONUS · 301</div>
+          <div className="bfe-kicker" style={{ color: CL.gold }}>BONUS · 301</div>
           <h2 className="bfe-title-cover" style={{ fontSize: 44, color: CL.ink }}>{t.bonus301Title}</h2>
           <div style={{ fontSize: 18, color: CL.muted, fontStyle: "italic", fontFamily: 'var(--font-playfair),Georgia,serif', maxWidth: 720 }}>{t.bonus301Sub}</div>
           <p style={{ fontSize: 16, color: CL.text, margin: 0, lineHeight: 1.6, maxWidth: 720 }}>{t.bonus301Body}</p>
         </section>
 
         {/* Ch 8 */}
-        <Section fr={fr} num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 8` : `Bonus 301 · Chapter 8`} kickerColor={CL.purple}>
+        <Section fr={fr} num={8} id="ch8" title={t.ch8Title} sub={t.ch8Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 8` : `Bonus 301 · Chapter 8`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch8Body}</p>
           <ToolCard title={t.ch8Tool}><MeltdownCalc fr={fr} t={t} /></ToolCard>
           <div style={{ display: "grid", gap: 10, margin: "14px 0" }}>
             {t.ch8Steps.map((s, i) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: 14, alignItems: "start", background: CL.panel, border: `1px solid ${CL.line}`, borderLeft: `2px solid ${CL.purple}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
-                <strong style={{ fontSize: 11, color: CL.purple, textTransform: "uppercase", letterSpacing: ".18em" }}>{s[0]}</strong>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: 14, alignItems: "start", background: CL.panel, border: `1px solid ${CL.line}`, borderLeft: `2px solid ${CL.gold}`, borderRadius: "0 8px 8px 0", padding: "12px 16px" }}>
+                <strong style={{ fontSize: 11, color: CL.gold, textTransform: "uppercase", letterSpacing: ".18em" }}>{s[0]}</strong>
                 <div style={{ fontSize: 14, color: CL.text, lineHeight: 1.55 }}>{s[1]}</div>
               </div>
             ))}
@@ -1208,14 +1208,14 @@ function Guide201Inner() {
         </Section>
 
         {/* Ch 9 */}
-        <Section fr={fr} num={9} id="ch9" title={t.ch9Title} sub={t.ch9Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 9` : `Bonus 301 · Chapter 9`} kickerColor={CL.purple}>
+        <Section fr={fr} num={9} id="ch9" title={t.ch9Title} sub={t.ch9Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 9` : `Bonus 301 · Chapter 9`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch9Body}</p>
           <p style={{ fontSize: 14, color: CL.text, lineHeight: 1.6, margin: "12px 0" }}>{t.ch9Principle}</p>
           <Callout color="gold">{t.ch9Example}</Callout>
         </Section>
 
         {/* Ch 10 */}
-        <Section fr={fr} num={10} id="ch10" title={t.ch10Title} sub={t.ch10Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 10` : `Bonus 301 · Chapter 10`} kickerColor={CL.purple}>
+        <Section fr={fr} num={10} id="ch10" title={t.ch10Title} sub={t.ch10Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 10` : `Bonus 301 · Chapter 10`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch10Body}</p>
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
             <Callout color="red">{t.ch10DPA}</Callout>
@@ -1226,7 +1226,7 @@ function Guide201Inner() {
         </Section>
 
         {/* Ch 11 */}
-        <Section fr={fr} num={11} id="ch11" title={t.ch11Title} sub={t.ch11Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 11` : `Bonus 301 · Chapter 11`} kickerColor={CL.purple}>
+        <Section fr={fr} num={11} id="ch11" title={t.ch11Title} sub={t.ch11Sub} kickerOverride={fr ? `Bonus 301 · Chapitre 11` : `Bonus 301 · Chapter 11`} kickerColor={CL.gold}>
           <p style={{ fontSize: 15, color: CL.text, lineHeight: 1.6 }}>{t.ch11Body}</p>
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
             <Callout color="red">{t.ch11SBD}</Callout>
@@ -1237,7 +1237,7 @@ function Guide201Inner() {
 
         {/* Costliest errors — single voice, paper cards with thin red bar */}
         <section id="mistakes" className="bfe-section">
-          <div className="bfe-kicker" style={{ color: CL.red, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
+          <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
           <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
           <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
             {t.mistakes.map((m, i) => (

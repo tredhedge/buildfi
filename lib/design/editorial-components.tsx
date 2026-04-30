@@ -101,12 +101,16 @@ export function Note({
   kicker?: string;
   children: React.ReactNode;
 }) {
-  const bar =
-    tone === "caution" ? CL.red :
-    tone === "check"   ? CL.green :
-    tone === "rule"    ? CL.gold :
-                         CL.ink;
-  const kickerColor = tone === "caution" ? CL.red : tone === "check" ? CL.green : CL.gold;
+  /*
+    Editorial restraint pass (2026-04-29): the bar carries semantic tone
+    via thin gold/ink shades (no red/green flooding). The kicker stays
+    gold across all tones — gold is the brand accent and gives the Note
+    a single calm voice. The bar uses --bf-gold for "rule" and --bfe-ink
+    for everything else (caution, info, check) so prose still distinguishes
+    serious-warning from observational without painting the page.
+  */
+  const bar = tone === "rule" ? CL.gold : CL.ink;
+  const kickerColor = CL.gold;
   return (
     <div style={{
       background: CL.panel,
@@ -149,7 +153,15 @@ export function CompareRow({
   sublabel?: string;
   value: string;
 }) {
-  const accent = tone === "good" ? CL.green : tone === "bad" ? CL.red : CL.gold;
+  /*
+    Editorial restraint pass (2026-04-29): all CompareRow bars + kickers
+    now use gold. The bar opacity varies subtly by tone (good=full gold,
+    neutral=mid, bad=line) so a row sequence still reads as a comparison
+    sequence visually, but no red/green floods. The numeric value carries
+    the semantic — a positive number reads good on its own.
+  */
+  const barOpacity = tone === "good" ? 1 : tone === "neutral" ? 0.6 : 0.3;
+  const bar = `color-mix(in srgb, ${CL.gold} ${Math.round(barOpacity * 100)}%, transparent)`;
   return (
     <div style={{
       display: "grid",
@@ -158,7 +170,7 @@ export function CompareRow({
       alignItems: "center",
       background: CL.panel,
       border: `1px solid ${CL.line}`,
-      borderLeft: `3px solid ${accent}`,
+      borderLeft: `3px solid ${bar}`,
       borderRadius: 8,
       padding: "12px 16px",
     }}>
@@ -166,7 +178,7 @@ export function CompareRow({
         <div style={{
           fontSize: 11,
           fontWeight: 700,
-          color: accent,
+          color: CL.gold,
           textTransform: "uppercase",
           letterSpacing: ".18em",
           marginBottom: 2,

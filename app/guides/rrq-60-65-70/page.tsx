@@ -73,9 +73,9 @@ export default function RRQArticle() {
 
             <Note tone="rule" kicker="TL;DR">
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 15, lineHeight: 1.7 }}>
-                <li>60 ans : <strong style={{ color: CL.red }}>−36 %</strong> pour la vie. Choix rationnel si santé précaire.</li>
+                <li>60 ans : <strong>−36 %</strong> pour la vie. Choix rationnel si santé précaire.</li>
                 <li>65 ans : rente de référence. Option par défaut par manque de réflexion.</li>
-                <li>70 ans : <strong style={{ color: CL.green }}>+42 %</strong> pour la vie. Point d'équilibre ≈ 82 ans.</li>
+                <li>70 ans : <strong>+42 %</strong> pour la vie. Point d'équilibre ≈ 82 ans.</li>
                 <li>Pour la plupart des Canadiens en santé, <strong>différer jusqu'à 70 ans est mathématiquement gagnant</strong>.</li>
               </ul>
             </Note>
@@ -96,7 +96,7 @@ export default function RRQArticle() {
                 <tbody>
                   <tr style={{ borderBottom: `1px solid ${CL.line}` }}>
                     <td style={{ padding: "10px 14px", color: CL.text, fontWeight: 600 }}>60</td>
-                    <td style={{ padding: "10px 14px", textAlign: "center", color: CL.red, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>−36 %</td>
+                    <td style={{ padding: "10px 14px", textAlign: "center", color: CL.ink, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>−36 %</td>
                     <td style={{ padding: "10px 14px", textAlign: "right", color: CL.text, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>965 $</td>
                   </tr>
                   <tr style={{ borderBottom: `1px solid ${CL.line}`, background: CL.s2 }}>
@@ -106,7 +106,7 @@ export default function RRQArticle() {
                   </tr>
                   <tr>
                     <td style={{ padding: "10px 14px", color: CL.text, fontWeight: 600 }}>70</td>
-                    <td style={{ padding: "10px 14px", textAlign: "center", color: CL.green, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>+42 %</td>
+                    <td style={{ padding: "10px 14px", textAlign: "center", color: CL.ink, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>+42 %</td>
                     <td style={{ padding: "10px 14px", textAlign: "right", color: CL.text, fontFamily: 'var(--font-jetbrains-mono),"Courier New",monospace' }}>2 141 $</td>
                   </tr>
                 </tbody>

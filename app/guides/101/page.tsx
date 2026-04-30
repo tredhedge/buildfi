@@ -581,7 +581,7 @@ function NetWorthCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
       <div>
-        <div style={{ fontSize: 12, fontWeight: 700, color: CL.green, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tAssets}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tAssets}</div>
         {row(t.tBank, bank, setBank)}
         {row(t.tSavings, savings, setSavings)}
         {row(t.tRRSP, rrsp, setRrsp)}
@@ -589,23 +589,23 @@ function NetWorthCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
         {row(t.tOther, other, setOther)}
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${CL.line2}`, fontSize: 13, display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: CL.dim }}>Total</span>
-          <strong style={{ color: CL.green }}>{fCAD(assets, fr)}</strong>
+          <strong style={{ color: CL.ink }}>{fCAD(assets, fr)}</strong>
         </div>
       </div>
       <div>
-        <div style={{ fontSize: 12, fontWeight: 700, color: CL.red, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tLiab}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: CL.gold, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>{t.tLiab}</div>
         {row(t.tMortgage, mortgage, setMortgage)}
         {row(t.tCards, cards, setCards)}
         {row(t.tLoans, loans, setLoans)}
         {row(t.tOtherDebt, otherDebt, setOtherDebt)}
         <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${CL.line2}`, fontSize: 13, display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: CL.dim }}>Total</span>
-          <strong style={{ color: CL.red }}>{fCAD(liab, fr)}</strong>
+          <strong style={{ color: CL.ink }}>{fCAD(liab, fr)}</strong>
         </div>
       </div>
       <div style={{ gridColumn: "1 / -1", background: CL.goldBg, border: `1px solid ${CL.gold}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 14, color: CL.ink, fontWeight: 600 }}>{t.tNetWorth}</span>
-        <strong style={{ fontSize: 28, color: net >= 0 ? CL.green : CL.red, fontWeight: 800 }}>{fCAD(net, fr)}</strong>
+        <strong style={{ fontSize: 28, color: CL.ink, fontWeight: 800 }}>{fCAD(net, fr)}</strong>
       </div>
     </div>
   );
@@ -786,9 +786,9 @@ function CompoundCalc({ fr, t }: { fr: boolean; t: typeof COPY.fr }) {
             <strong style={{ color: CL.ink }}>{fCAD(startBal, fr)}</strong> {t.tInitial}
             {" + "}
           </>) : null}
-          <strong style={{ color: CL.blue }}>{fCAD(contrib, fr)}</strong> {t.tContribs}
+          <strong style={{ color: CL.ink }}>{fCAD(contrib, fr)}</strong> {t.tContribs}
           {" + "}
-          <strong style={{ color: CL.green }}>{fCAD(growth, fr)}</strong> {t.tGrowth}
+          <strong style={{ color: CL.ink }}>{fCAD(growth, fr)}</strong> {t.tGrowth}
         </div>
       </div>
       <div style={{ marginTop: 10, fontSize: 11, color: CL.dim, fontStyle: "italic" }}>{t.tCompNote}</div>
@@ -1039,7 +1039,7 @@ function Guide101Inner() {
 
         {/* Costliest mistakes — single voice, paper cards with thin red bar */}
         <section id="mistakes" className="bfe-section">
-          <div className="bfe-kicker" style={{ color: CL.red, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
+          <div className="bfe-kicker" style={{ color: CL.gold, marginBottom: 6 }}>{fr ? "Erreurs courantes" : "Common mistakes"}</div>
           <h2 className="bfe-title-section" style={{ color: CL.ink }}>{t.mistakesTitle}</h2>
           <div style={{ fontSize: 16, color: CL.muted, fontStyle: "italic", marginTop: -4, marginBottom: 18 }}>{t.mistakesIntro}</div>
           <div style={{ display: "grid", gap: 10 }}>
