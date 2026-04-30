@@ -211,7 +211,7 @@ function renderBilanHTML(
   const deltaPct = comparison.deltas?.successPct ?? 0;
 
   const sectionStyle = `margin:24px 0;padding:20px 24px;background:#fff;border:1px solid #e8e4db;border-radius:10px;`;
-  const h2Style = `font-size:18px;font-weight:700;color:#1a2744;margin:0 0 12px;font-family:'Newsreader',Georgia,serif;`;
+  const h2Style = `font-size:18px;font-weight:700;color:#1a2744;margin:0 0 12px;font-family:'Playfair Display',Georgia,serif;`;
   const bodyStyle = `font-size:14px;color:#333;line-height:1.7;`;
   const kpiBox = (label: string, value: string, delta?: string, color?: string) =>
     `<div style="text-align:center;padding:12px 16px;background:#faf8f4;border:1px solid #e8e4db;border-radius:8px;min-width:120px">
@@ -233,7 +233,7 @@ function renderBilanHTML(
   return `<!DOCTYPE html><html lang="${lang}"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${fr ? `Bilan Annuel ${year} — BuildFi` : `Annual Assessment ${year} — BuildFi`}</title>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@300;400;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208;line-height:1.6}
@@ -244,7 +244,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#faf8f4;color:#1a1208
 
 <!-- Header -->
 <div style="text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #c4944a">
-  <div style="font-size:24px;font-weight:800;color:#1a2744;font-family:'Newsreader',serif">buildfi.ca</div>
+  <div style="font-size:24px;font-weight:800;color:#1a2744;font-family:'Playfair Display',serif">buildfi.ca</div>
   <div style="font-size:11px;color:#c4944a;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin:4px 0 16px">
     ${fr ? "Bilan Annuel" : "Annual Assessment"} ${year}
   </div>
@@ -315,7 +315,7 @@ ${comparison.history.length >= 2 ? `
 
 <!-- Pages 3-6: Scenario cards (BUG 17: distinct card styling) -->
 <div style="margin:24px 0;padding:16px 0">
-  <h2 style="font-size:16px;font-weight:700;color:#1a2744;margin:0 0 16px;font-family:'Newsreader',Georgia,serif;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #c4944a;padding-bottom:8px">
+  <h2 style="font-size:16px;font-weight:700;color:#1a2744;margin:0 0 16px;font-family:'Playfair Display',Georgia,serif;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #c4944a;padding-bottom:8px">
     ${fr ? "Observations par theme" : "Observations by theme"}
   </h2>
   <div style="display:grid;gap:16px">
@@ -324,7 +324,7 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #1a2744;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#1a2744;color:#fff;font-size:12px;font-weight:800">A</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Séquencement des retraits" : "Withdrawal sequencing"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Playfair Display',Georgia,serif">${fr ? "Séquencement des retraits" : "Withdrawal sequencing"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.withdrawalAI || (fr ? "Le modèle explore différentes séquences de retraits entre vos comptes enregistrés et non-enregistrés." : "The model explores different withdrawal sequences between your registered and non-registered accounts."))}</div>
     </div>
@@ -333,7 +333,7 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #1a7a4c;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#1a7a4c;color:#fff;font-size:12px;font-weight:800">B</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Prestations gouvernementales" : "Government benefits"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Playfair Display',Georgia,serif">${fr ? "Prestations gouvernementales" : "Government benefits"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.governmentAI || (fr ? `Le modèle a exploré les seuils de prestations gouvernementales selon votre profil dans la province de ${params.prov}.` : `The model explored government benefit thresholds based on your profile in ${params.prov}.`))}</div>
     </div>
@@ -342,7 +342,7 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #c4944a;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#c4944a;color:#fff;font-size:12px;font-weight:800">C</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Optimisation fiscale" : "Tax optimization"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Playfair Display',Georgia,serif">${fr ? "Optimisation fiscale" : "Tax optimization"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.taxAI || (fr ? "Le modèle a analysé les stratégies fiscales disponibles selon votre situation." : "The model analyzed available tax strategies based on your situation."))}</div>
     </div>
@@ -351,7 +351,7 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #666;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#666;color:#fff;font-size:12px;font-weight:800">D</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Immobilier" : "Real estate"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Playfair Display',Georgia,serif">${fr ? "Immobilier" : "Real estate"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.realEstateAI || (bilanFields.mortgageBalance > 0
         ? (fr ? `Hypothèque de ${f$(bilanFields.mortgageBalance)} à ${bilanFields.mortgageRate}%. Le modèle a exploré les implications sur votre plan.` : `Mortgage of ${f$(bilanFields.mortgageBalance)} at ${bilanFields.mortgageRate}%. The model explored implications for your plan.`)
@@ -362,7 +362,7 @@ ${comparison.history.length >= 2 ? `
     <div style="background:#fff;border:1px solid #e8e4db;border-radius:10px;border-left:4px solid #b91c1c;overflow:hidden">
       <div style="padding:16px 20px;background:#faf8f4;border-bottom:1px solid #e8e4db;display:flex;align-items:center;gap:10px">
         <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#b91c1c;color:#fff;font-size:12px;font-weight:800">E</span>
-        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Newsreader',Georgia,serif">${fr ? "Succession" : "Estate planning"}</span>
+        <span style="font-size:15px;font-weight:700;color:#1a2744;font-family:'Playfair Display',Georgia,serif">${fr ? "Succession" : "Estate planning"}</span>
       </div>
       <div style="padding:16px 20px;${bodyStyle}">${escapeHTML(ai.successionAI || (fr ? "Le modèle a évalué les implications fiscales au décès selon vos actifs actuels." : "The model evaluated tax implications at death based on your current assets."))}</div>
     </div>
