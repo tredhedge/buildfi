@@ -340,6 +340,40 @@ body[data-bf-system="editorial"][data-bf-mode="pdf"] .bf-inline-toc[open] > div 
   display: block !important;
 }
 
+/*
+  ════════════════════════════════════════════════════════════════════════
+  Editorial restraint guard rail (Plan v2.2 followup, 2026-04-29).
+  The editorial system is gold + ink + cream only. Any inline style trying
+  to paint red/green/blue/purple bars or backgrounds in the editorial body
+  gets neutralized. This is a guard rail in case a future contributor
+  reintroduces a semantic-color flood we already cleaned.
+  ════════════════════════════════════════════════════════════════════════
+*/
+body[data-bf-system="editorial"] [style*="border-left:"][style*="rgb(185, 63, 67)"],
+body[data-bf-system="editorial"] [style*="border-left:"][style*="#b93f43"],
+body[data-bf-system="editorial"] [style*="border-left:"][style*="#b91c1c"],
+body[data-bf-system="editorial"] [style*="borderLeft"][style*="#b93f43"],
+body[data-bf-system="editorial"] [style*="borderLeft"][style*="#b91c1c"] {
+  border-left-color: var(--bf-gold) !important;
+}
+/* Light pink/red/green/blue tinted backgrounds anywhere in editorial body
+   get flattened to the cream panel. The chart palette is exempted via the
+   .bfe-section svg path / rect / polyline allowlist below. */
+body[data-bf-system="editorial"] [style*="background:rgba(185,28,28"],
+body[data-bf-system="editorial"] [style*="background:rgba(185, 28, 28"],
+body[data-bf-system="editorial"] [style*="background:rgba(185,63,67"],
+body[data-bf-system="editorial"] [style*="background:rgba(185, 63, 67"],
+body[data-bf-system="editorial"] [style*="background:rgba(26,122,76"],
+body[data-bf-system="editorial"] [style*="background:rgba(26, 122, 76"],
+body[data-bf-system="editorial"] [style*="background:rgba(47,138,74"],
+body[data-bf-system="editorial"] [style*="background:rgba(47, 138, 74"],
+body[data-bf-system="editorial"] [style*="background:rgba(44,111,181"],
+body[data-bf-system="editorial"] [style*="background:rgba(44, 111, 181"],
+body[data-bf-system="editorial"] [style*="background:rgba(59,121,182"],
+body[data-bf-system="editorial"] [style*="background:rgba(59, 121, 182"] {
+  background: var(--bfe-panel) !important;
+}
+
 /* ── Inline TOC (collapsed details, mobile + print fallback) ───────────── */
 /*
   Used by the AI report renderer (Phase 4c) and forthcoming guide ports
