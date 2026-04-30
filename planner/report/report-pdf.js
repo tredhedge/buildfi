@@ -378,11 +378,11 @@
   //   Ch.5  Explore alternatives   sec-whatif
   //   Ch.6  Appendix               sec-methodology, sec-assumptions, sec-glossary
   var TOC_CHAPTER_MAP = {
-    'sec-assessment': 1, 'sec-diagnostic': 1, 'sec-levers': 1,
+    'sec-assessment': 1, 'sec-diagnostic': 1,
     'sec-profile': 2, 'sec-family': 2, 'sec-goals': 2,
     'sec-realestate': 2, 'sec-corp': 2, 'sec-rsu': 2, 'sec-debt': 2,
     'sec-projection': 2, 'sec-revenue': 2, 'sec-cashflow': 2,
-    'sec-risk': 3, 'sec-stress': 3,
+    'sec-risk': 3, 'sec-stress': 3, 'sec-levers': 3,
     'sec-strategies': 4, 'sec-tax': 4, 'sec-draworder': 4,
     'sec-meltdown': 4, 'sec-gis': 4, 'sec-succession': 4,
     'sec-insurance': 4, 'sec-actions': 4, 'sec-timeline': 4,
@@ -1053,10 +1053,10 @@
           : (fr ? 'le taux de succès ' + (_winner.succPts < 0 ? 'baisserait de ' + Math.abs(_winner.succPts) : 'monterait de ' + _winner.succPts) + ' points' : 'the success rate would ' + (_winner.succPts < 0 ? 'drop ' + Math.abs(_winner.succPts) : 'rise ' + _winner.succPts) + ' points');
         var _condFr = _kind === 'returns'
           ? 'Si les rendements réels se situaient à 1 % de moins par an sur l\'horizon, '
-          : 'Si l\'inflation se situait à 1 % de plus par an sur l\'horizon, ';
+          : 'Si l\'inflation se situait à 1 % de moins par an sur l\'horizon, ';
         var _condEn = _kind === 'returns'
           ? 'If real returns were 1% lower per year over the horizon, '
-          : 'If inflation were 1% higher per year over the horizon, ';
+          : 'If inflation were 1% lower per year over the horizon, ';
         var _watchSentence = (fr ? _condFr : _condEn) +
           (fr ? 'le patrimoine médian passerait de ' + f$(_baseMed) + ' à ' + f$(_newMed) + ' et ' + _succTxt + '.'
               : 'median wealth would move from ' + f$(_baseMed) + ' to ' + f$(_newMed) + ' and ' + _succTxt + '.');
@@ -1435,18 +1435,18 @@
                : phase === 'transition' ? 'Votre plan, \u00e0 quelques ann\u00e9es de la retraite'
                : phase === 'fire' ? 'Votre projet de retraite anticip\u00e9e'
                : 'Votre plan en un coup d\u2019\u0153il';
-        var f1 = phase === 'decum' ? 'L\u2019essentiel — durabilit\u00e9 du revenu, dispersion attendue, leviers qui restent.'
-               : phase === 'fire' ? 'L\u2019essentiel — la p\u00e9riode-pont \u00e0 financer, la trajectoire post-RPC, les leviers \u00e0 surveiller.'
-               : 'L\u2019essentiel — le cap, la vigueur du plan, et les deux ou trois leviers qui comptent.';
+        var f1 = phase === 'decum' ? 'Le contexte, le verdict, et ce qui m\u00e9rite votre attention.'
+               : phase === 'fire' ? 'Le contexte, le verdict, et la p\u00e9riode-pont \u00e0 surveiller.'
+               : 'Le contexte, le verdict, et ce qui m\u00e9rite votre attention.';
         return { title: t1, frame: f1 };
       }
       var t = phase === 'decum' ? 'Your retirement at a glance'
             : phase === 'transition' ? 'Your plan, a few years from retirement'
             : phase === 'fire' ? 'Your early retirement project'
             : 'Your plan at a glance';
-      var f = phase === 'decum' ? 'The essentials — income durability, expected dispersion, the levers still on the table.'
-            : phase === 'fire' ? 'The essentials — the bridge period to fund, the post-CPP trajectory, the levers to watch.'
-            : 'The essentials — the direction, the plan\u2019s strength, and the two or three levers that matter.';
+      var f = phase === 'decum' ? 'The context, the verdict, and what deserves your attention.'
+            : phase === 'fire' ? 'The context, the verdict, and the bridge period to monitor.'
+            : 'The context, the verdict, and what deserves your attention.';
       return { title: t, frame: f };
     }
 
@@ -1772,9 +1772,9 @@
     var f$ = F.fmtCompact, p = d.p;
     var fM = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
-    h += '<h3 class="sec" id="sec-assessment" style="border-bottom-color:' + sC + '">' +
-      '<span class="sec-n" style="background:' + sC + '">\u2606</span>' +
-      (fr ? 'Votre plan, en d\u00e9tail' : 'Your plan, in detail') + '</h3>';
+    // 2026-04-29: H3 stripped — Chapter 1 cover IS the heading; the
+    // chapter is one continuous flow with no internal section dividers.
+    h += '<div id="sec-assessment" data-bf-anchor="1" style="scroll-margin-top:24px"></div>';
 
     // 2026-04-29: phase-specific opening narrative \u2014 moved here from
     // sec-diagnostic. Chapter 1 establishes the lifecycle frame before
@@ -1862,7 +1862,10 @@
     h += '</div></div>';
     } // end if(false) — duplicate KPI block retired 2026-04-29
 
-    // Overall AI assessment — synthesizes everything
+    // 2026-04-29: AI overall_assessment moved to sec-diagnostic so the
+    // chapter 1 narrative ends on the suitability frame, not on a 5-
+    // sentence verdict. The merged AI synthesis lives in sec-diagnostic.
+    if (false) {
     if (d.ai.overall_assessment) {
       h += F.AiBlock(d.ai.overall_assessment, fr);
     } else {
@@ -1902,6 +1905,9 @@
       h += narr(_detSummary);
     }
 
+    } // end if(false) — AI block moved to sec-diagnostic
+
+    if (false) {
     // Key observations bullets (deterministic, AI can override via overall_assessment)
     var obs = [];
     var _planFailing = (d.succVal != null && d.succVal < 0.55);
@@ -1929,6 +1935,7 @@
       obs.forEach(function(o) { h += '<div style="margin-bottom:2px">' + o + '</div>'; });
       h += '</div>';
     }
+    } // end if(false) — obs bullets retired (duplicated AI prose)
 
     h += secPageEnd();
     return h;
@@ -1938,8 +1945,18 @@
   function renderDiagnostic(d, secN) {
     var fr = d.fr, exp = d.exp, mc = d.mc, p = d.p;
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
-    var h = secPage();
-    h += F.Sec(secN, F.L('diagnostic', fr), 'sec-diagnostic');
+    // 2026-04-29: open with a NO-page-break wrapper so the body
+    // continues sec-assessment's flow under the same chapter cover.
+    // H3 stripped — the chapter cover is the heading; we keep an
+    // anchor for deep links.
+    var h = '<div class="sec-page sec-page-continue" style="page-break-before:avoid;break-before:avoid">';
+    h += '<div id="sec-diagnostic" data-bf-anchor="1" style="scroll-margin-top:24px"></div>';
+    // ✦ visual rule between the suitability frame and the verdict.
+    h += '<div style="text-align:center;color:#c4944a;font-size:14px;letter-spacing:6px;margin:8px 0 18px;opacity:0.6">\u2726</div>';
+    // Merged AI synthesis (moved up from sec-assessment).
+    if (d.ai.overall_assessment) {
+      h += F.AiBlock(d.ai.overall_assessment, fr);
+    }
 
     // Vars used downstream — must be assigned regardless of whether the
     // narrative below renders (it's gated to false in 2026-04-29 because
@@ -2081,11 +2098,14 @@
       var _diagDet = fr
         ? 'Le moteur de simulation attribue \u00e0 votre plan la note <strong>' + g.letter + ' (' + g.label + ')</strong>, avec un taux de succ\u00e8s de <strong>' + succPct + '%</strong>. Le patrimoine m\u00e9dian (P50) en fin de projection est de <strong>' + f$(mc.rMedF || mc.medF) + '</strong> en dollars r\u00e9els. Dans un sc\u00e9nario prudent (P25), il serait de <strong>' + f$(_p25Val) + '</strong>.'
         : 'The simulation engine assigns your plan a grade of <strong>' + g.letter + ' (' + g.label + ')</strong>, with a success rate of <strong>' + succPct + '%</strong>. The median (P50) wealth at the end of the projection is <strong>' + f$(mc.rMedF || mc.medF) + '</strong> in real dollars. In a cautious scenario (P25), it would be <strong>' + f$(_p25Val) + '</strong>.';
-      h += narrAi(_diagDet, d.ai.verdict, fr, fr ? 'Verdict IA' : 'AI Verdict');
+      // 2026-04-29: secondary verdict + page_zero_verdict slots no
+      // longer rendered — overall_assessment at the top of the chapter
+      // synthesizes everything in one block.
+      if (false) h += narrAi(_diagDet, d.ai.verdict, fr, fr ? 'Verdict IA' : 'AI Verdict');
     } else {
-      h += aiSlot(d.ai.verdict, fr, fr ? 'Verdict IA' : 'AI Verdict');
+      if (false) h += aiSlot(d.ai.verdict, fr, fr ? 'Verdict IA' : 'AI Verdict');
     }
-    if (d.ai.page_zero_verdict) h += F.AiBlock(d.ai.page_zero_verdict, fr);
+    // d.ai.page_zero_verdict no longer rendered (merged into overall_assessment).
     h += secPageEnd();
     return h;
   }
@@ -6185,9 +6205,10 @@ h += secPageEnd();
     var tocSections = [];
     var _tocN = 0;
     // ─ Ch.1 — Plan at a glance ────────────────────
+    // 2026-04-29: collapsed to ONE entry. sec-assessment + sec-diagnostic
+    // are now one continuous chapter under one cover; sec-levers moved
+    // to Ch.3 next to risk + stress where sensitivity belongs.
     tocSections.push({ n: '\u2606', id: 'sec-assessment', label: F.L('page_zero', d.fr) });
-    _tocN++; tocSections.push({ n: _tocN, id: 'sec-diagnostic', label: F.L('diagnostic', d.fr) });
-    if (_hasSweeps) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-levers', label: F.L('levers', d.fr) }); }
     // ─ Ch.2 — Why this plan works ────────────────
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
@@ -6211,6 +6232,7 @@ h += secPageEnd();
     // ─ Ch.3 — Risks and tradeoffs ───────────────
     if (d.exp && !_isMinimalReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-risk', label: F.L('risk', d.fr) }); }
     if (_hasStress && !_isMinimalReader) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-stress', label: d.fr ? 'Tests de stress' : 'Stress tests' }); }
+    if (_hasSweeps) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-levers', label: F.L('levers', d.fr) }); }
     // ─ Ch.4 — Strategy & decisions ──────────────
     if (_hasStrats) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-strategies', label: F.L('strategies', d.fr) }); }
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-tax', label: F.L('tax', d.fr) });
@@ -6293,12 +6315,10 @@ h += secPageEnd();
       !(d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
     h += _showTeaser ? _renderWhatIfTeaser(d) : '';
 
-    // 1.5 What Could Change This — only if MC payload carries real sweep data
-    // (renderLevers is gated on mc._sweeps; avoids fabricated closed-form deltas).
-    if (_hasSweeps) {
-      secN++;
-      h += renderLevers(d, secN);
-    }
+    // 2026-04-29: sec-levers (Sensibilités) moved to Chapter 3 (Risks &
+    // tradeoffs) where sensitivity analysis logically belongs alongside
+    // risk dispersion + stress tests. It used to render here at the tail
+    // of Chapter 1, which made the chapter sprawl across 3 sections.
 
     // ─── CH.2 — POURQUOI CE PLAN TIENT LA ROUTE ─────────────────────────
     // Profile + family + goals + asset-class deep dives + projection + revenue.
@@ -6382,6 +6402,13 @@ h += secPageEnd();
       'Stress tests \u2014 alternative scenarios (click to open)',
       d
     );
+    // 2026-04-29: Sensibilit\u00e9s du plan (renderLevers) moved here from
+    // Chapter 1. Gated on mc._sweeps + a data-quality threshold inside
+    // the renderer (no row, no render).
+    if (_hasSweeps) {
+      secN++;
+      h += renderLevers(d, secN);
+    }
     // Year-by-year cash flow detail. Skip if Phase 3 already rendered it
     // earlier (cashflowLeads + revenueFirst). Density-collapse for compact
     // readers — the table is large (30+ rows) and overwhelming if not
