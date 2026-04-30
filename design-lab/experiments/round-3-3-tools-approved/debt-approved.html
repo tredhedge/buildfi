@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BuildFi Debt Tool Approved Prototype</title>
+  <link rel="stylesheet" href="./tools-approved.css">
+  <script defer src="./tools-approved.js"></script>
+</head>
+<body data-theme="dark">
+  <div class="tool-shell" id="debt-live-surface">
+    <div class="tool-topbar">
+      <div class="tool-brand">BuildFi Debt Tool</div>
+      <div class="tool-links">
+        <a href="./index.html">Back to overview</a>
+        <button type="button" data-set-theme="dark">Dark</button>
+        <button type="button" data-set-theme="light">Light</button>
+      </div>
+    </div>
+
+    <header class="tool-header" id="top">
+      <div class="kicker">Approved Prototype</div>
+      <h1 class="tool-title">Make the payoff tradeoff visible before another month rolls through.</h1>
+      <p class="tool-copy">This version stays tool-first: quick inputs on the left, operational comparison in the center, and just enough framing to show what delay costs. It is meant for action planning, not for reading like a report.</p>
+      <div class="chip-row" data-scenario-group data-scenario-target="debt-live-surface">
+        <button class="chip is-active" type="button" data-scenario data-payload='{"scenarioName":"Current pace","monthlyBudget":"$1,150/mo","monthsToZero":"39 months","interestBurn":"$14,800","cashTension":"Tight in peaks","focusMove":"Keep minimums stable and avoid fresh revolver growth","comparePayment":"$1,150","compareFinish":"Jul 2029","compareInterest":"$14,800","compareFreedCash":"$0 until finish","stackHeadline":"Two balances are driving most drag","priorityOne":"Stop the card rollover before the line resets higher","priorityTwo":"Point the next bonus to the 19.9% card, not the car loan","priorityThree":"Move the LOC only if rate spread stays above 5 pts"}'>Current pace</button>
+        <button class="chip" type="button" data-scenario data-payload='{"scenarioName":"Focused push","monthlyBudget":"$1,550/mo","monthsToZero":"28 months","interestBurn":"$9,200","cashTension":"Managed with buffer","focusMove":"Concentrate extra cash on the highest APR until one balance clears","comparePayment":"$1,550","compareFinish":"Aug 2028","compareInterest":"$9,200","compareFreedCash":"+$400 by month 29","stackHeadline":"High APR card clears inside the first year","priorityOne":"Add the extra $400 now while utilization is still repairable","priorityTwo":"Roll each cleared minimum forward without expanding lifestyle","priorityThree":"Keep a one-month buffer so the push does not break on repairs"}'>Focused push</button>
+        <button class="chip" type="button" data-scenario data-payload='{"scenarioName":"Refi plus push","monthlyBudget":"$1,450/mo","monthsToZero":"25 months","interestBurn":"$7,600","cashTension":"Moderate after setup","focusMove":"Refinance one tranche, then keep the accelerated payment instead of easing off","comparePayment":"$1,450","compareFinish":"May 2028","compareInterest":"$7,600","compareFreedCash":"+$1,050 by month 26","stackHeadline":"Rate compression matters, but only if payment discipline holds","priorityOne":"Validate fees and promo expiry before moving the line","priorityTwo":"Lock the saved interest into payoff speed, not monthly relief","priorityThree":"Use this only if approval does not depend on adding new revolving risk"}'>Refi plus push</button>
+      </div>
+    </header>
+
+    <section class="tool-summary" id="debt-surface">
+      <div class="summary-grid">
+        <article class="summary-card">
+          <div class="label">Scenario</div>
+          <div class="value" data-bind="scenarioName">Current pace</div>
+          <p>Working view for the debt stack and payoff order.</p>
+        </article>
+        <article class="summary-card">
+          <div class="label">Monthly debt budget</div>
+          <div class="value" data-bind="monthlyBudget">$1,150/mo</div>
+          <p>Available for minimums plus any targeted acceleration.</p>
+        </article>
+        <article class="summary-card">
+          <div class="label">Time to zero</div>
+          <div class="value" data-bind="monthsToZero">39 months</div>
+          <p>How long the current stack stays active if the plan holds.</p>
+        </article>
+        <article class="summary-card">
+          <div class="label">Interest burned</div>
+          <div class="value" data-bind="interestBurn">$14,800</div>
+          <p>Cost of staying in motion without changing the payoff path.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="tool-layout">
+      <aside class="tool-sidebar">
+        <div class="group-label">Tool map</div>
+        <nav class="tool-nav">
+          <a class="is-active" href="#compare">Compare path</a>
+          <a href="#stack">Debt stack</a>
+          <a href="#priorities">Action priorities</a>
+        </nav>
+
+        <div class="group-label">Working inputs</div>
+        <div class="control-grid">
+          <div class="control">
+            <label for="income">Net monthly income</label>
+            <input id="income" type="text" value="$6,300">
+          </div>
+          <div class="control">
+            <label for="floor">Required minimums</label>
+            <input id="floor" type="text" value="$910">
+          </div>
+          <div class="control">
+            <label for="extra">Explored extra payment</label>
+            <input id="extra" type="text" value="$400">
+          </div>
+          <div class="control">
+            <label for="strategy">Payoff logic</label>
+            <select id="strategy">
+              <option selected>Avalanche first</option>
+              <option>Hybrid refinance</option>
+              <option>Snowball first</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="buffer">Cash buffer rule</label>
+            <select id="buffer">
+              <option selected>Keep 1 month intact</option>
+              <option>Allow partial dip</option>
+              <option>Use full buffer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hint-card" style="margin-top:18px;">
+          <div class="group-label">What matters</div>
+          <p style="margin:0 0 10px;">Debt decisions break down when the plan looks affordable on paper but fails in a rough month. This surface keeps pressure on two questions:</p>
+          <p style="margin:0;">How much interest does waiting add, and which move shortens the loop fastest without creating rebound borrowing?</p>
+        </div>
+      </aside>
+
+      <main>
+        <section class="tool-panel" id="compare">
+          <div class="group-label">Baseline vs explored</div>
+          <div class="compare-grid">
+            <article class="compare-card">
+              <div class="label">Baseline</div>
+              <div class="value">$1,150</div>
+              <p style="margin:0 0 16px;">Minimums plus a small overpayment keep the stack moving, but not fast enough to stop interest drag.</p>
+              <table>
+                <tr><th>Finish</th><td class="mono">Jul 2029</td></tr>
+                <tr><th>Total interest</th><td class="mono">$14,800</td></tr>
+                <tr><th>Cash released</th><td class="mono">$0 until completion</td></tr>
+                <tr><th>Risk</th><td>High chance one stressed month reverses progress.</td></tr>
+              </table>
+            </article>
+            <article class="compare-card">
+              <div class="label">Explored path</div>
+              <div class="value" data-bind="comparePayment">$1,150</div>
+              <p style="margin:0 0 16px;" data-bind="focusMove">Keep minimums stable and avoid fresh revolver growth</p>
+              <table>
+                <tr><th>Finish</th><td class="mono" data-bind="compareFinish">Jul 2029</td></tr>
+                <tr><th>Total interest</th><td class="mono" data-bind="compareInterest">$14,800</td></tr>
+                <tr><th>Cash released</th><td class="mono" data-bind="compareFreedCash">$0 until finish</td></tr>
+                <tr><th>Pressure</th><td data-bind="cashTension">Tight in peaks</td></tr>
+              </table>
+            </article>
+          </div>
+          <div class="chart-shell" style="margin-top:14px;">
+            <div class="wave"></div>
+            <div class="wave alt"></div>
+            <div class="wave third"></div>
+          </div>
+          <p class="chart-caption">The comparison should answer one operational question quickly: if we add effort now, how much earlier do balances disappear and how much interest stops compounding in the meantime?</p>
+        </section>
+
+        <section class="tool-panel" id="stack" style="margin-top:14px;">
+          <div class="group-label">Debt stack and payoff</div>
+          <div class="two-grid">
+            <div>
+              <h2 style="margin:0 0 10px; font-size:24px;" data-bind="stackHeadline">Two balances are driving most drag</h2>
+              <p class="tool-copy" style="margin-top:0;">The operating view is simple: keep minimums current everywhere, then force focus onto the balance where each extra dollar changes the outcome most. The stack below is shown as a working queue rather than an account report.</p>
+              <table>
+                <tr>
+                  <th>Balance</th>
+                  <th>APR</th>
+                  <th>Min</th>
+                  <th>Target order</th>
+                </tr>
+                <tr>
+                  <td>Visa revolving</td>
+                  <td class="mono">19.9%</td>
+                  <td class="mono">$210</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>Line of credit</td>
+                  <td class="mono">12.4%</td>
+                  <td class="mono">$180</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>Personal loan</td>
+                  <td class="mono">8.2%</td>
+                  <td class="mono">$320</td>
+                  <td>3</td>
+                </tr>
+                <tr>
+                  <td>Auto loan</td>
+                  <td class="mono">5.9%</td>
+                  <td class="mono">$200</td>
+                  <td>4</td>
+                </tr>
+              </table>
+            </div>
+            <div class="action-list">
+              <article class="action-item urgent">
+                <div class="group-label">Cost of inaction</div>
+                <p style="margin:0;">Every month the card balance stays near current levels, the plan loses flexibility twice: direct interest keeps accruing, and utilization stays high enough to limit cleaner refinancing options later.</p>
+              </article>
+              <article class="action-item">
+                <div class="group-label">Payoff logic</div>
+                <p style="margin:0;">When a balance closes, its minimum should roll forward automatically. The interface should make that progression feel expected and mechanical, not like a separate planning exercise each time.</p>
+              </article>
+              <article class="action-item">
+                <div class="group-label">Guardrail</div>
+                <p style="margin:0;">Any explored path that requires ongoing card reuse to survive should fail the test, even if it looks faster in nominal payoff months.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="tool-panel" id="priorities" style="margin-top:14px;">
+          <div class="group-label">Action priorities</div>
+          <div class="action-list">
+            <article class="action-item urgent">
+              <strong>1. <span data-bind="priorityOne">Stop the card rollover before the line resets higher</span></strong>
+              <p style="margin:8px 0 0;">This is the highest-leverage move because it reduces both monthly interest and future option loss.</p>
+            </article>
+            <article class="action-item">
+              <strong>2. <span data-bind="priorityTwo">Point the next bonus to the 19.9% card, not the car loan</span></strong>
+              <p style="margin:8px 0 0;">The tool should make allocation errors obvious when a lower-rate balance feels emotionally appealing but mathematically slower.</p>
+            </article>
+            <article class="action-item">
+              <strong>3. <span data-bind="priorityThree">Move the LOC only if rate spread stays above 5 pts</span></strong>
+              <p style="margin:8px 0 0;">Refinancing belongs here as a tactical branch, not as the main story. It helps only when the payment discipline remains intact after the move.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+</body>
+</html>

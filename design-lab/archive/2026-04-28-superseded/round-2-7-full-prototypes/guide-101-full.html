@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide 101 Full Prototype</title>
+  <link rel="stylesheet" href="./full-prototypes.css">
+  <script defer src="./full-prototypes.js"></script>
+</head>
+<body class="full-page reading-page">
+  <div class="reading-shell">
+    <aside class="reading-rail">
+      <div class="kicker">Reading · Guide 101</div>
+      <h1>Financial basics</h1>
+      <p>A fuller guide shell for beginner readers: publication-grade pacing, but still approachable and action-oriented.</p>
+      <nav class="reading-nav">
+        <a class="is-active" href="#cover">Cover</a>
+        <a href="#orientation">Orientation</a>
+        <a href="#portrait">Financial portrait</a>
+        <a href="#budget">Budget</a>
+        <a href="#debt">Debt</a>
+        <a href="#savings">Savings</a>
+        <a href="#accounts">Accounts</a>
+        <a href="#action">Next step</a>
+      </nav>
+    </aside>
+    <main class="reading-main">
+      <div class="reading-topbar">
+        <div class="reading-brand">BuildFi Reading</div>
+        <div class="reading-links">
+          <a href="./index.html">Back to Round 2.7</a>
+          <a href="../../specs/2026-04-28-round-2-7-full-prototypes.md">Spec note</a>
+        </div>
+      </div>
+
+      <section class="reading-cover" id="cover">
+        <div class="kicker">Part 101 · Foundations</div>
+        <h1 class="cover-title">Get your financial footing before you optimize anything.</h1>
+        <p class="cover-promise">This fuller prototype tests whether a beginner guide can feel more like a high-quality reading product without losing clarity. The aim is less app-page energy, more thoughtful chapter flow.</p>
+        <div class="cover-actions">
+          <a class="btn-gold" href="#orientation">Start the guide</a>
+          <a class="btn-glass" href="#">Download PDF</a>
+        </div>
+      </section>
+
+      <section class="reading-note" id="orientation">
+        <p><strong>Who this is for:</strong> readers who need a clear order of operations before diving into calculators. The guide should stand on its own, and interactive tools should deepen the lesson rather than carry it.</p>
+      </section>
+
+      <section class="reading-toc">
+        <h2>What this guide covers</h2>
+        <div class="reading-sub">The chapter rhythm is meant to feel closer to a short advisory booklet than to a product landing page.</div>
+        <div class="toc-grid">
+          <div class="toc-item"><strong>01</strong><div><h3>Your financial portrait</h3><p>Understand what you own, what you owe, and what actually matters first.</p></div></div>
+          <div class="toc-item"><strong>02</strong><div><h3>Budgeting for control</h3><p>Use a budget as a decision tool, not as a punishment system.</p></div></div>
+          <div class="toc-item"><strong>03</strong><div><h3>Debt before ambition</h3><p>See why expensive debt often blocks every other plan.</p></div></div>
+          <div class="toc-item"><strong>04</strong><div><h3>Savings order</h3><p>Place each extra dollar in the right account, in the right sequence.</p></div></div>
+          <div class="toc-item"><strong>05</strong><div><h3>Accounts and government</h3><p>Get the essentials of RRSP, TFSA, FHSA, and public programs without jargon.</p></div></div>
+        </div>
+      </section>
+
+      <section class="reading-section" id="portrait">
+        <div class="section-head">
+          <div class="section-num">01</div>
+          <div>
+            <h2>Your financial portrait</h2>
+            <div class="reading-sub">The first question is not how much you make. It is where you actually stand.</div>
+          </div>
+        </div>
+        <p>A fuller guide version should linger a bit more on interpretation. The reader needs to understand why net worth matters, why cash flow matters, and why trend matters more than the snapshot.</p>
+        <div class="card-grid">
+          <div class="content-card"><strong>Core idea</strong><p>Your net worth is the one number that captures both assets and obligations in the same frame.</p></div>
+          <div class="content-card"><strong>Beginner value</strong><p>Negative early-career net worth is not failure. The real question is whether the direction is improving each year.</p></div>
+        </div>
+        <div class="interaction-grid" style="margin-top:14px;">
+          <div class="interaction-card">
+            <strong>Interactive enhancement</strong>
+            <div class="interaction-title">Net worth snapshot</div>
+            <p>In the online version, this chapter would let the reader enter a few balances and immediately see assets, liabilities, and net worth on one simple card.</p>
+          </div>
+          <div class="interaction-card">
+            <strong>PDF fallback</strong>
+            <div class="interaction-title">Static worked example</div>
+            <p>The PDF counterpart can show a single example household and how its net worth changes after one year of debt reduction and savings.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="reading-section" id="budget">
+        <div class="section-head">
+          <div class="section-num">02</div>
+          <div>
+            <h2>Budgeting for control</h2>
+            <div class="reading-sub">Budgeting should feel like permission with structure, not like shame with categories.</div>
+          </div>
+        </div>
+        <p>One thing the fuller guide can do better is frame the budget emotionally. The reader should leave this chapter feeling more agency, not more guilt.</p>
+        <div class="callout">A good 101 guide does not just say “50/30/20.” It explains what problem that structure solves for a real person.</div>
+        <div class="card-grid" style="margin-top:14px;">
+          <div class="content-card"><strong>Needs</strong><p>Anchor essentials first so the reader knows what must be protected every month.</p></div>
+          <div class="content-card"><strong>Flex</strong><p>Show that discretionary spending is not the enemy; unmanaged drift is.</p></div>
+        </div>
+      </section>
+
+      <section class="reading-section" id="debt">
+        <div class="section-head">
+          <div class="section-num">03</div>
+          <div>
+            <h2>Debt before ambition</h2>
+            <div class="reading-sub">For many households, the first true investment is eliminating a painful interest rate.</div>
+          </div>
+        </div>
+        <p>This chapter should feel like the hinge between reading and future product use. The guide teaches the principle. The debt tool later helps the reader apply it with their own balances.</p>
+        <div class="prompt-row">
+          <div class="prompt-chip">High-rate debt first</div>
+          <div class="prompt-chip">Avalanche vs snowball</div>
+          <div class="prompt-chip">Minimum payment trap</div>
+        </div>
+        <div class="interaction-grid" style="margin-top:14px;">
+          <div class="interaction-card">
+            <strong>Online guide moment</strong>
+            <div class="interaction-title">Card-trap calculator</div>
+            <p>The HTML guide can embed a mini illustration showing how a 19.99% card stretches out over years under minimum payments.</p>
+          </div>
+          <div class="interaction-card">
+            <strong>Tool handoff</strong>
+            <div class="interaction-title">Go deeper in debt tool</div>
+            <p>After the principle lands, the guide can invite the reader into the dedicated debt tool to compare strategies with their own numbers.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="reading-section" id="savings">
+        <div class="section-head">
+          <div class="section-num">04</div>
+          <div>
+            <h2>Savings order</h2>
+            <div class="reading-sub">Each extra dollar needs a sequence, not just a destination.</div>
+          </div>
+        </div>
+        <p>This chapter is where the guide becomes visibly useful. Readers want to know whether to build cash, take the employer match, kill debt, or fund tax-advantaged accounts.</p>
+        <div class="card-grid">
+          <div class="content-card"><strong>Emergency reserve</strong><p>Stability before optimization keeps the reader from falling back into expensive credit.</p></div>
+          <div class="content-card"><strong>Employer match</strong><p>The guide should explain why “free money” outranks almost everything else.</p></div>
+          <div class="content-card"><strong>Tax shelter</strong><p>Only after the basics are stable does the account-choice question really matter.</p></div>
+        </div>
+      </section>
+
+      <section class="reading-section" id="accounts">
+        <div class="section-head">
+          <div class="section-num">05</div>
+          <div>
+            <h2>Accounts and public benefits</h2>
+            <div class="reading-sub">Readers need plain-language meaning, not a wall of acronyms.</div>
+          </div>
+        </div>
+        <p>The fuller guide should connect the accounts to future life choices. RRSP, TFSA, FHSA, RRQ/QPP, OAS, and GIS matter because they change later flexibility, not because they are technical categories.</p>
+        <div class="interaction-grid">
+          <div class="interaction-card">
+            <strong>Static explanation</strong>
+            <div class="interaction-title">Account comparison table</div>
+            <p>The PDF should keep a clean comparison table. The web guide can add revealable notes or a tiny chooser for “income high now vs later.”</p>
+          </div>
+          <div class="interaction-card">
+            <strong>Future bridge</strong>
+            <div class="interaction-title">Lead into Guide 201</div>
+            <p>The right ending for 101 is not “now you know everything.” It is “now you are ready for optimization and timing questions.”</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="reading-cta" id="action">
+        <div class="kicker">What happens next</div>
+        <h3>Guide first. Tool second. Plan later.</h3>
+        <p>This is the intended portfolio logic: the beginner guide clarifies the mental model, the tool supports action, and the planner or report comes later when the person is ready for a deeper structured plan.</p>
+        <div class="tag-row">
+          <div class="tag">Reading mode</div>
+          <div class="tag">Simple first</div>
+          <div class="tag">Tool handoff later</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

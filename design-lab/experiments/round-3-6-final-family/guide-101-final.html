@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide 101 Final Lab</title>
+  <link rel="stylesheet" href="./reading-family.css">
+  <script defer src="./reading-family.js"></script>
+</head>
+<body data-guide-mode="interactive">
+  <div class="guide-shell">
+    <aside class="guide-rail">
+      <div class="kicker">Reading - Guide 101</div>
+      <h1>Guide system</h1>
+      <p>This prototype is not just a prettier guide page. It shows how the same beginner guide can support both interactive web reading and a proper PDF/static fallback.</p>
+      <nav class="guide-nav">
+        <a class="is-active" href="#cover">Cover</a>
+        <a href="#orientation">Orientation</a>
+        <a href="#portrait">Financial portrait</a>
+        <a href="#budget">Budget</a>
+        <a href="#debt">Debt</a>
+        <a href="#savings">Savings</a>
+        <a href="#action">Next step</a>
+      </nav>
+      <div class="mode-switch">
+        <div class="mode-switch-copy">Switch the same guide between web and PDF/static thinking.</div>
+        <div class="mode-buttons">
+          <button type="button" data-guide-mode-set="interactive">Interactive guide</button>
+          <button type="button" data-guide-mode-set="pdf">PDF / static guide</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="guide-main">
+      <div class="guide-topbar">
+        <div class="guide-brand">BuildFi Reading</div>
+        <div class="guide-links">
+          <a href="./index.html">Family overview</a>
+          <a href="../../specs/2026-04-28-round-2-8-guide-system.md">Guide system note</a>
+        </div>
+      </div>
+
+      <section class="guide-cover" id="cover">
+        <div class="kicker">Part 101 - Foundations</div>
+        <h1>Beginner guides should teach first, then let readers explore.</h1>
+        <p>This pass treats Guide 101 as one guide with two outputs. The beginner should get the same lesson order either way; only the depth of exploration changes.</p>
+        <div class="cover-actions">
+          <a class="btn-gold" href="#orientation">Start reading</a>
+          <a class="btn-glass" href="#action">See the system contract</a>
+        </div>
+      </section>
+
+      <section class="guide-note" id="orientation">
+        <p><strong>System rule:</strong> every chapter must stand on its own in PDF, and every interactive block must declare what its static replacement is. That prevents the web guide from becoming the "real" guide and the PDF from becoming a dead export.</p>
+      </section>
+
+      <section class="guide-toc">
+        <h2>Shared chapter spine</h2>
+        <div class="guide-sub">The chapter list stays stable across modes. What changes is the treatment inside each chapter, not the educational order itself.</div>
+        <div class="toc-grid">
+          <div class="toc-item"><strong>01</strong><div><h3>Your financial portrait</h3><p>Start with what exists today before trying to optimize tomorrow.</p></div></div>
+          <div class="toc-item"><strong>02</strong><div><h3>Budgeting for control</h3><p>Use cash flow as a decision tool, not a source of guilt.</p></div></div>
+          <div class="toc-item"><strong>03</strong><div><h3>Debt before ambition</h3><p>See why expensive debt often blocks every other goal.</p></div></div>
+          <div class="toc-item"><strong>04</strong><div><h3>Savings order</h3><p>Know where the next dollar should go once the basics are stable.</p></div></div>
+        </div>
+      </section>
+
+      <section class="chapter-card" id="portrait">
+        <div class="chapter-header">
+          <div>
+            <div class="kicker">Chapter 1</div>
+            <h2>Your financial portrait</h2>
+          </div>
+          <div class="chapter-meta">Shared in both modes</div>
+        </div>
+        <div class="chapter-frame">The lesson stays identical: before budgeting or investing, the reader needs a simple view of assets, debts, income, and monthly pressure points.</div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-grid">
+          <div class="shared-stack">
+            <h3>Start with the facts, not with goals.</h3>
+            <div class="shared-block">
+              <div class="shared-label">Shared explanation</div>
+              <p>Many beginners jump straight to "How much should I save?" before they know whether their cash flow is stable, whether debt costs are swallowing progress, or whether they even have a reliable net-worth picture. The guide should always slow that sequence down.</p>
+            </div>
+            <div class="shared-block">
+              <div class="shared-label">Shared takeaway</div>
+              <p>A simple asset-versus-liability snapshot is not busywork. It changes what kind of decision should come next.</p>
+            </div>
+          </div>
+          <div class="support-card">
+            <h3>Mode contract</h3>
+            <ul class="contract-list">
+              <li>Interactive mode can use a quick net-worth helper.</li>
+              <li>PDF mode needs a worked example and interpretation.</li>
+              <li>Both modes end on the same lesson.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dual-grid" style="margin-top:18px">
+          <div class="mode-panel interactive-only">
+            <h4>Interactive enhancement</h4>
+            <p>The reader can test a simple asset/liability input pattern after the lesson is explained.</p>
+            <div class="interaction-strip">
+              <div class="interaction-chip">Cash + TFSA</div>
+              <div class="interaction-chip">Credit card debt</div>
+              <div class="interaction-chip">Car loan</div>
+              <div class="interaction-chip">Monthly surplus</div>
+            </div>
+          </div>
+          <div class="mode-panel pdf-only">
+            <h4>PDF/static fallback</h4>
+            <p>Replace the helper with a representative household snapshot and a one-paragraph interpretation.</p>
+            <div class="fallback-figure">
+              <div class="fallback-bar"></div>
+              <strong>Example household:</strong>
+              Assets of $23,000 against debts of $18,500 creates a very different next step than someone with the same income but no debt pressure.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter-card" id="budget">
+        <div class="chapter-header">
+          <div>
+            <div class="kicker">Chapter 2</div>
+            <h2>Budgeting for control</h2>
+          </div>
+          <div class="chapter-meta">Same lesson, different support</div>
+        </div>
+        <div class="chapter-frame">This chapter teaches order and pressure, not perfect categorization. The reader needs to see where control comes from before they see a calculator.</div>
+      </section>
+
+      <section class="section-card">
+        <h3>Budgeting should lower anxiety, not create more of it.</h3>
+        <p>A guide-first experience explains that a budget is mainly about protecting room for essentials, debt service, and savings. The interactive version can then let the user test different monthly allocations without making the chapter depend on the tool.</p>
+
+        <div class="dual-grid">
+          <div class="mode-panel interactive-only">
+            <h4>Interactive enhancement</h4>
+            <p>Use three or four adjustable categories only after the reader understands what the categories are doing.</p>
+            <div class="interaction-strip">
+              <div class="interaction-chip">Housing 35%</div>
+              <div class="interaction-chip">Debt 14%</div>
+              <div class="interaction-chip">Savings 8%</div>
+            </div>
+          </div>
+          <div class="mode-panel pdf-only">
+            <h4>PDF/static fallback</h4>
+            <p>Show one balanced monthly example and one stressed monthly example, then interpret the difference in plain language.</p>
+            <div class="fallback-figure">
+              <strong>Static lesson card</strong>
+              If essentials and debt already absorb almost everything, "saving more" is not the right first instruction. The guide needs to say that directly.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter-card" id="debt">
+        <div class="chapter-header">
+          <div>
+            <div class="kicker">Chapter 3</div>
+            <h2>Debt before ambition</h2>
+          </div>
+          <div class="chapter-meta">Bridge to Product</div>
+        </div>
+        <div class="chapter-frame">This is where the guide starts pointing toward the debt tool. The guide teaches why debt cost matters; the tool later helps decide what to do next.</div>
+      </section>
+
+      <section class="section-card">
+        <h3>Explain the trap before offering a strategy.</h3>
+        <p>Guide 101 should not become a mini debt tool. It should teach the reader why high-interest balances distort every other plan, then hand off to the more tactical Product surface if they want personalized sequencing.</p>
+
+        <div class="dual-grid">
+          <div class="mode-panel interactive-only">
+            <h4>Interactive enhancement</h4>
+            <p>Offer a simple "minimums vs accelerated payoff" comparison card, not the full production repayment system.</p>
+          </div>
+          <div class="mode-panel pdf-only">
+            <h4>PDF/static fallback</h4>
+            <p>Show one side-by-side debt-payoff example and end with a direct CTA to the debt tool for readers who want a live plan.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapter-card" id="savings">
+        <div class="chapter-header">
+          <div>
+            <div class="kicker">Chapter 4</div>
+            <h2>Savings order</h2>
+          </div>
+          <div class="chapter-meta">Shared chapter close</div>
+        </div>
+        <div class="chapter-frame">Guide 101 ends better when it gives the reader a sequence: stabilize cash flow, control expensive debt, then place the next dollar intentionally.</div>
+      </section>
+
+      <section class="section-card" id="action">
+        <h3>What 101 should lock before implementation</h3>
+        <div class="dual-grid">
+          <div class="contract-card">
+            <h3>Architecture decisions</h3>
+            <ul class="decision-list">
+              <li>One chapter data model for web and PDF.</li>
+              <li>Each interactive block must have a defined static replacement.</li>
+              <li>Guide shell stays stable across both outputs.</li>
+              <li>Hand off to the debt tool happens after the lesson, not before it.</li>
+            </ul>
+          </div>
+          <div class="contract-card">
+            <h3>Why this matters</h3>
+            <p>If you lock this now, the later guide refactor is much cleaner: content modules, section contracts, and output-specific renderers become obvious instead of improvised.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="guide-footer">
+        <div>Round 2.8 - Guide 101 system prototype</div>
+        <div>Interactive and PDF modes share one reading spine</div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
