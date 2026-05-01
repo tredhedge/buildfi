@@ -151,7 +151,11 @@
     '.meth-check{color:'+C.green+';font-weight:700}',
     // Footer & disclaimer
     '.ft{text-align:center;margin-top:20px;padding-top:10px;border-top:1px solid #e0d8c8;font-size:9px;color:#aaa;line-height:1.8}',
-    '.disclaimer{margin-top:14px;padding:14px;background:#fdf3f3;border:1px solid #e8c8c8;border-radius:8px;font-size:9px;color:#777;line-height:1.7;text-align:center;break-inside:avoid}',
+    // 2026-04-30: disclaimer text bumped from 9px → 11px (was unreadable
+    // per user feedback). Color softened to warm grey on cream-pink so
+    // the contrast stays in the editorial palette. Text-align justified
+    // → left for readability at the higher size.
+    '.disclaimer{margin-top:14px;padding:14px 18px;background:#fdf6f6;border:1px solid #e8d4d4;border-radius:6px;font-size:11px;color:#5a3a3a;line-height:1.7;text-align:left;break-inside:avoid}',
     '.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid '+C.gold+';margin-bottom:10px}',
     '.hdr-right{text-align:right;font-size:11px;color:#666;line-height:1.8}',
     '.ver{background:#f5efe5;color:'+C.gold+';padding:2px 10px;border-radius:10px;font-size:9px;font-weight:800}',
@@ -215,8 +219,20 @@
     'p,.narr{widows:3;orphans:3}',
     '.bf-chart-figure,.bf-chart-figure+.bf-chart-caption{break-inside:avoid;page-break-inside:avoid}',
     'h3.sec,h4{break-after:avoid;page-break-after:avoid}',
-    'body{padding:0;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
-    '.narr{font-size:11px;line-height:1.7}',
+    // 2026-04-30: print mode forces ALL <details> open (including density-
+    // collapsed sections) so the printed PDF is the complete report,
+    // never collapsed disclosure UI. Removes the chevron and summary
+    // border so collapsed-in-screen sections look natural in print.
+    'details{display:block !important}',
+    'details[open]>summary,details>summary{display:none !important}',
+    'details>*:not(summary){display:revert !important}',
+    '.bf-density-collapse,.bf-density-collapse>*{margin:0 !important;border:none !important;background:transparent !important}',
+    // 2026-04-30: bump print body from 11px → 12px and .narr from 11px →
+    // 12px per user feedback ("il y a du texte beaucoup trop petit").
+    // The 11px base was tight; readability on print suffers, especially
+    // for older readers (the actual audience for retirement reports).
+    'body{padding:0;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.narr{font-size:12px;line-height:1.75}',
     '.sec-page{page-break-before:always}',
     '.sec-page:first-of-type{page-break-before:avoid}',
     'table{page-break-inside:auto}tr{page-break-inside:avoid}thead{display:table-header-group}',
@@ -1011,9 +1027,9 @@
     h += '<div style="display:flex;align-items:stretch;border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:18px 0;margin-bottom:28px">';
     _kpiTiles.forEach(function(t, i) {
       h += '<div style="flex:1;padding:0 16px;text-align:center;' + (i < _kpiTiles.length - 1 ? 'border-right:1px solid #ece4d4' : '') + '">' +
-        '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:600;color:#8a7a5c;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;line-height:1.3">' + t.label + '</div>' +
-        '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:24px;font-weight:600;line-height:1.1;letter-spacing:-0.3px;color:' + t.color + '">' + t.value + '</div>' +
-        (t.sub ? '<div style="font-family:Inter,sans-serif;font-size:10px;color:#8a7a5c;margin-top:6px;line-height:1.4">' + t.sub + '</div>' : '') +
+        '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;color:#8a7a5c;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;line-height:1.3">' + t.label + '</div>' +
+        '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:26px;font-weight:600;line-height:1.1;letter-spacing:-0.3px;color:' + t.color + '">' + t.value + '</div>' +
+        (t.sub ? '<div style="font-family:Inter,sans-serif;font-size:11px;color:#8a7a5c;margin-top:6px;line-height:1.4">' + t.sub + '</div>' : '') +
       '</div>';
     });
     h += '</div>';
@@ -1209,43 +1225,13 @@
       '</div>' +
     '</div>';
 
-    // Inputs / Hypothèses — KEY-VALUE tables (aligned columns), not
-    // dot-separated bullet sentences. Identity confirmation: the
-    // reader's eye sweeps left-to-right and recognizes their plan.
-    var _fM = function(v) { return F.fmtMoney(v, fr); };
-    function _kvRow(label, value) {
-      return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #ece4d4">' +
-        '<span style="font-family:Inter,sans-serif;font-size:11.5px;color:#5a4f3a">' + F.esc(label) + '</span>' +
-        '<span style="font-family:Inter,sans-serif;font-size:11.5px;font-weight:600;color:#1a1610">' + value + '</span>' +
-      '</div>';
-    }
-    var _inputRows = '';
-    _inputRows += _kvRow(fr ? 'Âge actuel' : 'Current age', (p.age || '—') + (fr ? ' ans' : ' yrs'));
-    _inputRows += _kvRow(fr ? 'Retraite' : 'Retirement', (fr ? 'à ' : 'at age ') + (p.retAge || '—'));
-    _inputRows += _kvRow(fr ? 'Dépenses cibles' : 'Target spending', _fM((p.retSpM || 0) * 12) + (fr ? '/an' : '/yr'));
-    _inputRows += _kvRow(fr ? 'Horizon' : 'Horizon', ((p.deathAge || 90) - (p.age || 0)) + (fr ? ' ans' : ' yrs'));
-    _inputRows += _kvRow(fr ? 'Province' : 'Province', p.prov || 'QC');
-    if (p.cOn) {
-      var _spouseDesc = (d.sfn ? F.esc(d.sfn) : (fr ? 'conjoint(e)' : 'spouse')) +
-        (p.cAge ? ', ' + p.cAge + (fr ? ' ans' : ' yr') : '');
-      _inputRows += _kvRow(fr ? 'Couple' : 'Couple', _spouseDesc);
-    }
-    var _assumpRows = '';
-    _assumpRows += _kvRow(fr ? 'Rendement espéré' : 'Expected return', (Math.round((p.eqRet || p.eqRetS || 0.06) * 1000) / 10) + ' %');
-    _assumpRows += _kvRow('Inflation', (Math.round((p.inf || 0.02) * 1000) / 10) + ' %');
-    _assumpRows += _kvRow(fr ? 'Longévité' : 'Longevity', (p.deathAge || 90) + (fr ? ' ans' : ' yrs'));
-    _assumpRows += _kvRow('Simulations', String(p.nSim || 5000));
-
-    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">';
-    h += '<div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#8a7a5c;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #c49a1a">' +
-        (fr ? 'Ce que vous nous avez dit' : 'What you told us') + '</div>' +
-      _inputRows + '</div>';
-    h += '<div>' +
-      '<div style="font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;color:#8a7a5c;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #c49a1a">' +
-        (fr ? 'Hypothèses du modèle' : 'Model assumptions') + '</div>' +
-      _assumpRows + '</div>';
-    h += '</div>';
+    // 2026-04-30: inputs/hypothèses key-value tables retired from the
+    // Sommaire exécutif. Chapter I opens with the Profile section
+    // which carries the same data (age · retraite · dépenses · horizon
+    // · longévité · province · couple) in its identity cards. Showing
+    // both was a duplicate. The phase opener pull-quote above already
+    // sets the lifecycle frame; the AI synthesis below delivers the
+    // verdict; Chapter I delivers the facts.
 
     // AI synthesis — Playfair italic LEAD CLAUSE pulled from the first
     // sentence, then the analytical body in Inter. The lead clause is
@@ -1909,7 +1895,10 @@
   function renderCover(d) {
     var fr = d.fr, g = F.grade(d.succVal, fr), sC = F.succColor(d.succVal);
     var cName = (d.client.name || 'Client');
-    var cSpouse = d.p.cOn ? (d.client.spouseName || d.p.cSpouseName || '') : '';
+    // 2026-04-30: spouse fallback. d.sfn is always populated for couple
+    // plans; use it when the explicit cover field is empty so spouse 2
+    // always appears on the cover.
+    var cSpouse = d.p.cOn ? (d.client.spouseName || d.p.cSpouseName || d.sfn || '') : '';
     var arch = _inferArchetype(d);
     d._archetype = arch; // share with downstream renderers (hero KPI, chapter framing)
     var h = '<div class="cover">';
@@ -2671,7 +2660,20 @@
     h += '<p class="narr" style="margin-top:8px;color:#888;font-size:10.5px;font-style:italic">' + (fr
       ? 'Le contenu narratif de ce rapport est rédigé par Claude Opus 4 (Anthropic) à partir des résultats du moteur de simulation BuildFi, puis vérifié par les contrôles AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
       : 'The narrative content in this report is drafted by Claude Opus 4 (Anthropic) from the BuildFi simulation engine outputs, then validated by the platform\'s AMF compliance checks. Figures and tables come from the engine, never from the language model.') + '</p>';
-    h += '<div style="margin-top:30px;padding-top:12px;border-top:1px solid ' + C.border + ';font-size:11px;color:#666">' + today + '<br/><span style="font-size:10px">BuildFi Technologies inc.</span></div>';
+    // 2026-04-30: letter signature simplified per user direction.
+    // Full client name (and spouse for couple plans) above the date.
+    // BuildFi Technologies inc. footer + advisor block dropped — those
+    // belong in the page footer or admin metadata, not in the letter
+    // signature for the prototype.
+    var _sigName = F.esc(d.client.name || '');
+    if (d.p.cOn) {
+      var _sigSpouse = d.client.spouseName || d.p.cSpouseName || d.sfn || '';
+      if (_sigSpouse) _sigName += ' & ' + F.esc(_sigSpouse);
+    }
+    h += '<div style="margin-top:30px;padding-top:14px;border-top:1px solid ' + C.border + ';font-size:12px;color:#3a322a;line-height:1.7">' +
+      '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:14px;font-weight:600;color:#1a1610;margin-bottom:4px">' + _sigName + '</div>' +
+      '<div style="font-size:11px;color:#5a4f3a">' + today + '</div>' +
+      '</div>';
     h += '</div></div>';
     return h;
   }
@@ -6659,7 +6661,13 @@ h += secPageEnd();
     //   non-plain (int / adv): individual entries — density-collapsed in
     //     compact mode via _densityWrap, inline otherwise.
     var _plainBackMatter = d.renderProfile && d.renderProfile.densityMode === 'deep';
-    var _showBackMatter = _plainBackMatter || !_isPlainReader;
+    // 2026-04-30: appendix now ALWAYS renders so the printed PDF
+    // carries methodology + assumptions + glossary regardless of
+    // reader profile. On screen, plain readers still see them
+    // density-collapsed via _densityWrap. Print CSS forces all
+    // <details> open (rule above), so the printed report is complete.
+    var _showBackMatter = true;
+    void _plainBackMatter; void _isPlainReader;  // kept for screen-only logic below
     if (_showBackMatter) {
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-methodology', label: F.L('methodology', d.fr) });
       _tocN++; tocSections.push({ n: _tocN, id: 'sec-assumptions', label: d.fr ? 'Hypoth\u00e8ses d\u00e9taill\u00e9es' : 'Detailed assumptions' });

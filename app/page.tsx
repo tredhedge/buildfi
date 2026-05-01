@@ -423,10 +423,10 @@ function Nav({ cl, lang, setLang, theme, toggleTheme, t }: any) {
             {theme === "dark" ? "☀" : "☾"}
           </button>
           <div style={{ display: "flex", gap: 4, background: cl.s2, borderRadius: 8, padding: 3 }}>
-            <button onClick={() => setLang("fr")} style={{ fontSize: 12, fontWeight: 700, color: lang === "fr" ? cl.al : cl.dm, background: lang === "fr" ? acBg(cl) : "transparent", border: "none", padding: "5px 12px", borderRadius: 6, cursor: "pointer" }}>FR</button>
-            <button onClick={() => setLang("en")} style={{ fontSize: 12, fontWeight: 700, color: lang === "en" ? cl.al : cl.dm, background: lang === "en" ? acBg(cl) : "transparent", border: "none", padding: "5px 12px", borderRadius: 6, cursor: "pointer" }}>EN</button>
+            <button onClick={() => setLang("fr")} style={{ fontSize: 12, fontWeight: 700, color: lang === "fr" ? cl.al : cl.dm, background: lang === "fr" ? acBg(cl) : "transparent", border: "none", padding: "8px 12px", borderRadius: 6, cursor: "pointer", minHeight: 32 }}>FR</button>
+            <button onClick={() => setLang("en")} style={{ fontSize: 12, fontWeight: 700, color: lang === "en" ? cl.al : cl.dm, background: lang === "en" ? acBg(cl) : "transparent", border: "none", padding: "8px 12px", borderRadius: 6, cursor: "pointer", minHeight: 32 }}>EN</button>
           </div>
-          <a href="#pricing" style={{ background: cl.ac, color: theme === "dark" ? cl.bg : "#fff", padding: "9px 16px", borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>{t.navCTA}</a>
+          <a href="#pricing" style={{ background: cl.ac, color: theme === "dark" ? cl.bg : "#fff", padding: "12px 18px", borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.navCTA}</a>
         </div>
       </div>
     </header>
