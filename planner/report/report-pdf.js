@@ -745,8 +745,8 @@
     });
     h += '<div style="margin-top:22px;padding-top:14px;border-top:2px solid #c49a1a;font-family:Inter,sans-serif;font-size:11px;color:#5a4f3a;line-height:1.7;font-style:italic">' +
       (fr
-        ? 'Les chiffres et tableaux proviennent du moteur de simulation BuildFi (5 000 trajectoires). Le contenu narratif est rédigé avec assistance d\'intelligence artificielle à partir des résultats du moteur, puis vérifié par les contrôles AMF de la plateforme.'
-        : 'Figures and tables come from the BuildFi simulation engine (5 000 trajectories). The narrative content is drafted with AI assistance from the engine outputs, then validated by the platform\'s AMF compliance checks.') +
+        ? 'Les chiffres et tableaux proviennent du moteur de simulation BuildFi (5 000 trajectoires Monte Carlo, fiscalité 2026 fédéral + 13 provinces, mortalité CPM-2023). Les observations textuelles sont rédigées avec assistance d\'intelligence artificielle à partir des résultats du moteur ; les calculs sous-jacents n\'utilisent pas l\'IA. Le langage du rapport est filtré par les contrôles éditoriaux AMF de la plateforme.'
+        : 'Figures and tables come from the BuildFi simulation engine (5 000 Monte Carlo trajectories, 2026 federal + 13-province tax model, CPM-2023 mortality). The narrative observations are drafted with AI assistance from the engine results; the underlying calculations do not use AI. Report language passes through the platform\'s AMF editorial controls.') +
       '</div>';
     h += '</div>';
     return h;
@@ -2469,8 +2469,8 @@
     // throughout the report. One global note here, repeated in the
     // methodology section; nowhere else.
     h += '<p class="narr" style="margin-top:8px;color:#888;font-size:10.5px;font-style:italic">' + (fr
-      ? 'Le contenu narratif de ce rapport est rédigé avec assistance d\'intelligence artificielle à partir des résultats du moteur de simulation BuildFi, puis vérifié par les contrôles AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
-      : 'The narrative content in this report is drafted with AI assistance from the BuildFi simulation engine outputs, then validated by the platform\'s AMF compliance checks. Figures and tables come from the engine, never from the language model.') + '</p>';
+      ? 'Le contenu narratif de ce rapport est rédigé avec assistance d\'intelligence artificielle à partir des résultats du moteur de simulation BuildFi. Le langage du rapport passe par les contrôles éditoriaux AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
+      : 'The narrative content in this report is drafted with AI assistance from the BuildFi simulation engine results. Report language passes through the platform\'s AMF editorial controls. Figures and tables come from the engine, never from the language model.') + '</p>';
     // 2026-04-30: letter signature simplified per user direction.
     // Full client name (and spouse for couple plans) above the date.
     // BuildFi Technologies inc. footer + advisor block dropped — those
@@ -6194,7 +6194,7 @@ h += secPageEnd();
     // AI Disclosure
     h += '<div style="background:#f0f4ff;border:1px solid #c0d0f0;border-radius:8px;padding:12px 16px;margin:16px 0">';
     h += '<div style="font-size:10px;font-weight:600;color:#4060b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? 'Intelligence artificielle' : 'Artificial Intelligence') + '</div>';
-    h += '<div style="font-size:11px;color:#555;line-height:1.6">' + (fr ? 'Certaines observations de ce rapport ont \u00e9t\u00e9 r\u00e9dig\u00e9es avec l\'assistance d\'un mod\u00e8le d\'intelligence artificielle. Le mod\u00e8le observe les donn\u00e9es issues du moteur de calcul et formule des observations en langage clair. Les calculs sous-jacents (fiscalit\u00e9, Monte Carlo, mortalit\u00e9) sont enti\u00e8rement d\u00e9terministes et ne d\u00e9pendent pas du mod\u00e8le AI.' : 'Some observations in this report were drafted with the assistance of an AI model. The model observes data from the calculation engine and formulates observations in plain language. The underlying calculations (tax, Monte Carlo, mortality) are entirely deterministic and do not depend on the AI model.') + '</div></div>';
+    h += '<div style="font-size:11px;color:#555;line-height:1.6">' + (fr ? 'Ce rapport est produit par un moteur de simulation d\u00e9terministe \u2014 5 000 trajectoires Monte Carlo, fiscalit\u00e9 2026 f\u00e9d\u00e9ral + 13 provinces et territoires, tables de mortalit\u00e9 canadiennes CPM-2023. Les observations textuelles sont r\u00e9dig\u00e9es avec assistance d\'intelligence artificielle \u00e0 partir des r\u00e9sultats du moteur. Les calculs sous-jacents (taux marginal, r\u00e9cup\u00e9ration PSV, ordre de retrait, succession) ne d\u00e9pendent pas du mod\u00e8le AI.' : 'This report is produced by a deterministic simulation engine \u2014 5 000 Monte Carlo trajectories, 2026 tax model spanning federal + 13 provinces and territories, Canadian CPM-2023 mortality tables. The narrative observations are drafted with AI assistance from the engine results. The underlying calculations (marginal rate, OAS clawback, withdrawal order, estate) do not depend on the AI model.') + '</div></div>';
 
     // Phase 4 (codex 2026-04-27): full LDPSF/AMF disclosure block lives
     // in the methodology appendix, not at the end of the report body.
