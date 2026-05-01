@@ -97,12 +97,19 @@ function preparePayload(prof) {
   // 'bilan' (includeSimulator=true) when sku is unspecified, since legacy
   // profiles predate the flag.
   const includeSim = prof.includeSimulator !== false;
+  // clientExport mode toggle (Phase 2, Codex audit 2026-05-01).
+  // Off by default — interactive payload + What-If simulator preserved.
+  // Set BUILDFI_CLIENT_EXPORT=1 to dry-run the hardened static export
+  // once the renderer's clientExport-aware code paths land. Profile JSON
+  // can also opt in per-profile via prof.clientExport === true.
+  const clientExport = prof.clientExport === true || process.env.BUILDFI_CLIENT_EXPORT === '1';
   return {
     params: prof.params, mc: mc, client: prof.client,
     rptLang: prof.lang, rptMode: prof.mode || 'standard',
     finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref,
     sku: prof.sku || 'bilan',
-    includeSimulator: includeSim
+    includeSimulator: includeSim,
+    clientExport: clientExport
   };
 }
 
