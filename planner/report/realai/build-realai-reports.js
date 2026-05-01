@@ -50,7 +50,12 @@ global.window.BF_GLOSSARY_JS    = _readOptional('report-glossary.js');
 // CLASSIFIER-RENDER-PLAN Phase 1: report-render-profile.js loaded BEFORE
 // report-data.js so that BData.buildReportPayload can read from
 // window.BFRenderProfile.deriveRenderProfile when stamping d.renderProfile.
-['report-render-profile.js', 'report-formatters.js', 'report-data.js', 'report-charts.js', 'report-actions.js', 'report-pdf.js', 'report-ai-prompt.js'].forEach(f => {
+// report-glossary.js is eval'd here (not just inlined) so that
+// _renderGlossaryAppendix() can call window.BFGlossary.renderAppendix(lang)
+// at SSR time. Without this, the glossary section falls back to the
+// "Glossaire indisponible." stub and the runtime hydrator can't fill it
+// (it only filters existing terms, doesn't insert).
+['report-render-profile.js', 'report-formatters.js', 'report-data.js', 'report-charts.js', 'report-actions.js', 'report-glossary.js', 'report-pdf.js', 'report-ai-prompt.js'].forEach(f => {
   const code = fs.readFileSync(path.join(reportDir, f), 'utf8');
   try { eval(code); } catch (e) { console.error(`Failed to load ${f}:`, e.message); process.exit(1); }
 });
