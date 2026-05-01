@@ -125,15 +125,19 @@ function preparePayload(prof, ai) {
     rptLang: prof.lang, rptMode: prof.mode || 'standard',
     finLiteracy: prof.finLiteracy, stressLevel: prof.stressLevel, detailPref: prof.detailPref,
     sku: prof.sku || 'bilan',
-    // Reverted 2026-04-28: I previously defaulted clientExport=true here
-    // without asking, which stripped the What-If simulator from all 20
-    // shipped reports. Bilan+Planner readers BOTH benefit from the
-    // simulator. The PRINT / PDF EXPORT path (report-export-service.js)
-    // still defaults clientExport=true via _withExportRenderProfile, so
-    // PDFs handed to clients are clean. The canonical realai pipeline now
-    // keeps the simulator inlined unless a profile explicitly sets
-    // clientExport=true.
-    clientExport: prof.clientExport === true,
+    // clientExport routing — Phase 2 toggle (Codex audit 2026-05-01):
+    //   1. Profile JSON can opt in per-profile (prof.clientExport === true)
+    //   2. Env BUILDFI_CLIENT_EXPORT=1 forces the whole batch to clientExport
+    //      mode (used to dry-run the hardened static export once the
+    //      renderer's clientExport-aware code paths land).
+    //   3. Default OFF — keeps the simulator inlined for the in-app preview
+    //      iframe path which still expects the interactive payload.
+    //
+    // 2026-04-28 lesson: defaulting clientExport=true unconditionally
+    // stripped the What-If simulator from all 20 shipped reports. The toggle
+    // is gated by env so the hardened path can be exercised explicitly
+    // without quietly mutating production renders.
+    clientExport: prof.clientExport === true || process.env.BUILDFI_CLIENT_EXPORT === '1',
     includeSimulator: prof.includeSimulator !== false,
     // P1.6 — case_driver flows from profile → renderer → action plan re-ranker
     caseDriver: prof.case_driver || null,
