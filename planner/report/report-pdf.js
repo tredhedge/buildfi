@@ -745,8 +745,8 @@
     });
     h += '<div style="margin-top:22px;padding-top:14px;border-top:2px solid #c49a1a;font-family:Inter,sans-serif;font-size:11px;color:#5a4f3a;line-height:1.7;font-style:italic">' +
       (fr
-        ? 'Les chiffres et tableaux proviennent du moteur de simulation BuildFi (5 000 trajectoires). Le contenu narratif est rédigé par Claude Opus 4 à partir des résultats du moteur, puis vérifié par les contrôles AMF de la plateforme.'
-        : 'Figures and tables come from the BuildFi simulation engine (5 000 trajectories). The narrative content is drafted by Claude Opus 4 from engine outputs, then validated by the platform\'s AMF compliance checks.') +
+        ? 'Les chiffres et tableaux proviennent du moteur de simulation BuildFi (5 000 trajectoires). Le contenu narratif est rédigé avec assistance d\'intelligence artificielle à partir des résultats du moteur, puis vérifié par les contrôles AMF de la plateforme.'
+        : 'Figures and tables come from the BuildFi simulation engine (5 000 trajectories). The narrative content is drafted with AI assistance from the engine outputs, then validated by the platform\'s AMF compliance checks.') +
       '</div>';
     h += '</div>';
     return h;
@@ -2469,8 +2469,8 @@
     // throughout the report. One global note here, repeated in the
     // methodology section; nowhere else.
     h += '<p class="narr" style="margin-top:8px;color:#888;font-size:10.5px;font-style:italic">' + (fr
-      ? 'Le contenu narratif de ce rapport est rédigé par Claude Opus 4 (Anthropic) à partir des résultats du moteur de simulation BuildFi, puis vérifié par les contrôles AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
-      : 'The narrative content in this report is drafted by Claude Opus 4 (Anthropic) from the BuildFi simulation engine outputs, then validated by the platform\'s AMF compliance checks. Figures and tables come from the engine, never from the language model.') + '</p>';
+      ? 'Le contenu narratif de ce rapport est rédigé avec assistance d\'intelligence artificielle à partir des résultats du moteur de simulation BuildFi, puis vérifié par les contrôles AMF de la plateforme. Les chiffres et tableaux proviennent du moteur, jamais du modèle linguistique.'
+      : 'The narrative content in this report is drafted with AI assistance from the BuildFi simulation engine outputs, then validated by the platform\'s AMF compliance checks. Figures and tables come from the engine, never from the language model.') + '</p>';
     // 2026-04-30: letter signature simplified per user direction.
     // Full client name (and spouse for couple plans) above the date.
     // BuildFi Technologies inc. footer + advisor block dropped — those
@@ -5437,7 +5437,7 @@ h += secPageEnd();
       [fr ? 'Rendement obligations' : 'Bond return', ((p.bndRet || 0.035) * 100).toFixed(1) + ' %'],
       [fr ? 'Inflation annuelle' : 'Annual inflation', ((p.inf || 0.021) * 100).toFixed(1) + ' %'],
       [fr ? 'Nombre de simulations' : 'Number of simulations', (p.nSim || 5000).toLocaleString(fr ? 'fr-CA' : 'en-CA')],
-      [fr ? 'Distribution des rendements' : 'Return distribution', p.fatT ? (fr ? 't-Student (queues \u00e9paisses)' : 't-Student (fat tails)') : 'Normal'],
+      [fr ? 'Distribution des rendements' : 'Return distribution', p.fatT ? (fr ? 'queues \u00e9paisses (krachs rares plus probables)' : 'fat tails (rare crashes more likely)') : (fr ? 'normale (gaussienne)' : 'normal (Gaussian)')],
       [fr ? 'Mortalit\u00e9' : 'Mortality', p.stochMort ? (fr ? 'Stochastique (CPM-2023)' : 'Stochastic (CPM-2023)') : (fr ? 'D\u00e9terministe (\u00e2ge de d\u00e9c\u00e8s fixe)' : 'Deterministic (fixed death age)')],
       [fr ? 'Inflation stochastique' : 'Stochastic inflation', p.stochInf ? (fr ? 'Oui' : 'Yes') : (fr ? 'Non' : 'No')],
       [fr ? 'FGP pond\u00e9r\u00e9s' : 'Weighted MER', ((d.merWt || 0) * 100).toFixed(2) + ' %'],
@@ -6153,7 +6153,7 @@ h += secPageEnd();
       _gapItems.forEach(function(item) { h += '<li style="margin-bottom:4px">' + item + '</li>'; });
       h += '</ul></div>';
     }
-    h += '<div class="meth-p"><strong>' + (fr ? 'Hypoth\u00e8ses de march\u00e9' : 'Market assumptions') + ':</strong> ' + (fr ? 'Rendement actions ' : 'Equity return ') + F.pc(p.eqRetS || 0.07) + (fr ? ', obligations ' : ' / bonds ') + F.pc(p.bndRetS || 0.035) + '. ' + (p.fatT ? 't-Student (df=5, ' + (fr ? 'queues \u00e9paisses' : 'fat tails') + ')' : 'Normal') + '. ' + (fr ? 'Corr\u00e9lation Cholesky 5\u00d75 (DMS 2024). ' : 'Cholesky 5\u00d75 correlation (DMS 2024). ') + (p.stochInf ? (fr ? 'Inflation stochastique \u00b11.5%.' : 'Stochastic inflation \u00b11.5%.') : (fr ? 'Inflation fixe ' : 'Fixed inflation ') + F.pc(p.inf) + '.') + '</div>';
+    h += '<div class="meth-p"><strong>' + (fr ? 'Hypoth\u00e8ses de march\u00e9' : 'Market assumptions') + ':</strong> ' + (fr ? 'Rendement actions ' : 'Equity return ') + F.pc(p.eqRetS || 0.07) + (fr ? ', obligations ' : ' / bonds ') + F.pc(p.bndRetS || 0.035) + '. ' + (p.fatT ? (fr ? 'queues \u00e9paisses (krachs rares plus probables qu\'une distribution normale)' : 'fat tails (rare crashes more likely than under a normal distribution)') : (fr ? 'distribution normale' : 'normal distribution')) + '. ' + (fr ? 'Corr\u00e9lation entre 5 classes d\'actifs (DMS 2024). ' : 'Cross-asset correlation across 5 classes (DMS 2024). ') + (p.stochInf ? (fr ? 'Inflation stochastique \u00b11.5%.' : 'Stochastic inflation \u00b11.5%.') : (fr ? 'Inflation fixe ' : 'Fixed inflation ') + F.pc(p.inf) + '.') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Mortalit\u00e9' : 'Mortality') + ':</strong> ' + (fr ? 'Tables CPM-2023 (ICA). Horizon d\u00e9terministe: ' : 'CPM-2023 tables (CIA). Deterministic horizon: ') + (p.deathAge || 90) + (fr ? ' ans. Esp\u00e9rance de vie CPM: H=85.5, F=87.4 (\u00e0 65 ans).' : ' yrs. CPM life expectancy: M=85.5, F=87.4 (at 65).') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Fiscalit\u00e9' : 'Taxation') + ':</strong> ' + (fr ? 'Bar\u00e8mes f\u00e9d\u00e9raux et provinciaux 2026 index\u00e9s. Cr\u00e9dits pour revenu de pension (2\u00a0000$), cr\u00e9dit en raison de l\'\u00e2ge (8\u00a0790$), bonification PSV 75+ (10%). Inclusion des gains en capital: ' : 'Federal and provincial 2026 brackets indexed. Pension credit ($2,000), age credit ($8,790), OAS 75+ bonus (10%). Capital gains inclusion: ') + (p.cgIncLo || 0.5) * 100 + '% / ' + ((p.cgIncHi || 0.6667) * 100).toFixed(0) + '%.</div>';
 
@@ -6194,7 +6194,7 @@ h += secPageEnd();
     // AI Disclosure
     h += '<div style="background:#f0f4ff;border:1px solid #c0d0f0;border-radius:8px;padding:12px 16px;margin:16px 0">';
     h += '<div style="font-size:10px;font-weight:600;color:#4060b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">' + (fr ? 'Intelligence artificielle' : 'Artificial Intelligence') + '</div>';
-    h += '<div style="font-size:11px;color:#555;line-height:1.6">' + (fr ? 'Certaines observations de ce rapport ont \u00e9t\u00e9 assist\u00e9es par l\u2019intelligence artificielle (Claude, Anthropic). Le mod\u00e8le AI observe les donn\u00e9es du moteur de calcul et formule des observations en langage clair. Les calculs sous-jacents (fiscalit\u00e9, Monte Carlo, mortalit\u00e9) sont enti\u00e8rement d\u00e9terministes et ne d\u00e9pendent pas de l\u2019AI.' : 'Some observations in this report were assisted by artificial intelligence (Claude, Anthropic). The AI model observes data from the calculation engine and formulates observations in plain language. The underlying calculations (tax, Monte Carlo, mortality) are entirely deterministic and do not depend on AI.') + '</div></div>';
+    h += '<div style="font-size:11px;color:#555;line-height:1.6">' + (fr ? 'Certaines observations de ce rapport ont \u00e9t\u00e9 r\u00e9dig\u00e9es avec l\'assistance d\'un mod\u00e8le d\'intelligence artificielle. Le mod\u00e8le observe les donn\u00e9es issues du moteur de calcul et formule des observations en langage clair. Les calculs sous-jacents (fiscalit\u00e9, Monte Carlo, mortalit\u00e9) sont enti\u00e8rement d\u00e9terministes et ne d\u00e9pendent pas du mod\u00e8le AI.' : 'Some observations in this report were drafted with the assistance of an AI model. The model observes data from the calculation engine and formulates observations in plain language. The underlying calculations (tax, Monte Carlo, mortality) are entirely deterministic and do not depend on the AI model.') + '</div></div>';
 
     // Phase 4 (codex 2026-04-27): full LDPSF/AMF disclosure block lives
     // in the methodology appendix, not at the end of the report body.

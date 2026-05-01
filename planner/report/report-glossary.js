@@ -112,8 +112,8 @@
       en: { label: 'Initial withdrawal rate', def: 'Percentage of capital withdrawn in the first year of retirement. Classic "4% rule", to be moderated by age, longevity and risk tolerance.' }
     },
     fat_tail: {
-      fr: { label: 'Distribution à queues épaisses (t-Student)', def: 'Modèle statistique qui donne plus de probabilité aux événements extrêmes (krachs, années exceptionnelles) qu\'une distribution normale. Plus réaliste pour les rendements boursiers.' },
-      en: { label: 'Fat-tailed distribution (t-Student)', def: 'Statistical model giving more probability to extreme events (crashes, exceptional years) than a normal distribution. More realistic for stock returns.' }
+      fr: { label: 'Distribution à queues épaisses', def: 'Modèle statistique qui donne plus de probabilité aux événements extrêmes (krachs, années exceptionnelles) qu\'une distribution normale. Plus réaliste pour les rendements boursiers.' },
+      en: { label: 'Fat-tailed distribution', def: 'Statistical model giving more probability to extreme events (crashes, exceptional years) than a normal distribution. More realistic for stock returns.' }
     },
     ccpc: {
       fr: { label: 'SPCC (Société privée sous contrôle canadien)', def: 'Société active admissible à la déduction pour petites entreprises (DPE). Combinaison salaire/dividendes optimisable selon le revenu d\'entreprise et personnel.' },

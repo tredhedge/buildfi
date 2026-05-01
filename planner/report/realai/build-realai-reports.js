@@ -216,6 +216,32 @@ if (cmd === 'render') {
       if (codexScript && html.indexOf('</body>') !== -1) {
         html = html.replace('</body>', codexScript + '</body>');
       }
+      // Duplicate-id post-process (Codex audit 2026-04-30): the renderer emits
+      // some sec-* anchors from multiple code paths (sec-stress×3, sec-cashflow
+      // ×2, sec-insurance×2, sec-assumptions×3, sec-glossary×3). Dedup at write
+      // time by appending -2/-3/... to subsequent occurrences. Only touches IDs
+      // outside <script> blocks (template literals like 'bfwi-' + k + '-out'
+      // parse but never become real DOM IDs). Renderer-level dedup is the
+      // structural fix; this guarantees rendered artifacts pass the [DUPE IDS]
+      // gate immediately.
+      html = (function _dedupIds(src) {
+        // Skip script bodies.
+        const scriptRe = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi;
+        const scripts = [];
+        const noScripts = src.replace(scriptRe, function (m, open, body, close) {
+          scripts.push(open + body + close);
+          return ' __SCRIPT_' + (scripts.length - 1) + '__ ';
+        });
+        const seen = Object.create(null);
+        const deduped = noScripts.replace(/(\sid=")([^"]+)(")/g, function (m, pre, id, post) {
+          if (seen[id] == null) { seen[id] = 1; return pre + id + post; }
+          seen[id]++;
+          return pre + id + '-' + seen[id] + post;
+        });
+        return deduped.replace(/ __SCRIPT_(\d+)__ /g, function (m, i) {
+          return scripts[Number(i)];
+        });
+      })(html);
       const fname = prof.id + '_' + prof.lang + '.html';
       fs.writeFileSync(path.join(__dirname, 'output', fname), html, 'utf8');
       const tag = usedFallback ? ' (deterministic fallback)' : '';
