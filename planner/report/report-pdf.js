@@ -70,8 +70,6 @@
     // Force readable color on emphasized inline tags inside the hero-score
     // block. Without this, AI markdown italics (`*foundations*`) and any
     // `<em>` text inherit a dark color and disappear on the navy hero bg.
-    '.hero-score em,.hero-score-explainer em{color:#e8e0d4;font-style:italic}',
-    '.hero-score strong,.hero-score-explainer strong{color:#c8d3e2}',
     '.bf-support-strip{display:flex;align-items:stretch;background:transparent;border-top:1px solid #e8e0d4;border-bottom:1px solid #e8e0d4;padding:14px 0;margin:8px 0 18px;break-inside:avoid;page-break-inside:avoid}',
     '.bf-support-tile{flex:1;padding:0 14px;text-align:center;border-right:1px solid #ece4d4}',
     '.bf-support-tile:last-child{border-right:none}',
@@ -704,198 +702,11 @@
     return pri + spo;
   }
 
-  // ─── Hero score gauge — semicircle SVG, print-first, no JS dependency.
-  // Renders d.heroScore (0-100 composite, see report-data.js for formula).
-  // The arc is band-graded: red→amber→green→gold matching the thresholds
-  // 40/65/85. Center number is the score; below is the band label and a
-  // 5-row component breakdown so the score is never a black-box. This is
-  // the single highest-signal cover-page visual; placement is the top of
-  // the executive summary, above the 4-up KPI grid.
-  function _renderScoreGauge(d) {
-    if (!d.heroScore || d.heroScore.value == null) return '';
-    var fr = d.fr;
-    var s = d.heroScore;
-    var score = s.value;
-    // Band → color only. We intentionally do NOT emit band-name text
-    // (surplus / solid / fragile / at-risk) anywhere in the gauge: the
-    // gauge band is computed from a 5-component composite while the
-    // thesis posture is computed from the success rate alone, and the
-    // two can disagree. Showing both as conflicting labels confuses
-    // readers AND trips the thesis-coherence-auditor. Color + score +
-    // threshold tick marks communicate the band visually without
-    // emitting tokens the auditor would scan.
-    // Band → color. Updated 2026-04-26 per user feedback: the previous
-    // 40-65 amber (#b89830) and 85+ gold (#c49a1a) read as the same
-    // yellow on print. Switched 40-65 to a deeper orange (#d97a1f) so
-    // the four bands now have visually distinct hues: red → orange →
-    // green → gold.
-    var bandColor;
-    if (s.band === 'surplus')      bandColor = '#c49a1a';
-    else if (s.band === 'solid')   bandColor = '#2a8c46';
-    else if (s.band === 'fragile') bandColor = '#d97a1f';
-    else                           bandColor = '#cc4444';
-    // CLASSIFIER-RENDER-PLAN Phase 3: tone-driven palette swap.
-    // bandColor='soft'   (toneMode=calm): mute risk colors so a high-stress
-    //                                     reader doesn't see harsh red.
-    // bandColor='stark'  (toneMode=direct): keep raw band colors.
-    // bandColor='standard' (default): same as stark for at-risk/fragile.
-    if (d.renderProfile && d.renderProfile.bandColor === 'soft') {
-      if (s.band === 'fragile') bandColor = '#a87a3a';   // muted amber
-      else if (s.band !== 'surplus' && s.band !== 'solid') bandColor = '#a06868'; // muted red
-    }
-    // SVG geometry — semicircle gauge, viewBox 0 0 220 130.
-    // Radius 90, center (110,110). Arc spans 180° from (20,110) to (200,110).
-    // Score arc length proportional to score/100 × π × 90.
-    var R = 90, CX = 110, CY = 110;
-    function _polar(angleRad) {
-      // angle 180° at left (score=0), 0° at right (score=100)
-      var x = CX + R * Math.cos(angleRad);
-      var y = CY - R * Math.sin(angleRad);
-      return { x: x, y: y };
-    }
-    var endAngleRad = Math.PI * (1 - score / 100);
-    var endPt = _polar(endAngleRad);
-    var startPt = _polar(Math.PI);
-    // SVG large-arc-flag MUST be 0 for any arc ≤180° (the active arc is
-    // 0–180° proportional to score). Previous value (score > 50 ? 1 : 0)
-    // flipped the flag at score=50, drawing the arc the LONG way around
-    // the full circle for higher scores — the visual we kept hitting at
-    // 67/80/91. The bg track is exactly 180° so its flag is irrelevant
-    // (both choices coincide); we leave it at 1 for compatibility.
-    var arcPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
-                  ' A ' + R + ' ' + R + ' 0 0 1 ' + endPt.x.toFixed(1) + ' ' + endPt.y.toFixed(1);
-    var bgArcEnd = _polar(0);
-    var bgPath = 'M ' + startPt.x.toFixed(1) + ' ' + startPt.y.toFixed(1) +
-                 ' A ' + R + ' ' + R + ' 0 1 1 ' + bgArcEnd.x.toFixed(1) + ' ' + bgArcEnd.y.toFixed(1);
-    // Band markers at 40, 65, 85 (the thresholds). Tick spans from just inside
-    // the stroke ring (R-3) to just outside (R+3) — keeps it visually contained
-    // within the arc's 14px stroke band, no protruding stubs.
-    function _tickMarker(pct) {
-      var ang = Math.PI * (1 - pct / 100);
-      var inner = { x: CX + (R - 3) * Math.cos(ang), y: CY - (R - 3) * Math.sin(ang) };
-      var outer = { x: CX + (R + 3) * Math.cos(ang), y: CY - (R + 3) * Math.sin(ang) };
-      return '<line x1="' + inner.x.toFixed(1) + '" y1="' + inner.y.toFixed(1) +
-             '" x2="' + outer.x.toFixed(1) + '" y2="' + outer.y.toFixed(1) +
-             '" stroke="rgba(250,248,244,0.55)" stroke-width="1.5" stroke-linecap="round" />';
-    }
-    // Geometry: arc center (110, 110), radius 90, stroke 14. Both arcs use
-    // stroke-linecap="round" with the SAME path geometry — this guarantees
-    // their round caps overlap exactly, eliminating the score-dependent
-    // visual artifacts that plagued the butt+round mix.
-    //
-    // Root-cause history: previous versions had stroke-linecap="round" on
-    // the gradient track but stroke-linecap="butt" on the active arc. The
-    // gradient's round caps protrude ~7px beyond the path endpoints; the
-    // active arc's butt caps cut sharp. At low scores the active arc was
-    // small and the gradient mismatch was invisible; at high scores the
-    // active arc spanned most of the track and the gradient's protruding
-    // round cap on the right (gold cap past x=200) became visible.
-    // Matching round-on-round eliminates this.
-    var svg = '<svg viewBox="0 0 220 115" width="220" height="115" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;margin:0 auto">' +
-      '<defs>' +
-        '<linearGradient id="gauge-bg" x1="0%" y1="0%" x2="100%" y2="0%">' +
-          '<stop offset="0%" stop-color="#cc4444" />' +
-          '<stop offset="40%" stop-color="#d97a1f" />' +
-          '<stop offset="65%" stop-color="#2a8c46" />' +
-          '<stop offset="100%" stop-color="#c49a1a" />' +
-        '</linearGradient>' +
-      '</defs>' +
-      // Background gradient track. Round caps for visual softness.
-      '<path d="' + bgPath + '" fill="none" stroke="url(#gauge-bg)" stroke-width="14" stroke-linecap="round" opacity="0.25" />' +
-      // Active arc. Same round caps so terminations match. The mild round
-      // bleed at the active arc's end is now visually consistent with
-      // the gradient's caps and reads as intentional.
-      '<path d="' + arcPath + '" fill="none" stroke="' + bandColor + '" stroke-width="14" stroke-linecap="round" />' +
-      // Threshold tick marks at 40 / 65 / 85
-      _tickMarker(40) + _tickMarker(65) + _tickMarker(85) +
-      // Score number — explicit y so we don\'t depend on dominant-baseline.
-      // Math: target optical centre = y=62 (visual midline of the
-      // semicircle opening). For 32px JetBrains Mono, alphabetic baseline
-      // sits ~22px below x-height; optical centre is at half-cap-height
-      // (~10) above baseline. baseline = 62 + 10 = 72.
-      '<text x="' + CX + '" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="32" font-weight="700" fill="' + bandColor + '">' + score + '</text>' +
-      // "/ 100" caption — separated from score by 8px, sits at baseline 90.
-      '<text x="' + CX + '" y="90" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#bccbe0" letter-spacing="1.5">/ 100</text>' +
-    '</svg>';
-    // Component breakdown — 5 rows showing each subscore + weight.
-    var compMeta = {
-      plan_resilience:  { fr: 'R\u00e9silience du plan',   en: 'Plan resilience',  hint: { fr: 'Taux de succ\u00e8s sur les avenirs simul\u00e9s', en: 'Success rate across simulated futures' } },
-      savings_rate:     { fr: 'Taux d\'\u00e9pargne',      en: 'Savings rate',     hint: { fr: 'Cotisations / revenu brut, plafonn\u00e9 \u00e0 25\u202f%', en: 'Contributions / gross income, capped at 25%' } },
-      tax_efficiency:   { fr: 'Efficacit\u00e9 fiscale',    en: 'Tax efficiency',   hint: { fr: 'Taux effectif moyen sur l\'horizon', en: 'Average effective rate over horizon' } },
-      diversification:  { fr: 'Diversification',          en: 'Diversification',  hint: { fr: 'R\u00e9partition entre comptes (REER/CELI/NR/CRI/Corp)', en: 'Spread across accounts (RRSP/TFSA/NR/LIRA/Corp)' } },
-      liquidity:        { fr: 'Liquidit\u00e9',             en: 'Liquidity',        hint: { fr: 'CELI + non-enregistr\u00e9 / d\u00e9penses annuelles', en: 'TFSA + non-reg / annual spending' } }
-    };
-    var compRows = '';
-    Object.keys(s.weights).forEach(function(k) {
-      var v = s.components[k];
-      var weight = Math.round(s.weights[k] * 100);
-      var label = compMeta[k][fr ? 'fr' : 'en'];
-      var hint = compMeta[k].hint[fr ? 'fr' : 'en'];
-      var cellColor;
-      if (v == null) cellColor = '#9aabc7';
-      else if (v >= 85) cellColor = '#c49a1a';
-      else if (v >= 65) cellColor = '#2a8c46';
-      else if (v >= 40) cellColor = '#d97a1f';
-      else cellColor = '#cc4444';
-      var bar = v == null ? 0 : Math.max(2, v);
-      compRows +=
-        '<div style="display:grid;grid-template-columns:140px 1fr 50px;gap:10px;align-items:center;padding:5px 0;border-top:1px solid rgba(250,248,244,0.08)">' +
-          '<div>' +
-            '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;color:#faf8f4">' + label + ' <span style="color:#9aabc7;font-weight:500">(' + weight + '\u202f%)</span></div>' +
-            '<div style="font-family:Inter,sans-serif;font-size:8.5px;color:#9aabc7;margin-top:1px;line-height:1.3">' + hint + '</div>' +
-          '</div>' +
-          '<div style="background:rgba(250,248,244,0.08);border-radius:3px;height:8px;overflow:hidden">' +
-            '<div style="height:100%;width:' + bar + '%;background:' + cellColor + '"></div>' +
-          '</div>' +
-          '<div style="font-family:JetBrains Mono,monospace;font-size:11px;font-weight:700;color:' + cellColor + ';text-align:right">' +
-            (v == null ? '\u2014' : Math.round(v)) + '</div>' +
-        '</div>';
-    });
-    // Phase 6 finish pass (codex 2026-04-27): the hero-score block
-    // previously used a hard 240px / 1fr two-column grid that left the
-    // right-side component stack cramped and could clip in narrower
-    // render contexts. Restructured as TWO STACKED BANDS:
-    //   Band 1 — gauge + readiness label, full-width, generous breathing
-    //            room. The gauge and its plain-language explainer share
-    //            a centered column with auto sizing (no fixed rail).
-    //   Band 2 — the 5-component breakdown grid, full-width below the
-    //            gauge. Component rows now use minmax-friendly grid
-    //            (min 110px label | flex bar | 50px value) so the bar
-    //            never compresses. Legend sits at the bottom.
-    // Two bands instead of two columns means: the gauge has all the
-    // horizontal real estate it needs at the top, the components have
-    // all the horizontal real estate they need below, and neither
-    // element is fighting for space with the other. This also reads as
-    // a single editorial composition (introduce → defend) rather than
-    // a two-column dashboard.
-    var h = '<div class="hero-score" style="background:rgba(250,248,244,0.04);border:1px solid rgba(196,154,26,0.25);border-radius:8px;padding:28px 28px 24px;margin-bottom:20px;break-inside:avoid">';
-    // Band 1 — gauge band
-    h += '<div class="hero-score-band hero-score-band-gauge" style="text-align:center;padding-bottom:24px;border-bottom:1px solid rgba(196,154,26,0.18);margin-bottom:22px">';
-    h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px">' + (fr ? 'Score de pr\u00e9paration' : 'Readiness score') + '</div>';
-    h += svg;
-    h += '<div class="hero-score-explainer" style="font-family:Inter,sans-serif;font-size:11px;color:#9aabc7;margin:14px auto 0;letter-spacing:0.2px;line-height:1.6;max-width:540px">' +
-      (fr
-        ? '<strong style="color:#c8d3e2">Pr\u00e9paration structurelle</strong> du plan, sur 100. Diff\u00e9rent du taux de succ\u00e8s : ce score \u00e9value vos <em style="color:#e8e0d4;font-style:italic">fondations</em> (r\u00e9silience, \u00e9pargne, fiscalit\u00e9, diversification, liquidit\u00e9), pas la trajectoire simul\u00e9e.'
-        : '<strong style="color:#c8d3e2">Structural readiness</strong> out of 100. Different from success rate: this score evaluates your <em style="color:#e8e0d4;font-style:italic">foundations</em> (resilience, savings, tax, diversification, liquidity), not the simulated trajectory.') +
-      '</div>';
-    h += '</div>';
-    // Band 2 — component breakdown band
-    h += '<div class="hero-score-band hero-score-band-components">';
-    h += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#c49a1a;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;text-align:center">' + (fr ? 'Composantes' : 'Components') + '</div>';
-    h += '<div style="max-width:680px;margin:0 auto">';
-    h += compRows;
-    h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#9aabc7;font-style:italic;margin-top:14px;line-height:1.6;text-align:center">' +
-      (fr
-        ? 'Score structurel (ind\u00e9pendant des avenirs simul\u00e9s). Seuils\u202f: <span style="color:#cc4444">\u003c40</span> \u00b7 <span style="color:#d97a1f">40-65</span> \u00b7 <span style="color:#2a8c46">65-85</span> \u00b7 <span style="color:#c49a1a">\u226585</span>.'
-        : 'Structural score (independent of simulated futures). Thresholds: <span style="color:#cc4444">&lt;40</span> &middot; <span style="color:#d97a1f">40-65</span> &middot; <span style="color:#2a8c46">65-85</span> &middot; <span style="color:#c49a1a">&ge;85</span>.') +
-      '</div>';
-    h += '</div>';
-    h += '</div>';
-    h += '</div>';
-    return h;
-  }
-
-  // 2026-04-30 — "Comment lire ce rapport" preface.
+  // 2026-04-30 — _renderScoreGauge function deleted (was already
+  // unused per 59905db). Kept the dead CSS rules near the top of this file
+  // for one cycle in case the build pipeline references them; they will
+  // be removed in a follow-up.
+    // 2026-04-30 — "Comment lire ce rapport" preface.
   // Names what each piece delivers in plain language so the reader
   // knows where to look for what they need. Cream/gold palette, no
   // boxes, hairline rules — quiet editorial register. Sits between
@@ -903,14 +714,14 @@
   function _renderHowToRead(d) {
     var fr = d.fr;
     var rows = fr ? [
-      { label: 'Sommaire exécutif',          desc: 'Le verdict en 30 secondes — taux de succès, patrimoine médian, points à surveiller.' },
+      { label: F.L('diagnostic', fr),               desc: 'Le verdict en 30 secondes — taux de succès, patrimoine médian, points à surveiller.' },
       { label: 'Chapitre I',                  desc: 'Les fondations — votre profil, vos comptes, vos revenus de retraite, la projection.' },
       { label: 'Chapitre II',                 desc: 'Les risques — fourchette de résultats, tests de stress, sensibilités du plan.' },
       { label: 'Chapitre III',                desc: 'Les stratégies — fiscalité, ordre de retrait, succession, plan d\'action.' },
       { label: 'Chapitre IV',                 desc: 'Explorer — un simulateur interactif pour tester vos propres hypothèses.' },
       { label: 'Annexe',                      desc: 'Méthodologie, hypothèses détaillées, glossaire des termes utilisés.' }
     ] : [
-      { label: 'Executive summary',           desc: 'The 30-second verdict — success rate, median wealth, watch points.' },
+      { label: F.L('diagnostic', fr),       desc: 'The 30-second verdict — success rate, median wealth, watch points.' },
       { label: 'Chapter I',                   desc: 'The foundations — your profile, your accounts, your retirement income, the projection.' },
       { label: 'Chapter II',                  desc: 'The risks — outcome range, stress tests, plan sensitivities.' },
       { label: 'Chapter III',                 desc: 'The strategies — tax, withdrawal order, succession, action plan.' },
@@ -977,7 +788,7 @@
     var h = '<div class="exec-summary" id="exec-summary" style="page-break-after:always;background:#fefcf9;color:#1a1610;border:1px solid #e8e0d4;border-radius:8px;padding:36px 40px 32px;margin-bottom:24px;position:relative;overflow:hidden">';
     h += '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,#c49a1a 50%,transparent 100%)"></div>';
     h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
-      '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + (fr ? 'Sommaire exécutif' : 'Executive summary') + '</div>' +
+      '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase">' + F.L('diagnostic', fr) + '</div>' +
       '<div style="font-family:Inter,sans-serif;font-size:11px;color:#8a7a5c;letter-spacing:0.5px">' + (fr ? 'En 30 secondes' : 'In 30 seconds') + '</div>' +
     '</div>';
     h += '<div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#5a4f3a;margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase">' + F.esc(d.client.name || (fr ? 'Client' : 'Client')) + '</div>';
@@ -6600,7 +6411,7 @@ h += secPageEnd();
     // 2026-04-29: collapsed to ONE entry. sec-assessment + sec-diagnostic
     // are now one continuous chapter under one cover; sec-levers moved
     // to Ch.3 next to risk + stress where sensitivity belongs.
-    tocSections.push({ n: '\u2606', id: 'exec-summary', label: d.fr ? 'Sommaire ex\u00e9cutif' : 'Executive summary' });
+    tocSections.push({ n: '\u2606', id: 'exec-summary', label: F.L('diagnostic', d.fr) });
     // ─ Ch.2 — Why this plan works ────────────────
     _tocN++; tocSections.push({ n: _tocN, id: 'sec-profile', label: F.L('profile', d.fr) });
     if (d.R.hasFamily) { _tocN++; tocSections.push({ n: _tocN, id: 'sec-family', label: F.L('family', d.fr) }); }
