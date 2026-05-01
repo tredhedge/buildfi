@@ -99,16 +99,22 @@ const COPY = {
     stickyCta: "Commencer mon Bilan — 29,99 $",
     stickyDismiss: "Fermer",
 
-    /* Sample preview */
+    /* Sample preview — public sample temporarily replaced by a "coming soon"
+       placeholder while the report-export pipeline is hardened. The legacy
+       /samples/bilan-exemple-fr.html still exists on disk but contains stale
+       labels (Retirement Plan, t-Student, AI-assisted analysis) and embedded
+       runtime payload (window.__BUILDFI__, scripts) — not appropriate as a
+       first impression. A clean static export is in progress. */
     sampleTitle: "Ce à quoi ressemble votre rapport",
-    sampleSub: "Un exemple concret avant l'achat. Deux sections sont floutées — c'est ce que vous débloquez en commandant votre rapport.",
+    sampleSub: "L'exemple complet du nouveau rapport sera publié sous peu — une version statique, sans scripts ni données embarquées.",
     sampleReportTitle: "Rapport Bilan 360",
     sampleReportCaption: "Couple, 58 ans, Ontario — rapport IA généré à partir d'un quiz type",
-    sampleReportCta: "Voir l'exemple complet →",
-    sampleReportHref: "/samples/bilan-exemple-fr.html",
+    sampleReportCta: "Aperçu complet bientôt disponible",
+    sampleReportHref: "",
     samplePlannerTitle: "Planner en action",
     samplePlannerCaption: "Simulateur 190+ variables, Wizard adaptatif, Monte Carlo configurable 1 000-10 000 scénarios",
     samplePlannerComingSoon: "Vidéo de démonstration bientôt disponible",
+    sampleReportComingSoon: "Aperçu rafraîchi en préparation",
     sampleLabelBlurred: "Section débloquée après achat",
 
     /* Quebec callout */
@@ -285,14 +291,15 @@ const COPY = {
     stickyDismiss: "Dismiss",
 
     sampleTitle: "What your report actually looks like",
-    sampleSub: "A concrete example before you buy. Two sections are blurred — that's what you unlock when you order.",
+    sampleSub: "The full example of the new report is being published shortly — a static version, with no scripts or embedded data.",
     sampleReportTitle: "Bilan 360 report",
     sampleReportCaption: "Couple, 58, Ontario — AI report generated from a sample quiz",
-    sampleReportCta: "See the full example →",
-    sampleReportHref: "/samples/bilan-sample-en.html",
+    sampleReportCta: "Full preview coming soon",
+    sampleReportHref: "",
     samplePlannerTitle: "Planner in action",
     samplePlannerCaption: "190+ variables, adaptive Wizard, configurable Monte Carlo 1,000-10,000 scenarios",
     samplePlannerComingSoon: "Demo video coming soon",
+    sampleReportComingSoon: "Refreshed preview in preparation",
     sampleLabelBlurred: "Unlocked after purchase",
 
     qcCalloutTitle: "And Quebec, done right",
@@ -629,25 +636,27 @@ function SamplePreview({ cl, theme, t, lang }: any) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 18 }}>
-          {/* Sample report card — iframe preview, blurred overlay on portions */}
+          {/* Sample report card — placeholder until the hardened static export
+              is ready. The legacy iframe preview was pulling /samples/bilan-*.html,
+              which still embed runtime payload (window.__BUILDFI__), scripts,
+              remote Google Fonts, and stale labels ("Retirement Plan",
+              "AI-assisted analysis", "t-Student"). Refused to ship that as a
+              first impression of the product. */}
           <div style={cardBase}>
-            <div style={{ position: "relative", height: 280, background: cl.s2, overflow: "hidden" }}>
-              <iframe
-                src={t.sampleReportHref}
-                title={t.sampleReportTitle}
-                style={{ width: "200%", height: 560, border: "none", transform: "scale(0.5)", transformOrigin: "top left", pointerEvents: "none", background: "#fff" }}
-                sandbox="allow-scripts"
-                loading="lazy"
-              />
-              {/* Blurred-section mask — covers bottom third to simulate "unlocks after purchase" */}
-              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "45%", background: `linear-gradient(to bottom, transparent, ${cl.cd}80 30%, ${cl.cd}ee 70%)`, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 16 }}>
-                <div style={{ background: cl.ac + "22", border: `1px solid ${cl.ac}`, color: cl.ac, fontSize: 11, fontWeight: 800, padding: "6px 14px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.7 }}>🔒 {t.sampleLabelBlurred}</div>
-              </div>
+            <div style={{ position: "relative", height: 280, background: `linear-gradient(135deg, ${cl.cd}, ${cl.s2})`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${cl.bd}` }}>
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden>
+                <rect x="14" y="10" width="36" height="44" rx="3" stroke={cl.ac} strokeWidth="2" opacity="0.5" fill="none" />
+                <line x1="20" y1="22" x2="44" y2="22" stroke={cl.ac} strokeWidth="2" opacity="0.7" />
+                <line x1="20" y1="30" x2="40" y2="30" stroke={cl.ac} strokeWidth="2" opacity="0.5" />
+                <line x1="20" y1="38" x2="44" y2="38" stroke={cl.ac} strokeWidth="2" opacity="0.5" />
+                <line x1="20" y1="46" x2="36" y2="46" stroke={cl.ac} strokeWidth="2" opacity="0.5" />
+              </svg>
+              <div style={{ position: "absolute", bottom: 16, left: 16, right: 16, textAlign: "center", fontSize: 11, fontWeight: 700, color: cl.dm, textTransform: "uppercase", letterSpacing: 0.8 }}>{t.sampleReportComingSoon}</div>
             </div>
             <div style={{ padding: "18px 20px 20px" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: cl.ac, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t.sampleReportTitle}</div>
               <div style={{ fontSize: 13, color: cl.tx, lineHeight: 1.5, marginBottom: 12 }}>{t.sampleReportCaption}</div>
-              <a href={t.sampleReportHref} target="_blank" rel="noopener" style={{ color: cl.ac, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>{t.sampleReportCta}</a>
+              <span style={{ color: cl.dm, fontSize: 13, fontWeight: 600, fontStyle: "italic" }}>{t.sampleReportCta}</span>
             </div>
           </div>
 
