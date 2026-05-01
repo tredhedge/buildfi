@@ -1067,6 +1067,52 @@ results.forEach(function(res) {
 
   if (res.size < 20000) issues.push('[SMALL] ' + res.file + ': only ' + Math.round(res.size / 1024) + ' KB');
 
+  // ── Duplicate id="..." attributes ────────────────────────────────
+  // Codex audit (2026-04-30) found 16-22 duplicate IDs per rendered file
+  // (sec-stress×3, sec-cashflow×2, sec-insurance×2, ...). Duplicate IDs
+  // break anchor jumps, accessibility, JS targeting, and print TOCs.
+  // Filter out IDs that legitimately repeat: those inside <script> blocks
+  // (template literals like 'bfwi-' + k + '-out' parse but never become
+  // real DOM IDs at runtime).
+  (function(){
+    var stripped = html.replace(/<script[\s\S]*?<\/script>/g, '');
+    var idMatches = stripped.match(/id="([^"]+)"/g) || [];
+    var seen = {};
+    idMatches.forEach(function(m) {
+      var id = m.slice(4, -1); seen[id] = (seen[id] || 0) + 1;
+    });
+    var dupes = [];
+    Object.keys(seen).forEach(function(id) { if (seen[id] > 1) dupes.push(id + '×' + seen[id]); });
+    if (dupes.length > 0) issues.push('[DUPE IDS] ' + res.file + ': ' + dupes.length + ' duplicates — ' + dupes.slice(0, 6).join(', ') + (dupes.length > 6 ? ', ...' : ''));
+  })();
+
+  // ── Static-export hygiene ────────────────────────────────────────
+  // Codex audit (2026-04-30): client deliverables should be inert. Right
+  // now every rendered final embeds engine runtime, what-if state, raw
+  // MC payload, and remote font dependencies. These are recorded as
+  // issues so a future hardened clientExport mode can verify it strips
+  // them. Failing CI on this signals when the renderer regresses.
+  if (html.indexOf('window.__BUILDFI__') > -1) issues.push('[EMBEDDED PAYLOAD] ' + res.file + ': contains window.__BUILDFI__');
+  var scriptCount = (html.match(/<script\b/g) || []).length;
+  if (scriptCount > 0) issues.push('[SCRIPTS] ' + res.file + ': ' + scriptCount + ' <script> block(s) — client deliverables should be inert');
+  if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(html)) issues.push('[REMOTE FONT] ' + res.file + ': Google Fonts URL — should be self-hosted/embedded');
+
+  // ── Stale label hunt ─────────────────────────────────────────────
+  // Codex flagged stale terminology leaking into deliverables:
+  // "Detailed Report" (vs "Plan financier"), "AI-assisted analysis"
+  // (internal phrasing), "t-Student" (engine internals).
+  ['Detailed Report', 'Retirement Plan', 'AI-assisted analysis', 't-Student'].forEach(function(stale) {
+    if (html.indexOf(stale) > -1) issues.push('[STALE LABEL] ' + res.file + ': contains "' + stale + '"');
+  });
+
+  // ── AMF prescriptive language hunt ───────────────────────────────
+  // CLAUDE.md forbids advice-style ("vous devez", "we recommend",
+  // "should/must"). Light scan; primary AMF discipline is in copy review.
+  ['vous devez ', 'devriez ', 'we recommend ', 'you should ', 'you must '].forEach(function(stale) {
+    var c = (html.toLowerCase().match(new RegExp(stale.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    if (c > 0) issues.push('[ADVISORY LANG] ' + res.file + ': "' + stale.trim() + '" appears ' + c + ' time(s)');
+  });
+
   // ── Value-level checks: catch flat / 0-income regressions ──
   // Pull the cash-flow table and assert that pre-retirement income > 0 and that
   // there are at least 3 unique values across income / spending / tax columns
@@ -1133,3 +1179,18 @@ console.log('Mode: prompt-substitution (buildPrompt -> local provider -> parseRe
 console.log('Reports with AI: ' + okWithAi.length + '/' + results.length);
 console.log('Average slots/report: ' + avgSlots);
 console.log('Average prompt chars/report: ' + avgPromptChars);
+
+// ── Fail-hard exit ────────────────────────────────────────────────
+// Codex audit (2026-04-30): the script previously logged issues but
+// always exited 0, meaning CI passed while reports had visible defects
+// (duplicate IDs, embedded payloads, stale labels). Now exits non-zero
+// when any issue was recorded, AND when any report failed to render.
+// Set BUILDFI_TEST_REPORTS_SOFT=1 in the environment to keep the legacy
+// permissive behaviour for local exploration.
+var failedRenders = results.filter(function(r) { return !r.ok; }).length;
+var hardFail = (failedRenders > 0) || (issues.length > 0);
+if (hardFail && process.env.BUILDFI_TEST_REPORTS_SOFT !== '1') {
+  console.error('\n✗ test-reports FAILED — ' + failedRenders + ' render error(s), ' + issues.length + ' validation issue(s).');
+  console.error('  Set BUILDFI_TEST_REPORTS_SOFT=1 to override locally; never override in CI.');
+  process.exit(1);
+}
