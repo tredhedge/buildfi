@@ -9405,7 +9405,11 @@ function App() {
   var _aiRpt = useState(null), aiReport = _aiRpt[0], setAiReport = _aiRpt[1];
   var _aiLoad = useState(false), aiLoading = _aiLoad[0], setAiLoading = _aiLoad[1];
   // AI config: default key (owner) + usage tracking
-  var AI_DEFAULT_KEY = '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';
+  // Reconciled audit P0 (2026-04-30): AI_DEFAULT_KEY no longer ships a
+  // live Anthropic key. The browser does not call Anthropic directly anymore;
+  // it posts to /api/ai-narrate which holds the key server-side. The constant
+  // is kept (empty) so existing useState refs / UI bindings don't break.
+  var AI_DEFAULT_KEY = '';
   var AI_MAX_REPORTS = 50; // max reports per session (adjust or connect to backend later)
   var _aiCount = useState(0), aiCount = _aiCount[0], setAiCount = _aiCount[1];
   var _aiKey = useState(AI_DEFAULT_KEY), aiApiKey = _aiKey[0], setAiApiKey = _aiKey[1];
@@ -11913,27 +11917,26 @@ var reportHTML = useMemo(function() {
       userPrompt = 'Analyze this Monte Carlo retirement simulation for a professional report. Reference specific numbers.\n\nDATA:\n' + payload + '\n\nCRITICAL FORMAT: Each JSON field must be 2-3 SHORT sentences MAX. No long paragraphs.\n\nRespond in ' + (fr?'French':'English') + ' as JSON:\n{"verdict":"2-3 short sentences with key numbers.","strengths":["One strength with data","Another strength"],"vulnerabilities":["One vulnerability with data","Another vulnerability"],"incomeInsight":"2 short sentences on income.","wealthInsight":"2 short sentences on wealth trajectory.","taxInsight":"2 short sentences on tax efficiency.","riskInsight":"2 short sentences on risk.","estateInsight":"1 sentence on estate."}';
     }
     var maxTok = tier === 'expert' ? 2500 : tier === 'standard' ? 1200 : 500;
-    fetch('https://api.anthropic.com/v1/messages', {
+    // Reconciled audit P0 (2026-04-30): browser no longer calls Anthropic
+    // directly. POST {sys, usr} to /api/ai-narrate, which holds the API key
+    // server-side, runs auth + rate limit (export tier 20/day), and returns
+    // the already-parsed and AMF-sanitized slot object.
+    fetch('/api/ai-narrate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': aiApiKey.trim(), 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5-20250514', max_tokens: maxTok, temperature: 0, system: sysPrompt, messages: [{ role: 'user', content: userPrompt }] })
-    }).then(function(res) { return res.json(); }).then(function(data) {
-      if (data.error) { setAiReport({ _error: true, _msg: data.error.message || 'API error' }); setAiLoading(false); return; }
-      var text = (data.content || []).map(function(b){ return b.type === 'text' ? b.text : ''; }).join('');
-      var clean = text.replace(/```json|```/g, '').trim();
-      // Extract JSON object from response
-      var jStart = clean.indexOf('{');
-      var jEnd = clean.lastIndexOf('}');
-      if (jStart >= 0 && jEnd > jStart) clean = clean.substring(jStart, jEnd + 1);
-      try {
-        var parsed = JSON.parse(clean);
-        Object.keys(parsed).forEach(function(k) {
-          if (typeof parsed[k] === 'string') parsed[k] = _sanitizeAI(parsed[k]);
-          if (Array.isArray(parsed[k])) parsed[k] = parsed[k].map(_sanitizeAI);
-        });
-        setAiReport(parsed);
-        setAiCount(function(c) { return c + 1; });
-      } catch(e) { setAiReport({ _error: true, _msg: 'Parse error: ' + e.message }); }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ sys: sysPrompt, usr: userPrompt })
+    }).then(function(res) {
+      if (res.status === 401 || res.status === 403) { setAiReport({ _error: true, _msg: fr ? 'Authentification requise' : 'Authentication required' }); setAiLoading(false); return null; }
+      if (res.status === 429) { setAiReport({ _error: true, _msg: fr ? 'Quota quotidien atteint' : 'Daily quota reached' }); setAiLoading(false); return null; }
+      if (!res.ok) { setAiReport({ _error: true, _msg: 'API error ' + res.status }); setAiLoading(false); return null; }
+      return res.json();
+    }).then(function(parsed) {
+      if (!parsed) return; // already handled error above
+      if (parsed._error) { setAiReport(parsed); return; }
+      // Server already parsed + sanitized; planner just stores the slots.
+      setAiReport(parsed);
+      setAiCount(function(c) { return c + 1; });
     }).catch(function(err) {
       setAiReport({ _error: true, _msg: err.message || 'Network error' });
     }).finally(function() { setAiLoading(false); });

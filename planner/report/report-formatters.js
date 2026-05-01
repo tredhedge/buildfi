@@ -322,8 +322,8 @@
 
   var LABELS = {
     // Section titles
-    cover_title:     { fr: "Rapport d\u00e9taill\u00e9", en: "Detailed Report" },
-    cover_sub:       { fr: "Plan financier personnalis\u00e9", en: "Personalized Financial Plan" },
+    cover_title:     { fr: "Plan financier", en: "Financial Plan" },
+    cover_sub:       { fr: "Personnalis\u00e9 et test\u00e9", en: "Personalized and stress-tested" },
     toc:             { fr: "Table des mati\u00e8res", en: "Table of Contents" },
     page_zero:       { fr: "Votre plan, en d\u00e9tail", en: "Your plan, in detail" },
     diagnostic:      { fr: "Forces et points d'attention", en: "Strengths & watch points" },
