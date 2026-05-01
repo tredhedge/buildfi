@@ -77,9 +77,9 @@ function NumInput({ id, value, onChange, step = 1, prefix, suffix, min = 0, max,
         max={max}
         value={value === 0 ? 0 : (value || "")}
         onChange={(e) => onChange(Math.max(min, Number(e.target.value) || 0))}
-        style={{ flex: 1, padding: "9px 10px", fontSize: 14, background: "transparent", border: "none", color: cl.tx, outline: "none", width: "100%" }}
+        style={{ flex: 1, padding: "10px 10px", fontSize: 16, background: "transparent", border: "none", color: cl.tx, outline: "none", width: "100%" }}
       />
-      {suffix ? <span style={{ padding: "9px 10px", background: cl.bg, color: cl.dm, fontSize: 12, fontWeight: 700, borderLeft: `1px solid ${cl.bd}` }}>{suffix}</span> : null}
+      {suffix ? <span style={{ padding: "10px 10px", background: cl.bg, color: cl.dm, fontSize: 12, fontWeight: 700, borderLeft: `1px solid ${cl.bd}` }}>{suffix}</span> : null}
     </div>
   );
 }
@@ -89,7 +89,7 @@ function SelectInput({ id, value, onChange, options, cl }) {
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      style={{ width: "100%", padding: "9px 10px", fontSize: 14, background: cl.s2, border: `1px solid ${cl.bd}`, borderRadius: 8, color: cl.tx, outline: "none" }}
+      style={{ width: "100%", padding: "10px 10px", fontSize: 16, background: cl.s2, border: `1px solid ${cl.bd}`, borderRadius: 8, color: cl.tx, outline: "none" }}
     >
       {options.map(([v, l]) => (<option key={v} value={v}>{l}</option>))}
     </select>

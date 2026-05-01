@@ -243,7 +243,7 @@ function NumInput({ value, onChange, step = 100, min = 0, max, prefix = "$", sty
           }
         }}
         onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
-        style={{ flex: 1, background: DK.bg, color: DK.tx, border: `1px solid ${isFocused ? DK.accent : DK.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 15, fontFamily: "JetBrains Mono, monospace", outline: "none", minWidth: 0, ...sx }}
+        style={{ flex: 1, background: DK.bg, color: DK.tx, border: `1px solid ${isFocused ? DK.accent : DK.border}`, borderRadius: 6, padding: "8px 8px", fontSize: 16, fontFamily: "JetBrains Mono, monospace", outline: "none", minWidth: 0, ...sx }}
       />
     </div>
   );

@@ -1,7 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import PostHogProvider from "./components/PostHogProvider";
+
+/*
+  Mobile viewport — explicit (Next.js auto-injects a default if absent, but
+  declaring it lets us opt into viewport-fit: cover so iOS Safari respects
+  env(safe-area-inset-*) padding on notched devices, and pin the initial
+  scale to 1 so the page never loads zoomed.
+*/
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf8f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1420" },
+  ],
+};
 
 /*
   BuildFi font stack (2026-04-28 design-system unification):
