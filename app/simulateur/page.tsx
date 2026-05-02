@@ -522,7 +522,8 @@ function useSimulation(params: Record<string, unknown>, token: string, authOk: b
     fetch("/api/simulate", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ params, sims: 1000 }),
+      // v1 contract (lib/schemas/engine.ts). Response: { v: 1, ok, mc, meta }.
+      body: JSON.stringify({ v: 1, params, options: { paths: 1000 } }),
       signal: controller.signal,
     })
       .then(res => {
@@ -531,11 +532,16 @@ function useSimulation(params: Record<string, unknown>, token: string, authOk: b
       })
       .then(data => {
         if (controller.signal.aborted) return;
-        if (data.success) {
+        // v1 shape: { v: 1, ok: true, mc, meta }. Legacy `{success, results}`
+        // also accepted for transitional callers.
+        if (data?.v === 1 && data.ok === true) {
+          setResults(data.mc);
+          setStatus("idle");
+        } else if (data?.success) {
           setResults(data.results);
           setStatus("idle");
         } else {
-          setError(data.error || "Simulation failed");
+          setError(data?.error || "Simulation failed");
           setStatus("error");
         }
       })

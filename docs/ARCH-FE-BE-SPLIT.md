@@ -311,28 +311,60 @@ not the validators; server validates on every request.
 ### Phase 1 -- Bilan 360 cutover (already done)
 - Webhook -> translator -> MC -> AI -> renderer -> Blob -> email. [DONE]
 
-### Phase 2 -- Wizard FE (2 weeks)
-- Build `app/(auth)/wizard/page.tsx`.
-- Implement Mode 1/2/3 React components (under `lib/wizard/`).
-- Wire `/api/wizard/classify`, `/api/wizard/save`, `/api/wizard/load`.
+### Phase 2 -- Wizard FE [PARTIAL DONE 2026-05-01]
+- [DONE] Wizard page exists at `app/wizard/page.tsx` (predates this plan;
+  uses the same `lib/wizard/blocks.ts` registry). Phase 2.0 backend wired.
+- [DONE 2.1] Two-tier persistence: localStorage (5-min working copy) +
+  KV via `/api/wizard/save` (90-day server-canonical draft per locked
+  decision #4). draftId stored in localStorage as the access token.
+- [DEFERRED] Mode 1 classifier currently runs client-side from
+  `MODE1_QUESTIONS`. Wiring `/api/wizard/classify` instead is purely a
+  network roundtrip the client can avoid -- the classifier is pure CPU.
+  Calling the server only buys us per-block telemetry; not load-bearing
+  for the split. Park.
 
-### Phase 3 -- Planner cutover (3 weeks -- biggest)
-- Build `app/(auth)/simulator/page.tsx`.
-- Replicate planner_v3 surface (190+ params, all the panels).
-- Each parameter change -> debounced POST to `/api/simulate`.
-- All charts render from server JSON.
-- Add credit counter UI.
+### Phase 3 -- Planner cutover [STARTED 2026-05-01]
+- [DONE 3.0] `/api/simulate` v1 contract live (Phase 0).
+- [DONE 3.1] `app/simulateur/page.tsx` updated to v1 contract -- calls
+  `/api/simulate` with `{v: 1, params, options: {paths}}`, parses
+  `{v: 1, ok, mc, meta}` response. Legacy fallback retained for
+  transitional callers.
+- [PARKED] Replicate the full 190-param planner_v3 surface as a thin
+  React shell. The current `app/simulateur/page.tsx` (3540 lines) already
+  covers the simulator UX; it just needs feature parity with planner_v3
+  before retirement. Park as separate work -- the contract is locked, the
+  pieces can ship one panel at a time.
+- [PARKED] Credit counter UI -- requires the `/api/credits/` route
+  (Phase 2 plan, not yet built).
 
-### Phase 4 -- Retire planner_v3 (1 week)
-- Delete `planner/planner_v3.html`, `planner_longform.html`, `planner/sw.js`,
-  `planner/manifest.json`, `planner/vendor/`.
-- Delete inline engine constants mirror.
-- Drop `tests/constants-drift.test.js` planner_v3 check.
-- Move `planner/report/*.js` to `lib/render/` (cosmetic -- last cleanup).
+### Phase 4 -- Retire planner_v3 [BLOCKED ON USER VERIFICATION]
+- [DONE prep] `planner/planner_v3.html` carries `meta robots noindex`
+  and a deprecated title so search and bookmarks point users to
+  `/simulateur` instead.
+- [PENDING] Deletion list (NOT executed -- destructive, awaits OK):
+  - `planner/planner_v3.html`
+  - `planner/planner_longform.html`
+  - `planner/sw.js`
+  - `planner/manifest.json`
+  - `planner/vendor/` (xlsx, exceljs CDN fallbacks)
+  - inline engine constants mirror in planner_v3 (drift test will
+    drop the planner_v3 check at the same time)
+  - the cosmetic `planner/report/*.js` -> `lib/render/` move
+- [VERIFY BEFORE DELETING] User checklist:
+  1. `/simulateur` loads, runs a 1000-path MC, returns results.
+  2. `/wizard` runs end-to-end (Mode 1 -> Mode 2 -> Stripe checkout
+     for Bilan 360, or simulator handoff for Planner SKU).
+  3. Existing customers reaching `/planner_v3.html` directly get the
+     redirect / deprecation banner (the `noindex` plus deprecated
+     title acts as a soft signal; no hard 301 yet).
 
-### Phase 5 -- Polish (1 week)
-- Move PWA shell to `app/manifest.ts` + Next 16 service worker.
-- Run a full E2E pass: marketing -> wizard -> checkout -> webhook -> email -> portal -> regenerate.
+### Phase 5 -- Polish [PARTIAL DONE 2026-05-01]
+- [DONE] `app/manifest.ts` (Next 16 native manifest) -- replaces the
+  legacy `planner/manifest.json`. Per locked decision #6 the simulator
+  is NOT a PWA-installable offline app: `display: "browser"` and no
+  service worker. The manifest exists for touch icons + add-to-homescreen
+  bookmarks only.
+- [PENDING] Full E2E pass once Phase 4 deletions are approved.
 
 ---
 

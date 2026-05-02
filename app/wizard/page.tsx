@@ -458,6 +458,16 @@ function Mode2Step({ cl, lang, profile, answers, setAnswers, blocks, onBack, onS
   );
 }
 
+/**
+ * Drop internal "__email", "__terms", etc. UI-only keys before persisting
+ * to KV. The server-side wizard draft only carries Mode 1/2/3 answers.
+ */
+function stripInternalKeys(obj: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of Object.keys(obj)) if (!k.startsWith("__")) out[k] = obj[k];
+  return out;
+}
+
 function WizardInner() {
   const params = useSearchParams();
   const router = useRouter();
@@ -484,30 +494,98 @@ function WizardInner() {
   const [error, setError] = useState("");
   const [errorFieldId, setErrorFieldId] = useState<string | null>(null);
 
-  // Save progress to localStorage with 30-day TTL (user can resume up to 30 days later)
+  // Two-tier persistence (Phase 2.1, 2026-05-01):
+  //   localStorage (WIZARD_KEY)   = 5-min working copy for instant offline resilience.
+  //   KV via /api/wizard/save     = server-canonical 90-day draft (locked decisions #2 + #4).
+  //                                  draftId stored in localStorage as the access token.
+  // On mount we prefer the KV draft (newer, auth'd) and fall back to localStorage.
   const WIZARD_KEY = "buildfi_wizard_v2";
-  const WIZARD_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const DRAFT_ID_KEY = "buildfi_wizard_draft_id";
+  const WIZARD_TTL_MS = 5 * 60 * 1000;        // localStorage TTL: 5 min only
+  const SAVE_DEBOUNCE_MS = 1500;
+  const [draftId, setDraftId] = useState<string | null>(null);
+
+  // Load: try KV first via stored draftId, fall back to localStorage.
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(WIZARD_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.savedAt && Date.now() - parsed.savedAt < WIZARD_TTL_MS) {
-          if (parsed.profile) setProfile(parsed.profile);
-          if (parsed.answers) setAnswers(parsed.answers);
-          if (parsed.step) setStep(parsed.step);
-        } else {
-          // Expired — clear
-          localStorage.removeItem(WIZARD_KEY);
-        }
+      const storedId = localStorage.getItem(DRAFT_ID_KEY);
+      if (storedId) {
+        fetch(`/api/wizard/load?draftId=${encodeURIComponent(storedId)}`)
+          .then((r) => r.json())
+          .then((data) => {
+            if (data?.ok && data.draft) {
+              setDraftId(storedId);
+              if (data.draft.mode1) setProfile((p: Mode1Profile) => ({ ...p, ...data.draft.mode1 }));
+              if (data.draft.mode2) setAnswers((a: Record<string, unknown>) => ({ ...a, ...data.draft.mode2 }));
+            } else {
+              // Stale draftId (KV expired). Drop it and fall through to localStorage.
+              localStorage.removeItem(DRAFT_ID_KEY);
+              loadFromLocalStorage();
+            }
+          })
+          .catch(() => loadFromLocalStorage());
+      } else {
+        loadFromLocalStorage();
       }
-    } catch {}
+    } catch { loadFromLocalStorage(); }
+
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem(WIZARD_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.savedAt && Date.now() - parsed.savedAt < WIZARD_TTL_MS) {
+            if (parsed.profile) setProfile(parsed.profile);
+            if (parsed.answers) setAnswers(parsed.answers);
+            if (parsed.step) setStep(parsed.step);
+          } else {
+            localStorage.removeItem(WIZARD_KEY);
+          }
+        }
+      } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // localStorage write (instant, every change).
   useEffect(() => {
     try {
       localStorage.setItem(WIZARD_KEY, JSON.stringify({ profile, answers, step, savedAt: Date.now() }));
     } catch {}
   }, [profile, answers, step]);
+
+  // KV save (debounced 1.5 s after last change). Skips empty mode1 to avoid
+  // creating drafts before the user actually answers anything.
+  useEffect(() => {
+    if (!profile.phase) return; // Wait for first real Mode 1 answer.
+    const timer = setTimeout(() => {
+      const body = {
+        v: 1,
+        draftId: draftId ?? undefined,
+        mode1: profile,
+        mode2: stripInternalKeys(answers),
+        sku: "bilan360" as const,
+        lang,
+      };
+      fetch("/api/wizard/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.ok && data.draftId) {
+            if (data.draftId !== draftId) {
+              setDraftId(data.draftId);
+              try { localStorage.setItem(DRAFT_ID_KEY, data.draftId); } catch {}
+            }
+          }
+        })
+        .catch(() => { /* silent — localStorage is the fallback */ });
+    }, SAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, answers, draftId, lang]);
 
   const blocks = useMemo(() => filterBlocksForProfile(profile), [profile]);
 
