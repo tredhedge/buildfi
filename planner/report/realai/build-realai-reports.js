@@ -220,7 +220,10 @@ if (cmd === 'render') {
       let html = buildReport(data);
       // Inject codex rail TOC + Reading/Explore toggle script before </body>.
       // Falls back to no-op if injection content unavailable (logged at start).
-      if (codexScript && html.indexOf('</body>') !== -1) {
+      // clientExport gate (Phase 1, Codex audit 2026-05-01): the codex rail
+      // injection is itself a <script> block (toggle + scroll-spy). Skip when
+      // producing a hardened static deliverable so the report stays inert.
+      if (codexScript && !data.clientExport && html.indexOf('</body>') !== -1) {
         html = html.replace('</body>', codexScript + '</body>');
       }
       // Duplicate-id post-process (Codex audit 2026-04-30): the renderer emits

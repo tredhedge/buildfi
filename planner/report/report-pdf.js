@@ -3028,7 +3028,7 @@
       h += '<div style="text-align:center">';
       h += Ch.svgSunburst(_sbAccounts, { size: 220, subLabel: fr ? 'patrimoine total' : 'total wealth' });
       h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:4px;letter-spacing:0.5px">' +
-        (fr ? 'Anneau int\u00e9rieur\u202f: type de compte. Anneau ext\u00e9rieur\u202f: actions / obligations.' : 'Inner ring: account type. Outer ring: equity / bonds.') +
+        (fr ? 'Anneau ext\u00e9rieur\u202f: type de compte. Anneau int\u00e9rieur\u202f: actions / obligations.' : 'Outer ring: account type. Inner ring: equity / bonds.') +
         '</div></div>';
       // Right column: account legend with values
       h += '<div style="font-family:Inter,sans-serif;font-size:11px">';
@@ -5272,10 +5272,17 @@
     }
     var h = secPage();
     h += F.Sec(secN, fr ? 'Glossaire' : 'Glossary', 'sec-glossary');
-    h += '<div style="font-size:10.5px;color:#666;margin-bottom:10px;font-style:italic;line-height:1.55">' +
-      (fr ? 'Définitions des termes techniques utilisés dans ce rapport. Les termes soulignés en pointillé à travers le rapport ouvrent une infobulle au survol.'
-          : 'Definitions of technical terms used in this report. Terms with a dotted underline throughout the report open a tooltip on hover.') +
-      '</div>';
+    // Glossary intro — varies by export mode. The interactive build wires
+    // hover tooltips on dotted-underlined terms via report-glossary.js;
+    // the clientExport build strips all <script> blocks so the tooltips
+    // are gone and the dotted underlines are inert. Telling a static-PDF
+    // reader to "hover" is a lie — say so accordingly.
+    var _glossaryIntro = (d.clientExport === true)
+      ? (fr ? 'Définitions des termes techniques utilisés dans ce rapport.'
+            : 'Definitions of technical terms used in this report.')
+      : (fr ? 'Définitions des termes techniques utilisés dans ce rapport. Les termes soulignés en pointillé à travers le rapport ouvrent une infobulle au survol.'
+            : 'Definitions of technical terms used in this report. Terms with a dotted underline throughout the report open a tooltip on hover.');
+    h += '<div style="font-size:10.5px;color:#666;margin-bottom:10px;font-style:italic;line-height:1.55">' + _glossaryIntro + '</div>';
     h += listHtml;
     
 h += secPageEnd();
@@ -6342,14 +6349,13 @@ h += secPageEnd();
       // P1.6 — case_driver wiring. Set on the payload so renderActionPlan
       // and the action generator can find the case-defining lever.
       d.caseDriver = (data && data.caseDriver) || (data && data.case_driver) || null;
-      // T2.6 — advisor identity wiring. Defaults below if upstream pipeline
-      // doesn't set them. Each is overridable per profile/customer.
-      d.advisor = (data && data.advisor) || {
-        name: 'BuildFi Planner',
-        credentials: 'Pl.Fin. (équivalent CFP)',
-        firm: 'BuildFi',
-        email: 'soutien@buildfi.ca'
-      };
+      // T2.6 — advisor identity wiring. Pass through whatever the pipeline
+      // sets; do NOT default to a fake "BuildFi Planner, Pl.Fin." identity.
+      // BuildFi is direct-to-consumer today — no real Pl.Fin. is on file
+      // for a B2C report, so the signature page is suppressed entirely
+      // when d.advisor is null/undefined (see render gate at line ~6861).
+      // The fake-Pl.Fin. default would have been a regulatory misstep.
+      d.advisor = (data && data.advisor) || null;
     }
 
     // Set the rendering-scope language so shared formatters (fmtCurrency, pc)
@@ -6376,8 +6382,15 @@ h += secPageEnd();
     // CLASSIFIER-RENDER-PLAN: stamp the body with the active classifier axes
     // and leadWith ordering so reviewers / auditors can grep proof of the
     // dispatch chain without parsing the rendered DOM.
+    //
+    // clientExport gate (Phase 1, Codex audit 2026-05-01): when this report
+    // is being produced as a hardened client deliverable, the data-bf-*
+    // taxonomy attributes leak internal classifier dispatch \u2014 strip them.
+    // Same gate skips the copyScript inline <script>: client deliverables
+    // should be inert HTML.
+    var _isClientExport = d.clientExport === true;
     var _rpAttrs = '';
-    if (d.renderProfile) {
+    if (d.renderProfile && !_isClientExport) {
       _rpAttrs = ' data-bf-chart-tier="' + (d.renderProfile.chartTier || '') + '"' +
                  ' data-bf-tone-mode="' + (d.renderProfile.toneMode || '') + '"' +
                  ' data-bf-density-mode="' + (d.renderProfile.densityMode || '') + '"' +
@@ -6387,15 +6400,24 @@ h += secPageEnd();
     }
     // Phase 2: stamp the inferred archetype on <body> so the runtime
     // hydration scripts (report-whatif.js) can pick the right Level-1
-    // curated scenario set without re-deriving from raw params.
+    // curated scenario set without re-deriving from raw params. Stripped
+    // in clientExport mode (no runtime \u2192 no consumer for the hint).
     var _archAttrs = '';
     var _archForBody = d._archetype || _inferArchetype(d);
-    if (_archForBody) {
+    if (_archForBody && !_isClientExport) {
       _archAttrs = ' data-bf-archetype-phase="' + (_archForBody.phase || '') + '"' +
                    ' data-bf-archetype-tags="' + ((_archForBody.tags || []).join(',')) + '"';
     }
-    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + css + '</style></head><body' + _rpAttrs + _archAttrs + '>';
-    h += copyScript;
+    // Strip the Google Fonts @import in clientExport mode \u2014 the report
+    // becomes offline-capable and stops sending a remote request to
+    // fonts.googleapis.com on every open. Fallback fonts already declared
+    // in every font-family rule (Georgia, Inter\u2192sans-serif, monospace) so
+    // the visual degrades gracefully on every device.
+    var _renderCss = _isClientExport
+      ? css.replace(/^@import\s+url\([^)]*\);\s*$/m, '/* @import stripped for clientExport */').replace(/^@import\s+url\([^)]*\);\s*\n/m, '/* @import stripped for clientExport */\n')
+      : css;
+    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + _renderCss + '</style></head><body' + _rpAttrs + _archAttrs + '>';
+    if (!_isClientExport) h += copyScript;
 
     // Cover page
     h += renderCover(d);
@@ -6828,8 +6850,16 @@ h += secPageEnd();
       }
     }
 
-    // 19. Signature page (last content page before footer)
-    h += renderSignaturePage(d);
+    // 19. Signature / accusé-de-réception page — B2C-disabled.
+    // The signature page lists "BuildFi Planner, Pl.Fin. (équivalent CFP)"
+    // as a counter-signatory, which only makes sense in a B2B advisor flow
+    // where a real Pl.Fin. is on file. BuildFi is direct-to-consumer today;
+    // there's no advisor signing alongside the client. Re-enable when the
+    // B2B/advisor channel ships and a real planner identity is available
+    // in d.advisor (already plumbed through the data contract).
+    if (d.advisor && d.advisor.name) {
+      h += renderSignaturePage(d);
+    }
 
     // Footer
     h += renderFooter(d);
@@ -6838,7 +6868,15 @@ h += secPageEnd();
     // fully parsed before they execute. Each module reads window.__BUILDFI__
     // and decorates the static report with hover tooltips, year drilldown,
     // print-profile toggle, glossary, what-if simulator, etc.
-    h += _emitInteractivePayload(d);
+    //
+    // clientExport gate (Phase 1, Codex audit 2026-05-01): skip the entire
+    // payload + script bundle when producing a hardened client deliverable.
+    // No window.__BUILDFI__ (privacy: profile JSON would otherwise ship with
+    // the report). No <script> blocks. Tooltips, drill-downs, what-if all
+    // disabled — this is a static deliverable, not an app.
+    if (d.clientExport !== true) {
+      h += _emitInteractivePayload(d);
+    }
 
     h += '</body></html>';
     return h;
