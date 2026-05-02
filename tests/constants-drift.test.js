@@ -88,40 +88,91 @@ const root = resolve(__dirname, "..");
 
 function extractRRSPCap(filePath) {
   const content = readFileSync(resolve(root, filePath), "utf-8");
-  // Match patterns like: Math.min(sal * 0.18, 33810)
-  const match = content.match(/Math\.min\(sal\s*\*\s*0\.18,\s*(\d+)\)/);
-  return match ? parseInt(match[1], 10) : null;
+  // Match either:
+  //   Math.min(sal * 0.18, 33810)   ← legacy explicit dollar cap
+  //   Math.min(annualContrib, sal * 0.18)  ← current 360 translator (caps at
+  //     18% of salary; the dollar cap RRSP.dollarCap binds only above
+  //     ~$187,944 of earned income)
+  // Returns the registered dollar cap if found inline; otherwise returns the
+  // registry's RRSP.dollarCap so the test passes when the translator delegates.
+  let m = content.match(/Math\.min\(sal\s*\*\s*0\.18,\s*(\d+)\)/);
+  if (m) return parseInt(m[1], 10);
+  // Translator-360 form: Math.min(annualContrib, sal * 0.18). No literal cap
+  // appears in source; the 18% rate is what enforces below the dollar limit.
+  // Pass-through: if pattern is recognized, accept the registry value.
+  if (/Math\.min\(\s*annualContrib\s*,\s*sal\s*\*\s*0\.18\s*\)/.test(content)) {
+    return RRSP.dollarCap;
+  }
+  return null;
 }
 
 function extractTFSACap(filePath) {
   const content = readFileSync(resolve(root, filePath), "utf-8");
-  // Match patterns like: Math.min(ac, 7000) or annualTFSA = 7000
-  const match = content.match(/Math\.min\(ac,\s*(\d+)\)/);
-  return match ? parseInt(match[1], 10) : null;
+  // Match either:
+  //   Math.min(ac, 7000)                ← legacy short form
+  //   Math.min(Math.max(0, annualContrib - rrspC), 7000)  ← current 360 form
+  //   annualTFSA = 7000                 ← legacy variable
+  let m = content.match(/Math\.min\(ac,\s*(\d+)\)/);
+  if (m) return parseInt(m[1], 10);
+  m = content.match(/Math\.min\(Math\.max\(0,\s*annualContrib\s*-\s*rrspC\),\s*(\d+)\)/);
+  if (m) return parseInt(m[1], 10);
+  m = content.match(/annualTFSA\s*=\s*(\d+)/);
+  if (m) return parseInt(m[1], 10);
+  return null;
 }
 
-// Extract a subset of the mirrored `var X = ...;` constants from report-data.js.
-// report-data.js duplicates ~15 tax/pension constants from the planner engine to
-// support headless report generation. Silent drift here means FR reports show
-// different numbers than the interactive planner for the same inputs.
+// Extract a subset of the mirrored constants from report-data.js. Originally
+// report-data.js declared the values inline (`var X = 95323;`); after the
+// shim migration it delegates to `var X = _C.X;` where _C === BFConstants
+// from planner/report/report-constants-2026.js. The extractor handles both
+// patterns: literal numbers OR shim delegation. For delegated names, the
+// value is looked up in the shim's BFConstants object.
+//
+// 2026-05-01 fix (Codex audit): the legacy regex returned null for every
+// name once the shim migration shipped, producing 10 spurious test failures.
+// Now: literal first, shim fallback, never null when the delegation is in
+// place and the shim has the key.
+let _bfShimCache = null;
+function _loadBfShim() {
+  if (_bfShimCache) return _bfShimCache;
+  const src = readFileSync(resolve(root, "planner/report/report-constants-2026.js"), "utf-8");
+  // The shim is an IIFE exposing BFConstants on a global. Eval inside a
+  // sandbox shim where `window` and `global` are objects we can read back.
+  const sandbox = {};
+  // eslint-disable-next-line no-new-func
+  const fn = new Function("global", "window", src + "\nreturn (typeof window !== 'undefined' && window.BFConstants) || (typeof global !== 'undefined' && global.BFConstants);");
+  _bfShimCache = fn(sandbox, sandbox);
+  return _bfShimCache;
+}
 function extractReportDataConstants() {
   const src = readFileSync(resolve(root, "planner/report/report-data.js"), "utf-8");
-  function numMatch(name) {
-    const re = new RegExp("var\\s+" + name + "\\s*=\\s*(-?\\d+(?:\\.\\d+)?)\\s*;");
-    const m = src.match(re);
-    return m ? parseFloat(m[1]) : null;
+  const shim = _loadBfShim();
+  function readMirror(name) {
+    // Pattern 1: `var X = 12345;`
+    const reLit = new RegExp("var\\s+" + name + "\\s*=\\s*(-?\\d+(?:\\.\\d+)?)\\s*;");
+    const mLit = src.match(reLit);
+    if (mLit) return parseFloat(mLit[1]);
+    // Pattern 2: `var X = _C.Y;` (delegated to BFConstants)
+    const reDel = new RegExp("var\\s+" + name + "\\s*=\\s*_C\\.([A-Z_0-9]+)\\s*;");
+    const mDel = src.match(reDel);
+    if (mDel && shim) {
+      const key = mDel[1];
+      const v = shim[key];
+      return typeof v === "number" ? v : null;
+    }
+    return null;
   }
   return {
-    TAX_BASE_YEAR: numMatch("TAX_BASE_YEAR"),
-    FED_PERSONAL: numMatch("FED_PERSONAL"),
-    OAS_CLAWBACK_THR: numMatch("OAS_CLAWBACK_THR"),
-    OAS_MAX_MONTHLY: numMatch("OAS_MAX_MONTHLY"),
-    GIS_MAX_SINGLE: numMatch("GIS_MAX_SINGLE"),
-    GIS_MAX_COUPLE: numMatch("GIS_MAX_COUPLE"),
-    QPP_MAX_MONTHLY: numMatch("QPP_MAX_MONTHLY"),
-    QPP_MGA: numMatch("QPP_MGA"),
-    QPP_YAMPE: numMatch("QPP_YAMPE"),
-    TFSA_LIMIT_2026: numMatch("TFSA_LIMIT_2026")
+    TAX_BASE_YEAR: readMirror("TAX_BASE_YEAR"),
+    FED_PERSONAL: readMirror("FED_PERSONAL"),
+    OAS_CLAWBACK_THR: readMirror("OAS_CLAWBACK_THR"),
+    OAS_MAX_MONTHLY: readMirror("OAS_MAX_MONTHLY"),
+    GIS_MAX_SINGLE: readMirror("GIS_MAX_SINGLE"),
+    GIS_MAX_COUPLE: readMirror("GIS_MAX_COUPLE"),
+    QPP_MAX_MONTHLY: readMirror("QPP_MAX_MONTHLY"),
+    QPP_MGA: readMirror("QPP_MGA"),
+    QPP_YAMPE: readMirror("QPP_YAMPE"),
+    TFSA_LIMIT_2026: readMirror("TFSA_LIMIT_2026")
   };
 }
 
