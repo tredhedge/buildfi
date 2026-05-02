@@ -86,6 +86,7 @@ const KEYS = {
   feedback: (token: string) => `feedback:${token}`,
   feedbackEmail: (email: string) => `feedback-email:${normalizeEmail(email)}`,
   simCache: (paramHash: string) => `sim:v1:${paramHash}`,
+  wizardDraft: (draftId: string) => `wizard:v1:${draftId}`,
 } as const;
 
 // ── Simulation cache (v1 contract) ────────────────────────
@@ -106,6 +107,28 @@ export async function setSimCache(paramHash: string, value: unknown): Promise<vo
 }
 
 export const SIM_CACHE_TTL = SIM_CACHE_TTL_SECONDS;
+
+// ── Wizard drafts (90-day TTL per locked decision #4) ─────
+//
+// Anonymous drafts key by sessionId (passed by the client).
+// Authenticated drafts key by userId. Either way the draftId is opaque
+// to the wizard; the server returns it on first save.
+
+const WIZARD_DRAFT_TTL_SECONDS = 90 * 24 * 60 * 60;
+
+export async function getWizardDraft<T = unknown>(draftId: string): Promise<T | null> {
+  return redis.get<T>(KEYS.wizardDraft(draftId));
+}
+
+export async function setWizardDraft(draftId: string, value: unknown): Promise<void> {
+  await redis.set(KEYS.wizardDraft(draftId), value, { ex: WIZARD_DRAFT_TTL_SECONDS });
+}
+
+export async function deleteWizardDraft(draftId: string): Promise<void> {
+  await redis.del(KEYS.wizardDraft(draftId));
+}
+
+export const WIZARD_DRAFT_TTL = WIZARD_DRAFT_TTL_SECONDS;
 
 // ── Expert Profile CRUD ───────────────────────────────────
 
