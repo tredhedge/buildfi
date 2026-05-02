@@ -2,7 +2,7 @@
   "name": "BuildFi — Simulateur de retraite",
   "short_name": "BuildFi",
   "description": "Simulateur de retraite canadien. Simulation Monte Carlo, fiscalité 13 provinces, QPP/OAS/GIS.",
-  "start_url": "./planner_v2.html",
+  "start_url": "./planner_v3.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#1a1714",

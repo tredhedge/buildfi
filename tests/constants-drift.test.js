@@ -176,16 +176,16 @@ function extractReportDataConstants() {
   };
 }
 
-// Extract the injected `C = {...}` block from planner_v2.html and eval it.
-// planner_v2.html is the engine source of truth for the interactive planner; this
+// Extract the injected `C = {...}` block from planner_v3.html and eval it.
+// planner_v3.html is the engine source of truth for the interactive planner; this
 // guards against the three-way drift between:
 //   lib/constants-registry.ts (shared)
 //   lib/engine/index.js       (Bilan/Bilan360 server engine)
-//   planner/planner_v2.html   (Laboratoire / interactive planner)
+//   planner/planner_v3.html   (Laboratoire / interactive planner)
 function extractPlannerConstants() {
-  const html = readFileSync(resolve(root, "planner/planner_v2.html"), "utf-8");
+  const html = readFileSync(resolve(root, "planner/planner_v3.html"), "utf-8");
   const m = html.match(/\/\*__INJECTED_CONSTANTS_START__\*\/([\s\S]*?)\/\*__INJECTED_CONSTANTS_END__\*\//);
-  if (!m) throw new Error("Could not find __INJECTED_CONSTANTS__ block in planner_v2.html");
+  if (!m) throw new Error("Could not find __INJECTED_CONSTANTS__ block in planner_v3.html");
   // The block is `var C = { ... };` — eval in an isolated scope and return C.
   const src = m[1].trim();
   const fn = new Function(src + "\nreturn C;");
@@ -307,12 +307,12 @@ const transExp = readFileSync(resolve(root, "lib/quiz-translator-expert.ts"), "u
 assertEqual(trans360.includes("sal * 0.18"), true, "360 translator uses 18% RRSP rate");
 assertEqual(transExp.includes("sal * 0.18"), true, "Expert uses 18% RRSP rate");
 
-// ── 10. Planner (planner_v2.html) injected C object ─────────
+// ── 10. Planner (planner_v3.html) injected C object ─────────
 // Guards against the planner drifting from the shared registry. Covers the subset
 // of constants where a wrong number would ship to users and materially affect
 // projections or tax math.
 
-console.log("── Planner planner_v2.html (injected C) ──");
+console.log("── Planner planner_v3.html (injected C) ──");
 try {
   const P = extractPlannerConstants();
   assertEqual(P.TAX_BASE_YEAR, TAX_YEAR, "Planner TAX_BASE_YEAR matches registry");

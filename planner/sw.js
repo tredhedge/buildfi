@@ -1,16 +1,18 @@
-// BuildFi Planner — Service Worker (Offline-first, v12)
+// BuildFi Planner — Service Worker (Offline-first, v13)
 //
 // Cache name is bumped whenever the shipped planner code changes so that
 // previously cached assets are evicted on activate. Bump VERSION below when
-// shipping a new build.
-var VERSION = 'v12.0.0-2026-04-16';
+// shipping a new build. Bumped 2026-05-01 with the v2 → v3 rename so any
+// previously-cached v2 asset list is invalidated cleanly.
+var VERSION = 'v13.0.0-2026-05-01';
 var CACHE_NAME = 'buildfi-planner-' + VERSION;
 
-// Core assets to pre-cache. The main planner file is planner_v2.html — keep this
-// list in sync with real filenames or install will fail silently for missing ones.
+// Core assets to pre-cache. Primary planner is planner_v3.html (v2 retired
+// 2026-05-01). Keep this list in sync with real filenames or install will
+// fail silently for missing ones.
 var ASSETS = [
   './',
-  './planner_v2.html',
+  './planner_v3.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
