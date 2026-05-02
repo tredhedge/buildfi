@@ -8,7 +8,7 @@
  * headers, section titles, frozen panes, alternating row colors.
  *
  * Usage:  node scripts/build-excel-template.js
- * Output: templates/report-template-b64.js
+ * Output: planner/report/templates/report-template-b64.js
  */
 
 const ExcelJS = require("exceljs");
@@ -447,7 +447,7 @@ async function build() {
   addFooter(wsM, 44);
 
   // ━━ Save ━━
-  const outDir = path.join(__dirname, "..", "templates");
+  const outDir = path.join(__dirname, "..", "planner", "report", "templates");
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   const xlsxPath = path.join(outDir, "buildfi-donnees-detaillees-template.xlsx");

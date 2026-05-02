@@ -4,7 +4,6 @@
  * For inline-style consumers (guides, AI report renderer) that build palettes
  * as JS objects. Keep these values in sync with editorial.css.
  *
- * Source of truth: design-lab/experiments/round-2-8-guide-system (2026-04-28).
  */
 
 import { BRAND, SEMANTIC } from "./product.tokens";

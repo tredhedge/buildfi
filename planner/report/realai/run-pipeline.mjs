@@ -80,10 +80,12 @@ const todoDir = path.join(outDir, 'responses-todo');
   every rendered draft + corrected + final output so the rail experience
   ships with every report, not as a manual after-the-fact decoration.
 
-  Reference: design-lab/experiments/report-view-toggle/_codex_view_toggle.js
+  Reference: docs/design-lab/experiments/report-view-toggle/_codex_view_toggle.js
+  (prototype dir was retired 2026-05-01; this codepath now no-ops via the
+   try/catch fallback below — reports render without the codex rail).
 */
 const codexInjectionPath = path.join(__dirname, '..', '..', '..',
-  'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
+  'docs', 'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
 let _codexScriptCache = null;
 function getCodexRailScript() {
   if (_codexScriptCache !== null) return _codexScriptCache;

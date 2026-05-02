@@ -4,7 +4,6 @@
  * For inline-style consumers (debt tool, decum tool, marketing landing) that
  * build palettes as JS objects. Keep these values in sync with product.css.
  *
- * Source of truth: design-lab/experiments/round-3-3-tools-approved (2026-04-28).
  */
 
 export const PRODUCT_DARK = {
