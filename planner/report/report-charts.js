@@ -588,21 +588,38 @@
 
     var svg = '<svg role="img" aria-label="' + (opts.title || 'Asset allocation') + '" xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="display:block;margin:0 auto">';
 
+    // Two-ring rendering only when at least one account carries an explicit
+    // asset_eq value. Without that, the inner ring would show a fake 60/40
+    // default that visually reads as "equity/bond split" but is really just
+    // a paler version of the outer ring — misleading. User flagged this.
+    // 2026-05-01: pure single-ring donut when no allocation is provided.
+    var hasAlloc = accounts.some(function(a) { return a.asset_eq != null; });
+
+    // Sunburst convention (2026-05-01): the broader category (account type,
+    // 3-5 buckets) goes on the INNER ring; the more granular split (equity
+    // vs bond) goes on the OUTER ring. User flagged the previous rendering
+    // as "l'inverse" — outer was account, inner was equity/bond, which is
+    // backwards from how every other sunburst (Excel, D3, Tableau) reads.
+    // Swapped now: inner = account type, outer = equity/bond.
     var startAngle = -Math.PI / 2;
     accounts.forEach(function(a) {
       var v = Math.max(0, a.value || 0);
       if (v <= 0) return;
       var sweep = (v / total) * 2 * Math.PI;
       var endAngle = startAngle + sweep;
-      // Inner arc (account type) — bold color
-      svg += '<path d="' + arc(startAngle, endAngle, rMid, rOuter) + '" fill="' + a.color + '" stroke="#fff" stroke-width="2"/>';
-      // Outer ring — split into equity/bond per account (default 60/40)
-      var eqShare = a.asset_eq != null ? a.asset_eq : 0.6;
-      var bndShare = 1 - eqShare;
-      var eqEnd = startAngle + sweep * eqShare;
-      svg += '<path d="' + arc(startAngle, eqEnd, rInner, rMid) + '" fill="' + a.color + '" opacity="0.55" stroke="#fff" stroke-width="1"/>';
-      if (bndShare > 0) {
-        svg += '<path d="' + arc(eqEnd, endAngle, rInner, rMid) + '" fill="' + a.color + '" opacity="0.25" stroke="#fff" stroke-width="1"/>';
+      if (hasAlloc) {
+        // 2-ring: inner = account type (bold), outer = equity/bond split.
+        svg += '<path d="' + arc(startAngle, endAngle, rInner, rMid) + '" fill="' + a.color + '" stroke="#fff" stroke-width="2"/>';
+        var eqShare = a.asset_eq != null ? a.asset_eq : 0.6;
+        var bndShare = 1 - eqShare;
+        var eqEnd = startAngle + sweep * eqShare;
+        svg += '<path d="' + arc(startAngle, eqEnd, rMid, rOuter) + '" fill="' + a.color + '" opacity="0.55" stroke="#fff" stroke-width="1"/>';
+        if (bndShare > 0) {
+          svg += '<path d="' + arc(eqEnd, endAngle, rMid, rOuter) + '" fill="' + a.color + '" opacity="0.25" stroke="#fff" stroke-width="1"/>';
+        }
+      } else {
+        // Single-ring: account type only, full radius. No fake equity/bond.
+        svg += '<path d="' + arc(startAngle, endAngle, rInner, rOuter) + '" fill="' + a.color + '" stroke="#fff" stroke-width="2"/>';
       }
       startAngle = endAngle;
     });
