@@ -6,7 +6,6 @@
    - Mono (single typographic family for numbers)
    - Radius scale, semantic states
    Surface-specific palettes live in product.css and editorial.css.
-   Source of truth promoted from design-lab/round-2-8 + round-3-3 (2026-04-28).
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {

@@ -274,8 +274,8 @@ on `codex-report-premium-rebuild` branch covering Phase 0 through Phase
 
 ## Phase B addendum (2026-04-29) — Plan v2.2 corrections
 
-**Reference: `design-lab/experiments/round-3-7-reading-real-clones/`** is now
-the canonical Editorial substrate. Codex round 3.7 demonstrates the rail +
+**Reference: round 3.7 (reading-real-clones)** was the canonical Editorial substrate
+(prototype dir removed 2026-05-01 in cleanup). It demonstrated the rail +
 hybrid-sheet + interactive/PDF-mode-switch patterns against real guide
 content; `lib/design/editorial.css` already contains those classes
 (`.bfe-shell--guide`, `.bfe-rail`, `.bfe-cover`, `.bfe-chapter`, `.bfe-section`,
@@ -318,6 +318,6 @@ in case any porting decision needs to be reverted (13 files).
 
 ## Dead-end iterations
 
-Six superseded design-lab rounds moved to
-[design-lab/archive/2026-04-28-superseded/](../design-lab/archive/2026-04-28-superseded/).
+Six superseded design-lab rounds were moved to
+[docs/design-lab/archive/2026-04-28-superseded/](design-lab/archive/2026-04-28-superseded/).
 Do not promote from there without re-evaluating against the active rounds.

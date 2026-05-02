@@ -55,4 +55,7 @@ tests/reports/**/*.md
 !tests/reports/**/*.ts
 !tests/reports/**/*.mts
 
+# realai pipeline run artifacts (per-variant reviewer rejection logs)
+planner/report/realai/review/*.fail.json
+
 .env*.local
