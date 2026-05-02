@@ -85,7 +85,27 @@ const KEYS = {
   processed: (sessionId: string) => `processed:${sessionId}`,
   feedback: (token: string) => `feedback:${token}`,
   feedbackEmail: (email: string) => `feedback-email:${normalizeEmail(email)}`,
+  simCache: (paramHash: string) => `sim:v1:${paramHash}`,
 } as const;
+
+// ── Simulation cache (v1 contract) ────────────────────────
+//
+// /api/simulate caches MC results keyed by a stable hash of the engine
+// params + path count. TTL is 10 minutes — long enough for a wizard
+// recalc-on-back-button to hit warm cache, short enough that constants
+// updates roll out within minutes without a manual purge.
+
+const SIM_CACHE_TTL_SECONDS = 600;
+
+export async function getSimCache<T = unknown>(paramHash: string): Promise<T | null> {
+  return redis.get<T>(KEYS.simCache(paramHash));
+}
+
+export async function setSimCache(paramHash: string, value: unknown): Promise<void> {
+  await redis.set(KEYS.simCache(paramHash), value, { ex: SIM_CACHE_TTL_SECONDS });
+}
+
+export const SIM_CACHE_TTL = SIM_CACHE_TTL_SECONDS;
 
 // ── Expert Profile CRUD ───────────────────────────────────
 

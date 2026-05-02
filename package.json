@@ -26,8 +26,9 @@
     "report:release:gate": "node planner/report/hardening/sprint8/release-gate.js",
     "report:release:gate:full": "node planner/report/hardening/sprint8/release-gate.js --full",
     "report:excel:test": "node planner/report/excel-roundtrip-test.js",
-    "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npx tsx tests/report-shared.test.ts && npx tsx tests/fiscal-constants-sync.test.ts && npm run lint:amf && npm run build",
+    "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npx tsx tests/report-shared.test.ts && npx tsx tests/fiscal-constants-sync.test.ts && npx tsx tests/simulate-contract.test.ts && npm run lint:amf && npm run build",
     "test:constants": "tsx tests/constants-drift.test.js",
+    "test:simulate-contract": "tsx tests/simulate-contract.test.ts",
     "lint:amf": "node scripts/lint-amf.js"
   },
   "dependencies": {
