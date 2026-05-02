@@ -120,7 +120,7 @@ export const OAS = {
 
 export const GIS = {
   maxSingle: 1105.43,
-  maxCouple: 667.41,
+  maxCouple: 665.41, // Service Canada Q1 2026 canonical (engine-shim + report-constants-2026 both at 665.41; the legacy 667.41 was a $2 over-estimate caught at adoption time)
   reductionRate: 0.50,
   department: "Service Canada / ESDC",
   source: "Service Canada GIS rates Q1 2026 (updated quarterly with OAS)",

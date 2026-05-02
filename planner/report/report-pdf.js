@@ -714,19 +714,19 @@
   function _renderHowToRead(d) {
     var fr = d.fr;
     var rows = fr ? [
-      { label: F.L('diagnostic', fr),               desc: 'Le verdict en 30 secondes — taux de succès, patrimoine médian, points à surveiller.' },
-      { label: 'Chapitre I',                  desc: 'Les fondations — votre profil, vos comptes, vos revenus de retraite, la projection.' },
-      { label: 'Chapitre II',                 desc: 'Les risques — fourchette de résultats, tests de stress, sensibilités du plan.' },
-      { label: 'Chapitre III',                desc: 'Les stratégies — fiscalité, ordre de retrait, succession, plan d\'action.' },
-      { label: 'Chapitre IV',                 desc: 'Explorer — un simulateur interactif pour tester vos propres hypothèses.' },
-      { label: 'Annexe',                      desc: 'Méthodologie, hypothèses détaillées, glossaire des termes utilisés.' }
+      { label: F.L('diagnostic', fr),               desc: 'Où le plan se tient aujourd\'hui — taux de succès, patrimoine médian, points à surveiller.' },
+      { label: 'Chapitre I',                  desc: 'Sur quoi le plan repose — profil, comptes, revenus de retraite, projection centrale.' },
+      { label: 'Chapitre II',                 desc: 'Ce qui pourrait le faire bouger — fourchette de résultats, krachs, inflation, longévité.' },
+      { label: 'Chapitre III',                desc: 'Les leviers à votre disposition — fiscalité, ordre de retrait, succession, observations à considérer.' },
+      { label: 'Chapitre IV',                 desc: 'Tester vos propres hypothèses — un simulateur intégré pour explorer les variantes.' },
+      { label: 'Annexe',                      desc: 'Méthodologie, hypothèses chiffrées, glossaire des termes utilisés.' }
     ] : [
-      { label: F.L('diagnostic', fr),       desc: 'The 30-second verdict — success rate, median wealth, watch points.' },
-      { label: 'Chapter I',                   desc: 'The foundations — your profile, your accounts, your retirement income, the projection.' },
-      { label: 'Chapter II',                  desc: 'The risks — outcome range, stress tests, plan sensitivities.' },
-      { label: 'Chapter III',                 desc: 'The strategies — tax, withdrawal order, succession, action plan.' },
-      { label: 'Chapter IV',                  desc: 'Explore — an interactive simulator to test your own assumptions.' },
-      { label: 'Appendix',                    desc: 'Methodology, detailed assumptions, glossary of terms used.' }
+      { label: F.L('diagnostic', fr),       desc: 'Where the plan stands today — success rate, median wealth, watch points.' },
+      { label: 'Chapter I',                   desc: 'What the plan is built on — profile, accounts, retirement income, central projection.' },
+      { label: 'Chapter II',                  desc: 'What could shift it — outcome range, market drops, inflation, longevity.' },
+      { label: 'Chapter III',                 desc: 'Levers at your disposal — tax, withdrawal order, succession, observations to consider.' },
+      { label: 'Chapter IV',                  desc: 'Test your own assumptions — an integrated simulator for exploring variants.' },
+      { label: 'Appendix',                    desc: 'Methodology, numerical assumptions, glossary of terms used.' }
     ];
     var h = '<div class="how-to-read sec-page" id="how-to-read" style="background:#fefcf9;padding:36px 40px 32px;margin-bottom:24px;border:1px solid #e8e0d4;border-radius:8px">';
     h += '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#c49a1a;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px">' +
@@ -1249,6 +1249,56 @@
         : 'Even in the lower quartile of outcomes, your ending wealth stays above ' + f$(p25) + '.';
     }
     return null;
+  }
+
+  // Caption for the income-sources waterfall (averaged across retirement).
+  // Highlights coverage ratio + which bucket dominates registered withdrawals.
+  function _incomeWaterfallCaption(d) {
+    var fr = d.fr, mc = d.mc;
+    if (!mc || !mc.medRevData || mc.medRevData.length === 0) return null;
+    var rows = mc.medRevData;
+    var sumGov = 0, sumPen = 0, sumW = 0, sumSpend = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      sumGov += (r.qpp || 0) + (r.oas || 0) + (r.gis || 0);
+      sumPen += (r.pen || 0);
+      sumW   += (r.wRRSP || 0) + (r.wTFSA || 0) + (r.wNR || 0) + (r.rrifMin || 0) + (r.meltAmt || 0) + (r.liraWith || 0);
+      sumSpend += (r.spend || 0);
+    }
+    if (sumSpend <= 0) return null;
+    var govShare = (sumGov + sumPen) / sumSpend;
+    var f$ = F.fmtCompact;
+    if (govShare >= 0.85) {
+      return fr
+        ? 'Les revenus garantis (gouvernement + pension PD) couvrent environ ' + Math.round(govShare * 100) + ' % des dépenses; les retraits enregistrés ne complètent que ' + f$(sumW / Math.max(rows.length, 1)) + '/an en moyenne.'
+        : 'Guaranteed income (government + DB pension) covers about ' + Math.round(govShare * 100) + '% of spending; registered withdrawals only top up ~' + f$(sumW / Math.max(rows.length, 1)) + '/yr on average.';
+    }
+    if (govShare >= 0.50) {
+      return fr
+        ? 'Les revenus garantis couvrent ' + Math.round(govShare * 100) + ' % des dépenses; le solde provient des retraits enregistrés (REER/FERR/CELI).'
+        : 'Guaranteed income covers ' + Math.round(govShare * 100) + '% of spending; the balance comes from registered withdrawals (RRSP/RRIF/TFSA).';
+    }
+    return fr
+      ? 'Les revenus garantis ne couvrent que ' + Math.round(govShare * 100) + ' % des dépenses; le plan dépend des retraits enregistrés et du rendement des marchés.'
+      : 'Guaranteed income covers only ' + Math.round(govShare * 100) + '% of spending; the plan relies on registered withdrawals and market returns.';
+  }
+
+  // Caption for the income-over-time stacked area chart. Names the cliffs
+  // a reader should expect (CPP at 65, RRIF conversion at 72, OAS 75+).
+  function _incomeTimeCaption(d) {
+    var fr = d.fr, p = d.p, mc = d.mc;
+    if (!mc || !mc.medRevData || mc.medRevData.length === 0) return null;
+    var hasGap = (p.retAge || 65) < (p.qppAge || 65);
+    var hasOas75 = ((p.deathAge || 90) >= 75);
+    var hasRrif72 = ((p.rrsp || 0) > 50000) || ((p.cRrsp || 0) > 50000);
+    var marks = [];
+    if (hasGap) marks.push(fr ? 'le pont avant la RRQ (' + (p.qppAge || 65) + ' ans), comblé par les retraits' : 'the bridge before CPP (' + (p.qppAge || 65) + '), filled by withdrawals');
+    if (hasRrif72) marks.push(fr ? 'la conversion FERR à 72 ans, qui force des retraits minimums' : 'RRIF conversion at 72, which forces minimum withdrawals');
+    if (hasOas75) marks.push(fr ? 'la bonification PSV à 75 ans (+10 %)' : 'the OAS bump at 75 (+10%)');
+    if (marks.length === 0) return null;
+    return fr
+      ? 'Trois moments à repérer : ' + marks.join(' ; ') + '.'
+      : 'Three moments to spot: ' + marks.join('; ') + '.';
   }
 
   // Phase 1 (premium shell): contextual hero KPI.
@@ -3689,6 +3739,8 @@
       h += '<div class="bf-chart-svg">';
       h += Ch.svgWaterfall(_wfClean, { title: fr ? 'Sources de revenus annuelles (moyenne sur la retraite)' : 'Annual Income Sources (averaged across retirement)', total: _wfTotal });
       h += '</div>';
+      var _wfCap = _incomeWaterfallCaption(d);
+      if (_wfCap) h += _chartCaption(_wfCap);
     } else {
       // Skip the entire bf-chart-block — caller's closing </div> compensated below.
       h += '<div class="bf-chart-block" data-bf-block="income_waterfall" data-bf-repr="omit" style="display:none">';
@@ -3871,6 +3923,8 @@
           _areaLabels,
           { stacked: true, title: fr ? 'Sources de revenus dans le temps' : 'Income Sources Over Time', yFmt: f$, yLabel: '$' }
         );
+        var _itCap = _incomeTimeCaption(d);
+        if (_itCap) h += _chartCaption(_itCap);
         // Cross-reference to the Draw-order section for the actual sequencing.
         h += '<div style="font-size:10px;color:#888;margin:4px 0 0;font-style:italic">' +
           (fr
@@ -6207,6 +6261,15 @@ h += secPageEnd();
       (fr
         ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit. Remboursement int\u00e9gral sur demande sous 30\u00a0jours, sans justification \u2014 voir <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.'
         : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
+      '</div>';
+
+    // Privacy / handling notice \u2014 sits below the LDPSF block. Reports
+    // contain the full personal financial profile of the recipient; a
+    // forwarded HTML or PDF leaks that profile in full. Codex audit 2026-05-01.
+    h += '<div style="margin-top:10px;padding:10px 14px;background:#fff8ec;border:1px solid #e8d8a8;border-radius:6px;font-size:10px;color:#6a5a3a;line-height:1.7;font-style:italic">' +
+      (fr
+        ? '<strong style="font-style:normal;color:#8a6a1a">Donn\u00e9es personnelles \u2014</strong> Ce rapport contient votre profil financier complet (revenus, comptes, dettes, rentes). Conserver dans un emplacement priv\u00e9. Ne pas transf\u00e9rer ni publier sans avoir retir\u00e9 les sections que vous ne souhaitez pas partager.'
+        : '<strong style="font-style:normal;color:#8a6a1a">Personal data \u2014</strong> This report contains your full financial profile (income, accounts, debts, pensions). Keep it in a private location. Do not forward or publish without first removing sections you do not wish to share.') +
       '</div>';
 
     h += secPageEnd();
