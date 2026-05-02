@@ -92,7 +92,10 @@ export function sanitizeAISlots360(raw: Record<string, any>): AINarration360 {
     const val = raw[key];
     if (val && typeof val === "string") {
       const maxLen = AI_SLOT_MAX_LENGTH_360[key] || 800;
-      const clean = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      const stripped = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      // Two-pass: try to soften prescriptive verbs first (you should → you
+      // could, etc.). Only drop if the rewrite still trips the regex.
+      const clean = softenAISlot(stripped);
       const forCheck = clean.replace(SAFE_DISCLAIMER_PATTERNS, "");
       if (!FORBIDDEN_TERMS.test(forCheck)) {
         result[key] = clean;
@@ -104,14 +107,61 @@ export function sanitizeAISlots360(raw: Record<string, any>): AINarration360 {
   return result;
 }
 
-// AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements
+// AMF/OSFI forbidden prescriptive terms + scenario combination + filler + glissements.
+// Codex audit 2026-05-01: broadened to catch "should/must" without the "you"
+// prefix (the AI was emitting "savings should grow" / "the plan must rebalance"
+// which dropped through the prior regex). Also catches "consider <X>ing"
+// imperative + "make sure" + "ensure" + "ought to" + "il faut"/"il faudrait"
+// without the "que" qualifier.
 export const FORBIDDEN_TERMS =
-  /\bdevriez\b|\bdevrait\b|\brecommandons\b|\bconseillons\b|\bvous devez\b|\bil faut que\b|\bassurez-vous\b|\bwe recommend\b|\byou should\b|\byou must\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\brecommandation\b|\brecommandations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b/i;
+  /\bdevriez\b|\bdevrait\b|\bdevraient\b|\bdevra(s|i|ent)?\b|\bfaudrait\b|\bil faut\b|\brecommandons\b|\brecommande\b|\bconseillons\b|\bconseille\b|\bvous devez\b|\bassurez-vous\b|\bil est essentiel\b|\bil est crucial\b|\bil est impératif\b|\bwe recommend\b|\bwe suggest\b|\bwe advise\b|\byou should\b|\byou must\b|\byou ought to\b|\byou need to\b|\bmake sure (that |to )?\b|\bensure that\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\bconsider \w+ing\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\baction plan\b|\brecommandation\b|\brecommandations\b|\brecommendation\b|\brecommendations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b/i;
+
+// Soft-rewrite map: when an AI slot trips a violation that is rescuable by a
+// simple verb swap, do that BEFORE dropping. Preserves the observation while
+// removing the prescriptive verb. Order matters — multi-word patterns first
+// so "you should consider" doesn't become "you might consider <X>ing" then
+// trip the consider rule.
+export const SOFT_REWRITES: Array<[RegExp, string]> = [
+  [/\bwe recommend\s+/gi, "an option to consider is "],
+  [/\bwe suggest\s+/gi, "one approach is "],
+  [/\bwe advise\s+/gi, "one approach is "],
+  [/\byou should\s+/gi, "you could "],
+  [/\byou must\s+/gi, "the plan would benefit from "],
+  [/\byou ought to\s+/gi, "you could "],
+  [/\byou need to\s+/gi, "the plan benefits from "],
+  [/\bmake sure (?:that |to )?/gi, "an avenue is to "],
+  [/\bensure that\s+/gi, "an avenue is that "],
+  [/\bvous devez\s+/gi, "vous pourriez "],
+  [/\bvous devriez\s+/gi, "vous pourriez "],
+  [/\bdevriez\s+/gi, "pourriez "],
+  [/\bdevrait\s+/gi, "pourrait "],
+  [/\bdevraient\s+/gi, "pourraient "],
+  [/\bil faut\s+/gi, "une avenue est de "],
+  [/\bil faudrait\s+/gi, "il pourrait être utile de "],
+  [/\brecommandons\s+/gi, "observons que "],
+  [/\bconseillons\s+/gi, "observons que "],
+  [/\boptimisez\s+/gi, "une optimisation possible : "],
+  [/\bpriorisez\s+/gi, "une priorisation possible : "],
+];
 
 // Defensive disclaimer patterns that are safe even though they contain forbidden terms.
 // Strip these before running FORBIDDEN_TERMS check so "ne sont pas des recommandations" etc. pass.
 const SAFE_DISCLAIMER_PATTERNS =
   /ne (sont|constitue(nt)?|s'agi(t|ssent)) pas (d'une?|des?) recommandation(s)?/gi;
+
+/**
+ * Apply soft rewrites to convert prescriptive AI output into observational
+ * tone. Each rule is tried in sequence; later rules see the output of
+ * earlier ones. Returns the rewritten string. Codex audit 2026-05-01.
+ */
+export function softenAISlot(text: string): string {
+  if (typeof text !== "string") return text;
+  let out = text;
+  for (const [pattern, replacement] of SOFT_REWRITES) {
+    out = out.replace(pattern, replacement);
+  }
+  return out;
+}
 
 /**
  * Sanitize raw AI output into safe, compliant slot values.

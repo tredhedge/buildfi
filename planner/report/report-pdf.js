@@ -1770,7 +1770,7 @@
     // formal "Detailed Report" reserved for intermediate / advanced readers.
     var _isPlain = d.renderProfile && d.renderProfile.jargonMode === 'plain';
     var _coverTitle = _isPlain
-      ? (fr ? 'Plan financier' : 'Financial Plan')
+      ? (fr ? 'Bilan 360' : 'Bilan 360')
       : F.L('cover_title', fr);
     h += '<div class="cover-title">' + _coverTitle + '</div>';
     // Phase 1 cover-promise: replaces the old uppercase "Personalized snapshot"
@@ -1825,7 +1825,7 @@
   function renderHeader(d) {
     var fr = d.fr, today = F.fmtDate(null, fr);
     var h = '<div class="hdr"><div>';
-    h += '<h1>' + (fr ? 'Plan financier' : 'Financial Plan') + '</h1>';
+    h += '<h1>' + (fr ? 'Bilan 360' : 'Bilan 360') + '</h1>';
     h += '<h2>' + F.esc(d.client.name || 'Client') + '</h2>';
     h += '</div><div class="hdr-right">';
     h += today + '<br/>';
@@ -6427,7 +6427,7 @@ h += secPageEnd();
     var _renderCss = _isClientExport
       ? css.replace(/^@import\s+url\([^)]*\);\s*$/m, '/* @import stripped for clientExport */').replace(/^@import\s+url\([^)]*\);\s*\n/m, '/* @import stripped for clientExport */\n')
       : css;
-    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Plan financier' : 'Financial Plan') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + _renderCss + '</style></head><body' + _rpAttrs + _archAttrs + '>';
+    var h = '<!DOCTYPE html><html lang="' + rl + '"><head><meta charset="utf-8"><title>' + (d.fr ? 'Bilan 360' : 'Bilan 360') + ' \u2014 ' + F.esc(d.client.name || 'Client') + '</title><style>' + _renderCss + '</style></head><body' + _rpAttrs + _archAttrs + '>';
     if (!_isClientExport) h += copyScript;
 
     // Cover page

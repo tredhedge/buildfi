@@ -352,7 +352,13 @@ async function handleBilan360Purchase(
     await createFeedbackRecord(feedbackToken, email, "bilan360", lang);
 
     // ── Render report ─────────────────────────────────────
-    const reportHTML = renderReportHTML360(D, mcBase as Record<string, any>, params, lang, ai, phase, feedbackToken, extraRuns, buildfiData);
+    // clientExport gate (Codex audit 2026-05-01): when BUILDFI_CLIENT_EXPORT=1
+    // is set in the deployment env, the report is emitted as a hardened
+    // static deliverable (no <script>, no embedded window.__BUILDFI__
+    // payload). Off by default so the current interactive slider/scenario
+    // experience is preserved unless explicitly opted in.
+    const clientExport = process.env.BUILDFI_CLIENT_EXPORT === "1";
+    const reportHTML = renderReportHTML360(D, mcBase as Record<string, any>, params, lang, ai, phase, feedbackToken, extraRuns, buildfiData, { clientExport });
 
     // ── Upload ────────────────────────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);
