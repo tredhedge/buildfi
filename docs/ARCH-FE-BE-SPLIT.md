@@ -293,11 +293,20 @@ not the validators; server validates on every request.
 
 ## 9. Migration phases
 
-### Phase 0 -- preparation (1 week)
-- Lock JSON contract for `/api/simulate` v1.
-- Move `report-engine.js` to `lib/engine/full.js`; expose `runMC(params, opts)`.
-- Add zod schemas for engine params under `lib/schemas/engine.ts`.
-- Add KV cache layer in `/api/simulate`.
+### Phase 0 -- preparation [DONE 2026-05-01]
+- [DONE] Lock JSON contract for `/api/simulate` v1 in
+  `lib/schemas/engine.ts` (SimulateRequest / SimulateResponse /
+  EngineParams / MCSummary).
+- [SKIPPED] "Move `report-engine.js` to `lib/engine/full.js`" was moot.
+  `lib/engine/index.js` is already a full 2716-line canonical engine
+  and `/api/simulate` already imports `runMC` from it.
+  `planner/report/report-engine.js` is the realai-pipeline copy; stays.
+- [DONE] Hand-rolled TS validator under `lib/schemas/engine.ts` (zod
+  intentionally skipped to avoid the runtime dep -- same shape,
+  fail-fast).
+- [DONE] KV cache in `/api/simulate` -- 10-min TTL, namespace
+  `sim:v1:{paramHash}`, skipped when `options.withAI === true`.
+- [DONE] 17-case contract smoke test wired into `npm run qa:full`.
 
 ### Phase 1 -- Bilan 360 cutover (already done)
 - Webhook -> translator -> MC -> AI -> renderer -> Blob -> email. [DONE]
