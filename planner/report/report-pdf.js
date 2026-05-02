@@ -3027,9 +3027,20 @@
       h += '<div style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:center;background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:14px 18px;margin-bottom:14px">';
       h += '<div style="text-align:center">';
       h += Ch.svgSunburst(_sbAccounts, { size: 220, subLabel: fr ? 'patrimoine total' : 'total wealth' });
-      h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:4px;letter-spacing:0.5px">' +
-        (fr ? 'Anneau ext\u00e9rieur\u202f: type de compte. Anneau int\u00e9rieur\u202f: actions / obligations.' : 'Outer ring: account type. Inner ring: equity / bonds.') +
-        '</div></div>';
+      // Caption gated on _userAllocSet (Codex audit 2026-05-01). Without
+      // user allocation, the chart renders single-ring and the line below
+      // claiming "actions / obligations" was a lie (the inner ring was a
+      // 60/40 default). Single-ring + muted prompt instead.
+      if (_userAllocSet) {
+        h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:4px;letter-spacing:0.5px">' +
+          (fr ? 'Anneau int\u00e9rieur\u202f: type de compte. Anneau ext\u00e9rieur\u202f: actions / obligations.' : 'Inner ring: account type. Outer ring: equity / bonds.') +
+          '</div>';
+      } else {
+        h += '<div style="font-family:Inter,sans-serif;font-size:9px;color:#aaa;margin-top:4px;letter-spacing:0.5px;font-style:italic">' +
+          (fr ? 'R\u00e9partition par compte. Pr\u00e9cisez vos % actions/obligations dans le simulateur pour faire appara\u00eetre l\u2019anneau d\u2019allocation.' : 'Account composition. Set your equity/bond % in the simulator to show the allocation ring.') +
+          '</div>';
+      }
+      h += '</div>';
       // Right column: account legend with values
       h += '<div style="font-family:Inter,sans-serif;font-size:11px">';
       _sbAccounts.forEach(function(a) {
