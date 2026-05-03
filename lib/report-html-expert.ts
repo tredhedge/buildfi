@@ -480,6 +480,33 @@ function renderExpertReport(
         D.ruinPct > 0.15 ? "risk" : "watch");
     }
 
+    // Risk softener (rec #2): contextualize depletion with guaranteed-income cushion.
+    // AMF-safe: conditional tense, observational, surfaces only when coverage is meaningful.
+    {
+      const covPct = Math.max(0, Math.min(100, Math.round(D.coveragePct || 0)));
+      const medRuinAge = D.medRuin && D.medRuin < 999 ? Math.round(D.medRuin) : null;
+      let filet = "";
+      if (medRuinAge && covPct >= 30) {
+        filet = t(
+          "Filet : m\u00eame si le portefeuille s'\u00e9puisait vers " + medRuinAge + " ans, les revenus garantis (RRQ/PSV) couvriraient environ " + covPct + " % des besoins de base.",
+          "Safety net: even if the portfolio were to deplete around age " + medRuinAge + ", guaranteed income (CPP/OAS) would cover roughly " + covPct + "% of base needs."
+        );
+      } else if (D.ruinPct >= 0.10 && covPct >= 30) {
+        filet = t(
+          "Filet : dans les sc\u00e9narios o\u00f9 le portefeuille s'\u00e9puiserait, les revenus garantis (RRQ/PSV) couvriraient encore environ " + covPct + " % des besoins de base.",
+          "Safety net: in scenarios where the portfolio would deplete, guaranteed income (CPP/OAS) would still cover roughly " + covPct + "% of base needs."
+        );
+      } else if (covPct >= 50) {
+        filet = t(
+          "Filet : les revenus garantis (RRQ/PSV) couvriraient environ " + covPct + " % des besoins de base, ind\u00e9pendamment des march\u00e9s.",
+          "Safety net: guaranteed income (CPP/OAS) would cover roughly " + covPct + "% of base needs, independent of markets."
+        );
+      }
+      if (filet) {
+        h += '<div style="font-size:12px;color:#1a1208;font-style:italic;margin:6px 0 12px;padding:10px 14px;border-left:3px solid #2f8a4a;background:rgba(47,138,74,0.05);border-radius:0 6px 6px 0">' + filet + '</div>';
+      }
+    }
+
     h += aiSlot("diagnostic_robustesse");
     h += secEnd();
   }
@@ -761,6 +788,48 @@ function renderExpertReport(
       "Les leviers les plus significatifs identifi\u00e9s par l'analyse incluraient l'\u00e2ge de retraite, le taux de retrait et la strat\u00e9gie de d\u00e9caissement.",
       "The most significant levers identified by the analysis would include retirement age, withdrawal rate, and decumulation strategy."
     ));
+
+    // Mitigation lever interpretations (rec #3): translate available data into actionable framings.
+    // AMF-safe: conditional/observational, no prescription.
+    {
+      const covPct = Math.max(0, Math.min(100, Math.round(D.coveragePct || 0)));
+      const leverNotes: string[] = [];
+      if (D.gapMonthly > 0) {
+        const trim5 = Math.round((D.retSpM || 0) * 0.05);
+        leverNotes.push(t(
+          "R\u00e9duire les d\u00e9penses cibles d'environ 5 % (\u2248 " + f$(trim5) + "/mois) pourrait all\u00e9ger l'\u00e9cart mensuel de " + f$(D.gapMonthly) + ".",
+          "Trimming target spending by ~5% (\u2248 " + f$(trim5) + "/mo) would shrink the monthly gap of " + f$(D.gapMonthly) + "."
+        ));
+      }
+      if (D.withdrawalRatePct >= 4.5) {
+        leverNotes.push(t(
+          "Un taux de retrait initial sous 4 % renforcerait la marge en d\u00e9but de d\u00e9caissement (taux actuel projet\u00e9 : " + D.withdrawalRatePct + " %).",
+          "Holding the initial withdrawal rate below 4% would widen the margin early in decumulation (projected rate: " + D.withdrawalRatePct + "%)."
+        ));
+      }
+      if (covPct >= 30 && covPct < 90) {
+        leverNotes.push(t(
+          "Reporter le RRQ/PSV de quelques ann\u00e9es augmenterait les revenus garantis viagers, au prix de revenus retard\u00e9s.",
+          "Deferring CPP/OAS by a few years would raise lifelong guaranteed income, at the cost of delayed payouts."
+        ));
+      }
+      if (D.retAge < 67) {
+        leverNotes.push(t(
+          "Reporter la retraite d'un an (de " + D.retAge + " \u00e0 " + (D.retAge + 1) + " ans) ajouterait une ann\u00e9e de cotisations et raccourcirait l'horizon de d\u00e9caissement.",
+          "Deferring retirement by one year (from " + D.retAge + " to " + (D.retAge + 1) + ") would add a contribution year and shorten the decumulation horizon."
+        ));
+      }
+      if (leverNotes.length) {
+        h += '<div style="margin-top:14px;border-top:1px solid #e8e4db;padding-top:12px">'
+          + '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">'
+          + t("Lecture des leviers", "Reading the levers")
+          + '</div>'
+          + '<ul style="margin:0;padding-left:20px;font-size:13px;color:#1a1208;line-height:1.75">'
+          + leverNotes.map(x => '<li style="margin-bottom:5px">' + x + '</li>').join('')
+          + '</ul></div>';
+      }
+    }
+
     h += badgeValidate();
     h += secEnd();
   }

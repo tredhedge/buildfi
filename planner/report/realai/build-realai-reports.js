@@ -147,39 +147,6 @@ if (cmd === 'dump') {
 
 if (cmd === 'render') {
   console.log('Rendering reports...');
-  /*
-    Codex rail TOC + Reading/Explore toggle (Plan v2.2 followup, 2026-04-29).
-    The codex view-toggle script (design-lab/experiments/report-view-toggle/
-    _codex_view_toggle.js) was authored against rendered realai reports —
-    it transforms the in-document .toc into a sticky .bf-pageify-rail with
-    scroll-spy and adds a Reading/Explore mode toggle. Injecting it into
-    every rendered report so the rail experience travels with the build,
-    not as a manual after-the-fact decoration.
-  */
-  const codexInjectionPath = path.join(__dirname, '..', '..', '..',
-    'design-lab', 'experiments', 'report-view-toggle', '_codex_view_toggle.js');
-  let codexScript = '';
-  try {
-    /*
-      The realai renderer marks the in-document <div class="toc"> as
-      bf-toc-print-only, which has @media screen { display:none !important }
-      (set in report-interactive.js). The codex script CLONES that TOC
-      into the rail, so the cloned copy inherits the hide rule and the
-      rail comes up empty. We prepend a small CSS override that re-shows
-      the cloned TOC when it's inside the rail or the source-toc swap-in.
-    */
-    const codexRailOverrides = '\n<style data-bf-codex-rail-overrides="1">\n' +
-      '.bf-pageify-rail .toc.bf-toc-print-only { display: block !important; }\n' +
-      '.bf-pageify-source-toc.bf-toc-print-only { display: block !important; }\n' +
-      'body[data-codex-view-toggle="1"] .bf-pageify-source-toc--hidden { display: none !important; }\n' +
-      '</style>\n';
-    codexScript = codexRailOverrides + '<script data-bf-codex-rail="1">\n' +
-      fs.readFileSync(codexInjectionPath, 'utf8') +
-      '\n</script>\n';
-  } catch (e) {
-    console.log('  ⚠ codex rail script not found at ' + codexInjectionPath +
-      ' — reports will render without the rail TOC.');
-  }
 
   // Optional profile filter: `node build-realai-reports.js render <slug>`
   // renders only matching profiles (id substring match). Used for spot
@@ -218,15 +185,7 @@ if (cmd === 'render') {
       const data = preparePayload(prof);
       data.ai = responseJson;
       let html = buildReport(data);
-      // Inject codex rail TOC + Reading/Explore toggle script before </body>.
-      // Falls back to no-op if injection content unavailable (logged at start).
-      // clientExport gate (Phase 1, Codex audit 2026-05-01): the codex rail
-      // injection is itself a <script> block (toggle + scroll-spy). Skip when
-      // producing a hardened static deliverable so the report stays inert.
-      if (codexScript && !data.clientExport && html.indexOf('</body>') !== -1) {
-        html = html.replace('</body>', codexScript + '</body>');
-      }
-      // Duplicate-id post-process (Codex audit 2026-04-30): the renderer emits
+      // Duplicate-id post-process: the renderer emits
       // some sec-* anchors from multiple code paths (sec-stress×3, sec-cashflow
       // ×2, sec-insurance×2, sec-assumptions×3, sec-glossary×3). Dedup at write
       // time by appending -2/-3/... to subsequent occurrences. Only touches IDs

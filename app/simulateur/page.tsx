@@ -523,7 +523,8 @@ function useSimulation(params: Record<string, unknown>, token: string, authOk: b
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       // v1 contract (lib/schemas/engine.ts). Response: { v: 1, ok, mc, meta }.
-      body: JSON.stringify({ v: 1, params, options: { paths: 1000 } }),
+      // 5000 paths per ARCH-FE-BE-SPLIT §11 locked decision #1 (no preview-then-full).
+      body: JSON.stringify({ v: 1, params, options: { paths: 5000 } }),
       signal: controller.signal,
     })
       .then(res => {
