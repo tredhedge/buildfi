@@ -45,7 +45,7 @@ function emailWrapper(lang: "fr" | "en", preheader: string, body: string): strin
               <a href="${BASE_URL}/avis-legal" style="color:${GOLD};text-decoration:none;">${fr ? "Avis l\u00e9gal" : "Legal"}</a>
             </td></tr>
             <tr><td align="center" style="font-family:${FONT};font-size:11px;color:#999;line-height:1.8;">
-              <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999;">.ca</span> &mdash; ${fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"}
+              <span style="font-weight:700;color:${DARK};">build</span><span style="font-weight:700;color:${GOLD};">fi</span><span style="color:#999;">.ca</span> &mdash; ${process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada")}
             </td></tr>
           </table>
         </td></tr>

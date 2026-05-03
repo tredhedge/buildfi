@@ -1,6 +1,12 @@
 ﻿// /lib/quiz-translator-360.ts
 // Minimal, stable translator for Bilan 360.
 
+// Pull canonical 2026 fiscal constants from the engine shim so the translator
+// cannot drift away from the engine. Hardcoded values used to land here
+// during quarterly OAS/QPP updates and silently understate retirement income
+// in the report header / AI prompt.
+import { OAS_MAX_MONTHLY, QPP_MAX_MONTHLY } from "@/lib/constants/engine-shim";
+
 const DEBT_RATES: Record<string, number> = {
   cc: 0.1999,
   student: 0.055,
@@ -100,13 +106,16 @@ export function translateBilan360(a: Record<string, any>, phase: string): Record
   const qppAge = clamp(Math.round(n(a.qppPlannedAge || a.qppAge, qppAlready ? age : 65)), 60, 70);
   const oasAge = clamp(Math.round(n(a.oasPlannedAge || a.oasAge, oasAlready ? Math.max(65, age) : 65)), 65, 70);
 
-  const qppMax = prov === "QC" ? 1364 : 1306;
+  // QPP_MAX_MONTHLY is the 2026 canonical max (currently 1507.65). Provincial
+  // delta is small at the max — keep a thin QC adjustment for backwards
+  // compatibility with prior reports, but base the magnitude on the shim.
+  const qppMax = prov === "QC" ? Math.round(QPP_MAX_MONTHLY) : Math.round(QPP_MAX_MONTHLY * 0.957);
   const qppMonthly = qppAlready
     ? Math.round(n(a.qppCurrentAmount || a.qppMonthly, qppMax * 0.7))
     : Math.round(qppMax * qppFactor(qppAge) * 0.85);
   const oasMonthly = oasAlready
-    ? Math.round(n(a.oasCurrentAmount || a.oasMonthly, 727))
-    : Math.round(727 * (oasAge >= 70 ? 1.36 : 1 + (oasAge - 65) * 0.072));
+    ? Math.round(n(a.oasCurrentAmount || a.oasMonthly, OAS_MAX_MONTHLY))
+    : Math.round(OAS_MAX_MONTHLY * (oasAge >= 70 ? 1.36 : 1 + (oasAge - 65) * 0.072));
   const govPenMonthly = penType === "db" ? penM : 0;
 
   const cOn = String(a.couple || "no") === "yes" && n(a.cAge) > 0;

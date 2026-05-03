@@ -58,7 +58,7 @@ export async function sendMagicLinkEmail(params: MagicLinkParams) {
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
-    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    location: process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"),
     contact: fr ? "Une question\u00a0?" : "Questions?",
   };
 
@@ -235,7 +235,7 @@ export async function sendExpertDeliveryEmail(params: ExpertDeliveryParams) {
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
-    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    location: process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"),
     contact: fr ? "Une question\u00a0?" : "Questions?",
     productType: fr ? "Produit num\u00e9rique\u00a0\u2014\u00a0livraison instantan\u00e9e" : "Digital product\u00a0\u2014\u00a0instant delivery",
   };
@@ -468,7 +468,7 @@ function buildRenewalHtml(opts: {
     ? "Cet outil est fourni à titre informatif et éducatif seulement. Il ne constitue pas un avis financier personnalisé."
     : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.";
   const contact = fr ? "Une question\u00a0?" : "Questions?";
-  const location = fr ? "Québec, Canada" : "Quebec, Canada";
+  const location = process.env.BUSINESS_ADDRESS || (fr ? "Québec, Canada" : "Quebec, Canada");
 
   const bodyHtml = opts.bodyParagraphs
     .map((p, i) => `<p style="margin:0${i < opts.bodyParagraphs.length - 1 ? " 0 14px 0" : ""};">${p}</p>`)
@@ -931,7 +931,7 @@ export async function sendAnniversaryReminderEmail(params: AnniversaryReminderPa
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
-    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    location: process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"),
     contact: fr ? "Une question\u00a0?" : "Questions?",
     unsubNote: fr
       ? "Vous recevez ce courriel car vous avez un compte Laboratoire actif."
@@ -1073,7 +1073,7 @@ export async function sendReferralUpgradeEmail(params: ReferralUpgradeParams) {
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
-    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    location: process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"),
     contact: fr ? "Une question\u00a0?" : "Questions?",
   };
 

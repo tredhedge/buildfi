@@ -83,7 +83,7 @@ const federal: FederalConstants = {
   OAS_MAX_MONTHLY_75: 817.36, // Q2 2026; 10% boost over base for 75+
   OAS_ZERO_POINT_65: 154767,  // 95323 + (743.05 * 12) / 0.15 ≈ 154,767
   GIS_MAX_SINGLE: 1105.43,
-  GIS_MAX_COUPLE: 667.41,
+  GIS_MAX_COUPLE: 665.41, // Canonical per engine-shim.js; was 667.41 (drift caught 2026-05-03 audit)
   QPP_MAX_MONTHLY: 1507.65,
   QPP_MGA: 74600,
   QPP_YAMPE: 85000,

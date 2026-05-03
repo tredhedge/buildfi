@@ -1,6 +1,10 @@
 ﻿User-agent: *
 Allow: /
-Disallow: /outils/
+# Free public tools — explicitly indexable for SEO
+Allow: /outils/dettes
+Allow: /outils/decaissement
+Allow: /outils/coupe-depense
+# Internal-only: pre-filled with PII via baseline URL params
 Disallow: /outils/allocation-epargne.html
 Disallow: /api/
 Disallow: /assets/

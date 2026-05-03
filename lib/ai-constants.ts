@@ -136,6 +136,12 @@ export const SOFT_REWRITES: Array<[RegExp, string]> = [
   [/\bdevriez\s+/gi, "pourriez "],
   [/\bdevrait\s+/gi, "pourrait "],
   [/\bdevraient\s+/gi, "pourraient "],
+  // Bare "devra/devras/devrai/devraient" (indicative future) — without these
+  // mappings the FORBIDDEN_TERMS regex would silently drop the entire AI slot
+  // for sentences like "Le portefeuille devra rebalancer".
+  [/\bdevra\s+/gi, "pourrait "],
+  [/\bdevras\s+/gi, "pourrais "],
+  [/\bdevrai\s+/gi, "pourrais "],
   [/\bil faut\s+/gi, "une avenue est de "],
   [/\bil faudrait\s+/gi, "il pourrait être utile de "],
   [/\brecommandons\s+/gi, "observons que "],

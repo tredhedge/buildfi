@@ -109,7 +109,12 @@ function buildEmailHTML(params: {
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
-    location: fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada",
+    // CASL \u00a76(2)(b) requires a valid mailing address of the sender.
+    // BUSINESS_ADDRESS env var should hold the registered office (e.g. as
+    // listed at the Registraire des entreprises du Qu\u00e9bec).
+    // The "Qu\u00e9bec, Canada" fallback is non-compliant \u2014 set BUSINESS_ADDRESS
+    // in Vercel env vars before launch.
+    location: process.env.BUSINESS_ADDRESS || (fr ? "Qu\u00e9bec, Canada" : "Quebec, Canada"),
     productType: fr ? "Produit num\u00e9rique\u00a0\u2014\u00a0livraison instantan\u00e9e" : "Digital product\u00a0\u2014\u00a0instant delivery",
     contactLabel: fr ? "Une question\u00a0?" : "Questions?",
     toolsInterTitle: fr ? "Vos deux outils inclus" : "Your two included tools",

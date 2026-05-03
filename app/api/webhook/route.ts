@@ -39,6 +39,7 @@ import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferr
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
 import { buildMagicLinkUrl, maskEmail } from "@/lib/auth";
 import { getValidConsent, hashEmail, CURRENT_POLICY_VERSION } from "@/lib/consent";
+import { safeJsonParse, stripDangerousKeys, scrubPromptObject } from "@/lib/safe-parse";
 
 // ── Loi 25 / LPRPDE: pre-flight consent verification ──────
 // Looks up the consent record (90d TTL) before report generation.
@@ -107,7 +108,7 @@ async function callAnthropic<T extends Record<string, string | undefined>>(
       .map((b) => b.text)
       .join("");
     const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
-    const raw = JSON.parse(cleaned);
+    const raw = safeJsonParse<Record<string, unknown>>(cleaned);
     const slots = sanitizer(raw);
     console.log(`[webhook] AI narration: ${Object.keys(slots).length} slots filled`);
     return slots;
@@ -131,7 +132,11 @@ function reassembleQuizAnswers(
     json += metadata[`quiz_${i}`] || "";
   }
   try {
-    return JSON.parse(json);
+    // safeJsonParse drops __proto__/constructor/prototype keys; scrubPromptObject
+    // strips control chars and caps each string field at 200 chars before any
+    // of this lands in an Anthropic prompt builder.
+    const parsed = safeJsonParse<Record<string, unknown>>(json);
+    return scrubPromptObject(parsed);
   } catch {
     throw new Error(`Malformed quiz JSON after reassembly (${json.length} chars, ${chunks} chunks)`);
   }
@@ -221,7 +226,10 @@ async function handleCheckoutCompleted(
 
   // Route by checkout type
   if (type === "addon" || type === "report-pack") {
-    return handleExportAddon(email, session.id);
+    // creditsToAdd is set in /api/checkout (string in Stripe metadata).
+    // Defaults to 1 for legacy `addon` SKU which never set it.
+    const creditsToAdd = parseInt(metadata.creditsToAdd || "1", 10);
+    return handleExportAddon(email, session.id, creditsToAdd);
   }
 
   // Planner SKU (new primary) — reuses Expert profile infra but with known 5-credit init
@@ -512,7 +520,10 @@ async function handleExpertPurchase(
       }
       const mergedRaw: Record<string, any> = {};
       for (const result of batchResults) {
-        Object.assign(mergedRaw, result);
+        // Defense-in-depth: even though safeJsonParse already drops dangerous
+        // keys, strip again before Object.assign in case a future code path
+        // skips the safe parser.
+        Object.assign(mergedRaw, stripDangerousKeys(result));
       }
       const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
       console.log(`[webhook] Expert AI: ${Object.keys(ai).length}/${activeSections.length} sections in ${Date.now() - aiStart}ms`);
@@ -576,7 +587,7 @@ async function handleExpertPurchase(
 
 // ── Export addon handler ──────────────────────────────────
 
-async function handleExportAddon(email: string, sessionId: string): Promise<NextResponse> {
+async function handleExportAddon(email: string, sessionId: string, creditsToAdd: number = 1): Promise<NextResponse> {
   try {
     // Verify profile exists before incrementing
     const profile = await getExpertProfile(email);
@@ -589,7 +600,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
     }
 
     // Atomic increment via Lua script to prevent race conditions
-    const { success, remaining } = await incrementExportCredit(email);
+    const { success, remaining } = await incrementExportCredit(email, creditsToAdd);
     if (!success) {
       throw new Error(`incrementExportCredit failed for ${email}`);
     }
@@ -601,7 +612,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
         {
           date: new Date().toISOString(),
           action: "addon_purchased",
-          details: { credits_added: 1, new_total: remaining },
+          details: { credits_added: creditsToAdd, new_total: remaining },
         },
       ],
     });

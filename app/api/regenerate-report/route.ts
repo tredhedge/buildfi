@@ -21,6 +21,7 @@ import { sanitizeAISlotsExpert } from "@/lib/ai-constants";
 import type { ExpertAINarration } from "@/lib/ai-constants";
 import { sendExpertDeliveryEmail } from "@/lib/email-expert";
 import Anthropic from "@anthropic-ai/sdk";
+import { stripDangerousKeys } from "@/lib/safe-parse";
 
 export const maxDuration = 120;
 export const runtime = "nodejs";
@@ -145,7 +146,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       batchResults = [];
     }
     const mergedRaw: Record<string, any> = {};
-    for (const result of batchResults) Object.assign(mergedRaw, result);
+    for (const result of batchResults) Object.assign(mergedRaw, stripDangerousKeys(result));
     const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
     console.log(`[regenerate] AI: ${Object.keys(ai).length}/${activeSections.length} sections in ${Date.now() - aiStart}ms`);
 

@@ -23,6 +23,7 @@ import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-ht
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
 import { sanitizeAISlotsExpert, type ExpertAINarration, type ExpertSectionKey } from "@/lib/ai-constants";
 import { sendExpertDeliveryEmail } from "@/lib/email-expert";
+import { safeJsonParse, stripDangerousKeys } from "@/lib/safe-parse";
 
 export const maxDuration = 120; // Expert reports can take longer (4 AI batches)
 export const runtime = "nodejs";
@@ -48,7 +49,7 @@ async function callAnthropicBatch(
       .map((b) => b.text)
       .join("");
     const cleaned = text.replace(/```json?\s*/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleaned);
+    return safeJsonParse(cleaned);
   } catch (err) {
     console.error("[export] AI batch failed:", err);
     return {};
@@ -130,10 +131,10 @@ export async function POST(req: NextRequest) {
     const aiMs = Date.now() - aiStart;
     console.log(`[export] ${batches.length} AI batches in ${aiMs}ms`);
 
-    // Merge all batch results
+    // Merge all batch results — strip prototype-pollution keys defensively
     const mergedRaw: Record<string, any> = {};
     for (const result of batchResults) {
-      Object.assign(mergedRaw, result);
+      Object.assign(mergedRaw, stripDangerousKeys(result));
     }
 
     // Sanitize
