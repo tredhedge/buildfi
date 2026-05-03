@@ -140,8 +140,11 @@ const COPY = {
     freeTools: [
       { t: "Guide 101 — Les bases", b: "4 mini-calculateurs interactifs : valeur nette, budget, piège du crédit, intérêts composés. Plus REER vs CELI, dette, gouvernement.", href: "/guides/101", tag: "4 calculateurs" },
       { t: "Guide 201 — Optimiser la retraite", b: "5 mini-calculateurs interactifs : décaissement, PSV, RRQ/RPC, fractionnement, frais. Bonus 301 : CCPC, Smith, meltdown REER.", href: "/guides/201", tag: "5 calculateurs" },
+      { t: "Calculateur d'épargne", b: "Si je coupais cette dépense récurrente, combien ça ferait à la retraite ? Multi-fréquence, rendement réel, instantané.", href: "/outils/coupe-depense", tag: "Gratuit" },
       { t: "Calculateur de dettes", b: "Avalanche vs snowball, consolidation, rembourser ou investir. Multi-provinces, couple, hypothèques.", href: "/outils/dettes", tag: "Gratuit" },
       { t: "Simulateur de décaissement", b: "Projection déterministe de votre portefeuille à la retraite. Durabilité, couverture garantie, taux de retrait.", href: "/outils/decaissement", tag: "Gratuit" },
+      { t: "Le coût réel d'1 $ de dette", b: "Combien vous coûte vraiment chaque dollar de dette, avec coût d'opportunité et 3 stratégies de remboursement.", href: "/guides/cout-reel-dette", tag: "Article" },
+      { t: "10 actions pour libérer 200 $/mois", b: "Plan 30/60/90 jours classé par effort × impact. Sans yoga financier ni promesses creuses.", href: "/guides/quick-wins-90-jours", tag: "Article" },
     ],
 
     howTitle: "Comment ça marche",
@@ -324,8 +327,11 @@ const COPY = {
     freeTools: [
       { t: "Guide 101 — The basics", b: "4 interactive mini-calculators: net worth, budget, credit-card trap, compound interest. Plus RRSP vs TFSA, debt, government programs.", href: "/guides/101?lang=en", tag: "4 calculators" },
       { t: "Guide 201 — Optimize retirement", b: "5 interactive mini-calculators: withdrawal, OAS clawback, QPP/CPP timing, splitting, fees. Bonus 301: CCPC, Smith, RRSP meltdown.", href: "/guides/201?lang=en", tag: "5 calculators" },
+      { t: "Savings calculator", b: "If I cut this recurring expense, how much would that be at retirement? Multi-frequency, real return, instant.", href: "/outils/coupe-depense?lang=en", tag: "Free" },
       { t: "Debt calculator", b: "Avalanche vs snowball, consolidation, repay or invest. Multi-province, couple, mortgages.", href: "/outils/dettes?lang=en", tag: "Free" },
       { t: "Decumulation simulator", b: "Deterministic projection of your retirement portfolio. Sustainability, guaranteed coverage, withdrawal rate.", href: "/outils/decaissement?lang=en", tag: "Free" },
+      { t: "The real cost of $1 of debt", b: "What every dollar of debt actually costs, with opportunity cost and 3 repayment strategies.", href: "/guides/real-cost-of-debt", tag: "Article" },
+      { t: "10 actions to free up $200/month", b: "30/60/90-day plan ranked by effort × impact. No financial yoga, no empty promises.", href: "/guides/quick-wins-90-days", tag: "Article" },
     ],
 
     howTitle: "How it works",
@@ -829,8 +835,11 @@ function Footer({ cl, lang, t }: any) {
             <div style={{ display: "grid", gap: 6, fontSize: 13 }}>
               <a href={`/guides/101${lang === "en" ? "?lang=en" : ""}`} style={{ color: cl.tx, textDecoration: "none" }}>Guide 101</a>
               <a href={`/guides/201${lang === "en" ? "?lang=en" : ""}`} style={{ color: cl.tx, textDecoration: "none" }}>Guide 201</a>
+              <a href={`/outils/coupe-depense${lang === "en" ? "?lang=en" : ""}`} style={{ color: cl.tx, textDecoration: "none" }}>{lang === "fr" ? "Calculateur d'épargne" : "Savings calculator"}</a>
               <a href={`/outils/dettes${lang === "en" ? "?lang=en" : ""}`} style={{ color: cl.tx, textDecoration: "none" }}>{lang === "fr" ? "Calculateur de dettes" : "Debt calculator"}</a>
               <a href={`/outils/decaissement${lang === "en" ? "?lang=en" : ""}`} style={{ color: cl.tx, textDecoration: "none" }}>{lang === "fr" ? "Simulateur de décaissement" : "Decumulation simulator"}</a>
+              <a href={lang === "en" ? "/guides/real-cost-of-debt" : "/guides/cout-reel-dette"} style={{ color: cl.tx, textDecoration: "none" }}>{lang === "fr" ? "Coût réel d'1 $ de dette" : "Real cost of $1 of debt"}</a>
+              <a href={lang === "en" ? "/guides/quick-wins-90-days" : "/guides/quick-wins-90-jours"} style={{ color: cl.tx, textDecoration: "none" }}>{lang === "fr" ? "10 actions en 90 jours" : "10 actions in 90 days"}</a>
             </div>
           </div>
           <div>
