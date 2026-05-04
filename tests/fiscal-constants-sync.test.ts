@@ -92,14 +92,37 @@ assert.ok(FISCAL_2026.metadata.verifiedDate, "metadata.verifiedDate exists");
 assert.ok(FISCAL_2026.metadata.sources.length > 0, "metadata.sources not empty");
 pass += 2;
 
-// ── Summary ──────────────────────────────────────────────────────────
+// ── Registry sync (constants-registry.ts ≡ engine PROV_TAX) ──────────
+// Catches drift like NU/NB dividend credits flagged in 2026-05-03 audit.
 
-console.log(`\n${"═".repeat(50)}`);
-console.log(`Fiscal constants sync: ${pass} pass, ${fail} fail (${pass + fail} total)`);
-if (failures.length > 0) {
-  console.log("\nFAILURES:");
-  failures.forEach(f => console.log(f));
-  process.exit(1);
-} else {
-  console.log("All constants in sync. ✓");
-}
+console.log("\n═══ Registry vs Engine ═══");
+import("../lib/constants-registry").then((reg) => {
+  for (const prov of provinces) {
+    const ep = (PROV_TAX as Record<string, any>)[prov];
+    const rp = reg.PROVINCIAL[prov];
+    if (!rp) {
+      fail++;
+      failures.push(`  FAIL: Registry missing province ${prov}`);
+      continue;
+    }
+    check(`registry/${prov}.brackets`, ep.b, rp.brackets);
+    check(`registry/${prov}.rates`, ep.r, rp.rates);
+    check(`registry/${prov}.personalAmount`, ep.pd, rp.personalAmount);
+    check(`registry/${prov}.eligDivCredit`, ep.eligDivCr, rp.eligDivCredit);
+    check(`registry/${prov}.nonEligDivCredit`, ep.nonEligDivCr, rp.nonEligDivCredit);
+  }
+
+  // ── Final summary (after async registry block) ────────────────────
+  console.log(`\n${"═".repeat(50)}`);
+  console.log(`Fiscal constants sync: ${pass} pass, ${fail} fail (${pass + fail} total)`);
+  if (failures.length > 0) {
+    console.log("\nFAILURES:");
+    failures.forEach((f) => console.log(f));
+    process.exit(1);
+  } else {
+    console.log("All constants in sync. ✓");
+  }
+  process.exit(0);
+});
+
+// Async block above prints the summary and exits.

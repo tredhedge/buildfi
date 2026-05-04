@@ -19,6 +19,7 @@ import {
   validateConsentPayload,
   recordConsent,
 } from "@/lib/consent";
+import { scrubPromptObject } from "@/lib/safe-parse";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
@@ -218,7 +219,12 @@ export async function POST(req: NextRequest) {
 
       // All tiers use SECOND50 coupon for second report
       const secondCoupon = "SECOND50";
-      const quizJSON = JSON.stringify(quizAnswers);
+      // Scrub control chars + cap each string field to 200 chars BEFORE
+      // stringifying. The webhook scrubs again at reassembly, but doing it
+      // here too keeps Stripe metadata small and bounds the prompt-injection
+      // surface at the entry point.
+      const safeAnswers = scrubPromptObject(quizAnswers);
+      const quizJSON = JSON.stringify(safeAnswers);
       const secondRefCode = generateReferralCode();
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: priceId, quantity: 1 }],
@@ -315,7 +321,9 @@ export async function POST(req: NextRequest) {
 
     // Attach quiz data only when present (Bilan path)
     if (quizAnswers) {
-      const quizJSON = JSON.stringify(quizAnswers);
+      // See safeAnswers comment above — early scrub bounds prompt-injection.
+      const safeAnswers = scrubPromptObject(quizAnswers);
+      const quizJSON = JSON.stringify(safeAnswers);
       Object.assign(metadata, splitMetadata(quizJSON));
     }
 

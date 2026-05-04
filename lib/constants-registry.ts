@@ -58,19 +58,19 @@ export interface ProvincialTax {
 // AB: Alberta Treasury Board — alberta.ca/personal-income-tax
 // Others: respective provincial finance departments
 export const PROVINCIAL: Record<string, ProvincialTax> = {
-  QC: { brackets: [54345, 108680, 132245], rates: [0.14, 0.19, 0.24, 0.2575], personalAmount: 18952, ageCreditAmount: 3903, ageCreditThreshold: 0, pensionCreditAmount: 2918, eligDivCredit: 0.1118, nonEligDivCredit: 0.039362 },
+  QC: { brackets: [54345, 108730, 132245], rates: [0.14, 0.19, 0.24, 0.2575], personalAmount: 18952, ageCreditAmount: 3903, ageCreditThreshold: 0, pensionCreditAmount: 2918, eligDivCredit: 0.1118, nonEligDivCredit: 0.039362 }, // QC.b[1] 108680 → 108730 (sync with engine 2026-05-03)
   ON: { brackets: [53891, 107785, 150000, 220000], rates: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], personalAmount: 12091, ageCreditAmount: 5286, ageCreditThreshold: 42335, pensionCreditAmount: 1580, eligDivCredit: 0.10, nonEligDivCredit: 0.029863 },
   BC: { brackets: [49159, 98320, 112883, 137073, 185854, 259197], rates: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], personalAmount: 12901, ageCreditAmount: 5766, ageCreditThreshold: 42660, pensionCreditAmount: 1000, eligDivCredit: 0.12, nonEligDivCredit: 0.0196 },
   AB: { brackets: [154259, 185203, 246938, 370220], rates: [0.1, 0.12, 0.13, 0.14, 0.15], personalAmount: 22769, ageCreditAmount: 5553, ageCreditThreshold: 43906, pensionCreditAmount: 1491, eligDivCredit: 0.0812, nonEligDivCredit: 0.0218 },
   SK: { brackets: [54532, 155805], rates: [0.105, 0.125, 0.145], personalAmount: 20381, ageCreditAmount: 5518, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.11, nonEligDivCredit: 0.02105 },
   MB: { brackets: [47000, 100000], rates: [0.108, 0.1275, 0.174], personalAmount: 15780, ageCreditAmount: 3728, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.08, nonEligDivCredit: 0.007835 },
-  NB: { brackets: [51306, 102614, 190081], rates: [0.094, 0.14, 0.16, 0.195], personalAmount: 13396, ageCreditAmount: 5849, ageCreditThreshold: 42553, pensionCreditAmount: 1000, eligDivCredit: 0.14, nonEligDivCredit: 0.0275 },
+  NB: { brackets: [51306, 102614, 190081], rates: [0.094, 0.14, 0.16, 0.195], personalAmount: 13396, ageCreditAmount: 5849, ageCreditThreshold: 42553, pensionCreditAmount: 1000, eligDivCredit: 0.14, nonEligDivCredit: 0.027518 }, // sync with engine 2026-05-03
   NS: { brackets: [30182, 60364, 94860, 153000], rates: [0.0879, 0.1495, 0.1667, 0.175, 0.21], personalAmount: 8651, ageCreditAmount: 4897, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.0885, nonEligDivCredit: 0.015 },
   PE: { brackets: [33538, 67079], rates: [0.098, 0.138, 0.167], personalAmount: 13865, ageCreditAmount: 4862, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.105, nonEligDivCredit: 0.013 },
   NL: { brackets: [44062, 88123, 157329, 220262, 281387, 562714], rates: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], personalAmount: 11034, ageCreditAmount: 7742, ageCreditThreshold: 39880, pensionCreditAmount: 1000, eligDivCredit: 0.063, nonEligDivCredit: 0.032 },
   NT: { brackets: [51963, 103931, 169067], rates: [0.059, 0.086, 0.122, 0.1405], personalAmount: 17041, ageCreditAmount: 8200, ageCreditThreshold: 0, pensionCreditAmount: 1000, eligDivCredit: 0.115, nonEligDivCredit: 0.06 },
   YT: { brackets: [58523, 117045, 181440, 258482, 500000], rates: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], personalAmount: 16452, ageCreditAmount: 8790, ageCreditThreshold: 44325, pensionCreditAmount: 2000, eligDivCredit: 0.1202, nonEligDivCredit: 0.0067 },
-  NU: { brackets: [54333, 108668, 177231], rates: [0.04, 0.07, 0.09, 0.115], personalAmount: 18284, ageCreditAmount: 14865, ageCreditThreshold: 0, pensionCreditAmount: 2000, eligDivCredit: 0.115, nonEligDivCredit: 0.0261 },
+  NU: { brackets: [54333, 108668, 177231], rates: [0.04, 0.07, 0.09, 0.115], personalAmount: 18284, ageCreditAmount: 14865, ageCreditThreshold: 0, pensionCreditAmount: 2000, eligDivCredit: 0.0551, nonEligDivCredit: 0.025904 }, // sync with engine 2026-05-03 (registry was outlier)
 };
 
 // ── CPP / QPP ────────────────────────────────────────────────────

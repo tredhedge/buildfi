@@ -173,7 +173,8 @@
 
   function calcQPP(startAge, avgEarn, yrsContrib) {
     var maxM = QPP_MAX_MONTHLY, mga = QPP_MGA;
-    var ratio = Math.min(1, avgEarn / mga) * Math.min(1, yrsContrib / 40);
+    // Defensive: clamp to [0, 1] to prevent negative QPP on bad inputs.
+    var ratio = Math.max(0, Math.min(1, avgEarn / mga)) * Math.max(0, Math.min(1, yrsContrib / 40));
     var adj = 1;
     if (startAge < 65) adj = 1 - 6e-3 * (65 - startAge) * 12;
     else if (startAge > 65) adj = 1 + 7e-3 * (startAge - 65) * 12;
@@ -190,8 +191,11 @@
   function calcOAS(startAge, income, yr, infR, currentAge) {
     var idxO = Math.pow(1 + (infR || 0.02), yr || 0);
     var maxM = OAS_MAX_MONTHLY * idxO, adj = 1;
+    // OAS cannot be claimed before 65 in Canada — defensive clamp.
+    if (startAge < 65) startAge = 65;
     if (startAge > 65) adj = 1 + 6e-3 * (startAge - 65) * 12;
-    adj = Math.min(1.36, adj);
+    // No early-claim reduction exists for OAS (unlike QPP/CPP). Cap at [1, 1.36].
+    adj = Math.max(1, Math.min(1.36, adj));
     var oas = maxM * adj;
     if ((currentAge || startAge) >= 75) oas *= 1.10;
     var oasThr = OAS_CLAWBACK_THR * idxO;
