@@ -484,12 +484,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check profile exists (bilan is hors quota — doesn't check exportsAI)
+    // Check profile exists. Audit 2026-05-03: this route used to be
+    // "hors quota" — doesn't check exportsAI — so any Planner buyer with
+    // 0 credits could trigger 5000+5000 MC sims + 6000-token Opus narration.
+    // Per CLAUDE.md known-drift, this route is REVIEW status (retire or
+    // repurpose); until that decision lands, gate it on exportsAI > 0 so
+    // it can't be abused as free compute.
     const profile = await getExpertProfile(authResult.email);
     if (!profile) {
       return NextResponse.json(
         { success: false, error: "No expert profile found" },
         { status: 403 }
+      );
+    }
+    if ((profile.exportsAI ?? 0) <= 0) {
+      return NextResponse.json(
+        { success: false, error: "no_credits", message: "Aucun crédit AI disponible. / No AI credits available." },
+        { status: 402 }
       );
     }
 

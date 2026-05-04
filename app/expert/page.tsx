@@ -388,7 +388,7 @@ function PortalContent() {
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 10 }}>Planner</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <a href={`/simulateur?token=${tokenRef.current}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
+          <a href={`/simulateur?token=${tokenRef.current}`} rel="noreferrer" style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>
             {t("Simulateur", "Simulator")}
           </a>
           <button onClick={() => setLang(fr ? "en" : "fr")} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", padding: "4px 10px", borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
@@ -437,7 +437,7 @@ function PortalContent() {
 
         {/* Quick actions */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 32 }}>
-          <a href={`/simulateur?token=${tokenRef.current}`} style={{
+          <a href={`/simulateur?token=${tokenRef.current}`} rel="noreferrer" style={{
             display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
             background: EK.marine, borderRadius: 12, textDecoration: "none", color: "#fff",
           }}>
@@ -449,6 +449,7 @@ function PortalContent() {
           </a>
           {profile.exportsAI > 0 ? (
             <a href={`/simulateur?token=${tokenRef.current}&action=export`}
+              rel="noreferrer"
               onClick={() => trackEvent(EVENTS.LAB_EXPORT_STARTED, { creditsRemaining: profile.exportsAI })}
               style={{
               display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
@@ -680,7 +681,7 @@ function PortalContent() {
                     </div>
                   </div>
                   <div style={{ fontSize: 12, color: EK.txMuted, marginBottom: 10 }}>{fDate(p.created, fr)}</div>
-                  <a href={`/simulateur?token=${tokenRef.current}&profile=${p.id}`} style={{
+                  <a href={`/simulateur?token=${tokenRef.current}&profile=${p.id}`} rel="noreferrer" style={{
                     display: "inline-block", fontSize: 12, fontWeight: 600, color: EK.gold, textDecoration: "none",
                   }}>
                     {t("Charger dans le simulateur", "Load in simulator")} &rarr;
