@@ -560,66 +560,109 @@
     var taxHeavy = tags.indexOf('tax_heavy') >= 0;
     var fire = phase === 'fire';
     var p = d.p || {};
+    var mc = d.mc || {};
     var hasDebt = (p.debtBal || 0) > 0 || ((d._report && d._report.debtBal) || 0) > 0 ||
                   (p.debts && p.debts.length > 0) || (d._debtTotal || 0) > 0;
+
+    // 2026-05-14 upgrade — per-profile data interpolation: real numbers
+    // baked into each archetype branch so the synthesis reads as
+    // specifically about THIS plan, not generic archetype boilerplate.
+    var fM = function(v) { return (F.fmtCompact ? F.fmtCompact(v) : v); };
+    var retAge = p.retAge || 65;
+    var rrif72 = Math.max(0, 72 - retAge);
+    var meltStart = retAge;
+    var meltEnd = retAge + rrif72;
+    var taxAlpha = +(d._taxAlpha || 0);
+    var avgEffPct = d.avgEffRate != null ? Math.round(d.avgEffRate * 100) : null;
+    var medEstateNet = mc.medEstateNet || 0;
+    var medEstateTax = mc.medEstateTax || 0;
+    var debtTotal = d._debtTotal || (p.debts || []).reduce(function(a, x) { return a + (x.amount || 0); }, 0) || 0;
+    var sucPct = s == null ? null : Math.round(s * 100);
 
     // P1 — the structural axis (which tensions cluster together for THIS archetype)
     var p1;
     if (fr) {
       if (ccpc) {
-        p1 = 'Trois leviers se rejoignent dans ce plan : l\'ordre d\'extraction de la société, l\'intégration fiscale personnelle, et la transmission. ' +
-          'Ce n\'est pas trois décisions distinctes, mais une seule séquence — modifier l\'extraction change la pression fiscale, ' +
-          'qui change le patrimoine résiduel transmissible.';
+        p1 = 'Trois leviers se rejoignent dans ce plan : l\'ordre d\'extraction de la société, l\'intégration fiscale personnelle, et la transmission' +
+          (medEstateNet > 0 ? ' (succession nette projetée: <strong>' + fM(medEstateNet) + '</strong>)' : '') + '. ' +
+          'Ce n\'est pas trois décisions distinctes, mais une seule séquence — modifier l\'extraction change la pression fiscale' +
+          (avgEffPct != null ? ' (taux effectif actuel <strong>' + avgEffPct + '%</strong>)' : '') +
+          ', qui change le patrimoine résiduel transmissible.';
       } else if (legacy && phase === 'transition') {
-        p1 = 'La fenêtre de décaissement anticipé du REER, le taux fiscal viager et la part transmise aux héritiers forment un seul axe. ' +
-          'L\'arbitrage central : retirer plus tôt pour réduire l\'impôt à vie et l\'impôt au décès, ' +
-          'au prix d\'une compression du scénario prudent en début de retraite.';
+        p1 = 'La fenêtre de décaissement anticipé du REER (<strong>' + meltStart + '–' + meltEnd + ' ans</strong>), ' +
+          'le taux fiscal viager' + (avgEffPct != null ? ' projeté à <strong>' + avgEffPct + '%</strong>' : '') +
+          ' et les <strong>' + fM(medEstateNet) + '</strong> transmissibles forment un seul axe. ' +
+          'L\'arbitrage central : retirer plus tôt pour réduire l\'impôt à vie' +
+          (taxAlpha > 0 ? ' (économie projetée <strong>' + fM(taxAlpha) + '</strong>)' : '') +
+          ' et l\'impôt au décès' + (medEstateTax > 0 ? ' (<strong>' + fM(medEstateTax) + '</strong>)' : '') +
+          ', au prix d\'une compression du scénario prudent en début de retraite.';
       } else if (fire) {
-        p1 = 'La zone-pont avant les prestations publiques amplifie le risque séquentiel des rendements. ' +
-          'Sur cet horizon, un repli marqué en début de retraite anticipée comprime durablement la trajectoire — ' +
-          'plus que tout autre choix dans le plan.';
+        var bridgeYrs = Math.max(0, 65 - retAge);
+        p1 = 'La zone-pont de <strong>' + bridgeYrs + ' ans</strong> avant les prestations publiques amplifie le risque séquentiel des rendements. ' +
+          'Sur cet horizon, un repli marqué en début de retraite anticipée' + (sucPct != null ? ' (taux de réussite base <strong>' + sucPct + '%</strong>)' : '') +
+          ' comprime durablement la trajectoire — plus que tout autre choix dans le plan.';
       } else if (lowInc) {
-        p1 = 'Les prestations publiques (RRQ, PSV, SRG) forment l\'ossature du revenu; ' +
+        p1 = 'Les prestations publiques (RRQ, PSV, SRG) forment l\'ossature du revenu' +
+          (d.govY ? ' (<strong>' + fM(d.govY) + '/an</strong>)' : '') + '; ' +
           'l\'épargne personnelle s\'y ajoute en complément. ' +
           'La sensibilité du plan se concentre sur le seuil d\'admissibilité au SRG et la coordination des retraits.';
       } else if (hasDebt && (s == null || s < 0.5)) {
-        p1 = 'La dynamique épargne-vs-dette structure tout le plan. ' +
+        p1 = 'La dynamique épargne-vs-dette structure tout le plan' +
+          (debtTotal > 0 ? ' (dette totale <strong>' + fM(debtTotal) + '</strong>' +
+            (sucPct != null ? ', réussite base <strong>' + sucPct + '%</strong>' : '') + ')' : '') + '. ' +
           'Le scénario observé reflète la course entre l\'accumulation et le poids du service de la dette à taux élevé — ' +
           'aucune autre décision ne déplace la trajectoire autant que cet arbitrage.';
       } else if (couple) {
         p1 = 'Le revenu de retraite, le fractionnement entre conjoints et la transmission s\'organisent autour d\'un axe unique : ' +
-          'la coordination des décaissements pour minimiser la fiscalité combinée du ménage. ' +
+          'la coordination des décaissements pour minimiser la fiscalité combinée du ménage' +
+          (avgEffPct != null ? ' (taux effectif <strong>' + avgEffPct + '%</strong>)' : '') + '. ' +
           'Chaque sous-décision modifie les deux autres.';
       } else {
-        p1 = 'Les leviers principaux du plan — fiscalité, décaissement, transmission — ne se lisent pas indépendamment. ' +
+        p1 = 'Les leviers principaux du plan — fiscalité' + (avgEffPct != null ? ' (taux effectif <strong>' + avgEffPct + '%</strong>)' : '') +
+          ', décaissement, transmission' + (medEstateNet > 0 ? ' (succession nette <strong>' + fM(medEstateNet) + '</strong>)' : '') +
+          ' — ne se lisent pas indépendamment. ' +
           'Le choix de la séquence de retrait modifie le taux fiscal viager, qui modifie le patrimoine final, qui modifie la transmission.';
       }
     } else {
       if (ccpc) {
-        p1 = 'Three levers converge in this plan: corporate extraction order, personal tax integration, and estate transfer. ' +
-          'These are not three distinct decisions but one sequence — changing extraction shifts the tax pressure, ' +
-          'which shifts the residual estate.';
+        p1 = 'Three levers converge in this plan: corporate extraction order, personal tax integration, and estate transfer' +
+          (medEstateNet > 0 ? ' (projected net estate: <strong>' + fM(medEstateNet) + '</strong>)' : '') + '. ' +
+          'These are not three distinct decisions but one sequence — changing extraction shifts the tax pressure' +
+          (avgEffPct != null ? ' (current effective rate <strong>' + avgEffPct + '%</strong>)' : '') +
+          ', which shifts the residual estate.';
       } else if (legacy && phase === 'transition') {
-        p1 = 'The RRSP meltdown window, lifetime tax, and the share transferred to heirs form a single axis. ' +
-          'The core trade-off: withdraw earlier to compress lifetime and estate tax, ' +
-          'at the cost of a tighter cautious-scenario buffer in early retirement.';
+        p1 = 'The RRSP meltdown window (<strong>age ' + meltStart + '–' + meltEnd + '</strong>), ' +
+          'lifetime tax' + (avgEffPct != null ? ' projected at <strong>' + avgEffPct + '%</strong>' : '') +
+          ', and the <strong>' + fM(medEstateNet) + '</strong> transferred to heirs form a single axis. ' +
+          'The core trade-off: withdraw earlier to compress lifetime tax' +
+          (taxAlpha > 0 ? ' (projected savings <strong>' + fM(taxAlpha) + '</strong>)' : '') +
+          ' and estate tax' + (medEstateTax > 0 ? ' (<strong>' + fM(medEstateTax) + '</strong>)' : '') +
+          ', at the cost of a tighter cautious-scenario buffer in early retirement.';
       } else if (fire) {
-        p1 = 'The bridge years before public benefits amplify sequence-of-returns risk. ' +
-          'Over this horizon, a sharp early-retirement drawdown compresses the trajectory durably — ' +
-          'more than any other choice in the plan.';
+        var bridgeYrsEn = Math.max(0, 65 - retAge);
+        p1 = 'The <strong>' + bridgeYrsEn + '-year</strong> bridge before public benefits amplifies sequence-of-returns risk. ' +
+          'Over this horizon, a sharp early-retirement drawdown' + (sucPct != null ? ' (baseline success <strong>' + sucPct + '%</strong>)' : '') +
+          ' compresses the trajectory durably — more than any other choice in the plan.';
       } else if (lowInc) {
-        p1 = 'Public benefits (CPP, OAS, GIS) form the income backbone; personal savings layer in as complement. ' +
+        p1 = 'Public benefits (CPP, OAS, GIS) form the income backbone' +
+          (d.govY ? ' (<strong>' + fM(d.govY) + '/yr</strong>)' : '') + '; ' +
+          'personal savings layer in as complement. ' +
           'The plan\'s sensitivity concentrates on the GIS eligibility threshold and withdrawal coordination.';
       } else if (hasDebt && (s == null || s < 0.5)) {
-        p1 = 'The savings-versus-debt dynamic structures the entire plan. ' +
+        p1 = 'The savings-versus-debt dynamic structures the entire plan' +
+          (debtTotal > 0 ? ' (total debt <strong>' + fM(debtTotal) + '</strong>' +
+            (sucPct != null ? ', baseline success <strong>' + sucPct + '%</strong>' : '') + ')' : '') + '. ' +
           'The observed scenario reflects the race between accumulation and high-rate debt service — ' +
           'no other decision moves the trajectory as much as this trade-off.';
       } else if (couple) {
         p1 = 'Retirement income, spouse-to-spouse splitting, and estate transfer organize around a single axis: ' +
-          'coordinated household withdrawals to minimize combined tax. ' +
+          'coordinated household withdrawals to minimize combined tax' +
+          (avgEffPct != null ? ' (effective rate <strong>' + avgEffPct + '%</strong>)' : '') + '. ' +
           'Each sub-decision shifts the other two.';
       } else {
-        p1 = 'The plan\'s main levers — tax, withdrawal sequencing, estate — do not read independently. ' +
+        p1 = 'The plan\'s main levers — tax' + (avgEffPct != null ? ' (effective rate <strong>' + avgEffPct + '%</strong>)' : '') +
+          ', withdrawal sequencing, estate' + (medEstateNet > 0 ? ' (net estate <strong>' + fM(medEstateNet) + '</strong>)' : '') +
+          ' — do not read independently. ' +
           'Withdrawal-order choice changes the lifetime tax rate, which changes the residual estate.';
       }
     }
@@ -659,6 +702,89 @@
     }
 
     return '<p class="narr">' + p1 + '</p><p class="narr">' + p2 + '</p>';
+  }
+
+  // 2026-05-14 Recovery-arc enforcement (codex audit P0 + qa-check
+  // [missing_recovery_path]). For low-grade plans (D/F band, success < 45%),
+  // we render a numbered 4-phase recovery sequence (Stabilize → Deleverage
+  // → Rebuild → Re-plan) so the reader leaves with a path forward, not a
+  // failure diagnosis. AMF-clean: observational sequencing, no
+  // FORBIDDEN verbs. Each phase is parameterized when data is available.
+  function xpRecoveryArc(d) {
+    if (!d) return '';
+    var s = d.succVal == null ? null : +d.succVal;
+    if (s == null || s >= 0.45) return ''; // only for D/F band
+    var fr = d.fr;
+    var p = d.p || {};
+    var fM = function(v) { return (F.fmtCompact ? F.fmtCompact(v) : v); };
+    var hasDebt = (p.debtBal || 0) > 0 || (p.debts && p.debts.length > 0) || (d._debtTotal || 0) > 0;
+    var debtTotal = d._debtTotal || (p.debts || []).reduce(function(a, x) { return a + (x.amount || 0); }, 0) || 0;
+    var sucPct = Math.round(s * 100);
+    var gapM = Math.round(d.gapM || 0);
+
+    var phases = [];
+    if (fr) {
+      phases.push({
+        n: 1,
+        title: 'Stabiliser le flux de trésorerie',
+        body: 'Première phase : un budget mensuel équilibré' +
+          (gapM > 0 ? ' réduit l\'écart actuel de <strong>' + fM(gapM) + '/mois</strong>' : ' libère la marge nécessaire pour les phases suivantes') +
+          '. Sans cette stabilisation, les autres ajustements ne tiennent pas.'
+      });
+      if (hasDebt) {
+        phases.push({
+          n: 2,
+          title: 'Désendetter à taux élevé',
+          body: 'Deuxième phase : la dette à taux élevé' +
+            (debtTotal > 0 ? ' (<strong>' + fM(debtTotal) + '</strong>)' : '') +
+            ' offre un rendement garanti supérieur à toute stratégie de placement. ' +
+            'Réduire la charge d\'intérêts libère la capacité d\'épargne pour la phase 3.'
+        });
+        phases.push({ n: 3, title: 'Reconstruire la capacité d\'épargne', body: 'Troisième phase : avec la dette allégée, le flux qui finançait le service d\'intérêts redevient disponible pour la cotisation CELI et REER selon le palier fiscal.' });
+        phases.push({ n: 4, title: 'Reposer les objectifs', body: 'Quatrième phase : avec une base assainie, le plan se réévalue — l\'âge cible de retraite, le niveau de dépenses visé, le profil de risque peuvent être ajustés à la nouvelle réalité du flux d\'épargne.' });
+      } else {
+        phases.push({ n: 2, title: 'Augmenter la capacité d\'épargne', body: 'Deuxième phase : sans dette à taux élevé, la priorité est d\'élargir la marge mensuelle disponible pour l\'épargne — réduire les dépenses discrétionnaires ou hausser le revenu.' });
+        phases.push({ n: 3, title: 'Allouer l\'épargne récupérée', body: 'Troisième phase : diriger les nouveaux dollars vers le compte qui maximise le rendement après impôt selon votre palier fiscal (CELI prioritaire jusqu\'à plafond, puis REER).' });
+        phases.push({ n: 4, title: 'Reposer les objectifs', body: 'Quatrième phase : à mesure que l\'épargne mensuelle augmente, les paramètres-clés (âge cible, dépenses visées, profil) se réévaluent dans la nouvelle trajectoire.' });
+      }
+    } else {
+      phases.push({
+        n: 1,
+        title: 'Stabilize cash flow',
+        body: 'Phase one: a balanced monthly budget' +
+          (gapM > 0 ? ' closes the current <strong>' + fM(gapM) + '/mo</strong> gap' : ' creates the margin needed for the next phases') +
+          '. Without this stabilization, the other adjustments do not hold.'
+      });
+      if (hasDebt) {
+        phases.push({
+          n: 2,
+          title: 'Deleverage high-rate debt',
+          body: 'Phase two: high-rate debt' +
+            (debtTotal > 0 ? ' (<strong>' + fM(debtTotal) + '</strong>)' : '') +
+            ' offers a guaranteed return higher than any investment strategy. ' +
+            'Lowering the interest burden frees the savings capacity for phase 3.'
+        });
+        phases.push({ n: 3, title: 'Rebuild savings capacity', body: 'Phase three: with debt lighter, the cash flow that previously serviced interest becomes available for TFSA + RRSP contributions based on the marginal tax bracket.' });
+        phases.push({ n: 4, title: 'Re-plan goals', body: 'Phase four: with a cleaner base, the plan is reassessed — target retirement age, target spending level, and risk profile can be adjusted to the new savings flow.' });
+      } else {
+        phases.push({ n: 2, title: 'Expand savings capacity', body: 'Phase two: without high-rate debt, the priority is widening the monthly margin available for savings — reduce discretionary spending or raise income.' });
+        phases.push({ n: 3, title: 'Allocate recovered savings', body: 'Phase three: direct the new dollars to the account that maximizes after-tax return based on your marginal bracket (TFSA-first to cap, then RRSP).' });
+        phases.push({ n: 4, title: 'Re-plan goals', body: 'Phase four: as monthly savings grow, the key parameters (target age, target spending, profile) are reassessed against the new trajectory.' });
+      }
+    }
+    var heading = fr ? 'Séquence de redressement (' + sucPct + '% de réussite base)' : 'Recovery sequence (' + sucPct + '% baseline success)';
+    var lead = fr
+      ? 'À ce niveau de réussite, la trajectoire requiert un redressement par étapes plutôt qu\'un ajustement unique. Chaque phase prépare la suivante.'
+      : 'At this success level, the trajectory needs a phased recovery rather than a single adjustment. Each phase prepares the next.';
+    var listHtml = phases.map(function(ph) {
+      return '<li style="margin-bottom:10px;padding-left:6px"><strong>' + ph.n + '. ' + ph.title + '.</strong> ' + ph.body + '</li>';
+    }).join('');
+    return '<div style="border-left:3px solid #b85d3a;padding:14px 0 6px 22px;margin:18px 0 8px;background:linear-gradient(180deg,#fdf5f1,transparent)">' +
+      '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#a85a3a;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">' +
+      heading + '</div>' +
+      '<p class="narr" style="margin-bottom:10px">' + lead + '</p>' +
+      '<ol style="margin:0;padding-left:22px;font-family:Inter,sans-serif;font-size:13px;color:#2a2420;line-height:1.7">' + listHtml + '</ol>' +
+      '</div>';
   }
 
   // Dynamic Table of Contents
@@ -2246,9 +2372,10 @@
     var _scopeAss = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     if (false) {
     h += '<div style="display:none">';
-    h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue);
+    // 2026-05-14 Sprint C — hero KPI: P50 wealth answers "where does the typical scenario land".
+    h += F.KPI('<span class="mono">' + f$(d.mc.rMedF || d.mc.medF) + '</span>', (fr ? 'Patrimoine P50' : 'P50 Wealth') + _scopeAss, C.blue, 'hero');
     h += F.KPI('<span class="mono">' + Math.round(d.covRatio * 100) + '%</span>', (fr ? 'Revenu garanti / dépenses' : 'Guaranteed income / spending') + _scopeAss, d.covRatio >= 0.6 ? C.green : d.covRatio >= 0.4 ? C.amber : C.red);
-    h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green);
+    h += F.KPI('<span class="mono">' + (d._wdPct ? d._wdPct + '%' : '\u2014') + '</span>', fr ? 'Taux retrait' : 'Withdrawal rate', d._wdPct && parseFloat(d._wdPct) > 4 ? C.red : C.green, 'detail');
     h += F.KPI('<span class="mono">' + f$(Math.round(d.mc.medEstateNet || 0)) + '</span>', (fr ? 'H\u00e9ritage net' : 'Net estate') + _scopeAss, C.gold);
     h += '</div></div>';
     } // end if(false) — duplicate KPI block retired 2026-04-29
@@ -2368,6 +2495,14 @@
     if (_sensTop) {
       h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 22px;margin:6px 0 14px;font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-style:italic;color:#1a1610;line-height:1.55;max-width:680px">' +
         _sensTop + '</div>';
+    }
+    // 2026-05-14 Recovery-arc enforcement — for low-grade plans only,
+    // adds a numbered 4-phase recovery sequence so the chapter 1 close
+    // delivers a path forward, not a failure diagnosis. Addresses
+    // qa-check.mjs [missing_recovery_path] flag for low_grade profiles.
+    var _recArc = xpRecoveryArc(d);
+    if (_recArc) {
+      h += _recArc;
     }
 
     // Vars used downstream — must be assigned regardless of whether the
@@ -3424,7 +3559,8 @@
     // Tag KPIs as household totals when couple to avoid per-person confusion.
     var _scopeTag = d.R.couple ? (fr ? ' (m\u00e9nage)' : ' (household)') : '';
     h += '<div style="flex:1"><div class="g3">';
-    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM)) + '</span>/m', (fr ? '\u00c9cart mensuel' : 'Monthly gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
+    // 2026-05-14 hero: monthly gap is the decision-relevant KPI for revenue section.
+    h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM)) + '</span>/m', (fr ? '\u00c9cart mensuel' : 'Monthly gap') + _scopeTag, d.gapM > 0 ? C.red : C.green, 'hero');
     h += F.KPI('<span class="mono">' + fR(Math.round(d.gapM * 12)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? '\u00c9cart annuel' : 'Annual gap') + _scopeTag, d.gapM > 0 ? C.red : C.green);
     h += F.KPI('<span class="mono">' + fR(Math.round(d.govY)) + '</span>' + (fr ? '/an' : '/yr'), (fr ? 'Rev. garanti' : 'Guaranteed inc.') + _scopeTag, C.green);
     h += '</div></div></div>';
@@ -4445,7 +4581,8 @@
     }
 
     h += '<div class="' + (exp ? 'g4' : 'g3') + '" style="margin-bottom:8px">';
-    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red);
+    // 2026-05-14 hero: tax savings (or lifetime tax if no alpha) is the section's decision metric.
+    h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red, 'hero');
     h += F.KPI('<span class="mono">' + Math.round(d.avgEffRate * 100) + '%</span>', fr ? 'Taux effectif moyen' : 'Avg effective rate', C.blue);
     h += F.KPI('<span class="mono">' + d.oasClbkYrs + '/' + _retLen + '</span>', fr ? 'Ann\u00e9es r\u00e9cup. PSV' : 'OAS clawback yrs', d.oasClbkYrs > _retLen * 0.5 ? C.red : d.oasClbkYrs > 0 ? C.amber : C.green);
     if (exp && d._hasNaive) h += F.KPI('<span class="mono">' + Math.round((d._naiveTax - d._optTax) / Math.max(1, d._naiveTax) * 100) + '%</span>', fr ? 'R\u00e9duction fiscale' : 'Tax reduction', C.purple);
@@ -4692,7 +4829,8 @@
       '</div>';
 
     h += '<div class="g4" style="margin-bottom:8px">';
-    h += F.KPI('<span class="mono">' + fR(Math.round(_gisTotal)) + '</span>', fr ? 'SRG viager' : 'Lifetime GIS', C.teal);
+    // 2026-05-14 hero: lifetime GIS is the prize this section optimizes for.
+    h += F.KPI('<span class="mono">' + fR(Math.round(_gisTotal)) + '</span>', fr ? 'SRG viager' : 'Lifetime GIS', C.teal, 'hero');
     h += F.KPI('<span class="mono">' + fR(Math.round(_gisAvg)) + '</span>' + (fr ? '/an' : '/yr'), fr ? 'SRG moyen/an' : 'Avg GIS/yr', C.teal);
     h += F.KPI('<span class="mono">' + fR(Math.round(_gisMax)) + '</span>', fr ? 'SRG max.' : 'Max GIS', C.blue);
     h += F.KPI('<span class="mono">' + _gisYrs.length + '/' + _gis65Yrs + '</span>', fr ? 'Ann\u00e9es SRG' : 'GIS years', C.purple);
@@ -4782,7 +4920,8 @@
 
     h += '<div class="g4" style="margin-bottom:8px">';
     h += F.KPI('<span class="mono">' + fR(p.rrsp || 0) + '</span>', fr ? 'REER actuel' : 'Current RRSP', C.purple);
-    h += F.KPI('<span class="mono">' + fR(Math.round(p.meltTgt || 0)) + '</span>', fr ? 'Cible/an' : 'Target/yr', C.gold);
+    // 2026-05-14 hero: yearly target is the actionable knob in the meltdown section.
+    h += F.KPI('<span class="mono">' + fR(Math.round(p.meltTgt || 0)) + '</span>', fr ? 'Cible/an' : 'Target/yr', C.gold, 'hero');
     h += F.KPI('<span class="mono">' + fR(Math.round(_rrspAt72)) + '</span>', fr ? 'REER \u00e0 72' : 'RRSP at 72', C.amber);
     h += F.KPI('<span class="mono">' + _meltPctRed + '%</span>', fr ? 'R\u00e9duction' : 'Reduction', _meltPctRed > 50 ? C.green : C.amber);
     h += '</div>';
@@ -4854,7 +4993,8 @@
 
     h += '<div class="g3" style="margin-bottom:8px">';
     h += F.KPI('<span class="mono">' + f$(Math.round(mc.medEstateTax || 0)) + '</span>', fr ? 'Imp\u00f4t au d\u00e9c\u00e8s' : 'Tax at death', C.red);
-    h += F.KPI('<span class="mono">' + f$(Math.round(mc.medEstateNet || 0)) + '</span>', fr ? 'H\u00e9ritage net' : 'Net estate', C.green);
+    // 2026-05-14 hero: net estate is what the section answers ("what passes to heirs").
+    h += F.KPI('<span class="mono">' + f$(Math.round(mc.medEstateNet || 0)) + '</span>', fr ? 'H\u00e9ritage net' : 'Net estate', C.green, 'hero');
     h += F.KPI('<span class="mono">' + f$(Math.round(mc.p25EstateNet || mc.p5EstateNet || 0)) + '</span>', fr ? 'Sc\u00e9nario prudent' : 'Cautious scenario', C.amber);
     h += '</div>';
 
