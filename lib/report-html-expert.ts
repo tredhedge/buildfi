@@ -197,6 +197,54 @@ function renderExpertReport(
   const circ = 2 * Math.PI * 48;
   const dashVal = circ * (1 - D.succ);
 
+  // 2026-05-14 Sprint B — per-section standfirst (FT-style subtitle).
+  // Returns a one-sentence parameterized headline using real data from D and
+  // mc, AMF-clean by construction. Used as the `sub` argument to secH().
+  // Sprint D synthesis pass may override these via ai.headlines[key].
+  const xpStandfirst = (key: string): string => {
+    const yrs = D.deathAge && D.retAge ? Math.max(0, D.deathAge - D.retAge) : 0;
+    const succ = D.successPct ?? Math.round((mc.succ || 0) * 100);
+    switch (key) {
+      case "sommaire_executif":
+        return t(
+          `Grade ${D.grade} avec ${succ}% de réussite — synthèse des trois constats les plus déterminants.`,
+          `Grade ${D.grade} with ${succ}% success — synthesis of the three most decisive findings.`
+        );
+      case "diagnostic_robustesse":
+        return t(
+          `Distribution de ${(D.nSim || 5000).toLocaleString()} scénarios — la robustesse se mesure aux percentiles, pas à la moyenne.`,
+          `Distribution of ${(D.nSim || 5000).toLocaleString()} scenarios — robustness lives in percentiles, not averages.`
+        );
+      case "revenus_retraite":
+        return t(
+          `Revenus garantis de ${f$(D.govMonthly || 0)}/mois contre ${f$(D.retSpM || 0)}/mois de dépenses cibles — soit ${Math.round((D.coveragePct || 0))}% de couverture avant retraits.`,
+          `Guaranteed ${f$(D.govMonthly || 0)}/mo vs ${f$(D.retSpM || 0)}/mo target spending — ${Math.round((D.coveragePct || 0))}% coverage before withdrawals.`
+        );
+      case "projection_patrimoine":
+        return t(
+          `Sur les ${yrs || "—"} ans projetés, le patrimoine médian atteindrait ${f$(D.rMedF || 0)} en dollars réels.`,
+          `Over ${yrs || "—"} projected years, median wealth would reach ${f$(D.rMedF || 0)} in real dollars.`
+        );
+      case "analyse_fiscale":
+        return t(
+          `Taux marginal actuel ${Math.round((D.taxCurrentMarginal || 0) * 100)}% — l'écart avec le taux de retraite ouvre la marge d'efficacité fiscale.`,
+          `Current marginal rate ${Math.round((D.taxCurrentMarginal || 0) * 100)}% — the gap with retirement rate defines the tax efficiency margin.`
+        );
+      case "stress_tests":
+        return t(
+          `Que survivrait à un krach 2008 ou à une stagflation prolongée — au-delà de la base ${succ}%.`,
+          `What would survive a 2008 crash or prolonged stagflation — beyond the ${succ}% baseline.`
+        );
+      case "priorites_action":
+        return t(
+          `Les leviers observés ici sont triés par impact attendu sur la trajectoire, pas par facilité d'exécution.`,
+          `Levers observed here are sorted by expected trajectory impact, not by ease of execution.`
+        );
+      default:
+        return "";
+    }
+  };
+
   // HTML helpers
   const aiSlot = (key: ExpertSectionKey, fallback?: string): string => {
     const text = ai[key];
@@ -282,28 +330,39 @@ function renderExpertReport(
   // Build TOC entries from activeSections — needed for both the rail and
   // the inline (post-cover) TOC card. Computed up here so the rail can
   // be emitted before <main> in DOM order.
+  // 2026-05-14 IA refactor: section labels are declarative, decision-framed
+  // noun phrases (Option C). The per-section AI standfirst (added in
+  // Sprint B) carries the conversational/decision question. Order below
+  // is the canonical decision flow used by activeSections re-sort:
+  // situation → trajectory → threats → levers → scenarios → mechanics.
   const sectionLabels: Record<string, { fr: string; en: string }> = {
-    sommaire_executif: { fr: "Sommaire exécutif", en: "Executive summary" },
-    diagnostic_robustesse: { fr: "Diagnostic de robustesse", en: "Robustness diagnostic" },
-    revenus_retraite: { fr: "Revenus à la retraite", en: "Retirement income" },
-    projection_patrimoine: { fr: "Projection du patrimoine", en: "Wealth projection" },
-    analyse_fiscale: { fr: "Analyse fiscale", en: "Tax analysis" },
-    couple: { fr: "Analyse du ménage", en: "Household analysis" },
-    immobilier: { fr: "Analyse immobilière", en: "Real estate analysis" },
-    pension_db: { fr: "Pension à prestations déterminées", en: "Defined benefit pension" },
-    corporatif: { fr: "Planification corporative", en: "Corporate planning" },
-    remuneration: { fr: "Stratégie de rémunération", en: "Compensation strategy" },
-    dettes: { fr: "Impact des dettes", en: "Debt impact" },
-    decaissement: { fr: "Séquence de décaissement", en: "Withdrawal sequencing" },
-    stress_tests: { fr: "Tests de résistance", en: "Stress tests" },
-    assurance: { fr: "Analyse d'assurance", en: "Insurance analysis" },
-    resp: { fr: "Régime enregistré d'épargne-études", en: "Registered Education Savings Plan" },
-    priorites_action: { fr: "Leviers identifiés", en: "Identified levers" },
+    // Situation
+    sommaire_executif: { fr: "Votre point de départ", en: "Your starting point" },
+    revenus_retraite: { fr: "Vos revenus à la retraite", en: "Your retirement income" },
+    // Trajectory
+    projection_patrimoine: { fr: "Trajectoire patrimoniale", en: "Wealth trajectory" },
+    diagnostic_robustesse: { fr: "Robustesse du plan", en: "Plan robustness" },
+    // Threats
+    stress_tests: { fr: "Réaction aux chocs de marché", en: "Reaction to market shocks" },
+    dettes: { fr: "Poids des dettes sur le plan", en: "Debt weight on the plan" },
+    assurance: { fr: "Couverture d'assurance", en: "Insurance coverage" },
+    // Levers (priorites_action first — synthesis before sub-levers)
+    priorites_action: { fr: "Leviers à plus grand impact", en: "Highest-impact levers" },
+    analyse_fiscale: { fr: "Marges d'efficacité fiscale", en: "Tax efficiency margins" },
+    decaissement: { fr: "Séquence de décaissement", en: "Withdrawal sequence" },
+    couple: { fr: "Optimisation du ménage", en: "Household optimization" },
+    corporatif: { fr: "Stratégie corporative", en: "Corporate strategy" },
+    remuneration: { fr: "Arbitrage rémunération", en: "Compensation tradeoff" },
+    immobilier: { fr: "Place de l'immobilier", en: "Real estate position" },
+    pension_db: { fr: "Intégration de la pension PD", en: "DB pension integration" },
+    resp: { fr: "Financement des études", en: "Education funding" },
+    // Scenarios
+    comparaison_scenarios: { fr: "Comparaison de trajectoires", en: "Trajectory comparison" },
+    // Mechanics / meeting prep / appendix
     observations_detaillees: { fr: "Observations détaillées", en: "Detailed observations" },
-    comparaison_scenarios: { fr: "Comparaison de scénarios", en: "Scenario comparison" },
-    driver_attribution: { fr: "Attribution des facteurs", en: "Driver attribution" },
-    pour_professionnel: { fr: "Pour votre professionnel", en: "For your professional" },
-    questions_fiscaliste: { fr: "Questions pour votre fiscaliste", en: "Questions for your tax advisor" },
+    driver_attribution: { fr: "Facteurs explicatifs du résultat", en: "Outcome drivers" },
+    pour_professionnel: { fr: "Notes pour votre conseiller", en: "Notes for your advisor" },
+    questions_fiscaliste: { fr: "Points à valider avec votre fiscaliste", en: "Points to validate with your tax advisor" },
     historique_modifications: { fr: "Historique des modifications", en: "Change history" },
     hypotheses_methodo: { fr: "Hypothèses et méthodologie", en: "Assumptions and methodology" },
     disclaimers: { fr: "Avertissements légaux", en: "Legal disclaimers" },
@@ -397,7 +456,7 @@ function renderExpertReport(
   // S1: Sommaire executif
   if (has("sommaire_executif")) {
     secN++;
-    h += secH(secN, t("Sommaire ex\u00e9cutif", "Executive summary"), t("Les constats cl\u00e9s de cette analyse", "Key findings from this analysis"));
+    h += secH(secN, t("Votre point de d\u00e9part", "Your starting point"), xpStandfirst("sommaire_executif"));
     h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px" class="rpt-grid3">';
     h += kp(D.successPct + '%', t("Probabilit\u00e9 de succ\u00e8s", "Success probability"), sC);
     h += kp(f$(D.rMedF), t("Patrimoine m\u00e9dian (r\u00e9el)", "Median wealth (real)"), "#1a2744");
@@ -415,7 +474,7 @@ function renderExpertReport(
   // S2: Diagnostic robustesse
   if (has("diagnostic_robustesse")) {
     secN++;
-    h += secH(secN, t("Diagnostic de robustesse", "Robustness diagnostic"), t("Distribution des " + (D.nSim || 5000).toLocaleString() + " sc\u00e9narios", "Distribution of " + (D.nSim || 5000).toLocaleString() + " scenarios"));
+    h += secH(secN, t("Robustesse du plan", "Plan robustness"), xpStandfirst("diagnostic_robustesse"));
     h += badgeScenario();
 
     // Fan chart
@@ -487,7 +546,7 @@ function renderExpertReport(
   // S3: Revenus retraite
   if (has("revenus_retraite")) {
     secN++;
-    h += secH(secN, t("Revenus \u00e0 la retraite", "Retirement income"), t("Sources et couverture", "Sources and coverage"));
+    h += secH(secN, t("Vos revenus \u00e0 la retraite", "Your retirement income"), xpStandfirst("revenus_retraite"));
     h += badgeEstimation();
     const items = [
       { v: D.qppMonthly, c: "#2f8a4a", l: gP },
@@ -521,7 +580,7 @@ function renderExpertReport(
   // S4: Projection patrimoine
   if (has("projection_patrimoine")) {
     secN++;
-    h += secH(secN, t("Projection du patrimoine", "Wealth projection"), t("Accumulation et d\u00e9caissement", "Accumulation and decumulation"));
+    h += secH(secN, t("Trajectoire patrimoniale", "Wealth trajectory"), xpStandfirst("projection_patrimoine"));
     h += badgeEstimation();
 
     // Stacked area chart
@@ -592,7 +651,7 @@ function renderExpertReport(
   // S5: Analyse fiscale
   if (has("analyse_fiscale")) {
     secN++;
-    h += secH(secN, t("Analyse fiscale", "Tax analysis"), t("Taux effectifs et opportunit\u00e9s", "Effective rates and opportunities"));
+    h += secH(secN, t("Marges d'efficacit\u00e9 fiscale", "Tax efficiency margins"), xpStandfirst("analyse_fiscale"));
     h += badgeEstimation();
     h += card(
       kvr(t("Taux effectif actuel (travail)", "Current effective rate (work)"), fPct(D.taxCurrentEffective))
@@ -616,7 +675,7 @@ function renderExpertReport(
   // Couple
   if (has("couple")) {
     secN++;
-    h += secH(secN, t("Analyse du m\u00e9nage", "Household analysis"), t("Impact du conjoint sur le plan", "Partner impact on the plan"));
+    h += secH(secN, t("Optimisation du m\u00e9nage", "Household optimization"), t("Impact du conjoint sur le plan", "Partner impact on the plan"));
     h += card(
       kvr(t("\u00c2ge du conjoint", "Partner age"), (D.cAge || "\u2014") + " " + t("ans", "yrs"))
       + kvr(t("Retraite du conjoint", "Partner retirement"), (D.cRetAge || "\u2014") + " " + t("ans", "yrs"))
@@ -633,7 +692,7 @@ function renderExpertReport(
   // Immobilier
   if (has("immobilier")) {
     secN++;
-    h += secH(secN, t("Analyse immobili\u00e8re", "Real estate analysis"));
+    h += secH(secN, t("Place de l'immobilier", "Real estate position"));
     h += card(
       kvr(t("Valeur de la propri\u00e9t\u00e9", "Property value"), f$(D.homeVal))
       + kvr(t("Solde hypoth\u00e9caire", "Mortgage balance"), f$(D.mortBal))
@@ -646,7 +705,7 @@ function renderExpertReport(
   // Pension DB
   if (has("pension_db")) {
     secN++;
-    h += secH(secN, t("Pension \u00e0 prestations d\u00e9termin\u00e9es", "Defined benefit pension"));
+    h += secH(secN, t("Int\u00e9gration de la pension PD", "DB pension integration"));
     h += card(
       kvr(t("Revenu mensuel PD", "Monthly DB income"), f$(D.dbPensionMonthly) + t("/mois", "/mo"))
       + kvr(t("Couverture", "Coverage"), fPct(D.dbPensionMonthly > 0 && D.retSpM > 0 ? Math.round(D.dbPensionMonthly / D.retSpM * 100) : 0))
@@ -658,7 +717,7 @@ function renderExpertReport(
   // Corporatif
   if (has("corporatif")) {
     secN++;
-    h += secH(secN, t("Planification corporative", "Corporate planning"));
+    h += secH(secN, t("Stratégie corporative", "Corporate strategy"));
     h += aiSlot("corporatif", t(
       "La structure corporative est int\u00e9gr\u00e9e dans les projections. Les b\u00e9n\u00e9fices non r\u00e9partis sont mod\u00e9lis\u00e9s selon le taux d'extraction d\u00e9fini.",
       "The corporate structure is integrated into projections. Retained earnings are modeled based on the defined extraction rate."
@@ -669,7 +728,7 @@ function renderExpertReport(
   // Remuneration
   if (has("remuneration")) {
     secN++;
-    h += secH(secN, t("Strat\u00e9gie de r\u00e9mun\u00e9ration", "Compensation strategy"));
+    h += secH(secN, t("Arbitrage r\u00e9mun\u00e9ration", "Compensation tradeoff"));
     h += aiSlot("remuneration", t(
       "Le choix entre salaire et dividendes d\u00e9pendrait du taux marginal et des cotisations au " + gP + ".",
       "The salary vs dividends choice would depend on the marginal rate and " + gP + " contributions."
@@ -680,7 +739,7 @@ function renderExpertReport(
   // Dettes
   if (has("dettes")) {
     secN++;
-    h += secH(secN, t("Impact des dettes", "Debt impact"));
+    h += secH(secN, t("Poids des dettes sur le plan", "Debt weight on the plan"));
     h += card(
       kvr(t("Solde total des dettes", "Total debt balance"), f$(D.debtBal))
       + kvr(t("Co\u00fbt annuel estim\u00e9", "Est. annual cost"), f$(D.debtAnnualCost))
@@ -695,7 +754,7 @@ function renderExpertReport(
   // Decaissement
   if (has("decaissement")) {
     secN++;
-    h += secH(secN, t("S\u00e9quence de d\u00e9caissement", "Withdrawal sequencing"));
+    h += secH(secN, t("S\u00e9quence de d\u00e9caissement", "Withdrawal sequence"));
     h += badgeEstimation();
     h += aiSlot("decaissement", t(
       "Les donn\u00e9es sugg\u00e8rent que l'ordre de d\u00e9caissement des comptes pourrait avoir un impact significatif sur la long\u00e9vit\u00e9 du patrimoine.",
@@ -707,7 +766,7 @@ function renderExpertReport(
   // Stress tests
   if (has("stress_tests")) {
     secN++;
-    h += secH(secN, t("Tests de r\u00e9sistance", "Stress tests"), t("Sc\u00e9narios adverses", "Adverse scenarios"));
+    h += secH(secN, t("R\u00e9action aux chocs de march\u00e9", "Reaction to market shocks"), xpStandfirst("stress_tests"));
     h += badgeScenario();
     const stress = [
       { t2: t("Krach 2008", "2008 Crash"), d2: t("\u221238% actions, reprise 5 ans", "\u221238% equity, 5yr recovery"), delta: -Math.round(D.successPct * 0.10) },
@@ -730,7 +789,7 @@ function renderExpertReport(
   // Assurance
   if (has("assurance")) {
     secN++;
-    h += secH(secN, t("Analyse d'assurance", "Insurance analysis"));
+    h += secH(secN, t("Couverture d'assurance", "Insurance coverage"));
     h += card(
       kvr(t("Prestation d'assurance vie", "Life insurance benefit"), f$(D.lifeInsBenefit))
       + kvr(t("Prime annuelle", "Annual premium"), f$(D.lifeInsPremium * 12))
@@ -742,7 +801,7 @@ function renderExpertReport(
   // RESP
   if (has("resp")) {
     secN++;
-    h += secH(secN, t("R\u00e9gime enregistr\u00e9 d'\u00e9pargne-\u00e9tudes", "Registered Education Savings Plan"));
+    h += secH(secN, t("Financement des \u00e9tudes", "Education funding"));
     h += card(
       kvr(t("Nombre d'enfants", "Number of children"), String(D.respKids || 0))
       + kvr(t("Solde REEE", "RESP balance"), f$(D.respBal))
@@ -756,7 +815,7 @@ function renderExpertReport(
   // Priorites action
   if (has("priorites_action")) {
     secN++;
-    h += secH(secN, t("Leviers identifi\u00e9s", "Identified levers"), t("Observations sur les axes d'am\u00e9lioration possibles", "Observations on possible improvement areas"));
+    h += secH(secN, t("Leviers \u00e0 plus grand impact", "Highest-impact levers"), xpStandfirst("priorites_action"));
     h += aiSlot("priorites_action", t(
       "Les leviers les plus significatifs identifi\u00e9s par l'analyse incluraient l'\u00e2ge de retraite, le taux de retrait et la strat\u00e9gie de d\u00e9caissement.",
       "The most significant levers identified by the analysis would include retirement age, withdrawal rate, and decumulation strategy."
@@ -784,7 +843,7 @@ function renderExpertReport(
   // Comparaison scenarios
   if (has("comparaison_scenarios")) {
     secN++;
-    h += secH(secN, t("Comparaison de sc\u00e9narios", "Scenario comparison"));
+    h += secH(secN, t("Comparaison de trajectoires", "Trajectory comparison"));
     h += badgeScenario();
     h += aiSlot("comparaison_scenarios");
     // Data-driven fallback table when comparisonData is provided (even without AI narration)
@@ -821,7 +880,7 @@ function renderExpertReport(
   // Driver attribution
   if (has("driver_attribution")) {
     secN++;
-    h += secH(secN, t("Attribution des facteurs", "Driver attribution"), t("Pourquoi chaque indicateur se situe \u00e0 ce niveau", "Why each indicator is at this level"));
+    h += secH(secN, t("Facteurs explicatifs du r\u00e9sultat", "Outcome drivers"), t("Pourquoi chaque indicateur se situe \u00e0 ce niveau", "Why each indicator is at this level"));
     h += badgeEstimation();
     h += aiSlot("driver_attribution", t(
       "Le taux de succ\u00e8s de " + D.successPct + "% serait principalement influenc\u00e9 par le taux de retrait ("
@@ -837,7 +896,7 @@ function renderExpertReport(
   // Pour professionnel
   if (has("pour_professionnel")) {
     secN++;
-    h += secH(secN, t("Pour votre professionnel", "For your professional"), t("Param\u00e8tres cl\u00e9s et hypoth\u00e8ses", "Key parameters and assumptions"));
+    h += secH(secN, t("Notes pour votre conseiller", "Notes for your advisor"), t("Param\u00e8tres cl\u00e9s et hypoth\u00e8ses", "Key parameters and assumptions"));
     h += card(
       kvr(t("Simulations", "Simulations"), String(D.nSim || 5000))
       + kvr(t("Rendement esp\u00e9r\u00e9", "Expected return"), (D.expReturn * 100).toFixed(1) + '%')
@@ -854,7 +913,7 @@ function renderExpertReport(
   // Questions fiscaliste
   if (has("questions_fiscaliste")) {
     secN++;
-    h += secH(secN, t("Questions pour votre fiscaliste", "Questions for your tax advisor"));
+    h += secH(secN, t("Points à valider avec votre fiscaliste", "Points to validate with your tax advisor"));
     h += badgeValidate();
     h += aiSlot("questions_fiscaliste", t(
       "1. Quelle serait la strat\u00e9gie optimale de d\u00e9caissement entre le REER et le CELI?\n"

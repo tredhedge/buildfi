@@ -233,7 +233,62 @@ export type ExpertSectionKey =
 export type ExpertAINarration = Partial<Record<ExpertSectionKey, string>>;
 
 /**
+ * Canonical decision-flow order for Expert sections (2026-05-14 IA refactor).
+ *
+ * Section order matters: pre-refactor the array was built in BASE → CONDITIONAL
+ * → EXCLUSIVE order, which pushed conditional sections (stress_tests, dettes,
+ * etc.) AFTER the disclaimers. Worse, topic-grouping ("Tax analysis" → "Levers
+ * identified" → "Observations") buried the actionable synthesis under
+ * appendix-adjacent content.
+ *
+ * The new order walks the reader through a decision flow:
+ *   1. Situation       — where do you stand?
+ *   2. Trajectory      — does the plan hold?
+ *   3. Threats         — what could break it?
+ *   4. Levers          — what moves the needle? (synthesis first, then details)
+ *   5. Scenarios       — which path holds best?
+ *   6. Mechanics       — how was this calculated?
+ *   7. Appendix/legal  — disclosure, change history, meeting prep
+ *
+ * `getActiveExpertSections` builds the set as before, then sorts against this
+ * array. Sections not listed here fall to the end (defensive against typos).
+ */
+export const EXPERT_SECTION_ORDER: ExpertSectionKey[] = [
+  // Situation
+  "sommaire_executif",
+  "revenus_retraite",
+  // Trajectory
+  "projection_patrimoine",
+  "diagnostic_robustesse",
+  // Threats
+  "stress_tests",
+  "dettes",
+  "assurance",
+  // Levers (synthesis → tax → decum → household → corp → real estate → DB → RESP)
+  "priorites_action",
+  "analyse_fiscale",
+  "decaissement",
+  "couple",
+  "corporatif",
+  "remuneration",
+  "immobilier",
+  "pension_db",
+  "resp",
+  // Scenarios
+  "comparaison_scenarios",
+  // Mechanics + appendix
+  "observations_detaillees",
+  "driver_attribution",
+  "pour_professionnel",
+  "questions_fiscaliste",
+  "historique_modifications",
+  "hypotheses_methodo",
+  "disclaimers",
+];
+
+/**
  * Determine which Expert sections are active based on profile.
+ * Output is sorted by EXPERT_SECTION_ORDER (decision-flow IA).
  */
 export function getActiveExpertSections(profile: {
   couple?: boolean;
@@ -248,26 +303,31 @@ export function getActiveExpertSections(profile: {
   hasScenarios?: boolean;
   hasChangelog?: boolean;
 }): ExpertSectionKey[] {
-  const sections: ExpertSectionKey[] = [...EXPERT_SECTIONS_BASE];
+  const set = new Set<ExpertSectionKey>(EXPERT_SECTIONS_BASE);
 
-  if (profile.couple) sections.push("couple");
-  if (profile.homeowner) sections.push("immobilier");
-  if (profile.pensionDB) sections.push("pension_db");
-  if (profile.ccpc) { sections.push("corporatif"); sections.push("remuneration"); }
-  if (profile.hasDebt) sections.push("dettes");
-  if (profile.sophistication !== "rapide") sections.push("decaissement");
-  if (profile.grade && ["C+", "C", "D", "F"].includes(profile.grade)) sections.push("stress_tests");
-  if (profile.hasInsurance) sections.push("assurance");
-  if (profile.hasRESP) sections.push("resp");
+  if (profile.couple) set.add("couple");
+  if (profile.homeowner) set.add("immobilier");
+  if (profile.pensionDB) set.add("pension_db");
+  if (profile.ccpc) { set.add("corporatif"); set.add("remuneration"); }
+  if (profile.hasDebt) set.add("dettes");
+  if (profile.sophistication !== "rapide") set.add("decaissement");
+  if (profile.grade && ["C+", "C", "D", "F"].includes(profile.grade)) set.add("stress_tests");
+  if (profile.hasInsurance) set.add("assurance");
+  if (profile.hasRESP) set.add("resp");
 
   // Exclusive Expert sections
-  if (profile.hasScenarios) sections.push("comparaison_scenarios");
-  sections.push("driver_attribution");
-  sections.push("pour_professionnel");
-  sections.push("questions_fiscaliste");
-  if (profile.hasChangelog) sections.push("historique_modifications");
+  if (profile.hasScenarios) set.add("comparaison_scenarios");
+  set.add("driver_attribution");
+  set.add("pour_professionnel");
+  set.add("questions_fiscaliste");
+  if (profile.hasChangelog) set.add("historique_modifications");
 
-  return sections;
+  // Sort by canonical decision-flow order. Sections outside the canon (would
+  // be a typo) fall to the end so we never lose them silently.
+  const rank = new Map(EXPERT_SECTION_ORDER.map((k, i) => [k, i]));
+  return Array.from(set).sort(
+    (a, b) => (rank.get(a) ?? 999) - (rank.get(b) ?? 999)
+  );
 }
 
 /**

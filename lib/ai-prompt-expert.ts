@@ -49,6 +49,10 @@ export function buildExpertPromptBatches(
 
   // Shared system prompt (compliance + style)
   const sharedSys = "You narrate buildfi.ca Expert reports ($129 tier).\n"
+    + "\n=== DECISION-NARRATIVE FRAMING (2026-05-14 IA refactor) ===\n"
+    + "Each section answers ONE decision question (see per-section defs).\n"
+    + "Lead with the answer — the so-what. Numbers come second, framing third.\n"
+    + "Avoid topic dumps. Every paragraph should advance the reader toward a clearer decision.\n"
     + "\n=== COMPLIANCE (AMF / OSFI) ===\n"
     + "This is an EDUCATIONAL tool, NOT financial advice.\n"
     + "1. Facts from DATA may use present tense.\n"
@@ -108,30 +112,39 @@ export function buildExpertPromptBatches(
   );
 
   const sectionPrompt = (sections: ExpertSectionKey[]): string => {
+    // Each entry: "[DECISION QUESTION] — [content guidance]". The decision
+    // question is what the reader is trying to answer when they reach this
+    // section. The narration should LEAD with the answer (observationally).
     const defs: Record<string, string> = {
-      sommaire_executif: "Executive summary: grade, success rate, 3 key findings. 5-6 sentences.",
-      hypotheses_methodo: "Methodology: MC sims, tax constants, assumptions. 3-4 sentences.",
-      diagnostic_robustesse: "Robustness diagnostic: success rate, percentile bands, ruin risk. 5-6 sentences.",
-      revenus_retraite: "Retirement income breakdown: " + gP + ", " + oN + ", pension, portfolio. 5-6 sentences.",
-      projection_patrimoine: "Wealth projection: fan chart context, real vs nominal, accumulation phase. 5-6 sentences.",
-      analyse_fiscale: "Tax analysis: current vs retirement rates, marginal brackets, optimization. 5-6 sentences.",
-      priorites_action: "Priority levers identified (observational, not prescriptive). 4-5 sentences.",
-      observations_detaillees: "5 detailed observations. Each: number -> implication -> nuance. 8-10 sentences total.",
+      // Situation
+      sommaire_executif: "Decision: where do you stand? — Grade, success rate, top 3 observations. 5-6 sentences.",
+      revenus_retraite: "Decision: what will you live on in retirement? — Income breakdown across " + gP + ", " + oN + ", pension, portfolio. 5-6 sentences.",
+      // Trajectory
+      projection_patrimoine: "Decision: how will your wealth evolve? — Fan chart context, real vs nominal, accumulation phase. 5-6 sentences.",
+      diagnostic_robustesse: "Decision: how robust is the plan? — Success rate, percentile bands, ruin risk. 5-6 sentences.",
+      // Threats
+      stress_tests: "Decision: what would survive a crash? — Worst-case scenarios, recovery paths. 4-5 sentences.",
+      dettes: "Decision: are your debts weighing on the plan? — Mathematical cost, payoff timeline. 3-4 sentences.",
+      assurance: "Decision: are your protections enough? — Coverage adequacy, cost-benefit. 3-4 sentences.",
+      // Levers
+      priorites_action: "Decision: which levers move the needle most? — Synthesis of top observational levers (NOT prescriptive). 4-5 sentences.",
+      analyse_fiscale: "Decision: where is tax costing you most? — Current vs retirement rates, marginal brackets, efficiency margins. 5-6 sentences.",
+      decaissement: "Decision: in what order to withdraw? — Optimal vs meltdown vs TFSA-first comparison. 4-5 sentences.",
+      couple: "Decision: how does the couple optimize income? — Income splitting, survivor impact. 4-5 sentences.",
+      corporatif: "Decision: what about your corp at retirement? — Retained earnings, extraction timeline. 4-5 sentences.",
+      remuneration: "Decision: salary or dividend? — Compensation mix tradeoff. 3-4 sentences.",
+      immobilier: "Decision: how does real estate fit the plan? — Equity, mortgage impact, downsizing math. 4-5 sentences.",
+      pension_db: "Decision: how does your DB pension integrate? — Indexation, bridge strategy. 4-5 sentences.",
+      resp: "Decision: will your kids be funded? — CESG, education funding timeline. 3-4 sentences.",
+      // Scenarios
+      comparaison_scenarios: "Decision: which scenario holds up best? — Variant deltas, key trade-offs. 5-6 sentences.",
+      // Mechanics / appendix
+      observations_detaillees: "Decision: what details deserve attention? — 5 detailed observations. Each: number -> implication -> nuance. 8-10 sentences total.",
+      driver_attribution: "Decision: what drives the outcome? — WHY for each KPI. 5-6 sentences.",
+      pour_professionnel: "Decision: what to bring your advisor? — Key assumptions, parameters. 3-4 sentences.",
+      questions_fiscaliste: "Decision: what to validate with your tax advisor? — 5-7 personalized questions. Brief context per question.",
+      hypotheses_methodo: "Decision: how were these numbers calculated? — MC sims, tax constants, assumptions. 3-4 sentences.",
       disclaimers: "Legal disclaimer paragraph. Educational tool, not financial advice. 3 sentences.",
-      couple: "Household analysis: income splitting, survivor impact. 4-5 sentences.",
-      immobilier: "Real estate analysis: equity, mortgage impact, downsizing. 4-5 sentences.",
-      pension_db: "DB pension analysis: indexation, bridge strategy. 4-5 sentences.",
-      corporatif: "Corporate structure: retained earnings, extraction timeline. 4-5 sentences.",
-      remuneration: "Compensation strategy: salary vs dividends mix. 3-4 sentences.",
-      dettes: "Debt impact: mathematical cost, payoff timeline. 3-4 sentences.",
-      decaissement: "Withdrawal sequencing: optimal vs meltdown vs TFSA-first. 4-5 sentences.",
-      stress_tests: "Stress test results: worst-case scenarios, recovery paths. 4-5 sentences.",
-      assurance: "Insurance analysis: coverage adequacy, cost-benefit. 3-4 sentences.",
-      resp: "RESP analysis: CESG, education funding timeline. 3-4 sentences.",
-      comparaison_scenarios: "Scenario comparison: variant deltas, key trade-offs. 5-6 sentences.",
-      driver_attribution: "Driver attribution: WHY for each KPI. 5-6 sentences.",
-      pour_professionnel: "For your professional: key assumptions, parameters. 3-4 sentences.",
-      questions_fiscaliste: "5-7 personalized questions for tax advisor. Brief context per question.",
       historique_modifications: "Changelog summary: what changed since last assessment. 3-4 sentences.",
     };
 
