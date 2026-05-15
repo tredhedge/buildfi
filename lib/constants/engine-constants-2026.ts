@@ -651,11 +651,15 @@ const ENGINE_CONSTANTS_2026: EngineConstants = {
 
   // ─────────────────────────────────────────────────────────────────────────
   // S14: CAPITAL GAINS
-  // CRA — 2024 Budget inclusion rate changes
+  // Finance Canada — 2024 Budget proposed 66.67% inclusion rate above $250K
+  // was CANCELLED on 2025-03-21. Inclusion rate stays at 50% for all amounts.
+  // LCGE increase to $1.25M (qualified small biz / farming / fishing) was retained.
+  // Source: https://enrichedthinking.scotiawealthmanagement.com/2025/04/07/
+  //         cancellation-of-the-proposed-capital-gains-inclusion-rate-increase/
   // ─────────────────────────────────────────────────────────────────────────
-  CG_THRESHOLD: 250000,                 // first $250K at lower inclusion
-  CG_INCLUSION_LOW: 0.50,               // 50% inclusion below threshold
-  CG_INCLUSION_HIGH: 0.6667,            // 66.67% inclusion above threshold
+  CG_THRESHOLD: 250000,                 // retained as a knob for future legislation; currently inert
+  CG_INCLUSION_LOW: 0.50,               // 50% inclusion (all amounts post-cancellation)
+  CG_INCLUSION_HIGH: 0.50,              // 50% — was 66.67% in cancelled proposal
 
   // ─────────────────────────────────────────────────────────────────────────
   // S15: PENSION SPLITTING

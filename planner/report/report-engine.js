@@ -1709,7 +1709,7 @@ function runMC(p, N, _progressCb) {
           corpCDA += _exemptGain * 0.5 + _taxableGainBiz * (1 - (p.cgIncLo || 0.5));
           // Taxable capital gain added to personal income for this year
           var _bizSaleCGtaxable = _taxableGainBiz > (p.cgThresh || 25e4) * infM ?
-            (p.cgThresh || 25e4) * infM * (p.cgIncLo || 0.5) + (_taxableGainBiz - (p.cgThresh || 25e4) * infM) * (p.cgIncHi || 0.6667) :
+            (p.cgThresh || 25e4) * infM * (p.cgIncLo || 0.5) + (_taxableGainBiz - (p.cgThresh || 25e4) * infM) * (p.cgIncHi || 0.5) :
             _taxableGainBiz * (p.cgIncLo || 0.5);
           // Add sale proceeds to corp balance
           corpBal += (p.bizSalePrice || 0) * infM;
@@ -1733,7 +1733,7 @@ function runMC(p, N, _progressCb) {
           var _pepmTaxable = 0;
           if (_pepmGain > 0) {
             var _cgThr = (p.cgThresh || 25e4) * infM;
-            _pepmTaxable = _pepmGain > _cgThr ? _cgThr * (p.cgIncLo || 0.5) + (_pepmGain - _cgThr) * (p.cgIncHi || 0.6667) : _pepmGain * (p.cgIncLo || 0.5);
+            _pepmTaxable = _pepmGain > _cgThr ? _cgThr * (p.cgIncLo || 0.5) + (_pepmGain - _cgThr) * (p.cgIncHi || 0.5) : _pepmGain * (p.cgIncLo || 0.5);
           }
           _tiOther = (ptInc || 0) + (liraWith || 0) + (_ippWith || 0) + _pepmTaxable;
           if (p.cOn && cAlive) {
@@ -1756,7 +1756,7 @@ function runMC(p, N, _progressCb) {
           var _nrGainPct = (nr + _wFromNR) > 0 && nrACB < (nr + _wFromNR) ? 1 - nrACB / (nr + _wFromNR) : 0;
           var _nrTaxableGain = _wFromNR * _nrGainPct;
           var _cgThr3 = (p.cgThresh || 25e4) * infM;
-          var _nrIncl = _nrTaxableGain > _cgThr3 ? _cgThr3 * (p.cgIncLo || 0.5) + (_nrTaxableGain - _cgThr3) * (p.cgIncHi || 0.6667) : _nrTaxableGain * (p.cgIncLo || 0.5);
+          var _nrIncl = _nrTaxableGain > _cgThr3 ? _cgThr3 * (p.cgIncLo || 0.5) + (_nrTaxableGain - _cgThr3) * (p.cgIncHi || 0.5) : _nrTaxableGain * (p.cgIncLo || 0.5);
           taxableInc = _tiQpp + _tiOas + _tiPen + _tiRrif + _tiMelt + _tiDraw + _tiRe + _tiOther + _nrIncl;
         } else {
           taxableInc = p.sal * infM;
@@ -1841,7 +1841,7 @@ function runMC(p, N, _progressCb) {
           var _simNrGainPct = 1 - nrACB / (nr + _wFromNR);
           var _simNrGain = _wFromNR * _simNrGainPct;
           var _simCgThr = (p.cgThresh || 25e4) * infM;
-          _simTaxInc1 += _simNrGain > _simCgThr ? _simCgThr * (p.cgIncLo || 0.5) + (_simNrGain - _simCgThr) * (p.cgIncHi || 0.6667) : _simNrGain * (p.cgIncLo || 0.5);
+          _simTaxInc1 += _simNrGain > _simCgThr ? _simCgThr * (p.cgIncLo || 0.5) + (_simNrGain - _simCgThr) * (p.cgIncHi || 0.5) : _simNrGain * (p.cgIncLo || 0.5);
         }
         var _simTaxInc2 = 0;
         if (p.cOn && cAlive) {
@@ -1878,7 +1878,7 @@ function runMC(p, N, _progressCb) {
     var acb = nrACB;
     var capGain = Math.max(0, nrAtDeath - acb);
     var cgThresh2 = (p.cgThresh || 25e4) * Math.pow(1 + p.inf, maxYrs);
-    var cgLo2 = p.cgIncLo || 0.5, cgHi2 = p.cgIncHi || 0.6667;
+    var cgLo2 = p.cgIncLo || 0.5, cgHi2 = p.cgIncHi || 0.5;
     var taxableGain = capGain > cgThresh2 ? cgThresh2 * cgLo2 + (capGain - cgThresh2) * cgHi2 : capGain * cgLo2;
     var finalYrPension = fP.rr > 0 ? getRRIFMin(simDeath, fP.rr) : 0;
     var pRrsp = p.cOn ? (fP.rr + (fP.lira || 0) + (fP.dc || 0) + (fP.dc2 || 0)) : rrspAtDeath + (fP.dc || 0) + (fP.dc2 || 0);
@@ -1891,7 +1891,7 @@ function runMC(p, N, _progressCb) {
           var propVal = (rp.v || 0) > 0 ? rp.v : rp.origV * Math.pow(1 + (rp.ri || 0.03), maxYrs);
           var propCG = Math.max(0, propVal - rp.origV);
           var cgThr4 = (p.cgThresh || 25e4) * Math.pow(1 + p.inf, maxYrs);
-          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || 0.5) + (propCG - cgThr4) * (p.cgIncHi || 0.6667) : propCG * (p.cgIncLo || 0.5);
+          reDeathCG += propCG > cgThr4 ? cgThr4 * (p.cgIncLo || 0.5) + (propCG - cgThr4) * (p.cgIncHi || 0.5) : propCG * (p.cgIncLo || 0.5);
         }
       });
     }
