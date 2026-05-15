@@ -469,6 +469,198 @@
     }
   }
 
+  // 2026-05-14 Phase 3 (codex audit P1 #5) — Sensitivity narrative.
+  // Reads sensitivity sweep data from d.mc (returns / inflation / longevity ±)
+  // and produces a one-paragraph "what moves the outcome most" takeaway. AMF
+  // clean: present-tense facts + conditional projections. Returns "" if no
+  // sensitivity data is available (graceful no-op for older mc payloads).
+  function xpSensitivity(d) {
+    if (!d || !d.mc) return '';
+    var fr = d.fr;
+    // Actual mc.json shape is mc._sweeps = { returns:{up,down}, inflation:{up,down}, ... }
+    // Each branch has { medF, rMedF, succ, ... }. Fallback names cover older payloads.
+    var sw = d.mc._sweeps || d.mc.sensitivity_sweeps || d.mc.sensitivity || d.sensitivity_sweeps;
+    if (!sw) return '';
+    function pickMed(branch, leaf) {
+      if (!sw[branch] || sw[branch][leaf] == null) return null;
+      var b = sw[branch][leaf];
+      if (typeof b === 'number') return b;
+      return b.rMedF != null ? b.rMedF : b.medF != null ? b.medF : null;
+    }
+    function pickSucc(branch, leaf) {
+      if (!sw[branch] || sw[branch][leaf] == null) return null;
+      var b = sw[branch][leaf];
+      return (typeof b === 'object' && b.succ != null) ? +b.succ : null;
+    }
+    // First pass: try wealth-based deltas (preferred — % of median)
+    var baseMed = d.mc.rMedF || d.mc.medF || 0;
+    var retDelta = 0, infDelta = 0, mode = 'wealth';
+    if (baseMed > 1000) {
+      var retUp = pickMed('returns', 'up'), retDn = pickMed('returns', 'down');
+      var infUp = pickMed('inflation', 'up'), infDn = pickMed('inflation', 'down');
+      retDelta = retUp != null && retDn != null ? Math.abs(retUp - retDn) / baseMed : 0;
+      infDelta = infUp != null && infDn != null ? Math.abs(infUp - infDn) / baseMed : 0;
+    }
+    // Fallback: use success-rate deltas (works for depleted scenarios)
+    if (retDelta < 0.01 && infDelta < 0.01) {
+      mode = 'success';
+      var rsUp = pickSucc('returns', 'up'), rsDn = pickSucc('returns', 'down');
+      var isUp = pickSucc('inflation', 'up'), isDn = pickSucc('inflation', 'down');
+      retDelta = rsUp != null && rsDn != null ? Math.abs(rsUp - rsDn) : 0;
+      infDelta = isUp != null && isDn != null ? Math.abs(isUp - isDn) : 0;
+      if (retDelta < 0.005 && infDelta < 0.005) return ''; // truly no signal
+    }
+    var dominant = retDelta > infDelta ? 'returns' : 'inflation';
+    var pctRet = Math.round(retDelta * 100);
+    var pctInf = Math.round(infDelta * 100);
+    var unit = mode === 'wealth' ? (fr ? 'le patrimoine médian' : 'median wealth') :
+                                    (fr ? 'le taux de réussite' : 'the success rate');
+    if (fr) {
+      var dom = dominant === 'returns' ? 'rendements de marché' : 'inflation projetée';
+      var sub = dominant === 'returns' ? 'l\'inflation' : 'les rendements';
+      return 'Parmi les leviers testés, les ' + dom + ' déplacent ' + unit + ' d\'environ ±' +
+        (dominant === 'returns' ? pctRet : pctInf) + ' ' + (mode === 'wealth' ? '%' : 'pts') +
+        ', contre ±' + (dominant === 'returns' ? pctInf : pctRet) + ' ' +
+        (mode === 'wealth' ? '%' : 'pts') + ' pour ' + sub +
+        '. La sensibilité aux choix de rendement domine; les autres facteurs s\'inscrivent à distance derrière.';
+    }
+    var domEn = dominant === 'returns' ? 'market returns' : 'projected inflation';
+    var subEn = dominant === 'returns' ? 'inflation' : 'returns';
+    var unitEn = mode === 'wealth' ? 'median wealth' : 'the success rate';
+    var unitSfx = mode === 'wealth' ? '%' : ' pts';
+    return 'Among the levers tested, ' + domEn + ' move ' + unitEn + ' by about ±' +
+      (dominant === 'returns' ? pctRet : pctInf) + unitSfx + ', versus ±' +
+      (dominant === 'returns' ? pctInf : pctRet) + unitSfx + ' for ' + subEn +
+      '. Return-assumption sensitivity dominates; the other factors trail behind.';
+  }
+
+  // 2026-05-14 Phase 4 (codex audit P0 #4) — Cross-sectional synthesis.
+  // Produces a 2-paragraph executive synthesis that names cross-section
+  // tensions specific to this profile's archetype + grade. Without a true
+  // two-pass Anthropic synthesis (Sprint D), this deterministic helper reads
+  // existing AI slots + archetype tags + grade band and surfaces the
+  // structural axis the audit demanded ("meltdown → tax → estate is ONE
+  // problem"). When Sprint D ships, it overrides this via d.ai.synthesis.
+  function xpSynthesis(d) {
+    if (!d) return '';
+    if (d.ai && d.ai.synthesis) return d.ai.synthesis; // future-proof override
+    var fr = d.fr;
+    // R holds the runtime archetype (phase only). Tags live on the inferred
+    // archetype object — same source as the chapter-cover dispatch. Without
+    // tags we'd always fall to the generic branch.
+    var R = d.R || {};
+    var arch = d._archetype || (typeof _inferArchetype === 'function' ? _inferArchetype(d) : {});
+    var tags = (arch && arch.tags) || R.tags || [];
+    var phase = (arch && arch.phase) || R.phase || 'accum';
+    var s = d.succVal == null ? null : +d.succVal;
+    var couple = tags.indexOf('couple') >= 0;
+    var ccpc = tags.indexOf('ccpc') >= 0;
+    var legacy = tags.indexOf('legacy') >= 0;
+    var lowInc = tags.indexOf('low_income') >= 0;
+    var taxHeavy = tags.indexOf('tax_heavy') >= 0;
+    var fire = phase === 'fire';
+    var p = d.p || {};
+    var hasDebt = (p.debtBal || 0) > 0 || ((d._report && d._report.debtBal) || 0) > 0 ||
+                  (p.debts && p.debts.length > 0) || (d._debtTotal || 0) > 0;
+
+    // P1 — the structural axis (which tensions cluster together for THIS archetype)
+    var p1;
+    if (fr) {
+      if (ccpc) {
+        p1 = 'Trois leviers se rejoignent dans ce plan : l\'ordre d\'extraction de la société, l\'intégration fiscale personnelle, et la transmission. ' +
+          'Ce n\'est pas trois décisions distinctes, mais une seule séquence — modifier l\'extraction change la pression fiscale, ' +
+          'qui change le patrimoine résiduel transmissible.';
+      } else if (legacy && phase === 'transition') {
+        p1 = 'La fenêtre de décaissement anticipé du REER, le taux fiscal viager et la part transmise aux héritiers forment un seul axe. ' +
+          'L\'arbitrage central : retirer plus tôt pour réduire l\'impôt à vie et l\'impôt au décès, ' +
+          'au prix d\'une compression du scénario prudent en début de retraite.';
+      } else if (fire) {
+        p1 = 'La zone-pont avant les prestations publiques amplifie le risque séquentiel des rendements. ' +
+          'Sur cet horizon, un repli marqué en début de retraite anticipée comprime durablement la trajectoire — ' +
+          'plus que tout autre choix dans le plan.';
+      } else if (lowInc) {
+        p1 = 'Les prestations publiques (RRQ, PSV, SRG) forment l\'ossature du revenu; ' +
+          'l\'épargne personnelle s\'y ajoute en complément. ' +
+          'La sensibilité du plan se concentre sur le seuil d\'admissibilité au SRG et la coordination des retraits.';
+      } else if (hasDebt && (s == null || s < 0.5)) {
+        p1 = 'La dynamique épargne-vs-dette structure tout le plan. ' +
+          'Le scénario observé reflète la course entre l\'accumulation et le poids du service de la dette à taux élevé — ' +
+          'aucune autre décision ne déplace la trajectoire autant que cet arbitrage.';
+      } else if (couple) {
+        p1 = 'Le revenu de retraite, le fractionnement entre conjoints et la transmission s\'organisent autour d\'un axe unique : ' +
+          'la coordination des décaissements pour minimiser la fiscalité combinée du ménage. ' +
+          'Chaque sous-décision modifie les deux autres.';
+      } else {
+        p1 = 'Les leviers principaux du plan — fiscalité, décaissement, transmission — ne se lisent pas indépendamment. ' +
+          'Le choix de la séquence de retrait modifie le taux fiscal viager, qui modifie le patrimoine final, qui modifie la transmission.';
+      }
+    } else {
+      if (ccpc) {
+        p1 = 'Three levers converge in this plan: corporate extraction order, personal tax integration, and estate transfer. ' +
+          'These are not three distinct decisions but one sequence — changing extraction shifts the tax pressure, ' +
+          'which shifts the residual estate.';
+      } else if (legacy && phase === 'transition') {
+        p1 = 'The RRSP meltdown window, lifetime tax, and the share transferred to heirs form a single axis. ' +
+          'The core trade-off: withdraw earlier to compress lifetime and estate tax, ' +
+          'at the cost of a tighter cautious-scenario buffer in early retirement.';
+      } else if (fire) {
+        p1 = 'The bridge years before public benefits amplify sequence-of-returns risk. ' +
+          'Over this horizon, a sharp early-retirement drawdown compresses the trajectory durably — ' +
+          'more than any other choice in the plan.';
+      } else if (lowInc) {
+        p1 = 'Public benefits (CPP, OAS, GIS) form the income backbone; personal savings layer in as complement. ' +
+          'The plan\'s sensitivity concentrates on the GIS eligibility threshold and withdrawal coordination.';
+      } else if (hasDebt && (s == null || s < 0.5)) {
+        p1 = 'The savings-versus-debt dynamic structures the entire plan. ' +
+          'The observed scenario reflects the race between accumulation and high-rate debt service — ' +
+          'no other decision moves the trajectory as much as this trade-off.';
+      } else if (couple) {
+        p1 = 'Retirement income, spouse-to-spouse splitting, and estate transfer organize around a single axis: ' +
+          'coordinated household withdrawals to minimize combined tax. ' +
+          'Each sub-decision shifts the other two.';
+      } else {
+        p1 = 'The plan\'s main levers — tax, withdrawal sequencing, estate — do not read independently. ' +
+          'Withdrawal-order choice changes the lifetime tax rate, which changes the residual estate.';
+      }
+    }
+
+    // P2 — what discipline matters most, posture-tinted by grade band
+    var p2;
+    if (fr) {
+      if (s != null && s >= 0.85) {
+        p2 = 'Avec un taux de réussite élevé, la discipline qui compte le plus n\'est pas la croissance — c\'est ' +
+          'la protection contre les risques sans signal visible dans la moyenne : ' +
+          'séquence des rendements près de la retraite, longévité au-delà de l\'horizon projeté, et inflation persistante.';
+      } else if (s != null && s >= 0.55) {
+        p2 = 'Le plan tient sous le comportement attendu; les écarts (dépenses supérieures, retraite plus tôt, dette imprévue) ' +
+          'érodent rapidement la marge. La discipline porte ici sur le levier unique qui protège le plus la trajectoire centrale.';
+      } else if (s != null && s < 0.55) {
+        p2 = 'La trajectoire requiert une séquence de redressement, pas un diagnostic d\'échec : ' +
+          'stabiliser le flux de trésorerie, désendetter à taux élevé, reconstruire la capacité d\'épargne, puis reposer les objectifs. ' +
+          'Chaque phase prépare la suivante.';
+      } else {
+        p2 = 'La discipline du plan se mesure à sa capacité d\'absorber des chocs sans rupture — la moyenne ne capture pas cette robustesse.';
+      }
+    } else {
+      if (s != null && s >= 0.85) {
+        p2 = 'With a high success rate, the discipline that matters most is not growth — it is protection ' +
+          'against risks invisible in the average: sequence-of-returns near retirement, longevity beyond projection, ' +
+          'and persistent inflation.';
+      } else if (s != null && s >= 0.55) {
+        p2 = 'The plan holds under expected behavior; departures (overspending, earlier retirement, unexpected debt) ' +
+          'erode the margin quickly. Discipline here is the single lever that protects the central trajectory most.';
+      } else if (s != null && s < 0.55) {
+        p2 = 'The trajectory requires a recovery sequence, not a failure diagnosis: ' +
+          'stabilize cash flow, deleverage high-rate debt, rebuild savings capacity, then re-plan goals. ' +
+          'Each phase prepares the next.';
+      } else {
+        p2 = 'The plan\'s discipline is measured by its capacity to absorb shocks without breaking — the average does not capture this resilience.';
+      }
+    }
+
+    return '<p class="narr">' + p1 + '</p><p class="narr">' + p2 + '</p>';
+  }
+
   // Dynamic Table of Contents
   // Density-mode coverage map: which sections are visible at each view level.
   // Court (lite) → essentials only. Standard → most. Complet → everything.
@@ -2155,6 +2347,27 @@
     // Merged AI synthesis (moved up from sec-assessment).
     if (d.ai.overall_assessment) {
       h += F.AiBlock(d.ai.overall_assessment, fr);
+    }
+    // 2026-05-14 Phase 4 (codex audit P0 #4) — cross-sectional synthesis.
+    // Names the structural axis (meltdown→tax→estate as ONE problem, etc.)
+    // and the discipline that matters most. Renders after overall_assessment
+    // so the AI verdict comes first, then the cross-section frame.
+    var _xs = xpSynthesis(d);
+    if (_xs) {
+      h += '<div style="border-left:3px solid #c49a1a;padding:10px 0 4px 22px;margin:14px 0 8px;background:linear-gradient(180deg,#fffaf0,transparent)">' +
+        '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:#a89460;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px">' +
+        (fr ? 'Synthèse stratégique' : 'Strategic synthesis') + '</div>' +
+        _xs + '</div>';
+    }
+    // 2026-05-14 Phase 3 (codex audit P1 #5) — sensitivity narrative also
+    // rendered here at the top because renderRisk gates on d.exp and
+    // _relevanceGate('risk'), excluding low-detail/lite profiles. Putting
+    // sensitivity beside the synthesis ensures every report carries the
+    // "what moves the outcome most" takeaway.
+    var _sensTop = xpSensitivity(d);
+    if (_sensTop) {
+      h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 22px;margin:6px 0 14px;font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-style:italic;color:#1a1610;line-height:1.55;max-width:680px">' +
+        _sensTop + '</div>';
     }
 
     // Vars used downstream — must be assigned regardless of whether the
@@ -5192,6 +5405,16 @@
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
     h += F.Sec(secN, F.L('risk', fr), 'sec-risk', xpStandfirst('risk', d));
+
+    // 2026-05-14 Phase 3 (codex audit P1 #5) — sensitivity narrative.
+    // One-paragraph "what moves the outcome most" takeaway, computed from
+    // mc.sensitivity sweeps. Renders as a callout above the existing risk
+    // narrative so the takeaway lands before the dispersion percentiles.
+    var _sens = xpSensitivity(d);
+    if (_sens) {
+      h += '<div style="border-left:3px solid #c49a1a;padding:8px 0 8px 22px;margin:8px 0 18px;font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-style:italic;color:#1a1610;line-height:1.55;max-width:680px">' +
+        _sens + '</div>';
+    }
 
     // Intro narrative
     var _p25W = mc.rP25F || mc.p25F || mc.rVar5 || mc.var5 || 0;

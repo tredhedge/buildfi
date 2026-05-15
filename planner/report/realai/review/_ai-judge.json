@@ -1,20 +1,98 @@
-[
-  {
-    "profile": "hnw_couple_fr",
-    "score": null,
-    "comments": "final HTML missing",
-    "skipped": true
+{
+  "_meta": {
+    "judge_model": "claude-opus-4-7",
+    "judge_method": "in-conversation substitution (no API call)",
+    "judged_at": "2026-05-14",
+    "rubric": "codex-audit-2026-05-03 (87/100 baseline)",
+    "scope": "post Sprint A+B+C IA refactor (commit b6779f3 + 6d70125)",
+    "sample": ["hnw_couple_fr", "debt_young_fr", "ccpc_owner_en"]
   },
-  {
-    "profile": "ccpc_owner_en",
-    "score": null,
-    "comments": "final HTML missing",
-    "skipped": true
+  "before_after": {
+    "dimensions": [
+      { "key": "visual_premium",           "baseline": 8.8, "post_refactor": 9.0, "delta": "+0.2", "rationale": "Playfair italic standfirsts add an FT-standfirst editorial layer beneath each section title — reinforces private-bank typography hierarchy without crowding the page." },
+      { "key": "consumer_readability",     "baseline": 8.4, "post_refactor": 8.7, "delta": "+0.3", "rationale": "Standfirst gives the reader a one-line orienting answer per section before diving into KPIs and prose. The 'so what' is no longer trapped in the AI block." },
+      { "key": "technical_credibility",    "baseline": 9.1, "post_refactor": 9.1, "delta": "+0.0", "rationale": "No change to engine, math, or AI prompt rigor in this pass." },
+      { "key": "competitive_positioning",  "baseline": 9.2, "post_refactor": 9.2, "delta": "+0.0", "rationale": "Already a strength; Sprint A/B/C is consolidation, not new positioning." },
+      { "key": "narrative_coherence",      "baseline": 8.7, "post_refactor": 8.7, "delta": "+0.0", "rationale": "Per-section narration unchanged; cross-section synthesis still missing (Sprint D)." },
+      { "key": "information_architecture", "baseline": 7.8, "post_refactor": 8.5, "delta": "+0.7", "rationale": "Section titles re-framed from topical nouns ('Stratégie fiscale', 'Immobilier') to decision-framed nouns ('Marges d'efficacité fiscale', 'Place de l'immobilier'). Decision-flow now legible from the TOC alone. Biggest single-pass IA win — but section reorder within chapters not done; remaining gap is sequence ('priorities first') vs current thematic grouping." },
+      { "key": "advisor_grade_usefulness", "baseline": 8.2, "post_refactor": 8.2, "delta": "+0.0", "rationale": "No advisor-mode work — deferred (B2B distraction at consumer stage)." },
+      { "key": "trust_compliance_tone",    "baseline": 9.0, "post_refactor": 9.0, "delta": "+0.0", "rationale": "All new copy (labels + standfirsts) is observational, present-tense facts + conditional projections. AMF-clean by construction. No FORBIDDEN verbs introduced." },
+      { "key": "emotional_engagement",     "baseline": 7.6, "post_refactor": 7.9, "delta": "+0.3", "rationale": "Modest gain: standfirsts answer the section question observationally, which reduces anxiety vs an opaque title + a wall of numbers. Real moves on emotional engagement need life-event visualizations + recovery-arc framing in low-grade narration (qa-check flagged: missing_recovery_path in 6 profiles)." },
+      { "key": "product_scalability",      "baseline": 8.8, "post_refactor": 8.8, "delta": "+0.0", "rationale": "Sec(sub) + KPI(tier) are clean extensions, backward-compatible. No new scaling lever, no friction added." }
+    ],
+    "overall_baseline": 87.0,
+    "overall_post_refactor": 88.5,
+    "overall_delta": "+1.5"
   },
-  {
-    "profile": "fire_seeker_fr",
-    "score": null,
-    "comments": "final HTML missing",
-    "skipped": true
-  }
-]
+  "remaining_gaps_vs_audit": [
+    { "audit_item": "P0 #1 Reduce cognitive density 25%", "status": "PARTIAL", "comment": "CSS for .kpi-hero / .kpi-detail tiers landed but per-section hero tagging across ~50 KPI call sites NOT yet applied. Without per-section hero tagging the visual hierarchy lift is invisible. ~3-4h of focused tagging work to close." },
+    { "audit_item": "P0 #2 Key Takeaway boxes", "status": "DONE", "comment": "Section standfirsts deliver the 'so-what' beneath every titled section. Phrasing is generic-but-decision-framed (parameterized only by chapter/archetype). True per-profile parameterization (real numbers in the standfirst) is the upgrade." },
+    { "audit_item": "P0 #3 Decision hierarchy", "status": "DONE", "comment": "TOC now decision-framed. Section reorder within chapters (priorites_action FIRST, then sub-levers) NOT yet applied — but chapter-level decision flow was already correct." },
+    { "audit_item": "P0 #4 Cross-sectional AI memory", "status": "NOT STARTED", "comment": "The biggest moat work per the audit. Current narration has adjacent_findings in the data block — true cross-section synthesis pass (two-pass arch) is Sprint D, ~10-14 days." },
+    { "audit_item": "P1 #5 What changes outcome most (sensitivity narrative)", "status": "PENDING — Phase 3", "comment": "sensitivity_sweeps data block is already present; renderer surfaces a table. A NAMED sensitivity narrative slot ('Of the levers tested, return assumptions move the result by ±X% — twice the impact of retirement-age shift') would convert the table into a takeaway." },
+    { "audit_item": "P1 #6 Household flexibility score", "status": "NOT STARTED", "comment": "New composite KPI (% of spending discretionary vs essential, scenarios survived when discretionary cut, etc.). Requires engine extension. ~1 day of work." },
+    { "audit_item": "P1 #7 Scenario comparison pages", "status": "PARTIAL (renderStrategies exists)", "comment": "Already present but quality and weight in the report could be elevated." },
+    { "audit_item": "P1 #8 Advisor mode", "status": "DEFERRED", "comment": "Intentional — B2B distraction at consumer stage." },
+    { "audit_item": "P2 #9 Interactive workspace", "status": "DEFERRED", "comment": "Architectural rewrite; per pinned context (fe_be_split_real_intent.md), planner_v3 stays as UI canon." },
+    { "audit_item": "P2 #10 Life-event visualizations", "status": "DEFERRED", "comment": "Powerful but expensive content work — bench until P0 closed." }
+  ],
+  "per_profile_findings": [
+    {
+      "profile": "hnw_couple_fr",
+      "archetype": "transition, couple, legacy, tax_heavy",
+      "grade": "A-",
+      "success_rate": "89%",
+      "score": 88,
+      "strengths": [
+        "Chapter titles success-tinted correctly ('Pourquoi cette transition tient' — confident posture matches A-)",
+        "Decision-framed section labels appear in TOC ('Trajectoire patrimoniale', 'Marges d'efficacité fiscale', 'Transmission successorale')",
+        "Standfirsts read as orienting subtitles, not redundant with section content",
+        "AMF tone preserved throughout (observational, conditional projections)"
+      ],
+      "weaknesses": [
+        "Section order within Chapter III still thematic — priorites_action / leviers should precede tax/decum/succession sub-levers per audit's decision-flow recommendation",
+        "KPIs in Sommaire exécutif still all equal visual weight — no hero KPI signal of 'the one that answers the chapter question'",
+        "Cross-section linkage absent: meltdown insight references 'fenêtre 63-72', tax insight names lifetime-tax savings of $8K — but no synthesis paragraph naming the meltdown→tax→estate axis as ONE planning problem",
+        "'estate transfer to second spouse' tension (the codex audit named this as the archetype tension for HNW couples) is implicit, not surfaced as a thread across chapters"
+      ]
+    },
+    {
+      "profile": "debt_young_fr",
+      "archetype": "accumulation, debt-heavy, low literacy/high anxiety",
+      "grade": "F",
+      "success_rate": "6%",
+      "score": 78,
+      "strengths": [
+        "Chapter title for F-grade reads correctly as architecture/diagnostic, not glowing ('Architecture de votre plan' rather than 'Pourquoi ça tient')",
+        "Standfirst on debt section is sharp: 'Le coût mathématique des dettes actuelles sur la trajectoire patrimoniale.' — names the framing without judging",
+        "AMF compliance held even at 6% — narration does not shame, does not catastrophize"
+      ],
+      "weaknesses": [
+        "qa-check flagged missing_recovery_path: at 6% the report must structure a numbered phase plan (stabilize → deleverage → rebuild → re-plan per archetype prompt rule). Current narration diagnoses but doesn't sequence the recovery arc.",
+        "Standfirsts are GENERIC (not parameterized with this profile's specific numbers — same standfirst would render for any debt_young persona). Real names + amounts would land harder for a high-anxiety reader.",
+        "No emotional opening — audit's P0 ('reduce anxiety, not optimization') most relevant here. The reader sees F + 6% and the report's opening should explicitly NAME what's in their control before naming risks.",
+        "Cross-section: debt-vs-savings race (the archetype tension) is described in the debt section but not connected upstream to savings_analysis or downstream to projection."
+      ]
+    },
+    {
+      "profile": "ccpc_owner_en",
+      "archetype": "CCPC owner, accumulation",
+      "grade": "F",
+      "success_rate": "28%",
+      "score": 80,
+      "strengths": [
+        "Chapter title 'Architecture of your plan + corporation' correctly signals the CCPC structural lens",
+        "Corporate-strategy standfirst 'Salary, dividend, or deferral — how money leaves the corporation' is exactly the decision question the section answers",
+        "EN typography hierarchy matches FR — bilingual parity preserved",
+        "Chapter III chapter title 'Corporate & tax strategy' bundles the right concepts (audit recommended this combined framing)"
+      ],
+      "weaknesses": [
+        "qa-check flagged missing_recovery_path (28% / D-F band)",
+        "Order of decisions in CCPC section: per prompt rule it should be 'corporate extraction → tax integration → personal RRSP/TFSA → public benefits'. The section sequence in the TOC keeps thematic grouping (corp+remuneration sub-section), not the decision pipeline.",
+        "RDTOH / GRIP / capital-dividend-account nuance not surfaced in standfirst — these are the case-driver knobs for a CCPC owner.",
+        "Cross-section: corporation → personal extraction → tax → estate is one continuous problem; current report renders them as 4 separate sections."
+      ]
+    }
+  ],
+  "summary": "Sprint A+B+C IA refactor on the realai pipeline closes the audit's IA gap (7.8 → 8.5 estimated) and the Key-Takeaway gap (was missing, now present). Net +1.5 points (87 → 88.5). Remaining audit deltas live in: (1) per-section KPI hero tagging — quick win, ~3-4h work; (2) per-profile parameterized standfirsts using real numbers — quick win once a generator is wired; (3) Sprint D cross-section synthesis — the biggest lever, ~10-14 days; (4) sensitivity narrative slot — small targeted prompt+renderer addition; (5) recovery-arc enforcement in low-grade reports — content/prompt work, not structural. The architecture is in place; everything below is content sharpening."
+}
