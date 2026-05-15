@@ -1894,8 +1894,14 @@
   //   Spacing:    120px top padding, 70px bottom — strong reset without
   //               feeling ceremonial. Forced page break retained so the
   //               cover sits alone on its page.
-  function _renderChapterCover(num, title, frame, fr) {
+  function _renderChapterCover(num, title, frame, fr, eyebrowOverride) {
+    // 2026-05-15: eyebrowOverride lets the appendix render its eyebrow as
+    // "Annexe / Appendix" instead of "Chapitre N", aligning with the
+    // intro "How to read" which lists 4 numbered chapters + Annexe/Appendix.
+    // Without this override, the appendix shows up as "Chapter V" in body
+    // but as "Appendix" in intro/TOC — same artifact, two names.
     var roman = ['', 'I', 'II', 'III', 'IV', 'V', 'VI'][num] || String(num);
+    var eyebrowLabel = eyebrowOverride || ((fr ? 'Chapitre ' : 'Chapter ') + roman);
     // CSS uses SINGLE-quoted family names so the surrounding HTML
     // double-quoted style attribute stays well-formed. The previous
     // version escaped JS double-quotes inside the attribute (\\"), which
@@ -1906,7 +1912,7 @@
     // that the chapter title needs to read emphatic, not refined.
     return '<div class="bf-chapter-cover" style="page-break-before:always;break-before:page;padding:110px 24px 70px;text-align:center">' +
       '<div class="bf-chapter-eyebrow" style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;letter-spacing:5px;color:#a89460;text-transform:uppercase;margin-bottom:24px">' +
-        F.esc((fr ? 'Chapitre ' : 'Chapter ') + roman) +
+        F.esc(eyebrowLabel) +
       '</div>' +
       '<div class="bf-chapter-rule" style="width:56px;height:2px;background:#c49a1a;margin:0 auto 28px"></div>' +
       '<div class="bf-chapter-title" style="font-family:\'Playfair Display\',Georgia,serif;font-size:54px;font-weight:700;color:#0f0d09;line-height:1.08;letter-spacing:-0.8px;margin:0 auto 24px;max-width:760px">' +
@@ -7354,7 +7360,12 @@ h += secPageEnd();
     // (plain non-deep readers omit it entirely → no orphan cover).
     if (_showBackMatter) {
       var _ch6 = _chapterCopy(6, d.fr, _arch, d.succVal);
-      h += _renderChapterCover(6, _ch6.title, _ch6.frame, d.fr);
+      // 2026-05-15 fix: was _renderChapterCover(6, ...) which rendered the
+      // appendix eyebrow as "Chapter VI" — there's no chapter V (only 4
+      // numbered chapters + appendix). Pass the appendix label as
+      // eyebrowOverride so the eyebrow reads "Annexe / Appendix",
+      // matching the "How to read" intro list and the TOC.
+      h += _renderChapterCover(5, _ch6.title, _ch6.frame, d.fr, d.fr ? 'Annexe' : 'Appendix');
       secN++;
       var _methHtml = renderMethodology(d, secN);
       secN++;

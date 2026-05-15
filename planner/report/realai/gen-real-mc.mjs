@@ -68,9 +68,37 @@ function compactMC(mc) {
   };
 }
 
+// 2026-05-15 — translate profile-shape rentals[] into engine-shape props[].
+//   Engine reads p.props (each {on, pri, val, mb, ri}); the realai profiles
+//   carry params.rentals (each {name, value, mortgage, rate, rentMonthly,
+//   expenseMonthly}). Pre-fix, the rentals were silently dropped: engine
+//   saw no props → reM=0/reEqM=0/reMtgM=0 → the rental narrative in cached
+//   AI prose described properties the engine had no record of (visible in
+//   rental_heavy_couple_fr where prose discusses "plex et condo" but
+//   engine output had reM=0 across all years).
+//   Mapping: pr.val = r.value; pr.mb = r.mortgage; pr.ri = annual rent
+//   yield (rentMonthly*12 / value), default 0.035 if missing; pr.on=true;
+//   pr.pri=false (rentals are never primary residence).
+function rentalsToProps(rentals) {
+  if (!Array.isArray(rentals)) return null;
+  return rentals.map(r => ({
+    on: true,
+    pri: false,
+    val: r.value || 0,
+    mb: r.mortgage || 0,
+    ri: (r.rentMonthly && r.value) ? (r.rentMonthly * 12 / r.value) : 0.035
+  }));
+}
+
 // Run baseline MC for a profile, with all enrichments.
 async function runProfile(prof) {
-  const base = prof.params;
+  // Apply rentals → props translation up front so every downstream MC
+  // (baseline, naive, sweeps, stress) sees the same property set.
+  const base = Object.assign({}, prof.params);
+  if (!base.props || !base.props.length) {
+    const props = rentalsToProps(base.rentals);
+    if (props && props.length) base.props = props;
+  }
   const nSim = prof.nSim || 2000;
   const t0 = Date.now();
 
