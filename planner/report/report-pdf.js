@@ -47,6 +47,10 @@
     '.sec{font-size:12px;color:'+C.gold+';border-bottom:1px solid '+C.gold+';padding-bottom:6px;margin:28px 0 14px;text-transform:uppercase;letter-spacing:2px;font-weight:700;display:flex;align-items:center;gap:10px;page-break-after:avoid;font-family:"Inter",sans-serif}',
     '.sec-n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:'+C.gold+';color:#fff;font-size:10px;font-weight:700;flex-shrink:0;letter-spacing:0}',
     '.sec-q{font-size:10px;color:#888;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto}',
+    // 2026-05-14 Sprint B — section standfirst (FT-style italic subtitle
+    // beneath the section title). Playfair serif, conditional projections,
+    // ~200 char target. Defaults to no top margin since it follows .sec.
+    '.sec-standfirst{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:14px;line-height:1.55;color:#5a4f3a;max-width:680px;margin:-4px 0 18px;letter-spacing:0.1px}',
     // Cards & containers
     '.cd{border:1px solid '+C.border+';border-radius:8px;padding:12px;background:'+C.bg+';break-inside:avoid;margin-bottom:8px}',
     'table{width:100%;border-collapse:collapse}',
@@ -62,6 +66,16 @@
     '.kpi{text-align:center;padding:10px 6px;border:1px solid #e0d3bf;border-radius:8px;background:#fffdf9;break-inside:avoid;box-shadow:0 1px 0 rgba(0,0,0,0.03)}',
     '.kpi-v{font-size:20px;font-weight:700;font-family:"JetBrains Mono",monospace;color:#3b2f1f}',
     '.kpi-l{font-size:10px;color:#6a6155;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}',
+    // 2026-05-14 Sprint C — KPI visual hierarchy. Hero KPI marks the section’s
+    // single primary metric (answers the decision question). Detail KPIs render
+    // at lower visual weight to demote secondary evidence. Support is the
+    // default and matches pre-refactor styling.
+    '.kpi.kpi-hero{background:linear-gradient(180deg,#fff5da,#fffdf9);box-shadow:0 1px 0 rgba(196,154,26,0.18),0 6px 22px rgba(196,154,26,0.10);border-color:'+C.gold+'}',
+    '.kpi.kpi-hero .kpi-v{font-size:28px}',
+    '.kpi.kpi-hero .kpi-l{color:#3b2f1f}',
+    '.kpi.kpi-detail{opacity:0.78}',
+    '.kpi.kpi-detail .kpi-v{font-size:16px}',
+    '.kpi.kpi-detail .kpi-l{font-size:9px}',
     // Phase 6 finish pass (codex 2026-04-27): supporting KPI strip below
     // the diagnostic hero. The hero owns the focal point; this strip
     // is editorial support, not a dashboard. No individual tile borders;
@@ -356,6 +370,104 @@
   // Section page wrapper — ensures page break before each section
   function secPage() { return '<div class="sec-page">'; }
   function secPageEnd() { return '</div>'; }
+
+  // 2026-05-14 IA refactor — per-section standfirst (FT-style italic
+  // subtitle below the section title). Returns a one-sentence parameterized
+  // headline using real data from d (mc, p, R, succVal). AMF-clean by
+  // construction: present-tense facts + conditional projections, no
+  // FORBIDDEN verbs. Called as the `sub` arg to F.Sec(...). Cross-sectional
+  // AI synthesis (Sprint D) can later override via d.ai.headlines[key].
+  function xpStandfirst(key, d) {
+    if (!d) return '';
+    var fr = d.fr;
+    var mc = d.mc || {};
+    var p = d.p || {};
+    var R = d.R || {};
+    var succ = d.succVal != null ? Math.round(+d.succVal * 100) : null;
+    var succStr = succ == null ? '—' : (succ < 1 ? '<1' : succ > 99 ? '≥99' : succ) + '%';
+    var f$ = function(v) { return (window.BFFormatters || {}).fmtCompact ? window.BFFormatters.fmtCompact(v) : '$' + v; };
+    var couple = !!R.couple;
+    switch (key) {
+      case 'diagnostic':
+        return fr
+          ? 'Là où le plan tient, là où il vacille — vu à travers ' + (mc.nSim || 5000).toLocaleString('fr-CA') + ' trajectoires simulées.'
+          : 'Where the plan holds and where it wavers — across ' + (mc.nSim || 5000).toLocaleString('en-CA') + ' simulated paths.';
+      case 'projection':
+        return fr
+          ? 'Comment votre patrimoine évoluerait sur l\'horizon projeté, en dollars réels.'
+          : 'How your wealth would evolve over the projected horizon, in real dollars.';
+      case 'revenue':
+        return fr
+          ? 'Les sources qui composent votre revenu de retraite, et la part déjà garantie.'
+          : 'The sources that make up your retirement income, and the share already guaranteed.';
+      case 'decum':
+        return fr
+          ? 'L\'ordre dans lequel les comptes seraient mis à contribution pour minimiser la fiscalité viagère.'
+          : 'The order in which accounts would be drawn down to minimize lifetime tax.';
+      case 'tax':
+        return fr
+          ? 'Où la fiscalité pèse le plus, et quelles marges d\'efficacité subsistent.'
+          : 'Where tax weighs most, and what efficiency margins remain.';
+      case 'gis':
+        return fr
+          ? 'Comment le revenu déclaré influence l\'admissibilité au Supplément de revenu garanti.'
+          : 'How declared income affects eligibility for the Guaranteed Income Supplement.';
+      case 'meltdown':
+        return fr
+          ? 'La fenêtre entre la retraite et 72 ans, où des retraits anticipés du REER pourraient réduire la fiscalité totale.'
+          : 'The window between retirement and 72, where accelerated RRSP withdrawals could lower lifetime tax.';
+      case 'succession':
+        return fr
+          ? 'Ce qui resterait à transmettre, et la part qui partirait en impôt au décès.'
+          : 'What would remain to transfer, and the share lost to tax at death.';
+      case 'realestate':
+        return fr
+          ? 'Comment vos propriétés s\'intègrent au plan — actif, levier ou poids selon la trajectoire.'
+          : 'How your properties fit the plan — asset, lever, or weight depending on the trajectory.';
+      case 'corp':
+        return fr
+          ? 'Salaire, dividende, ou différé — comment l\'argent sort de la société dans le scénario observé.'
+          : 'Salary, dividend, or deferral — how money leaves the corporation in the observed scenario.';
+      case 'debt':
+        return fr
+          ? 'Le coût mathématique des dettes actuelles sur la trajectoire patrimoniale.'
+          : 'The mathematical cost of current debts on the wealth trajectory.';
+      case 'insurance':
+        return fr
+          ? 'L\'écart entre vos couvertures actuelles et l\'exposition réelle du plan.'
+          : 'The gap between current coverages and the plan\'s actual exposure.';
+      case 'risk':
+        return fr
+          ? 'L\'écart entre le scénario typique et les scénarios défavorables — la mesure de la résilience.'
+          : 'The gap between the typical scenario and adverse ones — the measure of resilience.';
+      case 'levers':
+        return fr
+          ? 'Quels paramètres déplacent le résultat de combien, classés par impact attendu.'
+          : 'Which parameters move the outcome how much, ranked by expected impact.';
+      case 'profile':
+        return fr
+          ? 'Les chiffres et choix qui définissent votre situation au point de départ.'
+          : 'The numbers and choices that define your situation at the starting point.';
+      case 'goals':
+        return fr
+          ? 'Les objectifs déclarés et leur probabilité d\'être atteints dans le scénario actuel.'
+          : 'Declared goals and their probability of being reached in the current scenario.';
+      case 'family':
+        return fr
+          ? 'Les liens du ménage qui influencent revenus, fiscalité et transmission.'
+          : 'Household links that influence income, tax, and transfer.';
+      case 'strategies':
+        return fr
+          ? 'Les stratégies observées dans le plan, avec leurs effets respectifs sur la trajectoire.'
+          : 'Strategies observed in the plan, with their respective trajectory effects.';
+      case 'rsu':
+        return fr
+          ? 'Comment vos actions différées s\'intègrent au plan d\'investissement.'
+          : 'How your deferred shares integrate into the investment plan.';
+      default:
+        return '';
+    }
+  }
 
   // Dynamic Table of Contents
   // Density-mode coverage map: which sections are visible at each view level.
@@ -2268,7 +2380,7 @@
     if (!_meaningful) return '';
 
     var h = secPage();
-    h += F.Sec(secN, F.L('levers', fr), 'sec-levers');
+    h += F.Sec(secN, F.L('levers', fr), 'sec-levers', xpStandfirst('levers', d));
     h += narr(fr
       ? 'Pour chaque facteur ci-dessous, le chiffre indique combien le taux de succès et le patrimoine médian bougeraient si cette seule variable était modifiée — toutes les autres conditions tenues constantes.'
       : 'For each factor below, the figure indicates how far the success rate and median wealth would move if that single variable were modified — all other conditions held constant.');
@@ -2935,7 +3047,7 @@
     var f$ = F.fmtCompact;
     var qLbl = F.qppLabel(p.prov, fr);
     var h = secPage();
-    h += F.Sec(secN, F.L('profile', fr), 'sec-profile');
+    h += F.Sec(secN, F.L('profile', fr), 'sec-profile', xpStandfirst('profile', d));
 
     // F16 — Inflation bridge for long-horizon plans. Spending is stated
     // in 2026 dollars throughout the report; for plans extending 15+
@@ -3131,7 +3243,7 @@
     if (!d.R.hasFamily) return '';
     var fr = d.fr, family = d.p.family || [];
     var h = secPage();
-    h += F.Sec(secN, F.L('family', fr), 'sec-family');
+    h += F.Sec(secN, F.L('family', fr), 'sec-family', xpStandfirst('family', d));
 
     // Intro narrative
     var childCount = family.filter(function(m) { return m.role === 'child'; }).length;
@@ -3192,7 +3304,7 @@
     var ledger = d.mc && d.mc._enriched && d.mc._enriched.goalsLedger ? d.mc._enriched.goalsLedger : [];
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
-    h += F.Sec(secN, F.L('goals', fr), 'sec-goals');
+    h += F.Sec(secN, F.L('goals', fr), 'sec-goals', xpStandfirst('goals', d));
 
     var totalGoalCost = goals.reduce(function(s, g) { return s + (g.amount || 0); }, 0);
     var onTrackN = ledger.filter(function(l) { return l.status === 'on-track'; }).length;
@@ -3290,7 +3402,7 @@
     var fr = d.fr, mc = d.mc, p = d.p, revData = d.revData;
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
-    h += F.Sec(secN, F.L('projection', fr), 'sec-projection');
+    h += F.Sec(secN, F.L('projection', fr), 'sec-projection', xpStandfirst('projection', d));
 
     // Intro narrative — what projection does
     var _retPd = mc.pD ? mc.pD.find(function(r) { return r.age === p.retAge; }) : null;
@@ -3528,7 +3640,7 @@
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var qLbl = F.qppLabel(p.prov, fr);
     var h = secPage();
-    h += F.Sec(secN, F.L('revenue', fr), 'sec-revenue');
+    h += F.Sec(secN, F.L('revenue', fr), 'sec-revenue', xpStandfirst('revenue', d));
 
     // CANONICAL coverage — the single value used everywhere in this section.
     // d.covRatio = (CPP + OAS + pension) / spend, averaged over retirement
@@ -4035,7 +4147,7 @@
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var qLbl = F.qppLabel(p.prov, fr);
     var h = secPage();
-    h += F.Sec(secN, F.L('tax', fr), 'sec-tax');
+    h += F.Sec(secN, F.L('tax', fr), 'sec-tax', xpStandfirst('tax', d));
 
     // 2026-04-30 — Editorial pull-quote opener. Names the SHAPE of the
     // tax problem before delivering numbers. Pulls from avgEffRate +
@@ -4332,7 +4444,7 @@
     if (_gisYrs.length === 0) return '';
 
     var h = secPage();
-    h += F.Sec(secN, _term('gis', F.L('gis', fr)), 'sec-gis');
+    h += F.Sec(secN, _term('gis', F.L('gis', fr)), 'sec-gis', xpStandfirst('gis', d));
 
     // Defect 3 fix — household GIS (primary + spouse). For couple
     // profiles, spouse GIS (r.cSrg / r.cGis) was previously hidden in the
@@ -4435,7 +4547,7 @@
     var fr = d.fr, p = d.p, mc = d.mc, exp = d.exp, revData = d.revData;
     var fR = function(v) { return F.fmtMoney(v, fr); }, f$ = F.fmtCompact;
     var h = secPage();
-    h += F.Sec(secN, F.L('meltdown', fr), 'sec-meltdown');
+    h += F.Sec(secN, F.L('meltdown', fr), 'sec-meltdown', xpStandfirst('meltdown', d));
 
     // 2026-04-30 — Editorial pull-quote opener. Frames the meltdown
     // strategy as a CADENCE move, not a tax dodge. AMF-safe phrasing.
@@ -4518,7 +4630,7 @@
     }
 
     var h = secPage();
-    h += F.Sec(secN, F.L('succession', fr), 'sec-succession');
+    h += F.Sec(secN, F.L('succession', fr), 'sec-succession', xpStandfirst('succession', d));
 
     var _estTaxRate = _grossEstate > 0 ? Math.round((mc.medEstateTax || 0) / _grossEstate * 100) : 0;
 
@@ -4575,7 +4687,7 @@
     var fr = d.fr, fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
     var h = secPage();
-    h += F.Sec(secN, F.L('realestate', fr), 'sec-realestate');
+    h += F.Sec(secN, F.L('realestate', fr), 'sec-realestate', xpStandfirst('realestate', d));
 
     // Compute aggregates first for narrative
     var _totalVal = props.reduce(function(s, pr) { return s + (pr.val || 0); }, 0);
@@ -4641,7 +4753,7 @@
     var rsuGrants = d.p.rsuGrants || [];
     var activeGrants = rsuGrants.filter(function(r) { return r.totalShares > 0; });
     var h = secPage();
-    h += F.Sec(secN, F.L('rsu', fr), 'sec-rsu');
+    h += F.Sec(secN, F.L('rsu', fr), 'sec-rsu', xpStandfirst('rsu', d));
 
     // Intro narrative
     var _totalRsuVal = activeGrants.reduce(function(s, r) { return s + r.totalShares * (r.sharePrice || 0); }, 0);
@@ -4700,7 +4812,7 @@
     var _intRate = Math.round((_bizTaxRate || 0.125) * 100 + _persBase * 70);
 
     var h = secPage();
-    h += F.Sec(secN, F.L('corp', fr), 'sec-corp');
+    h += F.Sec(secN, F.L('corp', fr), 'sec-corp', xpStandfirst('corp', d));
 
     // Intro narrative
     h += narr(fr
@@ -4735,7 +4847,7 @@
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
     var h = secPage();
-    h += F.Sec(secN, F.L('debt', fr), 'sec-debt');
+    h += F.Sec(secN, F.L('debt', fr), 'sec-debt', xpStandfirst('debt', d));
     var _totalDebt = 0, _totalPay = 0;
     var _activeDebts = debts.filter(function(dd) { return (dd.balance || dd.bal || 0) > 0; });
 
@@ -4879,7 +4991,7 @@
     var fR = function(v) { return F.fmtMoney(v, fr); };
     var f$ = F.fmtCompact;
     var h = secPage();
-    h += F.Sec(secN, F.L('insurance', fr), 'sec-insurance');
+    h += F.Sec(secN, F.L('insurance', fr), 'sec-insurance', xpStandfirst('insurance', d));
 
     // Intro narrative — strictly observational
     var totalFace = lifeUser + lifeSp;
@@ -5010,7 +5122,7 @@
     if (samResults.length === 0 && _recos.length === 0) return '';
 
     var h = secPage();
-    h += F.Sec(secN, F.L('strategies', fr), 'sec-strategies');
+    h += F.Sec(secN, F.L('strategies', fr), 'sec-strategies', xpStandfirst('strategies', d));
 
     // Intro narrative
     var stratCount = samResults.length > 0 ? samResults.filter(function(s) { return s.score != null; }).length : _recos.length;
@@ -5079,7 +5191,7 @@
     var fr = d.fr, mc = d.mc, p = d.p, revData = d.revData;
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
-    h += F.Sec(secN, F.L('risk', fr), 'sec-risk');
+    h += F.Sec(secN, F.L('risk', fr), 'sec-risk', xpStandfirst('risk', d));
 
     // Intro narrative
     var _p25W = mc.rP25F || mc.p25F || mc.rVar5 || mc.var5 || 0;

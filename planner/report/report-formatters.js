@@ -198,17 +198,31 @@
   // signal ("this is the premium element"). Previous overuse made gold
   // wallpaper. Per-KPI color override still works for risk (red) /
   // success (green) coding via explicit color arg.
-  function KPI(v, l, c) {
+  // 2026-05-14 IA refactor: optional `tier` param ('hero'|'support'|'detail').
+  // Hero KPIs answer the section's primary decision question — rendered with
+  // gold accent + larger value. Detail KPIs render at lower visual weight.
+  // Support is the default and matches pre-refactor styling.
+  function KPI(v, l, c, tier) {
     var defaultC = '#252d39';
-    return '<div class="kpi" style="border-top:3px solid ' + (c || defaultC) + '">' +
+    var tierCls = tier === 'hero' ? ' kpi-hero' : tier === 'detail' ? ' kpi-detail' : '';
+    return '<div class="kpi' + tierCls + '" style="border-top:3px solid ' + (c || defaultC) + '">' +
       '<div class="kpi-v" style="color:' + (c || defaultC) + '">' + v + '</div>' +
       '<div class="kpi-l">' + l + '</div></div>';
   }
 
-  // Section header with numbered circle
-  function Sec(num, t, id) {
-    return '<h3 class="sec"' + (id ? ' id="' + id + '"' : '') + '>' +
+  // Section header with numbered circle.
+  // 2026-05-14 IA refactor: optional `sub` param renders a FT-style standfirst
+  // (italic Playfair, decision-question-framed) directly below the title.
+  // When omitted, output is unchanged from the pre-refactor version. Callers
+  // typically pass xpStandfirst(key, d) from report-pdf.js to compute the
+  // sub from real profile data (AMF-clean, parameterized).
+  function Sec(num, t, id, sub) {
+    var h = '<h3 class="sec"' + (id ? ' id="' + id + '"' : '') + '>' +
       '<span class="sec-n">' + num + '</span>' + t + '</h3>';
+    if (sub) {
+      h += '<p class="sec-standfirst">' + sub + '</p>';
+    }
+    return h;
   }
 
   // Card container
@@ -330,19 +344,19 @@
     profile:         { fr: "Votre profil", en: "Your Profile" },
     family:          { fr: "Votre famille", en: "Your Family" },
     goals:           { fr: "Vos objectifs", en: "Your Goals" },
-    projection:      { fr: "Projection du patrimoine", en: "Wealth Projection" },
-    revenue:         { fr: "Revenus de retraite", en: "Retirement Income" },
-    decum:           { fr: "Strat\u00e9gie de d\u00e9caissement", en: "Withdrawal Strategy" },
-    tax:             { fr: "Strat\u00e9gie fiscale", en: "Tax Strategy" },
-    gis:             { fr: "Analyse SRG", en: "GIS Analysis" },
-    meltdown:        { fr: "Strat\u00e9gie de d\u00e9caissement anticip\u00e9 du REER", en: "Early RRSP Drawdown Strategy" },
-    succession:      { fr: "Succession", en: "Estate" },
-    realestate:      { fr: "Immobilier", en: "Real Estate" },
+    projection:      { fr: "Trajectoire patrimoniale", en: "Wealth trajectory" },
+    revenue:         { fr: "De quoi vivrez-vous à la retraite", en: "What you'll live on in retirement" },
+    decum:           { fr: "S\u00e9quence de d\u00e9caissement", en: "Withdrawal sequence" },
+    tax:             { fr: "Marges d'efficacit\u00e9 fiscale", en: "Tax efficiency margins" },
+    gis:             { fr: "Préservation du SRG", en: "GIS preservation" },
+    meltdown:        { fr: "Fen\u00eatre de meltdown REER", en: "RRSP meltdown window" },
+    succession:      { fr: "Transmission successorale", en: "Estate transfer" },
+    realestate:      { fr: "Place de l'immobilier", en: "Real estate position" },
     rsu:             { fr: "Actions RSU", en: "RSU Grants" },
-    corp:            { fr: "Corporation (SPCC)", en: "Corporation (CCPC)" },
-    debt:            { fr: "Dettes", en: "Debts" },
-    insurance:       { fr: "Assurances", en: "Insurance" },
-    risk:            { fr: "Risque & sensibilit\u00e9", en: "Risk & Sensitivity" },
+    corp:            { fr: "Stratégie corporative", en: "Corporate strategy" },
+    debt:            { fr: "Poids des dettes sur le plan", en: "Debt weight on the plan" },
+    insurance:       { fr: "Couverture en cas d'imprévu", en: "Coverage if life shifts" },
+    risk:            { fr: "Dispersion et r\u00e9silience du plan", en: "Plan dispersion and resilience" },
     strategies:      { fr: "Strat\u00e9gies observ\u00e9es", en: "Observed Strategies" },
     methodology:     { fr: "M\u00e9thodologie", en: "Methodology" },
     levers:          { fr: "Sensibilités du plan", en: "Plan sensitivities" },
