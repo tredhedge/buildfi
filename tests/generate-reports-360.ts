@@ -12,8 +12,25 @@ import { buildBuildFiData } from '../lib/report-data-360';
 import { sanitizeAISlots360 } from '../lib/ai-constants';
 import { run5Strategies } from '../lib/strategies-inter';
 import Anthropic from '@anthropic-ai/sdk';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+
+// Load .env.local if ANTHROPIC_API_KEY is not already set. Dependency-free.
+if (!process.env.ANTHROPIC_API_KEY) {
+  const envPath = join(__dirname, '..', '.env.local');
+  if (existsSync(envPath)) {
+    for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+      if (m && !process.env[m[1]]) {
+        let val = m[2];
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        process.env[m[1]] = val;
+      }
+    }
+  }
+}
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const USE_REAL_AI = !!ANTHROPIC_API_KEY;
@@ -233,10 +250,15 @@ const profiles = [
 // ═══════════════════════════════════════════════════════════════════
 
 async function main() {
-  console.log(`Generating 9 Bilan 360 test reports (AI: ${USE_REAL_AI ? 'Opus 4.6' : 'MOCK — set ANTHROPIC_API_KEY'})...\n`);
+  // PROFILE_FILTER env var: comma-separated substrings of profile names. Empty = all 9.
+  // Example: PROFILE_FILTER="01,02,04,05,08" runs only those profiles.
+  const filterRaw = (process.env.PROFILE_FILTER || "").trim();
+  const filter = filterRaw ? filterRaw.split(",").map((s) => s.trim()).filter(Boolean) : null;
+  const selected = filter ? profiles.filter((p) => filter.some((f) => p.name.includes(f))) : profiles;
+  console.log(`Generating ${selected.length} Bilan 360 test reports (AI: ${USE_REAL_AI ? 'Opus 4.6' : 'MOCK — set ANTHROPIC_API_KEY'})${filter ? ` — filter: ${filterRaw}` : ''}\n`);
   const summary: any[] = [];
 
-  for (const profile of profiles) {
+  for (const profile of selected) {
     const t0 = Date.now();
     const quiz = profile.quiz as Record<string, any>;
 
