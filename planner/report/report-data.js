@@ -438,20 +438,31 @@
     // perturbed MC runs (returns ±1%, inflation ±1%). Each row is {label, lo, hi}
     // where lo/hi are deltas vs baseline medF. The legacy `_sensReturn` et al.
     // fields (closed-form) are never emitted by the v2 engine — we only read sweeps.
+    // 2026-05-14 fix: previously baseline read mc.rMedF (REAL) while sweep
+    // branches read .medF (NOMINAL). Since nominal > real, BOTH up and down
+    // deltas came out positive, producing a one-sided tornado (the bug
+    // visible as both green bars on the right). Now we pick real-or-nominal
+    // consistently across baseline AND sweep branches.
     var sensData = [];
-    var _baseMedF = (mc && (mc.rMedF != null ? mc.rMedF : mc.medF)) || 0;
+    var _useReal = (mc && mc.rMedF != null);
+    var _baseMedF = (_useReal ? mc.rMedF : (mc && mc.medF)) || 0;
+    var _swMedF = function(branch) {
+      if (!branch) return 0;
+      return _useReal ? (branch.rMedF != null ? branch.rMedF : branch.medF) || 0
+                      : (branch.medF || 0);
+    };
     if (mc && mc._sweeps && mc._sweeps.returns && mc._sweeps.returns.up && mc._sweeps.returns.down) {
       sensData.push({
         label: fr ? "Rendements \u00b1 1 %" : "Returns \u00b1 1%",
-        lo: (mc._sweeps.returns.down.medF || 0) - _baseMedF,
-        hi: (mc._sweeps.returns.up.medF || 0) - _baseMedF
+        lo: _swMedF(mc._sweeps.returns.down) - _baseMedF,
+        hi: _swMedF(mc._sweeps.returns.up) - _baseMedF
       });
     }
     if (mc && mc._sweeps && mc._sweeps.inflation && mc._sweeps.inflation.up && mc._sweeps.inflation.down) {
       sensData.push({
         label: fr ? "Inflation \u00b1 1 %" : "Inflation \u00b1 1%",
-        lo: (mc._sweeps.inflation.down.medF || 0) - _baseMedF,
-        hi: (mc._sweeps.inflation.up.medF || 0) - _baseMedF
+        lo: _swMedF(mc._sweeps.inflation.down) - _baseMedF,
+        hi: _swMedF(mc._sweeps.inflation.up) - _baseMedF
       });
     }
 

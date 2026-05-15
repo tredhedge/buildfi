@@ -1622,7 +1622,7 @@
   // drives the values; the structure is fixed per chart type.
   function _chartCaption(text) {
     if (!text) return '';
-    return '<p class="bf-chart-caption" style="font-family:\"Playfair Display\",Georgia,serif;font-size:12.5px;font-style:italic;color:#5a4f3a;line-height:1.55;margin:6px auto 14px;max-width:680px;text-align:center;letter-spacing:0.1px">' +
+    return '<p class="bf-chart-caption" style="font-family:\'Playfair Display\',Georgia,serif;font-size:12.5px;font-style:italic;color:#5a4f3a;line-height:1.55;margin:6px auto 14px;max-width:680px;text-align:center;letter-spacing:0.1px">' +
       F.esc(text) + '</p>';
   }
 
@@ -1858,8 +1858,8 @@
     }
     return '<div class="bf-hero-kpi" style="margin:6px 0 18px;padding:24px 28px;border:1px solid #e8e0d4;border-left:4px solid ' + color + ';border-radius:6px;background:#fdfbf6">' +
       '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#8a7a5c;margin-bottom:10px">' + F.esc(label) + '</div>' +
-      '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:42px;font-weight:600;color:' + color + ';line-height:1.05;letter-spacing:-0.5px">' + value + '</div>' +
-      (sub ? '<div style="font-family:\"Playfair Display\",Georgia,serif;font-size:13.5px;font-style:italic;color:#5a4f3a;line-height:1.5;margin-top:10px">' + F.esc(sub) + '</div>' : '') +
+      '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:42px;font-weight:600;color:' + color + ';line-height:1.05;letter-spacing:-0.5px">' + value + '</div>' +
+      (sub ? '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:13.5px;font-style:italic;color:#5a4f3a;line-height:1.5;margin-top:10px">' + F.esc(sub) + '</div>' : '') +
       '</div>';
   }
 
@@ -2208,7 +2208,7 @@
     // that articulates WHY this report exists for THIS reader. Same family,
     // archetype-keyed; never AI-generated (codex 2026-04-27: deterministic,
     // not AI; safer, consistent, easier to control tone).
-    h += '<div class="cover-promise" style="font-family:\"Playfair Display\",Georgia,serif;font-size:16px;font-style:italic;color:#e8e0d4;line-height:1.5;max-width:520px;margin:18px auto 0;letter-spacing:0.1px">' +
+    h += '<div class="cover-promise" style="font-family:\'Playfair Display\',Georgia,serif;font-size:16px;font-style:italic;color:#e8e0d4;line-height:1.5;max-width:520px;margin:18px auto 0;letter-spacing:0.1px">' +
       F.esc(_coverPromise(arch, fr, d.succVal)) + '</div>';
     h += '<div class="cover-divider"></div>';
     h += '<div style="font-size:13px;color:#bccbe0;margin-top:10px;letter-spacing:0.4px">' + F.L('prepared_for', fr) + '</div>';
@@ -2575,7 +2575,7 @@
     var _stripTiles = [
       {
         label: fr ? 'Taux de succès' : 'Success rate',
-        value: (d.succVal == null ? (fr ? 'En cours' : 'Pending') : Math.round(d.succVal * 100) + '%'),
+        value: (d.succVal == null ? (fr ? 'En cours' : 'Pending') : _fmtSucc(d.succVal)),
         color: F.succColor(d.succVal)
       },
       {
@@ -6199,46 +6199,76 @@ h += secPageEnd();
       ? 'Une lecture plus approfondie du même plan : quels leviers comptent le plus, quelle variante de calendrier surperforme, et où il reste de la marge à optimiser. Les clients Planner peuvent prolonger cette lecture dans l\'outil interactif (190+ paramètres).'
       : 'A deeper read on the same plan: which levers matter most, which timing variant outperforms, and where optimization headroom remains. Planner customers can extend this read in the live tool (190+ parameters).');
 
-    // ── (a) Richer sensitivity tornado ──────────────────────────────────
-    // Build 8 levers from heroScore components + sensData if present.
-    var levers = [];
+    // ── (a) Sensitivity tornado — split by unit (codex audit fix 2026-05-14) ─
+    // Pre-fix the tornado mixed two incompatible scales: heroScore component
+    // gaps (pts, 0-100 scale) and dollar sensitivity sweeps (K$, range
+    // +1700+). Dollar bars dwarfed score bars visually (1753 vs 18.6) and
+    // unit suffixes were missing. Fixed: two clearly-labeled mini-tornados,
+    // each on its own scale, units in the title.
+    var scoreLevers = [];
     var s = d.heroScore && d.heroScore.components;
     if (s) {
-      levers.push({ label: fr ? 'R\u00e9silience du plan' : 'Plan resilience',  delta: (s.plan_resilience || 0) - 70, color: '#5b8db8' });
-      levers.push({ label: fr ? 'Taux d\'\u00e9pargne' : 'Savings rate',           delta: (s.savings_rate || 0) - 50, color: '#2a8c46' });
-      levers.push({ label: fr ? 'Efficacit\u00e9 fiscale' : 'Tax efficiency',     delta: (s.tax_efficiency || 0) - 60, color: '#c49a1a' });
-      levers.push({ label: fr ? 'Diversification' : 'Diversification',           delta: (s.diversification || 0) - 60, color: '#4a4858' });
-      levers.push({ label: fr ? 'Liquidit\u00e9' : 'Liquidity',                   delta: (s.liquidity || 0) - 50, color: '#3aa39c' });
+      scoreLevers.push({ label: fr ? 'R\u00e9silience du plan' : 'Plan resilience',  delta: (s.plan_resilience || 0) - 70, color: '#5b8db8' });
+      scoreLevers.push({ label: fr ? 'Taux d\'\u00e9pargne' : 'Savings rate',           delta: (s.savings_rate || 0) - 50, color: '#2a8c46' });
+      scoreLevers.push({ label: fr ? 'Efficacit\u00e9 fiscale' : 'Tax efficiency',     delta: (s.tax_efficiency || 0) - 60, color: '#c49a1a' });
+      scoreLevers.push({ label: fr ? 'Diversification' : 'Diversification',           delta: (s.diversification || 0) - 60, color: '#4a4858' });
+      scoreLevers.push({ label: fr ? 'Liquidit\u00e9' : 'Liquidity',                   delta: (s.liquidity || 0) - 50, color: '#3aa39c' });
     }
-    // Append actual sens sweeps when available
+    // Dollar sensitivities \u2014 keep on a SEPARATE tornado (different unit).
+    var dollarLevers = [];
     if (Array.isArray(d.sensData) && d.sensData.length > 0) {
       d.sensData.slice(0, 4).forEach(function(sv) {
         var loVal = (sv.lo || sv.delta || 0);
         var hiVal = (sv.hi || -loVal);
-        var maxAbs = Math.max(Math.abs(loVal), Math.abs(hiVal));
-        if (maxAbs > 0) {
-          levers.push({ label: sv.label || sv.factor || (fr ? 'Sensibilit\u00e9' : 'Sensitivity'), delta: maxAbs / 1000, color: '#cf6060' });
+        // Pick the side with larger magnitude; preserve its SIGN so bar
+        // direction reads as upside (positive) or downside (negative).
+        var picked = Math.abs(hiVal) >= Math.abs(loVal) ? hiVal : loVal;
+        if (picked !== 0) {
+          dollarLevers.push({
+            label: sv.label || sv.factor || (fr ? 'Sensibilit\u00e9' : 'Sensitivity'),
+            delta: picked / 1000, // K$
+            color: picked >= 0 ? '#48a66d' : '#cf6060'
+          });
         }
       });
     }
-    var maxLever = Math.max.apply(null, levers.map(function(l) { return Math.abs(l.delta); })) || 1;
-    h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
-      (fr ? 'Tornado de sensibilit\u00e9 \u00e9tendu' : 'Extended sensitivity tornado') + '</div>';
-    h += '<div style="background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:12px 16px;margin-bottom:14px">';
-    levers.forEach(function(l) {
-      var w = Math.max(2, (Math.abs(l.delta) / maxLever) * 100);
-      var dir = l.delta >= 0 ? 'right' : 'left';
-      h += '<div style="display:grid;grid-template-columns:150px 1fr 60px;gap:10px;align-items:center;padding:5px 0">' +
-        '<div style="text-align:right;font-size:10.5px;color:#444;font-weight:600">' + l.label + '</div>' +
-        '<div style="background:#f5f1ea;border-radius:3px;height:14px;position:relative">' +
-          '<div style="position:absolute;' + dir + ':50%;width:' + (w / 2) + '%;height:100%;background:' + l.color + ';border-radius:3px"></div>' +
-        '</div>' +
-        '<div style="font-family:JetBrains Mono,monospace;text-align:right;font-size:10px;font-weight:600;color:' + l.color + '">' +
-          (l.delta >= 0 ? '+' : '\u2212') + Math.abs(l.delta).toFixed(1) +
-        '</div>' +
-        '</div>';
-    });
-    h += '</div>';
+
+    // Two clearly-labeled mini-tornados (avoids the prior mixed-scale bug).
+    function _renderTornadoBlock(title, levers, unit) {
+      if (!levers || !levers.length) return '';
+      var maxAbs = Math.max.apply(null, levers.map(function(l) { return Math.abs(l.delta); })) || 1;
+      var html = '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
+        title + ' <span style="font-family:JetBrains Mono,monospace;font-size:9px;color:#888;letter-spacing:0.5px;font-weight:600">(' + unit + ')</span></div>';
+      html += '<div style="background:#fdfbf6;border:1px solid #e8e0d4;border-radius:6px;padding:12px 16px;margin-bottom:14px">';
+      levers.forEach(function(l) {
+        var w = Math.max(2, (Math.abs(l.delta) / maxAbs) * 100);
+        var dir = l.delta >= 0 ? 'right' : 'left';
+        var fmt = unit === 'pts' ? Math.abs(l.delta).toFixed(1)
+                : unit === 'K$'  ? Math.round(Math.abs(l.delta)).toLocaleString('fr-CA').replace(/[\u00a0\u202f ]/g, ' ')
+                                 : Math.abs(l.delta).toFixed(1);
+        html += '<div style="display:grid;grid-template-columns:150px 1fr 80px;gap:10px;align-items:center;padding:5px 0">' +
+          '<div style="text-align:right;font-size:10.5px;color:#444;font-weight:600">' + l.label + '</div>' +
+          '<div style="background:#f5f1ea;border-radius:3px;height:14px;position:relative">' +
+            '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#bbb"></div>' +
+            '<div style="position:absolute;' + dir + ':50%;width:' + (w / 2) + '%;height:100%;background:' + l.color + ';border-radius:3px"></div>' +
+          '</div>' +
+          '<div style="font-family:JetBrains Mono,monospace;text-align:right;font-size:10px;font-weight:600;color:' + l.color + '">' +
+            (l.delta >= 0 ? '+' : '\u2212') + fmt + ' ' + unit +
+          '</div>' +
+          '</div>';
+      });
+      html += '</div>';
+      return html;
+    }
+
+    h += _renderTornadoBlock(
+      fr ? '\u00c9carts de score vs cible (leviers structurels)' : 'Score gaps vs target (structural levers)',
+      scoreLevers, 'pts'
+    );
+    h += _renderTornadoBlock(
+      fr ? 'Impact dollar du choc unitaire' : 'Dollar impact of unit shock',
+      dollarLevers, 'K$'
+    );
 
     // ── (b) 3-scenario compare matrix ───────────────────────────────────
     // Three variants: retire 2 yrs earlier, baseline, retire 2 yrs later.
@@ -6516,6 +6546,9 @@ h += secPageEnd();
     // Codex 2026-04-27 audit: surface goal completion in the Conclusion
     // when goals exist. Reader needs a quick read on whether their
     // declared objectives line up with the plan.
+    // 2026-05-14: goals now NAMED in the card, not just counted.
+    // Previously "OBJECTIFS EN VOIE 2/2 tous valid\u00e9s" left the reader
+    // wondering WHICH 2 \u2014 now each declared goal is listed with status.
     if (d.R && d.R.hasGoals && d.mc && d.mc._enriched && d.mc._enriched.goalsLedger) {
       var _rLedger = d.mc._enriched.goalsLedger || [];
       var _rOnTrack = _rLedger.filter(function(l){ return l.status === 'on-track'; }).length;
@@ -6523,21 +6556,42 @@ h += secPageEnd();
       var _rTotal = _rLedger.length;
       if (_rTotal > 0) {
         var _rCol = _rAtRisk > 0 ? '#cc4444' : _rOnTrack === _rTotal ? '#2a8c46' : '#c4944a';
-        // Codex 2026-04-27: thesis-band-drift guard. On failing plans,
-        // 'Goals on track' is auditor-flagged as posture mismatch.
         var _planFailingRecap = (d.succVal != null && d.succVal < 0.30);
         var _rLbl = _planFailingRecap
           ? (fr ? 'Objectifs atteints au moment cible' : 'Goals reaching target age')
-          : (fr ? 'Objectifs en voie' : 'Goals on track');
+          : (fr ? 'Vos objectifs d\u00e9clar\u00e9s' : 'Your declared goals');
         var _rVal = _rOnTrack + '/' + _rTotal;
         var _rSub = _rAtRisk > 0 ? (fr ? _rAtRisk + ' \u00e0 risque' : _rAtRisk + ' at risk')
                                  : (_rOnTrack < _rTotal ? (fr ? 'autres serr\u00e9s' : 'others tight')
                                                        : (fr ? 'tous valid\u00e9s' : 'all validated'));
-        h += '<div style="margin:8px 0 18px;padding:12px 14px;background:#fafafa;border:1px solid #e5e5e5;border-radius:4px;text-align:center">'
-          + '<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px">'
+        // Build the per-goal list. Each row: status icon + goal name + age + amount (when present)
+        // + probability_met when available. AMF-clean \u2014 observational, never prescriptive.
+        var _goalRows = _rLedger.map(function(g) {
+          var icon = g.status === 'on-track' ? '<span style="color:#2a8c46">\u25cf</span>'
+                   : g.status === 'at-risk' ? '<span style="color:#cc4444">\u25cf</span>'
+                                            : '<span style="color:#c4944a">\u25cf</span>';
+          var statusLbl = g.status === 'on-track' ? (fr ? 'en voie' : 'on track')
+                       : g.status === 'at-risk'  ? (fr ? '\u00e0 risque' : 'at risk')
+                       : (fr ? 'serr\u00e9' : 'tight');
+          var ageBit = (g.age != null) ? ' <span style="color:#888;font-size:10px">(\u00e2ge ' + g.age + ')</span>' : '';
+          var amtBit = g.amount ? ' <span style="color:#666;font-size:10px;font-family:JetBrains Mono,monospace">\u2014 ' + F.esc(String(g.amount)) + '</span>' : '';
+          var probBit = g.probability_met ? ' <span style="color:#888;font-size:10px">\u2014 ' + F.esc(String(g.probability_met)) + (fr ? ' probabilit\u00e9' : ' probability') + '</span>' : '';
+          var desc = F.esc(g.desc || g.name || (fr ? 'Objectif sans description' : 'Unnamed goal'));
+          return '<li style="padding:6px 0;border-bottom:1px solid #eee;text-align:left">' +
+            icon + ' <strong>' + desc + '</strong>' + ageBit + amtBit +
+            '<span style="display:block;margin-left:18px;font-size:10px;color:#888;margin-top:2px">' +
+            (fr ? 'Statut : ' : 'Status: ') + statusLbl + probBit + '</span></li>';
+        }).join('');
+        h += '<div style="margin:8px 0 18px;padding:14px 16px;background:#fafafa;border:1px solid #e5e5e5;border-radius:4px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">'
+          + '<div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600">'
           + _rLbl + '</div>'
+          + '<div style="text-align:right">'
           + '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:700;color:' + _rCol + ';line-height:1">' + _rVal + '</div>'
-          + '<div style="font-size:9px;color:#888;margin-top:4px;line-height:1.3">' + _rSub + '</div>'
+          + '<div style="font-size:9px;color:#888;margin-top:2px">' + _rSub + '</div>'
+          + '</div>'
+          + '</div>'
+          + '<ul style="margin:0;padding-left:0;list-style:none;font-family:Inter,sans-serif;font-size:12px;color:#2a2420;line-height:1.5">' + _goalRows + '</ul>'
           + '</div>';
       }
     }
@@ -6551,16 +6605,16 @@ h += secPageEnd();
         : 'Guaranteed income exceeds target spending. The central trajectory holds with comfortable margin, and portfolio withdrawals would remain optional for the baseline lifestyle. The next questions would lean toward legacy, tax optimization, and allocation \u2014 rather than plan robustness itself.';
     } else if (t.band === 'solid') {
       shiftMsg = fr
-        ? 'La trajectoire centrale tient. La marge contre les chocs (rendements, inflation, longue vie) reste mod\u00e9r\u00e9e, et les leviers identifi\u00e9s dans la section Plan d\'action permettraient de la \u00e9paissir si elle devenait insuffisante. La th\u00e8se ne changerait pas \u00e0 court terme \u2014 elle se renforcerait ou s\'\u00e9roderait selon les rendements r\u00e9alis\u00e9s.'
-        : 'The central trajectory holds. Margin against shocks (returns, inflation, longevity) remains moderate, and the levers identified in the Action Plan section would thicken it if needed. The thesis would not change in the short term \u2014 it would either firm up or erode depending on realized returns.';
+        ? 'La trajectoire centrale tient. La marge contre les chocs (rendements, inflation, longue vie) reste mod\u00e9r\u00e9e, et les leviers identifi\u00e9s dans la section Sensibilit\u00e9s du plan permettraient de la \u00e9paissir si elle devenait insuffisante. La th\u00e8se ne changerait pas \u00e0 court terme \u2014 elle se renforcerait ou s\'\u00e9roderait selon les rendements r\u00e9alis\u00e9s.'
+        : 'The central trajectory holds. Margin against shocks (returns, inflation, longevity) remains moderate, and the levers identified in the Plan sensitivities section would thicken it if needed. The thesis would not change in the short term \u2014 it would either firm up or erode depending on realized returns.';
     } else if (t.band === 'fragile') {
       shiftMsg = fr
-        ? 'La marge est mince. Les leviers du Plan d\'action (\u00e9pargne accrue, d\u00e9penses cibl\u00e9es, horizon ajust\u00e9, optimisation fiscale) feraient passer la th\u00e8se vers une posture plus solide s\'ils \u00e9taient appliqu\u00e9s. Sans ajustement, un choc de march\u00e9 ou une longue vie \u00e9roderaient sensiblement la trajectoire.'
-        : 'Margin is thin. The levers in the Action Plan (higher savings, targeted spending, adjusted horizon, tax optimization) would shift the thesis toward a more solid posture if applied. Without adjustment, a market shock or long life would erode the trajectory materially.';
+        ? 'La marge est mince. Les leviers identifi\u00e9s (\u00e9pargne accrue, d\u00e9penses cibl\u00e9es, horizon ajust\u00e9, marges d\'efficacit\u00e9 fiscale) feraient passer la th\u00e8se vers une posture plus solide s\'ils \u00e9taient appliqu\u00e9s. Sans ajustement, un choc de march\u00e9 ou une longue vie \u00e9roderaient sensiblement la trajectoire.'
+        : 'Margin is thin. The identified levers (higher savings, targeted spending, adjusted horizon, tax efficiency margins) would shift the thesis toward a more solid posture if applied. Without adjustment, a market shock or long life would erode the trajectory materially.';
     } else if (t.band === 'at-risk') {
       shiftMsg = fr
-        ? 'La trajectoire centrale ne tient pas \u00e0 l\'\u00e9tat actuel. Les leviers du Plan d\'action seraient \u00e0 consid\u00e9rer en combinaison \u2014 un seul ajustement, m\u00eame appliqu\u00e9 \u00e0 son maximum, ne suffirait g\u00e9n\u00e9ralement pas \u00e0 r\u00e9tablir la marge n\u00e9cessaire. La consultation d\'un planificateur agr\u00e9\u00e9 serait indiqu\u00e9e.'
-        : 'The central trajectory does not hold as is. The Action Plan levers would need to be considered in combination \u2014 a single adjustment, even at its maximum, would generally not be enough to restore the necessary margin. Consultation with a certified planner would be warranted.';
+        ? 'La trajectoire centrale ne tient pas \u00e0 l\'\u00e9tat actuel. Les leviers identifi\u00e9s seraient \u00e0 consid\u00e9rer en combinaison \u2014 un seul ajustement, m\u00eame appliqu\u00e9 \u00e0 son maximum, ne suffirait g\u00e9n\u00e9ralement pas \u00e0 r\u00e9tablir la marge n\u00e9cessaire. La consultation d\'un planificateur agr\u00e9\u00e9 serait indiqu\u00e9e.'
+        : 'The central trajectory does not hold as is. The identified levers would need to be considered in combination \u2014 a single adjustment, even at its maximum, would generally not be enough to restore the necessary margin. Consultation with a certified planner would be warranted.';
     } else {
       shiftMsg = fr
         ? 'La th\u00e8se actuelle indique que le plan ne serait pas viable sur l\'horizon mod\u00e9lis\u00e9. Une r\u00e9vision globale (\u00e9pargne, d\u00e9penses, \u00e2ge de retraite, revenus) serait n\u00e9cessaire avant que les leviers tactiques (optimisation fiscale, allocation) ne puissent avoir un impact significatif. La consultation d\'un planificateur agr\u00e9\u00e9 serait fortement indiqu\u00e9e.'
@@ -6573,8 +6627,8 @@ h += secPageEnd();
     //    metric was defended.
     h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;color:#666;line-height:1.7;border-top:1px solid #e5e5e5;padding-top:12px">' +
       (fr
-        ? '<strong>O\u00f9 trouver les d\u00e9tails\u202f:</strong> la trajectoire de patrimoine est \u00e9tablie en section Projection\u202f; la couverture garantie est d\u00e9compos\u00e9e en section Revenus\u202f; l\'imp\u00f4t \u00e0 vie est expliqu\u00e9 en section Strat\u00e9gie fiscale\u202f; les leviers sont list\u00e9s dans le Plan d\'action.'
-        : '<strong>Where to find the details:</strong> wealth trajectory is established in the Projection section; guaranteed coverage is broken down in the Revenue section; lifetime tax is explained in the Tax Strategy section; levers are listed in the Action Plan.') +
+        ? '<strong>O\u00f9 trouver les d\u00e9tails\u202f:</strong> la trajectoire de patrimoine est \u00e9tablie en section Trajectoire patrimoniale\u202f; la couverture garantie est d\u00e9compos\u00e9e en section De quoi vivrez-vous \u00e0 la retraite\u202f; l\'imp\u00f4t \u00e0 vie est expliqu\u00e9 en section Marges d\'efficacit\u00e9 fiscale\u202f; les leviers sont list\u00e9s dans Sensibilit\u00e9s du plan.'
+        : '<strong>Where to find the details:</strong> wealth trajectory is established in the Wealth trajectory section; guaranteed coverage is broken down in the Retirement income section; lifetime tax is explained in the Tax efficiency margins section; levers are listed in Plan sensitivities.') +
       '</div>';
 
     h += secPageEnd();
