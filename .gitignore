@@ -59,3 +59,8 @@ tests/reports/**/*.md
 planner/report/realai/review/*.fail.json
 
 .env*.local
+
+# local tooling artifacts (MCP, Playwright MCP cache, Python bytecode)
+.mcp.json
+.playwright-mcp/
+**/__pycache__/
