@@ -1,61 +1,78 @@
-﻿# CLAUDE.md - BuildFi (buildfi.ca)
+# CLAUDE.md - BuildFi (buildfi.ca)
 
 ## What is this project?
-BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS using Monte Carlo simulation and AI narration to generate actionable retirement reports.
+BuildFi is a bilingual (FR/EN) Canadian retirement planning SaaS using Monte Carlo simulation and AI narration (Anthropic Opus) to generate observational, AMF-safe retirement reports.
 
-## Canonical Product Vision (2026-03-13)
-This is the current source of truth.
+## Canonical Product Vision (2026-04-22 — supersedes the 2026-03-13 3-SKU model)
+This is the current source of truth. The earlier 3-SKU taxonomy (Bilan $9.99 /
+Bilan 360 $19.99 / Laboratoire $49.99) is **retired**. The product is now **2 SKUs**.
 
-| Product | Internal key(s) | Price | Couple | Properties | Purpose |
-|---|---|---|---|---|---|
-| Bilan | `essentiel` | 9.99 CAD | No | Primary only | Quick report for simple single profiles (~33 fields). |
-| Bilan 360 | `bilan360` (routes to accum/transition/decum) | 19.99 CAD | Full modeling | Primary + 2 rentals | Adaptive report with 3 life phases, Opus AI, full couple. |
-| Laboratoire | `expert` | 49.99 CAD + 29.99/yr renewal | Full | Unlimited | Interactive simulator 190+ params + AI report credits. |
+| Product | Tier key | Price (CAD) | Account | What |
+|---|---|---|---|---|
+| **Bilan 360** | `bilan360` | **$29.99** one-time | Anonymous OK (email = identity) | One AI-narrated retirement report. Wizard (~20–40 adaptive Qs) → MC 5000 → Opus narration → HTML in Blob → email. |
+| **Planner** | `planner` | **$69.99** one-time | Account required (magic link) | Live simulator (~190 params, 5000 MC) + **5 AI report credits**. |
 
-**No Bilan Annuel.** The free product concept is dropped.
+Add-ons:
+
+| Add-on | Key | Price | What |
+|---|---|---|---|
+| Report top-up | `report-pack` | $19.99 | +4 AI credits for existing Planner customers |
+| Second Bilan | `second` | $14.99 | 50% off a second Bilan 360 via `SECOND50` coupon |
+| Legacy addon | `addon` | $14.99 | Backward-compat only, not promoted |
 
 ## Product Rules
-- Bilan $9.99 is the entry-level product for simple profiles. Stands on its own quality.
-- Bilan 360 $19.99 replaces Inter ($59) and Decum ($59) — price DROP, quality UP.
-- Bilan 360 uses ONE adaptive quiz with 3 life phases (accum/transition/decum).
-- Couple is FULLY modeled in Bilan 360 (explicit fields, no heuristics).
-- No mandatory upsell ladder. Each product solves a distinct need.
-- AI narration (Opus 4.6) is a core differentiator, not a cosmetic add-on.
-- Architecture details: `docs/ARCH-BILAN-360.md` (10 architecture decisions).
+- **No quiz pages.** Bilan 360 is driven by a **Wizard** (`app/wizard/page.tsx`):
+  Mode 1 classifier → Mode 2 personalized. Draft persisted in KV `wizard:{sessionId}`
+  (90-day TTL).
+- Bilan 360 is anonymous-friendly (email is the identity). Planner requires an account.
+- Couple is FULLY modeled (explicit fields, no heuristics).
+- AI narration (Opus) is a core differentiator, not a cosmetic add-on. Every AI
+  response runs server-side through `softenAISlot` + `FORBIDDEN_TERMS` (AMF sanitizer).
+- AI credits: 5 granted at Planner purchase, no auto-refresh, server-canonical counter.
+- **Single source of live prices**: `public/index.html` translation tables. Never
+  hardcode prices elsewhere.
 
-## Current Execution Priority
-1. ~~Make Bilan (9.99) report quality excellent.~~ DONE (v7 shipped 2026-03-13)
-2. **Build Bilan 360 adaptive report** (quiz + translator + renderer + AI prompts).
-3. Upgrade Laboratoire (simulator + AI report system).
-4. Website/copy adjustments after product quality is locked.
+## Internal Naming / Legacy Aliases
+Normalized in `normalizeTier()`. Do **not** sweep-delete legacy keys — retire them as touched:
+- `essentiel`, `intermediaire`, `decaissement` → **`bilan360`**
+- `bilan360plus`, `expert` → **`planner`**
 
-## Internal Naming Constraint
-Internal identifiers:
-- `essentiel` — Bilan $9.99 (unchanged)
-- `bilan360` — Bilan 360 $19.99 (NEW — replaces intermediaire + decaissement)
-- `expert` — Laboratoire $49.99 (unchanged)
-
-Legacy `intermediaire` and `decaissement` keys remain in old code but are deprecated for new work.
+## Active Workstream: FE/BE Split (locked 2026-05-01)
+Doc: `docs/ARCH-FE-BE-SPLIT.md`. Move engine + AI + render off the browser.
+- **Engine canonical**: `lib/engine/index.js` (~2716 lines). `/api/simulate` uses it.
+- `planner/planner_v3.html` inline engine = **LEGACY**, scheduled for Phase 4 deletion
+  (blocked on user verification of `/simulateur` + `/wizard` E2E).
+- Critical fiscal constants mirrored in `lib/constants/fiscal-2026.ts`.
 
 ## Pipelines
 
-### Bilan (9.99)
-`quiz-essentiel` -> `/api/checkout` (`type=essentiel`) -> Stripe -> `/api/webhook` -> translator -> MC(5000) -> renderer -> Blob -> Resend
+### Bilan 360 ($29.99)
+```
+app/wizard/page.tsx → POST /api/checkout {type:"bilan360"} → Stripe → POST /api/webhook
+  → translator-360 → MC 5000 → AI narrate (Opus) → report-html-360 → Blob → Resend
+```
+Phase routing in the Wizard / translator:
+- `retAge - age <= 0` or already retired → DECUMULATION
+- `retAge - age <= 7 AND age >= 52` → TRANSITION
+- else → ACCUMULATION
 
-### Bilan 360 (19.99)
-Single adaptive quiz determines life phase:
-- `retAge - age <= 0` or already retired -> DECUMULATION
-- `retAge - age <= 7 AND age >= 52` -> TRANSITION
-- else -> ACCUMULATION
+### Planner ($69.99)
+```
+app/acheter-planner → /api/checkout {type:"planner"} → Stripe → webhook
+  → KV expert profile + magic-link token → /expert?token=...
+  → app/expert/page.tsx hosts iframe planner_v3 (legacy) OR app/simulateur/page.tsx (new)
+  → /api/simulate (5000 paths) | /api/regenerate-report (decrements aiCredits)
+```
+PostMessage bridge: `docs/PLANNER-FE-BE-CONTRACT.md`.
 
-Flow:
-`quiz-360` -> `/api/checkout` (`type=bilan360`, `phase=accum|transition|decum`) -> Stripe -> `/api/webhook` -> translator-360 -> MC(5000+extras) -> renderer-360 -> Blob -> Resend
+### Offline report lab (`planner/report/realai/`)
+20-persona pipeline used to design and validate report + AI narration quality
+before it ships to production: profile → MC → Claude narration → render HTML →
+`qa-check.mjs` gate → `review/` findings → `responses-todo/` → `ai-regen.mjs`.
+Deterministic fallbacks ship for any drifted slot.
 
-### Laboratoire (49.99)
-`quiz-expert` -> `/api/checkout` (`type=expert`) -> Stripe -> webhook -> KV profile + magic link -> simulator -> AI report exports (quota)
-
-## Report Quality Contract (all products)
-Every report must remain coherent across products for formatting, presentation, and reading experience:
+## Report Quality Contract (both products)
+Every report must remain coherent across products:
 - Shared typography, spacing rhythm, and visual hierarchy.
 - Shared number formatting (currency, percent, dates, labels).
 - Shared chart semantics (same percentile naming and legend logic).
@@ -63,17 +80,19 @@ Every report must remain coherent across products for formatting, presentation, 
 - Shared AI tone constraints (AMF-safe, observational, conditional tense).
 - Shared fallback behavior when AI fails (no broken sections, no empty slots).
 
-Details and checklist: `docs/TECH-REFERENCE.md`.
-
 ## Documentation Guide
 Read in this order before making product decisions:
-1. `docs/ARCH-BILAN-360.md` (architecture decisions for Bilan 360 — 10 DAs)
-2. `docs/STATUS.md` (current phase + active priorities)
-3. `docs/TECH-REFERENCE.md` (technical standards + report consistency + v7 reference)
-4. `docs/PLAN-PIVOT.md` (execution plan — partially superseded by ARCH-BILAN-360)
+1. `docs/ARCH-FE-BE-SPLIT.md` (current active workstream)
+2. `docs/PLANNER-FE-BE-CONTRACT.md` (iframe ↔ React ↔ API postMessage)
+3. `docs/ARCH-BILAN-360.md` (Bilan 360 architecture decisions)
+4. `docs/TECH-REFERENCE.md` (technical standards + report consistency)
 5. `docs/ARCHITECTURE.md` (dependencies and routing)
 6. `docs/SERVICES.md` (Stripe/env/email/deployment constraints)
 7. `docs/STRATEGY.md` (positioning, pricing rationale, competition)
+
+> Note: some docs (`STATUS.md`, `PLAN-PIVOT.md`) predate the 2026-04-22 2-SKU
+> pivot and may still reference the old 3-SKU pricing. Treat this file as
+> authoritative where they conflict.
 
 ## Critical Rules - Read Before Every Task
 
@@ -86,15 +105,20 @@ Never remove, simplify, or downgrade validated behavior without explicit written
 - Forbidden style: should/devriez/recommandons/il faut/plan d'action style directives.
 
 ### Engineering Rules
-- `planner.html` remains engine source of truth; mirror critical engine fixes in `lib/engine/index.js`.
+- `lib/engine/index.js` is the engine source of truth; `planner_v3.html`'s inline
+  engine is legacy. Mirror critical fiscal fixes in `lib/constants/fiscal-2026.ts`.
 - Reports must render with static fallback if AI is unavailable.
-- Keep API keys server-side only (Vercel env vars).
-- Webhook URLs must use `https://www.buildfi.ca`.
+- Keep API keys (Anthropic, Stripe, Resend) server-side only (Vercel env vars).
+- Webhook + magic-link URLs must use `https://www.buildfi.ca`.
+- New routes follow the `/api/v1/...` JSON contract pattern (ARCH-FE-BE-SPLIT §7);
+  schemas in `lib/schemas/`.
 
-## Open Pricing Decisions (to finalize)
-- Laboratoire renewal: 19.99 CAD/year OR 24.99 CAD/year.
-- Included AI report quota for Laboratoire: 5-10/year final value to lock.
-
-Until final decision is made:
-- Keep code paths configurable.
-- Do not hardcode irreversible limits in UX copy.
+## Known Drift / Cleanup Backlog (as of 2026-06-10)
+- **Code still carries old $9.99/$19.99/$49.99 prices** in several `app/` files —
+  pricing migration to $29.99/$69.99 is unfinished. Reconcile against
+  `public/index.html` (single price source).
+- `public/index.html` landing page still shows old 4-product promo pricing — update
+  before any marketing push.
+- `app/outils/bilan-annuel/` route + `bilan-annuel` lib still present though the
+  product was dropped — retire or repurpose.
+- `planner/planner_v3.html` deletion blocked on `/simulateur` + `/wizard` E2E verification.
