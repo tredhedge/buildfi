@@ -133,6 +133,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 }
 [data-theme=dark]{ --bf-paper:#1d2430; --bf-paper-2:#252d39; --bf-ink:#f2ede3;
   --bf-muted:#9aa3b2; /* dark = report-cover palette, not slate-grey */ }
+/* audit A2: tabular numerals so figures align in columns + mono numeric face */
+.kpi-v,.kpi-val,.bf-num,table td.bf-num{font-family:var(--bf-font-num);font-variant-numeric:tabular-nums}
 
 
 /* &#9552;&#9552;&#9552; KPI CARDS RESPONSIVE &#9552;&#9552;&#9552; */
@@ -1576,8 +1578,8 @@ var S = {
   labelBright:     { fontSize: FS.base, fontWeight: FW.medium, color: CL.al },
 
   // \u2500\u2500 KPI \u2500\u2500
-  kpiValue:        { fontSize: FS.xl, fontWeight: FW.bold },
-  kpiValueLg:      { fontSize: FS.xxl, fontWeight: FW.bold },
+  kpiValue:        { fontSize: FS.xl, fontWeight: FW.bold, fontFamily: "var(--bf-font-num)", fontVariantNumeric: "tabular-nums" }, // audit A2
+  kpiValueLg:      { fontSize: FS.xxl, fontWeight: FW.bold, fontFamily: "var(--bf-font-num)", fontVariantNumeric: "tabular-nums" }, // audit A2
   kpiLabel:        { fontSize: FS.sm, fontWeight: FW.normal, color: CL.dm },
 
   // \u2500\u2500 Cards \u2500\u2500
@@ -8114,21 +8116,40 @@ function runTestSuite() {
   return{pass:pass,fail:fail,total:total,results:results,mcMsg:mcMsg};
 }
 
-var f$ = function(v) {
-  if (v === void 0 || v === null || isNaN(v)) return "\u2014";
-  var a = Math.abs(v);
-  if (a >= 1e6) return (v / 1e6).toFixed(1) + "M$";
-  if (a >= 1e3) return Math.round(v / 1e3) + "K$";
-  return Math.round(v) + "$";
-};
-var fD = function(v) {
-  return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(v);
-};
+// audit A2: f$ (compact KPI money) and fD (full money) now delegate to the
+// canonical locale formatters below, so EN renders show $654K / $0 and FR shows
+// 654 K$ / 0 $ (narrow NBSP) everywhere these are used. bfFmtMoney/bfFmtPct are
+// hoisted function declarations, callable here.
+var f$ = function(v) { return bfFmtMoney(v, { compact: true }); };
+var fD = function(v) { return bfFmtMoney(v, { compact: false }); };
 var _nfCache = {};
 function _nf(locale, minD, maxD) {
   var k = locale + "|" + minD + "|" + maxD;
   if (!_nfCache[k]) _nfCache[k] = new Intl.NumberFormat(locale, { minimumFractionDigits: minD, maximumFractionDigits: maxD });
   return _nfCache[k];
+}
+// === Canonical locale money/percent formatters (audit A2) ===
+// EN -> $654K, $1.2M, $0, 41% ; FR -> 654 K$, 1,2 M$, 0 $, 41 % (narrow NBSP  ).
+function bfFmtMoney(v, opts) {
+  opts = opts || {};
+  var en = (opts.locale || (typeof window !== "undefined" && window.__bfLang) || "fr") === "en";
+  if (v == null || isNaN(v)) return "—";
+  var sign = v < 0 ? "−" : "", a = Math.abs(v);
+  if (opts.compact !== false && a >= 1000) {
+    var unit = a >= 1e6 ? "M" : "K";
+    var val = a >= 1e6 ? a / 1e6 : a / 1e3;
+    var num = unit === "M" ? String(Math.round(val * 10) / 10) : String(Math.round(val));
+    return en ? sign + "$" + num + unit : sign + num.replace(".", ",") + " " + unit + "$";
+  }
+  var s = _nf(en ? "en-CA" : "fr-CA", 0, 0).format(Math.round(a)).replace(/ /g, " ");
+  return en ? sign + "$" + s : sign + s + " $";
+}
+function bfFmtPct(v, locale, decimals) {
+  var en = (locale || (typeof window !== "undefined" && window.__bfLang) || "fr") === "en";
+  var d = decimals == null ? 0 : decimals;
+  var n = (v == null || !isFinite(v)) ? 0 : v;
+  var s = _nf(en ? "en-CA" : "fr-CA", d, d).format(n).replace(/ /g, " ");
+  return en ? s + "%" : s + " %";
 }
 var fmtIntLocale = function(v, lang) {
   var locale = lang === "en" ? "en-CA" : "fr-CA";
