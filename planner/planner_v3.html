@@ -135,6 +135,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   --bf-muted:#9aa3b2; /* dark = report-cover palette, not slate-grey */ }
 /* audit A2: tabular numerals so figures align in columns + mono numeric face */
 .kpi-v,.kpi-val,.bf-num,table td.bf-num{font-family:var(--bf-font-num);font-variant-numeric:tabular-nums}
+/* audit P1: Lucide stroke icons in chrome (rail/tabs). currentColor recolors them. */
+.bf-ico{display:inline-flex;align-items:center;justify-content:center;line-height:0;vertical-align:middle}
+.bf-ico svg{display:block}
+.bf-rail-ico .bf-ico svg{width:21px;height:21px}
+.bf-tabs .bf-ico svg,.bf-tab-label+.bf-ico svg{width:15px;height:15px}
+.bf-tabs button .bf-ico{margin-right:1px}
 
 
 /* &#9552;&#9552;&#9552; KPI CARDS RESPONSIVE &#9552;&#9552;&#9552; */
@@ -8151,6 +8157,40 @@ function bfFmtPct(v, locale, decimals) {
   var s = _nf(en ? "en-CA" : "fr-CA", d, d).format(n).replace(/ /g, " ");
   return en ? s + "%" : s + " %";
 }
+// === Lucide stroke icons for chrome (audit P1) — replaces emoji in rail/tabs ===
+// 24x24 viewBox, stroke=currentColor (recolors via --bf-gold/--bf-muted/active),
+// 1.75 weight. Keep emoji ONLY in user content, never in nav chrome.
+var BF_ICONS = {
+  user: '<circle cx="12" cy="7" r="4"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  sliders: '<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>',
+  wallet: '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+  trendingUp: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  creditCard: '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+  building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
+  landmark: '<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  puzzle: '<path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/>',
+  settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  dashboard: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  barChart: '<path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/>',
+  dollar: '<line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+  calculator: '<rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>',
+  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'
+};
+function bfIcon(name, size) {
+  var inner = BF_ICONS[name];
+  if (!inner) return name; // graceful: unknown name renders as-is (e.g. a residual label)
+  var px = size || 20;
+  return React.createElement("span", { className: "bf-ico", "aria-hidden": "true",
+    dangerouslySetInnerHTML: { __html: '<svg width="' + px + '" height="' + px + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>' } });
+}
 var fmtIntLocale = function(v, lang) {
   var locale = lang === "en" ? "en-CA" : "fr-CA";
   return _nf(locale, 0, 0).format(Math.round(v || 0));
@@ -8513,60 +8553,60 @@ function buildTabModel(lang, mode, bizOn) {
   var merged = navProfile !== "classic";
   var nav = merged
     ? [
-      { id: "dash", label: fr ? "Dashboard" : "Dashboard", icon: "\ud83d\udccb",
+      { id: "dash", label: fr ? "Dashboard" : "Dashboard", icon: bfIcon("dashboard"),
         tabs: [5,24,23],
         subLabels: [fr ? "R\u00e9sultats" : "Results", "Monte Carlo", fr ? "Analyse & Risques" : "Analysis & Risks"],
         modes: ["standard","expert"] },
-      { id: "report", label: fr ? "Rapport" : "Report", icon: "\ud83d\udcca",
+      { id: "report", label: fr ? "Rapport" : "Report", icon: bfIcon("barChart"),
         tabs: [9],
         subLabels: [fr ? "Rapport d\u00e9taill\u00e9" : "Detailed report"],
         modes: ["standard","expert"] },
-      { id: "cash", label: fr ? "Cashflow" : "Cashflow", icon: "\ud83d\udcb5",
+      { id: "cash", label: fr ? "Cashflow" : "Cashflow", icon: bfIcon("dollar"),
         tabs: [2,7,13,16], subLabels: [fr ? "Revenus" : "Income", fr ? "Projection" : "Projection", "Cash-flow", fr ? "D\u00e9caissement" : "Decumulation"],
         modes: ["standard","expert"] },
-      { id: "wealth", label: fr ? "Patrimoine" : "Wealth", icon: "\ud83c\udfe6",
+      { id: "wealth", label: fr ? "Patrimoine" : "Wealth", icon: bfIcon("coins"),
         tabs: [1,3,29,8],
         subLabels: [fr ? "Comptes & Bilan" : "Accounts & Balance", fr ? "Immobilier" : "Real Estate", fr ? "Analyse immo" : "RE Analysis", fr ? "Succession" : "Estate"],
         modes: ["standard","expert"] },
-      { id: "risk", label: fr ? "Risque" : "Risk", icon: "\ud83d\udee1",
+      { id: "risk", label: fr ? "Risque" : "Risk", icon: bfIcon("shield"),
         tabs: [6,25,26,20],
         subLabels: ["Stress tests", fr ? "Et si...?" : "What If?", "Tornado", fr ? "Impact frais" : "Fee Impact"],
         modes: ["standard","expert"] },
-      { id: "tax", label: fr ? "Fiscalit\u00e9" : "Tax", icon: "\ud83e\uddee",
+      { id: "tax", label: fr ? "Fiscalit\u00e9" : "Tax", icon: bfIcon("calculator"),
         tabs: [4], subLabels: [fr ? "Fiscalit\u00e9" : "Tax"],
         modes: ["standard","expert"] },
-      { id: "opt", label: fr ? "Optimisation" : "Optimization", icon: "\ud83e\udde0",
+      { id: "opt", label: fr ? "Optimisation" : "Optimization", icon: bfIcon("zap"),
         tabs: [27,30,21,17,18],
         subLabels: [fr ? "Sc\u00e9narios" : "Scenarios", "Guardrails", fr ? "Pensions gouv." : "Gov Pensions", fr ? "Rente vs Rachat" : "Pension vs CV", fr ? "Dette vs Invest." : "Debt vs Invest."],
         modes: ["standard","expert"] },
-      bizOn ? { id: "biz", label: fr ? "Entreprise" : "Business", icon: "\ud83c\udfe2",
+      bizOn ? { id: "biz", label: fr ? "Entreprise" : "Business", icon: bfIcon("building"),
         tabs: [31,32], subLabels: [fr ? "Tableau de bord" : "Dashboard", fr ? "Optim. r\u00e9mun." : "Comp. Optim."],
         modes: ["standard","expert"] } : null,
-      { id: "guide", label: "Guide", icon: "\ud83d\udcda", tabs: [28], modes: ["standard","expert"] }
+      { id: "guide", label: "Guide", icon: bfIcon("book"), tabs: [28], modes: ["standard","expert"] }
     ]
     : [
-      { id: "dash", label: fr ? "Dashboard" : "Dashboard", icon: "\ud83d\udccb",
+      { id: "dash", label: fr ? "Dashboard" : "Dashboard", icon: bfIcon("dashboard"),
         tabs: [5,9], subLabels: [fr ? "R\u00e9sultats" : "Results", fr ? "Rapport d\u00e9taill\u00e9" : "Detailed report"],
         modes: ["standard","expert"] },
-      { id: "cash", label: fr ? "Cashflow" : "Cashflow", icon: "\ud83d\udcb5",
+      { id: "cash", label: fr ? "Cashflow" : "Cashflow", icon: bfIcon("dollar"),
         tabs: [2,7,13,16], subLabels: [fr ? "Revenus" : "Income", fr ? "Projection" : "Projection", "Cash-flow", fr ? "D\u00e9caissement" : "Decumulation"],
         modes: ["standard","expert"] },
-      { id: "wealth", label: fr ? "Patrimoine" : "Wealth", icon: "\ud83c\udfe6",
+      { id: "wealth", label: fr ? "Patrimoine" : "Wealth", icon: bfIcon("coins"),
         tabs: [1,3,29,8],
         subLabels: [fr ? "Comptes & Bilan" : "Accounts & Balance", fr ? "Immobilier" : "Real Estate", fr ? "Analyse immo" : "RE Analysis", fr ? "Succession" : "Estate"],
         modes: ["standard","expert"] },
-      { id: "risk", label: fr ? "Risque" : "Risk", icon: "\ud83d\udee1",
+      { id: "risk", label: fr ? "Risque" : "Risk", icon: bfIcon("shield"),
         tabs: mode === "expert" ? [24,23,6,25,26,20] : [24,23,6,25,26,20],
         subLabels: mode === "expert" ? ["Monte Carlo", fr ? "Analyse & Risques" : "Analysis & Risks", "Stress tests", fr ? "Et si...?" : "What If?", "Tornado", fr ? "Impact frais" : "Fee Impact"] : ["Monte Carlo", fr ? "Analyse & Risques" : "Analysis & Risks", "Stress tests", fr ? "Et si...?" : "What If?", "Tornado", fr ? "Impact frais" : "Fee Impact"],
         modes: ["standard","expert"] },
-      { id: "opt", label: fr ? "Optimisation" : "Optimization", icon: "\ud83e\udde0",
+      { id: "opt", label: fr ? "Optimisation" : "Optimization", icon: bfIcon("zap"),
         tabs: [4,27,30,21,17,18],
         subLabels: [fr ? "Fiscalit\u00e9" : "Tax", fr ? "Sc\u00e9narios" : "Scenarios", "Guardrails", fr ? "Pensions gouv." : "Gov Pensions", fr ? "Rente vs Rachat" : "Pension vs CV", fr ? "Dette vs Invest." : "Debt vs Invest."],
         modes: ["standard","expert"] },
-      bizOn ? { id: "biz", label: fr ? "Entreprise" : "Business", icon: "\ud83c\udfe2",
+      bizOn ? { id: "biz", label: fr ? "Entreprise" : "Business", icon: bfIcon("building"),
         tabs: [31,32], subLabels: [fr ? "Tableau de bord" : "Dashboard", fr ? "Optim. r\u00e9mun." : "Comp. Optim."],
         modes: ["standard","expert"] } : null,
-      { id: "guide", label: "Guide", icon: "\ud83d\udcda", tabs: [28], modes: ["standard","expert"] }
+      { id: "guide", label: "Guide", icon: bfIcon("book"), tabs: [28], modes: ["standard","expert"] }
     ];
   nav = nav.filter(function(x) { return !!x; });
 
@@ -12802,7 +12842,7 @@ var _dismissVer = function() { setShowVerBanner(false); try { localStorage.setIt
     { key: "preRetiree", icon: "\ud83c\udfaf", name: lang === "fr" ? "Pierre, 55 ans" : "Pierre, age 55", desc: lang === "fr" ? "Pr\u00e9-retrait\u00e9 avec pension PD" : "Pre-retiree with DB pension", mode: "standard" },
     { key: "expertPEPM", icon: "\ud83d\udcbc", name: lang === "fr" ? "Luc et Anne, 48 ans" : "Luc & Anne, age 48", desc: lang === "fr" ? "Expert PE/PM/Immo" : "Expert PE/PM/Real Estate", mode: "expert" },
     { key: "retired68", icon: "\ud83c\udfe1", name: lang === "fr" ? "Monique, 68 ans" : "Monique, age 68", desc: lang === "fr" ? "D\u00e9j\u00e0 retrait\u00e9e, d\u00e9caissement" : "Already retired, decumulation", mode: "standard" },
-    { key: "bizConsultant", icon: "\ud83c\udfe2", name: lang === "fr" ? "Marc et Julie, 42 ans (CCPC)" : "Marc & Julie, age 42 (CCPC)", desc: lang === "fr" ? "Consultant incorpor\u00e9, mix sal/div, QC" : "Incorporated consultant, sal/div mix, QC", mode: "expert" },
+    { key: "bizConsultant", icon: bfIcon("building"), name: lang === "fr" ? "Marc et Julie, 42 ans (CCPC)" : "Marc & Julie, age 42 (CCPC)", desc: lang === "fr" ? "Consultant incorpor\u00e9, mix sal/div, QC" : "Incorporated consultant, sal/div mix, QC", mode: "expert" },
     { key: "bizCoupleSale", icon: "\ud83d\udcbc", name: lang === "fr" ? "David et Sarah, 50 ans (CCPC+vente)" : "David & Sarah, age 50 (CCPC+sale)", desc: lang === "fr" ? "CCPC ON, vente \u00e0 58 ans, LCGE, IPP, immo" : "CCPC ON, sale at 58, LCGE, IPP, real estate", mode: "expert" }
   ];
   var _wizardOverlay = showWizard && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" } },
@@ -14428,18 +14468,18 @@ React.createElement("div", { style: { display: "grid", gap: 4, marginTop: 8 } },
 // Stratégie (its content is already strategy-focused: meltdown / bridge /
 // split / pension-splitting).
 var _railSections = [
-  ["profil", "\ud83d\udc64", true, lang==="fr"?"Profil":"Profile", "you"],
-  ["conj",   "\ud83d\udc65", true, lang==="fr"?"Conjoint":"Spouse", "you"],
-  ["fisc",   "\ud83e\uddfe", true, lang==="fr"?"Strat\u00e9gie":"Strategy", "you"],
-  ["rev",    "\ud83d\udcb8", true, lang==="fr"?"Flux":"Cashflow", "flow"],
-  ["ep",     "\ud83d\udcc8", true, lang==="fr"?"\u00c9pargne":"Savings", "flow"],
-  ["immo",   "\ud83c\udfe0", true, lang==="fr"?"Immo":"Realty", "flow"],
-  ["debt",   "\ud83d\udcb3", true, lang==="fr"?"Dettes":"Debts", "flow"],
-  ["biz",    "\ud83c\udfe2", !cockpitMode, lang==="fr"?"Entrep.":"Business", "flow"],
-  ["gov",    "\ud83c\udfdb\ufe0f", true, lang==="fr"?"Pension":"Pension", "retire"],
-  ["ins",    "\ud83d\udee1\ufe0f", !cockpitMode, lang==="fr"?"Assur.":"Insur.", "retire"],
-  ["alt",    "\ud83e\udde9", mode === "expert" && !cockpitMode, lang==="fr"?"Altern.":"Alt.", "advanced"],
-  ["model",  "\u2699\ufe0f", !cockpitMode, lang==="fr"?"Mod\u00e8le":"Model", "advanced"]
+  ["profil", "user", true, lang==="fr"?"Profil":"Profile", "you"],
+  ["conj",   "users", true, lang==="fr"?"Conjoint":"Spouse", "you"],
+  ["fisc",   "sliders", true, lang==="fr"?"Strat\u00e9gie":"Strategy", "you"],
+  ["rev",    "wallet", true, lang==="fr"?"Flux":"Cashflow", "flow"],
+  ["ep",     "trendingUp", true, lang==="fr"?"\u00c9pargne":"Savings", "flow"],
+  ["immo",   "home", true, lang==="fr"?"Immo":"Realty", "flow"],
+  ["debt",   "creditCard", true, lang==="fr"?"Dettes":"Debts", "flow"],
+  ["biz",    "building", !cockpitMode, lang==="fr"?"Entrep.":"Business", "flow"],
+  ["gov",    "landmark", true, lang==="fr"?"Pension":"Pension", "retire"],
+  ["ins",    "shield", !cockpitMode, lang==="fr"?"Assur.":"Insur.", "retire"],
+  ["alt",    "puzzle", mode === "expert" && !cockpitMode, lang==="fr"?"Altern.":"Alt.", "advanced"],
+  ["model",  "settings", !cockpitMode, lang==="fr"?"Mod\u00e8le":"Model", "advanced"]
 ].filter(function(s) { return s[2]; });
 
 return React.createElement("div", { style: sty.wrap, className: "bf-wrap" }, React.createElement("a", { href: "#bf-main", style: { position: "absolute", left: "-9999px", top: "auto", width: "1px", height: "1px", overflow: "hidden", zIndex: 9999 }, onFocus: function(e) { e.target.style.left = "10px"; e.target.style.top = "10px"; e.target.style.width = "auto"; e.target.style.height = "auto"; }, onBlur: function(e) { e.target.style.left = "-9999px"; } }, lang === "fr" ? "Aller au contenu" : "Skip to content"), _wizardOverlay, React.createElement("div", { className: sty.sideMob && mobSbOpen ? "bf-backdrop bf-backdrop-visible" : "bf-backdrop", onClick: function() { setMobSb(false); }, style: { cursor: "pointer" } }),
@@ -14464,7 +14504,7 @@ React.createElement("div", { className: "bf-rail" },
         "aria-label": s[3],
         "aria-pressed": openSec === s[0] && pan ? "true" : "false",
         onClick: function() { if (openSec === s[0] && pan) { setPan(false); } else { setOS(s[0]); setPan(true); } }
-      }, React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, s[1]), React.createElement("span", { className: "bf-rail-label" }, s[3])));
+      }, React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, bfIcon(s[1])), React.createElement("span", { className: "bf-rail-label" }, s[3])));
     });
     return _items;
   })(),
@@ -14483,11 +14523,11 @@ React.createElement("div", { className: "bf-rail" },
       ? "Formulaire complet — ouvre un panneau plein écran par-dessus le cockpit avec les ~190 variables du moteur, organisées en sections avec tooltips et valeurs par défaut. Utile pour : la saisie initiale, l'audit annuel, ou ajuster un champ avancé (DPA, Smith, Guyton-Klinger, allocation par compte, scénarios de stress, etc.). Fermez le panneau pour revenir au cockpit."
       : "Full form — opens a fullscreen panel over the cockpit with the ~190 engine variables, organized in sections with tooltips and defaults. Use for: initial setup, annual review, or tuning an advanced field (CCA, Smith Manoeuvre, Guyton-Klinger, per-account allocation, stress scenarios, etc.). Close the panel to return to the cockpit."
   },
-    React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, "\ud83d\udccb"),
+    React.createElement("span", { className: "bf-rail-ico", "aria-hidden": "true" }, bfIcon("clipboard")),
     React.createElement("span", { className: "bf-rail-label" }, lang === "fr" ? "Long form" : "Long form")
   ),
-  React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, React.createElement("span", { className: "bf-rail-ico" }, dark ? "\u2600\ufe0f" : "\ud83c\udf19"), React.createElement("span", { className: "bf-rail-label" }, dark ? "Light" : "Dark")),
-  React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, React.createElement("span", { className: "bf-rail-ico" }, "\ud83d\udcda"), React.createElement("span", { className: "bf-rail-label" }, "Guide")),
+  React.createElement("button", { className: "bf-rail-btn", onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); } }, React.createElement("span", { className: "bf-rail-ico" }, dark ? bfIcon("sun") : bfIcon("moon")), React.createElement("span", { className: "bf-rail-label" }, dark ? "Light" : "Dark")),
+  React.createElement("button", { className: "bf-rail-btn", onClick: function() { setShowWiz(true); setWizStep(0); } }, React.createElement("span", { className: "bf-rail-ico" }, bfIcon("book")), React.createElement("span", { className: "bf-rail-label" }, "Guide")),
   React.createElement("button", { className: "bf-rail-btn", onClick: function() { setLang(function(prev) { var n = prev === "fr" ? "en" : "fr"; document.documentElement.lang = n; return n; }); }, style: { fontSize: 11, fontWeight: 700 } }, lang === "fr" ? "EN" : "FR")
 ),
 // === DESKTOP OVERLAY BACKDROP ===
