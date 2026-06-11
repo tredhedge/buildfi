@@ -33,6 +33,10 @@ const nextConfig = {
       // Laboratoire naming → Planner
       { source: '/laboratoire', destination: '/acheter-planner', permanent: true },
 
+      // Retired standalone Bilan Annuel free tool → landing (annual
+      // re-assessment lives on inside the Planner simulator via /api/bilan-annuel)
+      { source: '/outils/bilan-annuel', destination: '/', permanent: true },
+
       // Legacy static homepage → React landing
       { source: '/index.html', destination: '/', permanent: true },
     ];

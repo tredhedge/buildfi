@@ -84,15 +84,17 @@ Every report must remain coherent across products:
 Read in this order before making product decisions:
 1. `docs/ARCH-FE-BE-SPLIT.md` (current active workstream)
 2. `docs/PLANNER-FE-BE-CONTRACT.md` (iframe ↔ React ↔ API postMessage)
-3. `docs/ARCH-BILAN-360.md` (Bilan 360 architecture decisions)
-4. `docs/TECH-REFERENCE.md` (technical standards + report consistency)
-5. `docs/ARCHITECTURE.md` (dependencies and routing)
-6. `docs/SERVICES.md` (Stripe/env/email/deployment constraints)
-7. `docs/STRATEGY.md` (positioning, pricing rationale, competition)
+3. `docs/DESIGN-SYSTEM.md` (palette, typography, components, report consistency)
+4. `docs/PLANNER-ENGINE-AUDIT-2026-04-24.md` (engine findings)
+5. `docs/ENGINE-FULL-AUDIT-2026-04-14.md` (broader engine audit)
+6. `docs/REPORT-AUDIT-10-EN-2026-04-15.md` (EN report polish)
+7. `docs/LOI25-BREACH-RUNBOOK.md` (Quebec Loi 25 incident response)
+8. `docs/PATH-B-BACKLOG.md` (deferred work)
 
-> Note: some docs (`STATUS.md`, `PLAN-PIVOT.md`) predate the 2026-04-22 2-SKU
-> pivot and may still reference the old 3-SKU pricing. Treat this file as
-> authoritative where they conflict.
+> Note: `ARCH-BILAN-360.md`, `TECH-REFERENCE.md`, `ARCHITECTURE.md`,
+> `SERVICES.md`, and `STRATEGY.md` were removed in the 2026-04-06 docs/wip
+> cleanup (commit `1622722`) and no longer exist; recover from git history if
+> needed. Treat this file (CLAUDE.md) as authoritative.
 
 ## Critical Rules - Read Before Every Task
 
