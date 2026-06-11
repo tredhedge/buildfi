@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="BuildFi Laboratoire">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="description" content="BuildFi Laboratoire - Simulateur de retraite canadien avec Monte Carlo, fiscalite 13 provinces, QPP/OAS/GIS.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;--bf-cd:#2c2820;--bf-bd:#443e34;--bf-tx:#c8c4bf;--bf-rail-bg:rgba(36,40,48,.96);--bf-rail-border:rgba(132,154,182,.24);--bf-rail-btn:rgba(208,217,230,.62);--bf-rail-hover-bg:rgba(90,140,196,.16);--bf-rail-hover-tx:rgba(215,232,250,.96);--bf-rail-active-bg:rgba(84,130,182,.24);--bf-rail-active-tx:#8ec0f2;--bf-overlay-bg:rgba(34,40,52,.94);--bf-overlay-backdrop:rgba(0,0,0,.22);--bf-overlay-shadow:0 6px 22px rgba(0,0,0,.22);--bf-field-bg:rgba(20,26,34,.5);--bf-field-border:rgba(126,151,178,.42)}#root{min-height:100vh}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--bf-font-ui),BlinkMacSystemFont,sans-serif;--bf-cd:#2c2820;--bf-bd:#443e34;--bf-tx:#c8c4bf;--bf-rail-bg:rgba(36,40,48,.96);--bf-rail-border:rgba(132,154,182,.24);--bf-rail-btn:rgba(208,217,230,.62);--bf-rail-hover-bg:rgba(90,140,196,.16);--bf-rail-hover-tx:rgba(215,232,250,.96);--bf-rail-active-bg:rgba(84,130,182,.24);--bf-rail-active-tx:#8ec0f2;--bf-overlay-bg:rgba(34,40,52,.94);--bf-overlay-backdrop:rgba(0,0,0,.22);--bf-overlay-shadow:0 6px 22px rgba(0,0,0,.22);--bf-field-bg:rgba(20,26,34,.5);--bf-field-border:rgba(126,151,178,.42)}#root{min-height:100vh}
 .bf-content [style*="overflow"] table thead th,.bf-content [style*="overflow"] table thead td,.bf-content [style*="overflow"] table thead tr{position:sticky;top:0;z-index:2;background:var(--bf-cd);box-shadow:0 1px 0 var(--bf-bd)}
 
 
@@ -119,6 +119,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* &#9552;&#9552;&#9552; TYPOGRAPHY: Scale &#9552;&#9552;&#9552; */
 :root{--fs-xs:9px;--fs-sm:10px;--fs-base:11px;--fs-md:13px;--fs-lg:16px;--fs-xl:20px;--fs-2xl:28px}
+/* === BuildFi unified design tokens (audit A1) — one block, three surfaces ===
+   Mirror copy lives in bf-tokens.css for the Next.js site. Default = light/paper;
+   [data-theme=dark] = report-cover palette. */
+:root{
+  --bf-paper:#fdfbf7; --bf-paper-2:#f4efe6; --bf-ink:#1a1610; --bf-muted:#706558;
+  --bf-navy:#252d39; --bf-navy-2:#344155; --bf-gold:#c4944a; --bf-gold-soft:#e8d8a8;
+  --bf-good:#3f7a4e; --bf-warn:#b07a1e; --bf-bad:#b3402e; --bf-info:#3a6ea5;
+  --bf-radius:8px; --bf-shadow:0 1px 3px rgba(26,22,16,.08),0 4px 16px rgba(26,22,16,.06);
+  --bf-font-ui:"Inter",-apple-system,system-ui,sans-serif;
+  --bf-font-display:"Playfair Display",Georgia,serif;
+  --bf-font-num:"JetBrains Mono",monospace;
+}
+[data-theme=dark]{ --bf-paper:#1d2430; --bf-paper-2:#252d39; --bf-ink:#f2ede3;
+  --bf-muted:#9aa3b2; /* dark = report-cover palette, not slate-grey */ }
 
 
 /* &#9552;&#9552;&#9552; KPI CARDS RESPONSIVE &#9552;&#9552;&#9552; */
@@ -131,10 +145,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* Clickable KPI affordance — subtle chevron + hover lift signals that the
    card routes to a drill-in tab. Applied via inline className="bf-kpi-click". */
 .bf-kpi-click{position:relative;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
-.bf-kpi-click::after{content:"\203A";position:absolute;bottom:4px;right:8px;font-size:14px;line-height:1;color:var(--bf-ac,#c49a1a);opacity:.45;transition:opacity .12s ease,transform .12s ease}
+.bf-kpi-click::after{content:"\203A";position:absolute;bottom:4px;right:8px;font-size:14px;line-height:1;color:var(--bf-ac,var(--bf-gold));opacity:.45;transition:opacity .12s ease,transform .12s ease}
 .bf-kpi-click:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.12)}
 .bf-kpi-click:hover::after{opacity:.9;transform:translateX(2px)}
-.bf-kpi-click:focus-visible{outline:2px solid var(--bf-ac,#c49a1a);outline-offset:2px}
+.bf-kpi-click:focus-visible{outline:2px solid var(--bf-ac,var(--bf-gold));outline-offset:2px}
 
 /* ═══ SIDEBAR RAIL + OVERLAY (DESKTOP) ═══ */
 .bf-rail {
@@ -179,7 +193,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   --bfx-radius-lg: 14px;
   --bfx-dur: 180ms;
   --bfx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --bfx-ring: 0 0 0 3px var(--bf-accent, #c49a1a)55;
+  --bfx-ring: 0 0 0 3px var(--bf-accent, var(--bf-gold))55;
 }
 
 /* Overlay panel (desktop) */
@@ -215,9 +229,9 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 .bf-rail-btn:hover:not(.active) { background: var(--bf-rail-hover, rgba(255,255,255,0.05)); }
 .bf-rail-btn:hover:not(.active) .bf-rail-ico { transform: scale(1.05); }
 .bf-rail-btn .bf-rail-ico { transition: transform .15s ease; display: block; }
-.bf-rail-btn.active { background: linear-gradient(90deg, var(--bf-accent, #c49a1a)22 0%, transparent 60%); }
-.bf-rail-btn.active::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--bf-accent, #c49a1a); border-radius: 0 2px 2px 0; }
-.bf-rail-btn.active .bf-rail-label { color: var(--bf-accent, #c49a1a); font-weight: 700; }
+.bf-rail-btn.active { background: linear-gradient(90deg, var(--bf-accent, var(--bf-gold))22 0%, transparent 60%); }
+.bf-rail-btn.active::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--bf-accent, var(--bf-gold)); border-radius: 0 2px 2px 0; }
+.bf-rail-btn.active .bf-rail-label { color: var(--bf-accent, var(--bf-gold)); font-weight: 700; }
 .bf-rail-sep { height: 1px; background: var(--bf-rail-border); opacity: .6; margin: 4px 8px; }
 .bf-rail-sep-group { margin: 8px 10px; opacity: .5; }
 
@@ -232,7 +246,7 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 .bf-mobile-sheet .bf-subsec {
   background: linear-gradient(180deg, var(--bf-field-bg), rgba(255,255,255,0.01));
   border: 1px solid var(--bf-rail-border);
-  border-left: 3px solid var(--bf-accent, #c49a1a);
+  border-left: 3px solid var(--bf-accent, var(--bf-gold));
   border-radius: var(--bfx-radius-md);
   padding: 12px 14px; margin: 10px 0;
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
@@ -252,7 +266,7 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 .bf-mobile-sheet input[type="text"]:focus,
 .bf-mobile-sheet select:focus {
   outline: none;
-  border-color: var(--bf-accent, #c49a1a);
+  border-color: var(--bf-accent, var(--bf-gold));
   box-shadow: var(--bfx-ring);
   border-radius: var(--bfx-radius-sm);
 }
@@ -272,7 +286,7 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 .bf-rail-btn:focus-visible,
 .bf-side-overlay button:focus-visible,
 .bf-mobile-sheet button:focus-visible {
-  outline: 2px solid var(--bf-accent, #c49a1a);
+  outline: 2px solid var(--bf-accent, var(--bf-gold));
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -286,7 +300,7 @@ details.bf-adv-drawer[open] > summary::before { transform: rotate(90deg); }
 /* High-contrast fallback for Windows High Contrast mode: borders visible. */
 @media (prefers-contrast: more) {
   .bf-rail-btn { border: 1px solid currentColor; }
-  .bf-rail-btn.active { border-color: var(--bf-accent, #c49a1a); }
+  .bf-rail-btn.active { border-color: var(--bf-accent, var(--bf-gold)); }
 }
 
 /* v3 Phase 7 — Cockpit mode hides Tier-2 fields by default. Any element
@@ -301,22 +315,22 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
    above the utility buttons (Dark/Guide/FR-EN) in the rail footer. */
 .bf-rail-btn.bf-rail-longform {
   background: linear-gradient(180deg, rgba(196,154,26,0.22), rgba(196,154,26,0.12)) !important;
-  border-left: 3px solid var(--bf-accent, #c49a1a) !important;
+  border-left: 3px solid var(--bf-accent, var(--bf-gold)) !important;
   border-radius: 0 8px 8px 0 !important;
   margin: 4px 0 6px 0 !important;
   padding: 8px 6px !important;
   min-height: 52px;
   transition: background .15s var(--bfx-ease, ease), box-shadow .15s var(--bfx-ease, ease);
 }
-.bf-rail-btn.bf-rail-longform .bf-rail-ico { font-size: 18px; color: var(--bf-accent, #c49a1a); }
+.bf-rail-btn.bf-rail-longform .bf-rail-ico { font-size: 18px; color: var(--bf-accent, var(--bf-gold)); }
 .bf-rail-btn.bf-rail-longform .bf-rail-label {
-  color: var(--bf-accent, #c49a1a) !important;
+  color: var(--bf-accent, var(--bf-gold)) !important;
   font-weight: 700 !important; letter-spacing: 0.02em;
   opacity: 1 !important;
 }
 .bf-rail-btn.bf-rail-longform:hover {
   background: linear-gradient(180deg, rgba(196,154,26,0.36), rgba(196,154,26,0.2)) !important;
-  box-shadow: inset -2px 0 0 var(--bf-accent, #c49a1a);
+  box-shadow: inset -2px 0 0 var(--bf-accent, var(--bf-gold));
 }
 .bf-rail-btn.bf-rail-longform::before { content: none !important; }
 
@@ -385,7 +399,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
   transition: background .15s, color .15s;
 }
 .bf-mode-toggle button.on {
-  background: var(--bf-accent, #c49a1a); color: #0e1420;
+  background: var(--bf-accent, var(--bf-gold)); color: #0e1420;
 }
 .bf-mode-toggle button:not(.on):hover { color: var(--bf-rail-hover-tx); }
 
@@ -396,7 +410,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
   padding: 11px 14px; margin-bottom: 12px;
   background: rgba(80,144,200,0.08);
   border: none;
-  border-left: 3px solid var(--bf-accent, #c49a1a);
+  border-left: 3px solid var(--bf-accent, var(--bf-gold));
   border-radius: var(--bfx-radius-md);
   font-size: 12px; font-weight: 500;
   color: var(--bf-rail-btn, #b4becf);
@@ -406,7 +420,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 }
 .bf-blueprint-jump:hover {
   background: rgba(196,154,26,0.14);
-  color: var(--bf-accent, #c49a1a);
+  color: var(--bf-accent, var(--bf-gold));
   transform: translateX(2px);
 }
 .bf-blueprint-jump .bf-bpj-ico { font-size: 15px; line-height: 1; flex-shrink: 0; }
@@ -431,9 +445,9 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
   transition: color var(--bfx-dur) var(--bfx-ease);
 }
 .bf-side-overlay details.bf-adv-drawer > summary:hover,
-.bf-mobile-sheet details.bf-adv-drawer > summary:hover { color: var(--bf-accent, #c49a1a); }
+.bf-mobile-sheet details.bf-adv-drawer > summary:hover { color: var(--bf-accent, var(--bf-gold)); }
 .bf-side-overlay details.bf-adv-drawer[open] > summary,
-.bf-mobile-sheet details.bf-adv-drawer[open] > summary { color: var(--bf-accent, #c49a1a); margin-bottom: 8px; }
+.bf-mobile-sheet details.bf-adv-drawer[open] > summary { color: var(--bf-accent, var(--bf-gold)); margin-bottom: 8px; }
 
 /* v3 Phase 9 — v4-style compact input base (before focus state adds the ring) */
 .bf-side-overlay input[type="number"],
@@ -673,11 +687,11 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
    Port Plus Jakarta Sans + longform's spacing/radii/focus aesthetic
    to the React sidebar so the two surfaces feel like one product.
    Scope: .bf-side-overlay + .bf-mobile-sheet only. Main dashboard
-   (charts, KPIs, tabs) keeps DM Sans and existing look. */
+   (charts, KPIs, tabs) keeps Inter and existing look. */
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 .bf-side-overlay, .bf-mobile-sheet {
-  font-family: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
+  font-family: var(--bf-font-ui), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   font-feature-settings: "cv01", "cv03", "cv04", "ss01";
@@ -10871,12 +10885,12 @@ var reportHTML = useMemo(function() {
   if (!mc || !mc.pD || mc.pD.length === 0) {
     // Phase 6: Show deterministic-only report if available
     if (window._detResult && window._detResult.schedule) {
-      return '<div style="padding:30px;text-align:center;font-family:DM Sans,sans-serif"><div style="font-size:18px;font-weight:600;color:#c4944a;margin-bottom:10px">' + (_fr ? 'Simulation en cours...' : 'Simulation running...') + '</div><div style="font-size:13px;color:#888">' + (_fr ? 'Les r\u00e9sultats d\u00e9terministes sont pr\u00eats. Les r\u00e9sultats Monte Carlo appara\u00eetront sous peu.' : 'Deterministic results are ready. Monte Carlo results will appear shortly.') + '</div></div>';
+      return '<div style="padding:30px;text-align:center;font-family:Inter,sans-serif"><div style="font-size:18px;font-weight:600;color:#c4944a;margin-bottom:10px">' + (_fr ? 'Simulation en cours...' : 'Simulation running...') + '</div><div style="font-size:13px;color:#888">' + (_fr ? 'Les r\u00e9sultats d\u00e9terministes sont pr\u00eats. Les r\u00e9sultats Monte Carlo appara\u00eetront sous peu.' : 'Deterministic results are ready. Monte Carlo results will appear shortly.') + '</div></div>';
     }
     return "";
   }
   if (age >= retAge || (deathAge||90) <= retAge) {
-    return '<div style="padding:40px;text-align:center;color:#b83838;font-size:16px;font-family:DM Sans,sans-serif">' + (_fr ? 'Param\u00e8tres invalides. V\u00e9rifiez que l\u2019\u00e2ge de retraite est sup\u00e9rieur \u00e0 votre \u00e2ge actuel.' : 'Invalid parameters. Ensure retirement age is greater than your current age.') + '</div>';
+    return '<div style="padding:40px;text-align:center;color:#b83838;font-size:16px;font-family:Inter,sans-serif">' + (_fr ? 'Param\u00e8tres invalides. V\u00e9rifiez que l\u2019\u00e2ge de retraite est sup\u00e9rieur \u00e0 votre \u00e2ge actuel.' : 'Invalid parameters. Ensure retirement age is greater than your current age.') + '</div>';
   }
   var rm = rptMode || mode || "standard";
   var rl = rptLang || lang;
@@ -10945,7 +10959,7 @@ var reportHTML = useMemo(function() {
   // ═══ CSS ═══
   var css = '@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");\n' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
-    'body{font-family:"DM Sans",-apple-system,system-ui,sans-serif;max-width:820px;margin:0 auto;padding:24px 28px;color:#1a1a1a;font-size:'+(ess?'14':'13')+'px;line-height:1.6;background:#fff}' +
+    'body{font-family:"Inter",-apple-system,system-ui,sans-serif;max-width:820px;margin:0 auto;padding:24px 28px;color:#1a1a1a;font-size:'+(ess?'14':'13')+'px;line-height:1.6;background:#fff}' +
     '.mono{font-family:"JetBrains Mono",monospace;font-weight:500}' +
     'h1{font-size:'+(ess?'30':'26')+'px;color:#c4944a;font-weight:800;letter-spacing:-.5px;line-height:1.2}' +
     'h2{font-size:14px;color:#666;font-weight:400;margin-top:2px}' +
@@ -10966,7 +10980,7 @@ var reportHTML = useMemo(function() {
     '.ai-badge{display:inline-block;background:#e8e0f8;color:#7c60b8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}.ai-block p{margin-top:4px;line-height:1.7}' +
     '.tbl{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0}' +
     '.tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:#c4944a;background:#f9f7f2;border-bottom:2px solid #e8e0d4}.tbl th:first-child{text-align:left}' +
-    '.tbl td{padding:4px 6px;text-align:right;border-bottom:1px solid #f0ece4;font-family:"JetBrains Mono",monospace;font-size:10px}.tbl td:first-child{text-align:left;font-family:"DM Sans",sans-serif}' +
+    '.tbl td{padding:4px 6px;text-align:right;border-bottom:1px solid #f0ece4;font-family:"JetBrains Mono",monospace;font-size:10px}.tbl td:first-child{text-align:left;font-family:"Inter",sans-serif}' +
     '.tbl tr.ret{font-weight:700;background:#faf8f3}' +
     '.timeline{background:#f9f7f2;border:1px solid #e8e0d4;border-radius:8px;padding:12px;margin:10px 0}' +
     '.tl-item{display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid #f0ece4}.tl-item:last-child{border-bottom:none}' +
@@ -11132,7 +11146,7 @@ var reportHTML = useMemo(function() {
     family.forEach(function(m) {
       var role = m.role === 'self' ? (fr ? 'Titulaire' : 'Primary') : m.role === 'spouse' ? (fr ? 'Conjoint(e)' : 'Spouse') : (fr ? 'Enfant' : 'Child');
       var notes = m.role === 'self' ? (fr ? 'Retraite \u00e0 ' + retAge : 'Retirement at ' + retAge) : m.role === 'spouse' ? (fr ? 'Retraite \u00e0 ' + (cRetAge || retAge) : 'Retirement at ' + (cRetAge || retAge)) + (cSal > 0 ? ', ' + fmtR(cSal) : '') : (m.education ? (fr ? 'RE\u00c9\u00c9, \u00e9tudes pr\u00e9vues' : 'RESP, education planned') : '');
-      h += '<tr><td style="font-family:DM Sans,sans-serif">' + (m.name || role) + '</td><td>' + (m.age || '?') + '</td><td style="font-family:DM Sans,sans-serif">' + role + '</td><td style="font-family:DM Sans,sans-serif;font-size:10px;color:#888">' + notes + '</td></tr>';
+      h += '<tr><td style="font-family:Inter,sans-serif">' + (m.name || role) + '</td><td>' + (m.age || '?') + '</td><td style="font-family:Inter,sans-serif">' + role + '</td><td style="font-family:Inter,sans-serif;font-size:10px;color:#888">' + notes + '</td></tr>';
     });
     h += '</tbody></table></div>';
   }
@@ -11162,7 +11176,7 @@ var reportHTML = useMemo(function() {
       var typeLbl = g.type === 'retirement' ? (fr ? 'R\u00e9current' : 'Recurring') : g.type === 'lumpsum' ? (fr ? 'Ponctuel' : 'Lump sum') : g.type === 'savings' ? (fr ? '\u00c9pargne' : 'Savings') : g.type === 'legacy' ? 'Succession' : (g.type || '');
       var priLbl = g.priority === 'essential' ? (fr ? 'Essentiel' : 'Essential') : g.priority === 'important' ? 'Important' : (fr ? 'Souhait' : 'Nice-to-have');
       var priClr = g.priority === 'essential' ? '#cc4444' : g.priority === 'important' ? '#b89830' : '#888';
-      h += '<tr><td style="font-family:DM Sans,sans-serif">' + (g.icon || '') + ' ' + (fr ? (g.name || '') : (g.nameEn || g.name || '')) + '</td><td style="font-family:DM Sans,sans-serif;font-size:10px">' + typeLbl + '</td><td>' + (g.amount > 0 ? fmtR(g.amount) : '\u2014') + '</td><td>' + (g.startAge || g.endAge || '\u2014') + '</td><td style="color:' + priClr + ';font-weight:600;font-size:10px">' + priLbl + '</td></tr>';
+      h += '<tr><td style="font-family:Inter,sans-serif">' + (g.icon || '') + ' ' + (fr ? (g.name || '') : (g.nameEn || g.name || '')) + '</td><td style="font-family:Inter,sans-serif;font-size:10px">' + typeLbl + '</td><td>' + (g.amount > 0 ? fmtR(g.amount) : '\u2014') + '</td><td>' + (g.startAge || g.endAge || '\u2014') + '</td><td style="color:' + priClr + ';font-weight:600;font-size:10px">' + priLbl + '</td></tr>';
     });
     h += '</tbody></table>';
   }
@@ -11818,7 +11832,7 @@ var reportHTML = useMemo(function() {
       _totalDebt += bal;
       _totalPay += pay;
       if (bal <= 0) return;
-      h += '<tr><td style="font-family:DM Sans,sans-serif">' + (d.name || d.desc || (fr ? 'Dette' : 'Debt')) + '</td><td>' + fmtR(bal) + '</td><td>' + fmtP(rate, 1) + '</td><td>' + fmtR(pay) + '</td><td>' + months + '</td></tr>';
+      h += '<tr><td style="font-family:Inter,sans-serif">' + (d.name || d.desc || (fr ? 'Dette' : 'Debt')) + '</td><td>' + fmtR(bal) + '</td><td>' + fmtP(rate, 1) + '</td><td>' + fmtR(pay) + '</td><td>' + months + '</td></tr>';
     });
     h += '</tbody></table>';
     h += '<div class="g3" style="margin-top:8px">';
@@ -11861,7 +11875,7 @@ var reportHTML = useMemo(function() {
       strs.forEach(function(st) {
         var succDelta = st.succ != null ? Math.round((st.succ - mc.succ) * 100) : 0;
         var clr = succDelta >= 0 ? '#2a8c46' : succDelta > -10 ? '#b89830' : '#cc4444';
-        h += '<tr><td style="font-family:DM Sans,sans-serif">' + (st.name || st.label || '') + '</td><td style="color:' + clr + ';font-weight:700">' + (st.succ != null ? Math.round(st.succ*100) + '%' : '\u2014') + '</td><td>' + (st.medF != null ? fmtR(st.medF) : '\u2014') + '</td><td style="color:' + clr + '">' + (succDelta >= 0 ? '+' : '') + succDelta + ' pts</td></tr>';
+        h += '<tr><td style="font-family:Inter,sans-serif">' + (st.name || st.label || '') + '</td><td style="color:' + clr + ';font-weight:700">' + (st.succ != null ? Math.round(st.succ*100) + '%' : '\u2014') + '</td><td>' + (st.medF != null ? fmtR(st.medF) : '\u2014') + '</td><td style="color:' + clr + '">' + (succDelta >= 0 ? '+' : '') + succDelta + ' pts</td></tr>';
       });
       h += '</tbody></table>';
     }
@@ -11883,7 +11897,7 @@ var reportHTML = useMemo(function() {
         var y = 25 + i * 30;
         var xLo = _tScale(s.lo);
         var xHi = _tScale(s.hi);
-        h += '<text x="10" y="' + (y + 5) + '" font-size="10" fill="#555" font-family="DM Sans,sans-serif">' + s.label + '</text>';
+        h += '<text x="10" y="' + (y + 5) + '" font-size="10" fill="#555" font-family="Inter,sans-serif">' + s.label + '</text>';
         if (s.lo < 0) h += '<rect x="' + Math.min(250, xLo) + '" y="' + (y - 8) + '" width="' + Math.abs(250 - xLo) + '" height="16" fill="#cc4444" rx="2" opacity=".7"/>';
         if (s.hi > 0) h += '<rect x="250" y="' + (y - 8) + '" width="' + Math.abs(xHi - 250) + '" height="16" fill="#2a8c46" rx="2" opacity=".7"/>';
         h += '<text x="' + (xLo - 4) + '" y="' + (y + 4) + '" font-size="8" fill="#cc4444" text-anchor="end" font-family="JetBrains Mono,monospace">' + (s.lo < 0 ? fmtR(Math.round(s.lo)) : '') + '</text>';
@@ -16232,7 +16246,7 @@ tab === 29 && (props.some(function(p) { return p.on; }) ? React.createElement("d
                 { k: lang === "fr" ? "Âge médian d’épuisement" : "Median depletion age", w: smithResult.withSmith.ruinAge >= 999 ? (lang === "fr" ? "Jamais" : "Never") : smithResult.withSmith.ruinAge, wo: smithResult.withoutSmith.ruinAge >= 999 ? (lang === "fr" ? "Jamais" : "Never") : smithResult.withoutSmith.ruinAge, d: (smithResult.withSmith.ruinAge >= 999 && smithResult.withoutSmith.ruinAge >= 999) ? "\u2014" : ((smithResult.withSmith.ruinAge - smithResult.withoutSmith.ruinAge) >= 0 ? "+" : "") + (smithResult.withSmith.ruinAge - smithResult.withoutSmith.ruinAge), c: (smithResult.withSmith.ruinAge - smithResult.withoutSmith.ruinAge) >= 0 ? CL.gn : CL.rd }
               ].map(function(row, idx) {
                 return React.createElement("tr", { key: idx, style: { background: idx % 2 ? TABLE_UI.rowAlt : "transparent" } },
-                  React.createElement("td", { style: sx(_smithTd, { textAlign: "left", color: CL.dm, fontFamily: "DM Sans, sans-serif" }) }, row.k),
+                  React.createElement("td", { style: sx(_smithTd, { textAlign: "left", color: CL.dm, fontFamily: "Inter, sans-serif" }) }, row.k),
                   React.createElement("td", { style: _smithTd }, row.w),
                   React.createElement("td", { style: _smithTd }, row.wo),
                   React.createElement("td", { style: sx(_smithTd, { color: row.c, fontWeight: FW.medium }) }, row.d)
@@ -16257,7 +16271,7 @@ tab === 29 && (props.some(function(p) { return p.on; }) ? React.createElement("d
               )),
               React.createElement("tbody", null, smithResult.propContrib.map(function(r, idx) {
                 return React.createElement("tr", { key: idx, style: { background: idx % 2 ? TABLE_UI.rowAlt : "transparent" } },
-                  React.createElement("td", { style: sx(_smithTd, { textAlign: "left", color: CL.al, fontFamily: "DM Sans, sans-serif" }) }, r.name),
+                  React.createElement("td", { style: sx(_smithTd, { textAlign: "left", color: CL.al, fontFamily: "Inter, sans-serif" }) }, r.name),
                   React.createElement("td", { style: sx(_smithTd, { color: r.deltaSuccPP >= 0 ? CL.gn : CL.rd, fontWeight: FW.medium }) }, (r.deltaSuccPP >= 0 ? "+" : "") + r.deltaSuccPP),
                   React.createElement("td", { style: sx(_smithTd, { color: r.deltaMedF >= 0 ? CL.gn : CL.rd }) }, (r.deltaMedF >= 0 ? "+" : "") + f$(r.deltaMedF)),
                   React.createElement("td", { style: sx(_smithTd, { color: r.deltaP5F >= 0 ? CL.gn : CL.rd }) }, (r.deltaP5F >= 0 ? "+" : "") + f$(r.deltaP5F)),

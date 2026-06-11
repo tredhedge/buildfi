@@ -1,0 +1,31 @@
+/* === BuildFi unified design tokens (audit A1) ===
+   Single source of truth for the Next.js site. Mirror of the :root block
+   inlined in planner/planner_v3.html and the report templates. Import once
+   from app/globals.css (`@import "./bf-tokens.css";`). Default = light/paper;
+   [data-theme=dark] = report-cover palette. */
+:root {
+  --bf-paper: #fdfbf7;
+  --bf-paper-2: #f4efe6;
+  --bf-ink: #1a1610;
+  --bf-muted: #706558;
+  --bf-navy: #252d39;
+  --bf-navy-2: #344155;
+  --bf-gold: #c4944a;
+  --bf-gold-soft: #e8d8a8;
+  --bf-good: #3f7a4e;
+  --bf-warn: #b07a1e;
+  --bf-bad: #b3402e;
+  --bf-info: #3a6ea5;
+  --bf-radius: 8px;
+  --bf-shadow: 0 1px 3px rgba(26, 22, 16, 0.08), 0 4px 16px rgba(26, 22, 16, 0.06);
+  --bf-font-ui: "Inter", -apple-system, system-ui, sans-serif;
+  --bf-font-display: "Playfair Display", Georgia, serif;
+  --bf-font-num: "JetBrains Mono", monospace;
+}
+
+[data-theme="dark"] {
+  --bf-paper: #1d2430;
+  --bf-paper-2: #252d39;
+  --bf-ink: #f2ede3;
+  --bf-muted: #9aa3b2; /* dark = report-cover palette, not slate-grey */
+}
