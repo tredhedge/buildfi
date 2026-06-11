@@ -6865,6 +6865,25 @@ h += secPageEnd();
 
   window.buildReport = function(data) {
     _exportMode = !!(data && data.exportMode);
+    // L2(a) PII — the AI prompt builder emits neutral [[CLIENT_NAME]] /
+    // [[SPOUSE_NAME]] placeholder tokens instead of real names, so no personal
+    // identifier is ever sent to Anthropic. Rehydrate them here, template-side,
+    // from the local client record before rendering. No-op when the slots carry
+    // no placeholder (legacy responses) or when no name is on file.
+    if (data && data.ai && data.client) {
+      var _cn = (data.client.fn || '').toString();
+      var _sn = (data.client.sfn || '').toString();
+      var _rehydrateNames = function(v) {
+        if (typeof v === 'string') {
+          return v.replace(/\[\[CLIENT_NAME\]\]/g, _cn).replace(/\[\[SPOUSE_NAME\]\]/g, _sn);
+        }
+        if (v && typeof v === 'object') {
+          for (var k in v) { if (Object.prototype.hasOwnProperty.call(v, k)) v[k] = _rehydrateNames(v[k]); }
+        }
+        return v;
+      };
+      _rehydrateNames(data.ai);
+    }
     var d = D.buildReportPayload(data);
     // CLASSIFIER-RENDER-PLAN Phase 3 wiring: stash renderProfile + lang
     // in module scope so narr() / narrAi() can apply tone swaps without
@@ -7122,7 +7141,13 @@ h += secPageEnd();
     // the Explore-alternatives chapter hidden — the interactive section
     // still renders in the body for those who reach it, but it does not
     // dominate the orientation experience.
-    h += renderTOC(tocSections, d.fr, { arch: _arch, succVal: d.succVal });
+    // TOC is now DERIVED FROM THE RENDERED BODY (audit N1): emit a placeholder
+    // here and splice the real TOC in after the body pass, built from the
+    // F.Sec headings that actually rendered. This makes TOC numbers == body
+    // numbers with one counter and removes the pre-scan/body desync. The
+    // `tocSections` pre-scan above is retained only for the back-matter
+    // visibility flags it computes (_showBackMatter); its pushes are unused.
+    h += '@@BF_TOC@@';
 
     // ── Section rendering (phase-aware ordering) ──
     // Fix-plan flags: when the review pipeline detects a blocker, it sets
@@ -7200,11 +7225,11 @@ h += secPageEnd();
       }
       // Direct reader: pull risk section up adjacent to revenue/projection
       // so the dispersion narrative arrives before the soft fan chart.
-      if (riskLeads) { secN++; h += renderRisk(d, secN); }
+      if (riskLeads) { var _rH = renderRisk(d, secN + 1); if (_rH && _rH.trim()) { secN++; h += _rH; } }
       secN++; h += renderProjection(d, secN);
     } else {
       // Direct reader: lead with risk + dispersion, then projection.
-      if (riskLeads) { secN++; h += renderRisk(d, secN); }
+      if (riskLeads) { var _rH = renderRisk(d, secN + 1); if (_rH && _rH.trim()) { secN++; h += _rH; } }
       secN++; h += renderProjection(d, secN);
       secN++; h += renderRevenue(d, secN);
     }
@@ -7229,24 +7254,41 @@ h += secPageEnd();
     h += _renderChapterCover(2, _ch3.title, _ch3.frame, d.fr);  // renumbered 3→II
     // Risk + dispersion narrative (expert only) — when leadWith='dispersion'
     // it was already rendered above; otherwise it lands here.
-    if (d.exp && !riskLeads) { secN++; h += renderRisk(d, secN); }
+    // Render-or-remove (audit N1): renderRisk returns '' when dispersion data
+    // is absent (e.g. gis_en, rrsp_only_en) — previously consumed a number
+    // with no heading, leaving a body gap. Guard on actual content.
+    if (d.exp && !riskLeads) { var _rH2 = renderRisk(d, secN + 1); if (_rH2 && _rH2.trim()) { secN++; h += _rH2; } }
     // Stress tests
-    secN++;
     // CLASSIFIER-RENDER-PLAN Phase 4: density-collapsed when
     // detailPref='concise' (compact) OR stressLevel='high' (calm).
-    h += _densityWrap(
-      renderStressTests(d, secN),
-      'sec-stress',
-      'Tests de stress \u2014 sc\u00e9narios alternatifs (cliquer pour ouvrir)',
-      'Stress tests \u2014 alternative scenarios (click to open)',
-      d
-    );
+    // Render-or-remove (audit N1/N2): compute the section first and only
+    // consume a number + emit the collapse shell when it actually has
+    // content. renderStressTests returns '' when the relevance gate hides
+    // it for plain/minimal readers \u2014 without this guard that shipped a
+    // numbered, empty <details> shell and desynced the TOC vs body numbers.
+    var _stressHtml = renderStressTests(d, secN + 1);
+    if (_stressHtml && _stressHtml.trim()) {
+      secN++;
+      h += _densityWrap(
+        _stressHtml,
+        'sec-stress',
+        'Tests de stress \u2014 sc\u00e9narios alternatifs (cliquer pour ouvrir)',
+        'Stress tests \u2014 alternative scenarios (click to open)',
+        d
+      );
+    }
     // 2026-04-29: Sensibilit\u00e9s du plan (renderLevers) moved here from
     // Chapter 1. Gated on mc._sweeps + a data-quality threshold inside
     // the renderer (no row, no render).
     if (_hasSweeps) {
-      secN++;
-      h += renderLevers(d, secN);
+      // Render-or-remove (audit N1): renderLevers self-gates on a data-quality
+      // threshold ("no row, no render") and can return '' even when _hasSweeps
+      // is true. Guard so an empty result consumes no number.
+      var _leversHtml = renderLevers(d, secN + 1);
+      if (_leversHtml && _leversHtml.trim()) {
+        secN++;
+        h += _leversHtml;
+      }
     }
     // Year-by-year cash flow detail. Skip if Phase 3 already rendered it
     // earlier (cashflowLeads + revenueFirst). Density-collapse for compact
@@ -7282,21 +7324,31 @@ h += secPageEnd();
     // sections, so the cover is gated on _isMinReader.
     var _ch4 = _chapterCopy(4, d.fr, _arch, d.succVal);
     h += _renderChapterCover(3, _ch4.title, _ch4.frame, d.fr);  // renumbered 4→III
-    if (_hasStrats) { secN++; h += renderStrategies(d, secN); }
+    if (_hasStrats) {
+      // Render-or-remove (audit N1): guard on actual content.
+      var _stratHtml = renderStrategies(d, secN + 1);
+      if (_stratHtml && _stratHtml.trim()) { secN++; h += _stratHtml; }
+    }
     secN++;
     h += renderTax(d, secN);
     if (_hasDrawTrace) {
+      // Render-or-remove (audit N1): renderDrawOrder can return empty even
+      // when drawTrace exists (e.g. single_parent) — previously this left a
+      // dead TOC anchor + a body number gap. Guard on actual content.
+      var _drawHtml = renderDrawOrder(d, secN + 1);
+      if (_drawHtml && _drawHtml.trim()) {
       secN++;
       // Phase 4 density wrap — draw-order heatmap is dense; collapse for
       // compact readers so the section appears as a single-line teaser
       // with click-to-expand.
       h += _densityWrap(
-        renderDrawOrder(d, secN),
+        _drawHtml,
         'sec-draworder',
         'Ordre des retraits \u2014 s\u00e9quence de d\u00e9caissement (cliquer pour ouvrir)',
         'Draw-order strategy \u2014 withdrawal sequence (click to open)',
         d
       );
+      }
     }
     var meltHtml = renderMeltdown(d, secN + 1);
     if (meltHtml) { secN++; h += meltHtml; }
@@ -7414,6 +7466,26 @@ h += secPageEnd();
 
     // Footer
     h += renderFooter(d);
+
+    // ── Build the TOC from the body that actually rendered (audit N1) ──────
+    // One counter, one source of truth: the F.Sec headings emitted into the
+    // body above. Guarantees TOC numbers == body section numbers and that no
+    // TOC entry points at a section that did not render. Sections without a
+    // numbered heading are injected explicitly: the exec-summary star, and
+    // the What-If mount (its heading is folded into the Ch.5 cover).
+    var _renderedSecs = [{ n: '☆', id: 'exec-summary', label: F.L('diagnostic', d.fr) }];
+    var _secHeadRe = /<h3 class="sec" id="(sec-[a-z0-9-]+)"><span class="sec-n">([^<]*)<\/span>([\s\S]*?)<\/h3>/g;
+    var _shm;
+    while ((_shm = _secHeadRe.exec(h)) !== null) {
+      _renderedSecs.push({ n: _shm[2], id: _shm[1], label: _shm[3].replace(/<[^>]+>/g, '').trim() });
+    }
+    if (d.includeSimulator !== false && d.clientExport !== true && h.indexOf('id="sec-whatif"') !== -1) {
+      // Label must equal the Ch.5 cover title so renderTOC's single-child
+      // echo-suppression collapses the row (the chapter head becomes the
+      // #sec-whatif anchor) — matching the pre-refactor TOC.
+      _renderedSecs.push({ n: '', id: 'sec-whatif', label: _chapterCopy(5, d.fr, _arch, d.succVal).title });
+    }
+    h = h.replace('@@BF_TOC@@', renderTOC(_renderedSecs, d.fr, { arch: _arch, succVal: d.succVal }));
 
     // Inline interactive payload + scripts at the end of body so the DOM is
     // fully parsed before they execute. Each module reads window.__BUILDFI__
