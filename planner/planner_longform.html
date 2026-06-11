@@ -539,6 +539,10 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
   .bf-modal-title { font-size: var(--fs-lg); }
   #bf-whatif-card { right: 12px !important; bottom: 80px !important; left: 12px; min-width: 0 !important; max-width: none !important; }
   .simulate-fab { right: 16px; bottom: 16px; font-size: var(--fs-sm); padding: 12px 18px; }
+  /* audit (longform UI): standalone mobile lacked the bottom padding the embed
+     path has (body[data-embed="1"] .app), so the sticky FAB overlapped the last
+     field. Reserve FAB-height clearance unless embedded (FAB is hidden there). */
+  body:not([data-embed="1"]) .app { padding-bottom: 96px; }
 }
 
 /* ─────────────── A11y focus management ─────────────── */
@@ -3945,10 +3949,13 @@ function _ownerPillHTML(i, kind, os, sp) {
 function _BF_TO_ENGINE(key, value) {
   if (typeof _BF_PCT_KEYS !== "undefined" && _BF_PCT_KEYS[key]
       && typeof value === "number" && value !== 0) {
-    // Detect: a percent value (>1 in absolute terms) gets divided by 100.
-    // Values already in fraction range stay untouched (robust against
-    // round-trips or mixed-provenance profiles).
-    if (Math.abs(value) > 1) return value / 100;
+    // audit G: the longform UI is unambiguously percent-entry, so ALWAYS divide
+    // percent-keyed values by 100. The previous magnitude-sniff (divide only
+    // when |v|>1) silently corrupted sub-1% entries x100 — e.g. 0.9 meaning
+    // 0.9% bond return / MER / inflation exported as 0.9 (=90%), which the v3
+    // normalizer left untouched and the sanitizer then clamped to the cap.
+    // Magnitude-sniffing is reserved for IMPORTS of foreign files, not UI entry.
+    return value / 100;
   }
   return value;
 }
