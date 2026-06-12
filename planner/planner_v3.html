@@ -45,11 +45,11 @@
   .kpi-tip{padding:10px 8px!important}
   .kpi-tip .kpi-val{font-size:18px!important}
 }
-.bf-progress-bar{display:flex;align-items:center;gap:2px;padding:6px 12px;background:var(--bg,rgba(44,40,32,0.95));border-bottom:1px solid rgba(192,138,78,0.2);font-size:11px;position:relative;z-index:100}
+.bf-progress-bar{display:flex;align-items:center;gap:2px;padding:6px 12px;background:var(--bf-paper-2);color:var(--bf-ink);border-bottom:1px solid rgba(192,138,78,0.25);font-size:11px;position:relative;z-index:100}
 .bf-progress-bar .step{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;cursor:pointer;transition:all .2s ease;white-space:nowrap;font-weight:500}
-.bf-progress-bar .step.done{opacity:0.6}
+.bf-progress-bar .step.done{opacity:0.75}
 .bf-progress-bar .step.done::before{content:"\2713";font-size:10px}
-.bf-progress-bar .step.active{background:rgba(192,138,78,0.15);color:rgba(192,138,78,1)}
+.bf-progress-bar .step.active{background:rgba(192,138,78,0.18);color:var(--bf-ink);font-weight:600}
 .bf-progress-bar .step-line{width:16px;height:1px;background:rgba(192,138,78,0.3);flex-shrink:0}
 .bf-progress-bar .bf-dismiss-prog{margin-left:auto;background:none;border:none;color:rgba(192,138,78,0.5);cursor:pointer;font-size:14px;padding:2px 6px;line-height:1}
 .bf-progress-bar .dismiss-prog:hover{color:rgba(192,138,78,0.9)}
@@ -126,13 +126,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   --bf-paper:#fdfbf7; --bf-paper-2:#f4efe6; --bf-ink:#1a1610; --bf-muted:#706558;
   --bf-navy:#252d39; --bf-navy-2:#344155; --bf-gold:#c4944a; --bf-gold-soft:#e8d8a8;
   --bf-good:#3f7a4e; --bf-warn:#b07a1e; --bf-bad:#b3402e; --bf-info:#3a6ea5;
+  /* Verdict card: light/paper variant by default, navy report-cover in dark. */
+  --bf-verdict-bg:#fbf6ec; --bf-verdict-fg:#1a1610; --bf-verdict-sub:#9a7b3e;
   --bf-radius:8px; --bf-shadow:0 1px 3px rgba(26,22,16,.08),0 4px 16px rgba(26,22,16,.06);
   --bf-font-ui:"Inter",-apple-system,system-ui,sans-serif;
   --bf-font-display:"Playfair Display",Georgia,serif;
   --bf-font-num:"JetBrains Mono",monospace;
 }
 [data-theme=dark]{ --bf-paper:#1d2430; --bf-paper-2:#252d39; --bf-ink:#f2ede3;
-  --bf-muted:#9aa3b2; /* dark = report-cover palette, not slate-grey */ }
+  --bf-muted:#9aa3b2; /* dark = report-cover palette, not slate-grey */
+  --bf-verdict-bg:#252d39; --bf-verdict-fg:#f2ede3; --bf-verdict-sub:#e8d8a8; }
 /* audit A2: tabular numerals so figures align in columns + mono numeric face */
 .kpi-v,.kpi-val,.bf-num,table td.bf-num{font-family:var(--bf-font-num);font-variant-numeric:tabular-nums}
 /* audit P1: Lucide stroke icons in chrome (rail/tabs). currentColor recolors them. */
@@ -517,11 +520,11 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 /* Backdrop (desktop overlay) */
 .bf-overlay-backdrop {
   position: fixed; inset: 0; background: var(--bf-overlay-backdrop); z-index: 8400;
-  opacity: 0; visibility: hidden;
+  opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .25s ease, visibility 0s linear .25s;
   backdrop-filter: blur(2px);
 }
-.bf-overlay-backdrop.visible { opacity: 1; visibility: visible; transition: opacity .25s ease; }
+.bf-overlay-backdrop.visible { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .25s ease; }
 
 /* Typography in overlay */
 .bf-side-overlay .bf-side-title {
@@ -809,6 +812,10 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 
 <script src="./report/templates/report-template-b64.js"></script>
 <script src="./report/templates/buildfi-logo-b64.js"></script>
+<!-- BFConstants shim (A0 single source of truth, 2026-04-30). report-data.js
+     reads window.BFConstants at load; MUST come before it or calcTax/calcOAS
+     throw on undefined FED_BRACKETS, killing the Pro Excel export. -->
+<script src="report/report-constants-2026.js"></script>
 <script src="report/report-formatters.js"></script>
 <script src="report/report-data.js"></script>
 <script src="report/report-charts.js"></script>
@@ -15304,12 +15311,12 @@ React.createElement("span", { style: { fontSize: FS.base, color: CL.go, fontWeig
   var _grLbl = _kpiIncomplete ? (lang === "fr" ? "Incomplet" : "Incomplete") : lang === "fr" ? (_s >= 0.95 ? "Excellent" : _s >= 0.90 ? "Tr\u00e8s solide" : _s >= 0.85 ? "Solide" : _s >= 0.80 ? "Acceptable" : _s >= 0.70 ? "Fragile" : _s >= 0.50 ? "Risqu\u00e9" : "Critique") : (_s >= 0.95 ? "Excellent" : _s >= 0.90 ? "Very solid" : _s >= 0.85 ? "Solid" : _s >= 0.80 ? "Acceptable" : _s >= 0.70 ? "Fragile" : _s >= 0.50 ? "At risk" : "Critical");
   var _essLabel = lang === "fr" ? "Note du plan" : "Plan grade";
   var _expLabel = lang === "fr" ? "Succ\u00e8s MC" : "MC Success";
-  return React.createElement("div", { style: { textAlign: "center", padding: "8px 4px 6px", borderRadius: RAD.sm + 2, background: "var(--bf-navy)", border: "1px solid var(--bf-gold)", position: "relative", overflow: "hidden", cursor: "help" }, className: "kpi-tip bf-verdict-card", "data-tip": false ? (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". Votre note repr\u00e9sente la solidit\u00e9 de votre plan de retraite. R\u00e9f\u00e9rence de l'industrie: A- (90%+). Bas\u00e9 sur " + nSim + " sc\u00e9narios simul\u00e9s." : _gr + " \u2014 " + _grLbl + ". Your grade represents your retirement plan robustness. Industry benchmark: A- (90%+). Based on " + nSim + " simulated scenarios.") : (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". " + _pct + "% des " + nSim + " simulations MC o\u00f9 le patrimoine" + (cOn ? " du m\u00e9nage" : "") + " ne tombe jamais \u00e0 0$." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " Mortalit\u00e9 CPM 2023." : " Horizon fixe " + deathAge + " ans.") + " Cible: A- (85%+)." : _gr + " \u2014 " + _grLbl + ". " + _pct + "% of " + nSim + " MC sims where" + (cOn ? " household" : "") + " wealth never reaches $0." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " CPM 2023 mortality." : " Fixed horizon " + deathAge + ".") + " Target: A- (85%+).") },
+  return React.createElement("div", { style: { textAlign: "center", padding: "8px 4px 6px", borderRadius: RAD.sm + 2, background: "var(--bf-verdict-bg)", border: "1px solid var(--bf-gold)", position: "relative", overflow: "hidden", cursor: "help" }, className: "kpi-tip bf-verdict-card", "data-tip": false ? (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". Votre note repr\u00e9sente la solidit\u00e9 de votre plan de retraite. R\u00e9f\u00e9rence de l'industrie: A- (90%+). Bas\u00e9 sur " + nSim + " sc\u00e9narios simul\u00e9s." : _gr + " \u2014 " + _grLbl + ". Your grade represents your retirement plan robustness. Industry benchmark: A- (90%+). Based on " + nSim + " simulated scenarios.") : (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". " + _pct + "% des " + nSim + " simulations MC o\u00f9 le patrimoine" + (cOn ? " du m\u00e9nage" : "") + " ne tombe jamais \u00e0 0$." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " Mortalit\u00e9 CPM 2023." : " Horizon fixe " + deathAge + " ans.") + " Cible: A- (85%+)." : _gr + " \u2014 " + _grLbl + ". " + _pct + "% of " + nSim + " MC sims where" + (cOn ? " household" : "") + " wealth never reaches $0." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " CPM 2023 mortality." : " Fixed horizon " + deathAge + ".") + " Target: A- (85%+).") },
   React.createElement("div", { style: { position: "absolute", top: 0, left: 0, width: "100%", height: 3, background: "var(--bf-gold)" } }),
   React.createElement("div", { style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, borderRadius: "50%", border: "3px solid " + succC, color: succC, fontFamily: "var(--bf-font-num)", fontWeight: 800, fontSize: FS.lg, letterSpacing: -0.5, lineHeight: 1 } }, _gr),
-  React.createElement("div", { style: { fontSize: FS.xs, color: "var(--bf-gold-soft)", fontFamily: "var(--bf-font-num)", marginTop: 2 } }, _kpiIncomplete ? "" : _pct + "%"),
-  React.createElement("div", { style: { fontSize: FS.sm, color: "#f2ede3", fontFamily: "var(--bf-font-display)", fontStyle: "italic", fontWeight: 500, marginTop: 1, lineHeight: 1.15 } }, _grLbl),
-  React.createElement("div", { style: { fontSize: FS.xs, color: "var(--bf-gold-soft)", opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 } }, false ? _essLabel : _expLabel));
+  React.createElement("div", { style: { fontSize: FS.xs, color: "var(--bf-verdict-sub)", fontFamily: "var(--bf-font-num)", marginTop: 2 } }, _kpiIncomplete ? "" : _pct + "%"),
+  React.createElement("div", { style: { fontSize: FS.sm, color: "var(--bf-verdict-fg)", fontFamily: "var(--bf-font-display)", fontStyle: "italic", fontWeight: 500, marginTop: 1, lineHeight: 1.15 } }, _grLbl),
+  React.createElement("div", { style: { fontSize: FS.xs, color: "var(--bf-verdict-sub)", opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 } }, false ? _essLabel : _expLabel));
 }()),
 React.createElement("div", { style: sty.kpiC, className: "kpi-tip", "data-tip": lang === "fr" ? "Patrimoine total m\u00e9dian (P50)" + (cOn ? " du m\u00e9nage" : "") + " \u00e0 " + deathAge + " ans en $ r\u00e9els. Intervalle " + (mc.rP25F != null ? "P25-P75: " + f$(mc.rP25F) : "P5-P75: " + f$(mc.rVar5 || mc.var5 || 0)) + " \u00e0 " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + "." : "Median total" + (cOn ? " household" : "") + " real wealth (P50) at age " + deathAge + ". " + (mc.rP25F != null ? "P25-P75 range: " + f$(mc.rP25F) : "P5-P75 range: " + f$(mc.rVar5 || mc.var5 || 0)) + " to " + f$(mc.rP75F != null ? mc.rP75F : (mc.rMedF || mc.medF)) + "." },
 React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.bold, color: CL.ac } }, _kpiIncomplete ? "\u2014" : f$(mc.hasRE ? (mc.rLiqMedF || mc.liqMedF || 0) : (mc.rMedF || mc.medF))),
@@ -17313,7 +17320,7 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
           ,E("button", { onClick: function() { setShowDetRef(!showDetRef); }, style: { padding: "3px 10px", fontSize: FS.sm, fontWeight: showDetRef ? 700 : 400, color: showDetRef ? "#000" : CL.dm, background: showDetRef ? "#FFD700" : "transparent", border: showDetRef ? "none" : "1px solid " + CL.bd, borderRadius: RAD.lg + 4, cursor: "pointer", marginLeft: 4 } }, "\u2500 " + (fr ? "R\u00e9f." : "Ref."))
         ),
         E("div", { style: { display: "flex", gap: 6 } },
-          snapshots.length < 3 ? E("button", { onClick: _saveSnap, style: { padding: "4px 12px", background: "transparent", color: CL.ac, border: "1px solid " + CL.ac, borderRadius: RAD.sm + 2, fontSize: FS.sm, fontWeight: FW.medium, cursor: "pointer" } }, fr ? "Sauvegarder (" + snapshots.length + "/3)" : "Save (" + snapshots.length + "/3)") : null
+          snapshots.length < 3 ? E("button", { onClick: _saveSnap, title: fr ? "Garde ce scénario en mémoire pour le comparer dans le tableau « Comparaison de scénarios » au bas de la page (jusqu'à 3)." : "Saves this scenario to compare it in the « Scenario Comparison » table at the bottom of the page (up to 3).", style: { padding: "4px 12px", background: "transparent", color: CL.ac, border: "1px solid " + CL.ac, borderRadius: RAD.sm + 2, fontSize: FS.sm, fontWeight: FW.medium, cursor: "pointer" } }, fr ? "+ Comparer ce scénario (" + snapshots.length + "/3)" : "+ Compare this scenario (" + snapshots.length + "/3)") : null
         )
       ),
       E(MiniArea, {
@@ -18851,7 +18858,7 @@ StratBadge(true),
     )
   ),
   // Report iframe
-  React.createElement("iframe", { srcDoc: reportHTML, sandbox: "allow-same-origin allow-popups", style: { width: "100%", height: showReport ? "calc(100vh - 380px)" : "calc(100vh - 240px)", border: "1px solid " + CL.bd, borderRadius: RAD.sm + 2, background: "#fff" } })),
+  React.createElement("iframe", { srcDoc: reportHTML, sandbox: "allow-same-origin allow-popups allow-scripts", style: { width: "100%", height: showReport ? "calc(100vh - 380px)" : "calc(100vh - 240px)", border: "1px solid " + CL.bd, borderRadius: RAD.sm + 2, background: "#fff" } })),
 
 
 // \u2550\u2550\u2550 DETERMINISTIC RECOMMENDATIONS ENGINE \u2550\u2550\u2550
