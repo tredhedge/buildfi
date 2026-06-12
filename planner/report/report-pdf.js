@@ -3786,8 +3786,8 @@
       // worth and looked like an artificial cliff. This list covers EVERY
       // wealth stream the engine produces.
       var _ASSET_KEYS = [
-        { k: 'mp_rr',    fr: 'REER/RRSP',                en: 'RRSP',                color: C.purple },
-        { k: 'mp_tf',    fr: 'CELI/TFSA',                en: 'TFSA',                color: C.green },
+        { k: 'mp_rr',    fr: 'REER',                     en: 'RRSP',                color: C.purple },
+        { k: 'mp_tf',    fr: 'CELI',                     en: 'TFSA',                color: C.green },
         { k: 'mp_nr',    fr: 'Non enregistr\u00e9',      en: 'Non-registered',      color: C.blue },
         { k: 'mp_fhsa',  fr: 'CELIAPP',                  en: 'FHSA',                color: '#3a8a7a' },
         { k: 'mp_re',    fr: 'Immobilier',               en: 'Real estate',         color: C.teal },
@@ -4052,7 +4052,7 @@
     var _corpIncomeY   = _avg(function(r) { return (r.corpDiv || 0) + (r.corpSal || 0) + (r.corpExtract || 0); });
     var _rentalIncomeY = _avg(function(r) { return (r.tiRe || 0); });
     if (p.penType && p.penType !== 'none' && (p.penM || 0) > 0) _wfItems.push({ label: 'Pension', value: Math.round((p.penM || 0) * 12), color: C.purple });
-    if (_gisIncomeY > 0) _wfItems.push({ label: 'SRG/GIS', value: _gisIncomeY, color: '#a07a3a' });
+    if (_gisIncomeY > 0) _wfItems.push({ label: (fr ? 'SRG' : 'GIS'), value: _gisIncomeY, color: '#a07a3a' });
     if (_corpIncomeY > 0) _wfItems.push({ label: fr ? 'Dividendes / salaire corp.' : 'Corp. dividends / salary', value: _corpIncomeY, color: C.purple });
     if (_rentalIncomeY > 0) _wfItems.push({ label: fr ? 'Revenu locatif net' : 'Net rental cash flow', value: _rentalIncomeY, color: C.teal });
     if (_ptIncomeY > 0) _wfItems.push({ label: fr ? 'Travail \u00e0 temps partiel' : 'Part-time work', value: _ptIncomeY, color: '#5a87b3' });
@@ -4086,8 +4086,8 @@
     }
     if (d.R.couple) {
       if (d.cQppM > 0) _wfItems.push({ label: qLbl + ' ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cQppM * 12), color: '#7390b8' });
-      if (d.cOasM > 0) _wfItems.push({ label: 'PSV ' + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cOasM * 12), color: '#6da97a' });
-      if (_cGisIncomeY > 0) _wfItems.push({ label: 'SRG ' + (fr ? 'conj.' : 'sp.'), value: _cGisIncomeY, color: '#c89a3a' });
+      if (d.cOasM > 0) _wfItems.push({ label: (fr ? 'PSV ' : 'OAS ') + (fr ? 'conj.' : 'sp.'), value: Math.round(d.cOasM * 12), color: '#6da97a' });
+      if (_cGisIncomeY > 0) _wfItems.push({ label: (fr ? 'SRG ' : 'GIS ') + (fr ? 'conj.' : 'sp.'), value: _cGisIncomeY, color: '#c89a3a' });
       if (p.cOn && p.cPenType && p.cPenType !== 'none' && (p.cPenM || 0) > 0) _wfItems.push({ label: (fr ? 'Pension conj.' : 'Spouse pension'), value: Math.round((p.cPenM || 0) * 12), color: '#9577c8' });
     }
     // Sprint 0.8: suppress sub-$1K rows.
@@ -4113,10 +4113,10 @@
       { label: qLbl,                        value: Math.round(d.qppM * 12 + (d.cQppM || 0) * 12), color: '#5b8db8' },
       { label: (fr ? 'PSV' : 'OAS'),                   value: Math.round(d.oasM * 12 + (d.cOasM || 0) * 12), color: '#2a8c46' },
       { label: fr ? 'Pension'   : 'Pension', value: Math.round(((p.penM || 0) + (p.cOn ? (p.cPenM || 0) : 0)) * 12), color: C.blue },
-      { label: 'SRG/GIS',                   value: Math.round(_gisIncomeY + _cGisIncomeY), color: '#a07a3a' },
+      { label: (fr ? 'SRG' : 'GIS'),                   value: Math.round(_gisIncomeY + _cGisIncomeY), color: '#a07a3a' },
       { label: fr ? 'Locatif'   : 'Rental',  value: Math.round(_rentalIncomeY), color: '#3aa39c' },
-      { label: 'REER/RRIF',                 value: Math.round(_avg(function(r) { return r.wFromRR || 0; }) || 0), color: '#c49a1a' },
-      { label: 'CELI/TFSA',                 value: Math.round(_avg(function(r) { return r.wFromTF || 0; }) || 0), color: '#48a66d' },
+      { label: fr ? 'REER/FERR' : 'RRSP/RRIF', value: Math.round(_avg(function(r) { return r.wFromRR || 0; }) || 0), color: '#c49a1a' },
+      { label: fr ? 'CELI' : 'TFSA',           value: Math.round(_avg(function(r) { return r.wFromTF || 0; }) || 0), color: '#48a66d' },
       { label: 'NR',                        value: Math.round(_avg(function(r) { return r.wFromNR || 0; }) || 0), color: '#5b8db8' }
     ].filter(function(s) { return s.value > 1000; });
     var _todaySlices = [
@@ -4270,7 +4270,7 @@
         '<td style="text-align:right;font-family:monospace">' + (primaryQppY > 0 ? f$(primaryQppY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (spouseQppY > 0 ? f$(spouseQppY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryQppY + spouseQppY) + '</td></tr>';
-      h += '<tr><td style="padding:3px 0">PSV/OAS</td>' +
+      h += '<tr><td style="padding:3px 0">' + (fr ? 'PSV' : 'OAS') + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (primaryOasY > 0 ? f$(primaryOasY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace">' + (spouseOasY > 0 ? f$(spouseOasY) : '\u2014') + '</td>' +
         '<td style="text-align:right;font-family:monospace;font-weight:700">' + f$(primaryOasY + spouseOasY) + '</td></tr>';
@@ -4341,7 +4341,7 @@
         if (incData.some(function(r) { return (r.gisIncome || 0) > 0; })) {
           _areaKeys.push('gisIncome');
           _areaColors.push('#a07a3a');
-          _areaLabels.push('SRG/GIS');
+          _areaLabels.push((fr ? 'SRG' : 'GIS'));
         }
         if (incData.some(function(r) { return (r.ptIncome || 0) > 0; })) {
           _areaKeys.push('ptIncome');
@@ -4642,8 +4642,8 @@
         h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">' + (fr ? 'D\u00e9tail du d\u00e9caissement' : 'Withdrawal Detail') + '</div>';
         h += F.CopyBtn('rpt-t-wd');
         h += '<table id="rpt-t-wd" class="tbl"><thead><tr>';
-        h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th><th>REER</th><th>CELI</th><th>NR</th>';
-        h += '<th>' + qLbl + '</th><th>PSV</th><th>SRG</th>';
+        h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th><th>' + (fr ? 'REER' : 'RRSP') + '</th><th>' + (fr ? 'CELI' : 'TFSA') + '</th><th>NR</th>';
+        h += '<th>' + qLbl + '</th><th>' + (fr ? 'PSV' : 'OAS') + '</th><th>' + (fr ? 'SRG' : 'GIS') + '</th>';
         h += '<th style="color:' + C.red + '">' + (fr ? 'Imp\u00f4t' : 'Tax') + '</th>';
         h += '<th>' + (fr ? 'Taux eff.' : 'Eff. rate') + '</th>';
         h += '<th style="font-weight:700">' + (fr ? 'Rev. net' : 'Net income') + '</th>';
@@ -4853,9 +4853,9 @@
       h += '<th>' + (fr ? 'SRG \u2014 ' + (d.sfn || 'P2') : 'GIS \u2014 ' + (d.sfn || 'P2')) + '</th>';
       h += '<th>' + (fr ? 'SRG m\u00e9nage' : 'GIS household') + '</th>';
     } else {
-      h += '<th>SRG/GIS</th>';
+      h += '<th>' + (fr ? 'SRG' : 'GIS') + '</th>';
     }
-    h += '<th>PSV/OAS</th>';
+    h += '<th>' + (fr ? 'PSV' : 'OAS') + '</th>';
     // Codex flag: column was "Taxable inc." but the methodology note says
     // GIS depends on "counted income" which EXCLUDES OAS. Showing taxInc
     // (which INCLUDES OAS) confused readers. New column = counted income
@@ -4939,7 +4939,7 @@
         h += F.CopyBtn('rpt-t-melt');
         h += '<table id="rpt-t-melt" class="tbl"><thead><tr>';
         h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th><th>' + (fr ? 'Retraits' : 'Withdr.') + '</th>';
-        h += '<th>' + F.qppLabel(p.prov, fr) + '</th><th>PSV</th>';
+        h += '<th>' + F.qppLabel(p.prov, fr) + '</th><th>' + (fr ? 'PSV' : 'OAS') + '</th>';
         h += '<th style="color:' + C.red + '">' + (fr ? 'Imp\u00f4t' : 'Tax') + '</th><th>' + (fr ? 'Taux eff.' : 'Eff. rate') + '</th>';
         h += '<th>' + (fr ? 'Rev. imposable' : 'Taxable inc.') + '</th></tr></thead><tbody>';
         _meltPreYrs.forEach(function(r) {
@@ -6016,7 +6016,7 @@ h += secPageEnd();
 
     h += '<div style="font-size:10px;color:#888;font-style:italic;margin-top:10px;line-height:1.7">' +
       (fr
-        ? 'Les constantes fiscales (paliers f\u00e9d\u00e9raux 2026, paliers provinciaux ' + (p.prov || 'QC') + ', PSV, SRG, RRQ/RPC, RRIF) sont index\u00e9es annuellement sur l\'inflation. Les seuils de r\u00e9cup\u00e9ration PSV (95 323 $) et de couple pour le SRG suivent le bar\u00e8me 2026.'
+        ? 'Les constantes fiscales (paliers f\u00e9d\u00e9raux 2026, paliers provinciaux ' + (p.prov || 'QC') + ', PSV, SRG, RRQ/RPC, FERR) sont index\u00e9es annuellement sur l\'inflation. Les seuils de r\u00e9cup\u00e9ration PSV (95 323 $) et de couple pour le SRG suivent le bar\u00e8me 2026.'
         : 'Tax constants (2026 federal brackets, ' + (p.prov || 'QC') + ' provincial brackets, OAS, GIS, CPP/QPP, RRIF) are indexed annually on inflation. OAS clawback threshold ($95,323) and GIS couple thresholds follow the 2026 scale.') +
       '</div>';
 
@@ -6765,7 +6765,7 @@ h += secPageEnd();
     h += '<div class="meth-p"><strong>' + (fr ? 'Fiscalit\u00e9' : 'Taxation') + ':</strong> ' + (fr ? 'Bar\u00e8mes f\u00e9d\u00e9raux et provinciaux 2026 index\u00e9s. Cr\u00e9dits pour revenu de pension (2\u00a0000$), cr\u00e9dit en raison de l\'\u00e2ge (8\u00a0790$), bonification PSV 75+ (10%). Inclusion des gains en capital: ' : 'Federal and provincial 2026 brackets indexed. Pension credit ($2,000), age credit ($8,790), OAS 75+ bonus (10%). Capital gains inclusion: ') + (p.cgIncLo || 0.5) * 100 + '% / ' + ((p.cgIncHi || 0.6667) * 100).toFixed(0) + '%.</div>';
 
     if (exp) {
-      h += '<div class="meth-p"><strong>' + (fr ? 'Param\u00e8tres avanc\u00e9s' : 'Advanced parameters') + ':</strong> MER REER ' + F.pc(p.merR) + ', CELI ' + F.pc(p.merT) + ', NR ' + F.pc(p.merN) + '. ' + (fr ? 'Alloc. actions: REER ' : 'Equity alloc: RRSP ') + Math.round((p.allocR || 0.6) * 100) + '%, CELI ' + Math.round((p.allocT || 0.8) * 100) + '%, NR ' + Math.round((p.allocN || 0.5) * 100) + '%. ' + (fr ? 'Courbe de d\u00e9penses (Go/Slow/No): ' : 'Spending curve (Go/Slow/No): ') + Math.round((p.goP || 1) * 100) + '/' + Math.round((p.slP || 0.85) * 100) + '/' + Math.round((p.noP || 0.7) * 100) + '%.</div>';
+      h += '<div class="meth-p"><strong>' + (fr ? 'Param\u00e8tres avanc\u00e9s' : 'Advanced parameters') + ':</strong> MER ' + (fr ? 'REER ' : 'RRSP ') + F.pc(p.merR) + ', ' + (fr ? 'CELI ' : 'TFSA ') + F.pc(p.merT) + ', NR ' + F.pc(p.merN) + '. ' + (fr ? 'Alloc. actions: REER ' : 'Equity alloc: RRSP ') + Math.round((p.allocR || 0.6) * 100) + '%, ' + (fr ? 'CELI ' : 'TFSA ') + Math.round((p.allocT || 0.8) * 100) + '%, NR ' + Math.round((p.allocN || 0.5) * 100) + '%. ' + (fr ? 'Courbe de d\u00e9penses (Go/Slow/No): ' : 'Spending curve (Go/Slow/No): ') + Math.round((p.goP || 1) * 100) + '/' + Math.round((p.slP || 0.85) * 100) + '/' + Math.round((p.noP || 0.7) * 100) + '%.</div>';
     }
 
     // Feature checklist — profile-adaptive: hide profile-conditional rows that don't apply.
@@ -6784,12 +6784,12 @@ h += secPageEnd();
       { label: _isQC ? 'RRQ2' : 'CPP2', on: true, conditional: false },
       // Profile-conditional — only show when active for this profile
       { label: (fr ? 'MER d\u00e9duits' : 'MER deducted'), on: d.merWt > 0, conditional: true },
-      { label: 'SRG/GIS', on: _hasGIS, conditional: true },
+      { label: (fr ? 'SRG' : 'GIS'), on: _hasGIS, conditional: true },
       { label: (fr ? 'D\u00e9caissement anticip\u00e9 REER' : 'RRSP meltdown'), on: !!p.melt, conditional: true },
       { label: (fr ? 'Fractionnement de pension' : 'Pension splitting'), on: !!p.split, conditional: true },
       { label: 'Guyton-Klinger', on: !!(mc && mc.gkOn), conditional: true },
       { label: (fr ? 'Vente forc\u00e9e immo.' : 'Forced RE sale'), on: _hasProps, conditional: true },
-      { label: 'CELIAPP/FHSA', on: _hasFHSA, conditional: true }
+      { label: (fr ? 'CELIAPP' : 'FHSA'), on: _hasFHSA, conditional: true }
     ];
     _ck.forEach(function(c) {
       // Skip conditional rows that don't apply to this profile (less noise, more relevance).
@@ -7556,3 +7556,7 @@ h += secPageEnd();
       if (eJs) out += '<script>' + _stripScriptClose(eJs) + '<\/script>';
       if (wJs) out += '<script>' + _stripScriptClose(wJs) + '<\/script>';
     }
+    return out;
+  }
+
+})();
