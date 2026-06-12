@@ -1003,7 +1003,10 @@
       rrspC: p.rrspC || 0, tfsaC: p.tfsaC || 0, nrC: p.nrC || 0,
       penType: p.penType, penM: p.penM, penIdx: p.penIdx,
       melt: p.melt, meltTgt: p.meltTgt || 0, split: p.split, splitP: p.splitP,
-      wStrat: p.wStrat || 'standard',
+      // Audit P10: serialize the decumulation mode under the neutral name
+      // 'sequenced' (the legacy internal value was 'optimized'). The embedded
+      // engine accepts both, so old saved profiles still resolve identically.
+      wStrat: (p.wStrat === 'optimized' ? 'sequenced' : (p.wStrat || 'standard')),
       goP: p.goP || 1.0, slP: p.slP || 0.85, noP: p.noP || 0.7,
       eqRet: p.eqRet || 0.06, eqVol: p.eqVol || 0.16,
       bndRet: p.bndRet || 0.035, bndVol: p.bndVol || 0.06,

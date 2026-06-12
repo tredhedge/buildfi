@@ -1460,7 +1460,7 @@ function runMC(p, N, _progressCb) {
           cLira = 0;
         }
         var _wFromRR = 0, _wFromTF = 0, _wFromNR = 0, _wFromCRR = 0, _wFromCTF = 0, _wFromCNR = 0;
-        if (p.wStrat === "optimized" && p._optSchedule && p._optSchedule[y]) {
+        if ((p.wStrat === "optimized" || p.wStrat === "sequenced") && p._optSchedule && p._optSchedule[y]) {
           // Use pre-computed optimized schedule
           var os = p._optSchedule[y];
           // Apply meltdown from schedule (override the simple meltdown above)
