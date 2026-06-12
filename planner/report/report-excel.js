@@ -52,8 +52,13 @@
   // ── Number formats ──
   var FMT_MONEY = '#,##0" $"';
   var FMT_MONEY_RED = '#,##0" $";[Red](#,##0" $");"-"';
-  var FMT_PCT = '0.0"%"';
-  var FMT_PCT_INT = '0"%"';
+  // E1 fix (2026-06-12): MULTIPLYING percent format. The stored values are
+  // fractions (0.53305, 0.021, 0.6 …); the old literal '0.0"%"' suppressed the
+  // ×100, so 53,3 % rendered as « 0,5 % » across the whole workbook. Every
+  // FMT_PCT site in this file feeds a fraction (verified), so a global flip is
+  // safe. Space before % matches FR convention (« 53,3 % »).
+  var FMT_PCT = '0.0 %';
+  var FMT_PCT_INT = '0 %';
   var FMT_DELTA = '+#,##0;-#,##0;0';
 
   // ══════════════════════════════════════════════════════════════
@@ -185,8 +190,21 @@
         if (!cell.font || !cell.font.name) cell.font = BODY_FONT;
       }
     }
-    ws.views = [{ state: "frozen", ySplit: hr }];
-    ws.autoFilter = { from: { row: hr, column: fc }, to: { row: hr, column: lc } };
+    // E4 fix (2026-06-12): freeze ONCE, at the first (topmost) table's header.
+    // styleTable runs once per table block; the old unconditional assignment let
+    // the LAST block win, so long sheets froze at row 52-106 (e.g. MC at A107 of
+    // 116) and scrolling locked the top half. First call = topmost header = the
+    // row we actually want pinned. Sheets needing a different anchor assign
+    // ws.views explicitly after their first table (runs later, still overrides).
+    if (!ws.views || !ws.views.length || ws.views[0].state !== "frozen") {
+      ws.views = [{ state: "frozen", ySplit: hr }];
+    }
+    // Likewise keep the autofilter on the first (main) table only — a filter on a
+    // tiny sub-table below is meaningless and the last-wins overwrite hid the
+    // real one. (E11 governs which sheets get print/filter polish.)
+    if (!ws.autoFilter) {
+      ws.autoFilter = { from: { row: hr, column: fc }, to: { row: hr, column: lc } };
+    }
   }
 
   function printSetup(ws) {
@@ -338,7 +356,10 @@
     var revD = mc.medRevData || [];
     var y0 = new Date().getFullYear();
     var todayLong = new Date().toLocaleDateString(fr ? "fr-CA" : "en-CA", { year: "numeric", month: "long", day: "numeric" });
-    var baseName = (cName || "plan").toString().replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-|\-$/g, "");
+    // E8: strip diacritics before slugging — \w is ASCII-only, so « Émilie »
+    // lost its É and the file came out « …-milie-Lavoie… ». NFD + combining-mark
+    // removal maps É→E, ç→c, etc. before the non-word characters are collapsed.
+    var baseName = (cName || "plan").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-|\-$/g, "");
     var filename = "buildfi-donnees-detaillees-" + (baseName || "plan") + "-" + new Date().toISOString().slice(0, 10) + ".xlsx";
 
     var gr = gradeFor(mc.succ);
@@ -393,6 +414,7 @@
     // ── Workbook ──
     var wb = new ExcelJS.Workbook();
     wb.creator = "BuildFi Technologies inc.";
+    wb.title = (fr ? "BuildFi — Données détaillées — " : "BuildFi — Detailed data — ") + cName; // E8: was empty
     wb.created = new Date();
     wb.calcProperties = { fullCalcOnLoad: true };
 
@@ -468,7 +490,7 @@
     wsS.getCell(8, 2).font = { name: "Calibri", size: 22, bold: true, color: { argb: gr.c } };
     // MC success
     wsS.getCell(8, 4).value = toNum(mc.succ);
-    wsS.getCell(8, 4).numFmt = "0%";
+    wsS.getCell(8, 4).numFmt = "0.0 %"; // E2: one decimal — 0.497 → 49,7 % (not 50 %)
     wsS.getCell(8, 4).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
     // Retirement wealth (K$)
     var retWealth = toNum(mc.rMedF || mc.medF || 0);
@@ -479,13 +501,19 @@
     wsS.getCell(8, 8).value = Math.round(govM);
     wsS.getCell(8, 8).numFmt = '#,##0" $/m"';
     wsS.getCell(8, 8).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
-    // Coverage
-    wsS.getCell(8, 10).value = covRatio;
+    // Coverage — E7: store rounded (was raw 0.3388445801008686); CoverageRatio
+    // named range points here, so keep it copy-paste clean.
+    wsS.getCell(8, 10).value = Math.round(covRatio * 10000) / 10000;
     wsS.getCell(8, 10).numFmt = "0%";
     wsS.getCell(8, 10).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
-    // Tax alpha
-    wsS.getCell(8, 12).value = Math.max(0, Math.round(taxAlpha / 1000));
-    wsS.getCell(8, 12).numFmt = '#,##0" K$"';
+    // Tax alpha — E14: only a real figure when a naive run ran; else « s.o. »
+    // (not a misleading « 0 K$ ») and the TaxAlpha named range is skipped.
+    if (hasNaive) {
+      wsS.getCell(8, 12).value = Math.max(0, Math.round(taxAlpha / 1000));
+      wsS.getCell(8, 12).numFmt = '#,##0" K$"';
+    } else {
+      wsS.getCell(8, 12).value = fr ? "s.o." : "n/a";
+    }
     wsS.getCell(8, 12).font = { name: "Calibri", size: 22, bold: true, color: { argb: CL.gold } };
 
     // Composite resilience score: succ × min(1, VaR5 / (5 × annual spending))
@@ -495,10 +523,14 @@
     // margin. Surfaced as a row-10 sub-KPI so it has context next to the grade.
     var _annualSpend = toNum(retSpM) * 12;
     var _resCover = _annualSpend > 0 ? Math.min(1, toNum(mc.rVar5 || mc.var5 || 0) / (5 * _annualSpend)) : 0;
-    var resilience = toNum(mc.succ) * _resCover;
+    // E7: weighted blend (70% success + 30% buffer), not a pure product. The old
+    // succ × margin flatlined to 0% for every fragile plan once VaR5 margin hit 0
+    // (« Résilience 0 % » beside « Couverture 34 % »). Stored rounded. (HTML
+    // report still uses the product — flag for parity.)
+    var resilience = Math.round((0.7 * toNum(mc.succ) + 0.3 * _resCover) * 10000) / 10000;
     wsS.getRow(10).height = 14;
     wsS.mergeCells(10, 2, 10, 5);
-    set(wsS, wsS.getCell(10, 2), fr ? "R\u00e9silience composite (succ\u00e8s \u00d7 marge VaR5) : " : "Composite resilience (success × VaR5 margin): ");
+    set(wsS, wsS.getCell(10, 2), fr ? "R\u00e9silience composite (succ\u00e8s \u00d7 marge VaR5, 70/30) : " : "Composite resilience (70% success + 30% VaR5 margin): ");
     wsS.getCell(10, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.muted } };
     wsS.mergeCells(10, 6, 10, 8);
     wsS.getCell(10, 6).value = resilience;
@@ -517,16 +549,26 @@
     wsS.getCell(11, 2).font = SUB_FONT;
 
     // ── Comparison table ──
-    addTitle(wsS, 13, 2, fr ? "COMPARAISON: OPTIMIS\u00c9 vs PAR D\u00c9FAUT" : "COMPARISON: OPTIMIZED vs DEFAULT",
-      fr ? "Impact net des strat\u00e9gies fiscales actives" : "Net impact of active tax strategies", 13);
-    setRow(wsS, 16, 2, [fr ? "M\u00e9trique" : "Metric", fr ? "Votre plan" : "Your plan", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]);
+    // E14 (2026-06-12): only a real comparison when a naive run exists. Without
+    // it the \u00ab Par d\u00e9faut \u00bb + \u00ab Delta \u00bb columns were empty on every row \u2014 a
+    // skeleton implying a measurement that never ran (and it fed \u00ab Alpha fiscal
+    // 0 $ \u00bb on the cover + a TaxAlpha defined name pointing at an empty cell).
+    // When absent, present a single-column plan summary, no comparison columns.
+    addTitle(wsS, 13, 2,
+      hasNaive ? (fr ? "COMPARAISON: OPTIMIS\u00c9 vs PAR D\u00c9FAUT" : "COMPARISON: OPTIMIZED vs DEFAULT")
+               : (fr ? "SYNTH\u00c8SE DE VOTRE PLAN" : "YOUR PLAN \u2014 SUMMARY"),
+      hasNaive ? (fr ? "Impact net des strat\u00e9gies fiscales actives" : "Net impact of active tax strategies")
+               : (fr ? "Indicateurs cl\u00e9s du plan optimis\u00e9" : "Key indicators of the optimized plan"), 13);
+    setRow(wsS, 16, 2, hasNaive
+      ? [fr ? "M\u00e9trique" : "Metric", fr ? "Votre plan" : "Your plan", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]
+      : [fr ? "M\u00e9trique" : "Metric", fr ? "Votre plan" : "Your plan", "", "", "Notes"]);
     styleTable(wsS, { hr: 16, fr: 17, to: 23, fc: 2, lc: 6 });
 
     // Comparison rows — col C = your plan, col D = default, col E = delta as
     // formula so the user can see "delta = your - default" in the formula bar.
     setRow(wsS, 17, 2, [fr ? "Succ\u00e8s MC" : "MC Success"]);
-    setNum(wsS, wsS.getCell(17, 3), mc.succ || 0, "0%");
-    if (naiveSucc != null) setNum(wsS, wsS.getCell(17, 4), naiveSucc, "0%");
+    setNum(wsS, wsS.getCell(17, 3), mc.succ || 0, "0.0 %"); // E2: one decimal
+    if (naiveSucc != null) setNum(wsS, wsS.getCell(17, 4), naiveSucc, "0.0 %");
     if (succDelta != null) {
       // Delta in pts = (your% - default%) * 100; formula uses raw ratios in C/D
       setFormula(wsS, wsS.getCell(17, 5), '(C17-D17)*100', '+0" pts";-0" pts";0" pts"', succDelta);
@@ -554,8 +596,8 @@
     if (medDelta != null) setDelta(wsS, wsS.getCell(20, 5), medDelta, FMT_DELTA);
 
     setRow(wsS, 21, 2, [fr ? "H\u00e9ritage net" : "Net estate"]);
-    setNum(wsS, wsS.getCell(21, 3), mc.medEstateNet || 0, FMT_MONEY);
-    if (hasNaive) setNum(wsS, wsS.getCell(21, 4), mc._naiveMC.medEstateNet || 0, FMT_MONEY);
+    setNum(wsS, wsS.getCell(21, 3), Math.max(0, toNum(mc.medEstateNet)), FMT_MONEY); // E6: floor depleted-path clamp artifact
+    if (hasNaive) setNum(wsS, wsS.getCell(21, 4), Math.max(0, toNum(mc._naiveMC.medEstateNet)), FMT_MONEY);
 
     // Couple label reflects household-combined basis of r.taxInc; the Tax tab
     // exposes a per-spouse deterministic breakdown for individual attribution.
@@ -618,7 +660,9 @@
       wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$F$8", "MedianWealth");
       wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$H$8", "GuaranteedIncomeMonthly");
       wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$J$8", "CoverageRatio");
-      wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$L$8", "TaxAlpha");
+      // E14: only define TaxAlpha when a naive run produced a real delta —
+      // otherwise L8 holds « s.o. » and the name would resolve to a non-number.
+      if (hasNaive) wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$L$8", "TaxAlpha");
       wb.definedNames.add("'" + (fr ? "Sommaire" : "Summary") + "'!$F$10", "ResilienceScore");
     } catch (_) { /* older ExcelJS may not support definedNames.add */ }
 
@@ -893,6 +937,10 @@
 
     // Build the three columns based on observable signals.
     var succ = toNum(mc.succ);
+    // E2: one-decimal success % in prose so it matches the cover/Sommaire cells
+    // (0.497 → « 49,7 % », not the « 50 % » the old Math.round produced).
+    var _succP = (succ * 100).toFixed(1).replace(".", fr ? "," : ".");
+    var _failP = (100 - succ * 100).toFixed(1).replace(".", fr ? "," : ".");
     var rVar5 = toNum(mc.rVar5 || mc.var5 || 0);
     var rMedF = toNum(mc.rMedF || mc.medF || 0);
     var annualSpend = toNum(retSpM || p.retSpM) * 12;
@@ -900,7 +948,7 @@
     var weaknesses = [];
     var actions = [];
     // Strengths
-    if (succ >= 0.85) strengths.push(fr ? "Taux de succ\u00e8s \u00e9lev\u00e9 (" + Math.round(succ * 100) + "%) : le plan r\u00e9siste \u00e0 la plupart des sc\u00e9narios de march\u00e9." : "High success rate (" + Math.round(succ * 100) + "%): plan weathers most market scenarios.");
+    if (succ >= 0.85) strengths.push(fr ? "Taux de succ\u00e8s \u00e9lev\u00e9 (" + _succP + " %) : le plan r\u00e9siste \u00e0 la plupart des sc\u00e9narios de march\u00e9." : "High success rate (" + _succP + "%): plan weathers most market scenarios.");
     if (taxAlpha > 5000) strengths.push(fr ? "Strat\u00e9gie fiscale optimis\u00e9e : \u00e9conomie projet\u00e9e de " + _fmtM(taxAlpha, locale) + " sur la dur\u00e9e du plan." : "Optimized tax strategy: projected savings of " + _fmtM(taxAlpha, locale) + " over plan horizon.");
     if (covRatio >= 0.5) strengths.push(fr ? "Revenus garantis couvrent " + Math.round(covRatio * 100) + "% des d\u00e9penses : expositon r\u00e9duite au risque de march\u00e9." : "Guaranteed income covers " + Math.round(covRatio * 100) + "% of spending: reduced market exposure.");
     // activeProps is declared later; compute the diagnostic signal locally.
@@ -910,9 +958,10 @@
       if (_totalEq > 0) strengths.push(fr ? "Avoir immobilier de " + _fmtM(_totalEq, locale) + " : diversification hors placements financiers." : "Real estate equity " + _fmtM(_totalEq, locale) + ": diversification outside financial holdings.");
     }
     if (cOn) strengths.push(fr ? "Mode couple : deux sources de revenus gouvernementaux (RRQ + PSV \u00d7 2), fractionnement de pension possible." : "Couple mode: two government income streams (QPP + OAS × 2), pension splitting available.");
-    if (strengths.length === 0) strengths.push(fr ? "\u2014" : "\u2014");
+    // E13: graceful empty-state instead of a bare \u00ab \u2014 \u00bb bullet (observational, AMF-safe).
+    if (strengths.length === 0) strengths.push(fr ? "Aucune force marquante ne ressort des signaux analys\u00e9s \u00e0 ce stade." : "No standout strength emerges from the analyzed signals at this stage.");
     // Weaknesses
-    if (succ < 0.75) weaknesses.push(fr ? "Taux de succ\u00e8s faible (" + Math.round(succ * 100) + "%) : environ " + (100 - Math.round(succ * 100)) + "% des sc\u00e9narios \u00e9puisent le capital avant le d\u00e9c\u00e8s." : "Low success rate (" + Math.round(succ * 100) + "%): ~" + (100 - Math.round(succ * 100)) + "% of scenarios exhaust capital before death.");
+    if (succ < 0.75) weaknesses.push(fr ? "Taux de succ\u00e8s faible (" + _succP + " %) : environ " + _failP + " % des sc\u00e9narios \u00e9puisent le capital avant le d\u00e9c\u00e8s." : "Low success rate (" + _succP + "%): ~" + _failP + "% of scenarios exhaust capital before death.");
     if (rVar5 < annualSpend * 2) weaknesses.push(fr ? "R\u00e9serve VaR 5% limit\u00e9e : " + _fmtM(rVar5, locale) + " couvre moins de 2 ans de d\u00e9penses en sc\u00e9nario d\u00e9favorable." : "Limited VaR 5% buffer: " + _fmtM(rVar5, locale) + " covers less than 2 years of spending in adverse scenario.");
     if (rMedF < annualSpend * 3 && retAge < (p.deathAge || 90) - 20) weaknesses.push(fr ? "Patrimoine m\u00e9dian \u00e0 la retraite faible vs dur\u00e9e projet\u00e9e : attention au risque de s\u00e9quence." : "Low median wealth at retirement vs projected horizon: sequence-of-returns risk elevated.");
     var debtSvc = (p.debts || []).reduce(function (s, d) { return s + toNum(d.pay) * 12; }, 0);
@@ -920,7 +969,8 @@
     var existingLife = (p.lifeInsBenefit || 0) + (p.cLifeInsBenefit || 0);
     if (existingLife < annualSpend * 5 && p.cOn) weaknesses.push(fr ? "Couverture vie basse vs besoin du survivant (" + _fmtM(existingLife, locale) + " vs ~" + _fmtM(annualSpend * 5, locale) + ")." : "Low life coverage vs survivor need (" + _fmtM(existingLife, locale) + " vs ~" + _fmtM(annualSpend * 5, locale) + ").");
     if ((p.oasAge || 65) === 65 && rMedF > 500000) weaknesses.push(fr ? "PSV d\u00e9bute \u00e0 65 : risque de r\u00e9cup\u00e9ration \u00e9lev\u00e9 si autres revenus importants." : "OAS starts at 65: elevated clawback risk if other income is high.");
-    if (weaknesses.length === 0) weaknesses.push(fr ? "\u2014" : "\u2014");
+    // E13: graceful empty-state instead of a bare \u00ab \u2014 \u00bb bullet (observational, AMF-safe).
+    if (weaknesses.length === 0) weaknesses.push(fr ? "Aucune vuln\u00e9rabilit\u00e9 majeure n'est observ\u00e9e dans les signaux analys\u00e9s." : "No major vulnerability is observed in the analyzed signals.");
     // Actions (observational, AMF-safe — conditional tense)
     if (succ < 0.75) {
       actions.push(fr ? "Les donn\u00e9es sugg\u00e8rent que retarder la retraite de 2\u20133 ans am\u00e9liorerait le taux de succ\u00e8s substantiellement." : "Data suggest that delaying retirement by 2\u20133 years would materially improve success rate.");
@@ -1178,24 +1228,21 @@
       p75F: toNum(mc.p75F),
       p95F: toNum(mc.p95F)
     };
-    set(wsMC, wsMC.getCell(4, 2), fr ? "PATRIMOINE FINAL (\u00e2ge " + (deathAge || 90) + ")" : "FINAL WEALTH (age " + (deathAge || 90) + ")");
+    // E5 fix (2026-06-12): the old headline wrote its P5..P95 values into row 3,
+    // but addTabBanner had already merged row 3 (B3:Ncols) for the subtitle \u2014
+    // so the whole row collapsed to the single P95 value (a 24 M$ orphan in B3)
+    // and the row-4 labels lost their numbers. Place the snapshot on the free
+    // row 4 only, each value under its matching year-table column (E=P5 \u2026 I=P95,
+    // per the row-5 header), with a clear label so nothing is unlabeled.
+    wsMC.mergeCells(4, 2, 4, 4);
+    set(wsMC, wsMC.getCell(4, 2), fr ? "Patrimoine final r\u00e9el (\u00e2ge " + (deathAge || 90) + ") :" : "Real final wealth (age " + (deathAge || 90) + "):");
     wsMC.getCell(4, 2).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.muted } };
-    wsMC.mergeCells(4, 2, 4, 3);
-    var hlLabels = [
-      [fr ? "P5" : "P5", hl.p5F],
-      ["P25", hl.p25F],
-      [fr ? "P50 (m\u00e9diane)" : "P50 (median)", hl.medF],
-      ["P75", hl.p75F],
-      ["P95", hl.p95F]
-    ];
-    hlLabels.forEach(function (hlp, hi) {
-      var c = 4 + hi;
-      set(wsMC, wsMC.getCell(4, c), hlp[0]);
-      wsMC.getCell(4, c).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.muted } };
+    var hlVals = [hl.p5F, hl.p25F, hl.medF, hl.p75F, hl.p95F];
+    hlVals.forEach(function (v, hi) {
+      var c = 5 + hi; // E..I \u2014 aligned to the year-table P5..P95 columns (row 5 header self-labels them)
+      wsMC.getCell(4, c).value = toNum(v); wsMC.getCell(4, c).numFmt = FMT_MONEY;
+      wsMC.getCell(4, c).font = { name: "Calibri", size: 12, bold: true, color: { argb: CL.gold } };
       wsMC.getCell(4, c).alignment = { horizontal: "right" };
-      wsMC.getCell(3, c).value = hlp[1]; wsMC.getCell(3, c).numFmt = FMT_MONEY;
-      wsMC.getCell(3, c).font = { name: "Calibri", size: 12, bold: true, color: { argb: CL.gold } };
-      wsMC.getCell(3, c).alignment = { horizontal: "right" };
     });
     setRow(wsMC, 5, 2, [fr ? "An" : "Yr", fr ? "\u00c2ge" : "Age", fr ? "D\u00e9terministe" : "Det.", fr ? "P5 (pire 5%)" : "P5 (worst 5%)", "P25", fr ? "P50 (m\u00e9diane)" : "P50 (median)", "P75", fr ? "P95 (meil. 5%)" : "P95 (best 5%)", fr ? "\u00c9cart P50-Det." : "P50-Det.", fr ? "Fourch. P5-P95" : "Range P5-P95"]);
     var mcN = Math.min((mc.pD || []).length, 51);
@@ -1353,7 +1400,7 @@
     var wsWD = wb.addWorksheet(fr ? "Retraits d\u00e9taill\u00e9s" : "Detailed Withdrawals");
     // Withdrawals: col 2 = 18 for phase header labels, money cols to 16
     // (phase subtotals reach 8-digit in late-life scenarios).
-    setColWidths(wsWD, [3, 18, 8, 16, 16, 16, 16, 16, 16, 28, 14, 14, 14, 14]);
+    setColWidths(wsWD, [3, 18, 8, 16, 16, 16, 16, 16, 16, 38, 14, 14, 14, 14]); // E10: widen notes col (was 28 — truncated « moy. 110… »)
     printSetup(wsWD);
     addTabBanner(wsWD,
       fr ? "D\u00e9tail des retraits par source et par phase" : "Withdrawal detail by source and phase",
@@ -1401,19 +1448,23 @@
       // Phase totals row — per-column sums of all years in the phase.
       // Gives the user "how much came out of each bucket" at a glance.
       var avg = pr.length;
+      // E10: live =SUM() over the phase block (cols D..I), not pasted constants,
+      // so the file stays auditable and deleting a year visibly breaks the total.
+      var _wf = hdrR + 1, _wl = wdr - 1; // first..last data row of this phase
       set(wsWD, wsWD.getCell(wdr, 2), fr ? "TOTAL phase" : "Phase TOTAL");
       wsWD.getCell(wdr, 2).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.gold } };
-      wsWD.getCell(wdr, 4).value = phFerr; wsWD.getCell(wdr, 4).numFmt = FMT_MONEY;
-      wsWD.getCell(wdr, 5).value = phMelt; wsWD.getCell(wdr, 5).numFmt = FMT_MONEY;
-      wsWD.getCell(wdr, 6).value = phRR;   wsWD.getCell(wdr, 6).numFmt = FMT_MONEY;
-      wsWD.getCell(wdr, 7).value = phTF;   wsWD.getCell(wdr, 7).numFmt = FMT_MONEY;
-      wsWD.getCell(wdr, 8).value = phNR;   wsWD.getCell(wdr, 8).numFmt = FMT_MONEY;
-      wsWD.getCell(wdr, 9).value = phTotal; wsWD.getCell(wdr, 9).numFmt = FMT_MONEY;
+      setFormula(wsWD, wsWD.getCell(wdr, 4), 'SUM(D' + _wf + ':D' + _wl + ')', FMT_MONEY, phFerr);
+      setFormula(wsWD, wsWD.getCell(wdr, 5), 'SUM(E' + _wf + ':E' + _wl + ')', FMT_MONEY, phMelt);
+      setFormula(wsWD, wsWD.getCell(wdr, 6), 'SUM(F' + _wf + ':F' + _wl + ')', FMT_MONEY, phRR);
+      setFormula(wsWD, wsWD.getCell(wdr, 7), 'SUM(G' + _wf + ':G' + _wl + ')', FMT_MONEY, phTF);
+      setFormula(wsWD, wsWD.getCell(wdr, 8), 'SUM(H' + _wf + ':H' + _wl + ')', FMT_MONEY, phNR);
+      setFormula(wsWD, wsWD.getCell(wdr, 9), 'SUM(I' + _wf + ':I' + _wl + ')', FMT_MONEY, phTotal);
       for (var ptc = 4; ptc <= 9; ptc++) {
         wsWD.getCell(wdr, ptc).font = { name: "Calibri", size: 10, bold: true, color: { argb: CL.gold } };
       }
       set(wsWD, wsWD.getCell(wdr, 10), fr ? avg + " ans \u2022 moy. " + _fmtM(Math.round(phTotal / avg), locale) + "/an" : avg + " yrs \u2022 avg " + _fmtM(Math.round(phTotal / avg), locale) + "/yr");
       wsWD.getCell(wdr, 10).font = { name: "Calibri", size: 9, italic: true, color: { argb: CL.muted } };
+      wsWD.getCell(wdr, 10).alignment = { wrapText: true, vertical: "middle" }; // E10: wrap so the avg note isn't clipped
       styleTable(wsWD, { hr: hdrR, fr: hdrR + 1, to: wdr, fc: 2, lc: 10 });
       wdr += 2;
     });
@@ -1456,9 +1507,13 @@
     });
     styleTable(wsTax, { hr: 7, fr: 8, to: 18, fc: 2, lc: 7 });
 
-    // Tax comparison
-    addTitle(wsTax, 20, 2, fr ? "COMPARAISON FISCALE VIE ENTI\u00c8RE" : "LIFETIME TAX COMPARISON", "", 13);
-    setRow(wsTax, 22, 2, [fr ? "M\u00e9trique" : "Metric", fr ? "Optimis\u00e9" : "Optimized", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]);
+    // Tax comparison \u2014 E14: real comparison only with a naive run; else a summary.
+    addTitle(wsTax, 20, 2,
+      hasNaive ? (fr ? "COMPARAISON FISCALE VIE ENTI\u00c8RE" : "LIFETIME TAX COMPARISON")
+               : (fr ? "SYNTH\u00c8SE FISCALE VIE ENTI\u00c8RE" : "LIFETIME TAX SUMMARY"), "", 13);
+    setRow(wsTax, 22, 2, hasNaive
+      ? [fr ? "M\u00e9trique" : "Metric", fr ? "Optimis\u00e9" : "Optimized", fr ? "Par d\u00e9faut" : "Default", "Delta", "Notes"]
+      : [fr ? "M\u00e9trique" : "Metric", fr ? "Optimis\u00e9" : "Optimized", "", "", "Notes"]);
     styleTable(wsTax, { hr: 22, fr: 23, to: 28, fc: 2, lc: 6 });
 
     setRow(wsTax, 23, 2, [fr ? "Imp\u00f4t total nominal" : "Total nominal tax"]);
@@ -1476,9 +1531,11 @@
     set(wsTax, wsTax.getCell(25, 3), oasYears); if (oasYearsN != null) set(wsTax, wsTax.getCell(25, 4), oasYearsN);
     if (cOn) set(wsTax, wsTax.getCell(25, 6), fr ? "Base m\u00e9nage. D\u00e9tail par conjoint dans le bloc ci-dessous." : "Household basis. Per-spouse detail in block below.");
 
-    setRow(wsTax, 27, 2, [fr ? "Alpha fiscal total" : "Total tax alpha"]);
-    setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
-    wsTax.getCell(27, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    if (hasNaive) { // E14: only show a tax-alpha total when a naive run produced it
+      setRow(wsTax, 27, 2, [fr ? "Alpha fiscal total" : "Total tax alpha"]);
+      setDelta(wsTax, wsTax.getCell(27, 5), Math.max(0, taxAlpha), FMT_MONEY);
+      wsTax.getCell(27, 2).font = { name: "Calibri", size: 11, bold: true, color: { argb: CL.gold } };
+    }
 
     // ── Tax breakdown by income source (P4.6) ─────────────────
     // Engine emits per-year tax-income components on medRevData:
@@ -1645,8 +1702,8 @@
       fr ? "Analyse de sensibilit\u00e9 & sc\u00e9narios de stress" : "Sensitivity analysis & stress scenarios", "", 14);
 
     addTitle(wsSS, 5, 2, fr ? "TORNADO \u2014 CE QUI INFLUENCE LE PLUS VOTRE PLAN" : "TORNADO \u2014 WHAT INFLUENCES YOUR PLAN MOST",
-      fr ? "Impact estim\u00e9 sur le patrimoine final" : "Estimated impact on final wealth", 13);
-    setRow(wsSS, 7, 2, [fr ? "Facteur" : "Factor", fr ? "Impact n\u00e9gatif" : "Downside", fr ? "Impact positif" : "Upside", fr ? "Amplitude" : "Amplitude", fr ? "Interpr\u00e9tation" : "Interpretation"]);
+      fr ? "Impact estim\u00e9 sur le taux de succ\u00e8s (points de %)" : "Estimated impact on success rate (percentage points)", 13);
+    setRow(wsSS, 7, 2, [fr ? "Facteur" : "Factor", fr ? "Impact d\u00e9favorable (pts)" : "Downside (pts)", fr ? "Impact favorable (pts)" : "Upside (pts)", fr ? "Amplitude (pts)" : "Amplitude (pts)", fr ? "Interpr\u00e9tation" : "Interpretation"]);
     // Accept either mc.sens (array of {name,lo,hi}) or named _sens* fields written by the test harness.
     var sensRows = [];
     if (mc.sens && mc.sens.length) {
@@ -1664,14 +1721,31 @@
         if (mc[s.key]) sensRows.push({ label: s.label, lo: toNum(mc[s.key].lo), hi: toNum(mc[s.key].hi), unit: "$" });
       });
     }
-    sensRows.forEach(function(s, i) {
+    // E3 (2026-06-12): these are success-rate POINTS, not dollars. The old code
+    // applied FMT_MONEY (« 32 $ ») and trusted the engine's lo/hi sign order,
+    // which flipped row to row (Inflation shipped négatif +32,3 / positif −21,7).
+    // Normalize: downside = min(lo,hi) (always the adverse, ≤0 side), upside =
+    // max(lo,hi); round to 1 decimal to kill float noise (28.2999…); signed
+    // points format; fill the previously-empty Interprétation by amplitude rank.
+    var FMT_PTS = '+0.0;-0.0;"—"';
+    var _r1 = function(x) { return Math.round(toNum(x) * 10) / 10; };
+    var _sensN = sensRows.map(function(s) {
+      var d = Math.min(s.lo, s.hi), u = Math.max(s.lo, s.hi);
+      return { label: s.label, down: _r1(d), up: _r1(u), amp: _r1(Math.abs(u - d)) };
+    });
+    var _maxAmp = _sensN.reduce(function(m, x) { return Math.max(m, x.amp); }, 0);
+    _sensN.forEach(function(s, i) {
       var rr = 8 + i;
       set(wsSS, wsSS.getCell(rr, 2), s.label);
-      wsSS.getCell(rr, 3).value = s.lo; wsSS.getCell(rr, 3).numFmt = FMT_MONEY;
-      if (s.lo < 0) wsSS.getCell(rr, 3).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
-      wsSS.getCell(rr, 4).value = s.hi; wsSS.getCell(rr, 4).numFmt = FMT_MONEY;
-      if (s.hi > 0) wsSS.getCell(rr, 4).font = { name: "Calibri", size: 11, color: { argb: CL.green } };
-      wsSS.getCell(rr, 5).value = Math.abs(s.hi - s.lo); wsSS.getCell(rr, 5).numFmt = FMT_MONEY;
+      wsSS.getCell(rr, 3).value = s.down; wsSS.getCell(rr, 3).numFmt = FMT_PTS;
+      if (s.down < 0) wsSS.getCell(rr, 3).font = { name: "Calibri", size: 11, color: { argb: CL.red } };
+      wsSS.getCell(rr, 4).value = s.up; wsSS.getCell(rr, 4).numFmt = FMT_PTS;
+      if (s.up > 0) wsSS.getCell(rr, 4).font = { name: "Calibri", size: 11, color: { argb: CL.green } };
+      wsSS.getCell(rr, 5).value = s.amp; wsSS.getCell(rr, 5).numFmt = '0.0';
+      var interp = _maxAmp > 0 && s.amp >= _maxAmp * 0.999 ? (fr ? "Facteur le plus déterminant" : "Most decisive factor")
+        : _maxAmp > 0 && s.amp >= _maxAmp * 0.5 ? (fr ? "Influence notable" : "Notable influence")
+        : (fr ? "Influence secondaire" : "Secondary influence");
+      set(wsSS, wsSS.getCell(rr, 6), interp);
     });
     if (sensRows.length === 0) {
       wsSS.mergeCells(8, 2, 8, 6);
@@ -1826,15 +1900,34 @@
       ["P75", mc.p75EstateNet, mc.p75EstateTax, fr ? "March\u00e9s favorables" : "Favorable"],
       ["P95", mc.p95EstateNet, mc.p95EstateTax, fr ? "March\u00e9s tr\u00e8s haussiers" : "Very bullish"]
     ];
+    // E6 fix (2026-06-12): depleted paths come back with a small negative net
+    // estate (≈ −1 200 $, a last-uncovered-flow clamp artifact). Shown raw it
+    // read « Résultat le plus probable : −1 200 $ ». Floor net (and tax/gross)
+    // at 0 and render exact-zero as « — » so a ruined percentile reads as no
+    // estate, not a phantom debt. Footnote added when any percentile floors.
+    var FMT_MONEY_DASH = '#,##0" $";-#,##0" $";"—"';
+    var _estFloored = false;
     eData.forEach(function(ed, i) {
       var r = 8 + i;
+      var net = Math.max(0, toNum(ed[1]));
+      var tax = Math.max(0, toNum(ed[2]));
+      if (toNum(ed[1]) < 0) { _estFloored = true; }
       set(wsE, wsE.getCell(r, 2), ed[0]);
-      wsE.getCell(r, 3).value = toNum(ed[1]); wsE.getCell(r, 3).numFmt = FMT_MONEY;
-      wsE.getCell(r, 4).value = toNum(ed[2]); wsE.getCell(r, 4).numFmt = FMT_MONEY;
-      wsE.getCell(r, 5).value = toNum(ed[1]) + toNum(ed[2]); wsE.getCell(r, 5).numFmt = FMT_MONEY;
-      set(wsE, wsE.getCell(r, 6), ed[3]);
+      wsE.getCell(r, 3).value = net; wsE.getCell(r, 3).numFmt = FMT_MONEY_DASH;
+      wsE.getCell(r, 4).value = tax; wsE.getCell(r, 4).numFmt = FMT_MONEY_DASH;
+      wsE.getCell(r, 5).value = net + tax; wsE.getCell(r, 5).numFmt = FMT_MONEY_DASH;
+      // When the path is ruined (net floored to 0), the market-band label is
+      // misleading — say the capital was depleted instead.
+      set(wsE, wsE.getCell(r, 6), (net === 0 && toNum(ed[1]) <= 0) ? (fr ? "Capital épuisé avant le décès" : "Capital depleted before death") : ed[3]);
     });
     styleTable(wsE, { hr: 7, fr: 8, to: 12, fc: 2, lc: 6 });
+    if (_estFloored) {
+      set(wsE, wsE.getCell(13, 2), fr
+        ? "— : aucun héritage net dans ce centile (capital épuisé). Les valeurs négatives résiduelles du moteur sont ramenées à 0."
+        : "— : no net estate in this percentile (capital depleted). Residual negative engine values are floored to 0.");
+      wsE.mergeCells(13, 2, 13, 6);
+      wsE.getCell(13, 2).font = SUB_FONT;
+    }
 
     // Tax cascade — anchored on MC engine output (mc.medEstateTax,
     // mc.medEstateNet). The engine computes the full deemed-disposition,
@@ -2443,14 +2536,14 @@
     addTitle(wsM, 5, 2, fr ? "COMPOSANTES DU MOTEUR" : "ENGINE COMPONENTS", "", 13);
     setRow(wsM, 7, 2, [fr ? "Composante" : "Component", "Description", fr ? "D\u00e9tails" : "Details"]);
     var meth = [
-      [fr ? "1. Projection d\u00e9terministe" : "1. Deterministic", fr ? "Chemin unique, rendements esp\u00e9r\u00e9s" : "Single path, expected returns", "optimizeDecum()"],
+      [fr ? "1. Projection d\u00e9terministe" : "1. Deterministic", fr ? "Chemin unique, rendements esp\u00e9r\u00e9s" : "Single path, expected returns", fr ? "D\u00e9caissement optimis\u00e9" : "Optimized decumulation"], // E9: was optimizeDecum()
       [fr ? "2. Monte Carlo" : "2. Monte Carlo", nSim + " sims", "t-Student (df=5)"],
       [fr ? "3. Corr\u00e9lation" : "3. Correlation", fr ? "5 classes d'actifs" : "5 asset classes", "Cholesky 5\u00d75"],
       [fr ? "4. Fiscalit\u00e9" : "4. Tax", fr ? "Paliers progressifs" : "Progressive brackets", fr ? "Cr\u00e9dits \u00e2ge/pension, r\u00e9cup. PSV" : "Age/pension credits, OAS clawback"],
       [fr ? "5. Mortalit\u00e9" : "5. Mortality", stochMort ? "CPM 2023" : (fr ? "D\u00e9terministe" : "Deterministic"), ""],
       [fr ? "6. Retraits" : "6. Withdrawals", fr ? "Ordre dynamique" : "Dynamic order", "NR \u2192 Meltdown \u2192 REER \u2192 CELI"],
-      [fr ? "7. Lissage" : "7. Smoothing", fr ? "\u00c9vite les variations brusques" : "Avoids abrupt changes", "MC blend 70/30"],
-      [fr ? "8. Comportemental" : "8. Behavioral", fr ? "Ajustement selon l'\u00e2ge" : "Age-based", "Go " + Math.round(goP * 100) + "% / Slow " + Math.round(slP * 100) + "% / No " + Math.round(noP * 100) + "%"]
+      [fr ? "7. Lissage" : "7. Smoothing", fr ? "\u00c9vite les variations brusques" : "Avoids abrupt changes", fr ? "M\u00e9lange 70 % MC / 30 % d\u00e9terministe" : "70% MC / 30% deterministic blend"], // E9
+      [fr ? "8. Comportemental" : "8. Behavioral", fr ? "Ajustement selon l'\u00e2ge" : "Age-based", (fr ? "D\u00e9penses Go-Go " : "Go-Go spend ") + Math.round(goP * 100) + " % \u00b7 Slow-Go " + Math.round(slP * 100) + " % \u00b7 No-Go " + Math.round(noP * 100) + " %"] // E9
     ];
     meth.forEach(function(m, i) { setRow(wsM, 8 + i, 2, m); });
     styleTable(wsM, { hr: 7, fr: 8, to: 15, fc: 2, lc: 4 });
@@ -2584,7 +2677,7 @@
       fr ? "Taux de succ\u00e8s" : "Success rate",
       fr ? "Patrimoine m\u00e9dian" : "Median wealth",
       fr ? "Note du plan" : "Plan grade",
-      fr ? "Alpha fiscal" : "Tax alpha"
+      hasNaive ? (fr ? "Alpha fiscal" : "Tax alpha") : (fr ? "Couverture garantie" : "Guaranteed coverage") // E14
     ];
     // Row 7: labels
     wsCover.getRow(7).height = 18;
@@ -2608,7 +2701,7 @@
     });
     // Success rate
     wsCover.getCell(8, 2).value = toNum(mc.succ);
-    wsCover.getCell(8, 2).numFmt = "0%";
+    wsCover.getCell(8, 2).numFmt = "0.0 %"; // E2: one decimal on the cover (49,7 %, not 50 %)
     wsCover.getCell(8, 2).font = { name: "Calibri", size: 30, bold: true, color: { argb: CL.gold } };
     // Median wealth
     wsCover.getCell(8, 5).value = toNum(mc.rMedF || mc.medF);
@@ -2617,9 +2710,15 @@
     // Grade
     wsCover.getCell(8, 8).value = gr.g;
     wsCover.getCell(8, 8).font = { name: "Calibri", size: 30, bold: true, color: { argb: gr.c } };
-    // Tax alpha
-    wsCover.getCell(8, 11).value = toNum(Math.max(0, taxAlpha));
-    wsCover.getCell(8, 11).numFmt = FMT_MONEY;
+    // 4th card — E14: Tax alpha only when a naive run produced it; otherwise
+    // guaranteed-income coverage (always available) instead of « Alpha fiscal 0 $ ».
+    if (hasNaive) {
+      wsCover.getCell(8, 11).value = toNum(Math.max(0, taxAlpha));
+      wsCover.getCell(8, 11).numFmt = FMT_MONEY;
+    } else {
+      wsCover.getCell(8, 11).value = toNum(covRatio);
+      wsCover.getCell(8, 11).numFmt = "0 %";
+    }
     wsCover.getCell(8, 11).font = { name: "Calibri", size: 24, bold: true, color: { argb: CL.gold } };
 
     wsCover.mergeCells(11, 2, 12, 14);
@@ -2678,6 +2777,42 @@
       wsReadme.getRow(mapRow).height = 19;
       mapRow++;
     });
+
+    // ── E11 (2026-06-12): print & navigation polish ──
+    // Tab colours by role (gold = headline, navy = analysis, grey = annex);
+    // gridlines off on the presentation sheets so the cream cards float clean;
+    // cover forced to fit one page (fitToWidth alone is inert without fitToPage,
+    // which clipped the 3rd/4th KPI cards + the disclaimer); year-series sheets
+    // repeat their header row across printed pages.
+    (function applyE11Polish() {
+      var gold = {}, navy = {}, present = {}, series = {};
+      [coverName, (fr ? "Sommaire" : "Summary")].forEach(function (n) { gold[n] = 1; });
+      [(fr ? "Diagnostic" : "Diagnostic"), (fr ? "Projection déterministe" : "Deterministic Projection"),
+       (fr ? "Flux de trésorerie" : "Cash Flow"), (fr ? "MC — Patrimoine" : "MC — Wealth"),
+       (fr ? "Retraits détaillés" : "Detailed Withdrawals"), (fr ? "Fiscalité" : "Tax"),
+       (fr ? "Sensibilité & Stress" : "Sensitivity & Stress"), (fr ? "Succession" : "Estate")
+      ].forEach(function (n) { navy[n] = 1; });
+      [coverName, (fr ? "Sommaire" : "Summary"), (fr ? "Diagnostic" : "Diagnostic")].forEach(function (n) { present[n] = 1; });
+      [(fr ? "Projection déterministe" : "Deterministic Projection"),
+       (fr ? "Flux de trésorerie" : "Cash Flow"), (fr ? "MC — Patrimoine" : "MC — Wealth")
+      ].forEach(function (n) { series[n] = 1; });
+      wb.eachSheet(function (ws) {
+        var nm = ws.name;
+        try { ws.properties.tabColor = { argb: gold[nm] ? CL.gold : navy[nm] ? CL.dark : CL.muted }; } catch (_) {}
+        if (present[nm]) {
+          var v0 = (ws.views && ws.views[0]) || {};
+          v0.showGridLines = false;
+          ws.views = [v0];
+        }
+        if (series[nm]) {
+          ws.pageSetup = ws.pageSetup || {};
+          ws.pageSetup.printTitlesRow = '5:5';
+        }
+      });
+      if (wsCover) {
+        wsCover.pageSetup = { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 1, paperSize: 9 };
+      }
+    })();
 
     // ── Download ──
     var buf = await wb.xlsx.writeBuffer();

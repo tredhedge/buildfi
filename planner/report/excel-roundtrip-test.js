@@ -28,7 +28,9 @@ global.ExcelJS = ExcelJS;
 
 // Capture report-excel.js IIFE internals by re-eval-ing in a way that exposes them
 const dir = __dirname;
-['report-formatters.js', 'report-data.js', 'report-charts.js'].forEach(f => {
+// report-constants-2026.js MUST load first — report-data.js reads window.BFConstants
+// at eval time; without it FED_BRACKETS is undefined and calcTax throws on .map.
+['report-constants-2026.js', 'report-formatters.js', 'report-data.js', 'report-charts.js'].forEach(f => {
   eval(fs.readFileSync(path.join(dir, f), 'utf8'));
 });
 // Patch report-excel to expose helpers to the test
