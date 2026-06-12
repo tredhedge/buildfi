@@ -270,7 +270,7 @@
     var priCls = opts.priority >= 3 ? "reco-priority-high" :
                  opts.priority >= 2 ? "reco-priority-medium" : "reco-priority-low";
     var _fr = opts.fr !== false;
-    var priLbl = opts.priority >= 3 ? (_fr ? "\u26a0 HAUTE" : "\u26a0 HIGH") :
+    var priLbl = opts.priority >= 3 ? (_fr ? "HAUTE" : "HIGH") :
                  opts.priority >= 2 ? (_fr ? "MOYENNE" : "MEDIUM") : (_fr ? "BASSE" : "LOW");
     return '<div class="reco-card">' +
       '<span class="reco-priority ' + priCls + '">' + priLbl + '</span>' +
