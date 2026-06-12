@@ -1696,7 +1696,13 @@
       sumSpend += (r.spend || 0);
     }
     if (sumSpend <= 0) return null;
-    var govShare = (sumGov + sumPen) / sumSpend;
+    // Coverage basis (audit N3): use the SAME at-retirement figure as the
+    // income section KPI (d.covRatio = guaranteed income / spending once all
+    // elected benefits have started). The row-average over medRevData diluted
+    // the ratio with early-retirement years before OAS/GIS begin, producing a
+    // caption % (e.g. 1%, 37%) that flatly contradicted the KPI two paragraphs
+    // up (72%, 98%). Fall back to the row-average only if covRatio is absent.
+    var govShare = (d.covRatio != null ? d.covRatio : (sumGov + sumPen) / sumSpend);
     var f$ = F.fmtCompact;
     if (govShare >= 0.85) {
       return fr
