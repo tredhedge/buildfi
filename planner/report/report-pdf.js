@@ -3202,7 +3202,7 @@
   // by gen-real-mc.mjs running 6 perturbed MC scenarios.
   function renderStressTests(d, secN) {
     // Phase 5 relevance gate: hide for plain-mode readers (technical content).
-    if (!_relevanceGate(d, 'stress_tests')) return '';
+    if (!_relevanceGate(d, 'stress_tests') && !d._forceRisk) return '';
     var fr = d.fr;
     // Always emit the section anchor so downstream QA (report-qa.js) can
     // verify structural presence. When enrichment is missing, render a
@@ -5550,9 +5550,10 @@
 
   // === SECTION: RISK & SENSITIVITY (Expert) ===
   function renderRisk(d, secN) {
-    if (!d.exp) return '';
-    // Phase 5 relevance gate: plain-mode readers get this section omitted.
-    if (!_relevanceGate(d, 'risk')) return '';
+    if (!d.exp && !d._forceRisk) return '';
+    // Phase 5 relevance gate: plain-mode readers get this section omitted —
+    // unless the plan is fragile (audit N2), where dispersion is essential.
+    if (!_relevanceGate(d, 'risk') && !d._forceRisk) return '';
     var fr = d.fr, mc = d.mc, p = d.p, revData = d.revData;
     var f$ = F.fmtCompact, fR = function(v) { return F.fmtMoney(v, fr); };
     var h = secPage();
@@ -7050,6 +7051,11 @@ h += secPageEnd();
     var _hasDrawTrace = !!(d.mc && d.mc._enriched && d.mc._enriched.drawTrace && d.mc._enriched.drawTrace.length);
     // Stress tests gated on _stress payload.
     var _hasStress = !!(d.mc && d.mc._stress);
+    // Audit N2: on fragile plans the reader needs the risk analysis most, so
+    // override the reader-classifier suppression of dispersion + stress when
+    // success is low. The data exists for every profile; this only changes
+    // visibility. Threshold 70% (a plan failing >30% of paths is not "lean").
+    d._forceRisk = (d.succVal != null && d.succVal < 0.70);
     var _suppressed = d._suppressed || {};
     var _isSuppressed = function(id) { return !!_suppressed[id]; };
     // Reader-class flags. Two distinct gates:
@@ -7269,7 +7275,7 @@ h += secPageEnd();
     // Render-or-remove (audit N1): renderRisk returns '' when dispersion data
     // is absent (e.g. gis_en, rrsp_only_en) — previously consumed a number
     // with no heading, leaving a body gap. Guard on actual content.
-    if (d.exp && !riskLeads) { var _rH2 = renderRisk(d, secN + 1); if (_rH2 && _rH2.trim()) { secN++; h += _rH2; } }
+    if ((d.exp || d._forceRisk) && !riskLeads) { var _rH2 = renderRisk(d, secN + 1); if (_rH2 && _rH2.trim()) { secN++; h += _rH2; } }
     // Stress tests
     // CLASSIFIER-RENDER-PLAN Phase 4: density-collapsed when
     // detailPref='concise' (compact) OR stressLevel='high' (calm).
