@@ -115,6 +115,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* &#9552;&#9552;&#9552; TYPOGRAPHY: Weight normalization &#9552;&#9552;&#9552; */
 .bf-side{font-weight:400}
 .bf-content{font-weight:400}
+/* V10: reserve clearance so the fixed bottom disclaimer + version stamp don't occlude the last content rows. ID+!important beats the .bf-content padding shorthands in the media queries. */
+#main-content{padding-bottom:56px!important}
 .bf-content p,.bf-content span{font-weight:inherit}
 
 /* &#9552;&#9552;&#9552; TYPOGRAPHY: Scale &#9552;&#9552;&#9552; */
@@ -8831,30 +8833,9 @@ function App() {
     S.btnSecondary.color = CL.dm;
     S.insightGreen.borderLeft = "3px solid " + CL.gn; S.insightOrange.borderLeft = "3px solid " + CL.or; S.insightRed.borderLeft = "3px solid " + CL.rd;
   if (typeof document !== "undefined") document.body.style.background = CL.bg;
-  useEffect(function() {
-    if (typeof document === "undefined") return;
-    var root = document.getElementById("root");
-    if (!root) return;
-    var raf = requestAnimationFrame(function() { _repairVisibleText(root); });
-    var t1 = setTimeout(function() { _repairVisibleText(root); }, 120);
-    var t2 = setTimeout(function() { _repairVisibleText(root); }, 520);
-    var pending = false;
-    var obs = new MutationObserver(function() {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(function() {
-        pending = false;
-        _repairVisibleText(root);
-      });
-    });
-    obs.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["title", "placeholder", "aria-label"] });
-    return function() {
-      obs.disconnect();
-      cancelAnimationFrame(raf);
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [lang, dark, mode]);
+  // A-cleanup: removed the _repairVisibleText band-aid effect (raf + 2 timeouts +
+  // an always-on MutationObserver over all of #root). Encoding is fixed at source
+  // (0 real mojibake clusters), so this only added a per-mutation perf cost.
   var _prov = useState("QC"), prov = _prov[0], setProv = _prov[1];
   var _goals = useState([{ id: "ret", type: "retirement", name: "Retraite", nameEn: "Retirement", amount: 0, startAge: 0, endAge: 0, inflation: true, icon: "\ud83c\udfd6", locked: true }]), goals = _goals[0], setGoals = _goals[1];
   var t = lang === "fr" ? T_FR : T_EN;
