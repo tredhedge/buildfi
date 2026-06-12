@@ -173,7 +173,8 @@ function FrenchPolicy() {
           <li>
             <strong>Anthropic, PBC</strong> — modèle d&apos;intelligence
             artificielle utilisé pour rédiger une partie du commentaire de
-            votre rapport. Vos réponses au quiz sont transmises à Anthropic
+            votre rapport. Un profil financier pseudonymisé (âge, province,
+            montants, sans nom ni coordonnées) est transmis à Anthropic
             sous forme de prompt; Anthropic peut conserver ces prompts jusqu&apos;à
             30 jours pour des fins de sécurité (voir leur politique).
             BuildFi ne contrôle pas cette rétention.
@@ -374,8 +375,9 @@ function EnglishPolicy() {
           </li>
           <li>
             <strong>Anthropic, PBC</strong> — AI model used to write part of
-            your report&apos;s commentary. Your quiz answers are transmitted
-            to Anthropic as a prompt; Anthropic may retain these prompts for
+            your report&apos;s commentary. A pseudonymized financial profile
+            (age, province, amounts, without name or contact details) is
+            transmitted to Anthropic as a prompt; Anthropic may retain these prompts for
             up to 30 days for safety purposes (see their policy). BuildFi
             does not control this retention.
           </li>

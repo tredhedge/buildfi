@@ -881,7 +881,7 @@ function Guide101Inner() {
           <Note tone="info" kicker={fr ? "Protection du revenu" : "Income protection"}>
             <div>{t.ch5Protection}</div>
             <div style={{ marginTop: 8 }}>
-              <Link href="/guides/protection" style={{ color: CL.gold, textDecoration: "underline", fontSize: 13 }}>{t.ch5ProtectionLink}</Link>
+              <span style={{ color: CL.muted, fontSize: 13, fontStyle: "italic" }}>{t.ch5ProtectionLink}</span>
             </div>
           </Note>
         </Section>

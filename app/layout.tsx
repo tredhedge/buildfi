@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BuildFi — Planification retraite canadienne bilingue",
     description:
-      "Plan testé contre krach, inflation, longévité. Fiscalité Canada 2026 — 13 provinces et territoires. Bilingue FR/EN. Bilan 29,99 $ · Planner 69,99 $. AMF-compliant.",
+      "Plan testé contre krach, inflation, longévité. Fiscalité Canada 2026 — 13 provinces et territoires. Bilingue FR/EN. Bilan 29,99 $ · Planner 69,99 $. Projections observationnelles, pas un conseil financier.",
     url: "https://buildfi.ca",
     type: "website",
     locale: "fr_CA",

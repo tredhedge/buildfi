@@ -32,7 +32,7 @@ const COPY = {
     heroSub: "La rigueur d'un conseiller, le prix d'une sortie au restaurant. Bilan 360 modélise votre situation exacte — CPP/RRQ, PSV, REER, CELI, fiscalité fédérale + provinciale (toutes provinces), fractionnement, immobilier — contre des milliers de trajectoires de marché.",
     heroCtaPrimary: "Commencer mon Bilan",
     heroCtaSecondary: "Essayer les outils gratuits",
-    heroTrust: "Fiscalité 2026 · 13 provinces et territoires · Bilingue FR/EN · Conformité AMF",
+    heroTrust: "Fiscalité 2026 · 13 provinces et territoires · Bilingue FR/EN · Ton observationnel",
 
     statsTitle: "Pourquoi nos chiffres sont différents",
     stats: [
@@ -50,7 +50,7 @@ const COPY = {
     pricingBilanFeatures: [
       "1 rapport HTML interactif bilingue",
       "Plan testé contre krach, inflation, stagflation, longévité",
-      "Narration IA Opus (analyse de votre plan)",
+      "Narration IA Claude (analyse de votre plan)",
       "Timing optimal RRQ/PSV (11 combinaisons testées)",
       "Graphiques interactifs + export PDF",
     ],
@@ -131,7 +131,7 @@ const COPY = {
       },
       {
         t: "Narration IA qui explique votre situation",
-        b: "Opus 4.6 analyse vos résultats et écrit un briefing personnalisé. Vos forces. Vos points d'attention. Les 3 actions qui changent le plus votre plan. Ton AMF-compliant, aucune promesse.",
+        b: "Claude (Anthropic) analyse vos résultats et écrit un briefing personnalisé. Vos forces. Vos points d'attention. Les 3 actions qui changent le plus votre plan. Ton observationnel, aucune promesse.",
       },
     ],
 
@@ -148,7 +148,7 @@ const COPY = {
     howSteps: [
       { n: "01", t: "Questionnaire adaptatif — 10 minutes", b: "Seulement les questions pertinentes à votre situation (couple, propriétés, CCPC, etc.). Un célibataire locataire ne répond pas aux mêmes questions qu'un couple avec immeubles. Personne d'autre ne voit vos données." },
       { n: "02", t: "Votre plan testé contre l'adversité", b: "Pas une moyenne optimiste — des milliers de trajectoires de marché incluant krach, inflation, stagflation et longévité extrême. Calculs côté serveur en ~30 secondes." },
-      { n: "03", t: "Rapport HTML interactif + IA", b: "Score, chiffres clés, actions prioritaires, narration Opus. Interactif : testez des sliders (retraite ±2 ans, RRQ 60/65/70, dépenses). Lien valable à vie." },
+      { n: "03", t: "Rapport HTML interactif + IA", b: "Score, chiffres clés, actions prioritaires, narration IA Claude. Interactif : testez des sliders (retraite ±2 ans, RRQ 60/65/70, dépenses). Lien valable à vie." },
     ],
 
     whyTitle: "Pourquoi BuildFi",
@@ -162,8 +162,8 @@ const COPY = {
         b: "Moteur validé sur les règles fiscales 2026 complètes : fédéral + 13 provinces, ARC, Revenu Québec. CCPC, meltdown REER, manoeuvre Smith, récupération PSV/SRG. Les banques facturent 500 à 2 000 $ pour moins.",
       },
       {
-        t: "AMF-compliant",
-        b: "Langage conditionnel (« pourrait », « selon vos hypothèses »). Ton observationnel, jamais prescriptif. Aucune promesse de rendement. Les résultats sont des projections, pas des garanties.",
+        t: "Langage observationnel",
+        b: "Langage conditionnel (« pourrait », « selon vos hypothèses »). Ton observationnel, jamais prescriptif. Aucune promesse de rendement. Les résultats sont des projections, pas des garanties. BuildFi n'est pas inscrit auprès de l'AMF.",
       },
       {
         t: "Aucun conflit d'intérêts",
@@ -223,7 +223,7 @@ const COPY = {
     heroSub: "The rigor of an advisor, the price of a dinner out. Bilan 360 models your exact situation — CPP/QPP, OAS, RRSP, TFSA, federal + provincial tax (all provinces), splitting, real estate — against thousands of market paths.",
     heroCtaPrimary: "Start my Bilan",
     heroCtaSecondary: "Try the free tools",
-    heroTrust: "2026 tax year · 13 provinces & territories · Bilingual EN/FR · AMF-compliant",
+    heroTrust: "2026 tax year · 13 provinces & territories · Bilingual EN/FR · Observational, not advice",
 
     statsTitle: "Why our numbers are different",
     stats: [
@@ -241,7 +241,7 @@ const COPY = {
     pricingBilanFeatures: [
       "1 interactive bilingual HTML report",
       "Plan stress-tested against crash, inflation, stagflation, longevity",
-      "Opus AI narration (analyzes your plan)",
+      "Claude AI narration (analyzes your plan)",
       "Optimal CPP/OAS timing (11 combos tested)",
       "Interactive charts + PDF export",
     ],
@@ -315,7 +315,7 @@ const COPY = {
       },
       {
         t: "AI narration that explains your situation",
-        b: "Opus 4.6 analyzes your results and writes a personalized briefing. Your strengths. Your attention points. The 3 actions that change your plan most. AMF-compliant tone, no promises.",
+        b: "Claude (Anthropic) analyzes your results and writes a personalized briefing. Your strengths. Your attention points. The 3 actions that change your plan most. Observational tone, no promises.",
       },
     ],
 
@@ -332,7 +332,7 @@ const COPY = {
     howSteps: [
       { n: "01", t: "Adaptive questionnaire — 10 minutes", b: "Only the questions relevant to YOUR situation (couple, properties, CCPC, etc.). A single renter doesn't answer the same questions as a couple with rental properties. Nobody else sees your data." },
       { n: "02", t: "Your plan stress-tested", b: "Not an optimistic average — thousands of market paths including crashes, inflation, stagflation, and extreme longevity. Server-side compute in ~30 seconds." },
-      { n: "03", t: "Interactive HTML report + AI", b: "Score, key numbers, priority actions, Opus narration. Interactive: test sliders (retire ±2 years, CPP 60/65/70, spending). Link valid for life." },
+      { n: "03", t: "Interactive HTML report + AI", b: "Score, key numbers, priority actions, Claude AI narration. Interactive: test sliders (retire ±2 years, CPP 60/65/70, spending). Link valid for life." },
     ],
 
     whyTitle: "Why BuildFi",
@@ -346,8 +346,8 @@ const COPY = {
         b: "Engine validated against full 2026 tax rules: federal + 13 provinces, CRA, Revenu Québec. CCPC, RRSP meltdown, Smith Manoeuvre, OAS/GIS clawback. Banks charge $500-2,000 for less.",
       },
       {
-        t: "AMF-compliant",
-        b: "Conditional language (\"could\", \"based on your assumptions\"). Observational tone, never prescriptive. No return promises. Results are projections, not guarantees.",
+        t: "Observational by design",
+        b: "Conditional language (\"could\", \"based on your assumptions\"). Observational tone, never prescriptive. No return promises. Results are projections, not guarantees. BuildFi is not registered with the AMF.",
       },
       {
         t: "Zero conflicts of interest",
@@ -384,7 +384,7 @@ const COPY = {
     ],
 
     ctaBottomTitle: "Ready to see where you stand?",
-    ctaBottomSub: "10 minutes to answer. Report delivered in 30 seconds. 14-day guarantee.",
+    ctaBottomSub: "10 minutes to answer. Report delivered in 30 seconds.",
 
     footerLegal: "Legal",
     footerPrivacy: "Privacy",

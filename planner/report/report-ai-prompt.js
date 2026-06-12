@@ -104,7 +104,7 @@
     '- Professional but warm. Not robotic.\n' +
     '- Use bold (**text**) for key numbers — and only for numbers that appear in DATA verbatim.\n' +
     '- Bilingual: respond in the language specified in the DATA section.\n' +
-    '- Use client first name and goal descriptions verbatim when relevant.\n\n' +
+    '- The client first name is provided ONLY as the literal placeholder token [[CLIENT_NAME]] (and [[SPOUSE_NAME]] for a partner). When you address the reader by name, write the token verbatim — never invent, guess, or substitute a real name. The token is replaced with the real name after generation. Use goal descriptions verbatim when relevant.\n\n' +
     '## ANTI-REPETITION DOCTRINE — CRITICAL\n' +
     'The reader sees ALL slots in sequence. Each slot must ADVANCE the reasoning, not restate it. Reference the same fact at most ONCE across these opening slots:\n' +
     '- advisor_letter: WHY this report matters to THIS person — frame their concern, set the lens. NO success rate, NO P50/P25, NO mention of depletion or GIS. Human situation only.\n' +
@@ -230,8 +230,11 @@
       lang: fr ? 'fr' : 'en',
       phase: d.R.phase,
       isCouple: d.R.couple,
-      clientName: d.fn || '',
-      spouseName: d.sfn || '',
+      // L2(a) PII — never send a real name to Anthropic. Emit a neutral
+      // placeholder token (only signalling whether a name exists); the renderer
+      // rehydrates [[CLIENT_NAME]]/[[SPOUSE_NAME]] from the local client record.
+      clientName: d.fn ? '[[CLIENT_NAME]]' : '',
+      spouseName: d.sfn ? '[[SPOUSE_NAME]]' : '',
       age: p.age,
       retAge: p.retAge,
       deathAge: p.deathAge || 90,
