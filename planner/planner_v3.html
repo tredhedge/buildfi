@@ -212,8 +212,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   position: fixed; left: 84px; top: 0; bottom: 0; width: 620px;
   background: var(--bf-overlay-bg); border-right: 1px solid var(--bf-rail-border);
   z-index: 8600; overflow-y: auto; overflow-x: hidden; padding: 20px 22px;
-  transform: translateX(-640px); opacity: 0; pointer-events: none;
-  transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;
+  transform: translateX(-640px); opacity: 0; pointer-events: none; visibility: hidden;
+  transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease, visibility 0s linear .28s;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--bf-overlay-shadow);
   scrollbar-width: thin; scrollbar-color: var(--bf-rail-border) transparent;
@@ -221,7 +221,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bf-side-overlay::-webkit-scrollbar{width:6px}
 .bf-side-overlay::-webkit-scrollbar-thumb{background:var(--bf-rail-border);border-radius:3px}
 .bf-side-overlay::-webkit-scrollbar-track{background:transparent}
-.bf-side-overlay.open { transform: translateX(0); opacity: 1; pointer-events: auto; }
+.bf-side-overlay.open { transform: translateX(0); opacity: 1; pointer-events: auto; visibility: visible; transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .28s ease; }
 
 /* v3 PHASE 5: advanced drawer pattern.
    Use <details class="bf-adv-drawer"><summary>Advanced</summary>…</details>
