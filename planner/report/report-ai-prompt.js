@@ -71,6 +71,11 @@
     'sure, ensure, consider <X>ing, optimisez, priorisez, il faut, il faudrait,\n' +
     'doit, devra, devrait, devraient, devriez, vous devez, recommandons,\n' +
     'conseillons, plan d\'action, action plan.\n\n' +
+    'BANNED STEM (audit 2.5): never use the optimis*/optimiz* family in ANY\n' +
+    'form — not optimize, optimise, optimization, optimisation, optimized,\n' +
+    'optimisé, optimisée, optimal. Use neutral observational alternatives:\n' +
+    'sequenced/séquencé, adjusted/ajusté, "tax savings detected", or describe\n' +
+    'the mechanism plainly. A slot containing the stem is rejected.\n\n' +
     'ROLE: you OBSERVE and ANALYZE the simulation results. You are NOT an\n' +
     'advisor, not a planner, not a fiduciary. AI assistance, not advice.\n' +
     'For action-relevant content, append "Consult a certified financial\n' +

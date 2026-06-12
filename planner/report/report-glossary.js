@@ -126,8 +126,8 @@
       en: { label: 'Fat-tailed distribution', def: 'Statistical model giving more probability to extreme events (crashes, exceptional years) than a normal distribution. More realistic for stock returns.' }
     },
     ccpc: {
-      fr: { label: 'SPCC (Société privée sous contrôle canadien)', def: 'Société active admissible à la déduction pour petites entreprises (DPE). Combinaison salaire/dividendes optimisable selon le revenu d\'entreprise et personnel.' },
-      en: { label: 'CCPC (Canadian-Controlled Private Corporation)', def: 'Active corporation eligible for the small business deduction (SBD). Salary/dividend mix optimizable based on corporate and personal income.' }
+      fr: { label: 'SPCC (Société privée sous contrôle canadien)', def: 'Société active admissible à la déduction pour petites entreprises (DPE). Combinaison salaire/dividendes ajustable selon le revenu d\'entreprise et personnel.' },
+      en: { label: 'CCPC (Canadian-Controlled Private Corporation)', def: 'Active corporation eligible for the small business deduction (SBD). Salary/dividend mix adjustable based on corporate and personal income.' }
     },
     integrated_rate: {
       fr: { label: 'Taux intégré', def: 'Taux d\'imposition combiné corporation + actionnaire sur un dollar gagné par la société puis distribué. Mesure si le revenu est mieux extrait via salaire ou dividende.' },

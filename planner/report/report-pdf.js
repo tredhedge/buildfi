@@ -1346,8 +1346,8 @@
           : 'Light tax burden — likely benefits from pension splitting and TFSA withdrawals; monitor an unexpected income (inheritance, asset sale) that would push past the OAS threshold.';
       } else if (d.avgEffRate < 0.25) {
         _fiscBody = fr
-          ? 'Charge fiscale dans la fourchette typique pour ce niveau de revenu ; un ordre de retrait optimisé pourrait réduire la facture viagère.'
-          : 'Tax burden within the typical range for this income level; an optimized withdrawal order could reduce the lifetime bill.';
+          ? 'Charge fiscale dans la fourchette typique pour ce niveau de revenu ; un ordre de retrait ajusté pourrait réduire la facture viagère.'
+          : 'Tax burden within the typical range for this income level; an adjusted withdrawal order could reduce the lifetime bill.';
       } else {
         _fiscBody = fr
           ? 'Charge fiscale élevée — masse imposable concentrée (REER/FERR/SPCC). La section fiscale identifie les leviers (meltdown, fractionnement, report PSV) qui pourraient lisser l\'impôt.'
@@ -1542,7 +1542,7 @@
     var _planFailing = (d.succVal != null && d.succVal < 0.55);
     if (d.succVal >= 0.85) strengths.push(fr ? 'Trajectoire centrale tient avec marge sur ' + horizonYrs + '\u00a0ans' : 'Central trajectory holds with margin over ' + horizonYrs + ' years');
     if (d.covRatio > 1.0) strengths.push(fr ? 'Revenu garanti couvre ' + Math.round(d.covRatio * 100) + '\u202f% des d\u00e9penses cibles' : 'Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of target spending');
-    if (!_planFailing && d._taxAlpha != null && d._taxAlpha > 10000) strengths.push((fr ? 'Optimisation fiscale d\u00e9tect\u00e9e \u2014 \u00e9conomies de ' : 'Tax optimization detected \u2014 savings of ') + f$(d._taxAlpha) + (fr ? ' vs strat\u00e9gie standard' : ' vs standard strategy'));
+    if (!_planFailing && d._taxAlpha != null && d._taxAlpha > 10000) strengths.push((fr ? '\u00c9conomies fiscales d\u00e9tect\u00e9es \u2014 ' : 'Tax savings detected \u2014 ') + f$(d._taxAlpha) + (fr ? ' vs strat\u00e9gie standard' : ' vs standard strategy'));
     if (!_planFailing && mc && mc.medEstateNet > 250000) strengths.push((fr ? 'Patrimoine r\u00e9siduel m\u00e9dian de ' : 'Median residual estate of ') + f$(mc.medEstateNet));
     if (!_planFailing && d.heroScore && d.heroScore.components) {
       var topComp = null, topVal = 0;
@@ -2043,7 +2043,7 @@
         var f = ccpc ? 'Salaire vs dividendes, retrait corporatif, fractionnement et transmission de la soci\u00e9t\u00e9.'
               : phase === 'decum' ? 'L\u2019ordre des retraits, le fractionnement, l\u2019imp\u00f4t \u00e0 vie et la planification successorale.'
               : phase === 'fire' ? 'Comment couvrir les ann\u00e9es entre la retraite anticip\u00e9e et l\u2019arriv\u00e9e des prestations publiques.'
-              : lowInc ? 'Optimisation du SRG, ordre de d\u00e9caissement et coordination des prestations.'
+              : lowInc ? 'Pr\u00e9servation du SRG, ordre de d\u00e9caissement et coordination des prestations.'
               : 'Les leviers fiscaux, l\u2019ordre de d\u00e9caissement, la transmission, et le calendrier des d\u00e9cisions \u00e0 prendre.';
         return { title: t, frame: f };
       }
@@ -2056,7 +2056,7 @@
       var f = ccpc ? 'Salary vs dividends, corporate withdrawal, splitting, and corporate transition.'
             : phase === 'decum' ? 'Withdrawal order, splitting, lifetime tax, and estate planning.'
             : phase === 'fire' ? 'How to cover the years between early retirement and the arrival of public benefits.'
-            : lowInc ? 'GIS optimization, withdrawal order, and coordination of public benefits.'
+            : lowInc ? 'GIS preservation, withdrawal order, and coordination of public benefits.'
             : 'Tax levers, draw-order sequencing, succession, and the timeline of decisions ahead of you.';
       return { title: t, frame: f };
     }
@@ -2456,7 +2456,7 @@
     } else if (d.covRatio >= 0.7) obs.push(fr ? '\u2713 Le revenu garanti couvre ' + Math.round(d.covRatio * 100) + '% des d\u00e9penses, r\u00e9duisant la pression sur l\u2019\u00e9pargne.' : '\u2713 Guaranteed income covers ' + Math.round(d.covRatio * 100) + '% of spending, reducing pressure on savings.');
     else if (d.gapM > 0) obs.push(fr ? '\u2192 \u00c9cart mensuel de ' + F.fmtMoney(Math.round(d.gapM), fr) + ' \u00e0 combler par les retraits d\u2019\u00e9pargne.' : '\u2192 Monthly gap of ' + F.fmtMoney(Math.round(d.gapM), fr) + ' to be funded from savings withdrawals.');
 
-    if (!_planFailing && d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 Optimisation fiscale d\u00e9tect\u00e9e \u2014 \u00e9conomies de ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax optimization detected \u2014 savings of ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
+    if (!_planFailing && d._taxAlpha != null && d._taxAlpha > 0) obs.push(fr ? '\u2713 \u00c9conomies fiscales d\u00e9tect\u00e9es \u2014 ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' sur la vie du plan.' : '\u2713 Tax savings detected \u2014 ' + F.fmtCompact(Math.round(d._taxAlpha)) + ' over the plan lifetime.');
     if (d.R.hasMeltdown) obs.push(fr ? '\u2192 Strat\u00e9gie de d\u00e9caissement anticip\u00e9 REER active \u2014 d\u00e9tails en section d\u00e9di\u00e9e.' : '\u2192 RRSP meltdown strategy active \u2014 see dedicated section.');
     if (d.R.couple) obs.push(fr ? '\u2192 Plan de couple \u2014 les actifs des deux conjoints sont mod\u00e9lis\u00e9s explicitement.' : '\u2192 Couple plan \u2014 both partners\u2019 assets are explicitly modeled.');
 
@@ -2871,8 +2871,8 @@
         // (Canada Child Benefit) / Allocation canadienne pour enfants and
         // Quebec solidarity credit as income supports for the household.
         return fr
-          ? 'Avant l\'optimisation, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der toute autre optimisation. Du c\u00f4t\u00e9 des prestations gouvernementales, l\'<strong>Allocation canadienne pour enfants (CCB)</strong> et le <strong>cr\u00e9dit d\'imp\u00f4t pour solidarit\u00e9</strong> du Qu\u00e9bec compl\u00e8tent le revenu net du m\u00e9nage tant que les enfants sont \u00e0 charge.'
-          : 'Before optimization, the central frame is <strong>single-parent resilience</strong>. As the sole earner for a household with dependents, your children rely on your income-generating capacity : an emergency fund (6\u20139 months of spending), term life insurance ($250\u2013400K), and adequate disability coverage must precede any other optimization. On the government-benefit side, the <strong>Canada Child Benefit (CCB)</strong> and the Quebec <strong>solidarity tax credit</strong> supplement net household income while children remain dependents.';
+          ? 'Avant tout ajustement, le cadre central est la <strong>r\u00e9silience monoparentale</strong>. Comme seul revenu d\'un m\u00e9nage avec personnes \u00e0 charge, vos enfants d\u00e9pendent de votre capacit\u00e9 \u00e0 g\u00e9n\u00e9rer un revenu : un fonds d\'urgence (6\u20139 mois de d\u00e9penses), une assurance vie temporaire (250\u2013400\u202fK$) et une assurance invalidit\u00e9 ad\u00e9quate doivent pr\u00e9c\u00e9der tout autre ajustement. Du c\u00f4t\u00e9 des prestations gouvernementales, l\'<strong>Allocation canadienne pour enfants (CCB)</strong> et le <strong>cr\u00e9dit d\'imp\u00f4t pour solidarit\u00e9</strong> du Qu\u00e9bec compl\u00e8tent le revenu net du m\u00e9nage tant que les enfants sont \u00e0 charge.'
+          : 'Before any adjustment, the central frame is <strong>single-parent resilience</strong>. As the sole earner for a household with dependents, your children rely on your income-generating capacity : an emergency fund (6\u20139 months of spending), term life insurance ($250\u2013400K), and adequate disability coverage must precede any other adjustment. On the government-benefit side, the <strong>Canada Child Benefit (CCB)</strong> and the Quebec <strong>solidarity tax credit</strong> supplement net household income while children remain dependents.';
       default:
         return '';
     }
@@ -4016,11 +4016,11 @@
       ? (d.R.couple && d.fn && d.sfn
           ? '<strong>' + F.esc(d.fn) + '</strong> et <strong>' + F.esc(d.sfn) + '</strong>, vos revenus de retraite combinent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) — versé à chacun selon ses droits — à des retraits sur les comptes du ménage.'
           : 'Vos revenus de retraite mêlent un socle garanti (RPC/RRQ, PSV, pension d\'employeur) à des retraits sur vos comptes.'
-        ) + ' Le socle garanti couvre <strong>' + guarPct + ' %</strong> des dépenses cibles' + (wdPct > 0 ? '\u00a0; les <strong>' + wdPct + ' %</strong> restants viennent du patrimoine. Plus le socle est élevé, moins le plan dépend des marchés.' : '. Le socle garanti suffit — les retraits servent surtout d\'optimisation fiscale, pas de dépendance.')
+        ) + ' Le socle garanti couvre <strong>' + guarPct + ' %</strong> des dépenses cibles' + (wdPct > 0 ? '\u00a0; les <strong>' + wdPct + ' %</strong> restants viennent du patrimoine. Plus le socle est élevé, moins le plan dépend des marchés.' : '. Le socle garanti suffit — les retraits servent surtout d\'ajustement fiscal, pas de dépendance.')
       : (d.R.couple && d.fn && d.sfn
           ? '<strong>' + F.esc(d.fn) + '</strong> and <strong>' + F.esc(d.sfn) + '</strong>, your retirement income combines a guaranteed floor (CPP/QPP, OAS, employer pensions) — paid to each according to their entitlements — with withdrawals from household accounts.'
           : 'Your retirement income blends a guaranteed floor (CPP/QPP, OAS, employer pensions) with withdrawals from your accounts.'
-        ) + ' The guaranteed floor covers <strong>' + guarPct + ' %</strong> of target spending' + (wdPct > 0 ? '; the remaining <strong>' + wdPct + ' %</strong> comes from wealth. The taller the floor, the less the plan depends on markets.' : '. The guaranteed floor is enough — withdrawals serve tax optimization, not dependency.'));
+        ) + ' The guaranteed floor covers <strong>' + guarPct + ' %</strong> of target spending' + (wdPct > 0 ? '; the remaining <strong>' + wdPct + ' %</strong> comes from wealth. The taller the floor, the less the plan depends on markets.' : '. The guaranteed floor is enough — withdrawals serve tax adjustment, not dependency.'));
 
     // P1.1 — Real/nominal disclosure + scope reconciliation. Codex flagged
     // that "Annual Income Sources total = 131K$" (gross of withdrawals)
@@ -4560,8 +4560,8 @@
     // the canonical lifetime_tax_real metric. Previously read d._optTax
     // (nominal sum) which compounded inflation across the horizon.
     h += narr(fr
-      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> en dollars r\u00e9els (m\u00e9nage), avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement optimis\u00e9e d\u00e9gage des \u00e9conomies fiscales de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
-      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> in real dollars (household), with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The optimized withdrawal strategy generates tax savings of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
+      ? 'La fiscalit\u00e9 d\u00e9termine la part de vos revenus de retraite que vous conservez r\u00e9ellement. L\u2019imp\u00f4t viager total est estim\u00e9 \u00e0 <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> en dollars r\u00e9els (m\u00e9nage), avec un taux effectif moyen de <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> sur ' + _retLen + ' ann\u00e9es de retraite.' + (d.oasClbkYrs > 0 ? ' La r\u00e9cup\u00e9ration de la PSV touche <strong>' + d.oasClbkYrs + ' ann\u00e9e' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> sur ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' La strat\u00e9gie de d\u00e9caissement s\u00e9quenc\u00e9e d\u00e9gage des \u00e9conomies fiscales de <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote
+      : 'Taxation determines how much of your retirement income you actually keep. Total lifetime tax is estimated at <strong>' + f$(Math.round(d._optTaxReal)) + '</strong> in real dollars (household), with an average effective rate of <strong>' + Math.round(d.avgEffRate * 100) + '%</strong> over ' + _retLen + ' retirement years.' + (d.oasClbkYrs > 0 ? ' OAS clawback affects <strong>' + d.oasClbkYrs + ' year' + (d.oasClbkYrs > 1 ? 's' : '') + '</strong> out of ' + _retLen + '.' : '') + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' The sequenced withdrawal strategy generates tax savings of <strong>' + f$(Math.round(d._taxAlpha)) + '</strong>.' : '') + _provNote);
 
     // F9 — OAS deferral callout. When the profile defers OAS past 65,
     // surface the +0.6%/month boost (max +36% at 70). When it claims at
@@ -4604,7 +4604,7 @@
 
     // Strategy summary card
     h += F.Card('<table>' +
-      F.R(fr ? 'D\u00e9caissement' : 'Decumulation', p.wStrat === 'optimized' ? (fr ? 'Optimis\u00e9' : 'Optimized') : 'Standard') +
+      F.R(fr ? 'D\u00e9caissement' : 'Decumulation', p.wStrat === 'optimized' ? (fr ? 'S\u00e9quenc\u00e9' : 'Sequenced') : 'Standard') +
       F.R(fr ? 'D\u00e9caissement anticip\u00e9 REER' : 'Early RRSP drawdown', p.melt ? (fr ? 'Oui \u2014 cible ' : 'Yes \u2014 target ') + F.fmtCurrency(p.meltTgt) : (fr ? 'Non' : 'No')) +
       F.R(fr ? 'Fractionnement' : 'Splitting', p.split ? (fr ? 'Oui \u2014 ' : 'Yes \u2014 ') + Math.round((p.splitP || 0) * 100) + '%' : (fr ? 'Non' : 'No')) +
       F.R(fr ? 'D\u00e9penses' : 'Spending curve', 'Go-Go ' + Math.round((p.goP || 1) * 100) + '% / Slow-Go ' + Math.round((p.slP || 0.85) * 100) + '% / No-Go ' + Math.round((p.noP || 0.7) * 100) + '%') +
@@ -4634,8 +4634,8 @@
 
     // Post-data narrative — AI supersedes deterministic
     var _taxDet = fr
-      ? 'La strat\u00e9gie de d\u00e9caissement ' + (p.wStrat === 'optimized' ? 'optimis\u00e9e coordonne' : 'standard r\u00e9partit') + ' les retraits entre REER, CELI et non-enregistr\u00e9 pour minimiser l\u2019imp\u00f4t viager.' + (p.melt ? ' Le d\u00e9caissement anticip\u00e9 du REER acc\u00e9l\u00e8re les retraits avant 72 ans avec une cible de ' + F.fmtCurrency(p.meltTgt) + ' par ann\u00e9e.' : '') + (p.split ? ' Le fractionnement de revenus de pension \u00e0 ' + Math.round((p.splitP || 0) * 100) + '% r\u00e9duit l\u2019imp\u00f4t du m\u00e9nage.' : '') + ' La courbe de d\u00e9penses Go-Go/Slow-Go/No-Go refl\u00e8te un ralentissement progressif des d\u00e9penses avec l\u2019\u00e2ge.'
-      : 'The ' + (p.wStrat === 'optimized' ? 'optimized withdrawal strategy coordinates' : 'standard withdrawal strategy distributes') + ' withdrawals across RRSP, TFSA, and non-registered accounts to minimize lifetime tax.' + (p.melt ? ' RRSP meltdown accelerates withdrawals before age 72 with a target of ' + F.fmtCurrency(p.meltTgt) + ' per year.' : '') + (p.split ? ' Pension income splitting at ' + Math.round((p.splitP || 0) * 100) + '% reduces household tax.' : '') + ' The Go-Go/Slow-Go/No-Go spending curve reflects a gradual decline in spending with age.';
+      ? 'La strat\u00e9gie de d\u00e9caissement ' + (p.wStrat === 'optimized' ? 's\u00e9quenc\u00e9e coordonne' : 'standard r\u00e9partit') + ' les retraits entre REER, CELI et non-enregistr\u00e9 pour minimiser l\u2019imp\u00f4t viager.' + (p.melt ? ' Le d\u00e9caissement anticip\u00e9 du REER acc\u00e9l\u00e8re les retraits avant 72 ans avec une cible de ' + F.fmtCurrency(p.meltTgt) + ' par ann\u00e9e.' : '') + (p.split ? ' Le fractionnement de revenus de pension \u00e0 ' + Math.round((p.splitP || 0) * 100) + '% r\u00e9duit l\u2019imp\u00f4t du m\u00e9nage.' : '') + ' La courbe de d\u00e9penses Go-Go/Slow-Go/No-Go refl\u00e8te un ralentissement progressif des d\u00e9penses avec l\u2019\u00e2ge.'
+      : 'The ' + (p.wStrat === 'optimized' ? 'sequenced withdrawal strategy coordinates' : 'standard withdrawal strategy distributes') + ' withdrawals across RRSP, TFSA, and non-registered accounts to minimize lifetime tax.' + (p.melt ? ' RRSP meltdown accelerates withdrawals before age 72 with a target of ' + F.fmtCurrency(p.meltTgt) + ' per year.' : '') + (p.split ? ' Pension income splitting at ' + Math.round((p.splitP || 0) * 100) + '% reduces household tax.' : '') + ' The Go-Go/Slow-Go/No-Go spending curve reflects a gradual decline in spending with age.';
 
     // Withdrawal detail table (expert)
     if (exp && revData.length > 0) {
@@ -5324,8 +5324,8 @@
       var hh = secPage();
       hh += F.Sec(secN, fr ? 'Assurance \u2014 \u00c9cart de r\u00e9silience' : 'Insurance \u2014 Resilience Gap', 'sec-insurance');
       hh += narr(fr
-        ? 'Aucune assurance vie ni invalidit\u00e9 n\'est mod\u00e9lis\u00e9e dans votre profil. Pour un m\u00e9nage \u00e0 revenu unique' + (resilienceCase === 'single_parent_resilience' ? ' avec personnes \u00e0 charge' : '') + ', cet \u00e9cart est mat\u00e9riel : un d\u00e9c\u00e8s ou une invalidit\u00e9 prolong\u00e9e \u00e9liminerait la source de revenu sur laquelle repose ce plan. Les recommandations ci-dessous sont conditionnelles et m\u00e9ritent une consultation avec un courtier d\'assurance certifi\u00e9.'
-        : 'No life or disability insurance is modeled in your profile. For a single-income household' + (resilienceCase === 'single_parent_resilience' ? ' with dependents' : '') + ', this gap is material: a death or extended disability would eliminate the income source this plan relies on. The recommendations below are conditional and warrant consultation with a certified insurance broker.');
+        ? 'Aucune assurance vie ni invalidit\u00e9 n\'est mod\u00e9lis\u00e9e dans votre profil. Pour un m\u00e9nage \u00e0 revenu unique' + (resilienceCase === 'single_parent_resilience' ? ' avec personnes \u00e0 charge' : '') + ', cet \u00e9cart est mat\u00e9riel : un d\u00e9c\u00e8s ou une invalidit\u00e9 prolong\u00e9e \u00e9liminerait la source de revenu sur laquelle repose ce plan. Les observations ci-dessous sont conditionnelles et m\u00e9ritent une consultation avec un courtier d\'assurance certifi\u00e9.'
+        : 'No life or disability insurance is modeled in your profile. For a single-income household' + (resilienceCase === 'single_parent_resilience' ? ' with dependents' : '') + ', this gap is material: a death or extended disability would eliminate the income source this plan relies on. The observations below are conditional and warrant consultation with a certified insurance broker.');
       var sal = p.sal || 0;
       var lifeNeed = Math.max(250000, Math.round(sal * (caseDriver === 'single_parent_resilience' ? 7 : 5)));
       var disabNeed = Math.round(sal * 0.65);
@@ -5534,7 +5534,7 @@
       h += F.CalloutKPI(
         fr ? 'Co\u00fbt de l\u2019inaction' : 'Cost of Inaction',
         f$(Math.round(d._taxAlpha)),
-        fr ? 'Montant suppl\u00e9mentaire en imp\u00f4ts viagers si aucune optimisation fiscale n\u2019est appliqu\u00e9e.' : 'Additional lifetime tax if no tax optimization is applied.',
+        fr ? 'Montant suppl\u00e9mentaire en imp\u00f4ts viagers si aucun ajustement fiscal n\u2019est appliqu\u00e9.' : 'Additional lifetime tax if no tax adjustment is applied.',
         'callout-inaction'
       );
     }
@@ -6007,7 +6007,7 @@ h += secPageEnd();
       [fr ? 'Courbe de d\u00e9penses Go-Go (< 75 ans)' : 'Spending curve Go-Go (< age 75)', ((p.goP || 1.0) * 100).toFixed(0) + ' %'],
       [fr ? 'Courbe de d\u00e9penses Slow-Go (75-84)' : 'Spending curve Slow-Go (75-84)', ((p.slP || 0.85) * 100).toFixed(0) + ' %'],
       [fr ? 'Courbe de d\u00e9penses No-Go (85+)' : 'Spending curve No-Go (85+)', ((p.noP || 0.7) * 100).toFixed(0) + ' %'],
-      [fr ? 'Strat\u00e9gie de d\u00e9caissement' : 'Decumulation strategy', p.wStrat === 'optimized' ? (fr ? 'Optimis\u00e9e' : 'Optimized') : 'Standard'],
+      [fr ? 'Strat\u00e9gie de d\u00e9caissement' : 'Decumulation strategy', p.wStrat === 'optimized' ? (fr ? 'S\u00e9quenc\u00e9e' : 'Sequenced') : 'Standard'],
       [fr ? 'Ann\u00e9e fiscale de base' : 'Tax base year', '2026'],
       [fr ? 'Province' : 'Province', p.prov || 'QC']
     ];
@@ -6209,8 +6209,8 @@ h += secPageEnd();
     h += F.Sec(secN, fr ? 'Approfondissement Planner' : 'Planner deep-dive', 'sec-premium-deepdive');
 
     h += narr(fr
-      ? 'Une lecture plus approfondie du même plan : quels leviers comptent le plus, quelle variante de calendrier surperforme, et où il reste de la marge à optimiser. Les clients Planner peuvent prolonger cette lecture dans l\'outil interactif (190+ paramètres).'
-      : 'A deeper read on the same plan: which levers matter most, which timing variant outperforms, and where optimization headroom remains. Planner customers can extend this read in the live tool (190+ parameters).');
+      ? 'Une lecture plus approfondie du même plan : quels leviers comptent le plus, quelle variante de calendrier surperforme, et où il reste de la marge à ajuster. Les clients Planner peuvent prolonger cette lecture dans l\'outil interactif (190+ paramètres).'
+      : 'A deeper read on the same plan: which levers matter most, which timing variant outperforms, and where adjustment headroom remains. Planner customers can extend this read in the live tool (190+ parameters).');
 
     // ── (a) Sensitivity tornado — split by unit (codex audit fix 2026-05-14) ─
     // Pre-fix the tornado mixed two incompatible scales: heroScore component
@@ -6320,7 +6320,7 @@ h += secPageEnd();
     // For each of the 5 score components, show: your level / "optimal"
     // benchmark / gap. Scorecard makes the gauge components actionable.
     h += '<div style="font-family:Inter,sans-serif;font-size:10.5px;font-weight:700;color:#c49a1a;letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px">' +
-      (fr ? 'Tableau de bord d\'optimisation' : 'Optimization scorecard') + '</div>';
+      (fr ? 'Tableau de bord des leviers' : 'Levers scorecard') + '</div>';
     h += '<table class="tbl"><thead><tr>' +
       '<th style="text-align:left">' + (fr ? 'Levier' : 'Lever') + '</th>' +
       '<th>' + (fr ? 'Vous' : 'You') + '</th>' +
@@ -6354,8 +6354,8 @@ h += secPageEnd();
       '<div style="font-family:Inter,sans-serif;font-size:9px;font-weight:700;color:#c49a1a;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">' +
         (fr ? 'Avantage Planner' : 'Planner advantage') + '</div>' +
       (fr
-        ? 'Cette section est exclusive aux clients Planner. Le tableau de bord d\'optimisation, le tornado \u00e9tendu et la comparaison de calendriers sont absents du Bilan ($29.99). Vous avez \u00e9galement acc\u00e8s au simulateur live (190+ param\u00e8tres) et \u00e0 5 g\u00e9n\u00e9rations IA additionnelles.'
-        : 'This section is exclusive to Planner customers. The optimization scorecard, extended tornado, and timing comparison are absent from the Bilan ($29.99) report. You also have access to the live simulator (190+ parameters) and 5 additional AI generations.') +
+        ? 'Cette section est exclusive aux clients Planner. Le tableau de bord des leviers, le tornado \u00e9tendu et la comparaison de calendriers sont absents du Bilan ($29.99). Vous avez \u00e9galement acc\u00e8s au simulateur live (190+ param\u00e8tres) et \u00e0 5 g\u00e9n\u00e9rations IA additionnelles.'
+        : 'This section is exclusive to Planner customers. The levers scorecard, extended tornado, and timing comparison are absent from the Bilan ($29.99) report. You also have access to the live simulator (190+ parameters) and 5 additional AI generations.') +
       '</div>';
 
     h += secPageEnd();
@@ -6614,8 +6614,8 @@ h += secPageEnd();
     var shiftMsg;
     if (t.band === 'surplus') {
       shiftMsg = fr
-        ? 'Le revenu garanti d\u00e9passe les d\u00e9penses cibles. La trajectoire centrale tient avec une marge confortable, et les retraits du portefeuille demeureraient optionnels pour le niveau de vie de base. Les prochaines questions porteraient davantage sur la transmission, l\'optimisation fiscale et l\'allocation \u2014 plut\u00f4t que sur la solidit\u00e9 du plan lui-m\u00eame.'
-        : 'Guaranteed income exceeds target spending. The central trajectory holds with comfortable margin, and portfolio withdrawals would remain optional for the baseline lifestyle. The next questions would lean toward legacy, tax optimization, and allocation \u2014 rather than plan robustness itself.';
+        ? 'Le revenu garanti d\u00e9passe les d\u00e9penses cibles. La trajectoire centrale tient avec une marge confortable, et les retraits du portefeuille demeureraient optionnels pour le niveau de vie de base. Les prochaines questions porteraient davantage sur la transmission, l\'ajustement fiscal et l\'allocation \u2014 plut\u00f4t que sur la solidit\u00e9 du plan lui-m\u00eame.'
+        : 'Guaranteed income exceeds target spending. The central trajectory holds with comfortable margin, and portfolio withdrawals would remain optional for the baseline lifestyle. The next questions would lean toward legacy, tax adjustment, and allocation \u2014 rather than plan robustness itself.';
     } else if (t.band === 'solid') {
       shiftMsg = fr
         ? 'La trajectoire centrale tient. La marge contre les chocs (rendements, inflation, longue vie) reste mod\u00e9r\u00e9e, et les leviers identifi\u00e9s dans la section Sensibilit\u00e9s du plan permettraient de la \u00e9paissir si elle devenait insuffisante. La th\u00e8se ne changerait pas \u00e0 court terme \u2014 elle se renforcerait ou s\'\u00e9roderait selon les rendements r\u00e9alis\u00e9s.'
@@ -6630,8 +6630,8 @@ h += secPageEnd();
         : 'The central trajectory does not hold as is. The identified levers would need to be considered in combination \u2014 a single adjustment, even at its maximum, would generally not be enough to restore the necessary margin. Consultation with a certified planner would be warranted.';
     } else {
       shiftMsg = fr
-        ? 'La th\u00e8se actuelle indique que le plan ne serait pas viable sur l\'horizon mod\u00e9lis\u00e9. Une r\u00e9vision globale (\u00e9pargne, d\u00e9penses, \u00e2ge de retraite, revenus) serait n\u00e9cessaire avant que les leviers tactiques (optimisation fiscale, allocation) ne puissent avoir un impact significatif. La consultation d\'un planificateur agr\u00e9\u00e9 serait fortement indiqu\u00e9e.'
-        : 'The current thesis indicates the plan would not be sustainable over the modeled horizon. A global review (savings, spending, retirement age, income) would be necessary before tactical levers (tax optimization, allocation) could have meaningful impact. Consultation with a certified planner would be strongly warranted.';
+        ? 'La th\u00e8se actuelle indique que le plan ne serait pas viable sur l\'horizon mod\u00e9lis\u00e9. Une r\u00e9vision globale (\u00e9pargne, d\u00e9penses, \u00e2ge de retraite, revenus) serait n\u00e9cessaire avant que les leviers tactiques (ajustement fiscal, allocation) ne puissent avoir un impact significatif. La consultation d\'un planificateur agr\u00e9\u00e9 serait fortement indiqu\u00e9e.'
+        : 'The current thesis indicates the plan would not be sustainable over the modeled horizon. A global review (savings, spending, retirement age, income) would be necessary before tactical levers (tax adjustment, allocation) could have meaningful impact. Consultation with a certified planner would be strongly warranted.';
     }
     h += '<div class="narr" style="margin-bottom:14px">' + shiftMsg + '</div>';
 

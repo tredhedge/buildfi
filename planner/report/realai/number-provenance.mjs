@@ -51,6 +51,11 @@ const FRAGILE_FR = /\b(solide|robuste|fort|fiable|stable|sain|confortable|durabl
 const LEAK_EN_IN_FR = /\b(OAS|RRIF|CPP|GIS)\b/;
 const LEAK_FR_IN_EN = /\b(PSV|FERR|RRQ|SRG)\b/;
 const QUALIFIER = /\b(but|though|yet|however|while|mais|toutefois|cependant|tandis)\b/i;
+// AMF hard-negative (audit 2.5): the conditional/observational register forbids
+// the "optimis*/optimiz*" stem and directive phrasing in any AI slot. The noun
+// "recommandation(s)" inside a disclaimer is fine; "we recommend / nous
+// recommandons / you should / vous devriez / plan d'action" are not.
+const BANNED_AMF = /(optimis[a-zé]+|optimiz[a-z]+|vous devriez|you should|plan d['’]action|action plan|nous recommandons|we recommend\b|il faut que)/i;
 
 const files = fs.readdirSync(promptDir).filter(f => f.endsWith('.json'));
 const considered = files.filter(f => !only || only.some(o => f.startsWith(o)));
@@ -89,6 +94,8 @@ for (const f of considered) {
     }
     const leak = (locale === 'fr' ? LEAK_EN_IN_FR : LEAK_FR_IN_EN).exec(text);
     if (leak) defects.push({ tag, slot, kind: 'locale_leak', detail: leak[0] });
+    const amf = BANNED_AMF.exec(text);
+    if (amf) defects.push({ tag, slot, kind: 'amf_banned', detail: amf[0] });
   }
 }
 
