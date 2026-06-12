@@ -6818,8 +6818,8 @@ h += secPageEnd();
         (fr ? 'Mise en garde compl\u00e8te (LDPSF / AMF)' : 'Full disclosure (Quebec LDPSF / AMF)') +
       '</div>' +
       (fr
-        ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit. Remboursement int\u00e9gral sur demande sous 30\u00a0jours, sans justification \u2014 voir <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.'
-        : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
+        ? 'Document \u00e0 titre informatif uniquement. Ne constitue pas un conseil financier, fiscal ou juridique au sens de la <em>Loi sur la distribution de produits et services financiers</em>. Les projections reposent sur des simulations dont les hypoth\u00e8ses peuvent ne pas se r\u00e9aliser. Pour une planification engageante, consulter un planificateur financier (Pl. Fin.) ou un conseiller en placement inscrit.'
+        : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor.') +
       '</div>';
 
     // Support contact (audit N6) \u2014 a paying customer must have a written
@@ -6867,7 +6867,7 @@ h += secPageEnd();
     // "Detailed Report" / "Rapport détaillé" + version + sim count was
     // build-style chrome. Replaced by the prepared-on date alone.
     h += '<div class="ft">BuildFi \u00b7 ' + today + '</div>';
-    h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? '\u00c0 titre informatif. Ne constitue pas un conseil financier (LDPSF). Remboursement 30 j.' : 'Informational only. Not financial advice (Quebec LDPSF). 30-day refund.') + '</div>';
+    h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? '\u00c0 titre informatif. Ne constitue pas un conseil financier (LDPSF).' : 'Informational only. Not financial advice (Quebec LDPSF).') + '</div>';
     return h;
   }
 
