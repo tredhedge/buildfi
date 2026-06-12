@@ -2822,8 +2822,19 @@
     if (typeof ExcelJS !== "undefined" && ExcelJS.Workbook) {
       buildExcelPro(data).catch(function(err) {
         console.error("Excel Pro export error:", err);
-        if (typeof XLSX !== "undefined" && XLSX.utils) buildExcelBasic(data);
-        else alert("Excel export error: " + (err.message || err));
+        var _msg = (err && err.message) || String(err);
+        if (typeof XLSX !== "undefined" && XLSX.utils) {
+          // Surface the failure instead of silently degrading. A basic workbook
+          // still downloads (better than nothing), but the Pro path breaking
+          // must be visible — a silent fallback hid a broken export for weeks
+          // (BFConstants shim not loaded → calcTax threw). Don't repeat that.
+          alert("Detailed Excel export failed — downloading a basic workbook instead.\n\n"
+              + "Error: " + _msg + "\n\n"
+              + "Open the browser console for the full stack and report this.");
+          buildExcelBasic(data);
+        } else {
+          alert("Excel export error: " + _msg);
+        }
       });
       return;
     }
