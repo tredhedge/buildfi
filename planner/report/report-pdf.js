@@ -6816,6 +6816,12 @@ h += secPageEnd();
         : 'Document for informational purposes only. Does not constitute financial, tax, or legal advice within the meaning of the Quebec <em>Act respecting the distribution of financial products and services</em>. Projections rely on simulations whose assumptions may not materialize. For binding planning, consult a certified financial planner (Pl. Fin.) or registered investment advisor. Full refund on request within 30 days, no justification needed \u2014 see <a href="https://www.buildfi.ca/confidentialite" style="color:inherit">buildfi.ca/confidentialite</a>.') +
       '</div>';
 
+    // Support contact (audit N6) \u2014 a paying customer must have a written
+    // contact channel in the deliverable itself.
+    h += '<div style="margin-top:8px;font-size:10px;color:#777;font-family:Inter,sans-serif">' +
+      (fr ? 'Questions ou corrections concernant ce rapport\u00a0: ' : 'Questions or corrections about this report: ') +
+      '<a href="mailto:support@buildfi.ca" style="color:inherit;font-weight:600">support@buildfi.ca</a></div>';
+
     // Privacy / handling notice \u2014 sits below the LDPSF block. Reports
     // contain the full personal financial profile of the recipient; a
     // forwarded HTML or PDF leaks that profile in full. Codex audit 2026-05-01.
