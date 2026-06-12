@@ -7553,6 +7553,21 @@ h += secPageEnd();
     var json = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script');
     var out = '<script>window.__BUILDFI__=' + json + ';<\/script>';
     function _stripScriptClose(s) { return s.replace(/<\/script/gi, '<\\/script'); }
+    // Audit D1: the embedded MC engine shipped in plaintext WITH a readable
+    // "SERVER-ONLY" banner + full comments. Strip all comments and collapse
+    // whitespace before inlining — removes the banner/doc admission and raises
+    // copy cost. Safe for this bundle: it has no // inside strings, no URLs,
+    // and no regex literals (verified), and newlines are kept so ASI holds.
+    // (Full identifier-mangling would require terser as a build dependency.)
+    function _minifyEngineJs(s) {
+      return String(s)
+        .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments (incl. banner)
+        .replace(/[ \t]*\/\/.*$/gm, '')      // line + trailing // comments
+        .replace(/^[ \t]+/gm, '')             // leading indentation
+        .replace(/[ \t]+$/gm, '')             // trailing whitespace
+        .replace(/\n{2,}/g, '\n')             // collapse blank lines
+        .trim();
+    }
     var cJs = (typeof window !== 'undefined' && window.BF_CONSTANTS_JS) ? window.BF_CONSTANTS_JS : '';
     var eJs = (typeof window !== 'undefined' && window.BF_ENGINE_JS) ? window.BF_ENGINE_JS : '';
     var tJs = (typeof window !== 'undefined' && window.BF_TOOLTIP_JS) ? window.BF_TOOLTIP_JS : '';
@@ -7571,7 +7586,7 @@ h += secPageEnd();
       // throws "Cannot read properties of undefined (reading 'map')" the
       // moment a quick scenario fires (FED_BRACKETS.map on undefined).
       if (cJs) out += '<script>' + _stripScriptClose(cJs) + '<\/script>';
-      if (eJs) out += '<script>' + _stripScriptClose(eJs) + '<\/script>';
+      if (eJs) out += '<script>' + _stripScriptClose(_minifyEngineJs(eJs)) + '<\/script>';
       if (wJs) out += '<script>' + _stripScriptClose(wJs) + '<\/script>';
     }
     return out;
