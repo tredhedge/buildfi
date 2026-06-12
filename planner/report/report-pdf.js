@@ -6739,6 +6739,12 @@ h += secPageEnd();
 
     h += '<div class="meth-p">' + (fr ? 'Cette projection utilise ' + (p.nSim || 5000) + ' simulations Monte Carlo ind\u00e9pendantes. Chaque simulation g\u00e9n\u00e8re des trajectoires al\u00e9atoires de rendements (actions et obligations), d\'inflation et de mortalit\u00e9, puis calcule l\'\u00e9volution du patrimoine ann\u00e9e par ann\u00e9e en appliquant les r\u00e8gles fiscales, de d\u00e9caissement et de prestations gouvernementales.' : 'This projection uses ' + (p.nSim || 5000) + ' independent Monte Carlo simulations. Each simulation generates random trajectories for returns (equities and bonds), inflation, and mortality, then calculates year-by-year wealth evolution applying tax rules, withdrawal strategies, and government benefit calculations.') + '</div>';
 
+    // Deterministic-vs-Monte-Carlo + fat-tails explainer (2026-06-11):
+    // makes the fan chart legible and states the modeling posture plainly.
+    h += '<div class="meth-p">' + (fr
+      ? 'Contrairement à une projection <strong>déterministe</strong> — qui suppose un rendement fixe chaque année et produit un seul chiffre, masquant le risque lié à l\'ordre des bonnes et mauvaises années —, cette approche par simulation produit une <strong>fourchette de résultats</strong> et un taux de succès plutôt qu\'une fausse précision. Les rendements sont modélisés avec des <strong>queues épaisses</strong> (loi de Student, dl = 5) afin de représenter les krachs rares mais réels ; ce choix, appliqué par défaut, donne des taux de succès plus prudents qu\'un modèle à loi normale, l\'écart se concentrant sur les scénarios défavorables (résilience, épuisement).'
+      : 'Unlike a <strong>deterministic</strong> projection — which assumes one fixed return every year and produces a single number, hiding the sequence-of-returns risk that matters most in retirement — this simulation approach yields a <strong>range of outcomes</strong> and a success rate rather than false precision. Returns are modeled with <strong>fat tails</strong> (Student-t, df = 5) to represent rare but real market crashes; this choice, applied by default, produces more conservative success rates than a normal-distribution model, with the difference concentrated in the adverse scenarios (resilience, depletion).') + '</div>';
+
     // Sprint 0.5.3: explicit modeling-gap disclosure. Honesty about what
     // is NOT modeled is more important than premium feel for a $30 product.
     // Lists are stable across versions; bumped when a gap closes.
