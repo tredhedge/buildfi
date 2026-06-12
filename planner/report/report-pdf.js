@@ -3095,7 +3095,7 @@
       fr ? 'Inclut le d\u00e9caissement anticip\u00e9 comme strat\u00e9gie d\'extraction' : 'Includes meltdown as an extraction strategy'
     );
     h += _bar(
-      fr ? 'CELI / TFSA' : 'TFSA / CELI',
+      fr ? 'CELI' : 'TFSA',
       sumTFSA, lifetimeAll, '#2a8c46',
       fr ? 'Pr\u00e9serv\u00e9 \u2014 dernier recours' : 'Preserved \u2014 last resort'
     );
@@ -3479,10 +3479,10 @@
           _sbAccounts.push(entry);
         }
       };
-      _addAcct('REER/RRSP', 'rrsp', 'cRRSP', '#c49a1a', p.allocR);
-      _addAcct('CELI/TFSA', 'tfsa', 'cTFSA', '#2a8c46', p.allocT);
+      _addAcct(fr ? 'REER' : 'RRSP', 'rrsp', 'cRRSP', '#c49a1a', p.allocR);
+      _addAcct(fr ? 'CELI' : 'TFSA', 'tfsa', 'cTFSA', '#2a8c46', p.allocT);
       _addAcct('NR',        'nr',   'cNR',   '#5b8db8', p.allocN);
-      _addAcct('CRI/LIRA',  'liraBal', 'cLira', '#4a4858', p.allocR);
+      _addAcct(fr ? 'CRI' : 'LIRA',  'liraBal', 'cLira', '#4a4858', p.allocR);
       if ((p.bizRetainedEarnings || 0) >= 1000) {
         var corpEntry = { label: 'Corp', value: p.bizRetainedEarnings, color: '#7390b8' };
         if (_userAllocSet) corpEntry.asset_eq = 0.5;
@@ -3527,9 +3527,9 @@
     } else {
       // Fallback: legacy flat table for trivial balances
       h += F.Card('<table>' +
-        F.R('REER/RRSP', fR(p.rrsp || 0)) + F.R('CELI/TFSA', fR(p.tfsa || 0)) + F.R('NR', fR(p.nr || 0)) +
-        (p.liraBal ? F.R('CRI/LIRA', fR(p.liraBal)) : '') +
-        (p.fhsaBal ? F.R('CELIAPP/FHSA', fR(p.fhsaBal)) : '') +
+        F.R(fr ? 'REER' : 'RRSP', fR(p.rrsp || 0)) + F.R(fr ? 'CELI' : 'TFSA', fR(p.tfsa || 0)) + F.R('NR', fR(p.nr || 0)) +
+        (p.liraBal ? F.R(fr ? 'CRI' : 'LIRA', fR(p.liraBal)) : '') +
+        (p.fhsaBal ? F.R(fr ? 'CELIAPP' : 'FHSA', fR(p.fhsaBal)) : '') +
         (p.dcBal ? F.R('DC/CD', fR(p.dcBal)) : '') +
         (p.peBal ? F.R(fr ? 'PE (m\u00e9tal)' : 'PE (precious)', fR(p.peBal)) : '') +
         (p.pmBal ? F.R(fr ? 'PM (priv\u00e9)' : 'PM (private)', fR(p.pmBal)) : '') +
@@ -3541,8 +3541,8 @@
     var markers = [{ age: p.age, label: (fr ? 'Aujourd\'hui' : 'Today') }];
     if (p.retAge > p.age) markers.push({ age: p.retAge, label: (fr ? 'Retraite' : 'Retirement') });
     if (p.qppAge && p.qppAge !== p.retAge) markers.push({ age: p.qppAge, label: qLbl });
-    if (p.oasAge && p.oasAge !== p.retAge && p.oasAge !== p.qppAge) markers.push({ age: p.oasAge, label: 'PSV/OAS' });
-    if ((p.rrsp || 0) > 0 || (p.liraBal || 0) > 0) markers.push({ age: 72, label: 'FERR/RRIF' });
+    if (p.oasAge && p.oasAge !== p.retAge && p.oasAge !== p.qppAge) markers.push({ age: p.oasAge, label: fr ? 'PSV' : 'OAS' });
+    if ((p.rrsp || 0) > 0 || (p.liraBal || 0) > 0) markers.push({ age: 72, label: fr ? 'FERR' : 'RRIF' });
     markers.push({ age: p.deathAge || 90, label: (fr ? 'Horizon' : 'Horizon') });
     markers.sort(function(a, b) { return a.age - b.age; });
     h += Ch.svgTimeline(markers);
@@ -3551,9 +3551,9 @@
     h += '<div style="font-size:11px;font-weight:600;color:' + C.gold + ';text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">' + (fr ? 'Revenus gouvernementaux' : 'Government Income') + '</div>';
     h += F.Card('<table>' +
       F.R(qLbl + ' (' + (p.qppAge || 65) + (fr ? ' ans)' : ' yrs)'), fR(Math.round(d.qppM)) + '/m \u2014 ' + fR(Math.round(d.qppM * 12)) + (fr ? '/an' : '/yr')) +
-      F.R('PSV/OAS (' + (p.oasAge || 65) + (fr ? ' ans)' : ' yrs)'), fR(Math.round(d.oasM)) + '/m \u2014 ' + fR(Math.round(d.oasM * 12)) + (fr ? '/an' : '/yr')) +
+      F.R((fr ? 'PSV' : 'OAS') + ' (' + (p.oasAge || 65) + (fr ? ' ans)' : ' yrs)'), fR(Math.round(d.oasM)) + '/m \u2014 ' + fR(Math.round(d.oasM * 12)) + (fr ? '/an' : '/yr')) +
       (p.penType && p.penType !== 'none' ? F.R((fr ? 'Pension' : 'Pension'), fR(p.penM || 0) + '/m') : '') +
-      (d.R.couple ? F.R(qLbl + ' ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cQppM)) + '/m') + F.R('PSV ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cOasM)) + '/m') : '') +
+      (d.R.couple ? F.R(qLbl + ' ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cQppM)) + '/m') + F.R((fr ? 'PSV' : 'OAS') + ' ' + (fr ? 'conjoint' : 'spouse'), fR(Math.round(d.cOasM)) + '/m') : '') +
       F.R('<strong>' + (fr ? 'Total revenu garanti' : 'Total guaranteed income') + '</strong>', '<strong>' + fR(Math.round(d.govM)) + '/m \u2014 ' + fR(Math.round(d.govY)) + (fr ? '/an' : '/yr') + '</strong>') +
       '</table>');
 
@@ -3962,7 +3962,7 @@
     h += '<table id="rpt-t-proj" class="tbl"><thead><tr>';
     h += '<th style="text-align:left">' + (fr ? '\u00c2ge' : 'Age') + '</th>';
     h += '<th>' + (fr ? 'Patrimoine' : 'Wealth') + '</th>';
-    h += '<th>REER</th><th>CELI</th><th>NR</th>';
+    h += '<th>' + (fr ? 'REER' : 'RRSP') + '</th><th>' + (fr ? 'CELI' : 'TFSA') + '</th><th>NR</th>';
     if (d.hasMC) h += '<th>P25</th><th>P50</th><th>P75</th>';
     h += '</tr></thead><tbody>';
     milestones.forEach(function(a) {
@@ -4034,7 +4034,7 @@
     // single income stream; hiding it made the chart misleading.
     var _wfItems = [
       { label: qLbl, value: Math.round(d.qppM * 12), color: C.blue },
-      { label: 'PSV/OAS', value: Math.round(d.oasM * 12), color: C.green }
+      { label: (fr ? 'PSV' : 'OAS'), value: Math.round(d.oasM * 12), color: C.green }
     ];
     var _retRowsForIncome = revData.filter(function(r) { return r.age >= p.retAge; });
     var _avg = function(fn) {
@@ -4111,7 +4111,7 @@
     var _todayInvest = ((p.nr || 0) * 0.04) + (p.cOn ? ((p.cNR || 0) * 0.04) : 0); // 4% notional yield on NR
     var _retSlices = [
       { label: qLbl,                        value: Math.round(d.qppM * 12 + (d.cQppM || 0) * 12), color: '#5b8db8' },
-      { label: 'PSV/OAS',                   value: Math.round(d.oasM * 12 + (d.cOasM || 0) * 12), color: '#2a8c46' },
+      { label: (fr ? 'PSV' : 'OAS'),                   value: Math.round(d.oasM * 12 + (d.cOasM || 0) * 12), color: '#2a8c46' },
       { label: fr ? 'Pension'   : 'Pension', value: Math.round(((p.penM || 0) + (p.cOn ? (p.cPenM || 0) : 0)) * 12), color: C.blue },
       { label: 'SRG/GIS',                   value: Math.round(_gisIncomeY + _cGisIncomeY), color: '#a07a3a' },
       { label: fr ? 'Locatif'   : 'Rental',  value: Math.round(_rentalIncomeY), color: '#3aa39c' },
@@ -4337,7 +4337,7 @@
       if (incData.length > 0) {
         var _areaKeys = ['rrq', 'psv', 'pen'];
         var _areaColors = [C.blue, C.green, C.purple];
-        var _areaLabels = [F.qppLabel(p.prov, fr), 'PSV/OAS', 'Pension'];
+        var _areaLabels = [F.qppLabel(p.prov, fr), (fr ? 'PSV' : 'OAS'), 'Pension'];
         if (incData.some(function(r) { return (r.gisIncome || 0) > 0; })) {
           _areaKeys.push('gisIncome');
           _areaColors.push('#a07a3a');
@@ -7556,7 +7556,3 @@ h += secPageEnd();
       if (eJs) out += '<script>' + _stripScriptClose(eJs) + '<\/script>';
       if (wJs) out += '<script>' + _stripScriptClose(wJs) + '<\/script>';
     }
-    return out;
-  }
-
-})();

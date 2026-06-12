@@ -10,9 +10,9 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const POLICY_VERSION = "2026-04-26-v1";
-const POLICY_EFFECTIVE_DATE = "26 avril 2026";
-const POLICY_EFFECTIVE_DATE_EN = "April 26, 2026";
+const POLICY_VERSION = "2026-06-11-v1";
+const POLICY_EFFECTIVE_DATE = "11 juin 2026";
+const POLICY_EFFECTIVE_DATE_EN = "June 11, 2026";
 
 export default function PrivacyPage() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
