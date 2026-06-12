@@ -1,0 +1,25 @@
+{
+  "created_on": "2026-04-14",
+  "source_file": "planner_v2.html",
+  "line_markers": {
+    "exceljs_script": 374,
+    "xlsx_script": 375,
+    "report_usememo_start": 8322,
+    "report_usememo_deps_end": 9400,
+    "export_csv_start": 9596,
+    "export_xlsx_sheetjs_start": 9684,
+    "export_xlsx_exceljs_start": 9945,
+    "report_tab_excel_button": 15680,
+    "report_tab_iframe_srcdoc": 15708,
+    "methodology_csv_button_call": 19274,
+    "alt_html_export_button": 19879
+  },
+  "snapshots": [
+    "report/baseline/snapshots/report_usememo_snapshot.txt",
+    "report/baseline/snapshots/export_excel_snapshot.txt",
+    "report/baseline/snapshots/report_ui_snapshot.txt"
+  ],
+  "dependencies_file": "report/baseline/report_usememo_dependencies.txt",
+  "dependencies_count": 95
+}
+

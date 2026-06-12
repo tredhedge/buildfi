@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planner V3.1 Bridge Prototype</title>
+  <link rel="stylesheet" href="./planner-v3-bridge.css">
+  <script defer src="./planner-v3-bridge.js"></script>
+</head>
+<body class="v3-root" data-theme="dark" data-theme-root>
+  <div class="bf-rail">
+    <button class="bf-rail-btn active" data-tab-button="diagnostic">
+      <span class="bf-rail-ico">📋</span>
+      <span class="bf-rail-label">Dashboard</span>
+    </button>
+    <button class="bf-rail-btn" data-tab-button="report">
+      <span class="bf-rail-ico">📊</span>
+      <span class="bf-rail-label">Report</span>
+    </button>
+    <button class="bf-rail-btn" data-tab-button="cashflow">
+      <span class="bf-rail-ico">💵</span>
+      <span class="bf-rail-label">Cashflow</span>
+    </button>
+    <button class="bf-rail-btn" data-tab-button="wealth">
+      <span class="bf-rail-ico">🏦</span>
+      <span class="bf-rail-label">Wealth</span>
+    </button>
+    <button class="bf-rail-btn" data-tab-button="risk">
+      <span class="bf-rail-ico">🛡</span>
+      <span class="bf-rail-label">Risk</span>
+    </button>
+    <button class="bf-rail-btn" data-tab-button="guide">
+      <span class="bf-rail-ico">📚</span>
+      <span class="bf-rail-label">Guide</span>
+    </button>
+    <button class="bf-rail-btn bf-rail-longform" data-open-drawer>
+      <span class="bf-rail-ico">⇢</span>
+      <span class="bf-rail-label">Longform</span>
+    </button>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-bottom:8px;">
+      <button class="bf-rail-btn" id="bf-v31-open-overlay">
+        <span class="bf-rail-ico">⚙</span>
+        <span class="bf-rail-label">Cockpit</span>
+      </button>
+      <button class="bf-rail-btn" data-set-theme="dark">
+        <span class="bf-rail-ico">🌙</span>
+        <span class="bf-rail-label">Dark</span>
+      </button>
+      <button class="bf-rail-btn" data-set-theme="light">
+        <span class="bf-rail-ico">☀</span>
+        <span class="bf-rail-label">Light</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="bf-side-overlay" id="bf-v31-overlay">
+    <div class="bf-side-title">
+      <div>
+        <div class="kicker">Planner Cockpit</div>
+        <h2 style="font:700 26px/1 'Playfair Display',serif;margin:10px 0 0;">Keep the V3 setup surface</h2>
+      </div>
+      <button class="bf-close-x" id="bf-v31-close-overlay">×</button>
+    </div>
+    <div class="bf-subsec">
+      <div class="kicker">Profile</div>
+      <div class="two-grid" style="margin-top:12px;">
+        <div class="control"><label>Province</label><select><option>Quebec</option></select></div>
+        <div class="control"><label>Mode</label><select><option>Standard</option></select></div>
+        <div class="control"><label>Retirement age</label><input value="61" readonly></div>
+        <div class="control"><label>CPP/QPP age</label><select><option>70</option></select></div>
+      </div>
+    </div>
+    <div class="bf-subsec">
+      <div class="kicker">Bridge insight</div>
+      <p style="margin-top:10px;">This overlay stays the parameter dashboard. The bridge work should happen in how the center and longform drawer explain those parameters, not by replacing the cockpit.</p>
+    </div>
+    <div class="bf-subsec">
+      <div class="kicker">Report + guide handoff</div>
+      <p style="margin-top:10px;">V3 already has a `Report` rail group, a `Guide` tab, and a `Longform` drawer. V3.1 should make those three touchpoints feel like one coherent reading layer.</p>
+    </div>
+  </div>
+
+  <div class="bf-drawer-backdrop" id="bf-v31-drawer-backdrop"></div>
+  <div class="bf-drawer" id="bf-v31-drawer">
+    <button class="bf-drawer-close" id="bf-v31-close-drawer">×</button>
+    <div class="drawer-shell">
+      <aside class="drawer-rail">
+        <div class="kicker">Longform Drawer</div>
+        <h2 style="font:700 28px/1 'Playfair Display',serif;margin:10px 0 14px;">Reading layer inside V3</h2>
+        <p style="line-height:1.65;">The drawer becomes the planner’s calmer reading space, instead of acting like a completely separate experience.</p>
+        <div class="drawer-nav">
+          <button class="on" data-drawer-mode-button="report">Detailed report</button>
+          <button data-drawer-mode-button="guide">Guide / methodology</button>
+          <button data-drawer-mode-button="explain">Explain this plan</button>
+        </div>
+        <div class="drawer-nav" style="margin-top:18px;">
+          <button class="on" data-reading-mode-button="builder">Builder read</button>
+          <button data-reading-mode-button="reader">Reader read</button>
+        </div>
+      </aside>
+      <main class="drawer-main">
+        <section class="drawer-body on" data-drawer-mode="report">
+          <div class="drawer-reading">
+            <div class="cover">
+              <div class="kicker">Report inside planner</div>
+              <h1>Margaret Wilson</h1>
+              <p>Solid plan — 91% success over 30 years, with a stronger late-life income floor if CPP/QPP is delayed.</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">Plan at a glance</div>
+              <div class="paper-grid">
+                <div class="paper-kpi"><div class="v">91%</div><div>Resilience</div></div>
+                <div class="paper-kpi"><div class="v">$74k</div><div>Annual spending</div></div>
+                <div class="paper-kpi"><div class="v">70</div><div>CPP/QPP age</div></div>
+              </div>
+            </div>
+            <div class="paper-card" data-reading-mode-panel="builder">
+              <div class="section-title">Builder read</div>
+              <p>The planner still explains the baseline in simulator terms: bridge years are funded from RRSP and cash, registered draws are smoothed to reduce future tax spikes, and TFSA remains a reserve for flexibility.</p>
+            </div>
+            <div class="paper-card" data-reading-mode-panel="reader" hidden>
+              <div class="section-title">Reader read</div>
+              <p>This plan works because it balances early flexibility against late-life stability. You use private assets first to build a bridge, then let delayed public income support the later years when portfolio resilience matters most.</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">Why V3.1 matters</div>
+              <p>The report is still generated from planner outputs, but it no longer feels like a foreign object. The drawer teaches the same plan language the user saw in the simulator.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-body" data-drawer-mode="guide">
+          <div class="drawer-reading">
+            <div class="paper-card">
+              <div class="section-title">Guide inside planner</div>
+              <p>The Guide tab already exists in V3.1 should make it feel less like a help appendix and more like a contextual reading layer.</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">What this plan is teaching</div>
+              <p>Delaying CPP/QPP is not just a number tweak. It is a tradeoff between early draw pressure and later guaranteed income. The guide view should explain that in plain language while the simulation remains available outside the drawer.</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">Methodology bridge</div>
+              <p>Guide, methodology, and definitions should all live under one calmer reading system rather than being scattered as technical leftovers.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-body" data-drawer-mode="explain">
+          <div class="drawer-reading">
+            <div class="paper-card">
+              <div class="section-title">Explain this plan</div>
+              <p>This is the most bridge-like drawer mode: not a full report and not a generic methodology page. It answers the immediate question, “Why is the planner recommending this?”</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">Current explanation</div>
+              <p>Your current setup benefits from using registered assets earlier, because waiting too long creates a risk of larger taxable withdrawals later. Delaying CPP/QPP protects the back half of retirement even though it tightens the early bridge.</p>
+            </div>
+            <div class="paper-card">
+              <div class="section-title">Why this belongs in V3</div>
+              <p>Users should not have to leave the planner to understand the planner. This is the missing middle layer between dashboard outputs and the final report.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="bf-wrap">
+    <main class="bf-main">
+      <div class="bf-progress-bar">
+        <div class="step done">Inputs</div><div class="step-line"></div>
+        <div class="step done">Simulation</div><div class="step-line"></div>
+        <div class="step active">Results</div><div class="step-line"></div>
+        <div class="step">Guide</div><div class="step-line"></div>
+        <div class="step">Longform</div>
+      </div>
+
+      <div class="bf-tabs">
+        <button class="on" data-tab-pill="diagnostic">Diagnostic</button>
+        <button data-tab-pill="report">Detailed report</button>
+        <button data-tab-pill="cashflow">Projection</button>
+        <button data-tab-pill="wealth">Accounts & Balance</button>
+        <button data-tab-pill="risk">What If / Risks</button>
+        <button data-tab-pill="guide">Guide</button>
+      </div>
+
+      <div class="bf-content">
+        <section class="bf-banner">
+          <div>
+            <div class="kicker">V3.1 Bridge Test</div>
+            <h1 style="font:700 34px/1.04 'Playfair Display',serif;margin:8px 0 10px;">Keep the planner’s simulator core, but make its reading layer coherent.</h1>
+            <p style="max-width:780px;">This is still Planner V3. The rail, cockpit, tabs, and longform drawer remain. The experiment is about how the report and guide experience plug into that shell.</p>
+          </div>
+          <div class="lab-buttons" style="margin-top:0;">
+            <button data-open-drawer>Open longform</button>
+            <button id="bf-v31-open-overlay">Open cockpit</button>
+          </div>
+        </section>
+
+        <section class="bf-card" data-tab-panel="diagnostic">
+          <div class="kicker">Dashboard</div>
+          <div class="bf-kpi-grid" style="margin-top:14px;">
+            <div class="bf-kpi"><div class="kpi-v">A-</div><div class="kpi-l">Plan grade</div></div>
+            <div class="bf-kpi"><div class="kpi-v">91%</div><div class="kpi-l">Success rate</div></div>
+            <div class="bf-kpi"><div class="kpi-v">$1.48M</div><div class="kpi-l">Start assets</div></div>
+            <div class="bf-kpi"><div class="kpi-v">70</div><div class="kpi-l">CPP/QPP age</div></div>
+          </div>
+          <div class="two-col" style="margin-top:16px;">
+            <div class="bf-card" style="padding:18px;">
+              <div class="kicker">Chart with explanation</div>
+              <div class="chart-shell" style="margin-top:12px;">
+                <div class="wave"></div>
+                <div class="wave alt"></div>
+                <div class="wave third"></div>
+              </div>
+              <div class="chart-caption">V3.1 should not replace charts with prose. It should pair charts with calmer interpretation so users can move from “I see a line” to “I understand what this means.”</div>
+            </div>
+            <div class="bf-card" style="padding:18px;">
+              <div class="kicker">Guided scenario compare</div>
+              <div class="chip-row" data-scenario-group>
+                <button class="chip is-active" data-scenario data-payload='{"label":"Baseline plan","score":"91%","effect":"Current baseline keeps taxes moderate and protects late-life income."}'>Baseline</button>
+                <button class="chip" data-scenario data-payload='{"label":"Delay CPP/QPP to 70","score":"94%","effect":"Later guaranteed income improves longevity protection but tightens the bridge."}'>Delay benefits</button>
+                <button class="chip" data-scenario data-payload='{"label":"Spend 10% more","score":"83%","effect":"Higher spending narrows late-life flexibility quickly."}'>Spend +10%</button>
+              </div>
+              <div class="bf-card" style="margin-top:14px;padding:16px;" id="bf-v31-readout">
+                <div class="kicker" data-bind="label">Baseline plan</div>
+                <div class="kpi-v" data-bind="score">91%</div>
+                <p data-bind="effect">Current baseline keeps taxes moderate and protects late-life income.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bf-card" data-tab-panel="report" hidden>
+          <div class="kicker">Report touchpoint</div>
+          <h2 style="font:700 28px/1.04 'Playfair Display',serif;margin:10px 0 10px;">The report should feel native to planner V3.</h2>
+          <p>The current planner already has a `Detailed report` tab and export behavior. V3.1 strengthens that by making the longform drawer the reading bridge, so the report no longer feels like a separate product dropped in after the simulation.</p>
+          <div class="lab-buttons">
+            <button data-open-drawer>Open report drawer</button>
+          </div>
+        </section>
+
+        <section class="bf-card" data-tab-panel="cashflow" hidden>
+          <div class="kicker">Cashflow / Projection</div>
+          <h2 style="font:700 28px/1.04 'Playfair Display',serif;margin:10px 0;">Projection still belongs in the simulator.</h2>
+          <p>The planner bridge should not absorb every tab into longform reading. Core simulation tabs like projection stay in the main shell; they just get better explanation and better handoff to reading surfaces.</p>
+        </section>
+
+        <section class="bf-card" data-tab-panel="wealth" hidden>
+          <div class="kicker">Wealth / Accounts</div>
+          <p>Accounts, real estate, balance, and estate still live in the planner. The bridge work is about how those outputs are narrated later, not about moving them into a different shell prematurely.</p>
+        </section>
+
+        <section class="bf-card" data-tab-panel="risk" hidden>
+          <div class="kicker">Risk / What If</div>
+          <p>V3 already has strong analysis surfaces like Monte Carlo, What If, Tornado, and Fee Impact. V3.1 should connect them more clearly to the report/guide reading layer, not bury them.</p>
+        </section>
+
+        <section class="bf-card" data-tab-panel="guide" hidden>
+          <div class="kicker">Guide touchpoint</div>
+          <h2 style="font:700 28px/1.04 'Playfair Display',serif;margin:10px 0 10px;">Guide should stop feeling like a help appendix.</h2>
+          <p>The guide already exists in V3.1 makes it part of the planner’s reading layer: methodology, definitions, and contextual education can share one calmer surface in the longform drawer.</p>
+          <div class="lab-buttons">
+            <button data-open-drawer>Open guide drawer</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

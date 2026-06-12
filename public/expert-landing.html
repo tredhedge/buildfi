@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratoire — Simulateur de retraite | buildfi.ca</title>
+<meta name="description" content="Testez vos d&eacute;cisions de retraite avant de les prendre. 190 param&egrave;tres, jusqu'&agrave; 5 000 sc&eacute;narios en temps r&eacute;el, optimiseur automatique, 5 exports AI.">
+<meta property="og:title" content="buildfi.ca — Laboratoire">
+<meta property="og:description" content="Testez vos d&eacute;cisions financi&egrave;res avant de les prendre. Simulateur illimit&eacute;, 5 exports AI.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buildfi.ca/expert/landing">
+<meta property="og:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://buildfi.ca/og-image.png">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:site_name" content="BuildFi">
+<script id="faqSchema" type="application/ld+json"></script>
+<link rel="canonical" href="https://buildfi.ca/expert/landing">
+<link rel="alternate" hreflang="fr" href="https://buildfi.ca/expert/landing">
+<link rel="alternate" hreflang="en" href="https://buildfi.ca/expert/landing?lang=en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1a2744;--navy-light:#2c3e6b;--navy-dark:#111b2e;
+  --gold:#c49a1a;--gold-light:#d4af37;--gold-dark:#a68016;
+  --gold-wash:rgba(196,154,26,.06);--gold-wash-strong:rgba(196,154,26,.12);
+  --cream:#faf8f4;--sand:#f0ece4;--card:#ffffff;
+  --text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#777;
+  --border:#e8e0d4;--border-light:#f0ece4;
+  --success:#1a7a4c;--warning:#b89830;--danger:#b91c1c;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+  --shadow-gold:0 4px 20px rgba(196,154,26,.15);
+  --shadow-card:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+  --font-display:'Newsreader',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-data:'JetBrains Mono',monospace;
+  --max-content:1120px;--max-narrow:720px;--max-wide:1280px;
+  --section-py:clamp(72px,9vw,104px);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);background:var(--cream);color:var(--text-primary);font-size:clamp(16px,1.1vw,18px);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-top:72px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");opacity:.5}
+img{max-width:100%;display:block}
+a{color:var(--gold);text-decoration:none;transition:color .2s}a:hover{color:var(--gold-dark)}
+.container{width:100%;max-width:var(--max-content);margin:0 auto;padding:0 24px}
+.container--narrow{max-width:var(--max-narrow)}
+.section{padding:var(--section-py) 0;position:relative}
+.section--sand{background:var(--sand)}
+.section--navy{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-light) 50%,#2a4070 100%);color:#fff;position:relative;overflow:hidden}
+.section--navy::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(196,154,26,.08) 0%,transparent 60%);pointer-events:none}
+.section-label{font-family:var(--font-body);font-size:clamp(12px,.9vw,13px);font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.section--navy .section-label{color:var(--gold-light)}
+.section-title{font-family:var(--font-display);font-size:clamp(26px,3.2vw,40px);font-weight:700;line-height:1.12;color:var(--navy);margin-bottom:14px}
+.section--navy .section-title{color:#fff}
+.section-subtitle{font-size:clamp(16px,1.2vw,18px);color:var(--text-secondary);max-width:580px;line-height:1.65}
+.section--navy .section-subtitle{color:rgba(255,255,255,.7)}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-body);font-weight:700;border:none;cursor:pointer;transition:all .25s;text-decoration:none;letter-spacing:.2px}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:16px 32px;border-radius:var(--radius-md);font-size:16px;box-shadow:0 2px 8px rgba(196,154,26,.2)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-gold),0 8px 24px rgba(196,154,26,.25);color:#fff}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:transparent;color:var(--navy);border:2px solid var(--border);padding:14px 28px;border-radius:var(--radius-md);font-size:15px}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-wash)}
+.btn-ghost{background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:8px 0}
+.btn-ghost:hover{color:var(--gold)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:all .35s}
+.nav.scrolled{background:rgba(250,248,244,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--border),0 4px 16px rgba(0,0,0,.04);padding:12px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:var(--max-wide);margin:0 auto;padding:0 24px}
+.nav-logo{font-family:var(--font-body);font-size:32px;font-weight:800;color:var(--navy);letter-spacing:-.7px;text-decoration:none}.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;align-items:center;gap:36px;list-style:none}
+.nav-links a{font-size:14px;font-weight:600;color:var(--text-secondary);text-decoration:none;transition:color .2s;position:relative}.nav-links a:hover{color:var(--navy)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s;border-radius:1px}
+.nav-links a:hover::after{transform:scaleX(1)}
+.nav-links a.active{color:var(--navy)}
+.nav-links a.active::after{transform:scaleX(1)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all .25s;box-shadow:0 2px 8px rgba(196,154,26,.15)}.nav-cta:hover{transform:translateY(-1px);box-shadow:var(--shadow-gold);color:#fff}
+.lang-toggle{background:none;border:1px solid var(--border);padding:5px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:all .2s}.lang-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.nav-hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px;width:40px;height:40px;position:relative}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--navy);position:absolute;left:9px;transition:all .3s}
+.nav-hamburger span:nth-child(1){top:12px}.nav-hamburger span:nth-child(2){top:19px}.nav-hamburger span:nth-child(3){top:26px}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg);top:19px}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg);top:19px}
+.nav-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(250,248,244,.98);backdrop-filter:blur(16px);padding:80px 24px 24px;flex-direction:column;gap:8px}
+.nav-drawer.open{display:flex}
+.nav-drawer a{display:block;padding:16px 0;font-size:18px;font-weight:600;color:var(--navy);text-decoration:none;border-bottom:1px solid var(--border-light)}
+.nav-drawer .nav-cta{display:block;text-align:center;margin-top:16px;padding:16px;border-radius:var(--radius-md);font-size:16px}
+@media(max-width:900px){.nav-links,.nav-right .nav-cta,.nav-right .lang-toggle{display:none}.nav-hamburger{display:block}}
+
+/* ═══ HERO ═══ */
+.pp-hero{padding:clamp(80px,10vw,120px) 0 var(--section-py);text-align:center;position:relative}
+.pp-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.pp-back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--text-muted);text-decoration:none;margin-bottom:40px;transition:color .2s}
+.pp-back:hover{color:var(--gold)}
+.pp-hero-title{font-family:var(--font-display);font-size:clamp(40px,5.5vw,64px);font-weight:700;color:var(--navy);line-height:1.05;margin-bottom:8px;letter-spacing:-.5px}
+.pp-hero-subtitle{font-family:var(--font-display);font-size:clamp(18px,2vw,24px);font-weight:400;color:var(--text-secondary);margin-bottom:32px;font-style:italic}
+.pp-hero-price{margin-bottom:28px}
+.pp-hero-price-original{font-family:var(--font-data);font-size:clamp(18px,1.5vw,22px);color:var(--text-muted);text-decoration:line-through;margin-right:12px}
+.pp-hero-price-current{font-family:var(--font-data);font-size:clamp(36px,4.5vw,52px);font-weight:800;color:var(--navy)}
+.pp-hero-price-note{font-size:14px;color:var(--text-muted);margin-top:4px}
+.pp-hero-cta{margin-bottom:24px}
+.pp-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;background:var(--navy);color:#fff}
+.pp-hero-desktop{font-size:13px;color:var(--text-muted);margin-top:12px}
+
+/* ═══ MOCK SCREENSHOTS ═══ */
+.mock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+.mock-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-card);transition:transform .2s,box-shadow .2s}
+.mock-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.mock-visual{padding:20px;border-bottom:1px solid var(--border-light)}
+.mock-body{padding:20px 24px}
+.mock-body h3{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.mock-body p{font-size:13px;color:var(--text-secondary);line-height:1.55}
+
+/* ═══ WORKFLOWS ═══ */
+.wf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+.wf-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 24px;text-align:center;box-shadow:var(--shadow-card);transition:transform .2s,box-shadow .2s}
+.wf-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.wf-icon{width:48px;height:48px;margin:0 auto 16px;background:var(--gold-wash-strong);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.wf-icon svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.wf-card h3{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.wf-card p{font-size:14px;color:var(--text-secondary);line-height:1.55;margin-bottom:12px}
+.wf-example{font-family:var(--font-data);font-size:12px;color:var(--gold-dark);background:var(--gold-wash);padding:8px 12px;border-radius:var(--radius-sm);line-height:1.5}
+
+/* ═══ COMPARISON TABLE ═══ */
+.comp-wrap{margin-top:32px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.comp-table{width:100%;border-collapse:collapse;font-size:14px;text-align:center}
+.comp-table th{padding:14px 16px;font-weight:700;font-size:13px;border-bottom:2px solid var(--border);vertical-align:bottom}
+.comp-table td{padding:12px 16px;border-bottom:1px solid var(--border-light);font-size:13px}
+.comp-table td:first-child,.comp-table th:first-child{text-align:left;font-weight:600;color:var(--navy)}
+.comp-table tr:nth-child(even) td{background:rgba(0,0,0,.015)}
+.comp-table .cx{background:var(--gold-wash)}
+.comp-table tr:nth-child(even) .cx{background:var(--gold-wash-strong)}
+.comp-table th.cx{background:var(--gold-wash-strong);border-top:3px solid var(--gold);color:var(--gold-dark)}
+.comp-no{color:var(--text-muted)}
+
+/* ═══ NOT FOR EVERYONE ═══ */
+.nfe-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:24px}
+.nfe-col h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.nfe-yes h3{color:var(--success)}
+.nfe-no h3{color:var(--text-muted)}
+.nfe-col ul{list-style:none;padding:0}
+.nfe-col li{font-size:14px;color:var(--text-secondary);line-height:1.6;padding:4px 0 4px 20px;position:relative}
+.nfe-yes li::before{content:'';position:absolute;left:0;top:10px;width:8px;height:8px;background:var(--success);border-radius:50%}
+.nfe-no li::before{content:'';position:absolute;left:0;top:10px;width:8px;height:8px;background:var(--border);border-radius:50%}
+.nfe-no a{color:var(--gold);font-weight:600}
+
+/* ═══ POUR QUI ═══ */
+.pq-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.pq-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:24px}
+.pq-icon{width:40px;height:40px;background:var(--gold-wash-strong);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.pq-icon svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.pq-card h3{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.pq-card p{font-size:13px;color:var(--text-secondary);line-height:1.55}
+
+/* ═══ FEATURES ═══ */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.feat-item{display:flex;gap:12px;align-items:flex-start;padding:16px;background:var(--card);border:1px solid var(--border-light);border-radius:var(--radius-md)}
+.feat-check{color:var(--success);flex-shrink:0;margin-top:2px}
+.feat-item h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.feat-item p{font-size:13px;color:var(--text-secondary);line-height:1.5}
+
+/* ═══ STEPS ═══ */
+.steps-list{max-width:600px;margin:36px auto 0;display:flex;flex-direction:column;gap:24px}
+.step-item{display:flex;align-items:flex-start;gap:18px}
+.step-num{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#fff;font-family:var(--font-data);font-size:14px;font-weight:700;margin-top:2px}
+.step-text{font-size:clamp(15px,1.15vw,17px);color:var(--text-primary);line-height:1.6}
+.step-text strong{color:var(--navy)}
+
+/* ═══ DECISIONS ═══ */
+.dec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px}
+.dec-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:24px;text-align:center;box-shadow:var(--shadow-sm)}
+.dec-card .dec-stat{font-family:var(--font-data);font-size:24px;font-weight:800;color:var(--navy);margin:8px 0}
+.dec-card p{font-size:13px;color:var(--text-secondary);line-height:1.5}
+
+/* ═══ FAQ ═══ */
+.faq-list{max-width:var(--max-narrow);margin:32px auto 0}
+.faq-item{border-bottom:1px solid var(--border-light)}
+.faq-question{width:100%;background:none;border:none;text-align:left;cursor:pointer;padding:16px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:var(--font-body);font-size:15px;font-weight:700;color:var(--navy);transition:color .2s}
+.faq-question:hover{color:var(--gold)}
+.faq-chevron{width:20px;height:20px;flex-shrink:0;transition:transform .3s;stroke:var(--text-muted);fill:none;stroke-width:2}
+.faq-item.open .faq-chevron{transform:rotate(90deg);stroke:var(--gold)}
+.faq-item.open .faq-question{color:var(--gold)}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-answer-inner{padding:0 0 18px;font-size:14px;color:var(--text-secondary);line-height:1.7;border-left:3px solid var(--gold);padding-left:20px;margin-left:2px}
+
+/* ═══ TRUST ═══ */
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px}
+.trust-item{text-align:center;padding:16px;background:rgba(255,255,255,.05);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,.08)}
+.trust-item svg{width:24px;height:24px;stroke:var(--gold-light);fill:none;stroke-width:1.8;margin:0 auto 8px;display:block}
+.trust-item span{font-size:13px;color:rgba(255,255,255,.7);line-height:1.4;display:block}
+
+/* ═══ PRICING CTA ═══ */
+.pricing-cta{text-align:center}
+.pricing-cta .pp-hero-price{margin-bottom:24px}
+.pricing-reassurance{max-width:480px;margin:20px auto 0;font-size:14px;color:var(--text-muted);line-height:1.7}
+
+/* ═══ CROSS-SELL ═══ */
+.crosssell-list{max-width:640px;margin:32px auto 0;display:flex;flex-direction:column;gap:14px}
+.crosssell-card{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 24px;text-decoration:none;transition:all .3s;gap:16px}
+.crosssell-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--gold)}
+.crosssell-info{flex:1}
+.crosssell-name{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.crosssell-desc{font-size:14px;color:var(--text-secondary)}
+.crosssell-arrow{font-size:18px;color:var(--gold);flex-shrink:0;font-weight:700;transition:transform .2s}
+.crosssell-card:hover .crosssell-arrow{transform:translateX(4px)}
+
+/* ═══ FOOTER ═══ */
+.footer{background:var(--navy-dark);color:rgba(255,255,255,.7);padding:72px 0 32px;position:relative}
+.footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(196,154,26,.3),transparent)}
+.footer-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:48px;margin-bottom:52px}
+.footer-brand{font-size:26px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.3px}.footer-brand span{color:var(--gold-light)}
+.footer-tagline{font-size:14px;color:rgba(255,255,255,.35);line-height:1.65;max-width:280px}
+.footer-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.55);text-decoration:none;padding:5px 0;transition:color .2s}.footer-col a:hover{color:var(--gold-light)}
+.footer-disclaimer{border-top:1px solid rgba(255,255,255,.06);padding-top:36px;font-size:13px;color:rgba(255,255,255,.25);line-height:1.85;max-width:800px}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.05);font-size:13px;color:rgba(255,255,255,.2)}
+
+/* ═══ REVEAL ═══ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.18s}.reveal-delay-3{transition-delay:.26s}.reveal-delay-4{transition-delay:.34s}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  body{padding-top:64px}
+  .pp-hero{padding-top:clamp(48px,8vw,80px)}
+  .mock-grid,.wf-grid,.dec-grid,.trust-grid{grid-template-columns:1fr}
+  .feat-grid,.nfe-grid,.pq-grid{grid-template-columns:1fr}
+  .crosssell-card{flex-direction:column;text-align:center;gap:8px}
+  .crosssell-arrow{transform:rotate(90deg)}
+  .crosssell-card:hover .crosssell-arrow{transform:rotate(90deg) translateX(4px)}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+}
+@media(max-width:600px){
+  .pp-hero-price-current{font-size:clamp(32px,10vw,44px)}
+  .comp-table{font-size:12px}
+  .comp-table th,.comp-table td{padding:8px 10px}
+}
+</style>
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
+<script src="/logo.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip-nav" style="position:absolute;top:-100%;left:16px;z-index:9999;background:var(--navy);color:#fff;padding:12px 24px;border-radius:0 0 8px 8px;font-weight:700;font-size:14px">Aller au contenu</a>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="nav" role="navigation" aria-label="Navigation principale">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
+    <ul class="nav-links">
+      <li><a href="/bilan">Bilan</a></li>
+      <li><a href="/bilan-360">Bilan 360</a></li>
+      <li><a href="/horizon">Horizon</a></li>
+      <li><a href="/expert/landing" class="active">Simulateur</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="lang-toggle" id="langToggle" aria-label="Switch to English">EN</button>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="/bilan">Bilan</a>
+  <a href="/bilan-360">Bilan 360</a>
+  <a href="/horizon">Horizon</a>
+  <a href="/expert/landing">Simulateur</a>
+  <button class="lang-toggle" id="drawerLangToggle" style="margin-top:16px;font-size:14px;padding:12px 24px;width:100%;text-align:center">EN</button>
+</div>
+
+<!-- ═══ SECTION 1: HERO ═══ -->
+<section class="pp-hero" id="main">
+  <div class="container">
+    <a href="/" class="pp-back reveal"><span aria-hidden="true">&larr;</span> <span id="heroBack">Retour &agrave; buildfi.ca</span></a>
+    <h1 class="pp-hero-title reveal reveal-delay-1" id="heroTitle">Laboratoire</h1>
+    <p class="pp-hero-subtitle reveal reveal-delay-1" id="heroSub">Le simulateur interactif BuildFi &mdash; testez vos d&eacute;cisions de retraite avant de les prendre.</p>
+    <div class="pp-hero-price reveal reveal-delay-2">
+      <span class="pp-hero-price-original">49,99 $</span>
+      <span class="pp-hero-price-current">24,99 $</span>
+      <div class="pp-hero-price-note" id="heroPriceNote">avec LAUNCH-LAB &mdash; acc&egrave;s 12 mois</div>
+    </div>
+    <div class="pp-hero-cta reveal reveal-delay-3">
+      <a href="/quiz-expert.html" class="btn btn-primary" id="heroCta" data-track="product_page_cta_clicked">Acc&eacute;der au simulateur <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="reveal reveal-delay-4">
+      <span class="pp-badge" id="heroBadge">5 exports AI inclus</span>
+    </div>
+    <p class="pp-hero-desktop reveal reveal-delay-4" id="heroDesktop">Le mode Guid&eacute; fonctionne sur tablette et mobile. Le mode Avanc&eacute; est con&ccedil;u pour ordinateur.</p>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: MOCK SCREENSHOTS ═══ -->
+<section class="section" id="mocks">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="mockLabel">Ce que vous obtenez</p>
+    <h2 class="section-title reveal" id="mockTitle">Votre simulateur, en action.</h2>
+    <div class="mock-grid">
+
+      <!-- Mock 1: Decision testing -->
+      <div class="mock-card reveal">
+        <div class="mock-visual">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px" id="m1tag">Sc&eacute;nario</div>
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px" id="m1name">Retarder la retraite de 2 ans</div>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text-muted)" id="m1before">Avant</span><span style="font-family:var(--font-data);font-weight:700;color:var(--warning)">C+ <span style="font-size:11px">68%</span></span></div>
+            <div style="background:var(--border);border-radius:4px;height:7px;overflow:hidden"><div style="width:68%;background:var(--warning);height:100%;border-radius:4px"></div></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text-muted)" id="m1after">Apr&egrave;s</span><span style="font-family:var(--font-data);font-weight:700;color:var(--success)">B <span style="font-size:11px">76%</span></span></div>
+            <div style="background:var(--border);border-radius:4px;height:7px;overflow:hidden"><div style="width:76%;background:var(--success);height:100%;border-radius:4px"></div></div>
+          </div>
+          <div style="text-align:center;font-family:var(--font-data);font-size:18px;font-weight:800;color:var(--success)">&#8593; +8%</div>
+        </div>
+        <div class="mock-body">
+          <h3 id="mk1t">Tester une d&eacute;cision</h3>
+          <p id="mk1d">Testez l'impact de chaque d&eacute;cision &mdash; retraite anticip&eacute;e, hypoth&egrave;que, d&eacute;caissement REER, CCPC &mdash; avant de la prendre.</p>
+        </div>
+      </div>
+
+      <!-- Mock 2: Optimizer -->
+      <div class="mock-card reveal reveal-delay-1">
+        <div class="mock-visual">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px" id="m2tag">Optimiseur</div>
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px" id="m2name">Top 3 leviers identifi&eacute;s</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(26,122,76,.06);border-radius:6px;border-left:3px solid var(--success)">
+              <span style="font-size:12px;color:var(--text-primary)" id="m2l1">Retarder RRQ &agrave; 70 ans</span>
+              <span style="font-family:var(--font-data);font-weight:700;color:var(--success);font-size:13px">+6%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(26,122,76,.06);border-radius:6px;border-left:3px solid var(--success)">
+              <span style="font-size:12px;color:var(--text-primary)" id="m2l2">Augmenter C&Eacute;LI de 300 $/mois</span>
+              <span style="font-family:var(--font-data);font-weight:700;color:var(--success);font-size:13px">+4%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(26,122,76,.06);border-radius:6px;border-left:3px solid var(--success)">
+              <span style="font-size:12px;color:var(--text-primary)" id="m2l3">Fractionnement des pensions</span>
+              <span style="font-family:var(--font-data);font-weight:700;color:var(--success);font-size:13px">+3%</span>
+            </div>
+          </div>
+        </div>
+        <div class="mock-body">
+          <h3 id="mk2t">Optimiser automatiquement</h3>
+          <p id="mk2d">L'optimiseur teste 8 axes et 40+ combinaisons pour trouver les leviers qui ont le plus d'impact sur votre score.</p>
+        </div>
+      </div>
+
+      <!-- Mock 3: Summary -->
+      <div class="mock-card reveal reveal-delay-2">
+        <div class="mock-visual">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px" id="m3tag">R&eacute;sum&eacute;</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+            <div style="width:52px;height:52px;border-radius:50%;border:4px solid var(--success);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <div style="font-family:var(--font-data);font-size:15px;font-weight:800;color:var(--navy)">B+</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-data);font-size:22px;font-weight:800;color:var(--navy)">82%</div>
+              <div style="font-size:11px;color:var(--text-muted)" id="m3rate">taux de succ&egrave;s</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);line-height:1.6;border-top:1px solid var(--border-light);padding-top:8px">
+            <div style="margin-bottom:3px" id="m3o1">&#8226; Revenus suffisants jusqu'&agrave; 92 ans</div>
+            <div style="margin-bottom:3px" id="m3o2">&#8226; REER optimal : retrait de 22K$/an pr&eacute;-65</div>
+            <div id="m3o3">&#8226; RRQ &agrave; 70 : gain net de 247 $/mois</div>
+          </div>
+        </div>
+        <div class="mock-body">
+          <h3 id="mk3t">R&eacute;sum&eacute; 1 page</h3>
+          <p id="mk3d">Exportez un r&eacute;sum&eacute; clair avec votre grade, vos observations et vos leviers. Id&eacute;al pour discuter avec votre planificateur financier.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: 3 WORKFLOWS ═══ -->
+<section class="section section--sand" id="workflows">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="wfLabel">Trois fa&ccedil;ons d'explorer</p>
+    <h2 class="section-title reveal" id="wfTitle">Simulez. Ajustez. Recalculez.</h2>
+    <div class="wf-grid">
+      <div class="wf-card reveal">
+        <div class="wf-icon"><svg viewBox="0 0 24 24"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></div>
+        <h3 id="wf1Title">Simulez</h3>
+        <p id="wf1Desc">Testez chaque variable : &acirc;ge de retraite, RRQ 60/65/70, meltdown REER, downsizing, fractionnement.</p>
+        <div class="wf-example" id="wf1Ex">Reporter le RRQ de 65 &agrave; 70 : +247 $/mois, break-even &agrave; 82 ans</div>
+      </div>
+      <div class="wf-card reveal reveal-delay-1">
+        <div class="wf-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+        <h3 id="wf2Title">Ajustez</h3>
+        <p id="wf2Desc">L'optimiseur analyse 8 axes et identifie les 3 ajustements &agrave; plus fort impact sur votre taux de succ&egrave;s.</p>
+        <div class="wf-example" id="wf2Ex">Meltdown REER pr&eacute;-retraite : &eacute;conomie fiscale estim&eacute;e de 18&nbsp;400 $</div>
+      </div>
+      <div class="wf-card reveal reveal-delay-2">
+        <div class="wf-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <h3 id="wf3Title">Recalculez</h3>
+        <p id="wf3Desc">Chaque janvier, le Bilan Annuel recalcule vos sc&eacute;narios avec les nouvelles constantes fiscales.</p>
+        <div class="wf-example" id="wf3Ex">En 2027 : retrait REER de 22&nbsp;000 $ sous le seuil PSV</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: TIER COMPARISON ═══ -->
+<section class="section" id="comparison">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="compLabel">Comparaison</p>
+    <h2 class="section-title reveal" style="text-align:center" id="compTitle">Laboratoire vs Bilan, Bilan 360 et Horizon</h2>
+    <div class="comp-wrap reveal reveal-delay-1">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th id="ctHF">Fonctionnalit&eacute;</th>
+            <th id="ctHE">Bilan<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">29 $</span> <strong>14,50 $</strong></th>
+            <th id="ctHI">Bilan 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59 $</span> <strong>29,50 $</strong></th>
+            <th id="ctHD">Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59 $</span> <strong>29,50 $</strong></th>
+            <th class="cx" id="ctHX">Laboratoire<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">49,99 $</span> <strong>24,99 $</strong></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td id="ct1">Sc&eacute;narios Monte Carlo</td><td id="ctE1">5 000</td><td id="ctI1">5 000</td><td id="ctD1">5 000 + 6 runs</td><td class="cx" id="ctX1">1 000 &ndash; 5 000 en temps r&eacute;el</td></tr>
+          <tr><td id="ct2">Grade retraite</td><td id="ctE2">Oui</td><td id="ctI2">Oui</td><td id="ctD2">Oui</td><td class="cx" id="ctX2">Oui + &eacute;volution en direct</td></tr>
+          <tr><td id="ct3">Strat&eacute;gies</td><td id="ctE3" class="comp-no">Non</td><td id="ctI3">5 compar&eacute;es</td><td id="ctD3">Timing RRQ 60/65/70</td><td class="cx" id="ctX3">Illimit&eacute;es + optimiseur</td></tr>
+          <tr><td id="ct4">Simulations interactives</td><td id="ctE4" class="comp-no">Non</td><td id="ctI4" class="comp-no">Non</td><td id="ctD4" class="comp-no">Non</td><td class="cx" id="ctX4">Oui &mdash; tester chaque d&eacute;cision</td></tr>
+          <tr><td id="ct5">Couple</td><td id="ctE5" class="comp-no">Non</td><td id="ctI5">Oui</td><td id="ctD5" class="comp-no">Non</td><td class="cx" id="ctX5">Oui + conjoint(e) mod&eacute;lis&eacute;(e)</td></tr>
+          <tr><td id="ct6">Analyse de d&eacute;caissement</td><td id="ctE6" class="comp-no">Non</td><td id="ctI6" class="comp-no">Non</td><td id="ctD6">Oui &mdash; retraits, fiscalit&eacute;, robustesse</td><td class="cx" id="ctX6">Oui + contr&ocirc;le total</td></tr>
+          <tr><td id="ct7">Stress test (meltdown)</td><td id="ctE7" class="comp-no">Non</td><td id="ctI7" class="comp-no">Non</td><td id="ctD7">Oui &mdash; an 1 + an 5</td><td class="cx" id="ctX7">Oui + param&egrave;tres ajustables</td></tr>
+          <tr><td id="ct8">Rapport AI</td><td id="ctE8">1 bilan</td><td id="ctI8">1 bilan</td><td id="ctD8">1 bilan</td><td class="cx" id="ctX8">5 exports (+ 14,99 $/extra)</td></tr>
+          <tr><td id="ct9">Acc&egrave;s</td><td id="ctE9">1 rapport</td><td id="ctI9">1 rapport</td><td id="ctD9">1 rapport</td><td class="cx" id="ctX9">12 mois illimit&eacute;</td></tr>
+          <tr><td id="ct10">Immobilier</td><td id="ctE10" class="comp-no">Non</td><td id="ctI10">1 r&eacute;sidence + 3 locatifs</td><td id="ctD10" class="comp-no">Non</td><td class="cx" id="ctX10">Illimit&eacute;s + Smith, HELOC, refi, DPA par immeuble</td></tr>
+          <tr><td id="ct11">CCPC</td><td id="ctE11" class="comp-no">Non</td><td id="ctI11">Revenu corporatif</td><td id="ctD11" class="comp-no">Non</td><td class="cx" id="ctX11">Extraction compl&egrave;te, RDTOH, LCGE, dissolution</td></tr>
+          <tr><td id="ct12">Variables</td><td id="ctE12">~30</td><td id="ctI12">~85</td><td id="ctD12">~50</td><td class="cx" id="ctX12">190+ avec contr&ocirc;le total</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="reveal reveal-delay-2" style="margin-top:28px">
+      <a href="/quiz-expert.html" class="btn btn-primary" id="compCta" data-track="product_page_cta_clicked">Choisir le Laboratoire &mdash; 24,99 $ <span aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: NOT FOR EVERYONE ═══ -->
+<section class="section section--sand" id="honesty">
+  <div class="container">
+    <p class="section-label reveal" id="nfeLabel">Transparence</p>
+    <h2 class="section-title reveal" id="nfeTitle">Le simulateur n'est pas pour tout le monde.</h2>
+    <div class="nfe-grid reveal reveal-delay-1">
+      <div class="nfe-col nfe-yes">
+        <h3 id="nfeYesTitle">Pour vous si :</h3>
+        <ul>
+          <li id="nfeY1">Vous voulez tester plusieurs sc&eacute;narios avant de d&eacute;cider</li>
+          <li id="nfeY2">Votre situation est complexe : couple, immo, incorporation, pensions multiples</li>
+          <li id="nfeY3">Vous voulez comprendre les chiffres, pas juste une note</li>
+          <li id="nfeY4">Vous souhaitez un bilan annuel pour suivre votre progression</li>
+        </ul>
+      </div>
+      <div class="nfe-col nfe-no">
+        <h3 id="nfeNoTitle">Pas pour vous si :</h3>
+        <ul>
+          <li id="nfeN1">Vous voulez juste une note rapide &rarr; <a href="/bilan">Bilan (14,50 $)</a></li>
+          <li id="nfeN2">Vous voulez un portrait complet sans simulateur &rarr; <a href="/bilan-360">Bilan 360 (29,50 $)</a></li>
+          <li id="nfeN3">Vous &ecirc;tes retrait&eacute; et voulez savoir si votre argent va durer &rarr; <a href="/horizon">Horizon (29,50 $)</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 6: POUR QUI ═══ -->
+<section class="section" id="pourqui">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="pqLabel">Id&eacute;al pour</p>
+    <h2 class="section-title reveal" id="pqTitle">Le Laboratoire est con&ccedil;u pour vous si...</h2>
+    <p class="section-subtitle reveal" style="margin:0 auto 32px;text-align:center" id="pqSub">Le Bilan 360 mod&eacute;lise pour vous. Le Laboratoire vous donne le contr&ocirc;le.</p>
+    <div class="pq-grid">
+      <div class="pq-card reveal">
+        <div class="pq-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3 id="pq1t">Couples avec des situations complexes</h3>
+        <p id="pq1d">Mod&eacute;lisez les deux revenus, pensions, d&eacute;c&egrave;s, fractionnement.</p>
+      </div>
+      <div class="pq-card reveal reveal-delay-1">
+        <div class="pq-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <h3 id="pq2t">Propri&eacute;taires et investisseurs immobiliers</h3>
+        <p id="pq2d">Propri&eacute;t&eacute;s illimit&eacute;es, Smith Manoeuvre, HELOC, refinancement, DPA par immeuble. Le Bilan 360 mod&eacute;lise jusqu'&agrave; 3 locatifs &mdash; le Laboratoire n'a aucune limite.</p>
+      </div>
+      <div class="pq-card reveal reveal-delay-2">
+        <div class="pq-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+        <h3 id="pq3t">Entrepreneurs et CCPC</h3>
+        <p id="pq3d">Salaire vs dividende par ann&eacute;e, RDTOH, LCGE, dissolution, extraction pluri-annuelle. Le Bilan 360 int&egrave;gre le revenu corporatif &mdash; le Laboratoire vous laisse tester chaque sc&eacute;nario.</p>
+      </div>
+      <div class="pq-card reveal reveal-delay-3">
+        <div class="pq-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3 id="pq4t">Pr&eacute;-retrait&eacute;s 55-65</h3>
+        <p id="pq4d">Testez le pont pr&eacute;-RRQ, le d&eacute;caissement REER/FERR, la strat&eacute;gie PSV.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 7: FEATURES ═══ -->
+<section class="section section--sand" id="features">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="featLabel">Ce que vous obtenez</p>
+    <h2 class="section-title reveal" id="featTitle">Tout est inclus. Pas de surprises.</h2>
+    <div class="feat-grid">
+      <div class="feat-item reveal">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f1t">Simulateur illimit&eacute;</h4><p id="f1d">190 param&egrave;tres, contr&ocirc;le total, bilingue FR/EN</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-1">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f2t">5 exports AI</h4><p id="f2d">Rapports complets avec narration personnalis&eacute;e</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-1">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f3t">R&eacute;sum&eacute;s 1 page illimit&eacute;s</h4><p id="f3d">Capture diagnostic instantan&eacute;e</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-2">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f4t">Bilan Annuel</h4><p id="f4d">Check-up fiscal chaque janvier, hors quota</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-2">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f5t">5 profils sauvegard&eacute;s</h4><p id="f5d">Multi-sc&eacute;nario, multi-device</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-3">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f6t">Mises &agrave; jour r&eacute;glementaires</h4><p id="f6d">Constantes fiscales mises &agrave; jour annuellement</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-3">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f7t">Historique des changements</h4><p id="f7d">Comparez vos d&eacute;cisions dans le temps</p></div>
+      </div>
+      <div class="feat-item reveal reveal-delay-4">
+        <svg class="feat-check" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <div><h4 id="f8t">Section pour votre fiscaliste</h4><p id="f8d">Questions pr&eacute;par&eacute;es avec contexte chiffr&eacute;</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 8: COMMENT CA MARCHE ═══ -->
+<section class="section" id="steps">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="stLabel">Comment &ccedil;a marche</p>
+    <h2 class="section-title reveal" id="stTitle">Quatre &eacute;tapes. Z&eacute;ro complexit&eacute;.</h2>
+    <div class="steps-list">
+      <div class="step-item reveal">
+        <span class="step-num">1</span>
+        <span class="step-text"><strong id="st1t">Achetez votre acc&egrave;s</strong> &mdash; <span id="st1d">paiement unique, lien magique par courriel</span></span>
+      </div>
+      <div class="step-item reveal reveal-delay-1">
+        <span class="step-num">2</span>
+        <span class="step-text"><strong id="st2t">Choisissez un profil</strong> &mdash; <span id="st2d">5 presets pr&eacute;-configur&eacute;s : FIRE, Couple, CCPC, Pr&eacute;-retraite, Vierge</span></span>
+      </div>
+      <div class="step-item reveal reveal-delay-2">
+        <span class="step-num">3</span>
+        <span class="step-text"><strong id="st3t">Testez et explorez</strong> &mdash; <span id="st3d">chaque changement recalcul&eacute; en temps r&eacute;el</span></span>
+      </div>
+      <div class="step-item reveal reveal-delay-3">
+        <span class="step-num">4</span>
+        <span class="step-text"><strong id="st4t">Exportez votre r&eacute;sum&eacute;</strong> &mdash; <span id="st4d">bilan AI 1 page, partageable avec votre planificateur</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 9: DECISIONS ═══ -->
+<section class="section section--sand" id="decisions">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="decLabel">D&eacute;cisions test&eacute;es</p>
+    <h2 class="section-title reveal" id="decTitle">Ce que les donn&eacute;es pourraient montrer.</h2>
+    <div class="dec-grid">
+      <div class="dec-card reveal">
+        <p style="font-size:13px;color:var(--text-muted)" id="dec1Label">RRQ &agrave; 60 vs 70</p>
+        <div class="dec-stat" id="dec1Stat">+42 %</div>
+        <p id="dec1Desc">de pension mensuelle, break-even &agrave; 82 ans</p>
+      </div>
+      <div class="dec-card reveal reveal-delay-1">
+        <p style="font-size:13px;color:var(--text-muted)" id="dec2Label">Retraite &agrave; 58 vs 62</p>
+        <div class="dec-stat" id="dec2Stat">+11 pts</div>
+        <p id="dec2Desc">sur le taux de succ&egrave;s du plan</p>
+      </div>
+      <div class="dec-card reveal reveal-delay-2">
+        <p style="font-size:13px;color:var(--text-muted)" id="dec3Label">Vendre la maison &agrave; 65</p>
+        <div class="dec-stat" id="dec3Stat">+280K $</div>
+        <p id="dec3Desc">de liquidit&eacute;s, taux de succ&egrave;s +14 points</p>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:16px;font-style:italic" class="reveal reveal-delay-3" id="decDisclaimer">Exemples illustratifs. Les r&eacute;sultats varient selon chaque profil.</p>
+  </div>
+</section>
+
+<!-- ═══ SECTION 10: FAQ ═══ -->
+<section class="section" id="faq">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="faqLabel">Questions fr&eacute;quentes</p>
+    <h2 class="section-title reveal" id="faqTitle">Ce que vous voulez savoir.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span id="fq1">Quelle est la diff&eacute;rence avec le Bilan?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa1">Le Bilan est un portrait unique. Le Laboratoire vous permet de tester des dizaines de sc&eacute;narios en temps r&eacute;el et de voir instantan&eacute;ment l'impact de chaque d&eacute;cision.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span id="fq2">Est-ce que j'ai besoin de connaissances financi&egrave;res?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa2">Des connaissances de base (REER, C&Eacute;LI, RRQ) sont utiles. Le simulateur est con&ccedil;u pour les gens qui veulent comprendre leurs chiffres, pas juste recevoir un bilan.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span id="fq3">Que se passe-t-il apr&egrave;s 12 mois?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa3">Votre acc&egrave;s expire. Vos exports restent accessibles. Vous pouvez renouveler pour 29,99 $/an.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span id="fq4">Puis-je commencer par le Bilan et passer au Laboratoire?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa4">Oui. Votre achat Bilan ou Bilan 360 est cr&eacute;dit&eacute; sur le prix du Laboratoire.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span id="fq5">Le simulateur fonctionne-t-il sur mobile?</span>
+          <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner" id="fa5">Le mode Guid&eacute; fonctionne sur tablette et mobile. Le mode Avanc&eacute; est con&ccedil;u pour ordinateur.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 11: TRUST ═══ -->
+<section class="section section--navy" id="trust">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal" id="trustLabel">Rigueur</p>
+    <h2 class="section-title reveal" id="trustTitle">Construit pour &ecirc;tre v&eacute;rifi&eacute;.</h2>
+    <div class="trust-grid">
+      <div class="trust-item reveal">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="tr1">Moteur valid&eacute; par plus de 1&nbsp;600 tests automatis&eacute;s</span>
+      </div>
+      <div class="trust-item reveal reveal-delay-1">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="tr2">Fiscalit&eacute; 13 provinces, constantes 2026</span>
+      </div>
+      <div class="trust-item reveal reveal-delay-2">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <span id="tr3">Tables de mortalit&eacute; CPM-2023 (Institut canadien des actuaires)</span>
+      </div>
+      <div class="trust-item reveal reveal-delay-3">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <span id="tr4">Aucune publicit&eacute;. Aucune vente de donn&eacute;es.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 12: PRICING CTA ═══ -->
+<section class="section section--sand" id="pricing">
+  <div class="container pricing-cta">
+    <h2 class="section-title reveal" style="text-align:center" id="finalTitle">Prenez le contr&ocirc;le de votre retraite.</h2>
+    <p class="section-subtitle reveal reveal-delay-1" style="text-align:center;margin:0 auto 24px" id="finalSub">12 mois d'acc&egrave;s | 5 exports AI | Mises &agrave; jour incluses</p>
+    <div class="pp-hero-price reveal reveal-delay-1">
+      <span class="pp-hero-price-original">49,99 $</span>
+      <span class="pp-hero-price-current">24,99 $</span>
+      <div class="pp-hero-price-note">avec LAUNCH-LAB &mdash; paiement unique</div>
+    </div>
+    <div class="reveal reveal-delay-2" style="text-align:center">
+      <a href="/quiz-expert.html" class="btn btn-primary" id="finalCta" data-track="product_page_cta_clicked">Acc&eacute;der au simulateur <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="pricing-reassurance reveal reveal-delay-3">
+      <p id="finalAlt">Pas pr&ecirc;t? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan &agrave; 14,50 $</a> &mdash; <span id="finalAltHorizon">ou <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon &agrave; 29,50 $</a> pour les retrait&eacute;s</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 13: PAS LE BON PRODUIT? ═══ -->
+<section class="section" id="crosssell">
+  <div class="container" style="text-align:center">
+    <p class="section-label reveal">Vous pr&eacute;f&eacute;rez recevoir un diagnostic?</p>
+    <h2 class="section-title reveal" style="font-size:clamp(22px,2.5vw,30px)">Le simulateur n'est pas pour tout le monde. Nos bilans font le travail pour vous.</h2>
+    <div class="crosssell-list">
+      <a href="/bilan" class="crosssell-card reveal">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Bilan &mdash; 14,50 $</div>
+          <div class="crosssell-desc">Premier portrait clair sans manipuler de simulateur. 5 &agrave; 8 minutes, bilan livr&eacute; par courriel.</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/bilan-360" class="crosssell-card reveal reveal-delay-1">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Bilan 360 &mdash; 29,50 $</div>
+          <div class="crosssell-desc">Situation complexe? Couple, immobilier, succession &mdash; le rapport complet fait pour vous.</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a href="/horizon" class="crosssell-card reveal reveal-delay-2">
+        <div class="crosssell-info">
+          <div class="crosssell-name">Horizon &mdash; 29,50 $</div>
+          <div class="crosssell-desc">Retrait&eacute; ou pr&eacute;retrait&eacute;? Le bilan de revenu de retraite &mdash; retraits, timing RRQ, robustesse.</div>
+        </div>
+        <span class="crosssell-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">build<span>fi</span></div>
+        <p class="footer-tagline" id="footTagline">Planification financi&egrave;re personnalis&eacute;e pour les Canadiens.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Produits</div>
+        <a href="/bilan">Bilan</a>
+        <a href="/bilan-360">Bilan 360</a>
+        <a href="/horizon">Horizon</a>
+        <a href="/expert/landing">Simulateur</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Ressources</div>
+        <a href="/#faq" id="footFaq">FAQ</a>
+        <a href="mailto:support@buildfi.ca" id="footContact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">L&eacute;gal</div>
+        <a href="/confidentialite.html" id="footPriv">Confidentialit&eacute;</a>
+        <a href="/conditions.html" id="footTerms">Conditions d'utilisation</a>
+        <a href="/avis-legal.html" id="footDisc">Avis l&eacute;gal</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">
+      BuildFi n'est pas un conseiller financier, fiscal ou juridique. Les projections sont des estimations statistiques bas&eacute;es sur la m&eacute;thode Monte Carlo et ne constituent pas des garanties de rendement futur. Consultez un professionnel certifi&eacute; avant de prendre des d&eacute;cisions financi&egrave;res. BuildFi est un produit de BuildFi Technologies inc.
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 buildfi.ca &mdash; Tous droits r&eacute;serv&eacute;s</span>
+      <button class="lang-toggle" id="footLangToggle" style="border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.4)">English</button>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+// Logo SVG injection — check inside DOMContentLoaded (logo.js is deferred)
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof logoSVG === 'function') {
+    var nav = document.querySelector('.nav-logo');
+    if (nav) nav.innerHTML = logoSVG('md','light');
+    var footer = document.querySelector('.footer-brand');
+    if (footer) footer.innerHTML = logoSVG('lg','dark');
+  }
+});
+(function(){
+'use strict';
+var lang = (new URLSearchParams(window.location.search).get('lang') || localStorage.getItem('buildfi_lang') || 'fr').toLowerCase();
+if (lang !== 'en') lang = 'fr';
+
+var T = {
+  // ── Hero ──
+  heroBack: { fr:'Retour \u00e0 buildfi.ca', en:'Back to buildfi.ca' },
+  heroTitle: { fr:'Laboratoire', en:'Lab' },
+  heroSub: { fr:'Le simulateur interactif BuildFi \u2014 testez vos d\u00e9cisions de retraite avant de les prendre.', en:'BuildFi\u2019s interactive simulator \u2014 test your retirement decisions before you make them.' },
+  heroPriceNote: { fr:'avec LAUNCH-LAB \u2014 acc\u00e8s 12 mois', en:'with LAUNCH-LAB \u2014 12-month access' },
+  heroCta: { fr:'Acc\u00e9der au simulateur \u2192', en:'Access the simulator \u2192' },
+  heroBadge: { fr:'5 exports AI inclus', en:'5 AI exports included' },
+  heroDesktop: { fr:'Le mode Guid\u00e9 fonctionne sur tablette et mobile. Le mode Avanc\u00e9 est con\u00e7u pour ordinateur.', en:'Guided Mode works on tablet and mobile. Advanced Mode is designed for desktop.' },
+
+  // ── Mocks ──
+  mockLabel: { fr:'Ce que vous obtenez', en:'What you get' },
+  mockTitle: { fr:'Votre simulateur, en action.', en:'Your simulator, in action.' },
+  m1tag: { fr:'Sc\u00e9nario', en:'Scenario' },
+  m1name: { fr:'Retarder la retraite de 2 ans', en:'Delay retirement by 2 years' },
+  m1before: { fr:'Avant', en:'Before' },
+  m1after: { fr:'Apr\u00e8s', en:'After' },
+  mk1t: { fr:'Tester une d\u00e9cision', en:'Test a decision' },
+  mk1d: { fr:'Testez l\u2019impact de chaque d\u00e9cision \u2014 retraite anticip\u00e9e, hypoth\u00e8que, d\u00e9caissement REER, CCPC \u2014 avant de la prendre.', en:'Test the impact of every decision \u2014 early retirement, mortgage, RRSP drawdown, CCPC \u2014 before you make it.' },
+  m2tag: { fr:'Optimiseur', en:'Optimizer' },
+  m2name: { fr:'Top 3 leviers identifi\u00e9s', en:'Top 3 levers identified' },
+  m2l1: { fr:'Retarder RRQ \u00e0 70 ans', en:'Defer CPP to age 70' },
+  m2l2: { fr:'Augmenter C\u00c9LI de 300 $/mois', en:'Increase TFSA by $300/mo' },
+  m2l3: { fr:'Fractionnement des pensions', en:'Pension income splitting' },
+  mk2t: { fr:'Optimiser automatiquement', en:'Auto-optimize' },
+  mk2d: { fr:'L\u2019optimiseur teste 8 axes et 40+ combinaisons pour trouver les leviers qui ont le plus d\u2019impact sur votre score.', en:'The optimizer tests 8 axes and 40+ combinations to find the highest-impact levers for your score.' },
+  m3tag: { fr:'R\u00e9sum\u00e9', en:'Summary' },
+  m3rate: { fr:'taux de succ\u00e8s', en:'success rate' },
+  m3o1: { fr:'\u2022 Revenus suffisants jusqu\u2019\u00e0 92 ans', en:'\u2022 Income sufficient to age 92' },
+  m3o2: { fr:'\u2022 REER optimal : retrait de 22K$/an pr\u00e9-65', en:'\u2022 RRSP optimal: $22K/yr withdrawal pre-65' },
+  m3o3: { fr:'\u2022 RRQ \u00e0 70 : gain net de 247 $/mois', en:'\u2022 CPP at 70: net gain of $247/mo' },
+  mk3t: { fr:'R\u00e9sum\u00e9 1 page', en:'1-page summary' },
+  mk3d: { fr:'Exportez un r\u00e9sum\u00e9 clair avec votre grade, vos observations et vos leviers. Id\u00e9al pour discuter avec votre planificateur financier.', en:'Export a clear summary with your grade, observations, and levers. Ideal for discussing with your financial planner.' },
+
+  // ── Workflows ──
+  wfLabel: { fr:'Trois fa\u00e7ons d\u2019explorer', en:'Three ways to explore' },
+  wfTitle: { fr:'Simulez. Ajustez. Recalculez.', en:'Simulate. Adjust. Recalculate.' },
+  wf1Title: { fr:'Simulez', en:'Simulate' },
+  wf1Desc: { fr:'Testez chaque variable : \u00e2ge de retraite, RRQ 60/65/70, meltdown REER, downsizing, fractionnement.', en:'Test every variable: retirement age, CPP 60/65/70, RRSP meltdown, downsizing, income splitting.' },
+  wf1Ex: { fr:'Reporter le RRQ de 65 \u00e0 70 : +247 $/mois, break-even \u00e0 82 ans', en:'Deferring CPP from 65 to 70: +$247/mo, break-even at age 82' },
+  wf2Title: { fr:'Ajustez', en:'Adjust' },
+  wf2Desc: { fr:'L\u2019optimiseur analyse 8 axes et identifie les 3 ajustements \u00e0 plus fort impact sur votre taux de succ\u00e8s.', en:'The optimizer analyzes 8 axes and identifies the 3 highest-impact adjustments for your success rate.' },
+  wf2Ex: { fr:'Meltdown REER pr\u00e9-retraite : \u00e9conomie fiscale estim\u00e9e de 18\u00a0400 $', en:'Pre-retirement RRSP meltdown: estimated tax savings of $18,400' },
+  wf3Title: { fr:'Recalculez', en:'Recalculate' },
+  wf3Desc: { fr:'Chaque janvier, le Bilan Annuel recalcule vos sc\u00e9narios avec les nouvelles constantes fiscales.', en:'Every January, the Annual Review recalculates your scenarios with updated tax constants.' },
+  wf3Ex: { fr:'En 2027 : retrait REER de 22\u00a0000 $ sous le seuil PSV', en:'In 2027: RRSP withdrawal of $22,000 under OAS threshold' },
+
+  // ── Comparison ──
+  compLabel: { fr:'Comparaison', en:'Comparison' },
+  compTitle: { fr:'Laboratoire vs Bilan, Bilan 360 et Horizon', en:'Lab vs Snapshot, Snapshot 360 and Horizon' },
+  ctHF: { fr:'Fonctionnalit\u00e9', en:'Feature' },
+  ctHE: { fr:'Bilan<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">29\u00a0$</span> <strong>14,50\u00a0$</strong>', en:'Snapshot<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$29</span> <strong>$14.50</strong>' },
+  ctHI: { fr:'Bilan 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Snapshot 360<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$59</span> <strong>$29.50</strong>' },
+  ctHD: { fr:'Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">59\u00a0$</span> <strong>29,50\u00a0$</strong>', en:'Horizon<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$59</span> <strong>$29.50</strong>' },
+  ctHX: { fr:'Laboratoire<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">49,99\u00a0$</span> <strong>24,99\u00a0$</strong>', en:'Lab<br><span style="text-decoration:line-through;color:var(--text-muted);font-weight:400;font-size:.9em">$49.99</span> <strong>$24.99</strong>' },
+  ct1: { fr:'Sc\u00e9narios Monte Carlo', en:'Monte Carlo scenarios' },
+  ctE1: { fr:'5 000', en:'5,000' },
+  ctI1: { fr:'5 000', en:'5,000' },
+  ctD1: { fr:'5 000 + 6 runs', en:'5,000 + 6 runs' },
+  ctX1: { fr:'1 000 \u2013 5 000 en temps r\u00e9el', en:'1,000 \u2013 5,000 in real time' },
+  ct2: { fr:'Grade retraite', en:'Retirement grade' },
+  ctE2: { fr:'Oui', en:'Yes' },
+  ctI2: { fr:'Oui', en:'Yes' },
+  ctD2: { fr:'Oui', en:'Yes' },
+  ctX2: { fr:'Oui + \u00e9volution en direct', en:'Yes + live updates' },
+  ct3: { fr:'Strat\u00e9gies', en:'Strategies' },
+  ctE3: { fr:'Non', en:'No' },
+  ctI3: { fr:'5 compar\u00e9es', en:'5 compared' },
+  ctD3: { fr:'Timing RRQ 60/65/70', en:'CPP timing 60/65/70' },
+  ctX3: { fr:'Illimit\u00e9es + optimiseur', en:'Unlimited + optimizer' },
+  ct4: { fr:'Simulations interactives', en:'Interactive simulations' },
+  ctE4: { fr:'Non', en:'No' },
+  ctI4: { fr:'Non', en:'No' },
+  ctD4: { fr:'Non', en:'No' },
+  ctX4: { fr:'Oui \u2014 tester chaque d\u00e9cision', en:'Yes \u2014 test every decision' },
+  ct5: { fr:'Couple', en:'Couple' },
+  ctE5: { fr:'Non', en:'No' },
+  ctI5: { fr:'Oui', en:'Yes' },
+  ctD5: { fr:'Non', en:'No' },
+  ctX5: { fr:'Oui + conjoint(e) mod\u00e9lis\u00e9(e)', en:'Yes + spouse modeled' },
+  ct6: { fr:'Analyse de d\u00e9caissement', en:'Drawdown analysis' },
+  ctE6: { fr:'Non', en:'No' },
+  ctI6: { fr:'Non', en:'No' },
+  ctD6: { fr:'Oui \u2014 retraits, fiscalit\u00e9, robustesse', en:'Yes \u2014 withdrawals, tax, resilience' },
+  ctX6: { fr:'Oui + contr\u00f4le total', en:'Yes + full control' },
+  ct7: { fr:'Stress test (meltdown)', en:'Stress test (meltdown)' },
+  ctE7: { fr:'Non', en:'No' },
+  ctI7: { fr:'Non', en:'No' },
+  ctD7: { fr:'Oui \u2014 an 1 + an 5', en:'Yes \u2014 year 1 + year 5' },
+  ctX7: { fr:'Oui + param\u00e8tres ajustables', en:'Yes + adjustable parameters' },
+  ct8: { fr:'Rapport AI', en:'AI report' },
+  ctE8: { fr:'1 bilan', en:'1 assessment' },
+  ctI8: { fr:'1 bilan', en:'1 assessment' },
+  ctD8: { fr:'1 bilan', en:'1 assessment' },
+  ctX8: { fr:'5 exports (+ 14,99\u00a0$/extra)', en:'5 exports (+ $14.99/extra)' },
+  ct9: { fr:'Acc\u00e8s', en:'Access' },
+  ctE9: { fr:'1 rapport', en:'1 report' },
+  ctI9: { fr:'1 rapport', en:'1 report' },
+  ctD9: { fr:'1 rapport', en:'1 report' },
+  ctX9: { fr:'12 mois illimit\u00e9', en:'12 months unlimited' },
+  ct10: { fr:'Immobilier', en:'Real estate' },
+  ctE10: { fr:'Non', en:'No' },
+  ctI10: { fr:'1 r\u00e9sidence + 3 locatifs', en:'1 residence + 3 rentals' },
+  ctD10: { fr:'Non', en:'No' },
+  ctX10: { fr:'Illimit\u00e9s + Smith, HELOC, refi, DPA par immeuble', en:'Unlimited + Smith, HELOC, refi, CCA per property' },
+  ct11: { fr:'CCPC', en:'CCPC' },
+  ctE11: { fr:'Non', en:'No' },
+  ctI11: { fr:'Revenu corporatif', en:'Corporate income' },
+  ctD11: { fr:'Non', en:'No' },
+  ctX11: { fr:'Extraction compl\u00e8te, RDTOH, LCGE, dissolution', en:'Full extraction, RDTOH, LCGE, dissolution' },
+  ct12: { fr:'Variables', en:'Variables' },
+  ctE12: { fr:'~30', en:'~30' },
+  ctI12: { fr:'~85', en:'~85' },
+  ctD12: { fr:'~50', en:'~50' },
+  ctX12: { fr:'190+ avec contr\u00f4le total', en:'190+ with full control' },
+  compCta: { fr:'Choisir le Laboratoire \u2014 24,99 $ \u2192', en:'Choose the Lab \u2014 $24.99 \u2192' },
+
+  // ── Not for everyone ──
+  nfeLabel: { fr:'Transparence', en:'Transparency' },
+  nfeTitle: { fr:'Le simulateur n\u2019est pas pour tout le monde.', en:'The simulator isn\u2019t for everyone.' },
+  nfeYesTitle: { fr:'Pour vous si :', en:'For you if:' },
+  nfeY1: { fr:'Vous voulez tester plusieurs sc\u00e9narios avant de d\u00e9cider', en:'You want to test multiple scenarios before deciding' },
+  nfeY2: { fr:'Votre situation est complexe : couple, immo, incorporation, pensions multiples', en:'Your situation is complex: couple, real estate, incorporation, multiple pensions' },
+  nfeY3: { fr:'Vous voulez comprendre les chiffres, pas juste une note', en:'You want to understand the numbers, not just a grade' },
+  nfeY4: { fr:'Vous souhaitez un bilan annuel pour suivre votre progression', en:'You want an annual review to track your progress' },
+  nfeNoTitle: { fr:'Pas pour vous si :', en:'Not for you if:' },
+  nfeN1: { fr:'Vous voulez juste une note rapide \u2192 <a href="/bilan">Bilan (14,50\u00a0$)</a>', en:'You just want a quick grade \u2192 <a href="/bilan">Snapshot ($14.50)</a>' },
+  nfeN2: { fr:'Vous voulez un portrait complet sans simulateur \u2192 <a href="/bilan-360">Bilan 360 (29,50\u00a0$)</a>', en:'You want a full portrait without a simulator \u2192 <a href="/bilan-360">Snapshot 360 ($29.50)</a>' },
+  nfeN3: { fr:'Vous \u00eates retrait\u00e9 et voulez savoir si votre argent va durer \u2192 <a href="/horizon">Horizon (29,50\u00a0$)</a>', en:'You\u2019re retired and want to know if your money will last \u2192 <a href="/horizon">Horizon ($29.50)</a>' },
+
+  // ── Pour qui ──
+  pqLabel: { fr:'Id\u00e9al pour', en:'Ideal for' },
+  pqTitle: { fr:'Le Laboratoire est con\u00e7u pour vous si...', en:'The Lab is designed for you if...' },
+  pqSub: { fr:'Le Bilan 360 mod\u00e9lise pour vous. Le Laboratoire vous donne le contr\u00f4le.', en:'Snapshot 360 models for you. The Lab gives you control.' },
+  pq1t: { fr:'Couples avec des situations complexes', en:'Couples with complex situations' },
+  pq1d: { fr:'Mod\u00e9lisez les deux revenus, pensions, d\u00e9c\u00e8s, fractionnement.', en:'Model both incomes, pensions, death, income splitting.' },
+  pq2t: { fr:'Propri\u00e9taires et investisseurs immobiliers', en:'Homeowners and real estate investors' },
+  pq2d: { fr:'Propri\u00e9t\u00e9s illimit\u00e9es, Smith Manoeuvre, HELOC, refinancement, DPA par immeuble. Le Bilan 360 mod\u00e9lise jusqu\u2019\u00e0 3 locatifs \u2014 le Laboratoire n\u2019a aucune limite.', en:'Unlimited properties, Smith Manoeuvre, HELOC, refinancing, CCA per property. Snapshot 360 models up to 3 rentals \u2014 the Lab has no limit.' },
+  pq3t: { fr:'Entrepreneurs et CCPC', en:'Entrepreneurs and CCPC' },
+  pq3d: { fr:'Salaire vs dividende par ann\u00e9e, RDTOH, LCGE, dissolution, extraction pluri-annuelle. Le Bilan 360 int\u00e8gre le revenu corporatif \u2014 le Laboratoire vous laisse tester chaque sc\u00e9nario.', en:'Salary vs dividend by year, RDTOH, LCGE, dissolution, multi-year extraction. Snapshot 360 integrates corporate income \u2014 the Lab lets you test every scenario.' },
+  pq4t: { fr:'Pr\u00e9-retrait\u00e9s 55-65', en:'Pre-retirees 55-65' },
+  pq4d: { fr:'Testez le pont pr\u00e9-RRQ, le d\u00e9caissement REER/FERR, la strat\u00e9gie PSV.', en:'Test the pre-CPP bridge, RRSP/RRIF drawdown, OAS strategy.' },
+
+  // ── Features ──
+  featLabel: { fr:'Ce que vous obtenez', en:'What you get' },
+  featTitle: { fr:'Tout est inclus. Pas de surprises.', en:'Everything included. No surprises.' },
+  f1t: { fr:'Simulateur illimit\u00e9', en:'Unlimited simulator' },
+  f1d: { fr:'190 param\u00e8tres, contr\u00f4le total, bilingue FR/EN', en:'190 parameters, full control, bilingual FR/EN' },
+  f2t: { fr:'5 exports AI', en:'5 AI exports' },
+  f2d: { fr:'Rapports complets avec narration personnalis\u00e9e', en:'Complete reports with personalized narration' },
+  f3t: { fr:'R\u00e9sum\u00e9s 1 page illimit\u00e9s', en:'Unlimited 1-page summaries' },
+  f3d: { fr:'Capture diagnostic instantan\u00e9e', en:'Instant diagnostic snapshot' },
+  f4t: { fr:'Bilan Annuel', en:'Annual Review' },
+  f4d: { fr:'Check-up fiscal chaque janvier, hors quota', en:'Tax check-up every January, doesn\u2019t count against quota' },
+  f5t: { fr:'5 profils sauvegard\u00e9s', en:'5 saved profiles' },
+  f5d: { fr:'Multi-sc\u00e9nario, multi-device', en:'Multi-scenario, multi-device' },
+  f6t: { fr:'Mises \u00e0 jour r\u00e9glementaires', en:'Regulatory updates' },
+  f6d: { fr:'Constantes fiscales mises \u00e0 jour annuellement', en:'Tax constants updated annually' },
+  f7t: { fr:'Historique des changements', en:'Change history' },
+  f7d: { fr:'Comparez vos d\u00e9cisions dans le temps', en:'Compare your decisions over time' },
+  f8t: { fr:'Section pour votre fiscaliste', en:'Section for your tax advisor' },
+  f8d: { fr:'Questions pr\u00e9par\u00e9es avec contexte chiffr\u00e9', en:'Prepared questions with numerical context' },
+
+  // ── Steps ──
+  stLabel: { fr:'Comment \u00e7a marche', en:'How it works' },
+  stTitle: { fr:'Quatre \u00e9tapes. Z\u00e9ro complexit\u00e9.', en:'Four steps. Zero complexity.' },
+  st1t: { fr:'Achetez votre acc\u00e8s', en:'Purchase your access' },
+  st1d: { fr:'paiement unique, lien magique par courriel', en:'one-time payment, magic link by email' },
+  st2t: { fr:'Choisissez un profil', en:'Choose a profile' },
+  st2d: { fr:'5 presets pr\u00e9-configur\u00e9s : FIRE, Couple, CCPC, Pr\u00e9-retraite, Vierge', en:'5 pre-configured presets: FIRE, Couple, CCPC, Pre-retirement, Blank' },
+  st3t: { fr:'Testez et explorez', en:'Test and explore' },
+  st3d: { fr:'chaque changement recalcul\u00e9 en temps r\u00e9el', en:'every change recalculates in real time' },
+  st4t: { fr:'Exportez votre r\u00e9sum\u00e9', en:'Export your summary' },
+  st4d: { fr:'bilan AI 1 page, partageable avec votre planificateur', en:'1-page AI assessment, shareable with your planner' },
+
+  // ── Decisions ──
+  decLabel: { fr:'D\u00e9cisions test\u00e9es', en:'Tested decisions' },
+  decTitle: { fr:'Ce que les donn\u00e9es pourraient montrer.', en:'What the data could show.' },
+  dec1Label: { fr:'RRQ \u00e0 60 vs 70', en:'CPP at 60 vs 70' },
+  dec1Stat: { fr:'+42 %', en:'+42%' },
+  dec1Desc: { fr:'de pension mensuelle, break-even \u00e0 82 ans', en:'monthly pension, break-even at age 82' },
+  dec2Label: { fr:'Retraite \u00e0 58 vs 62', en:'Retire at 58 vs 62' },
+  dec2Stat: { fr:'+11 pts', en:'+11 pts' },
+  dec2Desc: { fr:'sur le taux de succ\u00e8s du plan', en:'on plan success rate' },
+  dec3Label: { fr:'Vendre la maison \u00e0 65', en:'Sell home at 65' },
+  dec3Stat: { fr:'+280K $', en:'+$280K' },
+  dec3Desc: { fr:'de liquidit\u00e9s, taux de succ\u00e8s +14 points', en:'in liquidity, success rate +14 points' },
+  decDisclaimer: { fr:'Exemples illustratifs. Les r\u00e9sultats varient selon chaque profil.', en:'Illustrative examples. Results vary by profile.' },
+
+  // ── FAQ ──
+  faqLabel: { fr:'Questions fr\u00e9quentes', en:'Frequently asked questions' },
+  faqTitle: { fr:'Ce que vous voulez savoir.', en:'What you want to know.' },
+  fq1: { fr:'Quelle est la diff\u00e9rence avec le Bilan?', en:'What\u2019s the difference from the Snapshot?' },
+  fa1: { fr:'Le Bilan est un portrait unique. Le Laboratoire vous permet de tester des dizaines de sc\u00e9narios en temps r\u00e9el et de voir instantan\u00e9ment l\u2019impact de chaque d\u00e9cision.', en:'The Snapshot is a one-time portrait. The Lab lets you test dozens of scenarios in real time and instantly see the impact of every decision.' },
+  fq2: { fr:'Est-ce que j\u2019ai besoin de connaissances financi\u00e8res?', en:'Do I need financial knowledge?' },
+  fa2: { fr:'Des connaissances de base (REER, C\u00c9LI, RRQ) sont utiles. Le simulateur est con\u00e7u pour les gens qui veulent comprendre leurs chiffres, pas juste recevoir un bilan.', en:'Basic knowledge (RRSP, TFSA, CPP) is helpful. The simulator is designed for people who want to understand their numbers, not just receive an assessment.' },
+  fq3: { fr:'Que se passe-t-il apr\u00e8s 12 mois?', en:'What happens after 12 months?' },
+  fa3: { fr:'Votre acc\u00e8s expire. Vos exports restent accessibles. Vous pouvez renouveler pour 29,99\u00a0$/an.', en:'Your access expires. Your exports remain accessible. You can renew for $29.99/year.' },
+  fq4: { fr:'Puis-je commencer par le Bilan et passer au Laboratoire?', en:'Can I start with the Snapshot and upgrade to the Lab?' },
+  fa4: { fr:'Oui. Votre achat Bilan ou Bilan 360 est cr\u00e9dit\u00e9 sur le prix du Laboratoire.', en:'Yes. Your Snapshot or Snapshot 360 purchase is credited toward the Lab price.' },
+  fq5: { fr:'Le simulateur fonctionne-t-il sur mobile?', en:'Does the simulator work on mobile?' },
+  fa5: { fr:'Le mode Guid\u00e9 fonctionne sur tablette et mobile. Le mode Avanc\u00e9 est con\u00e7u pour ordinateur.', en:'Guided Mode works on tablet and mobile. Advanced Mode is designed for desktop.' },
+
+  // ── Trust ──
+  trustLabel: { fr:'Rigueur', en:'Rigor' },
+  trustTitle: { fr:'Construit pour \u00eatre v\u00e9rifi\u00e9.', en:'Built to be verified.' },
+  tr1: { fr:'Moteur valid\u00e9 par plus de 1\u00a0600 tests automatis\u00e9s', en:'Engine validated by over 1,600 automated tests' },
+  tr2: { fr:'Fiscalit\u00e9 13 provinces, constantes 2026', en:'Taxes for 13 provinces, 2026 constants' },
+  tr3: { fr:'Tables de mortalit\u00e9 CPM-2023 (Institut canadien des actuaires)', en:'CPM-2023 mortality tables (Canadian Institute of Actuaries)' },
+  tr4: { fr:'Aucune publicit\u00e9. Aucune vente de donn\u00e9es.', en:'No advertising. No data sales.' },
+
+  // ── Final CTA ──
+  finalTitle: { fr:'Prenez le contr\u00f4le de votre retraite.', en:'Take control of your retirement.' },
+  finalSub: { fr:'12 mois d\u2019acc\u00e8s | 5 exports AI | Mises \u00e0 jour incluses', en:'12-month access | 5 AI exports | Updates included' },
+  finalCta: { fr:'Acc\u00e9der au simulateur \u2192', en:'Access the simulator \u2192' },
+  finalAlt: { fr:'Pas pr\u00eat? <a href="/bilan" style="color:var(--gold);font-weight:600">Commencez par le Bilan \u00e0 14,50\u00a0$</a>', en:'Not ready? <a href="/bilan" style="color:var(--gold);font-weight:600">Start with the Snapshot at $14.50</a>' },
+  finalAltHorizon: { fr:'ou <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon \u00e0 29,50\u00a0$</a> pour les retrait\u00e9s', en:'or <a href="/horizon" style="color:var(--gold);font-weight:600">Horizon at $29.50</a> for retirees' },
+
+  // ── Footer ──
+  footTagline: { fr:'Planification financi\u00e8re personnalis\u00e9e pour les Canadiens.', en:'Personalized financial planning for Canadians.' },
+  footFaq: { fr:'FAQ', en:'FAQ' },
+  footContact: { fr:'Contact', en:'Contact' },
+  footPriv: { fr:'Confidentialit\u00e9', en:'Privacy' },
+  footTerms: { fr:'Conditions d\u2019utilisation', en:'Terms of use' },
+  footDisc: { fr:'Avis l\u00e9gal', en:'Legal disclaimer' },
+};
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  Object.keys(T).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && T[id][lang] !== undefined) {
+      if (T[id][lang].indexOf('<') >= 0) el.innerHTML = T[id][lang];
+      else el.textContent = T[id][lang];
+    }
+  });
+  // Update all lang toggles
+  var toggles = [document.getElementById('langToggle'), document.getElementById('drawerLangToggle')];
+  toggles.forEach(function(lt) { if (lt) lt.textContent = lang === 'fr' ? 'EN' : 'FR'; });
+  var flt = document.getElementById('footLangToggle');
+  if (flt) flt.textContent = lang === 'fr' ? 'English' : 'Fran\u00e7ais';
+  // Update page title
+  document.title = lang === 'fr' ? 'Laboratoire \u2014 Simulateur de retraite | buildfi.ca' : 'Lab \u2014 Retirement simulator | buildfi.ca';
+}
+
+function toggleLang() {
+  lang = lang === 'fr' ? 'en' : 'fr';
+  try { localStorage.setItem('buildfi_lang', lang); } catch(e) {}
+  var url = new URL(window.location);
+  url.searchParams.set('lang', lang);
+  try { history.replaceState(null, '', url); } catch(e) {}
+  applyLang();
+}
+
+/* ─── NAV SCROLL ─── */
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function() {
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+/* ─── HAMBURGER ─── */
+var hamburger = document.getElementById('hamburger');
+var drawer = document.getElementById('navDrawer');
+if (hamburger && drawer) {
+  hamburger.addEventListener('click', function() {
+    var open = drawer.classList.toggle('open');
+    hamburger.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  drawer.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+/* ─── REVEAL ─── */
+var reveals = document.querySelectorAll('.reveal');
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(function(el) { revealObs.observe(el); });
+
+/* ─── FAQ ACCORDION ─── */
+document.querySelectorAll('.faq-question').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(fi) {
+      fi.classList.remove('open');
+      fi.querySelector('.faq-answer').style.maxHeight = '0';
+      fi.querySelector('.faq-question').setAttribute('aria-expanded','false');
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      var answer = item.querySelector('.faq-answer');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+      btn.setAttribute('aria-expanded','true');
+      trackEvent('faq_open', { q: btn.querySelector('span').textContent });
+    }
+  });
+});
+
+/* ─── LANG TOGGLE EVENTS ─── */
+document.getElementById('langToggle').addEventListener('click', toggleLang);
+document.getElementById('drawerLangToggle').addEventListener('click', toggleLang);
+document.getElementById('footLangToggle').addEventListener('click', toggleLang);
+
+/* ─── TRACKING ─── */
+function trackEvent(name, props) {
+  try {
+    if (localStorage.getItem('buildfi_consent') === 'yes' && window.posthog) {
+      window.posthog.capture(name, props);
+    }
+  } catch(e) {}
+}
+
+/* CTA tracking */
+document.querySelectorAll('[data-track]').forEach(function(el) {
+  el.addEventListener('click', function() {
+    trackEvent(el.dataset.track, { product: 'laboratoire' });
+  });
+});
+
+/* ─── FAQ SCHEMA ─── */
+function buildFaqSchema() {
+  var items = [];
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    var q = item.querySelector('.faq-question span');
+    var a = item.querySelector('.faq-answer-inner');
+    if (q && a) items.push({ '@type':'Question', name: q.textContent, acceptedAnswer: { '@type':'Answer', text: a.textContent } });
+  });
+  var schema = { '@context':'https://schema.org', '@type':'FAQPage', mainEntity: items };
+  var el = document.getElementById('faqSchema');
+  if (el) el.textContent = JSON.stringify(schema);
+}
+
+/* ─── COOKIE CONSENT ─── */
+(function() {
+  if (localStorage.getItem('buildfi_consent')) return;
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.85)';
+  bar.innerHTML = '<span>Ce site utilise des t\u00e9moins analytiques pour am\u00e9liorer l\u2019exp\u00e9rience.</span>'
+    + '<button id="consentAccept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff">Accepter</button>'
+    + '<button id="consentDecline" style="padding:8px 20px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.7)">Refuser</button>';
+  document.body.appendChild(bar);
+  document.getElementById('consentAccept').addEventListener('click', function() { localStorage.setItem('buildfi_consent','yes'); bar.remove(); });
+  document.getElementById('consentDecline').addEventListener('click', function() { localStorage.setItem('buildfi_consent','no'); bar.remove(); });
+})();
+
+/* ─── INIT ─── */
+applyLang();
+buildFaqSchema();
+})();
+</script>
+</body>
+</html>

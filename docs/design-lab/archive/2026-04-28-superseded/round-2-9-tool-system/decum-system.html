@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decumulation Tool System Prototype</title>
+  <link rel="stylesheet" href="./tool-system.css">
+  <script defer src="./tool-system.js"></script>
+</head>
+<body data-theme="dark">
+  <div class="tool-shell">
+    <div class="tool-topbar">
+      <div class="tool-brand">BuildFi Product System</div>
+      <div class="tool-links">
+        <a href="./index.html">Back to Round 2.9</a>
+        <button type="button" data-set-theme="dark">Dark</button>
+        <button type="button" data-set-theme="light">Light</button>
+      </div>
+    </div>
+
+    <div class="tool-grid">
+      <aside class="tool-rail">
+        <div class="kicker">Product - Decum</div>
+        <h1>Calm planning mode</h1>
+        <p>Decum should be the calmest tool in the Product family: still fast enough to use, but interpretive enough to prepare the user for planner and report experiences later.</p>
+        <nav class="tool-nav">
+          <a class="is-active" href="#cover">Cover</a>
+          <a href="#summary">Summary band</a>
+          <a href="#controls">Inputs</a>
+          <a href="#compare">Compare</a>
+          <a href="#trajectory">Trajectory</a>
+          <a href="#actions">Actions</a>
+        </nav>
+        <div class="theme-switch">
+          <div>Shared Product theme, calmer decum framing.</div>
+          <div class="rail-card-grid">
+            <div class="rail-card">
+              <div class="kicker">Density</div>
+              <strong>More breathing room</strong>
+              <p>Longer captions, wider compare blocks, and steadier section pacing.</p>
+            </div>
+            <div class="rail-card">
+              <div class="kicker">Decision style</div>
+              <strong>Interpret, then act</strong>
+              <p>Explain what the explored path changes before pushing the next move.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="tool-main">
+        <section class="tool-cover" id="cover">
+          <div class="tool-cover-grid">
+            <div>
+              <div class="kicker">Shared Product shell</div>
+              <h1>Retirement drawdown needs more interpretation than a normal calculator.</h1>
+              <p class="tool-copy">This prototype keeps the same Product system as debt, but the rhythm is slower: more space for plan explanation, more emphasis on baseline stability, and more deliberate chart interpretation.</p>
+              <div class="cover-actions">
+                <a class="btn-gold" href="#summary">See the baseline</a>
+                <a class="btn-outline" href="#compare">Explore a change</a>
+              </div>
+            </div>
+            <div class="pattern-card">
+              <div class="kicker">Hero readout</div>
+              <div class="hero-metric">
+                <div class="value">91%</div>
+              </div>
+              <p>Same Product metric style as debt, but attached to plan resilience instead of speed or urgency.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="tool-band" id="summary">
+          <h2>Shared summary band</h2>
+          <p class="section-copy">The summary pattern stays common across tools. Decum simply uses calmer labels and a longer-horizon story.</p>
+          <div class="summary-grid">
+            <article class="summary-card"><div class="value">$1.48M</div><div class="label">Start assets</div><p>Across RRSP, TFSA, non-reg, and cash reserve.</p></article>
+            <article class="summary-card"><div class="value">91%</div><div class="label">Plan resilience</div><p>Central baseline remains durable under current assumptions.</p></article>
+            <article class="summary-card"><div class="value">Age 87</div><div class="label">Median endpoint</div><p>Portfolio intact in the central path.</p></article>
+            <article class="summary-card"><div class="value">$74k</div><div class="label">Annual spending</div><p>Before tax, indexed at 2.2%.</p></article>
+          </div>
+        </section>
+
+        <section class="tool-section" id="controls">
+          <h2>Shared input card pattern</h2>
+          <p class="section-copy">Same control grammar as debt. The difference is that decum controls are framed around levers in a long plan, not immediate payoff mechanics.</p>
+          <div class="compare-grid">
+            <article class="tool-card">
+              <h3>Profile inputs</h3>
+              <div class="control-grid">
+                <div class="control"><label>Retirement age</label><input value="61" readonly></div>
+                <div class="control"><label>Spending target</label><input value="$74,000" readonly></div>
+                <div class="control"><label>CPP/QPP start</label><select><option>70</option></select></div>
+                <div class="control"><label>Province</label><select><option>Quebec</option></select></div>
+              </div>
+            </article>
+            <article class="tool-card">
+              <h3>Scenario presets</h3>
+              <p>Preset actions should sound like planning choices, not test harnesses.</p>
+              <div class="chip-row" data-scenario-group data-scenario-target="decum-readout">
+                <button class="chip is-active" data-scenario data-payload='{"label":"Baseline plan","score":"91%","effect":"Current baseline keeps taxes moderate and protects late-life income."}'>Baseline</button>
+                <button class="chip" data-scenario data-payload='{"label":"Delay CPP/QPP to 70","score":"94%","effect":"Later guaranteed income improves longevity protection but raises bridge pressure."}'>Delay benefits</button>
+                <button class="chip" data-scenario data-payload='{"label":"Spend 10% more","score":"83%","effect":"Higher early spending narrows late-retirement margin quickly."}'>Spend +10%</button>
+                <button class="chip" data-scenario data-payload='{"label":"Reduce fees to 0.6%","score":"93%","effect":"Fee savings preserve more optionality without changing lifestyle."}'>Lower fees</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="tool-section" id="compare">
+          <h2>Shared compare strip, calmer interpretation</h2>
+          <p class="section-copy">Same Product compare grammar as debt: baseline stays visible, explored state is distinct. Decum simply gives that comparison more interpretive room.</p>
+          <div class="compare-strip">
+            <article class="compare-card">
+              <div class="heading">Your baseline plan</div>
+              <div class="score">91%</div>
+              <p>Balanced withdrawals, later benefit timing, and enough room to protect future tax flexibility.</p>
+            </article>
+            <article class="compare-card" id="decum-readout">
+              <div class="heading" data-bind="label">Baseline plan</div>
+              <div class="score" data-bind="score">91%</div>
+              <p data-bind="effect">Current baseline keeps taxes moderate and protects late-life income.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="tool-section" id="trajectory">
+          <h2>Trajectory card</h2>
+          <div class="chart-shell">
+            <div class="chart-stage">
+              <div class="chart-wave"></div>
+              <div class="chart-wave alt"></div>
+              <div class="chart-wave third"></div>
+            </div>
+            <div class="chart-caption">The chart wrapper should stay shared across Product tools. What changes here is the caption tone: decum needs calmer explanation about durability, pressure, and late-life flexibility.</div>
+          </div>
+          <div class="table-shell" style="margin-top:16px">
+            <table>
+              <thead><tr><th>Phase</th><th>Primary source</th><th>Target draw</th></tr></thead>
+              <tbody>
+                <tr><td>Bridge years</td><td>RRSP + cash</td><td class="mono">$58k</td></tr>
+                <tr><td>Government live</td><td>TFSA support</td><td class="mono">$34k</td></tr>
+                <tr><td>Later retirement</td><td>Mixed withdrawals</td><td class="mono">$22k</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tool-section" id="actions">
+          <h2>Action guidance</h2>
+          <div class="action-list">
+            <div class="action-item"><strong>Protect the bridge</strong><p>Keep enough safe assets nearby so early-market shocks do not force bad withdrawals.</p></div>
+            <div class="action-item"><strong>Use tax bands deliberately</strong><p>Registered draws should smooth the future path, not just minimize this year’s bill.</p></div>
+            <div class="action-item"><strong>Keep explored states secondary</strong><p>The tool should always make it obvious which version is the recommended baseline and which is a tested variation.</p></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

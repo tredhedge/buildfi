@@ -1,0 +1,835 @@
+9588:        setAiCount(function(c) { return c + 1; });
+9589:      } catch(e) { setAiReport({ _error: true, _msg: 'Parse error: ' + e.message }); }
+9590:    }).catch(function(err) {
+9591:      setAiReport({ _error: true, _msg: err.message || 'Network error' });
+9592:    }).finally(function() { setAiLoading(false); });
+9593:  };
+9594:
+9595:  // === CSV Export ===
+9596:  var _exportCSV = function(headers, rows, filename) {
+9597:    var bom = "\u00ef\u00bb\u00bf";
+9598:    var csv = bom + headers.join(";") + "\n" + rows.map(function(r) { return r.map(function(c) { return typeof c === "string" && c.indexOf(";") >= 0 ? '"' + c + '"' : c; }).join(";"); }).join("\n");
+9599:    var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+9600:    var encoded = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+9601:    var a = document.createElement("a"); a.href = encoded; a.download = filename + ".csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+9602:  };
+9603:
+9604:  var _exportFullReport = function() {
+9605:    if (!mc || !mc.pD) return;
+9606:    var S = ";"; var bom = "\u00ef\u00bb\u00bf"; var out = []; var fr = lang === "fr";
+9607:    var today = new Date().toLocaleDateString("fr-CA");
+9608:    var J = function(a) { return a.join(S); };
+9609:    var H = function(t) { out.push(""); out.push(J(["\u2550\u2550\u2550 " + t + " \u2550\u2550\u2550"])); out.push(""); };
+9610:    var grade = mc.succ >= 0.95 ? "A+" : mc.succ >= 0.9 ? "A" : mc.succ >= 0.85 ? "A-" : mc.succ >= 0.8 ? "B+" : mc.succ >= 0.7 ? "B" : mc.succ >= 0.5 ? "C" : mc.succ >= 0.3 ? "D" : "F";
+9611:    out.push(J([fr ? "RAPPORT DE PLANIFICATION RETRAITE" : "RETIREMENT PLANNING REPORT"]));
+9612:    out.push(J([(fr ? "Client: " : "Client: ") + (cName || "\u2014"), (fr ? "Date: " : "Date: ") + today, "v11.12.9", nSim + " simulations MC"]));
+9613:    H(fr ? "R\u00c9SUM\u00c9 EX\u00c9CUTIF" : "EXECUTIVE SUMMARY");
+9614:    out.push(J([fr ? "M\u00e9trique" : "Metric", fr ? "Valeur" : "Value", fr ? "Unit\u00e9" : "Unit"]));
+9615:    out.push(J([fr ? "Taux de succ\u00e8s" : "Success rate", Math.round(mc.succ * 100), "%"]));
+9616:    out.push(J([fr ? "Note" : "Grade", grade, ""]));
+9617:    out.push(J([fr ? "Patrimoine m\u00e9dian" : "Median wealth", Math.round(mc.rMedF || mc.medF || 0), "$ r\u00e9el"]));
+9618:    out.push(J(["VaR 5%", Math.round(mc.rVar5 || mc.var5 || 0), "$"]));
+9619:    out.push(J(["CVaR 5%", Math.round(mc.rCvar5 || mc.cvar5 || 0), "$"]));
+9620:    out.push(J(["P95", Math.round(mc.rP95F || mc.p95F || 0), "$"]));
+9621:    out.push(J([fr ? "\u00c2ge ruine P5" : "Ruin age (worst 5%)", mc.p5Ruin >= 999 ? (fr ? "Jamais" : "Never") : mc.p5Ruin, ""]));
+9622:    out.push(J([fr ? "H\u00e9ritage net m\u00e9dian" : "Median net estate", Math.round(mc.medEstateNet || 0), "$"]));
+9623:    out.push(J([fr ? "Imp\u00f4t successoral" : "Estate tax", Math.round(mc.medEstateTax || 0), "$"]));
+9624:    out.push(J([fr ? "Revenus gouv./an" : "Gov. income/yr", Math.round((qppM + oasM) * 12), "$"]));
+9625:    if (_taxSaved > 0) out.push(J([fr ? "Alpha fiscal" : "Tax alpha", Math.round(_taxSaved), "$"]));
+9626:    H(fr ? "PARAM\u00c8TRES CL\u00c9S" : "KEY PARAMETERS");
+9627:    out.push(J([fr ? "Param\u00e8tre" : "Parameter", fr ? "Valeur" : "Value"]));
+9628:    [[fr?"\u00c2ge":"Age",age],[fr?"Retraite":"Retirement",retAge],["Province",prov],[fr?"Horizon":"Horizon",deathAge],[fr?"Salaire":"Salary",sal],[fr?"D\u00e9penses/m":"Spending/mo",retSpM],[fr?"Inflation":"Inflation",(inf*100).toFixed(1)+"%"],["REER/RRSP",rrsp],[fr?"REER cotis.":"RRSP contrib",rrspC],[fr?"REER % act.":"RRSP eq%",Math.round(allocR*100)+"%"],["REER MER",(merR*100).toFixed(2)+"%"],["C\u00c9LI/TFSA",tfsa],[fr?"C\u00c9LI cotis.":"TFSA contrib",tfsaC],["NR",nr],[fr?"RRQ d\u00e9but":"QPP start",qppAge],[fr?"PSV d\u00e9but":"OAS start",oasAge],[fr?"Strat\u00e9gie":"Strategy",wStrat],["Meltdown",melt?fr?"Oui":"Yes":fr?"Non":"No"]].forEach(function(r){out.push(J(r));});
+9629:    if (cOn) { out.push(J(["---",fr?"CONJOINT":"SPOUSE"])); [[fr?"Conjoint \u00e2ge":"Spouse age",cAge],["REER conj.",cRRSP],["C\u00c9LI conj.",cTFSA]].forEach(function(r){out.push(J(r));}); }
+9630:    if (bizOn) {
+9631:      out.push(J(["---",fr?"ENTREPRISE (CCPC)":"BUSINESS (CCPC)"]));
+9632:      [[fr?"Type":"Type",bizType],[fr?"Revenu brut":"Gross revenue",bizRevenue],[fr?"D\u00e9penses":"Expenses",bizExpenses],[fr?"R\u00e9mun.":"Remuneration",bizRemun],[fr?"% salaire":"Salary %",Math.round(bizSalaryPct*100)+"%"],[fr?"B\u00e9n. non r\u00e9partis":"Retained earnings",bizRetainedEarnings],[fr?"Mode extraction":"Extraction mode",bizExtractMode],[fr?"Ann\u00e9es extraction":"Extraction yrs",bizExtractYrs],[fr?"Optim. PSV":"OAS optim.",bizOasOptim?"Oui/Yes":"Non/No"],[fr?"\u00c2ge vente":"Sale age",bizSaleAge||"-"],[fr?"Prix vente":"Sale price",bizSalePrice||"-"],["LCGE",bizLCGE?"Oui/Yes":"Non/No"]].forEach(function(r){out.push(J(r));});
+9633:    }
+9634:    H(fr ? "PROJECTION ANNUELLE (m\u00e9diane)" : "ANNUAL PROJECTION (median)");
+9635:    out.push(J([fr?"\u00c2ge":"Age","REER",fr?"C\u00c9LI":"TFSA","NR","PE","DC","RE",bizOn?"Corp.":"","Total",fr?"Total r\u00e9el":"Real total"]));
+9636:    mc.pD.forEach(function(r) { out.push(J([r.age,Math.round(r.rrM||0),Math.round(r.tfM||0),Math.round(r.nrM||0),Math.round(r.peM||0),Math.round(r["dc_p50"]||0),Math.round(r.reM||0),bizOn?Math.round(r.mp_corp||0):"",Math.round(r.p50||0),Math.round(r.rp50||0)])); });
+9637:    var revD = mc.medRevData || [];
+9638:    if (revD.length > 0) {
+9639:      H(fr ? "FLUX DE TR\u00c9SORERIE" : "CASH FLOW");
+9640:      out.push(J([fr?"\u00c2ge":"Age","RRQ/CPP","PSV/OAS","SRG/GIS",fr?"Pension":"Pension",fr?"Retraits":"Withdrawals",fr?"D\u00e9penses":"Spending",fr?"Imp\u00f4t":"Tax",fr?"Rev.impos.":"Taxable inc.",fr?"Salaire":"Salary",bizOn?(fr?"Corp.tax":"Corp.tax"):"",bizOn?(fr?"Div.corp":"Corp.div"):"",bizOn?(fr?"Solde corp":"Corp.bal"):""]));
+9641:      revD.forEach(function(r) { out.push(J([r.age,Math.round(r.rrq||0),Math.round(r.psv||0),Math.round(r.gis||r.srg||0),Math.round(r.pen||0),Math.round(r.ret||0),Math.round(r.spend||0),Math.round(r.tax||0),Math.round(r.taxInc||0),Math.round(r.sal||0),bizOn?Math.round(r.corpTax||0):"",bizOn?Math.round(r.corpDiv||0):"",bizOn?Math.round(r.corpBal||0):""])); });
+9642:    }
+9643:    var hasW = revD.some(function(r){return (r.wFromRR||0)>0||(r.wFromTF||0)>0;});
+9644:    if (hasW) {
+9645:      H(fr ? "D\u00c9TAIL DES RETRAITS" : "WITHDRAWAL DETAIL");
+9646:      out.push(J([fr?"\u00c2ge":"Age",fr?"FERR min":"RRIF min","Meltdown",fr?"Total REER":"Total RRSP",fr?"C\u00c9LI":"TFSA","NR"]));
+9647:      revD.filter(function(r){return r.age>=retAge;}).forEach(function(r){ out.push(J([r.age,Math.round(r.wRrifMin||0),Math.round(r.wMelt||0),Math.round(r.wFromRR||0),Math.round(r.wFromTF||0),Math.round(r.wFromNR||0)])); });
+9648:    }
+9649:    H(fr ? "ANALYSE FISCALE \u2014 " + prov : "TAX ANALYSIS \u2014 " + prov);
+9650:    out.push(J([fr?"Revenu":"Income",fr?"F\u00e9d\u00e9ral":"Federal","Prov.","Total",fr?"Taux eff.":"Eff.rate","Marginal"]));
+9651:    for (var ti=0;ti<=300000;ti+=10000){var tx=calcTax(ti,0,prov);out.push(J([ti,Math.round(tx.fed),Math.round(tx.prov),Math.round(tx.total),(tx.eff*100).toFixed(1)+"%",(tx.marg*100).toFixed(1)+"%"]));}
+9652:    if (mc.sens && mc.sens.length > 0) {
+9653:      H(fr ? "SENSIBILIT\u00c9" : "SENSITIVITY");
+9654:      out.push(J([fr?"Param\u00e8tre":"Parameter",fr?"Impact bas":"Low impact",fr?"Impact haut":"High impact",fr?"Amplitude":"Range"]));
+9655:      mc.sens.forEach(function(s){out.push(J([s.name,(s.lo>=0?"+":"")+s.lo.toFixed(1)+"%",(s.hi>=0?"+":"")+s.hi.toFixed(1)+"%",Math.abs(s.hi-s.lo).toFixed(1)+"%"]));});
+9656:    }
+9657:    var _stRes = stressResults || window._autoStress;
+9658:    if (_stRes && _stRes.length > 0) {
+9659:      H(fr ? "SC\u00c9NARIOS DE STRESS" : "STRESS SCENARIOS");
+9660:      out.push(J([fr?"Sc\u00e9nario":"Scenario",fr?"Succ\u00e8s":"Success","\u0394",fr?"Patrimoine":"Wealth","VaR 5%",fr?"Ruine":"Ruin"]));
+9661:      var bS=_stRes[0]?_stRes[0].succ:mc.succ;
+9662:      _stRes.forEach(function(s){var d=Math.round((s.succ-bS)*100);out.push(J([s.name||s.key,Math.round(s.succ*100)+"%",d===0?"\u2014":(d>0?"+":"")+d+"%",Math.round(s.medF||0),Math.round(s.var5||0),s.medRuin>=999?(fr?"Jamais":"Never"):s.medRuin]));});
+9663:    }
+9664:    H(fr ? "DISTRIBUTION SUCCESSORALE" : "ESTATE DISTRIBUTION");
+9665:    out.push(J(["Percentile",fr?"H\u00e9ritage net":"Net estate",fr?"Imp\u00f4t":"Tax"]));
+9666:    [["P5",mc.p5EstateNet,mc.p5EstateTax],["P25",mc.p25EstateNet,mc.p25EstateTax],["P50",mc.medEstateNet,mc.medEstateTax],["P75",mc.p75EstateNet,mc.p75EstateTax],["P95",mc.p95EstateNet,mc.p95EstateTax]].forEach(function(r){out.push(J([r[0],Math.round(r[1]||0),Math.round(r[2]||0)]));});
+9667:    if (bizOn && revD.length > 0) {
+9668:      H(fr ? "ACTIFS CORPORATIFS (CCPC)" : "CORPORATE ASSETS (CCPC)");
+9669:      out.push(J([fr?"\u00c2ge":"Age",fr?"Solde corp.":"Corp. bal.",fr?"Imp\u00f4t corp.":"Corp. tax",fr?"Dividende":"Dividend",fr?"Salaire corp.":"Corp. salary",fr?"Extraction":"Extraction","CDA","RDTOH"]));
+9670:      revD.forEach(function(r) { if ((r.corpBal||0) > 0 || (r.corpTax||0) > 0 || (r.corpDiv||0) > 0) out.push(J([r.age,Math.round(r.corpBal||0),Math.round(r.corpTax||0),Math.round(r.corpDiv||0),Math.round(r.corpSal||0),Math.round(r.corpExtract||0),Math.round(r.corpCDA||0),Math.round(r.corpRDTOH||0)])); });
+9671:    }
+9672:    H(fr ? "M\u00c9THODOLOGIE" : "METHODOLOGY");
+9673:    out.push(J([nSim+" simulations MC | "+(fatT?"t-Student (df=5)":"Normal")+" | Cholesky 5x5"]));
+9674:    out.push(J([(stochMort?"CPM 2023":fr?"D\u00e9terministe ("+deathAge+" ans)":"Deterministic ("+deathAge+")")+" | "+(stochInf?"Inf. stoch.":"Inflation "+(inf*100).toFixed(1)+"%")]));
+9675:    out.push(J(["Smile: "+Math.round(goP*100)+"/"+Math.round(slP*100)+"/"+Math.round(noP*100)+"%"]));
+9676:    out.push(J([""]));
+9677:    out.push(J([fr?"\u26a0 Outil informatif. Ne constitue pas un conseil financier.":"\u26a0 Informational tool. Not financial advice."]));
+9678:    var csv = bom + out.join("\n");
+9679:    var encoded = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+9680:    var a = document.createElement("a"); a.href = encoded; a.download = (fr?"rapport-retraite-":"retirement-report-")+(cName||"plan").replace(/\s+/g,"-")+".csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+9681:  };
+9682:
+9683:  // === XLSX Export (professional multi-sheet workbook) ===
+9684:  var _exportFullReportXLSX = function() {
+9685:    if (!mc || !mc.pD) return;
+9686:    if (typeof XLSX === "undefined" || !XLSX.utils) {
+9687:      alert(lang === "fr" ? "Bibliotheque XLSX indisponible. Ouvrez le planner via http://localhost pour activer l'export Excel." : "XLSX library unavailable. Open planner via http://localhost to enable Excel export.");
+9688:      return;
+9689:    }
+9690:    var fr = lang === "fr";
+9691:    var today = new Date().toLocaleDateString("fr-CA");
+9692:    var grade = mc.succ >= 0.95 ? "A+" : mc.succ >= 0.9 ? "A" : mc.succ >= 0.85 ? "A-" : mc.succ >= 0.8 ? "B+" : mc.succ >= 0.7 ? "B" : mc.succ >= 0.5 ? "C" : mc.succ >= 0.3 ? "D" : "F";
+9693:    var revD = mc.medRevData || [];
+9694:    var baseName = (cName || "plan").toString().replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-|\-$/g, "");
+9695:    var filename = "buildfi-donnees-detaillees-" + (baseName || "plan") + "-" + (new Date()).toISOString().slice(0,10) + ".xlsx";
+9696:
+9697:    function sheetName(s) {
+9698:      return (s || "Sheet").replace(/[\\\/\?\*\[\]\:]/g, " ").slice(0, 31);
+9699:    }
+9700:    function addSheet(wb, name, rows, cfg) {
+9701:      var ws = XLSX.utils.aoa_to_sheet(rows || [[]]);
+9702:      cfg = cfg || {};
+9703:      var maxCols = 0;
+9704:      (rows || []).forEach(function(r) { maxCols = Math.max(maxCols, (r || []).length); });
+9705:      if (maxCols > 0) {
+9706:        ws["!cols"] = Array.from({ length: maxCols }, function(_, ci) {
+9707:          var w = (cfg.baseWidth || 10);
+9708:          (rows || []).forEach(function(r) {
+9709:            var v = (r && r[ci] != null) ? String(r[ci]) : "";
+9710:            if (v.length > w) w = v.length;
+9711:          });
+9712:          return { wch: Math.min(cfg.maxWidth || 52, Math.max(cfg.minWidth || 10, w + 2)) };
+9713:        });
+9714:      }
+9715:      if ((cfg.freezeRows || cfg.headerRow) && maxCols > 0) {
+9716:        var frz = cfg.freezeRows || cfg.headerRow;
+9717:        ws["!freeze"] = { xSplit: 0, ySplit: frz };
+9718:      }
+9719:      var ref = ws["!ref"] ? XLSX.utils.decode_range(ws["!ref"]) : null;
+9720:      if (ref && cfg.headerRow && cfg.headerRow >= 1) {
+9721:        var hr = cfg.headerRow - 1;
+9722:        if (hr >= ref.s.r && hr <= ref.e.r) {
+9723:          var start = XLSX.utils.encode_cell({ r: hr, c: ref.s.c });
+9724:          var end = XLSX.utils.encode_cell({ r: hr, c: ref.e.c });
+9725:          ws["!autofilter"] = { ref: start + ":" + end };
+9726:        }
+9727:      }
+9728:      // Visual styling (works with styled builds; ignored otherwise)
+9729:      var _bd = { top:{style:"thin",color:{rgb:"D9E1F2"}}, bottom:{style:"thin",color:{rgb:"D9E1F2"}}, left:{style:"thin",color:{rgb:"D9E1F2"}}, right:{style:"thin",color:{rgb:"D9E1F2"}} };
+9730:      var _titleS = { font:{bold:true,sz:14,color:{rgb:"FFFFFF"}}, fill:{fgColor:{rgb:"1F4E78"}}, alignment:{horizontal:"left",vertical:"center"}, border:_bd };
+9731:      var _headS = { font:{bold:true,color:{rgb:"FFFFFF"}}, fill:{fgColor:{rgb:"4472C4"}}, alignment:{horizontal:"center",vertical:"center"}, border:_bd };
+9732:      var _cellS = { font:{sz:10,color:{rgb:"1F2937"}}, alignment:{vertical:"center"}, border:_bd };
+9733:      var _altS  = { font:{sz:10,color:{rgb:"1F2937"}}, alignment:{vertical:"center"}, border:_bd, fill:{fgColor:{rgb:"F7FAFF"}} };
+9734:      if (ref) {
+9735:        var rowsLen = ref.e.r - ref.s.r + 1;
+9736:        ws["!rows"] = ws["!rows"] || [];
+9737:        if (cfg.titleRow) ws["!rows"][cfg.titleRow - 1] = { hpt: 24 };
+9738:        if (cfg.headerRow) ws["!rows"][cfg.headerRow - 1] = { hpt: 20 };
+9739:        for (var rri = ref.s.r; rri <= ref.e.r; rri++) {
+9740:          for (var cci = ref.s.c; cci <= ref.e.c; cci++) {
+9741:            var aa = XLSX.utils.encode_cell({ r: rri, c: cci });
+9742:            if (!ws[aa]) continue;
+9743:            if (cfg.titleRow && rri === cfg.titleRow - 1) ws[aa].s = _titleS;
+9744:            else if (cfg.headerRow && rri === cfg.headerRow - 1) ws[aa].s = _headS;
+9745:            else if (cfg.dataStartRow && rri >= cfg.dataStartRow - 1) ws[aa].s = (((rri - (cfg.dataStartRow - 1)) % 2) === 0) ? _cellS : _altS;
+9746:          }
+9747:        }
+9748:      }
+9749:      if (ref && (cfg.currencyCols || cfg.percentCols || cfg.intCols || cfg.decimalCols)) {
+9750:        var dataStart = Math.max((cfg.dataStartRow || 2) - 1, ref.s.r);
+9751:        var cur = cfg.currencyCols || [];
+9752:        var pctCols = cfg.percentCols || [];
+9753:        var ints = cfg.intCols || [];
+9754:        var decs = cfg.decimalCols || [];
+9755:        for (var rr = dataStart; rr <= ref.e.r; rr++) {
+9756:          for (var cc = ref.s.c; cc <= ref.e.c; cc++) {
+9757:            var a1 = XLSX.utils.encode_cell({ r: rr, c: cc });
+9758:            var cell = ws[a1];
+9759:            if (!cell || typeof cell.v !== "number") continue;
+9760:            var c1 = cc + 1; // 1-based
+9761:            if (cur.indexOf(c1) >= 0) cell.z = '$#,##0;[Red]-$#,##0';
+9762:            else if (pctCols.indexOf(c1) >= 0) cell.z = '0.0%';
+9763:            else if (decs.indexOf(c1) >= 0) cell.z = '#,##0.00';
+9764:            else if (ints.indexOf(c1) >= 0) cell.z = '#,##0';
+9765:          }
+9766:        }
+9767:      }
+9768:      if (ref && cfg.rowFormats) {
+9769:        Object.keys(cfg.rowFormats).forEach(function(rk) {
+9770:          var rr = Number(rk) - 1;
+9771:          var rowFmt = cfg.rowFormats[rk] || {};
+9772:          Object.keys(rowFmt).forEach(function(ck) {
+9773:            var cc = Number(ck) - 1;
+9774:            if (rr < ref.s.r || rr > ref.e.r || cc < ref.s.c || cc > ref.e.c) return;
+9775:            var addr = XLSX.utils.encode_cell({ r: rr, c: cc });
+9776:            if (!ws[addr]) return;
+9777:            ws[addr].z = rowFmt[ck];
+9778:          });
+9779:        });
+9780:      }
+9781:      XLSX.utils.book_append_sheet(wb, ws, sheetName(name));
+9782:    }
+9783:    function pct(v) { return Number(v || 0); }
+9784:    function money(v) { return Math.round(Number(v || 0)); }
+9785:    function moneyTxt(v) { return f$(Math.round(Number(v || 0))); }
+9786:    function pctTxt(v, d) { return (Number(v || 0) * 100).toFixed(d == null ? 1 : d) + "%"; }
+9787:
+9788:    var wb = XLSX.utils.book_new();
+9789:    wb.Props = {
+9790:      Title: fr ? "BuildFi Donnees detaillees" : "BuildFi Detailed Data",
+9791:      Subject: fr ? "Planification retraite" : "Retirement planning",
+9792:      Author: "BuildFi",
+9793:      CreatedDate: new Date()
+9794:    };
+9795:
+9796:    // 1) Sommaire
+9797:    addSheet(wb, fr ? "Sommaire" : "Summary", [
+9798:      [fr ? "BuildFi - Donnees detaillees" : "BuildFi - Detailed data"],
+9799:      [fr ? "Client" : "Client", cName || "—", fr ? "Date" : "Date", today, "v11.12.9"],
+9800:      [],
+9801:      [fr ? "Metrique" : "Metric", fr ? "Valeur" : "Value", fr ? "Unite" : "Unit"],
+9802:      [fr ? "Taux de succes" : "Success rate", pct(mc.succ || 0), ""],
+9803:      [fr ? "Note" : "Grade", grade, ""],
+9804:      [fr ? "Patrimoine median final (reel)" : "Median final wealth (real)", money(mc.rMedF || mc.medF || 0), ""],
+9805:      ["VaR P5", money(mc.rVar5 || mc.var5 || 0), ""],
+9806:      ["CVaR P5", money(mc.rCvar5 || mc.cvar5 || 0), ""],
+9807:      ["P95", money(mc.rP95F || mc.p95F || 0), ""],
+9808:      [fr ? "Age de ruine P5" : "Ruin age P5", mc.p5Ruin >= 999 ? (fr ? "Jamais" : "Never") : mc.p5Ruin, ""],
+9809:      [fr ? "Heritage net median" : "Median net estate", money(mc.medEstateNet || 0), ""],
+9810:      [fr ? "Impot successoral median" : "Median estate tax", money(mc.medEstateTax || 0), ""]
+9811:    ], { titleRow: 1, headerRow: 4, dataStartRow: 5, freezeRows: 4, rowFormats: { 5: { 2: "0.0%" }, 7: { 2: '$#,##0;[Red]-$#,##0' }, 8: { 2: '$#,##0;[Red]-$#,##0' }, 9: { 2: '$#,##0;[Red]-$#,##0' }, 10: { 2: '$#,##0;[Red]-$#,##0' }, 12: { 2: '$#,##0;[Red]-$#,##0' }, 13: { 2: '$#,##0;[Red]-$#,##0' } } });
+9812:
+9813:    // 2) Profil
+9814:    var profileRows = [
+9815:      [fr ? "Parametre" : "Parameter", fr ? "Valeur" : "Value"],
+9816:      [fr ? "Age" : "Age", age],
+9817:      [fr ? "Age retraite" : "Retirement age", retAge],
+9818:      [fr ? "Horizon (age fin)" : "Horizon (end age)", deathAge],
+9819:      ["Province", prov],
+9820:      [fr ? "Salaire brut" : "Gross salary", money(sal)],
+9821:      [fr ? "Depenses retraite / mois" : "Retirement spending / month", money(retSpM)],
+9822:      [fr ? "Inflation" : "Inflation", pctTxt(inf, 1)],
+9823:      ["REER/RRSP", money(rrsp)],
+9824:      ["CELI/TFSA", money(tfsa)],
+9825:      ["NR", money(nr)],
+9826:      [fr ? "Cotisations annuelles" : "Annual contributions", money((rrspC||0)+(tfsaC||0)+(nrC||0))],
+9827:      [fr ? "Debut RRQ/RPC" : "QPP/CPP start", qppAge],
+9828:      [fr ? "Debut PSV/OAS" : "OAS start", oasAge],
+9829:      [fr ? "Strategie decaissement" : "Withdrawal strategy", wStrat],
+9830:      ["Meltdown", melt ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No")]
+9831:    ];
+9832:    if (cOn) {
+9833:      profileRows.push([]);
+9834:      profileRows.push([fr ? "Conjoint" : "Spouse", ""]);
+9835:      profileRows.push([fr ? "Age conjoint" : "Spouse age", cAge]);
+9836:      profileRows.push([fr ? "Age retraite conjoint" : "Spouse retirement age", cRetAge]);
+9837:      profileRows.push(["REER conjoint", money(cRRSP || 0)]);
+9838:      profileRows.push(["CELI conjoint", money(cTFSA || 0)]);
+9839:      profileRows.push(["NR conjoint", money(cNR || 0)]);
+9840:    }
+9841:    addSheet(wb, "Profil", profileRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1 });
+9842:
+9843:    // 3) Projection deterministe (from pD table)
+9844:    var pRows = [[fr ? "Age" : "Age", "REER", "CELI", "NR", "PE", "DC", "Immobilier", bizOn ? "Corp." : "", "P50 nominal", "P50 reel"]];
+9845:    (mc.pD || []).forEach(function(r) {
+9846:      pRows.push([r.age, Math.round(r.rrM||0), Math.round(r.tfM||0), Math.round(r.nrM||0), Math.round(r.peM||0), Math.round(r["dc_p50"]||0), Math.round(r.reM||0), bizOn ? Math.round(r.mp_corp||0) : "", Math.round(r.p50||0), Math.round(r.rp50||0)]);
+9847:    });
+9848:    addSheet(wb, fr ? "Projection deterministe" : "Deterministic Projection", pRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, intCols: [1], currencyCols: [2,3,4,5,6,7,8,9,10] });
+9849:
+9850:    // 4) MC - Patrimoine
+9851:    addSheet(wb, fr ? "MC - Patrimoine" : "MC - Wealth", [
+9852:      [fr ? "Statistique" : "Statistic", fr ? "Valeur" : "Value"],
+9853:      ["P5", money(mc.rVar5 || mc.var5 || 0)],
+9854:      ["P25", money(mc.rP25F || mc.p25F || 0)],
+9855:      ["P50", money(mc.rMedF || mc.medF || 0)],
+9856:      ["P75", money(mc.rP75F || mc.p75F || 0)],
+9857:      ["P95", money(mc.rP95F || mc.p95F || 0)],
+9858:      ["CVaR P5", money(mc.rCvar5 || mc.cvar5 || 0)],
+9859:      [fr ? "Succes" : "Success", pct(mc.succ || 0)],
+9860:      [fr ? "Risque epuisement" : "Depletion risk", pct(1 - (mc.succ || 0))]
+9861:    ], { headerRow: 1, dataStartRow: 2, freezeRows: 1, rowFormats: { 8: { 2: "0.0%" }, 9: { 2: "0.0%" } } });
+9862:
+9863:    // 5) Flux de tresorerie
+9864:    if (revD.length > 0) {
+9865:      var cfRows = [[fr ? "Age" : "Age", "RRQ/CPP", "PSV/OAS", "SRG/GIS", fr ? "Pension" : "Pension", fr ? "Retraits" : "Withdrawals", fr ? "Depenses" : "Spending", fr ? "Impot" : "Tax", fr ? "Revenu imposable" : "Taxable income", fr ? "Salaire" : "Salary"]];
+9866:      revD.forEach(function(r) {
+9867:        cfRows.push([r.age, Math.round(r.rrq||0), Math.round(r.psv||0), Math.round(r.gis||r.srg||0), Math.round(r.pen||0), Math.round(r.ret||0), Math.round(r.spend||0), Math.round(r.tax||0), Math.round(r.taxInc||0), Math.round(r.sal||0)]);
+9868:      });
+9869:      addSheet(wb, fr ? "Flux de tresorerie" : "Cash Flow", cfRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, intCols: [1], currencyCols: [2,3,4,5,6,7,8,9,10] });
+9870:    }
+9871:
+9872:    // 6) Retraits detailles
+9873:    var wdRows = [[fr ? "Age" : "Age", fr ? "FERR min" : "RRIF min", "Meltdown", fr ? "Retrait REER" : "RRSP wd", fr ? "Retrait CELI" : "TFSA wd", fr ? "Retrait NR" : "NR wd"]];
+9874:    (revD || []).filter(function(r) { return r.age >= retAge; }).forEach(function(r) {
+9875:      wdRows.push([r.age, Math.round(r.wRrifMin||0), Math.round(r.wMelt||0), Math.round(r.wFromRR||0), Math.round(r.wFromTF||0), Math.round(r.wFromNR||0)]);
+9876:    });
+9877:    addSheet(wb, fr ? "Retraits detailles" : "Detailed Withdrawals", wdRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, intCols: [1], currencyCols: [2,3,4,5,6] });
+9878:
+9879:    // 7) Fiscalite
+9880:    var taxRows = [[fr ? "Revenu" : "Income", fr ? "Federal" : "Federal", "Prov.", fr ? "Total" : "Total", fr ? "Taux effectif" : "Effective rate", fr ? "Marginal" : "Marginal"]];
+9881:    for (var ti = 0; ti <= 300000; ti += 10000) {
+9882:      var tx = calcTax(ti, 0, prov);
+9883:      taxRows.push([ti, Math.round(tx.fed), Math.round(tx.prov), Math.round(tx.total), tx.eff || 0, tx.marg || 0]);
+9884:    }
+9885:    addSheet(wb, fr ? "Fiscalite" : "Tax", taxRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, currencyCols: [1,2,3,4], percentCols: [5,6] });
+9886:
+9887:    // 8) Sensibilite & Stress
+9888:    var ssRows = [[fr ? "Bloc" : "Block", fr ? "Nom" : "Name", fr ? "Valeur 1" : "Value 1", fr ? "Valeur 2" : "Value 2", fr ? "Valeur 3" : "Value 3"]];
+9889:    if (mc.sens && mc.sens.length > 0) {
+9890:      mc.sens.forEach(function(s) {
+9891:        ssRows.push([fr ? "Sensibilite" : "Sensitivity", s.name, (s.lo >= 0 ? "+" : "") + s.lo.toFixed(1) + "%", (s.hi >= 0 ? "+" : "") + s.hi.toFixed(1) + "%", Math.abs((s.hi||0) - (s.lo||0)).toFixed(1) + "%"]);
+9892:      });
+9893:    }
+9894:    var _stRes = stressResults || window._autoStress;
+9895:    if (_stRes && _stRes.length > 0) {
+9896:      _stRes.forEach(function(s) {
+9897:        ssRows.push([fr ? "Stress" : "Stress", s.name || s.key, pctTxt(s.succ||0, 1), money(s.medF||0), s.medRuin >= 999 ? (fr ? "Jamais" : "Never") : s.medRuin]);
+9898:      });
+9899:    }
+9900:    addSheet(wb, fr ? "Sensibilite & Stress" : "Sensitivity & Stress", ssRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1 });
+9901:
+9902:    // 9) Succession
+9903:    addSheet(wb, fr ? "Succession" : "Estate", [
+9904:      ["Percentile", fr ? "Heritage net" : "Net estate", fr ? "Impot" : "Tax"],
+9905:      ["P5", money(mc.p5EstateNet||0), money(mc.p5EstateTax||0)],
+9906:      ["P25", money(mc.p25EstateNet||0), money(mc.p25EstateTax||0)],
+9907:      ["P50", money(mc.medEstateNet||0), money(mc.medEstateTax||0)],
+9908:      ["P75", money(mc.p75EstateNet||0), money(mc.p75EstateTax||0)],
+9909:      ["P95", money(mc.p95EstateNet||0), money(mc.p95EstateTax||0)]
+9910:    ], { headerRow: 1, dataStartRow: 2, freezeRows: 1, currencyCols: [2,3] });
+9911:
+9912:    // 10) Immobilier
+9913:    var reRows = [[fr ? "Propriete" : "Property", fr ? "Valeur" : "Value", fr ? "Hypotheque" : "Mortgage", fr ? "Loyer/mois" : "Rent/mo", fr ? "Depenses/an" : "Expenses/yr", fr ? "Age achat" : "Buy age", fr ? "Age vente" : "Sell age"]];
+9914:    (props || []).forEach(function(pr, i) {
+9915:      reRows.push([(pr.name || (fr ? "Propriete " : "Property ") + (i + 1)), Math.round(pr.val||0), Math.round(pr.mb||0), Math.round(pr.rm||0), Math.round((pr.oe||0)+(pr.pt||0)+(pr.ins||0)), pr.ba||"", pr.sa||""]);
+9916:    });
+9917:    addSheet(wb, fr ? "Immobilier" : "Real Estate", reRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, currencyCols: [2,3,4,5], intCols: [6,7] });
+9918:
+9919:    // 11) Entreprise (optional)
+9920:    if (bizOn) {
+9921:      var bRows = [[fr ? "Age" : "Age", fr ? "Solde corp." : "Corp. balance", fr ? "Impot corp." : "Corp. tax", fr ? "Dividende" : "Dividend", fr ? "Salaire corp." : "Corp. salary", fr ? "Extraction" : "Extraction", "CDA", "RDTOH"]];
+9922:      revD.forEach(function(r) {
+9923:        if ((r.corpBal||0) > 0 || (r.corpTax||0) > 0 || (r.corpDiv||0) > 0 || (r.corpExtract||0) > 0) {
+9924:          bRows.push([r.age, Math.round(r.corpBal||0), Math.round(r.corpTax||0), Math.round(r.corpDiv||0), Math.round(r.corpSal||0), Math.round(r.corpExtract||0), Math.round(r.corpCDA||0), Math.round(r.corpRDTOH||0)]);
+9925:        }
+9926:      });
+9927:      addSheet(wb, fr ? "Entreprise (CCPC)" : "Business (CCPC)", bRows, { headerRow: 1, dataStartRow: 2, freezeRows: 1, intCols: [1], currencyCols: [2,3,4,5,6,7,8] });
+9928:    }
+9929:
+9930:    // 12) Methodologie
+9931:    addSheet(wb, fr ? "Methodologie" : "Methodology", [
+9932:      [fr ? "Modele" : "Model", nSim + " MC", (fatT ? "t-Student (df=5)" : "Normal"), "Cholesky 5x5"],
+9933:      [fr ? "Mortalite" : "Mortality", stochMort ? "CPM 2023" : (fr ? "Deterministe" : "Deterministic"), fr ? "Age fin: " + deathAge : "End age: " + deathAge, ""],
+9934:      [fr ? "Inflation" : "Inflation", stochInf ? (fr ? "Stochastique" : "Stochastic") : (inf*100).toFixed(1) + "%", "", ""],
+9935:      [fr ? "Courbe depenses (Go/Slow/No)" : "Spending curve (Go/Slow/No)", Math.round(goP*100) + "% / " + Math.round(slP*100) + "% / " + Math.round(noP*100) + "%", "", ""],
+9936:      [],
+9937:      [fr ? "Note" : "Note", fr ? "Outil informatif. Ne constitue pas un conseil financier." : "Informational tool. Not financial advice."]
+9938:    ], { headerRow: 1, dataStartRow: 2, freezeRows: 1 });
+9939:
+9940:    XLSX.writeFile(wb, filename, { bookType: "xlsx", compression: true });
+9941:  };
+9942:
+9943:  // Template-first Excel export — DATA_RAW architecture
+9944:  // All formatting lives in the template. This code ONLY writes raw data to the hidden DATA_RAW sheet.
+9945:  var _exportFullReportXLSX_Pro = async function() {
+9946:    try {
+9947:    if (!mc || !mc.pD) { alert("Aucune simulation disponible. Lancez le calcul d'abord."); return; }
+9948:    if (typeof ExcelJS === "undefined" || !ExcelJS.Workbook) {
+9949:      alert(lang === "fr"
+9950:        ? "Export Excel premium indisponible (ExcelJS non chargé). Ouvrez le planner principal du repo."
+9951:        : "Premium Excel export unavailable (ExcelJS not loaded). Open the main planner file from the repo.");
+9952:      return;
+9953:    }
+9954:
+9955:    var fr = lang === "fr";
+9956:    var locale = fr ? "fr-CA" : "en-CA";
+9957:    var revD = mc.medRevData || [];
+9958:    var baseName = (cName || "plan").toString().replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-|\-$/g, "");
+9959:    var filename = "buildfi-donnees-detaillees-" + (baseName || "plan") + "-" + (new Date()).toISOString().slice(0,10) + ".xlsx";
+9960:    var grade = mc.succ >= 0.95 ? "A+" : mc.succ >= 0.9 ? "A" : mc.succ >= 0.85 ? "A-" : mc.succ >= 0.8 ? "B+" : mc.succ >= 0.7 ? "B" : mc.succ >= 0.5 ? "C" : mc.succ >= 0.3 ? "D" : "F";
+9961:    var todayLong = new Date().toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" });
+9962:
+9963:    function toNum(v){ var n = Number(v); return Number.isFinite(n) ? n : 0; }
+9964:
+9965:    // -- Load template --
+9966:    var wb = new ExcelJS.Workbook();
+9967:    var loadedTemplate = false;
+9968:    try {
+9969:      if (typeof window !== "undefined" && window.BF_REPORT_TEMPLATE_B64) {
+9970:        var b = atob(window.BF_REPORT_TEMPLATE_B64);
+9971:        var bytes = new Uint8Array(b.length);
+9972:        for (var bi = 0; bi < b.length; bi++) bytes[bi] = b.charCodeAt(bi);
+9973:        await wb.xlsx.load(bytes.buffer);
+9974:        loadedTemplate = true;
+9975:      }
+9976:    } catch(e) {
+9977:      loadedTemplate = false;
+9978:      console.warn("Template load failed", e);
+9979:    }
+9980:    if (!loadedTemplate && typeof fetch === "function") {
+9981:      var candidatePaths = [
+9982:        "./templates/buildfi-donnees-detaillees-template.xlsx",
+9983:        "templates/buildfi-donnees-detaillees-template.xlsx",
+9984:        "../templates/buildfi-donnees-detaillees-template.xlsx"
+9985:      ];
+9986:      for (var pidx = 0; pidx < candidatePaths.length && !loadedTemplate; pidx++) {
+9987:        try {
+9988:          var resp = await fetch(candidatePaths[pidx]);
+9989:          if (!resp.ok) continue;
+9990:          var ab = await resp.arrayBuffer();
+9991:          await wb.xlsx.load(ab);
+9992:          loadedTemplate = true;
+9993:        } catch(_e2) {}
+9994:      }
+9995:    }
+9996:    if (!loadedTemplate) {
+9997:      alert(fr
+9998:        ? "Template Excel introuvable. Assurez-vous que le fichier template est dans le dossier templates/."
+9999:        : "Excel template not found. Ensure the template file is in the templates/ folder.");
+10000:      return;
+10001:    }
+10002:    wb.calcProperties = wb.calcProperties || {};
+10003:    wb.calcProperties.fullCalcOnLoad = true;
+10004:
+10005:    // -- Find display sheets from template --
+10006:    function wsFindByName(name) {
+10007:      for (var i = 0; i < wb.worksheets.length; i++) {
+10008:        if (wb.worksheets[i].name === name) return wb.worksheets[i];
+10009:      }
+10010:      return null;
+10011:    }
+10012:    // Helper to set cell value preserving formatting
+10013:    function setV(ws, row, col, val) { if(ws) ws.getCell(row, col).value = (val == null ? "" : val); }
+10014:    function setN(ws, row, col, val, fmt) { if(!ws) return; var c = ws.getCell(row, col); c.value = toNum(val); if(fmt) c.numFmt = fmt; }
+10015:
+10016:    var wsC = wsFindByName("00 - Couverture");
+10017:    var wsS = wsFindByName("Sommaire");
+10018:    var wsP = wsFindByName("Profil");
+10019:    var wsProj = wsFindByName("Projection déterministe");
+10020:    var wsCF = wsFindByName("Flux de trésorerie");
+10021:    var wsMC = wsFindByName("MC — Patrimoine");
+10022:    var wsWD = wsFindByName("Retraits détaillés");
+10023:    var wsTax = wsFindByName("Fiscalité");
+10024:    var wsSS = wsFindByName("Sensibilité & Stress");
+10025:    var wsE = wsFindByName("Succession");
+10026:    var wsRE = wsFindByName("Immobilier");
+10027:    var wsB = wsFindByName("Entreprise (CCPC)");
+10028:    var wsM = wsFindByName("Méthodologie");
+10029:    var wsReadme = wsFindByName("01 - README");
+10030:
+10031:    // -- Computed metrics --
+10032:    var y0 = new Date().getFullYear();
+10033:    var qppM2 = calcQPP(qppAge, avgE, qppYrs);
+10034:    var oasM2 = calcOAS(oasAge, (retSpM + (cOn ? (cRetSpM||0) : 0)) * 12);
+10035:    var cQppM2 = cOn ? calcQPP(cQppAge || 65, cAvgE || 0, cQppYrs || 0) : 0;
+10036:    var cOasM2 = cOn ? calcOAS(cOasAge || 65, (cRetSpM || 0) * 12) : 0;
+10037:    var govM = qppM2 + oasM2 + cQppM2 + cOasM2;
+10038:    var totalSpM = (retSpM || 0) + (cOn ? (cRetSpM || 0) : 0);
+10039:    var covRatio = totalSpM > 0 ? govM / totalSpM : 0;
+10040:    var optTax = revD.reduce(function(s,r){ return s + (r.tax||0); }, 0);
+10041:    var hasNaive = wStrat === "optimized" && mc._naiveMC && mc._naiveMC.medRevData;
+10042:    var naiveRev = hasNaive ? (mc._naiveMC.medRevData || []) : [];
+10043:    var naiveTax = hasNaive ? naiveRev.reduce(function(s,r){ return s + (r.tax||0); }, 0) : 0;
+10044:    var taxAlpha = hasNaive ? (naiveTax - optTax) : 0;
+10045:    var naiveSucc = hasNaive ? Number(mc._naiveMC.succ || 0) : null;
+10046:    var succDeltaPts = hasNaive ? ((mc.succ||0) - naiveSucc) * 100 : null;
+10047:    var medDelta = hasNaive ? ((mc.rMedF || mc.medF || 0) - (mc._naiveMC.rMedF || mc._naiveMC.medF || 0)) : null;
+10048:    var oasYears = revD.filter(function(r){ return (r.taxInc||0) > 95323; }).length;
+10049:    var oasYearsNaive = hasNaive ? naiveRev.filter(function(r){ return (r.taxInc||0) > 95323; }).length : null;
+10050:    var avgEffOpt = optTax > 0 ? optTax / Math.max(1, revD.reduce(function(s,r){return s + (r.taxInc||0);}, 0)) : 0;
+10051:    var avgEffNaive = hasNaive && naiveTax > 0 ? naiveTax / Math.max(1, naiveRev.reduce(function(s,r){return s + (r.taxInc||0);}, 0)) : null;
+10052:
+10053:    // Confidence interpretation
+10054:    var confParts = [];
+10055:    if (covRatio >= 1) confParts.push(fr ? "Forte couverture des revenus" : "Strong income coverage");
+10056:    else if (covRatio >= 0.7) confParts.push(fr ? "Couverture modérée des revenus" : "Moderate income coverage");
+10057:    else confParts.push(fr ? "Couverture faible des revenus" : "Weak income coverage");
+10058:    if (mc.sens && mc.sens.length > 0 && Math.abs(mc.sens[0].hi - mc.sens[0].lo) > 15) confParts.push(fr ? "Sensibilité élevée aux marchés" : "High market sensitivity");
+10059:    else confParts.push(fr ? "Sensibilité modérée aux marchés" : "Moderate market sensitivity");
+10060:    if (mc.p5Ruin >= 999) confParts.push(fr ? "Aucun risque d'épuisement dans le P5" : "No depletion risk in P5");
+10061:    else confParts.push(fr ? "Risque d'épuisement à " + mc.p5Ruin + " ans" : "Depletion risk at age " + mc.p5Ruin);
+10062:
+10063:    // Find balances at retirement and death
+10064:    var pDret = (mc.pD || []).find(function(r){ return r.age === retAge; }) || {};
+10065:    var pDend = (mc.pD || []).length > 0 ? mc.pD[mc.pD.length - 1] : {};
+10066:
+10067:    // ---------------------------------------------------------------
+10068:    //  COVER SHEET
+10069:    // ---------------------------------------------------------------
+10070:    setV(wsC, 3, 2, cName || (fr ? "Client" : "Client"));
+10071:    setV(wsC, 4, 2, todayLong + "  •  " + nSim + " simulations Monte Carlo");
+10072:    setV(wsC, 6, 2, (fr ? "Niveau: " : "Tier: ") + (mode === "expert" ? "Expert" : "Standard") + "  •  " + prov);
+10073:    setN(wsC, 10, 2, mc.succ || 0, "0%");
+10074:    setN(wsC, 10, 5, mc.rMedF || mc.medF || 0, "#,##0");
+10075:    setN(wsC, 10, 7, Math.max(0, taxAlpha), "#,##0");
+10076:    setV(wsC, 14, 2, fr ? "Document généré automatiquement par BuildFi. Les projections sont informatives et reposent sur vos hypothèses actuelles." : "Automatically generated by BuildFi. Projections are informational and based on your current assumptions.");
+10077:
+10078:    // ---------------------------------------------------------------
+10079:    //  SOMMAIRE
+10080:    // ---------------------------------------------------------------
+10081:    setV(wsS, 3, 2, (fr ? "Préparé pour " : "Prepared for ") + (cName || (fr ? "Client" : "Client")) + "  —  " + todayLong);
+10082:    setV(wsS, 4, 2, "BuildFi Technologies inc.  •  buildfi.ca  •  v11.12.9  •  " + nSim + " simulations Monte Carlo");
+10083:    setV(wsS, 8, 2, grade);
+10084:    setN(wsS, 8, 3, mc.succ || 0, "0%");
+10085:    setN(wsS, 8, 4, mc.rMedF || mc.medF || 0, "#,##0");
+10086:    setN(wsS, 8, 5, govM, "#,##0");
+10087:    setN(wsS, 8, 6, covRatio, "0%");
+10088:    setN(wsS, 8, 7, Math.max(0, taxAlpha), "#,##0");
+10089:    setV(wsS, 13, 2, fr ? "Confiance dans le plan" : "Plan confidence");
+10090:    setV(wsS, 14, 2, confParts.join("  •  "));
+10091:
+10092:    // Comparison rows
+10093:    var fmtM = function(v){ return Math.round(Number(v||0)).toLocaleString(locale) + " $"; };
+10094:    var fmtP = function(v,d){ return (Number(v||0)*100).toFixed(d==null?1:d).replace(".",",") + " %"; };
+10095:    var compRows = [
+10096:      [fr ? "Succès MC" : "MC Success", fmtP(mc.succ||0,0), naiveSucc==null ? "—" : fmtP(naiveSucc,0), succDeltaPts==null ? "—" : ((succDeltaPts>=0?"+":"") + succDeltaPts.toFixed(0) + " pts"), nSim + " sims"],
+10097:      [fr ? "Impôt total nominal" : "Total nominal tax", fmtM(optTax), hasNaive ? fmtM(naiveTax) : "—", hasNaive ? ("-" + fmtM(Math.max(0,taxAlpha))) : "—", "Nominal"],
+10098:      [fr ? "Impôt total réel" : "Total real tax", fmtM(Math.round(optTax/Math.pow(1+(inf||0.021),12))), hasNaive ? fmtM(Math.round(naiveTax/Math.pow(1+(inf||0.021),12))) : "—", hasNaive ? ("-" + fmtM(Math.round(Math.max(0,taxAlpha/Math.pow(1+(inf||0.021),12))))) : "—", fr ? "Actualisé" : "Discounted"],
+10099:      [fr ? "Patrimoine médian" : "Median wealth", fmtM(mc.rMedF||mc.medF||0), hasNaive ? fmtM(mc._naiveMC.rMedF||mc._naiveMC.medF||0) : "—", hasNaive ? ((medDelta>=0?"+":"") + fmtM(medDelta)) : "—", "MC P50"],
+10100:      [fr ? "Héritage net" : "Net estate", fmtM(mc.medEstateNet||0), hasNaive ? fmtM(mc._naiveMC.medEstateNet||0) : "—", hasNaive ? fmtM((mc.medEstateNet||0)-(mc._naiveMC.medEstateNet||0)) : "—", fr ? "Après impôt" : "After tax"],
+10101:      [fr ? "Taux effectif moyen" : "Avg eff. rate", fmtP(avgEffOpt,1), avgEffNaive==null ? "—" : fmtP(avgEffNaive,1), avgEffNaive==null ? "—" : ((avgEffOpt-avgEffNaive>=0?"+":"") + ((avgEffOpt-avgEffNaive)*100).toFixed(1).replace(".",",") + " pts"), fr ? "Pondéré" : "Weighted"]
+10102:    ];
+10103:    compRows.forEach(function(r, i) { for (var c = 0; c < 5; c++) setV(wsS, 20+i, 2+c, r[c]); });
+10104:
+10105:    if (samResults && samResults.length > 0) {
+10106:      setV(wsS, 30, 2, samResults[0].name || (fr ? "Action prioritaire" : "Priority action"));
+10107:      setV(wsS, 31, 2, (samResults[0].deltaWealth >= 0 ? "+" : "") + Math.round(samResults[0].deltaWealth/1000) + " K$ patrimoine   •   " + (samResults[0].deltaTax >= 0 ? "+" : "") + Math.round(samResults[0].deltaTax/1000) + " K$ impôt");
+10108:      setV(wsS, 32, 2, samResults[0].explain || "");
+10109:    }
+10110:
+10111:    // ---------------------------------------------------------------
+10112:    //  PROFIL
+10113:    // ---------------------------------------------------------------
+10114:    setV(wsP, 3, 2, (cName || (fr ? "Client" : "Client")) + "  •  " + todayLong);
+10115:    setV(wsP, 7, 2, age + " ans"); setV(wsP, 7, 4, (fr ? "Né(e) en " : "Born ") + (new Date().getFullYear() - age));
+10116:    setV(wsP, 8, 2, retAge + " ans"); setV(wsP, 8, 4, (fr ? "Dans " : "In ") + Math.max(0, retAge-age) + (fr ? " ans" : " years"));
+10117:    setV(wsP, 9, 2, deathAge + " ans"); setV(wsP, 9, 4, (deathAge-retAge) + (fr ? " ans de retraite" : " retirement years"));
+10118:    setV(wsP, 10, 2, prov);
+10119:    setN(wsP, 11, 2, sal, "#,##0 $");
+10120:    setV(wsP, 12, 2, Math.round(totalSpM) + " $/mois"); setV(wsP, 12, 4, fmtM(totalSpM*12) + "/an");
+10121:    // Accounts
+10122:    setN(wsP, 17, 3, rrsp||0); setN(wsP, 17, 4, rrspC||0); setN(wsP, 17, 5, allocR||0.6); setN(wsP, 17, 6, merR||0); setN(wsP, 17, 7, pDret.rrM||0); setN(wsP, 17, 8, pDend.rrM||0);
+10123:    setN(wsP, 18, 3, tfsa||0); setN(wsP, 18, 4, tfsaC||0); setN(wsP, 18, 5, allocT||0.6); setN(wsP, 18, 6, merT||0); setN(wsP, 18, 7, pDret.tfM||0); setN(wsP, 18, 8, pDend.tfM||0);
+10124:    setN(wsP, 19, 3, nr||0); setN(wsP, 19, 4, nrC||0); setN(wsP, 19, 5, allocN||0.6); setN(wsP, 19, 6, merN||0); setN(wsP, 19, 7, pDret.nrM||0); setN(wsP, 19, 8, pDend.nrM||0);
+10125:    setN(wsP, 20, 3, fhsaBal||0); setN(wsP, 20, 4, fhsaC||0); setN(wsP, 20, 5, allocT||0.6); setN(wsP, 20, 6, merT||0); setN(wsP, 20, 7, pDret.fhM||0); setN(wsP, 20, 8, pDend.fhM||0);
+10126:    var totBal = (rrsp||0)+(tfsa||0)+(nr||0)+(fhsaBal||0);
+10127:    var totRetBal = (pDret.rrM||0)+(pDret.tfM||0)+(pDret.nrM||0)+(pDret.fhM||0);
+10128:    var totEndBal = (pDend.rrM||0)+(pDend.tfM||0)+(pDend.nrM||0)+(pDend.fhM||0);
+10129:    setN(wsP, 21, 3, totBal); setN(wsP, 21, 7, totRetBal); setN(wsP, 21, 8, totEndBal);
+10130:    // Gov income
+10131:    setV(wsP, 26, 2, "RRQ/QPP"); setV(wsP, 26, 3, qppAge + " ans"); setN(wsP, 26, 4, qppM2, "#,##0 $"); setN(wsP, 26, 5, qppM2*12, "#,##0 $"); setV(wsP, 26, 6, "IPC"); setV(wsP, 26, 7, fr ? "Basé sur revenus moyens" : "Based on average earnings");
+10132:    setV(wsP, 27, 2, "PSV/OAS"); setV(wsP, 27, 3, oasAge + " ans"); setN(wsP, 27, 4, oasM2, "#,##0 $"); setN(wsP, 27, 5, oasM2*12, "#,##0 $"); setV(wsP, 27, 6, "IPC"); setV(wsP, 27, 7, fr ? "Sujet à récupération" : "Subject to clawback");
+10133:    setV(wsP, 30, 2, "Total"); setN(wsP, 30, 4, govM, "#,##0 $"); setN(wsP, 30, 5, govM*12, "#,##0 $"); setV(wsP, 30, 7, (fr ? "Couverture: " : "Coverage: ") + Math.round(covRatio*100) + "%");
+10134:
+10135:    // ---------------------------------------------------------------
+10136:    //  PROJECTION DÉTERMINISTE — write directly to display sheet
+10137:    // ---------------------------------------------------------------
+10138:    (mc.pD || []).slice(0, 51).forEach(function(r, i) {
+10139:      var reV = toNum(r.reM || 0), mtg = toNum(r.mtM || 0), eq = reV - mtg;
+10140:      var totalFin = toNum(r.rrM||0) + toNum(r.tfM||0) + toNum(r.nrM||0) + toNum(r.peM||0) + toNum(r.fhM||0);
+10141:      var curAge = r.age || (age + i);
+10142:      var phase = curAge < retAge ? (fr ? "Accumulation" : "Accumulation") : (fr ? "Décaissement" : "Decumulation");
+10143:      var row = 6 + i; // template header at row 5, data starts row 6
+10144:      setV(wsProj, row, 1, y0 + i); setN(wsProj, row, 2, curAge);
+10145:      setN(wsProj, row, 3, r.rrM||0); setN(wsProj, row, 4, r.tfM||0); setN(wsProj, row, 5, r.nrM||0); setN(wsProj, row, 6, r.fhM||0);
+10146:      setN(wsProj, row, 7, reV); setN(wsProj, row, 8, mtg); setN(wsProj, row, 9, eq);
+10147:      setN(wsProj, row, 10, totalFin); setN(wsProj, row, 11, totalFin + eq); setV(wsProj, row, 12, phase);
+10148:    });
+10149:
+10150:    // ---------------------------------------------------------------
+10151:    //  FLUX DE TRÉSORERIE
+10152:    // ---------------------------------------------------------------
+10153:    revD.slice(0, 51).forEach(function(r, i) {
+10154:      var eff = (r.taxInc||0) > 0 ? (r.tax||0)/(r.taxInc||1) : 0;
+10155:      var row = 6 + i;
+10156:      setV(wsCF, row, 1, y0 + i); setN(wsCF, row, 2, r.age||0);
+10157:      setN(wsCF, row, 3, r.sal||0); setN(wsCF, row, 4, r.rrq||0); setN(wsCF, row, 5, r.psv||0); setN(wsCF, row, 6, r.gis||r.srg||0);
+10158:      setN(wsCF, row, 7, r.pen||0); setN(wsCF, row, 8, r.ret||0); setN(wsCF, row, 9, r.spend||0); setN(wsCF, row, 10, r.tax||0);
+10159:      setN(wsCF, row, 11, eff); setN(wsCF, row, 12, r.taxInc||0);
+10160:    });
+10161:
+10162:    // ---------------------------------------------------------------
+10163:    //  MC — PATRIMOINE
+10164:    // ---------------------------------------------------------------
+10165:    setV(wsMC, 3, 2, nSim + (fr ? " simulations  •  Percentiles P5/P25/P50/P75/P95 comparés au déterministe" : " simulations  •  P5/P25/P50/P75/P95 compared to deterministic"));
+10166:    (mc.pD || []).slice(0, 51).forEach(function(r, i) {
+10167:      var curAge = r.age || (age + i);
+10168:      var det = toNum(r.det || r.p50 || 0);
+10169:      var p5v = toNum(r.p5||0), p25v = toNum(r.p25||0), p50v = toNum(r.p50||0);
+10170:      var p75v = toNum(r.p75||0), p95v = toNum(r.p95||0);
+10171:      var row = 5 + i; // header at row 4, data starts row 5
+10172:      setV(wsMC, row, 2, y0 + i); setN(wsMC, row, 3, curAge);
+10173:      setN(wsMC, row, 4, det); setN(wsMC, row, 5, p5v); setN(wsMC, row, 6, p25v);
+10174:      setN(wsMC, row, 7, p50v); setN(wsMC, row, 8, p75v); setN(wsMC, row, 9, p95v);
+10175:      setN(wsMC, row, 10, p50v - det); setN(wsMC, row, 11, p95v - p5v);
+10176:    });
+10177:
+10178:    // ---------------------------------------------------------------
+10179:    //  RETRAITS DÉTAILLÉS
+10180:    // ---------------------------------------------------------------
+10181:    setV(wsWD, 3, 2, fr ? ("Stratégie " + (wStrat === "optimized" ? "optimisée" : wStrat) + ": NR ? Meltdown ? REER vol. ? CELI") : ("Strategy " + wStrat + ": NR ? Meltdown ? RRSP vol. ? TFSA"));
+10182:    var retRevD = revD.filter(function(r){ return r.age >= retAge; });
+10183:    retRevD.slice(0, 51).forEach(function(r, i) {
+10184:      var ferr = toNum(r.wRrifMin||0), meltV = toNum(r.wMelt||0), rrVol = toNum(r.wFromRR||0);
+10185:      var tfV = toNum(r.wFromTF||0), nrV = toNum(r.wFromNR||0);
+10186:      var tot = ferr + meltV + rrVol + tfV + nrV;
+10187:      var phase = r.age < qppAge ? (fr ? "Pré-RRQ" : "Pre-QPP") : r.age < oasAge ? (fr ? "Pré-PSV" : "Pre-OAS") : r.age < 72 ? (fr ? "Post-PSV" : "Post-OAS") : (fr ? "FERR" : "RRIF");
+10188:      var note = "";
+10189:      if (r.age === retAge) note = fr ? "Début retraite" : "Retirement start";
+10190:      else if (r.age === qppAge) note = fr ? "RRQ commence" : "QPP starts";
+10191:      else if (r.age === oasAge) note = fr ? "PSV commence" : "OAS starts";
+10192:      else if (r.age === 72) note = fr ? "Conversion FERR" : "RRIF conversion";
+10193:      var row = 5 + i; // header at row 4
+10194:      setV(wsWD, row, 2, y0 + (r.age-age)); setN(wsWD, row, 3, r.age);
+10195:      setN(wsWD, row, 4, ferr); setN(wsWD, row, 5, meltV); setN(wsWD, row, 6, rrVol);
+10196:      setN(wsWD, row, 7, tfV); setN(wsWD, row, 8, nrV); setN(wsWD, row, 9, tot);
+10197:      setV(wsWD, row, 10, phase); setV(wsWD, row, 11, note);
+10198:    });
+10199:
+10200:    // ---------------------------------------------------------------
+10201:    //  FISCALITÉ
+10202:    // ---------------------------------------------------------------
+10203:    var brackets = [0, 20000, 40000, 60000, 80000, 100000, 120000, 150000, 200000, 250000, 300000];
+10204:    brackets.forEach(function(inc, i) {
+10205:      var tx = calcTax(inc, 0, prov);
+10206:      var eff = inc > 0 ? (tx.total / inc) : 0;
+10207:      var row = 6 + i; // header at row 5
+10208:      setN(wsTax, row, 2, inc); setN(wsTax, row, 3, Math.round(tx.fed||tx.basic||0));
+10209:      setN(wsTax, row, 4, Math.round(tx.prov||0)); setN(wsTax, row, 5, Math.round(tx.total));
+10210:      setN(wsTax, row, 6, eff); setN(wsTax, row, 7, tx.marg||0);
+10211:    });
+10212:    // Tax comparison rows (row 21+, header at 20)
+10213:    var txCompRows = [
+10214:      [fr ? "Impôt total nominal" : "Total nominal tax", fmtM(optTax), hasNaive ? fmtM(naiveTax) : "—", hasNaive ? ("-" + fmtM(Math.max(0,taxAlpha))) : "—", "Nominal"],
+10215:      [fr ? "Impôt total réel" : "Total real tax", fmtM(Math.round(optTax/Math.pow(1+(inf||0.021),12))), hasNaive ? fmtM(Math.round(naiveTax/Math.pow(1+(inf||0.021),12))) : "—", hasNaive ? ("-" + fmtM(Math.round(Math.max(0,taxAlpha/Math.pow(1+(inf||0.021),12))))) : "—", fr ? "Actualisé" : "Discounted"],
+10216:      [fr ? "Patrimoine médian" : "Median wealth", fmtM(mc.rMedF||mc.medF||0), hasNaive ? fmtM(mc._naiveMC.rMedF||mc._naiveMC.medF||0) : "—", hasNaive ? ((medDelta>=0?"+":"") + fmtM(medDelta)) : "—", "MC P50"],
+10217:      [fr ? "Taux effectif moyen" : "Avg eff. rate", fmtP(avgEffOpt,1), avgEffNaive==null ? "—" : fmtP(avgEffNaive,1), "", fr ? "Pondéré" : "Weighted"],
+10218:      [fr ? "Alpha fiscal total" : "Total tax alpha", "", "", fmtM(Math.max(0,taxAlpha)), ""]
+10219:    ];
+10220:    txCompRows.forEach(function(r, i) { for (var c = 0; c < 5; c++) setV(wsTax, 21+i, 2+c, r[c]); });
+10221:
+10222:    // ---------------------------------------------------------------
+10223:    //  SENSIBILITÉ & STRESS
+10224:    // ---------------------------------------------------------------
+10225:    var sensInterp = { "Rendement actions": fr?"Facteur dominant":"Dominant factor", "Equity returns": fr?"Facteur dominant":"Dominant factor", "Inflation": fr?"Coût réel cumulé":"Cumulative real cost", "Longévité": fr?"5 ans de plus":"5 extra years", "Longevity": fr?"5 ans de plus":"5 extra years" };
+10226:    (mc.sens || []).slice(0, 8).forEach(function(s, i) {
+10227:      var row = 6 + i; // header at row 5
+10228:      setV(wsSS, row, 1, s.name||""); setV(wsSS, row, 2, (s.lo>=0?"+":"") + s.lo.toFixed(1) + "%");
+10229:      setV(wsSS, row, 3, (s.hi>=0?"+":"") + s.hi.toFixed(1) + "%"); setV(wsSS, row, 4, Math.abs((s.hi||0)-(s.lo||0)).toFixed(1) + "%");
+10230:      setV(wsSS, row, 5, sensInterp[s.name] || "");
+10231:    });
+10232:    // Stress — reference row + scenarios (header at row 17, data starts 18)
+10233:    setV(wsSS, 18, 1, fr ? "Référence" : "Reference"); setV(wsSS, 18, 2, "—");
+10234:    setV(wsSS, 18, 3, Math.round((mc.succ||0)*100) + "%"); setV(wsSS, 18, 4, "—");
+10235:    setV(wsSS, 18, 5, Math.round((mc.rMedF||mc.medF||0)/1000) + " K$"); setV(wsSS, 18, 6, Math.round((mc.rVar5||mc.var5||0)/1000) + " K$");
+10236:    setV(wsSS, 18, 7, mc.p5Ruin >= 999 ? (fr ? "Jamais" : "Never") : String(mc.p5Ruin)); setV(wsSS, 18, 8, "—");
+10237:    setV(wsSS, 18, 9, fr ? "Plan tel que configuré" : "Plan as configured");
+10238:    var st = stressResults || window._autoStress || [];
+10239:    st.slice(0, 5).forEach(function(s, i) {
+10240:      var delta = Math.round(((s.succ||0) - (mc.succ||0)) * 100);
+10241:      var resilience = (s.succ||0) >= 0.8 ? (fr?"Robuste":"Robust") : (s.succ||0) >= 0.65 ? (fr?"Modéré":"Moderate") : (fr?"Fragile":"Fragile");
+10242:      var row = 19 + i;
+10243:      setV(wsSS, row, 1, s.name||s.key||""); setV(wsSS, row, 2, s.period||"—"); setV(wsSS, row, 3, Math.round((s.succ||0)*100) + "%");
+10244:      setV(wsSS, row, 4, (delta>=0?"+":"") + delta + " pts"); setV(wsSS, row, 5, Math.round((s.medF||0)/1000) + " K$");
+10245:      setV(wsSS, row, 6, Math.round((s.var5||0)/1000) + " K$"); setV(wsSS, row, 7, s.medRuin>=999 ? (fr?"Jamais":"Never") : String(s.medRuin));
+10246:      setV(wsSS, row, 8, resilience); setV(wsSS, row, 9, s.desc||"");
+10247:    });
+10248:
+10249:    // ---------------------------------------------------------------
+10250:    //  SUCCESSION
+10251:    // ---------------------------------------------------------------
+10252:    var eData = [
+10253:      ["P5", mc.p5EstateNet||0, mc.p5EstateTax||0, fr?"Marchés très défavorables":"Very unfavorable markets"],
+10254:      ["P10", mc.p10EstateNet||0, mc.p10EstateTax||0, fr?"Sous la médiane":"Below median"],
+10255:      ["P25", mc.p25EstateNet||0, mc.p25EstateTax||0, fr?"Quart inférieur":"Lower quartile"],
+10256:      ["P50", mc.medEstateNet||0, mc.medEstateTax||0, fr?"Résultat le plus probable":"Most likely outcome"],
+10257:      ["P75", mc.p75EstateNet||0, mc.p75EstateTax||0, fr?"Marchés favorables":"Favorable markets"],
+10258:      ["P90", mc.p90EstateNet||0, mc.p90EstateTax||0, fr?"Scénario optimiste":"Optimistic scenario"],
+10259:      ["P95", mc.p95EstateNet||0, mc.p95EstateTax||0, fr?"Marchés très haussiers":"Very bullish markets"]
+10260:    ];
+10261:    eData.forEach(function(ed, i) {
+10262:      var row = 6 + i; // header at row 5
+10263:      setV(wsE, row, 2, ed[0]); setN(wsE, row, 3, ed[1]); setN(wsE, row, 4, ed[2]); setN(wsE, row, 5, ed[1]+ed[2]); setV(wsE, row, 6, ed[3]);
+10264:    });
+10265:    // Estate cascade (header at row 16, data at 17+)
+10266:    var medGross = (mc.medEstateNet||0) + (mc.medEstateTax||0);
+10267:    var cascadeData = [
+10268:      [fr?"Actifs financiers bruts":"Gross financial assets", medGross, "—", fr?"REER + CELI + NR au décès":"RRSP + TFSA + NR at death"],
+10269:      [fr?"(-) Disposition réputée FERR":"(-) Deemed RRIF", -(mc.medEstateTax||0)*0.7, fr?"Taux marginal":"Marginal rate", ""],
+10270:      [fr?"(-) Gains en capital NR":"(-) NR capital gains", -(mc.medEstateTax||0)*0.2, "50% inclusion", ""],
+10271:      [fr?"(-) Résidence principale":"(-) Primary residence", 0, fr?"Exempt":"Exempt", ""],
+10272:      [fr?"(-) Frais probate":"(-) Probate fees", -10000, prov==="QC"?"~0%":"~1.5%", ""],
+10273:      [fr?"(-) Frais admin.":"(-) Admin fees", -15000, fr?"Estimé":"Estimated", ""],
+10274:      [fr?"(+) Assurance-vie":"(+) Life insurance", lifeInsBenefit||0, fr?"Non imposable":"Tax-free", ""],
+10275:      [fr?"HÉRITAGE NET":"NET ESTATE", medGross-(mc.medEstateTax||0)-25000+(lifeInsBenefit||0), "", ""]
+10276:    ];
+10277:    cascadeData.forEach(function(cd, i) {
+10278:      setV(wsE, 17+i, 2, cd[0]); setN(wsE, 17+i, 3, cd[1]); setV(wsE, 17+i, 4, cd[2]); setV(wsE, 17+i, 5, cd[3]);
+10279:    });
+10280:    setV(wsE, 28, 2, (fr?"Impôt successoral estimé: ":"Estate tax: ") + fmtM(mc.medEstateTax||0) + "  •  " + (fr?"Assurance-vie: ":"Life insurance: ") + fmtM(lifeInsBenefit||0) + "  •  " + (fr?"Écart: ":"Gap: ") + fmtM(Math.max(0,(mc.medEstateTax||0)-(lifeInsBenefit||0))));
+10281:
+10282:    // ---------------------------------------------------------------
+10283:    //  IMMOBILIER
+10284:    // ---------------------------------------------------------------
+10285:    var activeProps = (props || []).filter(function(p){ return p.on; }).slice(0, 3);
+10286:    activeProps.forEach(function(p, i) {
+10287:      var row = 6 + i; // header at row 5
+10288:      setV(wsRE, row, 1, p.name || ((fr?"Propriété ":"Property ") + (i+1)));
+10289:      setN(wsRE, row, 2, p.val||0); setN(wsRE, row, 3, p.mb||0); setN(wsRE, row, 4, (p.val||0)-(p.mb||0));
+10290:      setV(wsRE, row, 5, ((p.mr||0)*100).toFixed(1)+"%"); setV(wsRE, row, 6, (p.ma||0)+(fr?" ans":" yrs"));
+10291:      setV(wsRE, row, 7, ((p.ri||0)*100).toFixed(1)+"%"); setN(wsRE, row, 8, p.rm||0);
+10292:      setV(wsRE, row, 9, p.pri?(fr?"Résidence":"Primary"):(fr?"Locatif":"Rental"));
+10293:    });
+10294:    var pv = activeProps.reduce(function(s,p){ return s + toNum(p.val||0); }, 0);
+10295:    var pm2 = activeProps.reduce(function(s,p){ return s + toNum(p.mb||0); }, 0);
+10296:    var trR = 6 + activeProps.length;
+10297:    setV(wsRE, trR, 1, "Total"); setN(wsRE, trR, 2, pv); setN(wsRE, trR, 3, pm2); setN(wsRE, trR, 4, pv-pm2);
+10298:    // RE trajectory (header at row 13, data at 14+)
+10299:    var milestoneYears = [0, 3, 8, 13, retAge-age, qppAge-age, 28, 33, 38, 43, deathAge-age];
+10300:    milestoneYears = milestoneYears.filter(function(v,i,a){ return a.indexOf(v)===i && v>=0; }).sort(function(a,b){ return a-b; });
+10301:    milestoneYears.slice(0, 15).forEach(function(yi, i) {
+10302:      var pd = (mc.pD || [])[yi]; if (!pd) return;
+10303:      var reVal = toNum(pd.reM||0), mtgVal = toNum(pd.mtM||pd.reMtgM||0), eq = reVal - mtgVal;
+10304:      var totalWealth = toNum(pd.p50||0) + eq;
+10305:      var pctWealth = totalWealth > 0 ? eq / totalWealth : 0;
+10306:      var curAge = pd.age || (age + yi);
+10307:      var event = yi === 0 ? (fr?"Aujourd'hui":"Today") : curAge === retAge ? (fr?"Retraite":"Retirement") : mtgVal <= 0 && yi > 0 ? (fr?"Hyp. remboursée":"Mtg paid off") : curAge === deathAge ? "Horizon" : "";
+10308:      var row = 14 + i;
+10309:      setV(wsRE, row, 1, y0+yi); setN(wsRE, row, 2, curAge); setN(wsRE, row, 3, reVal);
+10310:      setN(wsRE, row, 4, mtgVal); setN(wsRE, row, 5, eq); setN(wsRE, row, 6, pctWealth); setV(wsRE, row, 7, event);
+10311:    });
+10312:
+10313:    // ---------------------------------------------------------------
+10314:    //  ENTREPRISE (CCPC)
+10315:    // ---------------------------------------------------------------
+10316:    if (bizOn) {
+10317:      var wbiz = 0;
+10318:      revD.forEach(function(r) {
+10319:        if (wbiz >= 37) return;
+10320:        if ((r.corpBal||0) <= 0 && (r.corpTax||0) <= 0 && (r.corpDiv||0) <= 0) return;
+10321:        var bPhase = r.age < retAge ? (fr?"Accumulation":"Accumulation") : (fr?"Extraction":"Extraction");
+10322:        var row = 6 + wbiz; // header at row 5
+10323:        setV(wsB, row, 1, y0+(r.age-age)); setN(wsB, row, 2, r.age||0);
+10324:        setN(wsB, row, 3, r.corpBal||0); setN(wsB, row, 4, r.corpTax||0); setN(wsB, row, 5, r.corpDiv||0);
+10325:        setN(wsB, row, 6, r.corpSal||0); setN(wsB, row, 7, r.corpExtract||0); setN(wsB, row, 8, r.corpCDA||0);
+10326:        setN(wsB, row, 9, r.corpRDTOH||0); setN(wsB, row, 10, r.corpPassive||0);
+10327:        setV(wsB, row, 11, (r.corpPassive||0)>50000?(fr?"OUI":"YES"):""); setV(wsB, row, 12, bPhase);
+10328:        wbiz++;
+10329:      });
+10330:    }
+10331:
+10332:    // ---------------------------------------------------------------
+10333:    //  MÉTHODOLOGIE
+10334:    // ---------------------------------------------------------------
+10335:    var methData = [
+10336:      [fr?"1. Projection déterministe":"1. Deterministic projection", fr?"Chemin unique, rendements espérés":"Single path, expected returns", "optimizeDecum()"],
+10337:      [fr?"2. Monte Carlo":"2. Monte Carlo", nSim + (fr?" sims, rendements aléatoires":" sims, random returns"), "t-Student (df=5)"],
+10338:      [fr?"3. Corrélation":"3. Correlation", fr?"5 classes d'actifs corrélées":"5 correlated asset classes", "Cholesky 5×5"],
+10339:      [fr?"4. Fiscalité":"4. Tax", fr?"Paliers progressifs fédéral + prov.":"Progressive fed + prov brackets", fr?"Crédits âge/pension":"Age/pension credits"],
+10340:      [fr?"5. Mortalité":"5. Mortality", stochMort?"CPM 2023":(fr?"Déterministe":"Deterministic"), fr?"Institut canadien des actuaires":"Canadian Institute of Actuaries"],
+10341:      [fr?"6. Retraits":"6. Withdrawals", fr?"Ordre de priorité dynamique":"Dynamic priority order", "NR ? Meltdown ? REER ? CELI"],
+10342:      [fr?"7. Lissage":"7. Smoothing", fr?"Évite les variations brusques":"Avoids abrupt changes", "Meltdown ±40%/an, MC blend 70/30"],
+10343:      [fr?"8. Comportemental":"8. Behavioral", fr?"Ajustement selon l'âge":"Age-based adjustment", "Go " + Math.round(goP*100) + "% / Slow " + Math.round(slP*100) + "% / No " + Math.round(noP*100) + "%"]
+10344:    ];
+10345:    methData.forEach(function(md, i) { setV(wsM, 6+i, 2, md[0]); setV(wsM, 6+i, 3, md[1]); setV(wsM, 6+i, 4, md[2]); });
+10346:    // Smoothing (header at row 17, data at 18+)
+10347:    var smoothData = [
+10348:      ["MELT","±40%/an",fr?"Variation meltdown":"Meltdown variation"],["MELT_FLOOR","5 000 $",fr?"Variation minimum":"Min variation"],
+10349:      ["SPEND","±30%/an",fr?"Variation retraits":"Spending variation"],["SPEND_FLOOR","10 000 $",fr?"Min dépenses":"Min spending"],
+10350:      ["BACK","±40%",fr?"Cap passe arrière":"Backward pass cap"],["BACK_FLOOR","15 000 $",fr?"Plancher":"Floor"],
+10351:      ["NR_OVER","1.50×",fr?"Cap NR":"NR cap"],["MC_BLEND","70/30",fr?"70% préc., 30% cible":"70% prev, 30% target"]
+10352:    ];
+10353:    smoothData.forEach(function(sd, i) { setV(wsM, 18+i, 2, sd[0]); setV(wsM, 18+i, 3, sd[1]); setV(wsM, 18+i, 4, sd[2]); });
+10354:    // Report ID
+10355:    setV(wsM, 29, 3, "v11.12.9"); setV(wsM, 30, 3, todayLong); setV(wsM, 31, 3, cName||(fr?"Client":"Client"));
+10356:    setV(wsM, 32, 3, prov); setV(wsM, 33, 3, String(nSim));
+10357:    setV(wsM, 34, 3, stochMort ? "CPM 2023" : ((fr?"Déterministe, âge fin: ":"Deterministic, end age: ") + deathAge));
+10358:    setV(wsM, 35, 3, stochInf ? (fr?"Stochastique":"Stochastic") : ((inf*100).toFixed(1) + "%"));
+10359:
+10360:    // Footer on all sheets
+10361:    var footerText = "BuildFi Technologies inc. — buildfi.ca  •  " + (fr?"Outil informatif. Ne constitue pas un conseil financier.":"Informational tool. Not financial advice.") + " © " + y0;
+10362:    [wsS,wsP,wsProj,wsCF,wsMC,wsWD,wsTax,wsSS,wsE,wsRE,wsB,wsM].forEach(function(ws) {
+10363:      if (!ws) return;
+10364:      var lr = Math.max((ws.rowCount || 0) + 2, 35);
+10365:      setV(ws, lr, 2, footerText);
+10366:    });
+10367:
+10368:    // README navigation links
+10369:    if (wsReadme) {
+10370:      var mapRow = 13;
+10371:      wb.worksheets.forEach(function(wsx) {
+10372:        if (!wsx || wsx.name === "01 - README" || wsx.name === "00 - Couverture" || wsx.state === "veryHidden") return;
+10373:        wsReadme.getCell("B" + mapRow).value = { text: wsx.name, hyperlink: "#'" + wsx.name + "'!A1" };
+10374:        wsReadme.getCell("B" + mapRow).font = { name: "Calibri", size: 11, color: { argb: "FF1D4ED8" }, underline: true };
+10375:        mapRow++;
+10376:      });
+10377:    }
+10378:
+10379:    // ---------------------------------------------------------------
+10380:    //  WRITE & DOWNLOAD
+10381:    // ---------------------------------------------------------------
+10382:    var buf = await wb.xlsx.writeBuffer();
+10383:    var blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+10384:    var url = URL.createObjectURL(blob);
+10385:    var a = document.createElement("a");
+10386:    a.href = url;
+10387:    a.download = filename;
+10388:    document.body.appendChild(a);
+10389:    a.click();
+10390:    document.body.removeChild(a);
+10391:    URL.revokeObjectURL(url);
+10392:    } catch(_exportErr) { console.error("Excel export error:", _exportErr); alert("Erreur export Excel: " + _exportErr.message); }
+10393:  };
+10394:
+10395:  // === SPRINT 5C: Coaching suggestions ===
+10396:  var _coachApplied = useState({}), coachApplied = _coachApplied[0], setCoachApplied = _coachApplied[1];
+10397:  var _coachDismissed = useState({}), coachDismissed = _coachDismissed[0], setCoachDismissed = _coachDismissed[1];
+10398:  var _optState = useState(null), optResult = _optState[0], setOptResult = _optState[1];
+10399:  var _optRun = useState(false), optRunning = _optRun[0], setOptRunning = _optRun[1];
+10400:  var _smithState = useState(null), smithResult = _smithState[0], setSmithResult = _smithState[1];
+10401:  var _smithRun = useState(false), smithRunning = _smithRun[0], setSmithRunning = _smithRun[1];
+10402:  var _optProg = useState(0), optProgress = _optProg[0], setOptProgress = _optProg[1];
+10403:  // === SAM (Strategic Advice Manager) State ===
+10404:  var _samRes = useState(null), samResults = _samRes[0], setSamResults = _samRes[1];
+10405:  var _samView = useState("sam"), samView = _samView[0], setSamView = _samView[1];
+10406:  var _samRunning = useState(false), samRunning = _samRunning[0], setSamRunning = _samRunning[1];
+10407:  var _evalSAM = function() {
+10408:    var baseP = Object.assign({}, _mcBaseParams);
+10409:    var baseR = null;
+10410:    try { baseR = optimizeDecum(baseP); } catch(e) { return []; }
+10411:    if (!baseR || !baseR.schedule) return [];
+10412:    var baseWealth = baseR.finalBal || 0;
+10413:    var baseTax = baseR.totalTax || 0;
+10414:    var results = [];
+10415:    SAM_STRATEGIES.forEach(function(strat) {
+10416:      if (!strat.cond(baseP)) return;
+10417:      try {
+10418:        var modP = strat.apply(baseP);
+10419:        var modR = optimizeDecum(modP);
+10420:        if (!modR || !modR.schedule) return;
+10421:        var modWealth = modR.finalBal || 0;
+10422:        var modTax = modR.totalTax || 0;

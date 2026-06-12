@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planner Bridge Beta</title>
+  <link rel="stylesheet" href="./planner-bridge.css">
+  <script defer src="./planner-bridge.js"></script>
+</head>
+<body data-planner-theme="light" data-planner-view="builder">
+  <div class="planner-shell">
+    <aside class="planner-setup">
+      <div class="kicker">Planner Setup</div>
+      <h1>Build the plan</h1>
+      <p>The left rail keeps the Product behavior: setup, step orientation, and fast access to the moving parts.</p>
+      <nav class="setup-steps">
+        <a class="is-active" href="#cover">Overview</a>
+        <a href="#household">Household</a>
+        <a href="#baseline">Baseline</a>
+        <a href="#explore">Explore</a>
+        <a href="#reading-chapter">Read the plan</a>
+        <a href="#actions">Next actions</a>
+      </nav>
+      <div class="theme-switch">
+        <div>Theme for planner shell</div>
+        <div class="button-row">
+          <button type="button" data-set-theme="light">Light</button>
+          <button type="button" data-set-theme="dark">Dark</button>
+        </div>
+      </div>
+      <div class="mode-switch">
+        <div>Switch how the same plan is presented</div>
+        <div class="button-row">
+          <button type="button" data-set-view="builder">Builder view</button>
+          <button type="button" data-set-view="reading">Reading view</button>
+        </div>
+      </div>
+      <div class="setup-card" style="margin-top:18px">
+        <div class="kicker">Live inputs</div>
+        <div class="control-grid" style="margin-top:10px">
+          <div class="control"><label>Province</label><select><option>Quebec</option></select></div>
+          <div class="control"><label>Retirement age</label><input value="61" readonly></div>
+          <div class="control"><label>Spending target</label><input value="$74,000" readonly></div>
+          <div class="control"><label>CPP/QPP start</label><select><option>70</option></select></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="planner-main">
+      <div class="planner-topbar">
+        <div class="planner-brand">BuildFi Planner Bridge Beta</div>
+        <div class="planner-links">
+          <a href="./index.html">Back to Round 3.0</a>
+          <a href="../../specs/2026-04-28-round-3-0-planner-bridge.md">Spec note</a>
+        </div>
+      </div>
+
+      <section class="planner-cover" id="cover">
+        <div class="planner-cover-grid">
+          <div>
+            <div class="kicker">Bridge surface</div>
+            <h1>One planner, two ways to work with the same plan.</h1>
+            <p>Builder view keeps the simulator alive. Reading view slows the planner down enough that the user can understand what the simulator is telling them. This is the bridge idea in one shell.</p>
+            <div class="cover-actions">
+              <a class="btn-gold" href="#baseline">See the baseline</a>
+              <a class="btn-outline" href="#reading-chapter">Read the plan</a>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="kicker">Current baseline</div>
+            <div class="metric-value">91%</div>
+            <p>Plan resilience is shown in the same planner shell that also explains what the number actually means.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="planner-band planner-section" id="household">
+        <h2 class="section-title">Household summary</h2>
+        <p class="mode-note builder-only">In builder view, this works like a control-aware dashboard band.</p>
+        <p class="mode-note reading-only">In reading view, the same band becomes a calm orientation surface before deeper explanation.</p>
+        <div class="summary-grid">
+          <article class="summary-card"><div class="value">$1.48M</div><div class="label">Invested assets</div><p>RRSP, TFSA, non-reg, cash reserve.</p></article>
+          <article class="summary-card"><div class="value">$74k</div><div class="label">Spending target</div><p>Before tax, indexed at 2.2%.</p></article>
+          <article class="summary-card"><div class="value">70</div><div class="label">CPP/QPP age</div><p>Delayed start to strengthen late-life guaranteed income.</p></article>
+          <article class="summary-card"><div class="value">91%</div><div class="label">Plan resilience</div><p>Central baseline survives under current assumptions.</p></article>
+        </div>
+      </section>
+
+      <section class="planner-block planner-section" id="baseline">
+        <h2 class="section-title">Baseline versus explored</h2>
+        <p>The planner should use the same compare grammar as the tools, but with more interpretive depth and a clearer bridge to report language.</p>
+        <div class="compare-grid">
+          <article class="compare-card">
+            <div class="label">Your baseline plan</div>
+            <div class="value">91%</div>
+            <p>Balanced registered draws, delayed CPP/QPP, and enough room to protect future tax flexibility.</p>
+          </article>
+          <article class="compare-card" id="planner-readout">
+            <div class="label" data-bind="label">Baseline plan</div>
+            <div class="value" data-bind="score">91%</div>
+            <p data-bind="effect">Current baseline keeps taxes moderate and protects late-life income.</p>
+          </article>
+        </div>
+        <div class="chip-row" data-scenario-group data-scenario-target="planner-readout">
+          <button class="chip is-active" data-scenario data-payload='{"label":"Baseline plan","score":"91%","effect":"Current baseline keeps taxes moderate and protects late-life income."}'>Baseline</button>
+          <button class="chip" data-scenario data-payload='{"label":"Delay CPP/QPP to 70","score":"94%","effect":"Later guaranteed income improves longevity protection but creates a tighter early bridge."}'>Delay benefits</button>
+          <button class="chip" data-scenario data-payload='{"label":"Spend 10% more","score":"83%","effect":"Higher early spending narrows late-retirement margin and increases drawdown pressure."}'>Spend +10%</button>
+          <button class="chip" data-scenario data-payload='{"label":"Reduce fees to 0.6%","score":"93%","effect":"Lower fees preserve optionality without changing lifestyle assumptions."}'>Lower fees</button>
+        </div>
+      </section>
+
+      <section class="chapter-block planner-section reading-only" id="reading-chapter">
+        <div class="kicker">Reading Mode</div>
+        <h2>Why this plan works</h2>
+        <p class="chapter-frame">Reading view is where the planner starts teaching. The same plan becomes a chapter-like explanation: bridge years are funded carefully, government income is delayed for protection, and withdrawals are smoothed to reduce future tax spikes.</p>
+      </section>
+
+      <section class="planner-block planner-section" id="explore">
+        <h2 class="section-title">Trajectory and interpretation</h2>
+        <p class="builder-only">Builder view keeps the plot close to the controls so the user can test changes quickly.</p>
+        <p class="reading-only">Reading view turns the same plot into an interpretive stop: what matters is not just the line, but what the line says about durability and pressure.</p>
+        <div class="chart-stage">
+          <div class="wave"></div>
+          <div class="wave alt"></div>
+          <div class="wave third"></div>
+        </div>
+        <p style="margin-top:14px">The bridge behavior is not about hiding the chart. It is about pairing the chart with enough interpretation that the user can carry the lesson into the report later.</p>
+      </section>
+
+      <section class="planner-block planner-section" id="plan-structure">
+        <h2 class="section-title">Plan structure</h2>
+        <div class="dual-grid">
+          <article class="mini-card">
+            <div class="kicker">Builder interpretation</div>
+            <p>Registered draws are used earlier to smooth future taxable income. TFSA remains a flexibility reserve instead of becoming the first funding source by default.</p>
+          </article>
+          <article class="mini-card guide-bridge">
+            <div class="kicker">Reading interpretation</div>
+            <p>This is where the planner starts to look like the guide/report family: the plan is explained as a sequence of decisions, not only as an output screen.</p>
+          </article>
+        </div>
+        <div class="planner-block" style="margin-top:18px; padding:22px;">
+          <table>
+            <thead><tr><th>Phase</th><th>Primary source</th><th>Target draw</th></tr></thead>
+            <tbody>
+              <tr><td>Bridge years</td><td>RRSP + cash</td><td class="mono">$58k</td></tr>
+              <tr><td>Government live</td><td>TFSA support</td><td class="mono">$34k</td></tr>
+              <tr><td>Later retirement</td><td>Mixed withdrawals</td><td class="mono">$22k</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="planner-block planner-section" id="actions">
+        <h2 class="section-title">Next actions</h2>
+        <div class="action-list">
+          <div class="action-item"><strong>Lock the setup once</strong><p>The planner should carry household facts through tools, reading surfaces, and reports without forcing the user to re-orient each time.</p></div>
+          <div class="action-item"><strong>Keep the baseline explicit</strong><p>Explored scenarios should remain visible as alternatives, not silently replace the recommended path.</p></div>
+          <div class="action-item"><strong>Make report handoff feel natural</strong><p>After using the planner, the user should feel ready for the report because the planner has already taught the plan language.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="planner-insights">
+      <div class="kicker">Bridge Insights</div>
+      <h2>Why this matters</h2>
+      <p>The planner is where the portfolio can stop feeling fragmented. It is the only surface that naturally touches setup, simulation, explanation, and report handoff.</p>
+      <div class="insight-stack">
+        <article class="insight-card">
+          <h3>Product behavior stays alive</h3>
+          <p>Inputs, presets, theme persistence, and compare logic keep the planner anchored in the Product family.</p>
+        </article>
+        <article class="insight-card">
+          <h3>Reading behavior enters gradually</h3>
+          <p>Reading view adds chapter-like interpretation without turning the planner into a static report.</p>
+        </article>
+        <article class="insight-card">
+          <h3>This can guide implementation order</h3>
+          <p>If this feels right, debt and decum can follow the shared Product shell, while guides and reports remain in Reading, and the planner mediates between them.</p>
+        </article>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

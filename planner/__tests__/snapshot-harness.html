@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BuildFi v3 — Snapshot Harness</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; max-width: 900px; color: #1a1a1a; }
+  h1 { font-size: 18px; margin: 0 0 8px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .controls { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  button { padding: 8px 14px; background: #c49a1a; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  button:hover { background: #a88416; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  input[type="number"] { padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; width: 80px; font-size: 13px; }
+  select { padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; }
+  label { font-size: 13px; color: #444; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid #eee; text-align: left; }
+  th { background: #fafafa; font-weight: 600; color: #444; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+  td.num { text-align: right; font-family: 'Menlo', monospace; }
+  .pass { color: #2a8c46; font-weight: 600; }
+  .fail { color: #d04848; font-weight: 600; }
+  .pending { color: #b8860b; }
+  pre { background: #f7f7f7; padding: 12px; border-radius: 6px; font-size: 11px; overflow-x: auto; max-height: 280px; }
+  .status { padding: 6px 10px; border-radius: 4px; font-size: 12px; margin-top: 8px; }
+  .status-info { background: #eef4fb; color: #2a5d8f; }
+  .status-err { background: #fbeeee; color: #a43a3a; }
+  iframe { width: 100%; height: 1px; opacity: 0; position: absolute; left: -9999px; }
+</style>
+</head>
+<body>
+
+<h1>v3 Snapshot Harness</h1>
+<div class="sub">Runs each profile in <code>v3-profiles.json</code> against <code>planner_v3.html</code>'s <code>runMC</code>, writes <code>{ succ, medF, rVar5, medEstateNet, medEstateTax, p5Ruin }</code> to <code>snapshots/&lt;profile&gt;.json</code>, compares to baseline.</div>
+
+<div class="controls">
+  <button id="btnRun" onclick="runAll()">▶ Run all profiles</button>
+  <label>Tier:
+    <select id="tier">
+      <option value="ci" selected>CI (1 000 sims)</option>
+      <option value="nightly">Nightly (5 000 sims)</option>
+    </select>
+  </label>
+  <label>Seed override: <input type="number" id="seedOverride" placeholder="(per profile)"></label>
+  <button onclick="downloadAll()">⬇ Download JSON</button>
+  <button onclick="clearResults()">Clear</button>
+</div>
+
+<div id="status" class="status status-info">Idle. Click "Run all profiles" to capture a snapshot.</div>
+
+<table id="resultsTable">
+  <thead>
+    <tr>
+      <th>Profile</th>
+      <th class="num">Succ</th>
+      <th class="num">Med F ($)</th>
+      <th class="num">VaR5 ($)</th>
+      <th class="num">Estate Net ($)</th>
+      <th class="num">Estate Tax ($)</th>
+      <th class="num">p5 Ruin</th>
+      <th>vs Baseline</th>
+      <th class="num">Time</th>
+    </tr>
+  </thead>
+  <tbody id="resultsBody"></tbody>
+</table>
+
+<details style="margin-top:16px">
+  <summary style="cursor:pointer;font-size:12px;color:#666">Raw JSON</summary>
+  <pre id="rawJson">(no results yet)</pre>
+</details>
+
+<iframe id="plannerFrame" src="../planner_v3.html"></iframe>
+
+<script>
+/* Tolerance bands from v3-profiles.json _tolerance */
+const DEFAULT_TOLERANCE = { succ: 0.003, medF_pct: 0.015, rVar5_pct: 0.02, rMedEstateNet_pct: 0.02, rMedEstateTax_pct: 0.02 };
+
+let profilesDoc = null;
+let currentResults = {};
+let currentBaselines = {};
+
+function setStatus(msg, isErr) {
+  const s = document.getElementById("status");
+  s.textContent = msg;
+  s.className = "status " + (isErr ? "status-err" : "status-info");
+}
+
+async function loadProfiles() {
+  const resp = await fetch("./v3-profiles.json", { cache: "no-store" });
+  if (!resp.ok) throw new Error("Cannot load v3-profiles.json: " + resp.status);
+  return await resp.json();
+}
+
+async function loadBaseline(id, tier) {
+  const dir = tier === "nightly" ? "snapshots-nightly" : "snapshots";
+  try {
+    const resp = await fetch("./" + dir + "/" + id + ".json", { cache: "no-store" });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (e) { return null; }
+}
+
+function withinTolerance(current, baseline, tol) {
+  if (!baseline || !current) return null;
+  const diffs = {};
+  if (typeof baseline.succ === "number") diffs.succ = Math.abs(current.succ - baseline.succ);
+  const pctDiff = (cur, base) => (base && Math.abs(base) > 1e-6) ? Math.abs((cur - base) / base) : 0;
+  diffs.medF = pctDiff(current.medF, baseline.medF);
+  diffs.rVar5 = pctDiff(current.rVar5, baseline.rVar5);
+  diffs.medEstateNet = pctDiff(current.medEstateNet, baseline.medEstateNet);
+  diffs.medEstateTax = pctDiff(current.medEstateTax, baseline.medEstateTax);
+  const pass =
+    diffs.succ <= tol.succ &&
+    diffs.medF <= tol.medF_pct &&
+    diffs.rVar5 <= tol.rVar5_pct &&
+    diffs.medEstateNet <= tol.rMedEstateNet_pct &&
+    diffs.medEstateTax <= tol.rMedEstateTax_pct;
+  return { pass, diffs };
+}
+
+function waitForFrameReady(iframe) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const tick = () => {
+      const w = iframe.contentWindow;
+      if (w && typeof w.runMC === "function") return resolve(w);
+      if (Date.now() - start > 30000) return reject(new Error("v3 runMC not exposed after 30 s"));
+      setTimeout(tick, 150);
+    };
+    tick();
+  });
+}
+
+/* Normalize legacy property schema (v3-profiles.json writes mort/rate/term/
+ * amort/rent/exp/tax/apprRate) into the canonical engine keys
+ * (mb/mr/mt1/ma/rm/ox/pt/appRate/ri). Engine reads mb/mr/ma/rm/ox/pt so
+ * missing keys produce zero-valued projections — snapshots were drifting
+ * silently for real-estate profiles before this mapping was added. */
+function normalizeProps(params) {
+  if (!params || !Array.isArray(params.props)) return params;
+  params.props = params.props.map(function(pr) {
+    var out = Object.assign({}, pr);
+    if (out.mb == null && out.mort != null) out.mb = out.mort;
+    if (out.mr == null && out.rate != null) out.mr = out.rate;
+    if (out.mr2 == null && out.renewRate != null) out.mr2 = out.renewRate;
+    if (out.mt1 == null && out.term != null) out.mt1 = out.term;
+    if (out.ma == null && out.amort != null) out.ma = out.amort;
+    if (out.rm == null && out.rent != null) out.rm = out.rent;
+    if (out.ox == null && out.exp != null) out.ox = out.exp;
+    if (out.pt == null && out.tax != null) out.pt = out.tax;
+    if (out.ri == null && out.appRate != null) out.ri = out.appRate;
+    if (out.ri == null && out.apprRate != null) out.ri = out.apprRate;
+    return out;
+  });
+  return params;
+}
+
+async function runProfile(profile, tier, win) {
+  const nSim = tier === "nightly" ? 5000 : 1000;
+  const params = normalizeProps(Object.assign({}, profile.params, { nSim: nSim }));
+  const t0 = performance.now();
+  let result;
+  try {
+    if (typeof win.runMC !== "function") throw new Error("runMC not on window");
+    /* Seed the RNG if a seedable variant is available — Phase 0.5 will add it. */
+    if (typeof win.__bfSeed === "function" && typeof profile.seed === "number") win.__bfSeed(profile.seed);
+    result = win.runMC(params, nSim);
+  } catch (e) {
+    return { error: e.message, elapsed_ms: Math.round(performance.now() - t0) };
+  }
+  const elapsed_ms = Math.round(performance.now() - t0);
+  return {
+    profile_id: profile.id, tier: tier, nSim: nSim, seed: profile.seed,
+    succ: result.succ,
+    medF: (result.rMedF != null ? result.rMedF : (result.medF || 0)),
+    rVar5: (result.rVar5 != null ? result.rVar5 : (result.var5 || 0)),
+    medEstateNet: result.medEstateNet || 0,
+    medEstateTax: result.medEstateTax || 0,
+    p5Ruin: result.p5Ruin || 999,
+    elapsed_ms: elapsed_ms,
+    _schema: "v3.1-snapshot"
+  };
+}
+
+async function runAll() {
+  const btn = document.getElementById("btnRun");
+  btn.disabled = true;
+  setStatus("Loading profiles…");
+  try {
+    profilesDoc = await loadProfiles();
+  } catch (e) {
+    setStatus("Failed to load profiles: " + e.message, true);
+    btn.disabled = false; return;
+  }
+  const tol = profilesDoc._tolerance || DEFAULT_TOLERANCE;
+  const tier = document.getElementById("tier").value;
+  const tbody = document.getElementById("resultsBody");
+  tbody.innerHTML = "";
+  currentResults = {};
+  currentBaselines = {};
+
+  setStatus("Waiting for planner_v3.html to expose runMC…");
+  const iframe = document.getElementById("plannerFrame");
+  let win;
+  try {
+    win = await waitForFrameReady(iframe);
+  } catch (e) {
+    setStatus("Harness error: " + e.message + " — ensure runMC is exposed on window in planner_v3.html.", true);
+    btn.disabled = false; return;
+  }
+
+  for (const profile of profilesDoc.profiles) {
+    setStatus("Running " + profile.id + " (" + tier + ")…");
+    const row = document.createElement("tr");
+    row.innerHTML = "<td>" + profile.id + "</td><td class='num pending' colspan='8'>running…</td>";
+    tbody.appendChild(row);
+
+    const baseline = await loadBaseline(profile.id, tier);
+    currentBaselines[profile.id] = baseline;
+
+    const result = await runProfile(profile, tier, win);
+    currentResults[profile.id] = result;
+
+    if (result.error) {
+      row.innerHTML = "<td>" + profile.id + "</td><td class='fail' colspan='8'>ERROR: " + result.error + "</td>";
+      continue;
+    }
+    const cmp = baseline ? withinTolerance(result, baseline, tol) : null;
+    const cmpTxt = cmp
+      ? (cmp.pass
+          ? "<span class='pass'>✓ within tol.</span>"
+          : "<span class='fail'>✗ out of tol.</span> Δsucc=" + (cmp.diffs.succ || 0).toFixed(4)
+            + " ΔmedF=" + ((cmp.diffs.medF || 0) * 100).toFixed(2) + "%"
+            + " ΔVaR5=" + ((cmp.diffs.rVar5 || 0) * 100).toFixed(2) + "%")
+      : "<span class='pending'>no baseline</span>";
+
+    const f$ = (n) => (n == null ? "—" : Math.round(n).toLocaleString("en-CA"));
+    row.innerHTML = "<td>" + profile.id + "</td>"
+      + "<td class='num'>" + (result.succ * 100).toFixed(1) + "%</td>"
+      + "<td class='num'>" + f$(result.medF) + "</td>"
+      + "<td class='num'>" + f$(result.rVar5) + "</td>"
+      + "<td class='num'>" + f$(result.medEstateNet) + "</td>"
+      + "<td class='num'>" + f$(result.medEstateTax) + "</td>"
+      + "<td class='num'>" + (result.p5Ruin >= 999 ? "never" : result.p5Ruin) + "</td>"
+      + "<td>" + cmpTxt + "</td>"
+      + "<td class='num'>" + result.elapsed_ms + " ms</td>";
+  }
+
+  document.getElementById("rawJson").textContent = JSON.stringify(currentResults, null, 2);
+  setStatus("Done. " + Object.keys(currentResults).length + " profiles run. Click Download to save.");
+  btn.disabled = false;
+}
+
+function downloadAll() {
+  if (!Object.keys(currentResults).length) return setStatus("Nothing to download. Run first.", true);
+  const tier = document.getElementById("tier").value;
+  const folder = tier === "nightly" ? "snapshots-nightly" : "snapshots";
+  for (const id in currentResults) {
+    const r = currentResults[id];
+    if (r.error) continue;
+    const blob = new Blob([JSON.stringify(r, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = folder + "_" + id + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  setStatus("Downloaded " + Object.keys(currentResults).length + " files. Move them into planner/__tests__/" + folder + "/ manually.");
+}
+
+function clearResults() {
+  document.getElementById("resultsBody").innerHTML = "";
+  document.getElementById("rawJson").textContent = "(no results yet)";
+  currentResults = {};
+  setStatus("Cleared.");
+}
+</script>
+
+</body>
+</html>

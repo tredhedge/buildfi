@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Debt Tool Prototype</title>
+  <link rel="stylesheet" href="./shared.css">
+  <script defer src="./shared.js"></script>
+</head>
+<body class="surface product" data-theme="dark">
+  <div class="surface-body">
+    <header class="topbar">
+      <div class="brand">BuildFi</div>
+      <div class="topbar-links">
+        <a href="./index.html">Back to lab</a>
+        <button type="button" data-set-theme="dark">Dark</button>
+        <button type="button" data-set-theme="light">Light</button>
+      </div>
+    </header>
+    <main class="product-shell">
+      <section class="product-hero">
+        <div class="hero-card">
+          <div class="hero-kicker">Product · Debt Management</div>
+          <h1 class="hero-title">A clearer way to attack debt, month by month.</h1>
+          <p class="hero-copy">This isolated test keeps the debt tool in Product mode: compact, practical, and numeric. The goal is not to make it editorial. The goal is to make it feel like the same family as decumulation and the future planner shell.</p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="#">See my strategy</a>
+            <a class="btn-secondary" href="#">Compare methods</a>
+          </div>
+        </div>
+        <div class="hero-card hero-side">
+          <div class="metric-label">Theme check</div>
+          <div class="metric-value" data-theme-label>Dark product mode</div>
+          <div class="metric-copy">Shared DM Sans body, shared mono numbers, and the same product palette family regardless of light or dark.</div>
+        </div>
+      </section>
+
+      <section class="stat-grid">
+        <div class="stat">
+          <div class="kpi">$18,450</div>
+          <div class="meta">Total debt</div>
+          <div class="sub">Across cards, line of credit, and auto loan.</div>
+        </div>
+        <div class="stat">
+          <div class="kpi">31 mo</div>
+          <div class="meta">Debt-free date</div>
+          <div class="sub">With an avalanche strategy and one extra payment.</div>
+        </div>
+        <div class="stat">
+          <div class="kpi">$2,140</div>
+          <div class="meta">Interest saved</div>
+          <div class="sub">Compared with minimum payments only.</div>
+        </div>
+      </section>
+
+      <section class="product-layout">
+        <div class="stack">
+          <div class="panel">
+            <h2 class="panel-title">Debt stack</h2>
+            <p class="panel-copy">The visual language stays crisp and tool-first: clean panels, compact tables, and strong numeric emphasis.</p>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>APR</th>
+                  <th>Balance</th>
+                  <th>Min</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Visa</td>
+                  <td class="mono">19.99%</td>
+                  <td class="mono">$7,250</td>
+                  <td class="mono">$215</td>
+                </tr>
+                <tr>
+                  <td>Line of credit</td>
+                  <td class="mono">10.25%</td>
+                  <td class="mono">$6,400</td>
+                  <td class="mono">$130</td>
+                </tr>
+                <tr>
+                  <td>Auto loan</td>
+                  <td class="mono">6.40%</td>
+                  <td class="mono">$4,800</td>
+                  <td class="mono">$189</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <h2 class="panel-title">Repayment progress</h2>
+            <div class="bars">
+              <div class="bar-row">
+                <label>Avalanche</label>
+                <div class="bar"><span style="width:78%"></span></div>
+                <div class="bar-value">31 mo</div>
+              </div>
+              <div class="bar-row">
+                <label>Snowball</label>
+                <div class="bar"><span style="width:71%"></span></div>
+                <div class="bar-value">34 mo</div>
+              </div>
+              <div class="bar-row">
+                <label>Minimum only</label>
+                <div class="bar"><span style="width:42%"></span></div>
+                <div class="bar-value">57 mo</div>
+              </div>
+            </div>
+            <div class="footer-note">This is a visual shell test only. The objective is family consistency, not live-calculator fidelity.</div>
+          </div>
+        </div>
+
+        <aside class="stack">
+          <div class="mini-card">
+            <div class="kpi">$420</div>
+            <div class="meta">Extra monthly room</div>
+            <div class="sub">A compact utility card, still part of the same product system.</div>
+          </div>
+          <div class="mini-card">
+            <div class="kpi">$18/day</div>
+            <div class="meta">Interest burn</div>
+            <div class="sub">Mono numerics stay consistent with other product surfaces.</div>
+          </div>
+          <div class="callout">Recommendation framing stays practical: put new money into the highest-cost balance first, then roll payments forward as each account clears.</div>
+        </aside>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
