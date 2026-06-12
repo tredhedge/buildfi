@@ -245,8 +245,13 @@
     // for older readers (the actual audience for retirement reports).
     'body{padding:0;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
     '.narr{font-size:12px;line-height:1.75}',
-    '.sec-page{page-break-before:always}',
-    '.sec-page:first-of-type{page-break-before:avoid}',
+    // Audit C2: keep the section head-group together (heading -> standfirst ->
+    // first paragraph) so no line is cut mid-word at a page top; h3.sec already
+    // avoids break-after, couple the standfirst too. Give a forced-break
+    // section breathing room below the top margin.
+    '.sec-standfirst{break-after:avoid;page-break-after:avoid}',
+    '.sec-page{page-break-before:always;padding-top:28px}',
+    '.sec-page:first-of-type{page-break-before:avoid;padding-top:0}',
     'table{page-break-inside:auto}tr{page-break-inside:avoid}thead{display:table-header-group}',
     'svg{max-width:700px !important;max-height:400px !important}',
     '.chart-legend{font-size:8px}',
