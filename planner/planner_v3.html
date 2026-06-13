@@ -646,7 +646,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
   .bf-content table td[style*="monospace"]{font-size:10px!important}
   /* Tab bar: icon-only on mobile, text shown only for active tab */
   .bf-tabs{padding:0 4px!important}
-  .bf-tabs button{padding:5px 6px!important;font-size:9px!important}
+  .bf-tabs button{padding:6px 7px!important;font-size:10px!important;min-height:34px}
   .bf-tabs button .bf-tab-label{display:none}
   .bf-tabs button[aria-selected="true"] .bf-tab-label{display:inline}
   .bf-grp-label{display:none!important}
@@ -658,7 +658,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 @media(max-width:400px){
   .bf-content{padding:4px!important}
   .bf-content table td,.bf-content table th{padding:1px 2px!important;font-size:9px!important}
-  .bf-tabs button{padding:4px 5px!important;font-size:8px!important}
+  .bf-tabs button{padding:5px 6px!important;font-size:10px!important;min-height:34px}
   .kpi-tip .kpi-val{font-size:14px!important}
   .bf-kpi{grid-template-columns:1fr 1fr!important;gap:3px!important}
 }
@@ -14741,12 +14741,12 @@ goalModal && React.createElement("div", {
 // === MOBILE BOTTOM NAV ===
 React.createElement("div", { className: "bf-bottom-nav" },
   [
-    ["profil", "\ud83d\udc64", lang==="fr"?"Profil":"Profile"],
-    ["rev", "\ud83d\udcb8", lang==="fr"?"Cashflow":"Cashflow"],
-    ["ep", "\ud83d\udcc8", lang==="fr"?"\u00c9pargne":"Savings"],
-    ["gov", "\ud83c\udfdb\ufe0f", lang==="fr"?"Pension":"Pension"],
-    ["model", "\u2699\ufe0f", lang==="fr"?"Mod\u00e8le":"Model"],
-    ["more", "\u2795", lang==="fr"?"Plus":"More"]
+    ["profil", bfIcon("user", 22), lang==="fr"?"Profil":"Profile"],
+    ["rev", bfIcon("wallet", 22), lang==="fr"?"Cashflow":"Cashflow"],
+    ["ep", bfIcon("trendingUp", 22), lang==="fr"?"\u00c9pargne":"Savings"],
+    ["gov", bfIcon("landmark", 22), lang==="fr"?"Pension":"Pension"],
+    ["model", bfIcon("settings", 22), lang==="fr"?"Mod\u00e8le":"Model"],
+    ["more", bfIcon("dashboard", 22), lang==="fr"?"Plus":"More"]
   ].map(function(item) {
     return React.createElement("button", {
       key: item[0],
@@ -22975,7 +22975,7 @@ React.createElement("div", { style: { position: "fixed", bottom: 0, left: 0, rig
   uiText(lang, "fixedFooter")),
 // Mobile floating Simulate FAB (visible only on small screens when sidebar is closed)
 !mobSbOpen && _mcStale && React.createElement("button", { className: "bf-fab-sim", onClick: function() { var btn = document.querySelector("[data-sim-btn]"); if (btn) btn.click(); }, style: { position: "fixed", bottom: 28, right: 16, zIndex: 95, width: 56, height: 56, borderRadius: 28, background: CL.ac, color: CL.bg, border: "none", fontSize: mcComputing ? 11 : 20, fontWeight: FW.bold, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.4)", display: "none", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" } }, mcComputing ? (_simProgressPct + "%") : "\u25b6"),
-React.createElement("div", { style: { position: "fixed", bottom: 22, right: 8, fontSize: FS.xs, color: CL.bd, opacity: 0.5 } }, "v12.0.0 \u00b7 ", nSim, " MC \u00b7 CPM 2023")));
+React.createElement("div", { style: { position: "fixed", bottom: 22, right: 8, fontSize: FS.xs, color: CL.dm } }, "v12.0.0 \u00b7 ", nSim, " MC \u00b7 CPM 2023")));
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
