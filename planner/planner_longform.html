@@ -743,7 +743,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   <label class="field-label" for="age" data-i18n="age">Âge actuel <span class="field-req">*</span></label>
                 </div>
                 <input id="age" type="number" class="field-input" placeholder="45" min="18" max="80">
-                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>45 ans — médiane des utilisateurs</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span data-i18n="hintCurAge">45 ans — médiane des utilisateurs</span></div>
               </div>
 
               <div class="field" data-search-keywords="sexe sex genre">
@@ -790,7 +790,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   </span>
                 </div>
                 <input id="retAge" type="number" class="field-input" placeholder="65" min="45" max="75">
-                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans (âge RRQ standard)</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span data-i18n="hintQppAge">65 ans (âge RRQ standard)</span></div>
               </div>
 
               <div class="field" data-search-keywords="horizon de vie survival death">
@@ -1141,7 +1141,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   </span>
                 </div>
                 <input id="retSpM" type="number" class="field-input" placeholder="6 200" min="0" step="100">
-                <div class="field-hint"><span class="default-pill" data-i18n="median">médiane</span> <span>6 200 $/mois (couple, QC)</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="median">médiane</span> <span data-i18n="hintSpendDefault">6 200 $/mois (couple, QC)</span></div>
               </div>
               <!-- Inflation santé — déplacé vers Hypothèses techniques (v3 key: infHealth) -->
 
@@ -1552,7 +1552,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   </span>
                 </div>
                 <input id="qppAge" type="number" class="field-input" placeholder="65" min="60" max="72">
-                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span data-i18n="hint65yrs">65 ans</span></div>
               </div>
               <div class="field">
                 <div class="field-head">
@@ -1563,7 +1563,7 @@ body[data-embed="1"] .simulate-fab { display: none; }
                   </span>
                 </div>
                 <input id="oasAge" type="number" class="field-input" placeholder="65" min="65" max="70">
-                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span>65 ans</span></div>
+                <div class="field-hint"><span class="default-pill" data-i18n="suggested">suggéré</span> <span data-i18n="hint65yrs">65 ans</span></div>
               </div>
             </div>
           </div>
@@ -2492,6 +2492,7 @@ var I18N = {
     searchPh: "Rechercher un champ…",
     notReviewed: "non revue",
     suggested: "suggéré", median: "médiane QC", stoch: "stochastique", max2026: "plafond 2026", pag2025: "PAG 2025",
+    hintCurAge: "45 ans — médiane des utilisateurs", hintQppAge: "65 ans (âge RRQ standard)", hintSpendDefault: "6 200 $/mois (couple, QC)", hint65yrs: "65 ans",
     load: "📂 Charger", save: "💾 Sauvegarder", toSidebar: "🧭 Vue compacte", simulate: "▶ Simuler mon plan",
     closeEmbed: "✓ Fermer et simuler",
     toolbarHint: "Formulaire complet · ~190 variables · toutes les sections optionnelles sauf <strong>Identité</strong> et <strong>Revenus</strong>.",
@@ -2880,6 +2881,7 @@ var I18N = {
     pageSub: "Each section gathers the information needed for a complete plan. Default values shown in grey italic represent the Canadian median for your profile — replace only what differs from your situation. A retirement plan evolves over time; come back to review each section every quarter.",
     sections: "Sections", searchPh: "Search a field…", notReviewed: "not reviewed",
     suggested: "suggested", median: "QC median", stoch: "stochastic", max2026: "2026 limit", pag2025: "PAG 2025",
+    hintCurAge: "45 yrs — median of users", hintQppAge: "65 yrs (standard QPP age)", hintSpendDefault: "$6,200/mo (couple, QC)", hint65yrs: "65 yrs",
     load: "📂 Load", save: "💾 Save", toSidebar: "🧭 Compact view", simulate: "▶ Simulate my plan",
     closeEmbed: "✓ Close and simulate",
     toolbarHint: "Full form · ~190 variables · all sections optional except <strong>Identity</strong> and <strong>Income</strong>.",
