@@ -525,8 +525,9 @@
     var _resCover = _annualSpend > 0 ? Math.min(1, toNum(mc.rVar5 || mc.var5 || 0) / (5 * _annualSpend)) : 0;
     // E7: weighted blend (70% success + 30% buffer), not a pure product. The old
     // succ × margin flatlined to 0% for every fragile plan once VaR5 margin hit 0
-    // (« Résilience 0 % » beside « Couverture 34 % »). Stored rounded. (HTML
-    // report still uses the product — flag for parity.)
+    // (« Résilience 0 % » beside « Couverture 34 % »). Stored rounded. NOTE: the
+    // HTML report's `plan_resilience` (report-data.js) is a different metric
+    // (success_rate × 100) and never had this flatline — no parity change needed.
     var resilience = Math.round((0.7 * toNum(mc.succ) + 0.3 * _resCover) * 10000) / 10000;
     wsS.getRow(10).height = 14;
     wsS.mergeCells(10, 2, 10, 5);
