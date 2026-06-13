@@ -1856,12 +1856,41 @@ function runMC(p, N, _progressCb) {
         return s + rp2.v - rp2.m - (rp2.heloc || 0);
       }, 0);
       if (si === 0 && revData[y]) revData[y].aRE = reTotal;
-      var total = alive ? rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + reTotal + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0) : 0;
       var _yrTax = si === 0 ? (yrTx ? yrTx.total : 0) : _simTax;
       var _p1Tax = si === 0 ? (yrTx1 ? yrTx1.total : (yrTx ? yrTx.total : 0)) : (_simTaxInc1 > 0 ? calcTax(Math.max(0, _simTaxInc1), y, p.prov || "QC", _infEff, age >= 65).total : 0);
       var _p2Tax = si === 0 ? (yrTx2 ? yrTx2.total : 0) : (_simTaxInc2 > 0 ? calcTax(Math.max(0, _simTaxInc2), y, p.prov || "QC", _infEff, cAge2 >= 65).total : 0);
+      // === YEAR-END SETTLEMENT (audit 1.1 income-tax funding + 1.4 surplus reinvest) ===
+      // Ported from lib/engine/index.js to keep the realai test engine in sync with
+      // production. Pay the year's reported income tax from the portfolio and
+      // reinvest any forced-inflow surplus (gov income + RRIF minimums + meltdown
+      // above spending). Without this, tax was displayed but never debited and
+      // unspent mandatory withdrawals vanished from household wealth — the source
+      // of the « impôt non financé » discrepancy in stale exported Flux sheets.
+      // NOTE: `total` is computed AFTER this block so it reflects adjusted balances.
+      var _settleTfWith = 0;
+      if (alive && retired) {
+        var _forcedSurplus = Math.max(0, (govInc + rrifMin + cRrifMin + meltAmt) - spending);
+        var _netSettle = _forcedSurplus - (_yrTax || 0);
+        if (_netSettle > 0) {
+          var _stTF = _mcTfsaRoom > 0 ? Math.min(_netSettle, _mcTfsaRoom) : 0;
+          if (_stTF > 0) { tf += _stTF; _mcTfsaRoom -= _stTF; }
+          var _stNR = _netSettle - _stTF;
+          if (_stNR > 0) { nr += _stNR; nrACB += _stNR; }
+        } else if (_netSettle < 0) {
+          var _short = -_netSettle, _d;
+          _d = Math.min(nr, _short); nr -= _d; _short -= _d;
+          if (_short > 0) { _d = Math.min(tf, _short); tf -= _d; _short -= _d; _settleTfWith += _d; }
+          if (_short > 0) { _d = Math.min(rr, _short); rr -= _d; _short -= _d; }
+          if (_short > 0 && p.cOn) {
+            _d = Math.min(cnr, _short); cnr -= _d; _short -= _d;
+            _d = Math.min(ctf, _short); ctf -= _d; _short -= _d;
+            _d = Math.min(crr, _short); crr -= _d; _short -= _d;
+          }
+        }
+      }
+      var total = alive ? rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + reTotal + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0) : 0;
       path.push({ total, rr, tf, nr, pe, pm, crr, ctf, cnr, fhsa: fhsa, cFhsa: cFhsa, dc: dc, dc2: dc2, disc: total / (infM || 1), re: reTotal, corp: p.bizOn ? corpBal : 0, ipp: p.ippOn ? _ippBal : 0, tax: _yrTax, p1Tax: _p1Tax, p2Tax: _p2Tax, spend: spending || 0, qpp: qpp || 0, oas: oas || 0, pen: (penMonth || 0) * 12, pt: ptInc || 0, gis: gis || 0, cQpp: cQppY || 0, cOas: cOasY || 0, cPen: cPenY || 0, cGis: cGisY || 0, cInc: cInc || 0, penCont: dcCont || 0, lira: lira, cLira: cLira });
-      _mcTfsaLastW = _wFromTF || 0; // TFSA withdrawals restore room next year
+      _mcTfsaLastW = (_wFromTF || 0) + _settleTfWith; // TFSA withdrawals (incl. settlement) restore room next year
       var finAssets = rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0); // R14: include all liquid-ish assets
       if (finAssets <= 0 && retired && !ruined) {
         ruined = true;
