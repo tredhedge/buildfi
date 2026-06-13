@@ -12814,6 +12814,20 @@ var _wizFinish = function(target) {
 };
 var _vBan = useState(function() { try { return localStorage.getItem("bf_dismiss_v") !== "v12.0.0"; } catch(e) { return true; } }), showVerBanner = _vBan[0], setShowVerBanner = _vBan[1];
 var _dismissVer = function() { setShowVerBanner(false); try { localStorage.setItem("bf_dismiss_v", "v12.0.0"); } catch(e) {} };
+// V4: condensed KPI summary appears (sticky) only after the Diagnostic hero cards scroll out of view.
+var _sk = useState(false), showStickyKpi = _sk[0], setShowStickyKpi = _sk[1];
+useEffect(function() {
+  if (typeof document === "undefined") return;
+  if (tab !== 5) { setShowStickyKpi(false); return; }
+  var root = document.getElementById("main-content");
+  var target = document.getElementById("bf-diag-hero");
+  if (!root || !target || typeof IntersectionObserver === "undefined") return;
+  var obs = new IntersectionObserver(function(entries) {
+    setShowStickyKpi(!entries[0].isIntersecting);
+  }, { root: root, threshold: 0, rootMargin: "-8px 0px 0px 0px" });
+  obs.observe(target);
+  return function() { obs.disconnect(); };
+}, [tab, mc, mode, lang]);
   // === RESTRUCTURED WIZARD (8 steps) ===
   var _wizValErrs = [];
   if (wizStep >= 5) {
@@ -15274,7 +15288,7 @@ React.createElement("div", { style: sty.head },
           : "Opens the full form in fullscreen — all ~190 engine variables with tooltips, defaults and explanations. For initial setup or annual review."
       }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire complet" : "Full form")),
       React.createElement("button", { onClick: function() { setTab(9); }, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Rapport client":"Client report" }, "\ud83d\udcca"),
-      mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: "6px 16px", borderBottom: "1px solid " + CL.bd, opacity: tab === 5 ? 0.35 : 1, maxHeight: tab === 5 ? 36 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", cursor: tab === 5 ? "pointer" : "default" }, onClick: tab === 5 ? function() { /* no-op, just visual hint */ } : undefined, title: tab === 5 ? (lang === "fr" ? "Ces indicateurs sont d\u00e9taill\u00e9s ci-dessous" : "These indicators are detailed below") : undefined }, React.createElement("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
+      mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: tab === 5 ? "0 16px" : "6px 16px", borderBottom: tab === 5 ? "none" : "1px solid " + CL.bd, opacity: tab === 5 ? 0 : 1, maxHeight: tab === 5 ? 0 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", pointerEvents: tab === 5 ? "none" : "auto", cursor: "default" } }, React.createElement("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
 cOn && React.createElement("div", { style: { gridColumn: "1 / -1", textAlign: "center", fontSize: FS.sm, color: CL.tl, fontWeight: FW.medium, background: "rgba(72,184,168,0.06)", borderRadius: RAD.sm, padding: "3px 0", border: "1px solid rgba(72,184,168,0.15)" } }, "\ud83d\udc6a ", lang === "fr" ? "R\u00e9sultats Monte Carlo pour le m\u00e9nage (deux conjoints combin\u00e9s)" : "Monte Carlo results for the household (both spouses combined)"),
 valCount > 0 && React.createElement("div", { style: { padding: "6px 12px", background: "rgba(208,72,72,.12)", border: "1px solid " + CL.rd, borderRadius: RAD.sm + 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 } },
 React.createElement("span", { style: { fontSize: FS.lg } }, "\u26a0\ufe0f"),
@@ -16739,8 +16753,29 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
           }
         }, (fireLens ? "\u25c9" : "\u25cb") + " \ud83d\udd25 FIRE")),
 
+      // V4: condensed sticky summary — pinned at the top of the scroll area, fades in
+      // only once the hero KPI cards below scroll out of view (driven by the
+      // IntersectionObserver on #bf-diag-hero). Replaces the old clipped top-strip teaser.
+      E("div", { id: "bf-kpi-sticky", style: { position: "sticky", top: 0, zIndex: 40, background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "5px 12px", margin: "0 0 8px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, fontSize: FS.sm, boxShadow: "0 2px 8px rgba(0,0,0,0.12)", transition: "opacity .22s ease, transform .22s ease", opacity: showStickyKpi ? 1 : 0, transform: showStickyKpi ? "translateY(0)" : "translateY(-6px)", pointerEvents: showStickyKpi ? "auto" : "none" }, "aria-hidden": showStickyKpi ? "false" : "true" },
+        (function() {
+          if (_kpiIncomplete) return E("span", { style: { color: CL.dm } }, fr ? "Complétez votre profil pour voir le sommaire" : "Complete your profile to see the summary");
+          var _p = Math.round(mc.succ * 100);
+          var _gr = mc.succ >= 0.95 ? "A+" : mc.succ >= 0.90 ? "A" : mc.succ >= 0.85 ? "A-" : mc.succ >= 0.80 ? "B+" : mc.succ >= 0.70 ? "B" : mc.succ >= 0.50 ? "C" : mc.succ >= 0.30 ? "D" : "F";
+          var _gc = mc.succ >= 0.90 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd;
+          var _med = f$(mc.hasRE ? (mc.rLiqMedF || mc.liqMedF || 0) : (mc.rMedF || mc.medF));
+          var _v5 = f$(mc.hasRE ? (mc.rLiqP5 || mc.liqP5 || 0) : (mc.rVar5 || mc.var5));
+          var _dep = (mc.p5Ruin || 999) >= 999 ? (fr ? "Jamais" : "Never") : (mc.p5Ruin || 999) + (fr ? " ans" : " yrs");
+          var _cell = function(lbl, val, col, k) { return E("span", { key: k, style: { color: CL.dm, whiteSpace: "nowrap" } }, lbl + " ", E("b", { style: { color: col || CL.ac } }, val)); };
+          return [
+            E("span", { key: "g", style: { fontWeight: FW.bold, color: _gc, whiteSpace: "nowrap" } }, (fr ? "Note " : "Grade ") + _gr + " · " + _p + "%"),
+            _cell("P50", _med, null, "p50"),
+            _cell("VaR 5%", _v5, null, "var"),
+            _cell(fr ? "Épuis." : "Depl.", _dep, (mc.p5Ruin || 999) >= 999 ? CL.gn : CL.go, "dep")
+          ];
+        })()
+      ),
       // 4 hero KPIs (all modes) - large, semantic colors, rich tooltips
-      E("div", { className: "bf-grid-4", style: { gap: 10, marginBottom: 14 } },
+      E("div", { id: "bf-diag-hero", className: "bf-grid-4", style: { gap: 10, marginBottom: 14 } },
 
         // KPI 1: Succes / Solidite — click through to Stress tests (tab 6)
         E("div", { className: "bf-kpi-click", role: "button", tabIndex: 0, style: { textAlign: "center", padding: "14px 8px", background: CL.cd, borderRadius: RAD.md + 2, border: "2px solid " + (mc.succ >= 0.9 ? CL.gn : mc.succ >= 0.75 ? CL.go : CL.rd) + "30", cursor: "pointer" }, onClick: function() { setTab(6); }, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(6); } }, title: (fr ? "Taux de succ\u00e8s MC: " + Math.round(mc.succ * 100) + "% des " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (horizon fixe " + deathAge + " ans)") + ". Note " + _gr + ". \u2192 Stress tests." : "MC success: " + Math.round(mc.succ * 100) + "% of " + nSim + " sims" + (fatT ? " (t-Student df=5)" : "") + (stochMort ? " (CPM 2023)" : " (fixed horizon " + deathAge + ")") + ". Grade " + _gr + ". \u2192 Stress tests.") },
