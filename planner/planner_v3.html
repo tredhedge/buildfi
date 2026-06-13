@@ -1436,12 +1436,16 @@ function MiniComposed({ data, bars, lines, xKey, height, yFmt }) {
     var d3 = data[hover];
     ttX = ml + hover / data.length * w + bw;
     ttLabel = d3[xKey] || "";
+    // Tooltip must use the SAME formatter as the axis (yFmt). Previously it
+    // re-multiplied by 100, which turned an already-percent value (e.g. 100)
+    // into "10 000,0%". When yFmt is provided it is authoritative; only fall
+    // back to the fraction->percent formatter for charts that pass fractions.
     ttItems = [].concat(
       (bars || []).map(function(b) {
-        return { label: b.label || b.key, value: fmtPctLocale((d3[b.key] || 0) * 100, 1, window.__bfLang || "fr", false), color: b.color };
+        return { label: b.label || b.key, value: yFmt ? yFmt(d3[b.key] || 0) : fmtPctLocale((d3[b.key] || 0) * 100, 1, window.__bfLang || "fr", false), color: b.color };
       }),
       (lines || []).map(function(l) {
-        return { label: l.label || l.key, value: fmtPctLocale((d3[l.key] || 0) * 100, 1, window.__bfLang || "fr", false), color: l.color };
+        return { label: l.label || l.key, value: yFmt ? yFmt(d3[l.key] || 0) : fmtPctLocale((d3[l.key] || 0) * 100, 1, window.__bfLang || "fr", false), color: l.color };
       })
     );
   }
@@ -1691,7 +1695,7 @@ const T_FR = {
   primary: "R\u00e9s. principale",
   cgRate: "Taux incl. GC",
   wStrat: "Ordre retrait",
-  wOptimal: "Classique (NR\u2192REER\u2192CELI)",
+  wOptimal: "Ordre standard (NR\u2192REER\u2192CELI)",
   wTFSAFirst: "CELI d'abord",
   melt: "D\u00e9caissement REER (meltdown)",
   split: "Fractionnement pension",
@@ -1839,7 +1843,7 @@ const T_EN = {
   primary: "Primary res.",
   cgRate: "CG incl. rate",
   wStrat: "Withdrawal order",
-  wOptimal: "Standard (NR\u2192RRSP\u2192TFSA)",
+  wOptimal: "Standard order (NR\u2192RRSP\u2192TFSA)",
   wTFSAFirst: "TFSA first",
   melt: "RRSP meltdown",
   split: "Pension splitting",
@@ -8666,7 +8670,7 @@ function uiText(lang, key, nSimVal) {
   var _n = nSimVal || 1000;
   var dict = {
     refShort: fr ? "Réf." : "Ref.",
-    refRevenue: fr ? "Réf. revenu" : "Ref. income",
+    refRevenue: fr ? "Sans volatilité" : "No volatility",
     refWealthTitle: fr ? "Patrimoine déterministe (sans volatilité)." : "Deterministic wealth (no volatility).",
     refWealthLongTitle: fr ? "Patrimoine déterministe (sans volatilité). Rendements = moyenne, inflation = prévue." : "Deterministic wealth (no volatility). Returns = average, inflation = expected.",
     refBalanceLongTitle: fr ? "Solde déterministe (sans volatilité). Rendements = moyenne, inflation = prévue." : "Deterministic balance (no volatility). Returns = average, inflation = expected.",
@@ -9538,7 +9542,7 @@ function App() {
   var _cPEE = useState(0), cPenEE = _cPEE[0], sCPEE = _cPEE[1];
   var _cPER = useState(0), cPenER = _cPER[0], sCPER = _cPER[1];
   var _cPMER = useState(0.005), cPenMER = _cPMER[0], sCPMER = _cPMER[1];
-  var _projR = useState(false), projReal = _projR[0], setProjReal = _projR[1];
+  var _projR = useState(true), projReal = _projR[0], setProjReal = _projR[1]; // default REAL $ (today's purchasing power) — nominal is opt-in
   var _projV = useState("family"), projView = _projV[0], setProjView = _projV[1];
   var _wiI = useState(0), whatIfInc = _wiI[0], setWhatIfInc = _wiI[1];
   var _ftqAmt = useState(5000), ftqAmt = _ftqAmt[0], setFTQAmt = _ftqAmt[1];
@@ -15577,13 +15581,16 @@ PBadge(lang === "fr" ? "Trajectoire centrale (P50)" : "Central path (P50)", CL.b
 
     // \u2500\u2500 Revenue Sources Chart \u2500\u2500
     E("div", { style: { marginBottom: 14 } },
-      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2] } }, fr ? "Sources de revenus par ann\u00e9e" : "Income Sources by Year"),
+      E("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: SP[2] } }, fr ? "Sources de revenus par ann\u00e9e ($ r\u00e9els)" : "Income Sources by Year (real $)"),
       E(MiniArea, {
         data: revD.filter(function(d) { return d.age >= retAge; }).map(function(d) {
-          var _o = { age: d.age, rrq: d.rrq, psv: d.psv, srg: d.srg, pen: d.pen, pt: d.pt, ret: d.ret };
+          // Deflate raw (nominal) medRevData to today's purchasing power so this
+          // chart is consistent with the rest of the planner's real-$ default.
+          var _df = Math.pow(1 + (inf || 0.021), d.age - age);
+          var _o = { age: d.age, rrq: (d.rrq||0)/_df, psv: (d.psv||0)/_df, srg: (d.srg||0)/_df, pen: (d.pen||0)/_df, pt: (d.pt||0)/_df, ret: (d.ret||0)/_df };
           if (showDetRef && window._detSchedule) {
             var _ds = window._detSchedule.find(function(s) { return s.age === d.age; });
-            if (_ds) _o._detInc = (_ds.qpp || 0) + (_ds.oas || 0) + (_ds.gis || 0) + (_ds.pen || 0) + (_ds.totalWithdraw || 0);
+            if (_ds) _o._detInc = ((_ds.qpp || 0) + (_ds.oas || 0) + (_ds.gis || 0) + (_ds.pen || 0) + (_ds.totalWithdraw || 0)) / _df;
           }
           return _o;
         }),
@@ -18296,12 +18303,15 @@ tab === 6 && mc && React.createElement("div", { style: { padding: 16 } }, _ctxSu
   E("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", background: CL.cd, borderBottom: "1px solid " + CL.bd, flexWrap: "wrap", gap: 4 } },
     E("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
       E("span", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.al, letterSpacing: -0.3 } }, fr ? "Projection" : "Projection"),
-      E("div", { style: { display: "flex", gap: 0, background: CL.s2, borderRadius: RAD.lg + 4, padding: 2, border: "1px solid " + CL.bd } }, (cOn ? ["family", "p1", "p2"] : ["family", "p1"]).map(function(v) {
-var lbl = { family: cOn ? (fr ? "Famille" : "Family") : (fr ? "Global" : "Overview"), p1: cOn ? (cName || (fr ? "Princ." : "Primary")) : (fr ? "D\u00e9tail" : "Detail"), p2: fr ? "Conj." : "Spouse" };
+      // Household/individual toggle only makes sense for a couple. For a single
+      // person "Global" vs "D\u00e9tail" showed near-identical tables \u2014 hide it and
+      // always render the household view (handled by the family-view guard below).
+      cOn ? E("div", { style: { display: "flex", gap: 0, background: CL.s2, borderRadius: RAD.lg + 4, padding: 2, border: "1px solid " + CL.bd } }, ["family", "p1", "p2"].map(function(v) {
+var lbl = { family: fr ? "M\u00e9nage" : "Household", p1: cName || (fr ? "Princ." : "Primary"), p2: fr ? "Conj." : "Spouse" };
         var ico = { family: "\ud83d\udcca", p1: "\ud83d\udd0d", p2: "\ud83d\udc65" };
         var isA = projView === v;
         return E("button", { key: v, onClick: function() { setProjView(v); }, style: { padding: "4px 10px", fontSize: FS.base, fontWeight: isA ? 700 : 500, color: isA ? CL.bg : CL.dm, background: isA ? CL.ac : "transparent", border: "none", borderRadius: 18, cursor: "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: 3 } }, isA ? ico[v] + " " : "", lbl[v]);
-      }))
+      })) : null
     ),
     E("div", { style: { display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" } },
       E("button", { onClick: function() { setProjReal(!projReal); }, title: projReal ? (fr ? "Montants ajust\u00e9s pour l\u2019inflation (pouvoir d\u2019achat d\u2019aujourd\u2019hui)" : "Amounts adjusted for inflation (today\u2019s purchasing power)") : (fr ? "Montants futurs non ajust\u00e9s (incluent l\u2019inflation)" : "Future amounts not adjusted (include inflation)"), style: { padding: "5px 12px", borderRadius: RAD.lg, border: "2px solid " + (projReal ? CL.gn : CL.or), background: projReal ? CL.gn + "20" : CL.or + "20", color: projReal ? CL.gn : CL.or, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer", transition: "all .15s", letterSpacing: 0.3 } }, projReal ? (fr ? "$ r\u00e9els " + new Date().getFullYear() : "Real $ " + new Date().getFullYear()) : (fr ? "$ nominaux" : "Nominal $")),
@@ -18320,7 +18330,7 @@ var lbl = { family: cOn ? (fr ? "Famille" : "Family") : (fr ? "Global" : "Overvi
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   // \u2550\u2550\u2550  VIEW: FAMILLE  \u2550\u2550\u2550
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-  projView === "family" && E(React.Fragment, null,
+  (projView === "family" || !cOn) && E(React.Fragment, null,
   E("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: FS.xs, minWidth: 580, tableLayout: "auto" } },
     E("thead", null, E("tr", { style: { position:"sticky",top:0,zIndex:2,background: CL.cd } },
       thS(fr ? "\u00c2ge" : "Age", CL.ac, { center: true }),
@@ -18391,11 +18401,11 @@ lines.push("\u2500\u2500\u2500 " + (fr ? "Conjoint" : "Spouse") + " \u2500\u2500
           tdS(d.age + ageSuffix, d.age === retAge ? CL.ac : d.age === qppAge ? CL.pr : d.age === oasAge ? CL.tl : isNow ? CL.al : CL.tx, { center: true, bold: isNow || d.age === retAge || d.age === qppAge || d.age === oasAge, fs: 10, tip: _evtLabel(d.age) || (d.age === retAge ? (fr ? "D\u00e9but retraite" : "Retirement start") : d.age === qppAge ? (fr ? "D\u00e9but RRQ/QPP" : "QPP/CPP start") : d.age === oasAge ? (fr ? "D\u00e9but PSV/OAS" : "OAS start") : "") }),
           tdS(ph.t, ph.c, { center: true, fs: 8, bold: true }),
           (function() { try { var yrsFromNow = d.age - age; var salGr = Math.pow(1 + (contGr || inf || 0.021), yrsFromNow); var salComb = (d.age < retAge ? (sal || 0) * salGr : 0) + (cOn && d.age < (cRetAge || retAge) ? (cSal || 0) * salGr : 0); return tdS(salComb > 0 ? fR(salComb, d.age) : "", CL.tl); } catch(e) { return tdS("", CL.tl); } })(),
-          tdS(fR(tot, d.age), tot <= 0 ? CL.rd : CL.al, { bold: true }),
+          tdS((tot > 0 || isRet) ? fR(tot, d.age) : "", tot <= 0 ? CL.rd : CL.al, { bold: true }),
           showDetRef ? (function() { var _dw = window._detWealth && window._detWealth[d.age]; return tdS(_dw != null ? fR(_dw, d.age) : "", "#B8860B", { bg: "#FFD70010" }); })() : null,
-          tdS(fR(rr, d.age), CL.tx),
-          tdS(fR(tf, d.age), CL.tx),
-          tdS(fR(nrV, d.age), CL.tx),
+          tdS((rr > 0 || isRet) ? fR(rr, d.age) : "", CL.tx),
+          tdS((tf > 0 || isRet) ? fR(tf, d.age) : "", CL.tx),
+          tdS((nrV > 0 || isRet) ? fR(nrV, d.age) : "", CL.tx),
           hasImmo ? tdS(re > 10000 ? fR(re, d.age) : "", CL.pr) : null,
           bizOn ? (function() { var _cv = projP === "p50" ? (d.mp_corp || 0) : (d["corp_" + projP] || 0); return tdS(_cv > 1000 ? fR(_cv, d.age) : "", CL.cp); })() : null,
           tdS(spend > 0 ? fR(spend, d.age) : "", CL.rd),
@@ -18422,7 +18432,7 @@ lines.push("\u2500\u2500\u2500 " + (fr ? "Conjoint" : "Spouse") + " \u2500\u2500
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   // \u2550\u2550\u2550  VIEW: PARTNER 1 / PARTNER 2  \u2550\u2550\u2550
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-  (projView === "p1" || projView === "p2") && (function() {
+  cOn && (projView === "p1" || projView === "p2") && (function() {
     var isP2 = projView === "p2";
 var pName = isP2 ? (fr ? "Conjoint" : "Spouse") : (cName || (fr ? "Principal" : "Primary"));
     var pAge = isP2 ? cAge : age;
@@ -18495,16 +18505,16 @@ var pName = isP2 ? (fr ? "Conjoint" : "Spouse") : (cName || (fr ? "Principal" : 
         return E("tr", { key: i, style: { background: bgc, borderLeft: pAgeY === pRetAge ? "3px solid " + CL.ac : pAgeY === pQppAge ? "3px solid " + CL.pr : pAgeY === pOasAge ? "3px solid " + CL.tl : "3px solid transparent" } },
           tdS(pAgeY + ageSuffix, pAgeY === pRetAge ? CL.ac : pAgeY === pQppAge ? CL.pr : pAgeY === pOasAge ? CL.tl : isNow ? CL.al : CL.tx, { center: true, bold: pAgeY === pRetAge || pAgeY === pQppAge || pAgeY === pOasAge || isNow, fs: 10, tip: _evtLabel(d.age) || (pAgeY === pRetAge ? (fr ? "D\u00e9but retraite" : "Retirement start") : pAgeY === pQppAge ? (fr ? "D\u00e9but RRQ/QPP" : "QPP/CPP start") : pAgeY === pOasAge ? (fr ? "D\u00e9but PSV/OAS" : "OAS start") : "") }),
           tdS(ph.t, ph.c, { center: true, fs: 8, bold: true }),
-          tdS(fR(rr, dAge), rr <= 0 && isRet ? CL.rd : CL.bl),
-          tdS(fR(tf, dAge), tf <= 0 && isRet ? CL.rd : CL.gn),
-          tdS(fR(nrV, dAge), nrV <= 0 && isRet ? CL.rd : CL.or),
+          tdS((rr > 0 || isRet) ? fR(rr, dAge) : "", rr <= 0 && isRet ? CL.rd : CL.bl),
+          tdS((tf > 0 || isRet) ? fR(tf, dAge) : "", tf <= 0 && isRet ? CL.rd : CL.gn),
+          tdS((nrV > 0 || isRet) ? fR(nrV, dAge) : "", nrV <= 0 && isRet ? CL.rd : CL.or),
           hasFhsa ? tdS(fhsaV > 0 ? fR(fhsaV, dAge) : "", CL.tl) : null,
           hasPE ? tdS(peV > 0 ? fR(peV, dAge) : "", CL.pr) : null,
           hasPM ? tdS(pmV > 0 ? fR(pmV, dAge) : "", CL.go) : null,
           hasLira ? tdS(liraV > 0 ? fR(liraV, dAge) : "", CL.or) : null,
           hasRE ? tdS(reV > 10000 ? fR(reV, dAge) : "", CL.pr) : null,
           hasCorp ? tdS((d.mp_corp||0) > 1000 ? fR(d.mp_corp, dAge) : "", CL.cp) : null,
-          tdS(fR(tot, dAge), tot <= 0 ? CL.rd : CL.al, { bold: true }),
+          tdS((tot > 0 || isRet) ? fR(tot, dAge) : "", tot <= 0 ? CL.rd : CL.al, { bold: true }),
           tdS(salV > 0 ? fR(salV, dAge) : "", CL.tl, { fs: 10 }),
           tdS(qppV > 0 ? fRm(qppV, dAge) : "", CL.bl),
           tdS(oasV > 0 ? fRm(oasV, dAge) : "", CL.gn),
@@ -19469,7 +19479,7 @@ tab === 16 && cOn && React.createElement("div", { style: { padding: 10, backgrou
     lang === "fr" ? "Ordre de retrait: 1) Comptes principaux (REER\u2192C\u00c9LI\u2192NR) \u00b7 2) Comptes conjoint (REER\u2192C\u00c9LI\u2192NR) \u00b7 3) HELOC en urgence. Le moteur optimise la s\u00e9quence pour minimiser l'imp\u00f4t combin\u00e9." : "Withdrawal order: 1) Primary accounts (RRSP\u2192TFSA\u2192NR) \u00b7 2) Spouse accounts (RRSP\u2192TFSA\u2192NR) \u00b7 3) HELOC emergency. The engine optimizes the sequence to minimize combined tax.")),
 tab === 16 && React.createElement("div", { style: { padding: 10, color: CL.tx } },
   React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: 6 } }, lang === "fr" ? "Analyse de d\u00e9caissement" : "Decumulation Analysis"),
-  PBadge("medPath (P50)", CL.bl),
+  PBadge(lang === "fr" ? "Scénario médian" : "Median scenario", CL.bl),
   React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 12, lineHeight: 1.5 } }, lang === "fr" ? "Sources de retrait ann\u00e9e par ann\u00e9e, seuils fiscaux et comparaison des strat\u00e9gies. Donn\u00e9es de la trajectoire m\u00e9diane (P50 du patrimoine final) \u2014 utiliser les percentiles (onglet Projection) pour les r\u00e9sultats probabilistes." : "Year-by-year withdrawal sources, tax thresholds and strategy comparison. Data from median path (P50 final wealth) \u2014 use Projection tab for probabilistic results."),
 
   // === ALWAYS VISIBLE: Strategy info + thresholds ===
