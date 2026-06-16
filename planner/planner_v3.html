@@ -3378,6 +3378,28 @@ function optimizeDecum(p) {
     row.effRate = tx.eff;
     row.margRate = tx.marg;
 
+    // === TAX FUNDING (audit 1.1 — deterministic engine) ===
+    // Debit the year's income tax from the portfolio, mirroring the runMC year-end
+    // settlement. The forced-inflow surplus was already reinvested once above (R2),
+    // so here we fund only the tax. Source order NR -> TFSA -> RRSP -> spouse: NR/TFSA
+    // first minimises additional taxable income from the tax-paying withdrawal.
+    // Previously the tax was reported (row.cashWithdraw) but never debited, so the
+    // deterministic schedule understated withdrawals by the year's tax.
+    var _odTfWith = 0;
+    if (retired && (row.tax || 0) > 0) {
+      var _odShort = row.tax, _d2;
+      _d2 = Math.min(nr, _odShort); nr -= _d2; _odShort -= _d2;
+      if (_odShort > 0) { _d2 = Math.min(tf, _odShort); tf -= _d2; _odShort -= _d2; _odTfWith += _d2; }
+      if (_odShort > 0) { _d2 = Math.min(rr, _odShort); rr -= _d2; _odShort -= _d2; }
+      if (_odShort > 0 && p.cOn) {
+        _d2 = Math.min(cnr, _odShort); cnr -= _d2; _odShort -= _d2;
+        _d2 = Math.min(ctf, _odShort); ctf -= _d2; _odShort -= _d2;
+        _d2 = Math.min(crr, _odShort); crr -= _d2; _odShort -= _d2;
+      }
+      // Residual _odShort = unfunded tax (portfolio exhausted).
+    }
+    _tfsaLastYrWith += _odTfWith; // settlement TFSA draws restore room next year
+
     row.balRR = rr; row.balTF = tf; row.balNR = nr;
     row.balCRR = crr; row.balCTF = ctf; row.balCNR = cnr;
     // Track TFSA withdrawals for next year's room restoration

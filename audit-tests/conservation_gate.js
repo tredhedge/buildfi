@@ -35,10 +35,12 @@ function gate(name, resid, tol) {
     allocR: 1, allocT: 1, allocN: 1, merR: 0, merT: 0, merN: 0, nrTaxDrag: 1e-12, melt: false };
   const r = optimizeDecum(p);
   const L = r.schedule[r.schedule.length - 1];
-  let gov = 0, sp = 0;
-  r.schedule.forEach(s => { gov += (s.govInc || 0); sp += (s.spending || 0); });
+  let gov = 0, sp = 0, tax = 0;
+  r.schedule.forEach(s => { gov += (s.govInc || 0); sp += (s.spending || 0); tax += (s.tax || 0); });
   const tot = L.balRR + L.balTF + L.balNR;
-  gate('1.3 optimizeDecum (final = init + Σgov − Σspend)', tot - (800000 + gov - sp), 1);
+  // Tax is now funded in optimizeDecum too (audit 1.1 deterministic). NR/TFSA hold
+  // the reinvested surplus so tax draws add no RRSP income -> exact conservation.
+  gate('1.1/1.3 optimizeDecum (final = init + Σgov − Σspend − Σtax)', tot - (800000 + gov - sp - tax), 1);
 })();
 
 // --- 1.1 + 1.4: runMC funds tax AND reinvests forced-inflow surplus ---

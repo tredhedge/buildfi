@@ -40,19 +40,27 @@ The correct post-fix identities (asserted in `conservation_gate.js`) are:
 legitimate drag on reinvested NR balances (that drag is what made the raw per-year
 trace look like a small "leak").
 
-## Open gap — optimizeDecum does NOT fund its own tax (1.1 half-landed)
+## Closed — optimizeDecum now funds its own tax (1.1 fully landed)
 
-The 1.1 year-end settlement was added to **runMC only**. In `optimizeDecum` the
-withdrawal `need` (L3182) is `spending − fixedIncome` with **no tax term**;
-`row.cashWithdraw = spending + tax − govInc` (L3389) is a *reported* field that never
-debits an account. Consequence: the **deterministic decumulation schedule** (the
-Optimiseur/Décaissement table) still understates withdrawals by the year's income
-tax, even though the **Monte-Carlo success rate and the Bilan are now correct**.
+Originally the 1.1 settlement was in **runMC only**; `optimizeDecum`'s `row.tax` was
+reported but never debited. **Fixed**: a tax-funding settlement was added after the
+tax computation (right before balances are recorded, ~L3380) mirroring runMC's source
+order (NR → TFSA → RRSP → spouse; NR/TFSA first to avoid generating extra taxable
+income). The R2 surplus reinvest (L3217) was left untouched, so surplus is reinvested
+once and tax funded once.
 
-Decision for maître: fund tax in optimizeDecum too (mirror the runMC settlement —
-adds tax to `need`, gross-up `wRR_net/(1−marg)`), which will lower the displayed
-deterministic schedule's residual balances; or accept the deterministic view as a
-pre-tax planning schedule and rely on the MC view for after-tax truth. Not started.
+Verified: the conservation gate's optimizeDecum identity is now
+`final = init + Σgov − Σspend − Σtax` → residual **$0**; 505-suite stays 505/505; a
+realistic 65→90 profile (meltdown on) produces a sane schedule (0 NaN/negative, RRSP
+melts down, surplus compounds in TFSA). The deterministic Optimiseur/Décaissement
+table now reflects after-tax withdrawals, consistent with the MC/Bilan.
+
+## Follow-up — mirror to the canonical engine
+
+This audit + all fixes are in `planner/planner_v3.html` (legacy inline engine, still
+served via the Planner iframe). Per CLAUDE.md the canonical engine is
+`lib/engine/index.js`; confirm whether it carries the same conservation/tax fixes
+(1.1/1.3/1.4) and mirror if not. Not checked here.
 
 ## Residual tightening (optional)
 
