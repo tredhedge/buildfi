@@ -115,12 +115,17 @@ Never remove, simplify, or downgrade validated behavior without explicit written
 - New routes follow the `/api/v1/...` JSON contract pattern (ARCH-FE-BE-SPLIT §7);
   schemas in `lib/schemas/`.
 
-## Known Drift / Cleanup Backlog (as of 2026-06-10)
-- **Code still carries old $9.99/$19.99/$49.99 prices** in several `app/` files —
-  pricing migration to $29.99/$69.99 is unfinished. Reconcile against
-  `public/index.html` (single price source).
-- `public/index.html` landing page still shows old 4-product promo pricing — update
-  before any marketing push.
-- `app/outils/bilan-annuel/` route + `bilan-annuel` lib still present though the
-  product was dropped — retire or repurpose.
+## Known Drift / Cleanup Backlog (as of 2026-06-16)
+- Pricing is reconciled to the 2-SKU model on customer-facing surfaces: `public/index.html`
+  landing (Bilan 360 $29.99 / Planner $69.99 / report-pack $19.99), the legal pages
+  (`conditions`/`confidentialite`, FR HTML + EN `T` tables), and the `/expert` cross-sell
+  CTA (now → the Bilan 360 wizard, was "Diagnostic $14.50").
+- `app/outils/bilan-annuel/` **public route retired** (product dropped). Dead code still to
+  sweep: `lib/bilan-annuel.ts`, `app/api/bilan-annuel`, `app/api/cron/ba-reminder` (NOT
+  scheduled in `vercel.json`), `tests/bilan-annuel.test.ts`, and the `bilan-annuel`
+  reference in `lib/design/components/ProductHeader.tsx`.
+- Remaining stale product copy ("Laboratoire"/"Lab") lives only in the **parked**
+  `app/simulateur/*` — leave until /simulateur is revived or dropped.
+- Internal-only legacy kept on purpose: `normalizeTier()` aliases (checkout/webhook) and
+  admin/stats historical tiers.
 - `planner/planner_v3.html` deletion blocked on `/simulateur` + `/wizard` E2E verification.

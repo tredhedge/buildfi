@@ -153,9 +153,9 @@ function ExpertDeniedScreen({ lang, setLang }: { lang: "fr" | "en"; setLang: (l:
           )}
         </div>
 
-        {/* Tertiary → Essentiel */}
-        <a href="/quiz-essentiel.html" style={{ display: "block", marginTop: 20, fontSize: 13, color: EK.txDim, textDecoration: "none", fontWeight: 600 }}>
-          {t("Commencer par le Diagnostic à 14,50 $ →", "Start with the Diagnostic at $14.50 →")}
+        {/* Tertiary → Bilan 360 */}
+        <a href="/wizard" style={{ display: "block", marginTop: 20, fontSize: 13, color: EK.txDim, textDecoration: "none", fontWeight: 600 }}>
+          {t("Commencer par le Bilan 360 à 29,99 $ →", "Start with the Bilan 360 at $29.99 →")}
         </a>
       </div>
     </div>
