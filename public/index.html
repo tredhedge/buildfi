@@ -399,15 +399,23 @@ footer svg{height:22px; width:auto; opacity:.85}
 @media(max-width:520px){.eng-band ul{columns:1}}
 
 /* "testez-le gratuitement" — strip outils intégré à Pourquoi */
-.try-strip{max-width:1000px; margin:30px auto 0; display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:center;
-  background:var(--navy); color:var(--paper); border-radius:var(--r-lg); padding:26px 30px}
-.try-strip .tl h3{font-family:var(--serif); font-size:20px; color:#fff; margin:0 0 4px}
-.try-strip .tl p{font-size:13.5px; color:rgba(253,251,247,.72); margin:0; line-height:1.5}
-.try-strip .tr{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
-.try-chip{font-size:13px; font-weight:600; color:var(--paper); text-decoration:none; background:rgba(255,255,255,.06);
-  border:1px solid rgba(232,216,168,.3); border-radius:var(--r-pill); padding:8px 15px; transition:all .15s; white-space:nowrap}
-.try-chip:hover{border-color:var(--gold); color:var(--gold-soft); background:rgba(196,148,74,.1)}
-@media(max-width:760px){.try-strip{grid-template-columns:1fr; gap:16px}.try-strip .tr{justify-content:flex-start}}
+.try-strip{max-width:1000px; margin:30px auto 0;
+  background:var(--navy); color:var(--paper); border-radius:var(--r-lg); padding:30px 32px}
+.try-head{margin:0 0 22px; max-width:640px}
+.try-kicker{font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-soft); margin:0 0 8px}
+.try-strip .try-head h3{font-family:var(--serif); font-size:24px; color:#fff; margin:0 0 6px; line-height:1.2}
+.try-strip .try-head p{font-size:14px; color:rgba(253,251,247,.72); margin:0; line-height:1.55}
+.try-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.try-card{display:flex; flex-direction:column; gap:5px; position:relative; text-decoration:none;
+  background:rgba(255,255,255,.05); border:1px solid rgba(232,216,168,.22); border-radius:var(--r-md);
+  padding:16px 18px; transition:all .15s}
+.try-card:hover{border-color:var(--gold); background:rgba(196,148,74,.1)}
+.try-card-meta{font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--gold-soft)}
+.try-card-title{font-family:var(--serif); font-size:18px; color:#fff; line-height:1.2}
+.try-card-list{font-size:12.5px; color:rgba(253,251,247,.66); line-height:1.5; margin-top:2px; padding-right:18px}
+.try-card-go{position:absolute; top:16px; right:18px; color:var(--gold-soft); font-size:16px; transition:transform .15s}
+.try-card:hover .try-card-go{transform:translateX(3px); color:var(--gold)}
+@media(max-width:760px){.try-strip{padding:24px 22px}.try-grid{grid-template-columns:1fr}}
 
 /* Tarifs — psychologie produit reformulée (sous-titre carte) */
 .card .who2{font-size:14px; color:var(--gold); font-weight:600; margin:-2px 0 14px; font-style:italic}
@@ -711,15 +719,36 @@ footer svg{height:22px; width:auto; opacity:.85}
     </div>
 
     <div class="try-strip reveal">
-      <div class="tl">
-        <h3 data-i18n="try-h3">Ne nous croyez pas sur parole.</h3>
-        <p data-i18n="try-p">Neuf calculateurs gratuits, sans courriel, tout en local. Jugez le moteur avant d&rsquo;acheter.</p>
+      <div class="try-head">
+        <p class="try-kicker" data-i18n="try-kicker">Ne nous croyez pas sur parole</p>
+        <h3 data-i18n="try-h3">Onze outils gratuits. Aucun courriel, aucun compte.</h3>
+        <p data-i18n="try-p">Le moteur fiscal derrière nos rapports — directement dans votre navigateur. Rien n&rsquo;est envoyé, rien n&rsquo;est stocké.</p>
       </div>
-      <div class="tr">
-        <a class="try-chip" href="/guides/101" data-i18n="try-chip1">Bâtir mes bases — 4 outils</a>
-        <a class="try-chip" href="/guides/201" data-i18n="try-chip2">Préparer ma retraite — 5 outils</a>
-        <a class="try-chip" href="/outils/dettes" data-i18n="try-chip3">Sortir de mes dettes</a>
-        <a class="try-chip" href="/outils/decaissement" data-i18n="try-chip4">Faire durer mon épargne</a>
+      <div class="try-grid">
+        <a class="try-card" href="/guides/101">
+          <span class="try-card-meta" data-i18n="try-c1-meta">Guide 101 · 4 calculateurs</span>
+          <span class="try-card-title" data-i18n="try-c1-title">Bâtir mes bases</span>
+          <span class="try-card-list" data-i18n="try-c1-list">Valeur nette · Budget 50/30/20 · Piège du paiement minimum · Intérêts composés</span>
+          <span class="try-card-go" aria-hidden="true">→</span>
+        </a>
+        <a class="try-card" href="/guides/201">
+          <span class="try-card-meta" data-i18n="try-c2-meta">Guide 201 · 5 calculateurs</span>
+          <span class="try-card-title" data-i18n="try-c2-title">Préparer ma retraite</span>
+          <span class="try-card-list" data-i18n="try-c2-list">Récupération PSV · Point d&rsquo;équilibre RRQ · Fractionnement · Frais sur 30 ans · Fenêtre meltdown REER</span>
+          <span class="try-card-go" aria-hidden="true">→</span>
+        </a>
+        <a class="try-card" href="/outils/dettes">
+          <span class="try-card-meta" data-i18n="try-c3-meta">Simulateur</span>
+          <span class="try-card-title" data-i18n="try-c3-title">Sortir de mes dettes</span>
+          <span class="try-card-list" data-i18n="try-c3-list">Avalanche vs snowball · rembourser ou investir · date de liberté financière</span>
+          <span class="try-card-go" aria-hidden="true">→</span>
+        </a>
+        <a class="try-card" href="/outils/decaissement">
+          <span class="try-card-meta" data-i18n="try-c4-meta">Simulateur</span>
+          <span class="try-card-title" data-i18n="try-c4-title">Faire durer mon épargne</span>
+          <span class="try-card-list" data-i18n="try-c4-list">Taux de retrait sécuritaire · RRQ + PSV · durabilité du portefeuille</span>
+          <span class="try-card-go" aria-hidden="true">→</span>
+        </a>
       </div>
     </div>
   </div>
