@@ -8,6 +8,7 @@ window.BF_I18N = {
   "meta-desc": { fr: "Un rapport de retraite testé contre 5 000 scénarios de marché : krach, inflation, longévité. 10 minutes, 29,99 $. Conçu au Canada, bilingue, sans abonnement.", en: "A retirement report stress-tested against 5,000 market scenarios: crash, inflation, longevity. 10 minutes, $29.99. Built in Canada, bilingual, no subscription." },
 
   /* nav */
+  "nav-outils": { fr: "Outils gratuits", en: "Free tools" },
   "nav-rapport": { fr: "Le rapport", en: "The report" },
   "nav-planner": { fr: "Planner", en: "Planner" },
   "nav-pourquoi": { fr: "Pourquoi BuildFi", en: "Why BuildFi" },

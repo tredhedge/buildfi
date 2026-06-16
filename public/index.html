@@ -96,7 +96,20 @@ section{padding:92px 0}
 .nav-cta{font-size:14px; font-weight:600; color:#fff; background:var(--navy); text-decoration:none;
   padding:9px 18px; border-radius:var(--r-pill); transition:all .15s}
 .nav-cta:hover{background:#2f3a4a; transform:translateY(-1px)}
-@media(max-width:900px){.nav-links>a{display:none}}
+.nav-free{color:var(--gold)!important; font-weight:600}
+.nav-toggle{display:none; background:none; border:0; cursor:pointer; padding:6px; margin:-6px; color:var(--ink); line-height:0}
+#outils{scroll-margin-top:84px}
+@media(max-width:900px){
+  .nav-toggle{display:inline-flex; align-items:center}
+  .nav-links{position:absolute; top:100%; left:0; right:0; flex-direction:column; align-items:stretch; gap:0;
+    background:var(--paper); border-bottom:1px solid var(--line); box-shadow:0 14px 30px rgba(26,22,16,.10);
+    padding:6px 0; max-height:0; overflow:hidden; opacity:0; pointer-events:none;
+    transition:max-height .26s ease, opacity .2s ease}
+  .nav-in.open .nav-links{max-height:80vh; opacity:1; pointer-events:auto}
+  .nav-links>a{padding:13px 24px; font-size:16px; border-bottom:1px solid var(--line-soft)}
+  .nav-links .lang{margin:10px 24px 4px; align-self:flex-start}
+  .nav-links .nav-cta{margin:8px 24px; text-align:center}
+}
 
 /* 1. HERO */
 .hero{padding:70px 0 56px}
@@ -428,7 +441,8 @@ footer svg{height:22px; width:auto; opacity:.85}
     <a class="nav-logo" href="/" aria-label="BuildFi — accueil">
       <svg xmlns="http://www.w3.org/2000/svg" width="172" height="38" viewBox="0 0 220 48" role="img" aria-hidden="true"><g><rect x="0" y="32" width="28" height="8" rx="2" fill="#1a1610"/><rect x="4" y="22" width="26" height="8" rx="2" fill="#1a1610" opacity=".5"/><rect x="8" y="12" width="24" height="8" rx="2" fill="#c4944a"/></g><text x="40" y="38" font-family="Inter,'Segoe UI',Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5"><tspan fill="#1a1610">build</tspan><tspan fill="#c4944a">fi</tspan></text></svg>
     </a>
-    <nav class="nav-links" aria-label="Navigation principale">
+    <nav class="nav-links" id="nav-links-menu" aria-label="Navigation principale">
+      <a class="nav-free" href="#outils" data-i18n="nav-outils">Outils gratuits</a>
       <a href="#rapport" data-i18n="nav-rapport">Le rapport</a>
       <a href="#planner-demo" data-i18n="nav-planner">Planner</a>
       <a href="#pourquoi" data-i18n="nav-pourquoi">Pourquoi BuildFi</a>
@@ -437,6 +451,9 @@ footer svg{height:22px; width:auto; opacity:.85}
       <button class="lang" type="button" aria-label="Basculer la langue"><b>FR</b> · EN</button>
       <a class="nav-cta" href="#tarifs" data-i18n="nav-cta">Commencer</a>
     </nav>
+    <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links-menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
   </div>
 </header>
 
@@ -718,7 +735,7 @@ footer svg{height:22px; width:auto; opacity:.85}
       </ul>
     </div>
 
-    <div class="try-strip reveal">
+    <div class="try-strip reveal" id="outils">
       <div class="try-head">
         <p class="try-kicker" data-i18n="try-kicker">Ne nous croyez pas sur parole</p>
         <h3 data-i18n="try-h3">Onze outils gratuits. Aucun courriel, aucun compte.</h3>
@@ -1021,6 +1038,13 @@ function refreshLang(){applyI18N();heroReadout();plReadout();hero.resize();pl.re
 (function(){var l="fr";try{var p=new URLSearchParams(location.search).get("lang");if(p==="en"||p==="fr"){l=p;}else{var s=localStorage.getItem("bf_lang");if(s==="en"||s==="fr"){l=s;}else{var n=(navigator.language||"").toLowerCase();if(n&&n.slice(0,2)!=="fr"){l="en";}}}}catch(e){}LANG=l;})();
 refreshLang();
 var langBtn=document.querySelector(".lang");if(langBtn)langBtn.addEventListener("click",function(){LANG=LANG==="fr"?"en":"fr";try{localStorage.setItem("bf_lang",LANG);}catch(e){}refreshLang();});
+
+/* Mobile nav: hamburger toggles the menu; tapping a link closes it. */
+var navIn=document.querySelector(".nav-in"),navToggle=document.querySelector(".nav-toggle");
+if(navIn&&navToggle){
+  navToggle.addEventListener("click",function(){var open=navIn.classList.toggle("open");navToggle.setAttribute("aria-expanded",open?"true":"false");});
+  navIn.querySelectorAll(".nav-links a").forEach(function(a){a.addEventListener("click",function(){navIn.classList.remove("open");navToggle.setAttribute("aria-expanded","false");});});
+}
 
 /* referral attribution — restores the ?ref=CODE ping the old static landing
    sent to /api/referral/use (see that route's header comment). Persists the
