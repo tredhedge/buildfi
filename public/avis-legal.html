@@ -8,7 +8,7 @@
 <link rel="canonical" href="https://buildfi.ca/avis-legal">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -18,8 +18,8 @@
   --text-primary:#26201a;--text-secondary:#5c5346;--text-muted:#857a6a;
   --border:#e4dac8;--border-light:#efe7d8;
   --danger:#b3402e;
-  --font-display:'Newsreader',Georgia,serif;
-  --font-body:'DM Sans',-apple-system,sans-serif;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'Inter','Segoe UI',Arial,sans-serif;
   --max-narrow:720px;--radius-md:14px;
 }
 html{scroll-behavior:smooth}
@@ -79,13 +79,13 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   <div class="nav-inner">
     <a href="/" class="nav-logo" aria-label="buildfi.ca">build<span>fi</span></a>
     <ul class="nav-links">
-      <li><a href="/#tools">Outils gratuits</a></li>
-      <li><a href="/#pricing">Prix</a></li>
+      <li><a href="/#outils">Outils gratuits</a></li>
+      <li><a href="/#tarifs">Prix</a></li>
       <li><a href="/#faq">FAQ</a></li>
     </ul>
     <div class="nav-right">
       <button class="lang-toggle" id="langToggle" aria-label="Switch to English" onclick="toggleLang()">English</button>
-      <a href="/#products" class="nav-cta" id="navCta">Commencer</a>
+      <a href="/#tarifs" class="nav-cta" id="navCta">Commencer</a>
       <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -93,10 +93,10 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
   </div>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="/#tools">Outils gratuits</a>
-  <a href="/#pricing">Prix</a>
+  <a href="/#outils">Outils gratuits</a>
+  <a href="/#tarifs">Prix</a>
   <a href="/#faq">FAQ</a>
-  <a href="/#products" class="nav-cta">Commencer</a>
+  <a href="/#tarifs" class="nav-cta">Commencer</a>
 </div>
 
 <div class="legal-wrap">
@@ -166,7 +166,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:#a68016}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:14px" id="footProducts">Produits</div>
-        <a href="/#pricing" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
+        <a href="/#tarifs" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Bilan 360</a>
         <a href="/acheter-planner" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Planner + Rapports</a>
         <a href="/guides/101" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Guides gratuits</a>
         <a href="/outils/dettes" style="display:block;font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;padding:4px 0">Outils gratuits</a>

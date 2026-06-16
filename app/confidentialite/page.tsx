@@ -8,7 +8,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 const POLICY_VERSION = "2026-06-11-v1";
 const POLICY_EFFECTIVE_DATE = "11 juin 2026";
@@ -16,25 +15,63 @@ const POLICY_EFFECTIVE_DATE_EN = "June 11, 2026";
 
 export default function PrivacyPage() {
   const [lang, setLang] = useState<"fr" | "en">("fr");
+  const [menuOpen, setMenuOpen] = useState(false);
   const fr = lang === "fr";
 
   return (
     <main className="min-h-screen bg-[#fdfbf7] text-[#2a2419]">
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-8 flex items-center justify-between">
-          <Link
+      {/* Brand nav — matches the v6 landing and the other legal pages */}
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-[#efe7d8] bg-[#faf8f4]/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-6">
+          <a
             href="/"
-            className="text-sm text-[#3a3326] hover:text-[#c4944a] transition"
+            aria-label="buildfi.ca"
+            className="text-[22px] font-extrabold text-[#252d39]"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            ← {fr ? "Retour à BuildFi" : "Back to BuildFi"}
-          </Link>
-          <button
-            onClick={() => setLang(fr ? "en" : "fr")}
-            className="text-xs uppercase tracking-wide text-[#c4944a] border border-[#c4944a]/40 rounded px-3 py-1 hover:bg-[#c4944a]/10 transition"
-          >
-            {fr ? "English" : "Français"}
-          </button>
+            build<span className="text-[#c4944a]">fi</span>
+          </a>
+          <ul className="hidden list-none items-center gap-7 p-0 text-sm md:flex">
+            <li><a href="/#outils" className="text-[#5c5346] transition hover:text-[#252d39]">{fr ? "Outils gratuits" : "Free tools"}</a></li>
+            <li><a href="/#tarifs" className="text-[#5c5346] transition hover:text-[#252d39]">{fr ? "Prix" : "Pricing"}</a></li>
+            <li><a href="/#faq" className="text-[#5c5346] transition hover:text-[#252d39]">FAQ</a></li>
+          </ul>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLang(fr ? "en" : "fr")}
+              className="rounded-lg border border-[#e4dac8] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[#857a6a] transition hover:border-[#c4944a] hover:text-[#c4944a]"
+            >
+              {fr ? "English" : "Français"}
+            </button>
+            <a
+              href="/#tarifs"
+              className="hidden rounded-[10px] bg-[#c4944a] px-5 py-2 text-[13px] font-bold text-white transition hover:bg-[#b0823a] md:inline-block"
+            >
+              {fr ? "Commencer" : "Get started"}
+            </a>
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              className="flex h-9 w-9 flex-col justify-center gap-[5px] p-1.5 md:hidden"
+            >
+              <span className={`block h-0.5 w-full rounded bg-[#252d39] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
+              <span className={`block h-0.5 w-full rounded bg-[#252d39] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
+              <span className={`block h-0.5 w-full rounded bg-[#252d39] transition-transform ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
+            </button>
+          </div>
         </div>
+        <div className={`overflow-hidden border-t border-[#efe7d8] bg-[#fdfbf7] transition-all md:hidden ${menuOpen ? "max-h-80" : "max-h-0"}`}>
+          <div className="flex flex-col px-6 py-1">
+            <a href="/#outils" onClick={() => setMenuOpen(false)} className="border-b border-[#efe7d8] py-2.5 text-[15px] text-[#5c5346]">{fr ? "Outils gratuits" : "Free tools"}</a>
+            <a href="/#tarifs" onClick={() => setMenuOpen(false)} className="border-b border-[#efe7d8] py-2.5 text-[15px] text-[#5c5346]">{fr ? "Prix" : "Pricing"}</a>
+            <a href="/#faq" onClick={() => setMenuOpen(false)} className="border-b border-[#efe7d8] py-2.5 text-[15px] text-[#5c5346]">FAQ</a>
+            <a href="/#tarifs" onClick={() => setMenuOpen(false)} className="mb-1 mt-2 rounded-[10px] bg-[#c4944a] py-3 text-center text-[13px] font-bold text-white">{fr ? "Commencer" : "Get started"}</a>
+          </div>
+        </div>
+      </nav>
+
+      <div className="mx-auto max-w-3xl px-6 pb-16 pt-28">
 
         <header className="mb-10">
           <div className="text-xs uppercase tracking-[0.2em] text-[#c4944a] mb-3">
