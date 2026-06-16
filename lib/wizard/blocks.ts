@@ -115,8 +115,8 @@ export const MODE1_QUESTIONS: Mode1Question[] = [
     type: "choice",
     labelFr: "Avez-vous des propriétés à revenus ?",
     labelEn: "Do you own rental properties?",
-    helpFr: "Pour 4 propriétés ou plus, le Planner est recommandé (modélisation détaillée illimitée).",
-    helpEn: "For 4+ properties, the Planner is recommended (unlimited detailed modeling).",
+    helpFr: "Pour 4 propriétés ou plus, le Planner est mieux adapté (modélisation détaillée illimitée).",
+    helpEn: "For 4+ properties, the Planner is better suited (unlimited detailed modeling).",
     options: [
       { value: 0, labelFr: "Aucune", labelEn: "None" },
       { value: 1, labelFr: "Une propriété", labelEn: "One property" },
@@ -248,7 +248,7 @@ export const BLOCKS: WizardBlock[] = [
       { id: "retSpM", type: "currency", labelFr: "Dépenses mensuelles souhaitées à la retraite", labelEn: "Desired monthly spending in retirement", required: true, min: 0, helpFr: "En dollars d'aujourd'hui. Typique : 65-80 % des dépenses actuelles.", helpEn: "In today's dollars. Typical: 65-80% of current spending." },
       { id: "qppAge", type: "age", labelFr: "Âge prévu pour commencer RRQ/RPC", labelEn: "Planned age to start QPP/CPP", min: 60, max: 70 },
       { id: "oasAge", type: "age", labelFr: "Âge prévu pour commencer PSV", labelEn: "Planned age to start OAS", min: 65, max: 70 },
-      { id: "deathAge", type: "age", labelFr: "Âge de fin de plan (horizon)", labelEn: "Plan end age (horizon)", min: 85, max: 105, helpFr: "Défaut recommandé : 95 (80 % des Canadiens n'y arrivent pas, donc marge de sécurité).", helpEn: "Recommended default: 95 (80% of Canadians don't reach it — safety margin)." },
+      { id: "deathAge", type: "age", labelFr: "Âge de fin de plan (horizon)", labelEn: "Plan end age (horizon)", min: 85, max: 105, helpFr: "Souvent utilisé : 95. Environ 80 % des Canadiens n'atteignent pas cet âge, ce qui laisse une marge.", helpEn: "Often used: 95. About 80% of Canadians don't reach this age, which leaves a margin." },
     ],
   },
   {

@@ -178,6 +178,7 @@ window.BF_I18N = {
   "card-bilan-feat5": { fr: "Un rapport, à un moment précis. Pas de régénération.", en: "One report, at a single point in time. No regenerations." },
   "card-bilan-cta": { fr: "Choisir le Bilan — 29,99 $", en: "Choose Bilan — $29.99" },
   "card-planner-badge": { fr: "Simulateur", en: "Simulator" },
+  "card-planner-title": { fr: "Planner + Rapports", en: "Planner + Reports" },
   "card-planner-who2": { fr: "Le simulateur, entre mes mains.", en: "The simulator, in my hands." },
   "card-planner-price": { fr: "69,99&nbsp;$ <small>paiement unique · accès à vie</small>", en: "$69.99 <small>one-time payment · lifetime access</small>" },
   "card-planner-feat1": { fr: "190+ variables, 24 onglets, scénarios illimités", en: "190+ variables, 24 tabs, unlimited scenarios" },

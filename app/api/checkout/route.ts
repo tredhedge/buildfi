@@ -24,6 +24,21 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || "https://www.buildfi.ca";
 
+// ── Beta free-access codes (friends / beta testers) ──────────────────────
+// Each code grants ONE free purchase per email for a specific tier, applied as
+// a 100%-off Stripe coupon (→ $0 checkout → same webhook fulfillment as a paid
+// order). Human-facing codes AND the coupon IDs live in env (never in the repo).
+// Create the coupons once with: node scripts/stripe-beta-coupons.mjs
+//   BETA_CODE_BILAN     e.g. "FRIENDS360"   BETA_COUPON_BILAN   = coupon id, 100% off Bilan price
+//   BETA_CODE_PLANNER   e.g. "FRIENDSLAB"   BETA_COUPON_PLANNER = coupon id, 100% off Planner price
+const BETA_CODES: Record<string, { tier: string; coupon: string }> = {};
+if (process.env.BETA_CODE_BILAN && process.env.BETA_COUPON_BILAN) {
+  BETA_CODES[process.env.BETA_CODE_BILAN.toUpperCase()] = { tier: "bilan360", coupon: process.env.BETA_COUPON_BILAN };
+}
+if (process.env.BETA_CODE_PLANNER && process.env.BETA_COUPON_PLANNER) {
+  BETA_CODES[process.env.BETA_CODE_PLANNER.toUpperCase()] = { tier: "planner", coupon: process.env.BETA_COUPON_PLANNER };
+}
+
 // Rate limit: max 10 checkout sessions per IP per 15 minutes
 const RL_WINDOW_SEC = 15 * 60;
 const RL_MAX = 10;
@@ -334,6 +349,36 @@ export async function POST(req: NextRequest) {
       metadata.upgrade_from = body.upgradeFrom;
     }
 
+    // Beta free-access code — one free purchase per email, scoped to a tier.
+    const betaCodeRaw = typeof body.betaCode === "string" ? body.betaCode.trim().toUpperCase() : "";
+    let betaCoupon: string | null = null;
+    if (betaCodeRaw) {
+      const beta = BETA_CODES[betaCodeRaw];
+      if (!beta) {
+        return NextResponse.json(
+          { error: "invalid_beta_code", message: "Code bêta invalide. / Invalid beta code." },
+          { status: 400 }
+        );
+      }
+      if (beta.tier !== selectedTier) {
+        return NextResponse.json(
+          { error: "beta_code_wrong_product", message: "Ce code ne s'applique pas à ce produit. / This code does not apply to this product." },
+          { status: 400 }
+        );
+      }
+      // Once per email: atomic reserve (NX). If the key already exists, used.
+      const redeemKey = `beta:redeemed:${betaCodeRaw}:${email.toLowerCase().trim()}`;
+      const reserved = await redis.set(redeemKey, "1", { nx: true });
+      if (reserved !== "OK") {
+        return NextResponse.json(
+          { error: "beta_code_already_used", message: "Ce code a déjà été utilisé avec cette adresse courriel. / This code was already used with this email." },
+          { status: 403 }
+        );
+      }
+      betaCoupon = beta.coupon;
+      metadata.beta = betaCodeRaw;
+    }
+
     // Build checkout params
     const checkoutLang = lang || "fr";
     // Planner buyers land on /expert (their portal with Wizard). Bilan buyers land on /merci (report delivery).
@@ -347,9 +392,11 @@ export async function POST(req: NextRequest) {
       cancel_url: `${BASE_URL}/`,
     };
 
-    // Discount priority: upgrade > referral > launch promo
+    // Discount priority: beta (free) > upgrade > referral > launch promo
     // Stripe only allows one of discounts OR allow_promotion_codes per session
-    if (body.upgradeFrom === "essentiel" || body.upgradeFrom === "intermediaire") {
+    if (betaCoupon) {
+      checkoutParams.discounts = [{ coupon: betaCoupon }];
+    } else if (body.upgradeFrom === "essentiel" || body.upgradeFrom === "intermediaire") {
       const existingProfile = await getExpertProfile(email);
       if (existingProfile) {
         checkoutParams.discounts = [

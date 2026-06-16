@@ -108,6 +108,7 @@ function PageInner() {
     setSubmitting(true);
     trackEvent(EVENTS.PLANNER_CHECKOUT_STARTED, { tier: "planner" });
     try {
+      const betaCode = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("beta") || undefined) : undefined;
       const resp = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -117,6 +118,7 @@ function PageInner() {
           tier: "planner",
           lang,
           termsAccepted: true,
+          ...(betaCode ? { betaCode } : {}),
           // Loi 25 / LPRPDE — server validates policyVersion + acceptedAt freshness.
           consent: {
             policyVersion: CLIENT_POLICY_VERSION,

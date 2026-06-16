@@ -33,15 +33,20 @@ const nextConfig = {
       // Laboratoire naming → Planner
       { source: '/laboratoire', destination: '/acheter-planner', permanent: true },
 
-      // Legacy static homepage → React landing
+      // Legacy static homepage → static landing (served at root via rewrite below)
       { source: '/index.html', destination: '/', permanent: true },
+
+      // Pricing-section shortcut. Next drops redirects whose destination is a
+      // bare hash, so send it to the landing root (pricing is one scroll down).
+      { source: '/bilan-360', destination: '/', permanent: true },
     ];
   },
   async rewrites() {
     return [
-      // Current 2-SKU landing lives at /app/page.tsx (the root)
-      // Keep the /bilan-360 shortcut pointing to the landing's pricing anchor
-      { source: '/bilan-360', destination: '/#pricing' },
+      // 2-SKU landing is the static bilingual page at public/index.html
+      // (v6 design + FR/EN tables in public/landing-i18n.js). Served at root.
+      // The previous React landing is preserved at /old-landing.
+      { source: '/', destination: '/index.html' },
 
       // Planner portal entry point (post-purchase)
       { source: '/expert/landing', destination: '/expert' },
