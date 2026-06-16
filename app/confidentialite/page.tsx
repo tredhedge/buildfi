@@ -19,12 +19,12 @@ export default function PrivacyPage() {
   const fr = lang === "fr";
 
   return (
-    <main className="min-h-screen bg-[#0e1420] text-[#e8e0d4]">
+    <main className="min-h-screen bg-[#fdfbf7] text-[#2a2419]">
       <div className="mx-auto max-w-3xl px-6 py-16">
         <div className="mb-8 flex items-center justify-between">
           <Link
             href="/"
-            className="text-sm text-[#bccbe0] hover:text-[#c4944a] transition"
+            className="text-sm text-[#3a3326] hover:text-[#c4944a] transition"
           >
             ← {fr ? "Retour à BuildFi" : "Back to BuildFi"}
           </Link>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
           <h1 className="font-serif text-3xl md:text-4xl font-semibold leading-tight mb-2">
             buildfi.ca
           </h1>
-          <p className="text-sm text-[#9aaab8]">
+          <p className="text-sm text-[#706558]">
             {fr ? "Version" : "Version"} {POLICY_VERSION} ·{" "}
             {fr ? "En vigueur le" : "Effective"}{" "}
             {fr ? POLICY_EFFECTIVE_DATE : POLICY_EFFECTIVE_DATE_EN}
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           {fr ? <FrenchPolicy /> : <EnglishPolicy />}
         </article>
 
-        <footer className="mt-16 pt-8 border-t border-[#2a3548] text-xs text-[#7a8a98]">
+        <footer className="mt-16 pt-8 border-t border-[#e4dac8] text-xs text-[#857a6a]">
           <p>
             {fr
               ? "Toute question ou demande relative à vos renseignements personnels :"
@@ -88,11 +88,11 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="font-serif text-xl font-semibold text-[#faf8f4] mb-3">
+      <h2 className="font-serif text-xl font-semibold text-[#1a1610] mb-3">
         <span className="text-[#c4944a] mr-2">{n}.</span>
         {title}
       </h2>
-      <div className="space-y-3 text-[#bccbe0]">{children}</div>
+      <div className="space-y-3 text-[#3a3326]">{children}</div>
     </section>
   );
 }
