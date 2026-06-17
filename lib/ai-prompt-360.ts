@@ -428,6 +428,7 @@ export function buildAIPrompt360(
     };
     data.spending = {
       flex: q.spendingFlex || "moderate", gkActive,
+      currentMonthly: q.currentSpM || 0, desiredMonthly: params.retSpM || 0,
       gkMaxCut: params.gkMaxCut, gkCutFreq: D.gkCutFreq, gkAvgCut: D.gkAvgCut,
     };
     data.meltdown = {

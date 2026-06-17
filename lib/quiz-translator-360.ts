@@ -37,7 +37,43 @@ function toDebtArray(debts: any[]): any[] {
     });
 }
 
-export function translateBilan360(a: Record<string, any>, phase: string): Record<string, any> {
+/**
+ * Reconcile the rebuilt wizard's answer shape (lib/wizard/blocks.ts) with the
+ * field names + structure this translator expects. The wizard nests its Mode 1
+ * classifier under `__profile` and uses field ids (sal, liraBal, mortgageBal,
+ * flat debt* fields) that differ from the translator's reads (income, lira,
+ * mortgage, debts[]). Without this mapping, salary, couple mode, the home,
+ * debts and the LIRA were silently dropped before the engine. Non-destructive:
+ * only fills a translator key when it isn't already present.
+ */
+function normalizeBilan360Input(raw: Record<string, any>): Record<string, any> {
+  const a: Record<string, any> = { ...raw };
+  const prof: Record<string, any> = (raw && raw.__profile) || {};
+  // Mode 1 profile gates → top-level flags the translator reads.
+  if (a.couple == null && prof.hasSpouse != null) a.couple = prof.hasSpouse ? "yes" : "no";
+  if (a.homeowner == null && prof.homeOwner != null) a.homeowner = !!prof.homeOwner;
+  // Renamed fields (wizard id → translator key).
+  if (a.income == null && a.sal != null) a.income = a.sal;
+  if (a.lira == null && a.liraBal != null) a.lira = a.liraBal;
+  if (a.mortgage == null && a.mortgageBal != null) a.mortgage = a.mortgageBal;
+  // Flat debt fields → the {amount,type,rate%} array toDebtArray() expects.
+  if (a.debts == null) {
+    const d: any[] = [];
+    const push = (amount: any, type: string, rate?: any) => {
+      if (Number(amount) > 0) d.push({ amount: Number(amount), type, ...(rate != null && rate !== "" ? { rate: Number(rate) } : {}) });
+    };
+    push(a.debtCards, "cc", a.debtCardRate);
+    push(a.debtLoc, "loc", a.debtLocRate);
+    push(a.debtAuto, "car");
+    push(a.debtStudent, "student");
+    push(a.debtOther, "other");
+    if (d.length) a.debts = d;
+  }
+  return a;
+}
+
+export function translateBilan360(rawA: Record<string, any>, phase: string): Record<string, any> {
+  const a = normalizeBilan360Input(rawA);
   const isDecum = phase === "DECUM";
 
   const age = clamp(Math.round(n(a.age, isDecum ? 65 : 35)), 18, 95);
@@ -54,7 +90,8 @@ export function translateBilan360(a: Record<string, any>, phase: string): Record
   retAge = clamp(retAge, age, 95);
 
   const sal = isDecum ? 0 : Math.round(n(a.income, 70000));
-  const deathAge = isDecum ? 105 : (sex === "F" ? 92 : 90);
+  // Use the client's stated horizon when given; else gendered/phase default.
+  const deathAge = clamp(Math.round(n(a.deathAge, isDecum ? 105 : (sex === "F" ? 92 : 90))), age + 1, 110);
 
   const rrsp = Math.round(n(a.rrsp));
   const tfsa = Math.round(n(a.tfsa));
@@ -116,6 +153,10 @@ export function translateBilan360(a: Record<string, any>, phase: string): Record
 
   const props: any[] = [];
   if (a.homeowner) {
+    // Selling the home at retirement releases its equity into the portfolio
+    // (CG-exempt for a principal residence). dsAge = planned sale age, else
+    // retAge. The engine doesn't model a replacement purchase (Planner-tier).
+    const sellHome = a.sellAtRet === true || a.sellAtRet === "true";
     props.push({
       on: true,
       pri: true,
@@ -126,6 +167,28 @@ export function translateBilan360(a: Record<string, any>, phase: string): Record
       ma: Math.round(n(a.mortgageAmort, 20)),
       rm: 0,
       ox: 0,
+      dsAge: sellHome ? clamp(Math.round(n(a.downsizeAge, retAge)), retAge, deathAge) : 0,
+    });
+  }
+  // Rental properties (up to 2). rentalIncome is net of operating costs but
+  // before mortgage, so map it to monthly rent with ox=0 and let the engine
+  // net out debt service. sa = planned sale age (0 = never).
+  for (let i = 1; i <= 2; i++) {
+    const rv = Math.round(n(a["rentalValue" + i]));
+    if (rv <= 0) continue;
+    const rsa = Math.round(n(a["rentalSell" + i]));
+    props.push({
+      on: true,
+      pri: false,
+      name: "Propriete a revenus " + i,
+      val: rv,
+      mb: Math.round(n(a["rentalMortgage" + i])),
+      mr: n(a["rentalMortgageRate" + i], 5.5) / 100,
+      ma: 25,
+      rm: Math.round(n(a["rentalIncome" + i]) / 12),
+      ox: 0,
+      cg: 0.5,
+      sa: rsa > 0 ? rsa : 0,
     });
   }
 
@@ -222,6 +285,7 @@ export function translateBilan360(a: Record<string, any>, phase: string): Record
     oasAlreadyClaiming: oasAlready,
     detailPreference: String(a.detailPreference || a.prefDetails || "short"),
     employer: String(a.employer || ""),
+    currentSpM: Math.round(n(a.currentSpM)),
     risk,
     couple: cOn ? "yes" : "no",
   };

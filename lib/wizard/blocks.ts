@@ -18,7 +18,7 @@ export interface Mode1Profile {
   employmentStatus: "employed" | "self-employed" | "not-working" | "retired";
   hasDebt: boolean;
   homeOwner: boolean;
-  rentalCount: 0 | 1 | 2 | 3;
+  rentalCount: 0 | 1 | 2;
   hasCCPC: boolean;
   hasDBPension: boolean;
   hasLIRA: boolean;
@@ -97,14 +97,6 @@ export const MODE1_QUESTIONS: Mode1Question[] = [
     helpEn: "Credit cards, car loan, LOC, student loans, etc. (excluding primary home mortgage).",
   },
   {
-    id: "hasInsurance",
-    type: "bool",
-    labelFr: "Modéliser votre portrait d'assurance ?",
-    labelEn: "Model your insurance picture?",
-    helpFr: "Assurance vie, invalidité, maladies graves. Inclut employeur + individuel.",
-    helpEn: "Life, disability, critical illness. Includes employer + individual.",
-  },
-  {
     id: "homeOwner",
     type: "bool",
     labelFr: "Êtes-vous propriétaire de votre résidence principale ?",
@@ -115,22 +107,13 @@ export const MODE1_QUESTIONS: Mode1Question[] = [
     type: "choice",
     labelFr: "Avez-vous des propriétés à revenus ?",
     labelEn: "Do you own rental properties?",
-    helpFr: "Pour 4 propriétés ou plus, le Planner est mieux adapté (modélisation détaillée illimitée).",
-    helpEn: "For 4+ properties, the Planner is better suited (unlimited detailed modeling).",
+    helpFr: "Pour 3 propriétés ou plus, le Planner est mieux adapté (modélisation détaillée illimitée).",
+    helpEn: "For 3+ properties, the Planner is better suited (unlimited detailed modeling).",
     options: [
       { value: 0, labelFr: "Aucune", labelEn: "None" },
       { value: 1, labelFr: "Une propriété", labelEn: "One property" },
       { value: 2, labelFr: "Deux propriétés", labelEn: "Two properties" },
-      { value: 3, labelFr: "Trois propriétés", labelEn: "Three properties" },
     ],
-  },
-  {
-    id: "hasCCPC",
-    type: "bool",
-    labelFr: "Possédez-vous une société par actions (CCPC) ?",
-    labelEn: "Do you own an incorporated business (CCPC)?",
-    helpFr: "Si oui, nous ajoutons les champs pour l'extraction salaire vs dividende, DPE, IMRTDD.",
-    helpEn: "If yes, we add fields for salary vs dividend extraction, SBD, RDTOH.",
   },
   {
     id: "hasDBPension",
@@ -148,14 +131,6 @@ export const MODE1_QUESTIONS: Mode1Question[] = [
     helpFr: "Habituellement provient d'un ancien employeur.",
     helpEn: "Typically from a former employer.",
   },
-  {
-    id: "hasEstateGoals",
-    type: "bool",
-    labelFr: "Souhaitez-vous modéliser vos objectifs successoraux ?",
-    labelEn: "Do you want to model estate/legacy goals?",
-    helpFr: "Héritage visé, assurance vie, dons de bienfaisance.",
-    helpEn: "Target inheritance, life insurance, charitable giving.",
-  },
 ];
 
 // ── Mode 2 blocks registry ─────────────────────────────────────
@@ -163,7 +138,7 @@ export interface WizardField {
   id: string;
   labelFr: string;
   labelEn: string;
-  type: "number" | "choice" | "bool" | "currency" | "percent" | "age";
+  type: "number" | "choice" | "bool" | "currency" | "percent" | "age" | "multi";
   required?: boolean;
   min?: number;
   max?: number;
@@ -234,8 +209,6 @@ export const BLOCKS: WizardBlock[] = [
     showIf: () => true,
     fields: [
       { id: "currentSpM", type: "currency", labelFr: "Dépenses mensuelles totales (actuelles)", labelEn: "Total current monthly spending", required: true, min: 0, helpFr: "Logement, nourriture, transport, loisirs, tout compris.", helpEn: "Housing, food, transport, leisure — everything." },
-      { id: "housingMonthly", type: "currency", labelFr: "Dont logement (loyer/hypothèque + impôts + services)", labelEn: "Of which housing (rent/mortgage + taxes + utilities)", min: 0 },
-      { id: "otherIncome", type: "currency", labelFr: "Autres revenus mensuels (location, dividendes, pigiste)", labelEn: "Other monthly income (rental, dividends, freelance)", min: 0 },
     ],
   },
   {
@@ -244,11 +217,82 @@ export const BLOCKS: WizardBlock[] = [
     titleEn: "Your retirement",
     showIf: () => true,
     fields: [
-      { id: "retAge", type: "age", labelFr: "Âge visé pour la retraite", labelEn: "Target retirement age", required: true, min: 45, max: 75 },
+      { id: "retAge", type: "age", labelFr: "Âge visé pour la retraite", labelEn: "Target retirement age", required: true, placeholder: "65", min: 45, max: 75 },
       { id: "retSpM", type: "currency", labelFr: "Dépenses mensuelles souhaitées à la retraite", labelEn: "Desired monthly spending in retirement", required: true, min: 0, helpFr: "En dollars d'aujourd'hui. Typique : 65-80 % des dépenses actuelles.", helpEn: "In today's dollars. Typical: 65-80% of current spending." },
-      { id: "qppAge", type: "age", labelFr: "Âge prévu pour commencer RRQ/RPC", labelEn: "Planned age to start QPP/CPP", min: 60, max: 70 },
-      { id: "oasAge", type: "age", labelFr: "Âge prévu pour commencer PSV", labelEn: "Planned age to start OAS", min: 65, max: 70 },
-      { id: "deathAge", type: "age", labelFr: "Âge de fin de plan (horizon)", labelEn: "Plan end age (horizon)", min: 85, max: 105, helpFr: "Souvent utilisé : 95. Environ 80 % des Canadiens n'atteignent pas cet âge, ce qui laisse une marge.", helpEn: "Often used: 95. About 80% of Canadians don't reach this age, which leaves a margin." },
+      { id: "qppAge", type: "age", labelFr: "Âge prévu pour commencer RRQ/RPC", labelEn: "Planned age to start QPP/CPP", placeholder: "65", min: 60, max: 70 },
+      { id: "oasAge", type: "age", labelFr: "Âge prévu pour commencer PSV", labelEn: "Planned age to start OAS", placeholder: "65", min: 65, max: 70 },
+      { id: "deathAge", type: "age", labelFr: "Âge de fin de plan (horizon)", labelEn: "Plan end age (horizon)", placeholder: "95", min: 85, max: 105, helpFr: "Souvent utilisé : 95. Environ 80 % des Canadiens n'atteignent pas cet âge, ce qui laisse une marge.", helpEn: "Often used: 95. About 80% of Canadians don't reach this age, which leaves a margin." },
+    ],
+  },
+  {
+    id: "profile-you",
+    titleFr: "À propos de vous",
+    titleEn: "About you",
+    descFr: "Ces réponses personnalisent l'analyse et le ton de votre rapport — il n'y a pas de mauvaise réponse.",
+    descEn: "These answers personalize your report's analysis and tone — there are no wrong answers.",
+    showIf: () => true,
+    fields: [
+      {
+        id: "risk", type: "choice", labelFr: "Votre tolérance au risque (marché)", labelEn: "Your market risk tolerance",
+        helpFr: "Prudent : baisses rarement au-delà de 5 %. Équilibré : jusqu'à 15 %. Croissance : jusqu'à 30 %.",
+        helpEn: "Conservative: rarely drops beyond 5%. Balanced: up to 15%. Growth: up to 30%.",
+        options: [
+          { value: "conservative", labelFr: "Prudent", labelEn: "Conservative" },
+          { value: "balanced", labelFr: "Équilibré", labelEn: "Balanced" },
+          { value: "growth", labelFr: "Croissance", labelEn: "Growth" },
+        ],
+      },
+      {
+        id: "investStyle", type: "choice", labelFr: "Comment investissez-vous aujourd'hui ?", labelEn: "How do you invest today?",
+        helpFr: "Sert à estimer vos frais de gestion (RFG).", helpEn: "Used to estimate your management fees (MER).",
+        options: [
+          { value: "diy_stocks", labelFr: "Actions en autonomie", labelEn: "DIY individual stocks" },
+          { value: "low_fee_etf", labelFr: "FNB à faibles frais", labelEn: "Low-fee ETFs" },
+          { value: "high_fee_etf", labelFr: "FNB / fonds à frais plus élevés", labelEn: "Higher-fee ETFs / funds" },
+          { value: "mutual_funds", labelFr: "Fonds communs (avec conseiller)", labelEn: "Mutual funds (with advisor)" },
+          { value: "unsure", labelFr: "Je ne sais pas", labelEn: "Not sure" },
+        ],
+      },
+      {
+        id: "spendingFlex", type: "choice", labelFr: "Vos dépenses à la retraite sont-elles flexibles ?", labelEn: "Is your retirement spending flexible?",
+        helpFr: "Détermine si le plan peut ajuster les retraits les mauvaises années (Guyton-Klinger).",
+        helpEn: "Determines whether the plan can adjust withdrawals in bad years (Guyton-Klinger).",
+        options: [
+          { value: "rigid", labelFr: "Fixes (peu de marge)", labelEn: "Rigid (little room)" },
+          { value: "moderate", labelFr: "Modérément flexibles", labelEn: "Moderately flexible" },
+          { value: "flexible", labelFr: "Très flexibles", labelEn: "Very flexible" },
+        ],
+      },
+      {
+        id: "confidence", type: "choice", labelFr: "Votre confiance face à la retraite", labelEn: "Your confidence about retirement",
+        options: [
+          { value: 2, labelFr: "Peu confiant·e", labelEn: "Not very confident" },
+          { value: 3, labelFr: "Modérément confiant·e", labelEn: "Moderately confident" },
+          { value: 4, labelFr: "Confiant·e", labelEn: "Confident" },
+          { value: 5, labelFr: "Très confiant·e", labelEn: "Very confident" },
+        ],
+      },
+      {
+        id: "psychLiteracy", type: "choice", labelFr: "Votre aisance avec les finances", labelEn: "Your comfort with finances",
+        helpFr: "Ajuste le niveau de vocabulaire du rapport.", helpEn: "Adjusts the report's vocabulary level.",
+        options: [
+          { value: "basic", labelFr: "Notions de base", labelEn: "Basics" },
+          { value: "medium", labelFr: "À l'aise", labelEn: "Comfortable" },
+          { value: "advanced", labelFr: "Avancé", labelEn: "Advanced" },
+        ],
+      },
+      {
+        id: "worries", type: "multi", labelFr: "Qu'est-ce qui vous préoccupe le plus ?", labelEn: "What worries you most?",
+        helpFr: "Plusieurs choix possibles. Oriente l'analyse du rapport.", helpEn: "Select all that apply. Steers the report's analysis.",
+        options: [
+          { value: "runout", labelFr: "Manquer d'argent", labelEn: "Running out of money" },
+          { value: "market", labelFr: "Un krach boursier", labelEn: "A market crash" },
+          { value: "tax", labelFr: "Payer trop d'impôt", labelEn: "Paying too much tax" },
+          { value: "health", labelFr: "Les coûts de santé", labelEn: "Health costs" },
+          { value: "inflation", labelFr: "L'inflation", labelEn: "Inflation" },
+          { value: "legacy", labelFr: "Laisser un héritage", labelEn: "Leaving a legacy" },
+        ],
+      },
     ],
   },
   {
@@ -271,30 +315,6 @@ export const BLOCKS: WizardBlock[] = [
     ],
   },
   {
-    id: "goals",
-    titleFr: "Vos objectifs et jalons",
-    titleEn: "Your goals and milestones",
-    descFr: "Grands projets financiers à intégrer dans le plan.",
-    descEn: "Major financial goals to factor into the plan.",
-    showIf: () => true,
-    fields: [
-      { id: "goalEmergency", type: "currency", labelFr: "Fonds d'urgence actuel", labelEn: "Current emergency fund", min: 0, helpFr: "Cash facilement accessible. Cible : 3-6 mois de dépenses essentielles.", helpEn: "Easily accessible cash. Target: 3-6 months of essential expenses." },
-      {
-        id: "goalRiskTolerance", type: "choice", labelFr: "Votre tolérance au risque (marché)", labelEn: "Your market risk tolerance",
-        options: [
-          { value: "conservative", labelFr: "Prudent (perd rarement plus de 5 % en un an)", labelEn: "Conservative (rarely loses more than 5% in a year)" },
-          { value: "balanced", labelFr: "Équilibré (accepte des baisses jusqu'à 15 %)", labelEn: "Balanced (accepts drops up to 15%)" },
-          { value: "growth", labelFr: "Croissance (accepte des baisses jusqu'à 30 %)", labelEn: "Growth (accepts drops up to 30%)" },
-          { value: "aggressive", labelFr: "Agressif (100 % actions, accepte -40 %+)", labelEn: "Aggressive (100% equity, accepts -40%+)" },
-        ],
-      },
-      { id: "goalBigPurchase", type: "currency", labelFr: "Achat important prévu dans 5 ans (chalet, rénovation, etc.)", labelEn: "Major purchase expected in 5 years (cottage, renovation, etc.)", min: 0 },
-      { id: "goalKidsEducation", type: "currency", labelFr: "Épargne études enfants (REEE + autres)", labelEn: "Kids' education savings (RESP + other)", min: 0 },
-      { id: "goalKidsCount", type: "number", labelFr: "Nombre d'enfants à charge", labelEn: "Number of dependent children", min: 0, max: 10 },
-      { id: "goalTravel", type: "currency", labelFr: "Budget voyages annuel souhaité à la retraite", labelEn: "Desired annual travel budget in retirement", min: 0 },
-    ],
-  },
-  {
     id: "employer-benefits",
     titleFr: "Avantages employeur",
     titleEn: "Employer benefits",
@@ -302,27 +322,7 @@ export const BLOCKS: WizardBlock[] = [
     descEn: "What your employer adds to your plan.",
     showIf: (p) => p.employmentStatus === "employed",
     fields: [
-      { id: "rrspMatch", type: "percent", labelFr: "Cotisation équivalente REER (% du salaire)", labelEn: "RRSP match (% of salary)", step: 0.5, min: 0, max: 20, helpFr: "Ex: employeur donne 5 % si vous cotisez 5 %. Entrez 5.", helpEn: "E.g., employer gives 5% if you contribute 5%. Enter 5." },
-      { id: "rrspMatchMax", type: "percent", labelFr: "Plafond équivalence (% du salaire max. cotisé)", labelEn: "Match cap (% of salary max contributed)", step: 1, min: 0, max: 100 },
-      { id: "dcPension", type: "currency", labelFr: "Solde REER collectif / régime à cotisation déterminée", labelEn: "Group RRSP / DC pension balance", min: 0 },
-      { id: "dcContrib", type: "percent", labelFr: "Cotisation employeur au régime CD (%)", labelEn: "Employer DC contribution (%)", step: 0.5, min: 0, max: 25 },
-      { id: "hasGroupInsurance", type: "bool", labelFr: "Avez-vous l'assurance collective ?", labelEn: "Do you have group insurance?" },
-      { id: "stockOptions", type: "currency", labelFr: "Options d'achat / actions employeur (valeur actuelle)", labelEn: "Stock options / employer shares (current value)", min: 0 },
-    ],
-  },
-  {
-    id: "insurance",
-    titleFr: "Votre portrait d'assurance",
-    titleEn: "Your insurance picture",
-    descFr: "Couverture actuelle — employeur + individuelle.",
-    descEn: "Current coverage — employer + individual.",
-    showIf: (p) => p.hasInsurance,
-    fields: [
-      { id: "insLife", type: "currency", labelFr: "Assurance vie (capital total)", labelEn: "Life insurance (total face value)", min: 0 },
-      { id: "insLifeEmployer", type: "currency", labelFr: "Dont par l'employeur (multiple du salaire)", labelEn: "Of which through employer (salary multiple)", min: 0 },
-      { id: "insDisability", type: "percent", labelFr: "Assurance invalidité (% du salaire couvert)", labelEn: "Disability insurance (% of salary covered)", step: 5, min: 0, max: 100 },
-      { id: "insCritical", type: "currency", labelFr: "Assurance maladies graves (capital)", labelEn: "Critical illness insurance (face value)", min: 0 },
-      { id: "insPremMonthly", type: "currency", labelFr: "Total primes d'assurance mensuelles", labelEn: "Total monthly insurance premiums", min: 0 },
+      { id: "dcBal", type: "currency", labelFr: "REER collectif / régime à cotisation déterminée (solde)", labelEn: "Group RRSP / DC pension (balance)", min: 0, helpFr: "Solde actuel de votre régime collectif. Laissez vide si aucun.", helpEn: "Current balance of your group plan. Leave empty if none." },
     ],
   },
   {
@@ -340,13 +340,21 @@ export const BLOCKS: WizardBlock[] = [
       },
       { id: "cIncome", type: "currency", labelFr: "Revenu d'emploi brut annuel (conjoint)", labelEn: "Spouse gross annual income" },
       { id: "cRetAge", type: "age", labelFr: "Âge de retraite visé (conjoint)", labelEn: "Spouse target retirement age", min: 45, max: 75 },
-      { id: "cQppAge", type: "age", labelFr: "Âge RRQ/RPC (conjoint)", labelEn: "Spouse QPP/CPP age", min: 60, max: 70 },
-      { id: "cOasAge", type: "age", labelFr: "Âge PSV (conjoint)", labelEn: "Spouse OAS age", min: 65, max: 70 },
       { id: "cRrsp", type: "currency", labelFr: "REER du conjoint (solde)", labelEn: "Spouse RRSP (balance)", min: 0 },
       { id: "cTfsa", type: "currency", labelFr: "CELI du conjoint (solde)", labelEn: "Spouse TFSA (balance)", min: 0 },
       { id: "cNr", type: "currency", labelFr: "Non-enregistré du conjoint (solde)", labelEn: "Spouse non-registered (balance)", min: 0 },
-      { id: "cLira", type: "currency", labelFr: "CRI/LIRA du conjoint", labelEn: "Spouse LIRA", min: 0 },
       { id: "cMonthlyContrib", type: "currency", labelFr: "Cotisation mensuelle totale du conjoint", labelEn: "Spouse total monthly contribution", min: 0 },
+    ],
+  },
+  {
+    id: "spouse-2",
+    titleFr: "Conjoint·e — retraite et pension",
+    titleEn: "Spouse — retirement & pension",
+    showIf: (p) => p.hasSpouse,
+    fields: [
+      { id: "cQppAge", type: "age", labelFr: "Âge RRQ/RPC (conjoint)", labelEn: "Spouse QPP/CPP age", placeholder: "65", min: 60, max: 70 },
+      { id: "cOasAge", type: "age", labelFr: "Âge PSV (conjoint)", labelEn: "Spouse OAS age", placeholder: "65", min: 65, max: 70 },
+      { id: "cLira", type: "currency", labelFr: "CRI/LIRA du conjoint", labelEn: "Spouse LIRA", min: 0 },
       { id: "cPenM", type: "currency", labelFr: "Rente de pension PD du conjoint ($/mois)", labelEn: "Spouse DB pension ($/month)", min: 0 },
       {
         id: "cPenType", type: "choice", labelFr: "Source de la pension du conjoint", labelEn: "Spouse pension source",
@@ -371,10 +379,8 @@ export const BLOCKS: WizardBlock[] = [
       { id: "mortgageBal", type: "currency", labelFr: "Solde hypothécaire actuel", labelEn: "Current mortgage balance", min: 0 },
       { id: "mortgageRate", type: "percent", labelFr: "Taux hypothécaire", labelEn: "Mortgage rate", step: 0.05, min: 0, max: 15 },
       { id: "mortgageAmort", type: "age", labelFr: "Années restantes à l'amortissement", labelEn: "Years left on amortization", min: 0, max: 30 },
-      { id: "propertyTaxes", type: "currency", labelFr: "Taxes foncières annuelles", labelEn: "Annual property taxes", min: 0 },
-      { id: "sellAtRet", type: "bool", labelFr: "Prévoyez-vous vendre à la retraite ?", labelEn: "Plan to sell at retirement?" },
-      { id: "downsizeAge", type: "age", labelFr: "Si oui, âge prévu de vente", labelEn: "If yes, planned age of sale", min: 45, max: 90, helpFr: "Laisser vide si pas de vente prévue.", helpEn: "Leave empty if no sale planned." },
-      { id: "downsizeValue", type: "currency", labelFr: "Prix prévu de la prochaine résidence (ou 0 si location)", labelEn: "Expected next home price (or 0 if renting)", min: 0 },
+      { id: "sellAtRet", type: "bool", labelFr: "Prévoyez-vous vendre votre résidence à la retraite ?", labelEn: "Plan to sell your home in retirement?", helpFr: "L'équité nette serait libérée dans votre portefeuille. Le rachat d'une résidence plus modeste se modélise dans le Planner.", helpEn: "Net equity would be released into your portfolio. Buying a smaller replacement home is modeled in the Planner." },
+      { id: "downsizeAge", type: "age", labelFr: "Si oui, âge prévu de vente", labelEn: "If yes, planned age of sale", min: 45, max: 90, helpFr: "Laisser vide = à l'âge de la retraite.", helpEn: "Leave empty = at retirement age." },
     ],
   },
   {
@@ -408,41 +414,6 @@ export const BLOCKS: WizardBlock[] = [
     ],
   },
   {
-    id: "rentals-3",
-    titleFr: "Propriété à revenus #3",
-    titleEn: "Rental property #3",
-    showIf: (p) => p.rentalCount >= 3,
-    fields: [
-      { id: "rentalValue3", type: "currency", labelFr: "Valeur de marché", labelEn: "Market value", required: true, step: 5000 },
-      { id: "rentalIncome3", type: "currency", labelFr: "Revenu net annuel", labelEn: "Net annual income", required: true, step: 500 },
-      { id: "rentalMortgage3", type: "currency", labelFr: "Solde hypothécaire", labelEn: "Mortgage balance", min: 0, step: 1000 },
-      { id: "rentalMortgageRate3", type: "percent", labelFr: "Taux hypothécaire", labelEn: "Mortgage rate", step: 0.05, min: 0, max: 15 },
-      { id: "rentalCost3", type: "currency", labelFr: "Coût d'acquisition (FNACC)", labelEn: "Adjusted cost base (ACB)", min: 0, step: 1000 },
-      { id: "rentalSell3", type: "age", labelFr: "Âge prévu de vente", labelEn: "Planned age of sale", min: 0, max: 100 },
-    ],
-  },
-  {
-    id: "ccpc",
-    titleFr: "Société par actions (CCPC)",
-    titleEn: "Incorporated business (CCPC)",
-    showIf: (p) => p.hasCCPC,
-    descFr: "Extraction salaire vs dividende, DPE, IMRTDD.",
-    descEn: "Salary vs dividend extraction, SBD, RDTOH.",
-    fields: [
-      { id: "ccpcActive", type: "currency", labelFr: "Revenu actif annuel de la société", labelEn: "Annual active corporate income" },
-      { id: "ccpcPassive", type: "currency", labelFr: "Revenu passif annuel (intérêts, dividendes, gains)", labelEn: "Annual passive income (interest, dividends, gains)" },
-      { id: "ccpcCash", type: "currency", labelFr: "Liquidités et placements dans la société", labelEn: "Corporate cash + investments" },
-      {
-        id: "ccpcExtraction", type: "choice", labelFr: "Mode d'extraction privilégié", labelEn: "Preferred extraction mode",
-        options: [
-          { value: "salary", labelFr: "Salaire (cotise RRQ)", labelEn: "Salary (contributes to QPP/CPP)" },
-          { value: "dividend", labelFr: "Dividende seulement", labelEn: "Dividend only" },
-          { value: "mixed", labelFr: "Mixte salaire + dividende", labelEn: "Mixed salary + dividend" },
-        ],
-      },
-    ],
-  },
-  {
     id: "db-pension",
     titleFr: "Pension à prestations définies",
     titleEn: "Defined-benefit pension",
@@ -467,17 +438,6 @@ export const BLOCKS: WizardBlock[] = [
     showIf: (p) => p.hasLIRA,
     fields: [
       { id: "liraBal", type: "currency", labelFr: "Solde CRI / LIRA actuel", labelEn: "Current LIRA balance" },
-    ],
-  },
-  {
-    id: "estate",
-    titleFr: "Objectifs successoraux",
-    titleEn: "Estate goals",
-    showIf: (p) => p.hasEstateGoals,
-    fields: [
-      { id: "targetEstate", type: "currency", labelFr: "Héritage ciblé au décès", labelEn: "Target inheritance at death" },
-      { id: "charityGoal", type: "currency", labelFr: "Dons de bienfaisance annuels à la retraite", labelEn: "Annual charitable giving in retirement" },
-      { id: "lifeInsurance", type: "currency", labelFr: "Assurance vie en vigueur", labelEn: "Life insurance in force" },
     ],
   },
 ];
