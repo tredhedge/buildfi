@@ -1,0 +1,83 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": "sec-gis",
+      "target": "gis_insight",
+      "severity": "major",
+      "message": "AI GIS narrative does not appear to match the rendered GIS total."
+    },
+    {
+      "section": "sec-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "Success rate is 0% but slot \"overall_assessment\" describes the plan with positive framing (\"en votre faveur\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-assessment",
+      "target": "verdict",
+      "severity": "major",
+      "message": "Success rate is 0% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 2000000 for \"p25_wealth_real\" but canonical is -3399388.89. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes dollar value 819000 for \"p75_wealth_real\" but canonical is -686985.54. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-trajectory-insight",
+      "target": "trajectory_insight",
+      "severity": "major",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 3400000 for \"p25_wealth_real\" but canonical is -3399388.89. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes pct value 6.1 for \"lifetime_effective_tax_rate\" but canonical is 1.14. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-overall-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "Plan posture is \"failure\" (succ=0%) but slot \"overall_assessment\" uses \"solide\" (band=\"solid\", 3 bands away). Posture must match."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": [
+    {
+      "section": "sec-letter-deterministic",
+      "target": "sec-letter-deterministic",
+      "severity": "major",
+      "message": "Plan posture is \"failure\" (succ=0%) but slot \"sec-letter-deterministic\" uses \"au-del\" (band=\"surplus\", 4 bands away). Posture must match."
+    },
+    {
+      "section": null,
+      "target": "global",
+      "severity": "blocker",
+      "message": "Internal engineering vocabulary leaked into client deliverable."
+    },
+    {
+      "section": null,
+      "target": "narrative",
+      "severity": "major",
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
+    },
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

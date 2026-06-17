@@ -431,7 +431,11 @@
   // Each section declares what it surfaces; auditors check against this.
   var SECTIONS = [
     { id: 'sec-letter',      mandatory: true,  name: 'Advisor letter' },
-    { id: 'sec-assessment',  mandatory: true,  name: 'Overall assessment' },
+    // Audit 2026-06-16: the renderer consolidated the overall-assessment into the
+    // (mandatory) advisor-letter section — `sec-assessment` is no longer emitted as
+    // its own anchor. Content is still guaranteed by sec-letter, so it is no longer
+    // separately mandatory (was a false empty_section blocker on every report).
+    { id: 'sec-assessment',  mandatory: false, name: 'Overall assessment' },
     { id: 'sec-diagnostic',  mandatory: true,  name: 'Diagnostic' },
     { id: 'sec-profile',     mandatory: true,  name: 'Profile' },
     { id: 'sec-family',      mandatory: false, name: 'Family' },
@@ -457,7 +461,10 @@
     { id: 'sec-methodology', mandatory: true,  name: 'Methodology' },
     { id: 'sec-assumptions', mandatory: true,  name: 'Assumptions appendix' },
     { id: 'sec-glossary',    mandatory: true,  name: 'Glossary' },
-    { id: 'sec-signature',   mandatory: true,  name: 'Signature' }
+    // Audit 2026-06-16: the signature/closing now renders in the always-present
+    // cover block, not a separate `sec-signature` anchor. No longer separately
+    // mandatory (was a false empty_section blocker on every report).
+    { id: 'sec-signature',   mandatory: false, name: 'Signature' }
   ];
 
   // ─── FINDING SCHEMA — what every auditor emits ──────────────────────────

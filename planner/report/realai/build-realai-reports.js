@@ -27,6 +27,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// AMF sanitizer (audit 2026-06-16): the render path previously injected
+// responses/*.json verbatim, so any banned stem committed in a stale response
+// leaked to the HTML. Every AI slot now passes through softenAISlot +
+// FORBIDDEN_TERMS before render, mirroring the production webhook path.
+const amfSanitize = require('../amf-sanitize.js');
+
 // ── Node browser-like globals (mirrors report/test-reports.js) ───────────
 global.window = {};
 global.document = { getElementById: () => null, querySelectorAll: () => [], activeElement: null };
@@ -69,13 +75,19 @@ if (!buildReport || !BAiPrompt || !BData) {
 }
 
 // ── Load profiles from single source ───────────────────────────────────────
-const profilesPath = path.join(__dirname, 'profiles.json');
+// Data root override (audit 2026-06-16): BF_REALAI_BASE repoints the data dirs
+// (profiles.json + mc/prompts/responses/output) to a separate directory while
+// the report modules still load relative to __dirname. Used by the separate
+// bilan360-personas/ pipeline so customer-questionnaire personas never mix with
+// the 20 validation profiles. Defaults to __dirname (the 20-profile set).
+const DATA_DIR = process.env.BF_REALAI_BASE ? path.resolve(process.env.BF_REALAI_BASE) : __dirname;
+const profilesPath = path.join(DATA_DIR, 'profiles.json');
 const PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8')).profiles;
 
 // ── Real MC loader: reads payloads produced by gen-real-mc.mjs ────────────
 // Numbers/charts/tables come from the validated engine. Do NOT reintroduce
 // synthetic generators here — that pattern fed the AI fabricated values.
-const mcDir = path.join(__dirname, 'mc');
+const mcDir = path.join(DATA_DIR, 'mc');
 function loadRealMC(profId, lang) {
   const fp = path.join(mcDir, profId + '_' + lang + '.json');
   if (!fs.existsSync(fp)) {
@@ -87,11 +99,11 @@ function loadRealMC(profId, lang) {
 // ── Build payload + prompt for one profile (real-engine MC) ───────────────
 function preparePayload(prof) {
   const mc = loadRealMC(prof.id, prof.lang);
-  // NOTE: `_naiveMC` (tax-alpha comparator) is intentionally NOT populated here.
-  // A prior implementation fabricated it by multiplying tax × 1.15, which fed the
-  // AI a number with no engine basis. Real implementation will come from gen-real-mc
-  // running a second MC with wStrat='standard' and emitting it on the payload.
-  // Until then: no taxAlpha in prompt, no fabricated tax-alpha KPI.
+  // tax-alpha comparator: `_naiveMC` is now populated by gen-real-mc.mjs (a real
+  // second MC run with wStrat='standard'); report-data.js computes _taxAlpha as a
+  // real-dollar delta (_naiveTaxReal - _optTaxReal). The old "× 1.15 fabrication"
+  // is gone. taxAlpha surfaces only for wStrat==='optimized' profiles that carry
+  // _naiveMC.medRevData; null otherwise (no fabricated KPI).
   // sku → includeSimulator flag. Bilan SKU embeds the live What-If; Planner
   // SKU points readers back to the live Planner tool instead. Default is
   // 'bilan' (includeSimulator=true) when sku is unspecified, since legacy
@@ -136,7 +148,7 @@ if (cmd === 'dump') {
       system: built.prompt.system,
       user: built.prompt.user
     };
-    fs.writeFileSync(path.join(__dirname, 'prompts', fname), JSON.stringify(out, null, 2));
+    fs.writeFileSync(path.join(DATA_DIR, 'prompts', fname), JSON.stringify(out, null, 2));
     console.log('  ✓ ' + fname + ' (slots=' + built.prompt.slotKeys.length + ', user=' + built.prompt.user.length + ' chars)');
   });
   console.log('\nNext: write Claude responses to report/realai/responses/{profile}_{lang}.json');
@@ -146,7 +158,19 @@ if (cmd === 'dump') {
 }
 
 if (cmd === 'render') {
-  console.log('Rendering reports...');
+  // ── GUARDRAIL (audit 2026-06-16) ─────────────────────────────────────────
+  // This branch is the DRAFT renderer: sanitize → buildReport → dedup → write.
+  // It runs NO auditors, NO fix-plan, and NO ship gate. Output here is for fast
+  // iteration ONLY and must NEVER be delivered to a client. For a deliverable
+  // report, use run-pipeline.mjs — only profiles that pass the ship gate land in
+  // final/; the rest go to review/*.fail.json. See planner/report/AUDIT.md.
+  console.log('\n' +
+    '╔══════════════════════════════════════════════════════════════════════╗\n' +
+    '║  DRAFT RENDER — NOT ship-gated. Do NOT deliver output/ to clients.    ║\n' +
+    '║  No auditors / fix-plan / ship gate run on this path.                 ║\n' +
+    '║  Deliverables: node run-pipeline.mjs  →  final/ (gated) | fail.json   ║\n' +
+    '╚══════════════════════════════════════════════════════════════════════╝');
+  console.log('Rendering DRAFT reports...');
   /*
     Codex rail TOC + Reading/Explore toggle (Plan v2.2 followup, 2026-04-29).
     The codex view-toggle script (design-lab/experiments/report-view-toggle/
@@ -201,7 +225,7 @@ if (cmd === 'render') {
       errored++;
       return;
     }
-    const respPath = path.join(__dirname, 'responses', prof.id + '_' + prof.lang + '.json');
+    const respPath = path.join(DATA_DIR, 'responses', prof.id + '_' + prof.lang + '.json');
     let responseJson = {};
     let usedFallback = false;
     if (fs.existsSync(respPath)) {
@@ -216,7 +240,14 @@ if (cmd === 'render') {
     }
     try {
       const data = preparePayload(prof);
-      data.ai = responseJson;
+      // AMF sanitize before injecting: soften prescriptive verbs / banned stems,
+      // drop any slot that still trips FORBIDDEN_TERMS (renderer then falls back).
+      const _san = amfSanitize.sanitizeAiObject(responseJson);
+      data.ai = _san.ai;
+      if (_san.dropped.length || _san.softened.length) {
+        console.log('  · ' + prof.id + '_' + prof.lang + ' — AMF sanitize: softened=[' +
+          _san.softened.join(',') + '] dropped=[' + _san.dropped.join(',') + ']');
+      }
       let html = buildReport(data);
       // Inject codex rail TOC + Reading/Explore toggle script before </body>.
       // Falls back to no-op if injection content unavailable (logged at start).
@@ -253,7 +284,7 @@ if (cmd === 'render') {
         });
       })(html);
       const fname = prof.id + '_' + prof.lang + '.html';
-      fs.writeFileSync(path.join(__dirname, 'output', fname), html, 'utf8');
+      fs.writeFileSync(path.join(DATA_DIR, 'output', fname), html, 'utf8');
       const tag = usedFallback ? ' (deterministic fallback)' : '';
       console.log('  ✓ ' + fname + ' (' + Math.round(html.length / 1024) + ' KB)' + tag + ' [sku=' + (prof.sku || 'bilan') + ']');
       if (usedFallback) fallback++;
@@ -265,6 +296,7 @@ if (cmd === 'render') {
     }
   });
   console.log('\nDone. ' + ok + '/' + filteredProfiles.length + ' rendered (' + fallback + ' deterministic, ' + (ok - fallback) + ' with AI), ' + errored + ' errors.');
+  console.log('⚠ These are DRAFTS (no ship gate). Run run-pipeline.mjs to produce gated, deliverable reports.');
   process.exit(errored > 0 ? 1 : 0);
 }
 

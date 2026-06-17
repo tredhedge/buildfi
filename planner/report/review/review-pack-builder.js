@@ -24,13 +24,21 @@ function _safeJson(p) { try { return JSON.parse(_read(p)); } catch (e) { return 
 // becomes one entry; we capture the section's title + the byte range it spans
 // (until the next <h3 class="sec"> or end-of-doc).
 function extractSections(html) {
-  // Sections are emitted in two patterns:
+  // Sections are emitted in several patterns:
   //   A) <h3 class="sec"... id="sec-..."> ... </h3>           (numbered sections)
-  //   B) <div class="sec-page" id="sec-..."> ... </div>       (special sections like advisor letter, signature)
-  // Collect all anchors of either type, sorted by offset.
+  //   B) <div class="sec-page" id="sec-..."> ... </div>       (advisor letter, signature)
+  //   C) <div id="sec-..." data-bf-anchor ...>                (anchored blocks, e.g.
+  //                                                            sec-diagnostic) and any
+  //                                                            other element carrying a
+  //                                                            sec-* id.
+  // Audit 2026-06-16: only A+B were detected, so anchored blocks like
+  // <div id="sec-diagnostic"> were reported "missing from the rendered HTML"
+  // even though they render — false empty_section blockers on every report. The
+  // general pass (C) catches any element-level sec-* anchor, deduped by id.
   var anchors = [];
   var reH3 = /<h3 class="sec"[^>]*id="(sec-[a-z-]+)"[^>]*>([\s\S]*?)<\/h3>/g;
   var reDiv = /<div class="sec-page"[^>]*id="(sec-[a-z-]+)"[^>]*>/g;
+  var reAny = /<(?:div|section|h[1-6])[^>]*\bid="(sec-[a-z-]+)"[^>]*>/g;
   var m;
   while ((m = reH3.exec(html)) !== null) {
     var titleText = m[2].replace(/<[^>]*>/g, '').trim();
@@ -40,6 +48,12 @@ function extractSections(html) {
     // Don't double-count: if h3 inside this div has same id, skip
     var sameAsH3 = anchors.some(function(a) { return a.id === m[1] && a.kind === 'h3'; });
     if (!sameAsH3) anchors.push({ id: m[1], title: m[1], start: m.index, kind: 'div' });
+  }
+  while ((m = reAny.exec(html)) !== null) {
+    // General element-level anchor — add only ids not already captured by A/B.
+    if (!anchors.some(function(a) { return a.id === m[1]; })) {
+      anchors.push({ id: m[1], title: m[1], start: m.index, kind: 'el' });
+    }
   }
   anchors.sort(function(a, b) { return a.start - b.start; });
   var sections = [];

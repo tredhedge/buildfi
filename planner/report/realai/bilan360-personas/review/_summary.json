@@ -1,0 +1,100 @@
+[
+  {
+    "profile": "maxime_accum_qc_fr",
+    "sku": "bilan",
+    "pre": {
+      "blockers": 3,
+      "majors": 4,
+      "minors": 1
+    },
+    "post": {
+      "blockers": 0,
+      "majors": 1,
+      "minors": 1
+    },
+    "shipped": false,
+    "pre_blocker_categories": [
+      "impossible_gis"
+    ],
+    "post_blocker_categories": [],
+    "ai_regen_slots": 3
+  },
+  {
+    "profile": "walsh_transition_on_en",
+    "sku": "bilan",
+    "pre": {
+      "blockers": 0,
+      "majors": 4,
+      "minors": 2
+    },
+    "post": {
+      "blockers": 0,
+      "majors": 0,
+      "minors": 2
+    },
+    "shipped": true,
+    "pre_blocker_categories": [],
+    "post_blocker_categories": [],
+    "ai_regen_slots": 5
+  },
+  {
+    "profile": "bouchard_decum_qc_fr",
+    "sku": "bilan",
+    "pre": {
+      "blockers": 0,
+      "majors": 3,
+      "minors": 1
+    },
+    "post": {
+      "blockers": 0,
+      "majors": 1,
+      "minors": 1
+    },
+    "shipped": false,
+    "pre_blocker_categories": [],
+    "post_blocker_categories": [],
+    "ai_regen_slots": 2
+  },
+  {
+    "profile": "okafor_accum_ab_en",
+    "sku": "bilan",
+    "pre": {
+      "blockers": 1,
+      "majors": 8,
+      "minors": 2
+    },
+    "post": {
+      "blockers": 0,
+      "majors": 0,
+      "minors": 2
+    },
+    "shipped": true,
+    "pre_blocker_categories": [
+      "percentage_contradiction"
+    ],
+    "post_blocker_categories": [],
+    "ai_regen_slots": 8
+  },
+  {
+    "profile": "gagnon_transition_qc_fr",
+    "sku": "bilan",
+    "pre": {
+      "blockers": 1,
+      "majors": 10,
+      "minors": 1
+    },
+    "post": {
+      "blockers": 1,
+      "majors": 2,
+      "minors": 1
+    },
+    "shipped": false,
+    "pre_blocker_categories": [
+      "trust_gate"
+    ],
+    "post_blocker_categories": [
+      "trust_gate"
+    ],
+    "ai_regen_slots": 5
+  }
+]

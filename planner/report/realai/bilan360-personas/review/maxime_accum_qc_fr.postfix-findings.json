@@ -1,0 +1,79 @@
+{
+  "findings": [
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    }
+  ],
+  "minors": [
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
+      },
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 0,
+  "major_count": 1,
+  "minor_count": 1
+}

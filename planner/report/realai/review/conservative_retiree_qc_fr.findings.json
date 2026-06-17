@@ -1,15 +1,125 @@
 {
   "findings": [
     {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
       "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "canonical-quote-gov_coverage_only-overall_assessment",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-overall-assessment",
+      "message": "AI slot \"overall_assessment\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical.",
+      "evidence": "\"…tions publiques garanties qui couvrent **112%** de vos besoins, de sorte que votre épargne\"  (canon=77.0374641242353, quoted=112)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "advisor_letter"
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 515000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"… un patrimoine réel médian projeté de **515K$** et un scénario prudent qui se maintient en\"  (canon=407152.9917532819, quoted=515000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"…**407K$** dans le scénario prudent et **643K$** dans le scénario favorable. Cet éventail r\"  (canon=407152.9917532819, quoted=643000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-gov_coverage_only-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Les prestations publiques couvrent **112%** de vos besoins, ce qui ramène l'écart mensu\"  (canon=77.0374641242353, quoted=112)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"… **407K$** et le scénario favorable de **643K$** reste modéré, signe d'une dispersion bien\"  (canon=407152.9917532819, quoted=643000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-p50_wealth_real-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes dollar value 713000 for \"p50_wealth_real\" but canonical is 514745.7. Slot must be regenerated to match canonical.",
+      "evidence": "\"…1970, où le patrimoine médian fléchit à 713K$, tandis qu'une inflation persistante laisser\"  (canon=514745.6994968604, quoted=713000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"$/an Longévité modélisée 92 ans Province\" (gap=102 chars) | \"des simulations Monte Carlo terminent sous\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
     },
     {
       "id": "polish-debris-triple-em-dash",
@@ -23,18 +133,129 @@
       "fix_target": "global"
     }
   ],
-  "blockers": [],
+  "blockers": [
+    {
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    }
+  ],
   "majors": [
     {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
+      "id": "canonical-quote-gov_coverage_only-overall_assessment",
+      "reviewer": "canonical",
       "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "advisor_letter=solid, sec-assessment-deterministic=solid, sec-letter-deterministic=solid",
+      "category": "canonical_quote_drift",
+      "section": "sec-overall-assessment",
+      "message": "AI slot \"overall_assessment\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical.",
+      "evidence": "\"…tions publiques garanties qui couvrent **112%** de vos besoins, de sorte que votre épargne\"  (canon=77.0374641242353, quoted=112)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "advisor_letter"
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 515000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"… un patrimoine réel médian projeté de **515K$** et un scénario prudent qui se maintient en\"  (canon=407152.9917532819, quoted=515000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"…**407K$** dans le scénario prudent et **643K$** dans le scénario favorable. Cet éventail r\"  (canon=407152.9917532819, quoted=643000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
+    },
+    {
+      "id": "canonical-quote-gov_coverage_only-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Les prestations publiques couvrent **112%** de vos besoins, ce qui ramène l'écart mensu\"  (canon=77.0374641242353, quoted=112)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical.",
+      "evidence": "\"… **407K$** et le scénario favorable de **643K$** reste modéré, signe d'une dispersion bien\"  (canon=407152.9917532819, quoted=643000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "riskInsight"
+    },
+    {
+      "id": "canonical-quote-p50_wealth_real-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes dollar value 713000 for \"p50_wealth_real\" but canonical is 514745.7. Slot must be regenerated to match canonical.",
+      "evidence": "\"…1970, où le patrimoine médian fléchit à 713K$, tandis qu'une inflation persistante laisser\"  (canon=514745.6994968604, quoted=713000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"$/an Longévité modélisée 92 ans Province\" (gap=102 chars) | \"des simulations Monte Carlo terminent sous\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
     }
   ],
   "minors": [
@@ -54,17 +275,79 @@
     "remove_section": [],
     "rerun_ai_slot": [
       {
-        "section": null,
-        "target": "advisor_letter",
+        "section": "sec-overall-assessment",
+        "target": "overall_assessment",
         "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"surplus\"). Cumulatively the report swings posture; consolidate tone."
+        "message": "AI slot \"overall_assessment\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-verdict",
+        "target": "verdict",
+        "severity": "major",
+        "message": "AI slot \"verdict\" quotes dollar value 515000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-trajectory-insight",
+        "target": "trajectory_insight",
+        "severity": "major",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-income-insight",
+        "target": "income_insight",
+        "severity": "major",
+        "message": "AI slot \"income_insight\" quotes pct value 112 for \"gov_coverage_only\" but canonical is 77.04. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
+        "severity": "major",
+        "message": "AI slot \"riskInsight\" quotes dollar value 643000 for \"p25_wealth_real\" but canonical is 407152.99. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-stress-interpretation",
+        "target": "stress_interpretation",
+        "severity": "major",
+        "message": "AI slot \"stress_interpretation\" quotes dollar value 713000 for \"p50_wealth_real\" but canonical is 514745.7. Slot must be regenerated to match canonical."
       }
     ],
     "recompute_from_canonical": [],
-    "block_data": [],
+    "block_data": [
+      {
+        "section": "sec-assessment",
+        "target": "sec-assessment",
+        "severity": "blocker",
+        "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-diagnostic",
+        "target": "sec-diagnostic",
+        "severity": "blocker",
+        "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-signature",
+        "target": "sec-signature",
+        "severity": "blocker",
+        "message": "Mandatory section \"Signature\" is missing from the rendered HTML."
+      }
+    ],
     "replace_with_callout": [],
-    "localize_label": [],
+    "localize_label": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "blocker",
+        "message": "EN engineering jargon in FR client report: 1 term(s) matched"
+      }
+    ],
     "manual": [
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel."
+      },
       {
         "section": null,
         "target": "global",
@@ -74,7 +357,7 @@
     ]
   },
   "can_ship": false,
-  "blocker_count": 0,
-  "major_count": 1,
+  "blocker_count": 4,
+  "major_count": 7,
   "minor_count": 1
 }

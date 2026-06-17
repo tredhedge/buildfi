@@ -1334,7 +1334,7 @@
       } else if (_shareRrsp >= 0.55) {
         _concHead = fr ? 'REER dominant (' + Math.round(_shareRrsp * 100) + ' %)' : 'RRSP-dominant (' + Math.round(_shareRrsp * 100) + '%)';
         _concBody = fr
-          ? 'Masse imposable concentrée à la conversion FERR (72 ans) ; un retrait anticipé (meltdown) pourrait lisser l\'impôt viager.'
+          ? 'Masse imposable concentrée à la conversion FERR (72 ans) ; un décaissement anticipé pourrait lisser l\'impôt viager.'
           : 'Taxable mass concentrated at RRIF conversion (age 72); an early drawdown (meltdown) could smooth lifetime tax.';
       } else {
         _concHead = fr ? 'répartition équilibrée' : 'balanced allocation';
@@ -1358,7 +1358,7 @@
           : 'Tax burden within the typical range for this income level; an adjusted withdrawal order could reduce the lifetime bill.';
       } else {
         _fiscBody = fr
-          ? 'Charge fiscale élevée — masse imposable concentrée (REER/FERR/SPCC). La section fiscale identifie les leviers (meltdown, fractionnement, report PSV) qui pourraient lisser l\'impôt.'
+          ? 'Charge fiscale élevée — masse imposable concentrée (REER/FERR/SPCC). La section fiscale identifie les leviers (décaissement anticipé, fractionnement, report PSV) qui pourraient lisser l\'impôt.'
           : 'High tax burden — taxable mass concentrated (RRSP/RRIF/CCPC). The tax section identifies levers (meltdown, splitting, OAS deferral) that could smooth the bill.';
       }
       _profilHtml += _signalCard(fr ? 'Posture fiscale' : 'Tax posture', _fiscHead, _fiscBody, '#4680c0');
@@ -1609,10 +1609,10 @@
     var _hidesSim = d.clientExport ||
       (d.renderProfile && d.renderProfile.densityMode === 'compact' && d.renderProfile.jargonMode === 'plain');
     var _readFurther = _hidesSim
-      ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et le plan d\'action proposent des leviers concrets.'
-            : 'the advisor letter (p. 2) frames the read, and the diagnostic and action plan propose concrete levers.')
-      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et le plan d\'action proposent des leviers concrets, et un module de scénarios en fin de rapport laisse tester quelques décisions clés.'
-            : 'the advisor letter (p. 2) frames the read, the diagnostic and action plan propose concrete levers, and a scenarios module at the end lets you test a few key decisions.');
+      ? (fr ? 'la lettre du conseiller (page 2) cadre la lecture, et le diagnostic et les leviers par horizon proposent des pistes concrètes.'
+            : 'the advisor letter (p. 2) frames the read, and the diagnostic and the levers-by-horizon section propose concrete steps.')
+      : (fr ? 'la lettre du conseiller (page 2) cadre la lecture, le diagnostic et les leviers par horizon proposent des pistes concrètes, et un module de scénarios en fin de rapport laisse tester quelques décisions clés.'
+            : 'the advisor letter (p. 2) frames the read, the diagnostic and the levers-by-horizon section propose concrete steps, and a scenarios module at the end lets you test a few key decisions.');
     h += '<div style="border-top:1px solid rgba(196,154,26,0.25);padding-top:14px;font-size:10.5px;color:#bccbe0;line-height:1.6">' +
       '<strong style="color:#c49a1a;letter-spacing:0.3px">' + (fr ? 'Pour aller plus loin :' : 'Read further:') + '</strong> ' +
       _readFurther +
@@ -2626,7 +2626,7 @@
         label: d._taxAlpha != null && d._taxAlpha > 0
           ? (fr ? 'Économies fiscales' : 'Tax savings')
           : (fr ? 'Impôt viager' : 'Lifetime tax'),
-        value: f$(Math.round(d._taxAlpha != null && d._taxAlpha > 0 ? d._taxAlpha : (d._optTax || 0))),
+        value: f$(Math.round(d._taxAlpha != null && d._taxAlpha > 0 ? d._taxAlpha : ((d._optTaxReal != null ? d._optTaxReal : d._optTax) || 0))),
         color: d._taxAlpha != null && d._taxAlpha > 0 ? '#2a8c46' : '#a85a3a'
       });
     }
@@ -3845,7 +3845,7 @@
           simplified: _wcRepr === 'chart_simplified',
           annotations: [
             { age: p.retAge, label: fr ? 'Retraite' : 'Ret.' },
-            { age: 72, label: 'FERR' }
+            { age: 72, label: fr ? 'FERR' : 'RRIF' }
           ]
         });
         h += '</div>';
@@ -4605,7 +4605,7 @@
     h += F.KPI('<span class="mono">' + (d._taxAlpha !== null && d._taxAlpha > 0 ? f$(Math.round(d._taxAlpha)) : f$(Math.round(d._optTaxReal))) + '</span>', d._taxAlpha !== null && d._taxAlpha > 0 ? (fr ? '\u00c9conomies fiscales' : 'Tax savings') : (fr ? 'Imp\u00f4t viager (r\u00e9el)' : 'Lifetime tax (real)'), d._taxAlpha !== null && d._taxAlpha > 0 ? C.green : C.red, 'hero');
     h += F.KPI('<span class="mono">' + Math.round(d.avgEffRate * 100) + '%</span>', fr ? 'Taux effectif moyen' : 'Avg effective rate', C.blue);
     h += F.KPI('<span class="mono">' + d.oasClbkYrs + '/' + _retLen + '</span>', fr ? 'Ann\u00e9es r\u00e9cup. PSV' : 'OAS clawback yrs', d.oasClbkYrs > _retLen * 0.5 ? C.red : d.oasClbkYrs > 0 ? C.amber : C.green);
-    if (exp && d._hasNaive) h += F.KPI('<span class="mono">' + Math.round((d._naiveTax - d._optTax) / Math.max(1, d._naiveTax) * 100) + '%</span>', fr ? 'R\u00e9duction fiscale' : 'Tax reduction', C.purple);
+    if (exp && d._hasNaive) h += F.KPI('<span class="mono">' + Math.round((d._naiveTaxReal - d._optTaxReal) / Math.max(1, d._naiveTaxReal) * 100) + '%</span>', fr ? 'R\u00e9duction fiscale' : 'Tax reduction', C.purple);
     h += '</div>';
 
     if (d.oasClbkYrs > 0) { var _oasThr = D.OAS_CLAWBACK_THR; h += '<div style="font-size:10px;color:#888;font-style:italic;margin:2px 0 6px">' + (fr ? 'R\u00e9cup\u00e9ration PSV: un revenu imposable sup\u00e9rieur \u00e0 ' + F.fmtCurrency(_oasThr) + ' entra\u00eene une r\u00e9cup\u00e9ration de 15% de la PSV. ' + d.oasClbkYrs + ' ann\u00e9es sur ' + _retLen + ' sont affect\u00e9es.' : 'OAS clawback: taxable income above ' + F.fmtCurrency(_oasThr) + ' triggers 15% OAS recovery tax. ' + d.oasClbkYrs + ' of ' + _retLen + ' retirement years are affected.') + '</div>'; }
@@ -5595,8 +5595,8 @@
         : 'Cautious and favourable scenarios converge to the same value (\u2248 ' + f$(_p25W) + '). This signals a <strong>structural floor</strong>: a deterministic asset or income flow dominates final wealth rather than market variability. The decision-relevant range in this case lives in the Plan stability section, not here.');
     } else if (_allZero) {
       h += narr(fr
-        ? 'La trajectoire centrale projette un patrimoine final tr\u00e8s faible ou nul. Les revenus garantis (RRQ + PSV + pension) couvriraient toujours une part des d\u00e9penses, mais le portefeuille serait \u00e9puis\u00e9 dans la majorit\u00e9 des sc\u00e9narios. Le levier dominant pour \u00e9largir cette fourchette se trouve dans la section Plan d\'action.'
-        : 'The central trajectory projects very low or zero final wealth. Guaranteed income (CPP + OAS + pension) would still cover a share of spending, but the portfolio would be depleted in most scenarios. The dominant lever to widen this range lives in the Action plan section.');
+        ? 'La trajectoire centrale projette un patrimoine final tr\u00e8s faible ou nul. Les revenus garantis (RRQ + PSV + pension) couvriraient toujours une part des d\u00e9penses, mais le portefeuille serait \u00e9puis\u00e9 dans la majorit\u00e9 des sc\u00e9narios. Le levier dominant pour \u00e9largir cette fourchette se trouve dans la section Leviers par horizon.'
+        : 'The central trajectory projects very low or zero final wealth. Guaranteed income (CPP + OAS + pension) would still cover a share of spending, but the portfolio would be depleted in most scenarios. The dominant lever to widen this range lives in the Levers by horizon section.');
     } else {
       // 2026-04-30: spouse-aware framing. Couple plans now name both
       // partners in the dispersion narrative \u2014 the range reflects the
@@ -6051,7 +6051,7 @@ h += secPageEnd();
     var TL = window.BActions.TL;
 
     var h = secPage();
-    /* AMF rename (audit 2026-04-29 / P0): "Plan d'action" was prescriptive
+    /* AMF rename (audit 2026-04-29 / P0): the former section title was prescriptive
        per CLAUDE.md. Reframed as observational. Id preserved to avoid
        breaking data-bf-leadwith hooks. */
     h += F.Sec(secN, fr ? 'Leviers par horizon' : 'Levers by horizon', 'sec-actions');

@@ -11,6 +11,7 @@ import { translateBilan360 } from "@/lib/quiz-translator-360";
 import { runMC } from "@/lib/engine";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { determinePhase, extractReportData360, renderReportHTML360 } from "@/lib/report-html-360";
+import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
 import { sendReportEmail } from "@/lib/email";
@@ -358,7 +359,26 @@ async function handleBilan360Purchase(
     // payload). Off by default so the current interactive slider/scenario
     // experience is preserved unless explicitly opted in.
     const clientExport = process.env.BUILDFI_CLIENT_EXPORT === "1";
-    const reportHTML = renderReportHTML360(D, mcBase as Record<string, any>, params, lang, ai, phase, feedbackToken, extraRuns, buildfiData, { clientExport });
+    let reportHTML = renderReportHTML360(D, mcBase as Record<string, any>, params, lang, ai, phase, feedbackToken, extraRuns, buildfiData, { clientExport });
+
+    // ── Ship gate (audit 2026-06-16, planner/report/AUDIT.md) ──────────────
+    // Never email a broken / implausible / non-compliant report to a paying
+    // client. On failure, serve the honest "needs attention" variant instead.
+    // Fail OPEN: a gate bug must never block a delivery.
+    try {
+      const verdict = evaluateReportShip(reportHTML, lang as "fr" | "en", {
+        coreInvalid: (D as Record<string, any>)?._integrity?.coreInvalid === true,
+      });
+      if (!verdict.ok) {
+        console.warn(`[webhook] Bilan 360 ship-gate FAILED [${verdict.reasons.join(", ")}] for ${maskEmail(email)} — serving needs-attention variant`);
+        reportHTML = renderNeedsAttentionHTML({
+          firstName: (D as Record<string, any>)?.firstName || (params as Record<string, any>)?.firstName || "",
+          lang: lang as "fr" | "en",
+        });
+      }
+    } catch (gateErr) {
+      console.error("[webhook] ship-gate error (fail-open, shipping rendered report):", gateErr);
+    }
 
     // ── Upload ────────────────────────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);

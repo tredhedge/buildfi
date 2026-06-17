@@ -353,7 +353,7 @@
           { dollarImpact: Math.round((p.bizRetainedEarnings || 0) * 0.08), successImpactPp: 8, timeline: 'medium', confidence: 'high', priority: 'high', kind: 'corp', driver: 'ccpc_extraction', whenLabel: (p.bizSaleAge || (p.retAge || 60)) + '–' + ((p.bizSaleAge || (p.retAge || 60)) + 5) });
       case 'rental_cashflow':
         return mk('cd-rental',
-          fr ? 'Optimiser le flux net des immeubles locatifs' : 'Optimize net rental cash flow',
+          fr ? 'Préserver le flux net des immeubles locatifs' : 'Preserve net rental cash flow',
           fr
             ? 'Les immeubles locatifs sont une source de revenu de retraite distincte des prestations publiques et des retraits de portefeuille. La grille de loyers, le calendrier de renouvellement hypoth\u00e9caire et la d\u00e9duction des d\u00e9penses d\'op\u00e9ration sont les leviers qui pr\u00e9servent ce flux.'
             : 'Rental properties are a retirement income source distinct from public benefits and portfolio withdrawals. Rent escalation schedule, mortgage renewal timing, and operating-expense deductibility are the levers that preserve this stream.',
@@ -418,8 +418,8 @@
         return mk('cd-resilience',
           fr ? 'Construire la r\u00e9silience financi\u00e8re' : 'Build financial resilience',
           fr
-            ? 'En tant que parent seul revenu, la r\u00e9silience aux chocs (perte d\'emploi, urgence familiale, sant\u00e9) est la priorit\u00e9 avant l\'optimisation. Un fonds d\'urgence de 6\u20139 mois de d\u00e9penses, une assurance vie temporaire suffisante, et une assurance invalidit\u00e9 ad\u00e9quate cadrent le plan avant tout autre levier.'
-            : 'As a single-income parent, resilience to shocks (job loss, family emergency, health) is the priority before optimization. An emergency fund of 6\u20139 months of expenses, sufficient term life insurance, and adequate disability coverage frame the plan before any other lever.',
+            ? 'En tant que parent seul revenu, la r\u00e9silience aux chocs (perte d\'emploi, urgence familiale, sant\u00e9) est la priorit\u00e9 avant tout ajustement fin. Un fonds d\'urgence de 6\u20139 mois de d\u00e9penses, une assurance vie temporaire suffisante, et une assurance invalidit\u00e9 ad\u00e9quate cadrent le plan avant tout autre levier.'
+            : 'As a single-income parent, resilience to shocks (job loss, family emergency, health) is the priority before any fine-tuning. An emergency fund of 6\u20139 months of expenses, sufficient term life insurance, and adequate disability coverage frame the plan before any other lever.',
           { dollarImpact: null, dollarImpactLabel: fr ? 'assurance vie + invalidit\u00e9 + 6 mois r\u00e9serve' : 'life + disability + 6mo reserve', successImpactPp: 20, timeline: 'immediate', confidence: 'high', priority: 'high', kind: 'income', driver: 'single_parent_resilience', whenLabel: fr ? '12 mois' : '12 months' });
       default:
         return null;

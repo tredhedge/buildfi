@@ -7,20 +7,31 @@
       "category": "narration_generic",
       "section": "sec-assessment",
       "message": "Success rate is 38% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
-      "evidence": "verdict: \"nd asymmetric dispersion: the favourable scenario lands at **424K$** of remaining wealth w\"",
+      "evidence": "verdict: \"in real terms, while only the favourable scenario (P75) preserves **475K$**. When the medi\"",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "verdict"
     },
     {
-      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "id": "canonical-quote-p25_wealth_real-verdict",
       "reviewer": "canonical",
       "severity": "major",
       "category": "canonical_quote_drift",
-      "section": "sec-income-insight",
-      "message": "AI slot \"income_insight\" quotes pct value 28 for \"guaranteed_income_coverage\" but canonical is 30.84. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Guaranteed income coverage stands at **28%**, leaving a monthly gap of **$10,629** betwee\"  (canon=30.838094148369365, quoted=28)",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…e favourable scenario (P75) preserves **475K$**. When the median and the 25th-percentile o\"  (canon=0, quoted=475000)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "income_insight"
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…the favourable (P75) scenario retains **475K$**. The spread is driven less by volatility t\"  (canon=0, quoted=475000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
     },
     {
       "id": "canonical-quote-lifetime_tax_real-taxInsight",
@@ -28,32 +39,21 @@
       "severity": "major",
       "category": "canonical_quote_drift",
       "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes dollar value 804000 for \"lifetime_tax_real\" but canonical is 386417. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Lifetime tax sits at **804K$** with an average effective rate of **16.7%*\"  (canon=386417, quoted=804000)",
+      "message": "AI slot \"taxInsight\" quotes dollar value 48000 for \"lifetime_tax_real\" but canonical is 568942. Slot must be regenerated to match canonical.",
+      "evidence": "\"…, and the analysis identifies roughly **48K$** in tax savings achievable through sequenced\"  (canon=568942, quoted=48000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "taxInsight"
     },
     {
-      "id": "canonical-quote-success_rate-stress_interpretation",
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
       "reviewer": "canonical",
       "severity": "major",
       "category": "canonical_quote_drift",
-      "section": "sec-stress-interpretation",
-      "message": "AI slot \"stress_interpretation\" quotes pct value 9 for \"success_rate\" but canonical is 38.45. Slot must be regenerated to match canonical.",
-      "evidence": "\"… most vulnerable to stagflation73 at a **9%** success rate and lostDecade at **16%**, both\"  (canon=38.45, quoted=9)",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…e the favourable scenario (P75) holds **475K$**, with savings durability showing depletion\"  (canon=0, quoted=475000)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "scope-oas-clawback-drift",
-      "reviewer": "scope-reconciliation",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-tax",
-      "message": "OAS clawback years mentioned across sections drifts from canonical (7 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
-      "evidence": "sec-tax=0",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
+      "fix_target": "riskInsight"
     },
     {
       "id": "polish-debris-triple-em-dash",
@@ -76,20 +76,31 @@
       "category": "narration_generic",
       "section": "sec-assessment",
       "message": "Success rate is 38% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band.",
-      "evidence": "verdict: \"nd asymmetric dispersion: the favourable scenario lands at **424K$** of remaining wealth w\"",
+      "evidence": "verdict: \"in real terms, while only the favourable scenario (P75) preserves **475K$**. When the medi\"",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "verdict"
     },
     {
-      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "id": "canonical-quote-p25_wealth_real-verdict",
       "reviewer": "canonical",
       "severity": "major",
       "category": "canonical_quote_drift",
-      "section": "sec-income-insight",
-      "message": "AI slot \"income_insight\" quotes pct value 28 for \"guaranteed_income_coverage\" but canonical is 30.84. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Guaranteed income coverage stands at **28%**, leaving a monthly gap of **$10,629** betwee\"  (canon=30.838094148369365, quoted=28)",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…e favourable scenario (P75) preserves **475K$**. When the median and the 25th-percentile o\"  (canon=0, quoted=475000)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "income_insight"
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-p25_wealth_real-trajectory_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-trajectory-insight",
+      "message": "AI slot \"trajectory_insight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…the favourable (P75) scenario retains **475K$**. The spread is driven less by volatility t\"  (canon=0, quoted=475000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "trajectory_insight"
     },
     {
       "id": "canonical-quote-lifetime_tax_real-taxInsight",
@@ -97,32 +108,21 @@
       "severity": "major",
       "category": "canonical_quote_drift",
       "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes dollar value 804000 for \"lifetime_tax_real\" but canonical is 386417. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Lifetime tax sits at **804K$** with an average effective rate of **16.7%*\"  (canon=386417, quoted=804000)",
+      "message": "AI slot \"taxInsight\" quotes dollar value 48000 for \"lifetime_tax_real\" but canonical is 568942. Slot must be regenerated to match canonical.",
+      "evidence": "\"…, and the analysis identifies roughly **48K$** in tax savings achievable through sequenced\"  (canon=568942, quoted=48000)",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "taxInsight"
     },
     {
-      "id": "canonical-quote-success_rate-stress_interpretation",
+      "id": "canonical-quote-p25_wealth_real-riskInsight",
       "reviewer": "canonical",
       "severity": "major",
       "category": "canonical_quote_drift",
-      "section": "sec-stress-interpretation",
-      "message": "AI slot \"stress_interpretation\" quotes pct value 9 for \"success_rate\" but canonical is 38.45. Slot must be regenerated to match canonical.",
-      "evidence": "\"… most vulnerable to stagflation73 at a **9%** success rate and lostDecade at **16%**, both\"  (canon=38.45, quoted=9)",
+      "section": "sec-riskInsight",
+      "message": "AI slot \"riskInsight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"…e the favourable scenario (P75) holds **475K$**, with savings durability showing depletion\"  (canon=0, quoted=475000)",
       "fix_kind": "rerun_ai_slot",
-      "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "scope-oas-clawback-drift",
-      "reviewer": "scope-reconciliation",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-tax",
-      "message": "OAS clawback years mentioned across sections drifts from canonical (7 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count.",
-      "evidence": "sec-tax=0",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
+      "fix_target": "riskInsight"
     }
   ],
   "minors": [
@@ -148,28 +148,28 @@
         "message": "Success rate is 38% but slot \"verdict\" describes the plan with positive framing (\"favourable\"). Tone must match grade band."
       },
       {
-        "section": "sec-income-insight",
-        "target": "income_insight",
+        "section": "sec-verdict",
+        "target": "verdict",
         "severity": "major",
-        "message": "AI slot \"income_insight\" quotes pct value 28 for \"guaranteed_income_coverage\" but canonical is 30.84. Slot must be regenerated to match canonical."
+        "message": "AI slot \"verdict\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-trajectory-insight",
+        "target": "trajectory_insight",
+        "severity": "major",
+        "message": "AI slot \"trajectory_insight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
       },
       {
         "section": "sec-taxInsight",
         "target": "taxInsight",
         "severity": "major",
-        "message": "AI slot \"taxInsight\" quotes dollar value 804000 for \"lifetime_tax_real\" but canonical is 386417. Slot must be regenerated to match canonical."
+        "message": "AI slot \"taxInsight\" quotes dollar value 48000 for \"lifetime_tax_real\" but canonical is 568942. Slot must be regenerated to match canonical."
       },
       {
-        "section": "sec-stress-interpretation",
-        "target": "stress_interpretation",
+        "section": "sec-riskInsight",
+        "target": "riskInsight",
         "severity": "major",
-        "message": "AI slot \"stress_interpretation\" quotes pct value 9 for \"success_rate\" but canonical is 38.45. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-tax",
-        "target": "taxInsight",
-        "severity": "major",
-        "message": "OAS clawback years mentioned across sections drifts from canonical (7 yrs). Renderer must read d.oasClbkYrs (single source) and AI slots must not invent their own count."
+        "message": "AI slot \"riskInsight\" quotes dollar value 475000 for \"p25_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
       }
     ],
     "recompute_from_canonical": [],

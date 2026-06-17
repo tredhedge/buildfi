@@ -25,28 +25,24 @@ function check(label, actual, expected, tolerance) {
   RESULTS.push({ label, actual, expected, ok });
 }
 
-// Run a baseline profile and extract the famCredit-equivalent at year 0.
-// We can't pull famCredit directly out of runMC, so we infer it as the
-// difference between govInc with kids and govInc without kids, holding
-// other inputs constant.
+// Read the engine's family-credit aggregate at year 0 (working age).
+//
+// Fix 2026-06-16: the engine exposes the family-credit benefit directly on each
+// medRevData row as `famCredit` (CCB + Allocation famille + Solidarité +
+// childcare offset — engine/index.js ~1473, surfaced at ~2364). The earlier
+// inference via the with-kids/without-kids `spend_funded` difference was
+// structurally broken: at year 0 the profile is in ACCUMULATION, where
+// spend_funded = spend_target regardless of family credits (engine ~2356), so
+// the difference was always 0 and every scenario failed at actual=0. Read the
+// field directly instead.
 function inferFamilyCredit(baseProfile, kids) {
   const withKids = Object.assign({}, baseProfile, {
     family: kids.map((age, i) => ({ name: 'Child' + i, age, type: 'child' }))
   });
-  const noKids = Object.assign({}, baseProfile, { family: [] });
-  const mcWith = runMC(withKids, 200);
-  const mcNo = runMC(noKids, 200);
-  const r0With = (mcWith.medRevData || [])[0];
-  const r0No = (mcNo.medRevData || [])[0];
-  if (!r0With || !r0No) return null;
-  // Family credit ≈ difference in (rrq+psv+gis+pen+others) inferred via spend_funded
-  // Better: approximate via the difference in total non-tax income.
-  const incWith = (r0With.rrq || 0) + (r0With.psv || 0) + (r0With.gis || 0) + (r0With.pen || 0);
-  const incNo = (r0No.rrq || 0) + (r0No.psv || 0) + (r0No.gis || 0) + (r0No.pen || 0);
-  // Family credit lives inside govInc but not in any single field; use spend_funded
-  // diff (more reliable when public benefits cap spending).
-  const spendDiff = (r0With.spend_funded || 0) - (r0No.spend_funded || 0);
-  return Math.max(0, spendDiff);
+  const mc = runMC(withKids, 200);
+  const r0 = (mc.medRevData || [])[0];
+  if (!r0) return null;
+  return Math.max(0, r0.famCredit || 0);
 }
 
 const baseProfile = {
@@ -100,8 +96,13 @@ const baseProfile = {
     Object.assign({}, baseProfile, { sal: 130000, cOn: true, cSal: 70000, cAge: 38, cRetAge: 67 }),
     [4, 9]
   );
-  // Expected: CCB phased significantly ~$7,500 + minimal Allocation ~$1,400 + 0 Solidarité + 0 childcare ≈ $8,900
-  check('Couple QC $200K, 2 kids (4, 9)', fc, 8900, 0.30);
+  // Expected (corrected 2026-06-16 after CRA verification): at $200K AFNI the
+  // 2-child CCB is steeply phased out — 13.5% over $36,502 then 5.7% over
+  // $79,087 against a $14,357 max → ~$1,700, NOT the ~$7,500 originally guessed.
+  // Allocation famille and Solidarité both fully phase out at this income (≈$0).
+  // The childcare benefit-equivalent (~$4,200), applied consistently with the
+  // other QC scenarios above, dominates. Total ≈ $1,700 + $4,200 ≈ $5,900.
+  check('Couple QC $200K, 2 kids (4, 9)', fc, 5900, 0.20);
 }
 
 // ON couple, $100K combined, 1 child age 8 (federal CCB only, no QC credits)

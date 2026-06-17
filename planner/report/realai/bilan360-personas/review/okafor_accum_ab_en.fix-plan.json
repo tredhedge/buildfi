@@ -1,0 +1,78 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": null,
+      "target": "tone-pass",
+      "severity": "minor",
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+    },
+    {
+      "section": "sec-overall-assessment",
+      "target": "overall_assessment",
+      "severity": "major",
+      "message": "AI slot \"overall_assessment\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-verdict",
+      "target": "verdict",
+      "severity": "major",
+      "message": "AI slot \"verdict\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-income-insight",
+      "target": "income_insight",
+      "severity": "major",
+      "message": "AI slot \"income_insight\" quotes pct value 38 for \"guaranteed_income_coverage\" but canonical is 34.3. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 720000 for \"lifetime_tax_real\" but canonical is 612649. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-estateInsight",
+      "target": "estateInsight",
+      "severity": "major",
+      "message": "AI slot \"estateInsight\" quotes dollar value 486 for \"net_estate\" but canonical is 5010529.34. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-gis-insight",
+      "target": "gis_insight",
+      "severity": "major",
+      "message": "AI slot \"gis_insight\" quotes dollar value 10000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-stress-interpretation",
+      "target": "stress_interpretation",
+      "severity": "major",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 49 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-tax",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (612649). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention."
+    }
+  ],
+  "recompute_from_canonical": [
+    {
+      "section": null,
+      "target": "success_rate",
+      "severity": "blocker",
+      "message": "Concept \"success_rate\" surfaces with conflicting values (49% to 94%, gap=45pts) across 2 occurrences."
+    }
+  ],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

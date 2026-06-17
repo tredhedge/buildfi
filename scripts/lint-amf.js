@@ -65,13 +65,22 @@ const EXEMPT_LINE_PATTERNS = [
   /AMF compliant/i,
 ];
 
-// File paths (relative) exempted entirely — these list forbidden terms in AI instructions
+// File paths (relative) exempted entirely — these DEFINE the forbidden terms as
+// detection patterns / soft-rewrite maps / AI-prompt negative lists, so they
+// legitimately contain the banned strings as code rather than advisory copy.
 const EXEMPT_FILE_SUFFIXES = [
   "ai-prompt-expert.ts",
   "ai-prompt-inter.ts",
   "ai-prompt-decum.ts",
   "ai-constants.ts",
   "scripts/lint-amf.js",
+  // audit 2026-06-16: the report-pipeline AMF sanitizer (JS twin of
+  // ai-constants.ts) and the compliance/language auditors define the banned
+  // stems as regex patterns — exempt them like the prompt/sanitizer files above.
+  "planner/report/amf-sanitize.js",
+  "review/reviewers/compliance-auditor.js",
+  "review/reviewers/language-auditor.js",
+  "report-ai-prompt.js", // lab narration prompt — SYSTEM_PROMPT lists the banned terms
 ];
 
 const SCAN_DIRS = ["lib", "public", "app", "planner"];

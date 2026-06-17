@@ -16,6 +16,7 @@ import { maskEmail } from "@/lib/auth";
 import { translateToMCExpert } from "@/lib/quiz-translator-expert";
 import { runMC } from "@/lib/engine";
 import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
+import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
 import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
 import { sanitizeAISlotsExpert } from "@/lib/ai-constants";
 import type { ExpertAINarration } from "@/lib/ai-constants";
@@ -153,7 +154,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const feedbackToken = randomUUID();
     await createFeedbackRecord(feedbackToken, email, "expert", lang);
 
-    const reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, feedbackToken);
+    let reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, feedbackToken);
+
+    // ── Ship gate (audit 2026-06-16, planner/report/AUDIT.md) ──────────────
+    // Don't deliver a broken / non-compliant regenerated report. Fail OPEN.
+    try {
+      const verdict = evaluateReportShip(reportHTML, lang as "fr" | "en", {
+        coreInvalid: (D as Record<string, any>)?._integrity?.coreInvalid === true,
+      });
+      if (!verdict.ok) {
+        console.warn(`[regenerate] ship-gate FAILED [${verdict.reasons.join(", ")}] — serving needs-attention variant`);
+        reportHTML = renderNeedsAttentionHTML({
+          firstName: (D as Record<string, any>)?.firstName || (mcParams as Record<string, any>)?.firstName || "",
+          lang: lang as "fr" | "en",
+        });
+      }
+    } catch (gateErr) {
+      console.error("[regenerate] ship-gate error (fail-open, shipping rendered report):", gateErr);
+    }
 
     // Upload to Blob
     const timestamp = new Date().toISOString().slice(0, 10);

@@ -55,11 +55,19 @@ const buildReport = global.window.buildReport;
 const reviewOrch = require(path.join(reportDir, 'review/review-orchestrator.js'));
 const corrector = require(path.join(reportDir, 'review/correction-pass.js'));
 const packBuilder = require(path.join(reportDir, 'review/review-pack-builder.js'));
+// AMF sanitizer (audit 2026-06-16) — soften/drop banned AI text before render.
+const amfSanitize = require(path.join(reportDir, 'amf-sanitize.js'));
 
-const PROFILES = JSON.parse(fs.readFileSync(path.join(__dirname, 'profiles.json'), 'utf8')).profiles;
-const mcDir = path.join(__dirname, 'mc');
-const respDir = path.join(__dirname, 'responses');
-const outDir = __dirname;
+// BF_REALAI_BASE repoints the DATA dirs (profiles.json + mc/responses + the
+// draft/review/corrected/final/responses-todo outputs) to a separate set, e.g.
+// bilan360-personas/, while the report modules still load from reportDir. This
+// is what lets dev/persona builds run through the GATED pipeline instead of the
+// raw build-realai-reports.js render shortcut. Defaults to __dirname (the 20).
+const DATA_DIR = process.env.BF_REALAI_BASE ? path.resolve(process.env.BF_REALAI_BASE) : __dirname;
+const PROFILES = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'profiles.json'), 'utf8')).profiles;
+const mcDir = path.join(DATA_DIR, 'mc');
+const respDir = path.join(DATA_DIR, 'responses');
+const outDir = DATA_DIR;
 const draftDir = path.join(outDir, 'draft');
 const reviewDir = path.join(outDir, 'review');
 const correctedDir = path.join(outDir, 'corrected');
@@ -174,7 +182,12 @@ SELECTED.forEach(prof => {
   const tag = prof.id + '_' + prof.lang;
   const outTag = tag + '__' + _comboTag(prof);
   const respPath = path.join(respDir, tag + '.json');
-  const aiResp = fs.existsSync(respPath) ? JSON.parse(fs.readFileSync(respPath, 'utf8')) : {};
+  const aiRespRaw = fs.existsSync(respPath) ? JSON.parse(fs.readFileSync(respPath, 'utf8')) : {};
+  const _aiSan = amfSanitize.sanitizeAiObject(aiRespRaw);
+  if (_aiSan.dropped.length || _aiSan.softened.length) {
+    console.log('[pipeline] ' + tag + ' AMF sanitize: softened=[' + _aiSan.softened.join(',') + '] dropped=[' + _aiSan.dropped.join(',') + ']');
+  }
+  const aiResp = _aiSan.ai;
 
   // ─── Pass 1: DRAFT ────────────────────────────────────────────────
   const data1 = preparePayload(prof, aiResp);

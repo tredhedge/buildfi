@@ -32,8 +32,12 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const mcDir = path.join(__dirname, 'mc');
-const profilesPath = path.join(__dirname, 'profiles.json');
+// BF_REALAI_BASE repoints data dirs to a separate set (e.g. bilan360-personas/)
+// while the engine/enrich modules still resolve relative to the repo. Defaults
+// to __dirname (the 20 validation profiles).
+const DATA_DIR = process.env.BF_REALAI_BASE ? path.resolve(process.env.BF_REALAI_BASE) : __dirname;
+const mcDir = path.join(DATA_DIR, 'mc');
+const profilesPath = path.join(DATA_DIR, 'profiles.json');
 
 const PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8')).profiles;
 

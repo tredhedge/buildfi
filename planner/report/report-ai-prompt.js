@@ -291,9 +291,14 @@
       p50Wealth: _finStr(f$, _coreFields.medF),
       p25Wealth: _finStr(f$, (mc.rP25F != null ? mc.rP25F : (mc.p25F != null ? mc.p25F : (mc.rVar5 != null ? mc.rVar5 : mc.var5)))),
       p75Wealth: _finStr(f$, (mc.rP75F != null ? mc.rP75F : mc.p75F)),
+      // Localized sentinel (audit 2026-06-16): this was emitted in English
+      // regardless of report language, and the model copied "depleted at age N"
+      // / "never depleted" verbatim into FR narration (qa-check language_leak).
+      // FR/EN strings now match the report language.
       savingsDurability: (function() {
         var r = _fin(mc && mc.p5Ruin);
         if (r == null) return null;
+        if (fr) return r >= 200 ? 'jamais épuisée' : 'épuisée vers ' + r + ' ans';
         return r >= 200 ? 'never depleted' : 'depleted at age ' + r;
       })(),
       nSim: p.nSim || 5000,
@@ -317,7 +322,10 @@
 
       // Tax
       avgEffectiveRate: _coreFields.avgEffRate == null ? null : (_coreFields.avgEffRate * 100).toFixed(1) + '%',
-      lifetimeTax: _finStr(f$, d._optTax),
+      // Use the REAL-dollar lifetime tax (audit 2026-06-16): the renderer surfaces
+      // _optTaxReal to readers (report-pdf.js ~1264/4500); feeding the AI the
+      // nominal _optTax made the narrative quote a different number than the report.
+      lifetimeTax: _finStr(f$, (d._optTaxReal != null ? d._optTaxReal : d._optTax)),
       taxAlpha: (function() {
         var a = _fin(d._taxAlpha);
         return (a != null && a > 0) ? f$(Math.round(a)) : null;
@@ -506,6 +514,10 @@
           cg_tax: f$(ew.deductions.cgTax),
           probate: f$(ew.deductions.probate),
           probate_note: ew.probateConfig ? ew.probateConfig.note : null,
+          // The rrsp_tax / cg_tax split is an indicative breakdown of the engine
+          // estate-tax total, not a separate engine output. Flag so the narrative
+          // does not present the component split as a precise engine figure.
+          tax_split_basis: ew.taxSplitIndicative ? 'indicative split of estate-tax total (only the total and probate are engine-canonical)' : null,
           net: f$(ew.net),
           p25_net: ew.p25Net != null ? f$(ew.p25Net) : null
         };
@@ -541,6 +553,29 @@
         inflation_down_medF: mc._sweeps.inflation && mc._sweeps.inflation.down ? f$(mc._sweeps.inflation.down.medF) : null
       };
     }
+
+    // Stamp canonical raw values (audit 2026-06-16). This was previously dead —
+    // `data.canonical` was never populated, so the anti-drift pinning block in
+    // buildPrompt never emitted. Source each value from the SAME raw variable
+    // that feeds the formatted DATA field, so the canonical line and the DATA
+    // block agree by construction. Stamped here in extractData (where mc/d/
+    // _coreFields are in scope). Null entries are skipped by canonMap.
+    // Only pin metrics whose canonical formatter (compact "K$"/"%") matches the
+    // format the DATA block already shows for that field — otherwise the AI gets
+    // two conflicting strings for one number. Wealth/tax/estate use compact f$
+    // (matches _fmtMoney); success + coverage use rounded % (matches _fmtPct).
+    // Monthly $ fields (gap/qpp/oas) use the PRECISE "3 274 $" form in the DATA
+    // block, which _fmtMoney would render as "3K$" — so they are intentionally
+    // NOT pinned here (the DATA block is their single source).
+    data.canonical = {
+      success_rate: _coreFields.succVal,
+      p25_wealth_real: _fin(mc && (mc.rP25F != null ? mc.rP25F : (mc.p25F != null ? mc.p25F : (mc.rVar5 != null ? mc.rVar5 : mc.var5)))),
+      p50_wealth_real: _coreFields.medF,
+      p75_wealth_real: _fin(mc && (mc.rP75F != null ? mc.rP75F : mc.p75F)),
+      lifetime_tax_real: _fin(d._optTaxReal != null ? d._optTaxReal : d._optTax),
+      net_estate: _fin(mc && mc.medEstateNet),
+      guaranteed_income_coverage: _coreFields.covRatio
+    };
 
     return data;
   }
@@ -595,6 +630,8 @@
       if (v == null || !isFinite(v)) return null;
       return (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
     }
+    // canonical raw values are stamped on `data` in extractData (where mc/d/
+    // _coreFields are in scope); buildPrompt just reads them here.
     var canon = data.canonical || {};
     var canonLines = [];
     var canonMap = {

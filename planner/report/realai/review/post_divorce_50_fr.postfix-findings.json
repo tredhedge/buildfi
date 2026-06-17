@@ -1,6 +1,83 @@
 {
   "findings": [
     {
+      "id": "data-pct-contradict-success_rate",
+      "reviewer": "data",
+      "severity": "blocker",
+      "category": "percentage_contradiction",
+      "section": null,
+      "message": "Concept \"success_rate\" surfaces with conflicting values (4% to 19%, gap=15pts) across 2 occurrences.",
+      "evidence": "19% - \"le taux de succès passerait de...\" | 4% - \"té marquée à la stagflation, qui ramène le taux de succès à...\"",
+      "fix_kind": "recompute_from_canonical",
+      "fix_target": "success_rate"
+    },
+    {
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "thesis-drift-sec-letter-deterministic-surplus",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-letter-deterministic",
+      "message": "Plan posture is \"at-risk\" (succ=19%) but slot \"sec-letter-deterministic\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "fix_kind": "manual",
+      "fix_target": "sec-letter-deterministic"
+    },
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -12,8 +89,87 @@
       "fix_target": "global"
     }
   ],
-  "blockers": [],
-  "majors": [],
+  "blockers": [
+    {
+      "id": "data-pct-contradict-success_rate",
+      "reviewer": "data",
+      "severity": "blocker",
+      "category": "percentage_contradiction",
+      "section": null,
+      "message": "Concept \"success_rate\" surfaces with conflicting values (4% to 19%, gap=15pts) across 2 occurrences.",
+      "evidence": "19% - \"le taux de succès passerait de...\" | 4% - \"té marquée à la stagflation, qui ramène le taux de succès à...\"",
+      "fix_kind": "recompute_from_canonical",
+      "fix_target": "success_rate"
+    },
+    {
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    }
+  ],
+  "majors": [
+    {
+      "id": "thesis-drift-sec-letter-deterministic-surplus",
+      "reviewer": "narrative",
+      "severity": "major",
+      "category": "thesis_band_drift",
+      "section": "sec-letter-deterministic",
+      "message": "Plan posture is \"at-risk\" (succ=19%) but slot \"sec-letter-deterministic\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match.",
+      "evidence": "truth_band=at-risk  found_token=\"au-del\"  drift=3",
+      "fix_kind": "manual",
+      "fix_target": "sec-letter-deterministic"
+    },
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    }
+  ],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -30,11 +186,56 @@
   "fix_plan": {
     "remove_section": [],
     "rerun_ai_slot": [],
-    "recompute_from_canonical": [],
-    "block_data": [],
+    "recompute_from_canonical": [
+      {
+        "section": null,
+        "target": "success_rate",
+        "severity": "blocker",
+        "message": "Concept \"success_rate\" surfaces with conflicting values (4% to 19%, gap=15pts) across 2 occurrences."
+      }
+    ],
+    "block_data": [
+      {
+        "section": "sec-assessment",
+        "target": "sec-assessment",
+        "severity": "blocker",
+        "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-diagnostic",
+        "target": "sec-diagnostic",
+        "severity": "blocker",
+        "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-signature",
+        "target": "sec-signature",
+        "severity": "blocker",
+        "message": "Mandatory section \"Signature\" is missing from the rendered HTML."
+      }
+    ],
     "replace_with_callout": [],
-    "localize_label": [],
+    "localize_label": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "blocker",
+        "message": "EN engineering jargon in FR client report: 1 term(s) matched"
+      }
+    ],
     "manual": [
+      {
+        "section": "sec-letter-deterministic",
+        "target": "sec-letter-deterministic",
+        "severity": "major",
+        "message": "Plan posture is \"at-risk\" (succ=19%) but slot \"sec-letter-deterministic\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match."
+      },
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
+      },
       {
         "section": null,
         "target": "global",
@@ -43,8 +244,8 @@
       }
     ]
   },
-  "can_ship": true,
-  "blocker_count": 0,
-  "major_count": 0,
+  "can_ship": false,
+  "blocker_count": 5,
+  "major_count": 2,
   "minor_count": 1
 }

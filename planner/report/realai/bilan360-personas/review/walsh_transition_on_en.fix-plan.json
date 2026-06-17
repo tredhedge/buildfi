@@ -1,0 +1,47 @@
+{
+  "remove_section": [],
+  "rerun_ai_slot": [
+    {
+      "section": null,
+      "target": "advisor_letter",
+      "severity": "major",
+      "message": "AI slot \"advisor_letter\" contains 2 generic filler phrases. Narration reads as boilerplate."
+    },
+    {
+      "section": null,
+      "target": "tone-pass",
+      "severity": "minor",
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+    },
+    {
+      "section": "sec-income-insight",
+      "target": "income_insight",
+      "severity": "major",
+      "message": "AI slot \"income_insight\" quotes pct value 69 for \"guaranteed_income_coverage\" but canonical is 64.6. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-taxInsight",
+      "target": "taxInsight",
+      "severity": "major",
+      "message": "AI slot \"taxInsight\" quotes dollar value 453000 for \"lifetime_tax_real\" but canonical is 337252. Slot must be regenerated to match canonical."
+    },
+    {
+      "section": "sec-gis-insight",
+      "target": "gis_insight",
+      "severity": "major",
+      "message": "AI slot \"gis_insight\" quotes dollar value 21000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical."
+    }
+  ],
+  "recompute_from_canonical": [],
+  "block_data": [],
+  "replace_with_callout": [],
+  "localize_label": [],
+  "manual": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "minor",
+      "message": "Templating debris detected: triple em-dash."
+    }
+  ]
+}

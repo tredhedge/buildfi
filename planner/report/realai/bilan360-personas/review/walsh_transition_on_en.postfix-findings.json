@@ -1,0 +1,79 @@
+{
+  "findings": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×2 \"worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [],
+  "majors": [],
+  "minors": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×2 \"worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      }
+    ],
+    "recompute_from_canonical": [],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": true,
+  "blocker_count": 0,
+  "major_count": 0,
+  "minor_count": 2
+}

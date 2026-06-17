@@ -126,6 +126,29 @@ function audit(pack) {
     });
   }
 
+  // ─── 4) AMF banned-stem scan (audit 2026-06-16) ─────────────────────
+  // The optimis*/optimiz* family and "plan d'action" / "action plan" are
+  // forbidden in any visible copy (audit 2.5). No prior auditor caught the
+  // stem, so banned text could pass the ship gate. Blocker severity — the
+  // report does not ship until it is gone (matches number-provenance BANNED_AMF
+  // and the runtime FORBIDDEN_TERMS sanitizer).
+  var AMF_STEM = /\boptimis[a-zàâçéèêëîïôûùüÿœæ]+|\boptimiz[a-z]+|\bplan d['’]action\b|\baction plan\b/i;
+  var amfMatch = visible.match(new RegExp(AMF_STEM.source, 'gi'));
+  if (amfMatch && amfMatch.length > 0) {
+    var uniq = Array.from(new Set(amfMatch.map(function(s) { return s.toLowerCase(); })));
+    findings.push({
+      id: 'compliance-amf-banned-stem',
+      reviewer: 'compliance',
+      severity: 'blocker',
+      category: 'compliance_amf_banned',
+      section: null,
+      message: 'AMF-forbidden stem in visible copy (optimis*/optimiz* or plan d\'action). Must be removed before ship.',
+      evidence: uniq.slice(0, 5).join(', '),
+      fix_kind: 'rerun_ai_slot',
+      fix_target: 'tone-pass'
+    });
+  }
+
   return findings;
 }
 

@@ -17,9 +17,11 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const profilesPath = path.join(__dirname, 'profiles.json');
-const responsesDir = path.join(__dirname, 'responses');
-const outputDir = path.join(__dirname, 'output');
+// BF_REALAI_BASE repoints to a separate profile set (e.g. bilan360-personas/).
+const DATA_DIR = process.env.BF_REALAI_BASE ? path.resolve(process.env.BF_REALAI_BASE) : __dirname;
+const profilesPath = path.join(DATA_DIR, 'profiles.json');
+const responsesDir = path.join(DATA_DIR, 'responses');
+const outputDir = path.join(DATA_DIR, 'output');
 
 const PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8')).profiles;
 
@@ -28,16 +30,20 @@ const PROFILES = JSON.parse(fs.readFileSync(profilesPath, 'utf8')).profiles;
 // appear in either language as foreign borrowings).
 const FR_LEAK_WORDS = [
   // FR-only words that shouldn't appear in EN reports
-  'épargne', 'retraite', 'épuiser', 'dépense', 'dépenses', 'patrimoine',
+  'épargne', 'retraite', 'épuiser', 'épuisée', 'dépense', 'dépenses', 'patrimoine',
   'rentes', 'récupération', 'décaissement', 'fractionnement', 'imposition',
   'pourrait', 'serait', 'devrait', 'l\'épargne', 'l\'horizon', 'l\'étape',
-  'votre situation', 'vos dépenses'
+  'votre situation', 'vos dépenses', 'viager', 'ménage', 'fiscalité'
 ];
 const EN_LEAK_WORDS = [
-  // EN-only words that shouldn't appear in FR reports
-  'retirement', 'savings', 'depleted', 'spending', 'wealth',
+  // EN-only words that shouldn't appear in FR reports.
+  // "meltdown" IS banned in FR client copy (Codex: engineering jargon must never
+  // reach a client; enforced by review/reviewers/language-auditor.js). The FR
+  // template uses "décaissement anticipé" instead (audit 2026-06-16). This entry
+  // aligns qa-check with that authoritative rule.
+  'retirement', 'savings', 'depleted', 'spending', 'wealth', 'meltdown',
   'pensions', 'clawback', 'drawdown', 'splitting', 'taxation',
-  'could', 'would', 'should', 'your situation'
+  'could', 'would', 'should', 'your situation', 'in-kind', 'on-track', 'household'
 ];
 
 const defects = [];
@@ -103,14 +109,35 @@ PROFILES.forEach(prof => {
   const combinedAction = stressText + ' ' + bestMove;
   // Look up the MC payload to determine the success rate (so we know if a
   // recovery path is required).
-  const mcPath = path.join(__dirname, 'mc', prof.id + '_' + prof.lang + '.json');
+  const mcPath = path.join(DATA_DIR, 'mc', prof.id + '_' + prof.lang + '.json');
+  // ── Check 6: FRESHNESS — the AI response must not predate its MC payload.
+  // Root cause of the worst audit defects (audit 2026-06-16): MC was regenerated
+  // but prompts/responses were never re-narrated, so the narrative quoted numbers
+  // from a stale simulation (fabricated values into now-null fields, 41%→100%
+  // contradictions). A response older than its mc/*.json is presumed stale and
+  // must be re-dumped + re-narrated before it can ship.
+  if (fs.existsSync(mcPath) && fs.existsSync(respPath)) {
+    const mcM = fs.statSync(mcPath).mtimeMs;
+    const respM = fs.statSync(respPath).mtimeMs;
+    if (respM < mcM) {
+      recordDefect(tag, 'stale_response', 'Response predates its MC payload (re-dump prompt + re-narrate). resp=' +
+        new Date(respM).toISOString().slice(0, 10) + ' < mc=' + new Date(mcM).toISOString().slice(0, 10));
+    }
+  }
   if (fs.existsSync(mcPath)) {
     try {
       const mc = JSON.parse(fs.readFileSync(mcPath, 'utf8'));
       const succ = mc.succ;
       if (succ != null && succ < 0.45) {
         // Plan is fragile/critical — recovery path required
-        const hasSequence = /phase 1|phase 2|phase 3|étape 1|étape 2|first[,]|second[ly]?|then[,]|d'abord|ensuite|en premier/i.test(combinedAction);
+        // Recognize a numbered/sequenced recovery path in any common form:
+        // "phase 1" / "étape 1", "first, … then,", "d'abord … ensuite", OR an
+        // explicit numeric enumeration "(1) … (2)", "1. … 2.", "1) … 2)".
+        // (audit 2026-06-16: the parenthetical/numeric forms were previously
+        // unrecognized, flagging legitimate sequences like fire_seeker's "(1)…(2)").
+        const hasSequence =
+          /phase 1|phase 2|phase 3|étape 1|étape 2|first[,]|second[ly]?|then[,]|d'abord|ensuite|en premier|premièrement/i.test(combinedAction) ||
+          /\(1\)[\s\S]*\(2\)|\b1[.)]\s[\s\S]*\b2[.)]\s/.test(combinedAction);
         if (!hasSequence) {
           recordDefect(tag, 'missing_recovery_path', 'Low-grade plan (succ=' + Math.round(succ*100) + '%) but stress_interpretation/best_move lack a numbered recovery sequence');
         }

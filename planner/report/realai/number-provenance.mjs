@@ -18,9 +18,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const promptDir = path.join(__dirname, 'prompts');
-const respDir = path.join(__dirname, 'responses');
-const mcDir = path.join(__dirname, 'mc');
+// BF_REALAI_BASE repoints to a separate profile set (e.g. bilan360-personas/).
+const DATA_DIR = process.env.BF_REALAI_BASE ? path.resolve(process.env.BF_REALAI_BASE) : __dirname;
+const promptDir = path.join(DATA_DIR, 'prompts');
+const respDir = path.join(DATA_DIR, 'responses');
+const mcDir = path.join(DATA_DIR, 'mc');
 
 const args = Object.fromEntries(process.argv.slice(2).map(a => {
   const [k, v] = a.replace(/^--/, '').split('='); return [k, v ?? true];
@@ -39,17 +41,66 @@ function canonNum(s) {
   return s;
 }
 
-function nums(text) {
+// Unit-aware tokenizer (audit 2026-06-16). The old extractor stripped the
+// magnitude suffix and the unit, so "526 K$", "526 %", and a bare "526" all
+// canonicalized to "526" — a fabricated $526K estate passed whenever a bare
+// 526 appeared anywhere in the prompt, and the gate produced noisy false
+// positives on ages. Each token now carries a unit class so a response number
+// only matches a prompt number of the SAME magnitude+unit.
+//   unit: 'K' = thousands-$, 'M' = millions-$, '$' = plain dollars,
+//         '%' = percent, '' = bare (age / year / count).
+// Returns canonical "value@unit" keys.
+const SPchars = SP.slice(1, -1); // the char-class body, e.g. "    "
+const TOKEN_RE = new RegExp(
+  '(\\$\\s?)?(\\d[\\d.,' + SPchars + ']*\\d|\\d)\\s?(M\\$|k\\$|K\\$|M\\b|K\\b|\\$|%)?',
+  'gi'
+);
+function tokenize(text) {
   if (!text) return [];
   const cleaned = String(text).replace(/\b[Pp]\d{1,3}\b/g, ' '); // drop P25/p5 percentile tokens
-  const raw = cleaned.match(new RegExp(`\\d[\\d.,${SP.slice(1, -1)}]*\\d|\\d`, 'g')) || [];
-  return raw.map(canonNum).filter(Boolean);
+  const out = [];
+  let m;
+  TOKEN_RE.lastIndex = 0;
+  while ((m = TOKEN_RE.exec(cleaned))) {
+    const v = canonNum(m[2]);
+    if (!v) continue;
+    const suf = m[3] || '';
+    let u = '';
+    if (/k/i.test(suf)) u = 'K';
+    else if (/m/i.test(suf)) u = 'M';
+    else if (suf === '%') u = '%';
+    else if (suf === '$' || m[1]) u = '$';
+    out.push(v + '@' + u);
+  }
+  return out;
 }
+
+// Fixed Canadian-retirement constants the narrative legitimately cites but the
+// DATA block does not always carry verbatim: RRIF conversion (71/72), CPP/OAS
+// claim ages (60/65/67/70), historical stress years, the projection/current
+// years, and the 0%/100% percent bounds. Whitelisting these (by value@unit)
+// removes the age/year false positives without masking fabricated money.
+const DOMAIN_WHITELIST = [
+  '60@', '65@', '67@', '70@', '71@', '72@',
+  // historical crisis / decade references narration legitimately cites
+  '1929@', '1970@', '1973@', '1981@', '1990@', '2000@', '2008@', '2020@', '2022@', '2025@', '2026@',
+  '0@%', '100@%'
+];
 
 const FRAGILE_EN = /\b(solid|robust|strong|durable|on track|comfortable|secure|healthy)\b/i;
 const FRAGILE_FR = /\b(solide|robuste|fort|fiable|stable|sain|confortable|durable|en bonne voie)\b/i;
 const LEAK_EN_IN_FR = /\b(OAS|RRIF|CPP|GIS)\b/;
 const LEAK_FR_IN_EN = /\b(PSV|FERR|RRQ|SRG)\b/;
+// Bilingual gloss exception (audit 2026-06-16): "PSV/OAS", "RRQ/CPP" etc. are
+// deliberate native-acronym + translation pairs, not leaks.
+const GLOSS = /(PSV\s*\/\s*OAS|OAS\s*\/\s*PSV|RRQ\s*\/\s*(RPC|CPP)|(RPC|CPP)\s*\/\s*RRQ|SRG\s*\/\s*GIS|GIS\s*\/\s*SRG|FERR\s*\/\s*RRIF|RRIF\s*\/\s*FERR|CELI\s*\/\s*TFSA|TFSA\s*\/\s*CELI|REER\s*\/\s*RRSP|RRSP\s*\/\s*REER)/i;
+// Number-FORMAT locale leak (audit 2026-06-16, conservative — only unambiguous
+// signals so the bilingual "K$" compact form is never flagged):
+//  FR must not use the EN dollar-PREFIX ("$2,400" / "$526K"); FR uses suffix "$".
+//  EN must not use FR space/NBSP thousands on a suffix-$ amount ("3 382 $") nor
+//  an FR decimal comma in a percent/decimal ("59,9 %").
+const FMT_LEAK_EN_IN_FR = /\$\s?\d/;
+const FMT_LEAK_FR_IN_EN = /\d[\u00A0\u202F\u2009 ]\d{3}\s?\$|\d,\d{1,2}\s?%/;
 const QUALIFIER = /\b(but|though|yet|however|while|mais|toutefois|cependant|tandis)\b/i;
 // AMF hard-negative (audit 2.5): the conditional/observational register forbids
 // the "optimis*/optimiz*" stem and directive phrasing in any AI slot. The noun
@@ -69,8 +120,9 @@ for (const f of considered) {
   const resp = JSON.parse(fs.readFileSync(respPath, 'utf8'));
   const locale = prompt.lang === 'fr' ? 'fr' : 'en';
 
-  const allowed = new Set(nums(prompt.user));
-  for (let i = 0; i <= 12; i++) allowed.add(String(i)); // sentence counts / phase numbers
+  const allowed = new Set(tokenize(prompt.user));
+  for (let i = 0; i <= 12; i++) allowed.add(i + '@'); // sentence counts / phase numbers (bare)
+  for (const w of DOMAIN_WHITELIST) allowed.add(w);   // fixed retirement constants
 
   let band = null;
   const mcPath = path.join(mcDir, tag + '.json');
@@ -85,7 +137,7 @@ for (const f of considered) {
 
   for (const [slot, text] of Object.entries(resp)) {
     if (typeof text !== 'string') continue;
-    const foreign = [...new Set(nums(text).filter(n => !allowed.has(n)))];
+    const foreign = [...new Set(tokenize(text).filter(n => !allowed.has(n)))];
     if (foreign.length) defects.push({ tag, slot, kind: 'foreign_number', detail: foreign.slice(0, 8).join(', ') });
     if (fragile && openingSlots.has(slot)) {
       const re = locale === 'fr' ? FRAGILE_FR : FRAGILE_EN;
@@ -93,7 +145,9 @@ for (const f of considered) {
       if (m && !QUALIFIER.test(text)) defects.push({ tag, slot, kind: 'direction_violation', detail: `"${m[0]}" with band=fragile` });
     }
     const leak = (locale === 'fr' ? LEAK_EN_IN_FR : LEAK_FR_IN_EN).exec(text);
-    if (leak) defects.push({ tag, slot, kind: 'locale_leak', detail: leak[0] });
+    if (leak && !GLOSS.test(text)) defects.push({ tag, slot, kind: 'locale_leak', detail: leak[0] });
+    const fmtLeak = (locale === 'fr' ? FMT_LEAK_EN_IN_FR : FMT_LEAK_FR_IN_EN).exec(text);
+    if (fmtLeak) defects.push({ tag, slot, kind: 'format_leak', detail: fmtLeak[0].trim() });
     const amf = BANNED_AMF.exec(text);
     if (amf) defects.push({ tag, slot, kind: 'amf_banned', detail: amf[0] });
   }

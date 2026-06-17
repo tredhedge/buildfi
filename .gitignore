@@ -64,3 +64,14 @@ planner/report/realai/review/*.fail.json
 .mcp.json
 .playwright-mcp/
 **/__pycache__/
+
+# run-pipeline per-run artifacts (transient; regenerate from responses/mc)
+planner/report/realai/draft/
+planner/report/realai/corrected/
+planner/report/realai/final/
+planner/report/realai/responses-todo/
+planner/report/realai/bilan360-personas/draft/
+planner/report/realai/bilan360-personas/corrected/
+planner/report/realai/bilan360-personas/final/
+planner/report/realai/bilan360-personas/responses-todo/
+planner/report/realai/bilan360-personas/review/*.fail.json

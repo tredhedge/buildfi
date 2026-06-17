@@ -1,81 +1,9 @@
 [
   {
-    "profile": "hnw_couple_fr",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 3,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 3
-  },
-  {
-    "profile": "ccpc_owner_en",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 6,
-      "minors": 2
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 2
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 4
-  },
-  {
-    "profile": "fire_seeker_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 0
-  },
-  {
     "profile": "low_income_gis_en",
     "sku": "bilan",
     "pre": {
       "blockers": 0,
-      "majors": 4,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 4
-  },
-  {
-    "profile": "debt_young_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
       "majors": 0,
       "minors": 1
     },
@@ -88,136 +16,6 @@
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
     "ai_regen_slots": 0
-  },
-  {
-    "profile": "conservative_retiree_qc_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 1,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 1
-  },
-  {
-    "profile": "rental_landlord_on_en",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 6,
-      "minors": 2
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 2
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 7
-  },
-  {
-    "profile": "single_parent_qc_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 3,
-      "majors": 5,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [
-      "impossible_gis"
-    ],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 3
-  },
-  {
-    "profile": "govt_db_couple_ab_en",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 5,
-      "minors": 2
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 2
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 6
-  },
-  {
-    "profile": "late_starter_bc_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 2,
-      "majors": 5,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [
-      "impossible_gis"
-    ],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 3
-  },
-  {
-    "profile": "widow_late_decum_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 4,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 3
-  },
-  {
-    "profile": "immigrant_partial_qpp_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 6,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 4
   },
   {
     "profile": "early_retiree_single_en",
@@ -238,121 +36,11 @@
     "ai_regen_slots": 4
   },
   {
-    "profile": "mortgage_in_retirement_en",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 8,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 6
-  },
-  {
-    "profile": "no_heir_estate_fr",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 5,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 5
-  },
-  {
-    "profile": "sandwich_gen_en",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 11,
-      "minors": 2
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 2
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 9
-  },
-  {
-    "profile": "post_divorce_50_fr",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 3,
-      "majors": 5,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [
-      "impossible_gis"
-    ],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 3
-  },
-  {
-    "profile": "rrsp_only_late_starter_en",
-    "sku": "bilan",
-    "pre": {
-      "blockers": 0,
-      "majors": 6,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 5
-  },
-  {
-    "profile": "rental_heavy_couple_fr",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 8,
-      "minors": 1
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 1
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 5
-  },
-  {
     "profile": "high_rrsp_oas_clawback_en",
     "sku": "planner",
     "pre": {
       "blockers": 0,
-      "majors": 5,
+      "majors": 4,
       "minors": 2
     },
     "post": {
@@ -363,6 +51,6 @@
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 6
+    "ai_regen_slots": 4
   }
 ]

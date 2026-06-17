@@ -162,6 +162,11 @@ function buildEstateWaterfall(mc, params) {
       cgTax: Math.round(cgTax),
       probate: Math.round(probate)
     },
+    // The rrspTax / cgTax split is an INDICATIVE re-allocation of the engine's
+    // authoritative medEstateTax (proxies at lines above), not a distinct engine
+    // output. Only the total (medEstateTax) and probate are engine-canonical.
+    // Consumers must label the component split as indicative (audit 2026-06-16).
+    taxSplitIndicative: true,
     probateConfig: probCfg,
     net: Math.round(net),
     // Alternative: P25 conservative scenario if available

@@ -387,14 +387,22 @@
       var infY = Math.pow(1 + (p.inf || 0.021), r.age - (p.age || 0));
       return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0) / infY;
     }, 0);
-    var _naiveTax = 0;
+    // Audit 2026-06-16: taxAlpha must be a REAL-dollar delta to sit beside the
+    // real-dollar lifetime tax the report surfaces (_optTaxReal). Previously it
+    // differenced two NOMINAL sums (_naiveTax - _optTax) and was displayed next
+    // to the real figure, overstating the gain. Deflate the naive sum on the
+    // same basis as _optTaxReal (post-retirement, inflation-discounted) and
+    // difference against _optTaxReal.
+    var _naiveTaxReal = 0;
     var _hasNaive = p.wStrat === "optimized" && mc._naiveMC && mc._naiveMC.medRevData;
     if (_hasNaive) {
-      _naiveTax = (mc._naiveMC.medRevData || []).reduce(function(s, r) {
-        return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0);
+      _naiveTaxReal = (mc._naiveMC.medRevData || []).reduce(function(s, r) {
+        if (r.age < (p.retAge || 65)) return s;
+        var infY = Math.pow(1 + (p.inf || 0.021), r.age - (p.age || 0));
+        return s + ((r.tax_household != null ? r.tax_household : r.tax) || 0) / infY;
       }, 0);
     }
-    var _taxAlpha = _hasNaive ? _naiveTax - _optTax : null;
+    var _taxAlpha = _hasNaive ? _naiveTaxReal - _optTaxReal : null;
     var avgEffRate = _optTax > 0
       ? _optTax / Math.max(1, revData.reduce(function(s, r) {
           return s + ((r.taxInc_household != null ? r.taxInc_household : r.taxInc) || 0);
@@ -674,7 +682,7 @@
       merWt: merWt,
       _optTax: _optTax,
       _optTaxReal: _optTaxReal,
-      _naiveTax: _naiveTax,
+      _naiveTaxReal: _naiveTaxReal,
       _hasNaive: _hasNaive,
       _taxAlpha: _taxAlpha,
       avgEffRate: avgEffRate,

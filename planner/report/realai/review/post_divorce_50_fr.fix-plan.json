@@ -25,36 +25,57 @@
       "target": "gis_insight",
       "severity": "major",
       "message": "AI GIS narrative does not appear to match the rendered GIS total."
-    },
-    {
-      "section": "sec-assessment",
-      "target": "advisor_letter",
-      "severity": "major",
-      "message": "Success rate is 21% but slot \"advisor_letter\" describes the plan with positive framing (\"jouent en votre\"). Tone must match grade band."
-    },
-    {
-      "section": "sec-assessment",
-      "target": "verdict",
-      "severity": "major",
-      "message": "Success rate is 21% but slot \"verdict\" describes the plan with positive framing (\"favorable\"). Tone must match grade band."
-    },
-    {
-      "section": "sec-advisor-letter",
-      "target": "advisor_letter",
-      "severity": "major",
-      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"advisor_letter\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
     }
   ],
-  "recompute_from_canonical": [],
-  "block_data": [],
+  "recompute_from_canonical": [
+    {
+      "section": null,
+      "target": "success_rate",
+      "severity": "blocker",
+      "message": "Concept \"success_rate\" surfaces with conflicting values (4% to 19%, gap=15pts) across 2 occurrences."
+    }
+  ],
+  "block_data": [
+    {
+      "section": "sec-assessment",
+      "target": "sec-assessment",
+      "severity": "blocker",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML."
+    },
+    {
+      "section": "sec-diagnostic",
+      "target": "sec-diagnostic",
+      "severity": "blocker",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML."
+    },
+    {
+      "section": "sec-signature",
+      "target": "sec-signature",
+      "severity": "blocker",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML."
+    }
+  ],
   "replace_with_callout": [],
-  "localize_label": [],
+  "localize_label": [
+    {
+      "section": null,
+      "target": "global",
+      "severity": "blocker",
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched"
+    }
+  ],
   "manual": [
     {
       "section": "sec-letter-deterministic",
       "target": "sec-letter-deterministic",
       "severity": "major",
-      "message": "Plan posture is \"at-risk\" (succ=21%) but slot \"sec-letter-deterministic\" uses \"stable\" (band=\"solid\", 2 bands away). Posture must match."
+      "message": "Plan posture is \"at-risk\" (succ=19%) but slot \"sec-letter-deterministic\" uses \"au-del\" (band=\"surplus\", 3 bands away). Posture must match."
+    },
+    {
+      "section": null,
+      "target": "narrative",
+      "severity": "major",
+      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
     },
     {
       "section": null,

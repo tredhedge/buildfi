@@ -1,6 +1,61 @@
 {
   "findings": [
     {
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    },
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"$/an Longévité modélisée 92 ans Province\" (gap=102 chars) | \"des simulations Monte Carlo terminent sous\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    },
+    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -12,8 +67,65 @@
       "fix_target": "global"
     }
   ],
-  "blockers": [],
-  "majors": [],
+  "blockers": [
+    {
+      "id": "table-missing-sec-assessment",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-assessment",
+      "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-assessment",
+      "fix_kind": "block_data",
+      "fix_target": "sec-assessment"
+    },
+    {
+      "id": "table-missing-sec-diagnostic",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-diagnostic",
+      "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-diagnostic",
+      "fix_kind": "block_data",
+      "fix_target": "sec-diagnostic"
+    },
+    {
+      "id": "table-missing-sec-signature",
+      "reviewer": "table",
+      "severity": "blocker",
+      "category": "empty_section",
+      "section": "sec-signature",
+      "message": "Mandatory section \"Signature\" is missing from the rendered HTML.",
+      "evidence": "expected_id=sec-signature",
+      "fix_kind": "block_data",
+      "fix_target": "sec-signature"
+    },
+    {
+      "id": "lang-jargon-mix",
+      "reviewer": "language",
+      "severity": "blocker",
+      "category": "language_leak",
+      "section": null,
+      "message": "EN engineering jargon in FR client report: 1 term(s) matched",
+      "evidence": "\\bMeltdown\\b (×1): \"2 ans) ; un retrait anticipé (meltdown) pourrait lisser l'impôt viager. Posture\"",
+      "fix_kind": "localize_label",
+      "fix_target": "global"
+    }
+  ],
+  "majors": [
+    {
+      "id": "polish-repeated-phrase",
+      "reviewer": "polish",
+      "severity": "major",
+      "category": "polish",
+      "section": null,
+      "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel.",
+      "evidence": "\"$/an Longévité modélisée 92 ans Province\" (gap=102 chars) | \"des simulations Monte Carlo terminent sous\" (gap=149 chars)",
+      "fix_kind": "manual",
+      "fix_target": "narrative"
+    }
+  ],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -31,10 +143,42 @@
     "remove_section": [],
     "rerun_ai_slot": [],
     "recompute_from_canonical": [],
-    "block_data": [],
+    "block_data": [
+      {
+        "section": "sec-assessment",
+        "target": "sec-assessment",
+        "severity": "blocker",
+        "message": "Mandatory section \"Overall assessment\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-diagnostic",
+        "target": "sec-diagnostic",
+        "severity": "blocker",
+        "message": "Mandatory section \"Diagnostic\" is missing from the rendered HTML."
+      },
+      {
+        "section": "sec-signature",
+        "target": "sec-signature",
+        "severity": "blocker",
+        "message": "Mandatory section \"Signature\" is missing from the rendered HTML."
+      }
+    ],
     "replace_with_callout": [],
-    "localize_label": [],
+    "localize_label": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "blocker",
+        "message": "EN engineering jargon in FR client report: 1 term(s) matched"
+      }
+    ],
     "manual": [
+      {
+        "section": null,
+        "target": "narrative",
+        "severity": "major",
+        "message": "Repeated phrase in close proximity (4 instances). Stylistic stutter breaks premium feel."
+      },
       {
         "section": null,
         "target": "global",
@@ -43,8 +187,8 @@
       }
     ]
   },
-  "can_ship": true,
-  "blocker_count": 0,
-  "major_count": 0,
+  "can_ship": false,
+  "blocker_count": 4,
+  "major_count": 1,
   "minor_count": 1
 }

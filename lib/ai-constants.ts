@@ -113,8 +113,13 @@ export function sanitizeAISlots360(raw: Record<string, any>): AINarration360 {
 // which dropped through the prior regex). Also catches "consider <X>ing"
 // imperative + "make sure" + "ensure" + "ought to" + "il faut"/"il faudrait"
 // without the "que" qualifier.
+// Audit 2026-06-16: added the optimis*/optimiz* stem (was only catching the
+// imperative "optimisez" — "optimisation"/"optimization"/"optimisé"/"optimal"
+// leaked through) and the insurance-distribution prescriptions from
+// scripts/lint-amf.js. MUST stay in sync with planner/report/amf-sanitize.js
+// (asserted by planner/report/realai/tests/amf-sync.test.mjs).
 export const FORBIDDEN_TERMS =
-  /\bdevriez\b|\bdevrait\b|\bdevraient\b|\bdevra(s|i|ent)?\b|\bfaudrait\b|\bil faut\b|\brecommandons\b|\brecommande\b|\bconseillons\b|\bconseille\b|\bvous devez\b|\bassurez-vous\b|\bil est essentiel\b|\bil est crucial\b|\bil est impératif\b|\bwe recommend\b|\bwe suggest\b|\bwe advise\b|\byou should\b|\byou must\b|\byou ought to\b|\byou need to\b|\bmake sure (that |to )?\b|\bensure that\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\bconsider \w+ing\b|\boptimisez\b|\bpriorisez\b|\bplan d'action\b|\baction plan\b|\brecommandation\b|\brecommandations\b|\brecommendation\b|\brecommendations\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b/i;
+  /\bdevriez\b|\bdevrait\b|\bdevraient\b|\bdevra(s|i|ent)?\b|\bfaudrait\b|\bil faut\b|\brecommandons\b|\brecommande\b|\bconseillons\b|\bconseille\b|\bvous devez\b|\bassurez-vous\b|\bil est essentiel\b|\bil est crucial\b|\bil est impératif\b|\bwe recommend\b|\bwe suggest\b|\bwe advise\b|\byou should\b|\byou must\b|\byou ought to\b|\byou need to\b|\bmake sure (that |to )?\b|\bensure that\b|\bcombiner les\b|\bcombine the\b|\bconsiderez\b|\bconsidérez\b|\bconsider \w+ing\b|\boptimisez\b|\bpriorisez\b|\boptimis[a-zàâçéèêëîïôûùüÿœæ]+|\boptimiz[a-z]+|\bplan d'action\b|\baction plan\b|\brecommandation\b|\brecommandations\b|\brecommendation\b|\brecommendations\b|\bsouscrivez\b|\bachetez (cette|une|de l')\s*assurance\b|\bvous (devez|devriez) (souscrire|acheter)\b|\byou should buy\b|\byou need (life|disability|critical|term)?\s*insurance\b|\bil est important de noter\b|\bil convient de souligner\b|\bil convient de noter\b|\bil est à noter\b|\bnotons que\b|\bsoulignons que\b|\bmentionnons que\b|\bit is important to note\b|\bit should be noted\b|\bworth noting\b/i;
 
 // Soft-rewrite map: when an AI slot trips a violation that is rescuable by a
 // simple verb swap, do that BEFORE dropping. Preserves the observation while
@@ -140,8 +145,31 @@ export const SOFT_REWRITES: Array<[RegExp, string]> = [
   [/\bil faudrait\s+/gi, "il pourrait être utile de "],
   [/\brecommandons\s+/gi, "observons que "],
   [/\bconseillons\s+/gi, "observons que "],
-  [/\boptimisez\s+/gi, "une optimisation possible : "],
-  [/\bpriorisez\s+/gi, "une priorisation possible : "],
+  // optimis*/optimiz* family → neutral observational vocabulary (audit 2026-06-16).
+  // The old "optimisez → une optimisation possible" rewrite RE-INTRODUCED the
+  // banned stem; replaced with a stem-free equivalent. Keep in sync with
+  // planner/report/amf-sanitize.js.
+  [/\boptimisez\s+/gi, "vous pourriez ajuster "],
+  [/\boptimisations\b/gi, "ajustements"],
+  [/\boptimisation\b/gi, "ajustement"],
+  [/\boptimiser\b/gi, "ajuster"],
+  [/\boptimisées\b/gi, "structurées"],
+  [/\boptimisée\b/gi, "structurée"],
+  [/\boptimisés\b/gi, "structurés"],
+  [/\boptimisé\b/gi, "structuré"],
+  [/\boptimise\b/gi, "ajuste"],
+  [/\boptimisons\b/gi, "ajustons"],
+  [/\boptimales\b/gi, "favorables"],
+  [/\boptimale\b/gi, "favorable"],
+  [/\boptimaux\b/gi, "favorables"],
+  [/\boptimal\b/gi, "favorable"],
+  [/\boptimizations\b/gi, "adjustments"],
+  [/\boptimization\b/gi, "adjustment"],
+  [/\boptimizing\b/gi, "adjusting"],
+  [/\boptimizes\b/gi, "structures"],
+  [/\boptimized\b/gi, "structured"],
+  [/\boptimize\b/gi, "adjust"],
+  [/\bpriorisez\s+/gi, "vous pourriez prioriser "],
 ];
 
 // Defensive disclaimer patterns that are safe even though they contain forbidden terms.

@@ -1,0 +1,334 @@
+{
+  "findings": [
+    {
+      "id": "data-pct-contradict-success_rate",
+      "reviewer": "data",
+      "severity": "blocker",
+      "category": "percentage_contradiction",
+      "section": null,
+      "message": "Concept \"success_rate\" surfaces with conflicting values (49% to 94%, gap=45pts) across 2 occurrences.",
+      "evidence": "94% - \"the success rate would move from...\" | 49% - \"vulnerable to stagflation, where the success rate falls to...\"",
+      "fix_kind": "recompute_from_canonical",
+      "fix_target": "success_rate"
+    },
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "canonical-quote-success_rate-overall_assessment",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-overall-assessment",
+      "message": "AI slot \"overall_assessment\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Your plan carries a success rate of **96%**, an A+ result that places it among the most\"  (canon=94.39999999999999, quoted=96)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "canonical-quote-success_rate-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…An A+ grade with a **96%** success rate reflects a plan that holds acro\"  (canon=94.39999999999999, quoted=96)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 38 for \"guaranteed_income_coverage\" but canonical is 34.3. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Guaranteed income coverage sits at **38%**, meaning public benefits and any pension wou\"  (canon=34.29969074289513, quoted=38)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 720000 for \"lifetime_tax_real\" but canonical is 612649. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Your lifetime tax of **720K$** corresponds to an average effective rate o\"  (canon=612649, quoted=720000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 486 for \"net_estate\" but canonical is 5010529.34. Slot must be regenerated to match canonical.",
+      "evidence": "\"… **5.2M$**, with tax at death of just **486$** — a strikingly light burden that reflects s\"  (canon=5010529.335491174, quoted=486)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-lifetime_gis-gis_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-gis-insight",
+      "message": "AI slot \"gis_insight\" quotes dollar value 10000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"… years of GIS eligibility and roughly **10K$** in lifetime GIS, which is modest and incide\"  (canon=0, quoted=10000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "gis_insight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 49 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…lation, where the success rate falls to 49% from the baseline **96%** — a steep drop — wit\"  (canon=94.39999999999999, quoted=49)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "scope-lifetime-tax-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (612649). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+      "evidence": "sec-tax=720000 (drift 18%)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "data-pct-contradict-success_rate",
+      "reviewer": "data",
+      "severity": "blocker",
+      "category": "percentage_contradiction",
+      "section": null,
+      "message": "Concept \"success_rate\" surfaces with conflicting values (49% to 94%, gap=45pts) across 2 occurrences.",
+      "evidence": "94% - \"the success rate would move from...\" | 49% - \"vulnerable to stagflation, where the success rate falls to...\"",
+      "fix_kind": "recompute_from_canonical",
+      "fix_target": "success_rate"
+    }
+  ],
+  "majors": [
+    {
+      "id": "canonical-quote-success_rate-overall_assessment",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-overall-assessment",
+      "message": "AI slot \"overall_assessment\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Your plan carries a success rate of **96%**, an A+ result that places it among the most\"  (canon=94.39999999999999, quoted=96)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "overall_assessment"
+    },
+    {
+      "id": "canonical-quote-success_rate-verdict",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-verdict",
+      "message": "AI slot \"verdict\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…An A+ grade with a **96%** success rate reflects a plan that holds acro\"  (canon=94.39999999999999, quoted=96)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "verdict"
+    },
+    {
+      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-income-insight",
+      "message": "AI slot \"income_insight\" quotes pct value 38 for \"guaranteed_income_coverage\" but canonical is 34.3. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Guaranteed income coverage sits at **38%**, meaning public benefits and any pension wou\"  (canon=34.29969074289513, quoted=38)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "income_insight"
+    },
+    {
+      "id": "canonical-quote-lifetime_tax_real-taxInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-taxInsight",
+      "message": "AI slot \"taxInsight\" quotes dollar value 720000 for \"lifetime_tax_real\" but canonical is 612649. Slot must be regenerated to match canonical.",
+      "evidence": "\"…Your lifetime tax of **720K$** corresponds to an average effective rate o\"  (canon=612649, quoted=720000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    },
+    {
+      "id": "canonical-quote-net_estate-estateInsight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-estateInsight",
+      "message": "AI slot \"estateInsight\" quotes dollar value 486 for \"net_estate\" but canonical is 5010529.34. Slot must be regenerated to match canonical.",
+      "evidence": "\"… **5.2M$**, with tax at death of just **486$** — a strikingly light burden that reflects s\"  (canon=5010529.335491174, quoted=486)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "estateInsight"
+    },
+    {
+      "id": "canonical-quote-lifetime_gis-gis_insight",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-gis-insight",
+      "message": "AI slot \"gis_insight\" quotes dollar value 10000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical.",
+      "evidence": "\"… years of GIS eligibility and roughly **10K$** in lifetime GIS, which is modest and incide\"  (canon=0, quoted=10000)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "gis_insight"
+    },
+    {
+      "id": "canonical-quote-success_rate-stress_interpretation",
+      "reviewer": "canonical",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-stress-interpretation",
+      "message": "AI slot \"stress_interpretation\" quotes pct value 49 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical.",
+      "evidence": "\"…lation, where the success rate falls to 49% from the baseline **96%** — a steep drop — wit\"  (canon=94.39999999999999, quoted=49)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "stress_interpretation"
+    },
+    {
+      "id": "scope-lifetime-tax-drift",
+      "reviewer": "scope-reconciliation",
+      "severity": "major",
+      "category": "canonical_quote_drift",
+      "section": "sec-tax",
+      "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (612649). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention.",
+      "evidence": "sec-tax=720000 (drift 18%)",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "taxInsight"
+    }
+  ],
+  "minors": [
+    {
+      "id": "compliance-prescriptive-tight",
+      "reviewer": "compliance",
+      "severity": "minor",
+      "category": "compliance_prescriptive",
+      "section": null,
+      "message": "Tightened prescriptive constructions detected (close-to-imperative language).",
+      "evidence": "\\bworth (validating|considering|reviewing)\\b×1 \"Worth reviewing\"",
+      "fix_kind": "rerun_ai_slot",
+      "fix_target": "tone-pass"
+    },
+    {
+      "id": "polish-debris-triple-em-dash",
+      "reviewer": "polish",
+      "severity": "minor",
+      "category": "polish",
+      "section": null,
+      "message": "Templating debris detected: triple em-dash.",
+      "evidence": "\"— — —\"",
+      "fix_kind": "manual",
+      "fix_target": "global"
+    }
+  ],
+  "fix_plan": {
+    "remove_section": [],
+    "rerun_ai_slot": [
+      {
+        "section": null,
+        "target": "tone-pass",
+        "severity": "minor",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      },
+      {
+        "section": "sec-overall-assessment",
+        "target": "overall_assessment",
+        "severity": "major",
+        "message": "AI slot \"overall_assessment\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-verdict",
+        "target": "verdict",
+        "severity": "major",
+        "message": "AI slot \"verdict\" quotes pct value 96 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-income-insight",
+        "target": "income_insight",
+        "severity": "major",
+        "message": "AI slot \"income_insight\" quotes pct value 38 for \"guaranteed_income_coverage\" but canonical is 34.3. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-taxInsight",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "AI slot \"taxInsight\" quotes dollar value 720000 for \"lifetime_tax_real\" but canonical is 612649. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-estateInsight",
+        "target": "estateInsight",
+        "severity": "major",
+        "message": "AI slot \"estateInsight\" quotes dollar value 486 for \"net_estate\" but canonical is 5010529.34. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-gis-insight",
+        "target": "gis_insight",
+        "severity": "major",
+        "message": "AI slot \"gis_insight\" quotes dollar value 10000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-stress-interpretation",
+        "target": "stress_interpretation",
+        "severity": "major",
+        "message": "AI slot \"stress_interpretation\" quotes pct value 49 for \"success_rate\" but canonical is 94.4. Slot must be regenerated to match canonical."
+      },
+      {
+        "section": "sec-tax",
+        "target": "taxInsight",
+        "severity": "major",
+        "message": "Lifetime tax mentioned across 1 section(s) drifts from canonical (612649). Renderer must read d._optTaxReal (real-dollar canonical), not nominal sums or AI invention."
+      }
+    ],
+    "recompute_from_canonical": [
+      {
+        "section": null,
+        "target": "success_rate",
+        "severity": "blocker",
+        "message": "Concept \"success_rate\" surfaces with conflicting values (49% to 94%, gap=45pts) across 2 occurrences."
+      }
+    ],
+    "block_data": [],
+    "replace_with_callout": [],
+    "localize_label": [],
+    "manual": [
+      {
+        "section": null,
+        "target": "global",
+        "severity": "minor",
+        "message": "Templating debris detected: triple em-dash."
+      }
+    ]
+  },
+  "can_ship": false,
+  "blocker_count": 1,
+  "major_count": 8,
+  "minor_count": 2
+}
