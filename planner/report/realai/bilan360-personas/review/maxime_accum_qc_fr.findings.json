@@ -67,17 +67,6 @@
       "fix_target": "verdict"
     },
     {
-      "id": "polish-repeated-phrase",
-      "reviewer": "polish",
-      "severity": "major",
-      "category": "polish",
-      "section": null,
-      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
-      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
-      "fix_kind": "manual",
-      "fix_target": "narrative"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -157,17 +146,6 @@
       "evidence": "verdict: \"pique (**0$**) et le scénario favorable (**0$**) convergent tous vers une épargne épuisée,\"",
       "fix_kind": "rerun_ai_slot",
       "fix_target": "verdict"
-    },
-    {
-      "id": "polish-repeated-phrase",
-      "reviewer": "polish",
-      "severity": "major",
-      "category": "polish",
-      "section": null,
-      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
-      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
-      "fix_kind": "manual",
-      "fix_target": "narrative"
     }
   ],
   "minors": [
@@ -231,12 +209,6 @@
     "manual": [
       {
         "section": null,
-        "target": "narrative",
-        "severity": "major",
-        "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
-      },
-      {
-        "section": null,
         "target": "global",
         "severity": "minor",
         "message": "Templating debris detected: triple em-dash."
@@ -245,6 +217,6 @@
   },
   "can_ship": false,
   "blocker_count": 3,
-  "major_count": 4,
+  "major_count": 3,
   "minor_count": 1
 }

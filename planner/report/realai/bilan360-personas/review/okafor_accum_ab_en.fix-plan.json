@@ -26,22 +26,10 @@
       "message": "AI slot \"income_insight\" quotes pct value 38 for \"guaranteed_income_coverage\" but canonical is 34.3. Slot must be regenerated to match canonical."
     },
     {
-      "section": "sec-taxInsight",
-      "target": "taxInsight",
-      "severity": "major",
-      "message": "AI slot \"taxInsight\" quotes dollar value 720000 for \"lifetime_tax_real\" but canonical is 612649. Slot must be regenerated to match canonical."
-    },
-    {
       "section": "sec-estateInsight",
       "target": "estateInsight",
       "severity": "major",
       "message": "AI slot \"estateInsight\" quotes dollar value 486 for \"net_estate\" but canonical is 5010529.34. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-gis-insight",
-      "target": "gis_insight",
-      "severity": "major",
-      "message": "AI slot \"gis_insight\" quotes dollar value 10000 for \"lifetime_gis\" but canonical is 0. Slot must be regenerated to match canonical."
     },
     {
       "section": "sec-stress-interpretation",

@@ -21,12 +21,6 @@
   "manual": [
     {
       "section": null,
-      "target": "narrative",
-      "severity": "major",
-      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
-    },
-    {
-      "section": null,
       "target": "global",
       "severity": "minor",
       "message": "Templating debris detected: triple em-dash."

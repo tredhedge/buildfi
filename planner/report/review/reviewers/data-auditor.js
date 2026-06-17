@@ -130,6 +130,34 @@ function audit(pack) {
     });
   }
 
+  // 2.5) Methodology equity-return must match the engine assumption.
+  // Audit 2026-06-17: the methodology read a stale param (p.eqRetS||0.07) and
+  // showed 7.0% while the engine actually ran 6.5% — an internal contradiction
+  // in a delivered report. Compare the methodology's stated equity return to the
+  // engine param so the two can never diverge again.
+  var _methSec = pack.sections.find(function(s) { return s.id === 'sec-methodology'; });
+  if (_methSec && pack.profile && pack.profile.params) {
+    var _methHtml = pack.html.slice(_methSec.offset, _methSec.offset + _methSec.bytes);
+    var _mEq = _methHtml.match(/(?:Equity return|Rendement actions)\s*([\d]+(?:[.,][\d]+)?)\s*%/i);
+    if (_mEq) {
+      var _shownEq = parseFloat(_mEq[1].replace(',', '.'));
+      var _engEq = Math.round((pack.profile.params.eqRet || pack.profile.params.eqRetS || 0.06) * 1000) / 10;
+      if (isFinite(_shownEq) && Math.abs(_shownEq - _engEq) > 0.15) {
+        findings.push({
+          id: 'data-methodology-return-drift',
+          reviewer: 'data',
+          severity: 'major',
+          category: 'methodology_drift',
+          section: 'sec-methodology',
+          message: 'Methodology equity return (' + _shownEq + '%) does not match the engine assumption (' + _engEq + '%).',
+          evidence: 'methodology=' + _shownEq + '% engine=' + _engEq + '%',
+          fix_kind: 'manual',
+          fix_target: 'sec-methodology'
+        });
+      }
+    }
+  }
+
   // 3) GIS rendered values must reconcile with canonical values
   if (hasGisSection) {
     var secHtml = _sectionHtml(pack, 'sec-gis');

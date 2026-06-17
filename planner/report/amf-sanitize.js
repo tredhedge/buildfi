@@ -108,8 +108,40 @@ function sanitizeAiObject(raw) {
   return { ai: out, softened: softened, dropped: dropped };
 }
 
+// EN currency convention (audit 2026-06-17). The prompt DATA block expresses
+// compact money with the FR suffix form ("200K$", "1.4M$") regardless of report
+// language, so EN narration that quotes DATA verbatim inherits the wrong
+// convention ("a 200K$ RRSP" instead of "a $200K RRSP"). The renderer's own
+// tables/charts are already lang-aware (fmtCompact reads window.__bfLang); this
+// normalizes the AI slots for EN reports only. FR is left untouched.
+function localizeCurrencyEN(text) {
+  if (typeof text !== 'string') return text;
+  return text
+    .replace(/\b(\d+(?:\.\d+)?)\s*K\$/g, '$$$1K')
+    .replace(/\b(\d+(?:\.\d+)?)\s*M\$/g, '$$$1M');
+}
+
+// Apply EN currency normalization to every string slot in an AI object when the
+// report language is English. Returns { ai, changed: [keys] }.
+function normalizeCurrency(raw, lang) {
+  if (lang !== 'en' || !raw || typeof raw !== 'object') return { ai: raw, changed: [] };
+  var out = {};
+  var changed = [];
+  Object.keys(raw).forEach(function (k) {
+    var v = raw[k];
+    if (typeof v === 'string') {
+      var nv = localizeCurrencyEN(v);
+      if (nv !== v) changed.push(k);
+      out[k] = nv;
+    } else { out[k] = v; }
+  });
+  return { ai: out, changed: changed };
+}
+
 module.exports = {
   FORBIDDEN_TERMS: FORBIDDEN_TERMS,
+  localizeCurrencyEN: localizeCurrencyEN,
+  normalizeCurrency: normalizeCurrency,
   SOFT_REWRITES: SOFT_REWRITES,
   SAFE_DISCLAIMER_PATTERNS: SAFE_DISCLAIMER_PATTERNS,
   softenAISlot: softenAISlot,

@@ -244,6 +244,10 @@ if (cmd === 'render') {
       // drop any slot that still trips FORBIDDEN_TERMS (renderer then falls back).
       const _san = amfSanitize.sanitizeAiObject(responseJson);
       data.ai = _san.ai;
+      // EN currency convention: normalize FR-suffix money (200K$) the EN agents
+      // copied from the DATA block into EN prefix form ($200K). FR untouched.
+      const _cur = amfSanitize.normalizeCurrency(data.ai, prof.lang);
+      data.ai = _cur.ai;
       if (_san.dropped.length || _san.softened.length) {
         console.log('  · ' + prof.id + '_' + prof.lang + ' — AMF sanitize: softened=[' +
           _san.softened.join(',') + '] dropped=[' + _san.dropped.join(',') + ']');

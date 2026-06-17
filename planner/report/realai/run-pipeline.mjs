@@ -187,7 +187,9 @@ SELECTED.forEach(prof => {
   if (_aiSan.dropped.length || _aiSan.softened.length) {
     console.log('[pipeline] ' + tag + ' AMF sanitize: softened=[' + _aiSan.softened.join(',') + '] dropped=[' + _aiSan.dropped.join(',') + ']');
   }
-  const aiResp = _aiSan.ai;
+  // EN currency convention: normalize FR-suffix money (200K$ -> $200K) in EN
+  // narration (the DATA block is suffix-form regardless of language).
+  const aiResp = amfSanitize.normalizeCurrency(_aiSan.ai, prof.lang).ai;
 
   // ─── Pass 1: DRAFT ────────────────────────────────────────────────
   const data1 = preparePayload(prof, aiResp);

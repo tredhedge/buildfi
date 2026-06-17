@@ -68,6 +68,17 @@ function _findRepeatedPhrases(text) {
   return hits;
 }
 
+// The glossary's term/definition blocks legitimately share parallel phrasing —
+// the P5/P25/P50/P75 entries each read "X % des simulations … terminent sous ce
+// niveau" by design. That is reference material, not narrative stutter, so it is
+// excluded from the repeated-phrase scan (audit 2026-06-16: was false-blocking
+// otherwise-clean reports, incl. a 100%-success plan, on a polish "major").
+function _stripGlossary(html) {
+  return String(html || '')
+    .replace(/<dt\b[^>]*class="[^"]*glossary-term[^"]*"[\s\S]*?<\/dt>/gi, ' ')
+    .replace(/<dd\b[^>]*class="[^"]*glossary-def[^"]*"[\s\S]*?<\/dd>/gi, ' ');
+}
+
 // Build labels / version strings that should never appear in visible output.
 var BUILD_LABELS = [
   '\\bv\\d+\\.\\d+\\.\\d+\\b',                 // v12.0.0
@@ -83,7 +94,9 @@ function audit(pack) {
   var visible = _visibleText(html);
 
   // ─── 1) Repeated phrase in close proximity (BLOCKER) ─────────────────
-  var repeats = _findRepeatedPhrases(visible);
+  // Scan with glossary term/def blocks removed — their parallel phrasing is
+  // reference material, not narrative stutter.
+  var repeats = _findRepeatedPhrases(_visibleText(_stripGlossary(html)));
   if (repeats.length > 0) {
     findings.push({
       id: 'polish-repeated-phrase',
@@ -97,6 +110,26 @@ function audit(pack) {
       }).join(' | '),
       fix_kind: 'manual',
       fix_target: 'narrative'
+    });
+  }
+
+  // ─── 1.5) Empty / nameless greeting (BLOCKER) ────────────────────────
+  // A delivered letter must never read "Dear ," / "Bonjour ," — that means
+  // the [[CLIENT_NAME]] name substitution produced an empty string. The
+  // placeholder-leak check misses this (the token was substituted, just to ""),
+  // so it is checked explicitly here. (Audit 2026-06-17: Okafor shipped "Dear ,".)
+  var _emptyGreet = visible.match(/\b(Dear|Hi|Hello|Bonjour|Chère|Cher|Chers)\s*[,.:]/i);
+  if (_emptyGreet) {
+    findings.push({
+      id: 'polish-empty-greeting',
+      reviewer: 'polish',
+      severity: 'blocker',
+      category: 'empty_greeting',
+      section: 'sec-letter',
+      message: 'Salutation has no name ("' + _emptyGreet[0].trim() + '") — name substitution failed.',
+      evidence: _emptyGreet[0].trim(),
+      fix_kind: 'manual',
+      fix_target: 'sec-letter'
     });
   }
 

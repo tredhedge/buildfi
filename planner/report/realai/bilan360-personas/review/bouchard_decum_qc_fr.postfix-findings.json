@@ -1,17 +1,6 @@
 {
   "findings": [
     {
-      "id": "polish-repeated-phrase",
-      "reviewer": "polish",
-      "severity": "major",
-      "category": "polish",
-      "section": null,
-      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
-      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
-      "fix_kind": "manual",
-      "fix_target": "narrative"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -24,19 +13,7 @@
     }
   ],
   "blockers": [],
-  "majors": [
-    {
-      "id": "polish-repeated-phrase",
-      "reviewer": "polish",
-      "severity": "major",
-      "category": "polish",
-      "section": null,
-      "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel.",
-      "evidence": "\"des simulations Monte Carlo terminent sous\" (gap=149 chars) | \"simulations Monte Carlo terminent sous ce\" (gap=149 chars)",
-      "fix_kind": "manual",
-      "fix_target": "narrative"
-    }
-  ],
+  "majors": [],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -60,20 +37,14 @@
     "manual": [
       {
         "section": null,
-        "target": "narrative",
-        "severity": "major",
-        "message": "Repeated phrase in close proximity (3 instances). Stylistic stutter breaks premium feel."
-      },
-      {
-        "section": null,
         "target": "global",
         "severity": "minor",
         "message": "Templating debris detected: triple em-dash."
       }
     ]
   },
-  "can_ship": false,
+  "can_ship": true,
   "blocker_count": 0,
-  "major_count": 1,
+  "major_count": 0,
   "minor_count": 1
 }

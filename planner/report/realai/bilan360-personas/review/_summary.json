@@ -4,15 +4,15 @@
     "sku": "bilan",
     "pre": {
       "blockers": 3,
-      "majors": 4,
+      "majors": 3,
       "minors": 1
     },
     "post": {
       "blockers": 0,
-      "majors": 1,
+      "majors": 0,
       "minors": 1
     },
-    "shipped": false,
+    "shipped": true,
     "pre_blocker_categories": [
       "impossible_gis"
     ],
@@ -24,7 +24,7 @@
     "sku": "bilan",
     "pre": {
       "blockers": 0,
-      "majors": 4,
+      "majors": 2,
       "minors": 2
     },
     "post": {
@@ -35,22 +35,22 @@
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 5
+    "ai_regen_slots": 3
   },
   {
     "profile": "bouchard_decum_qc_fr",
     "sku": "bilan",
     "pre": {
       "blockers": 0,
-      "majors": 3,
+      "majors": 2,
       "minors": 1
     },
     "post": {
       "blockers": 0,
-      "majors": 1,
+      "majors": 0,
       "minors": 1
     },
-    "shipped": false,
+    "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
     "ai_regen_slots": 2
@@ -60,7 +60,7 @@
     "sku": "bilan",
     "pre": {
       "blockers": 1,
-      "majors": 8,
+      "majors": 6,
       "minors": 2
     },
     "post": {
@@ -73,19 +73,19 @@
       "percentage_contradiction"
     ],
     "post_blocker_categories": [],
-    "ai_regen_slots": 8
+    "ai_regen_slots": 7
   },
   {
     "profile": "gagnon_transition_qc_fr",
     "sku": "bilan",
     "pre": {
       "blockers": 1,
-      "majors": 10,
+      "majors": 9,
       "minors": 1
     },
     "post": {
       "blockers": 1,
-      "majors": 2,
+      "majors": 1,
       "minors": 1
     },
     "shipped": false,

@@ -2820,8 +2820,8 @@
     switch (driver) {
       case 'ccpc_extraction':
         return fr
-          ? 'Au c\u0153ur de votre cas: l\'<strong>ordre d\'extraction de la SPCC</strong> \u2014 salaire, dividendes, vente d\'actifs. Avec ' + f$(corp) + '$ de b\u00e9n\u00e9fices non r\u00e9partis et une vente pr\u00e9vue \u00e0 ' + (p.bizSaleAge || retAge) + ' ans, la cadence d\'extraction d\u00e9termine l\'imp\u00f4t int\u00e9gr\u00e9 viager. Une cadence document\u00e9e ann\u00e9e par ann\u00e9e peut \u00e9conomiser 8\u201312\u202f% de l\'imp\u00f4t total.'
-          : 'At the heart of your case: the <strong>CCPC extraction order</strong> \u2014 salary, dividends, asset sale. With ' + f$(corp) + '$ in retained earnings and a sale planned at age ' + (p.bizSaleAge || retAge) + ', the extraction cadence drives lifetime integrated tax. A documented year-by-year cadence can save 8\u201312% of total tax.';
+          ? 'Au c\u0153ur de votre cas: l\'<strong>ordre d\'extraction de la SPCC</strong> \u2014 salaire, dividendes, vente d\'actifs. Avec ' + f$(corp) + ' de b\u00e9n\u00e9fices non r\u00e9partis et une vente pr\u00e9vue \u00e0 ' + (p.bizSaleAge || retAge) + ' ans, la cadence d\'extraction d\u00e9termine l\'imp\u00f4t int\u00e9gr\u00e9 viager. Une cadence document\u00e9e ann\u00e9e par ann\u00e9e peut \u00e9conomiser 8\u201312\u202f% de l\'imp\u00f4t total.'
+          : 'At the heart of your case: the <strong>CCPC extraction order</strong> \u2014 salary, dividends, asset sale. With ' + f$(corp) + ' in retained earnings and a sale planned at age ' + (p.bizSaleAge || retAge) + ', the extraction cadence drives lifetime integrated tax. A documented year-by-year cadence can save 8\u201312% of total tax.';
       case 'rental_cashflow':
         var propCount = (p.props || []).filter(function(pr) { return pr && pr.on; }).length;
         return fr
@@ -2851,8 +2851,8 @@
         // BEAT: debt-vs-invest tradeoff explicitly named (rembourser…investir,
         // après-impôt return, coût d'opportunité) — required by content-depth.
         return fr
-          ? 'L\'arbitrage central de votre cas: le <strong>remboursement structur\u00e9 de ' + f$(debtTotal) + '$ de dettes</strong>. Chaque dollar rembours\u00e9 \u00e9quivaut \u00e0 un rendement garanti au taux de la dette. La d\u00e9cision <strong>rembourser ou investir</strong> se r\u00e9sout en comparant le rendement apr\u00e8s imp\u00f4t de l\'\u00e9pargne au taux d\'int\u00e9r\u00eat de la dette : tant que les soldes \u00e0 taux \u00e9lev\u00e9 ne sont pas \u00e9limin\u00e9s, le co\u00fbt d\'opportunit\u00e9 d\'investir d\'abord d\u00e9passe le rendement attendu.'
-          : 'The central trade-off of your case: <strong>structured paydown of ' + f$(debtTotal) + '$ in debt</strong>. Each dollar repaid equals a guaranteed return at the debt rate. The <strong>pay debt or invest</strong> decision resolves by comparing the after-tax return on savings against the debt interest rate ; until high-rate balances are cleared, the opportunity cost of investing first exceeds the expected return.';
+          ? 'L\'arbitrage central de votre cas: le <strong>remboursement structur\u00e9 de ' + f$(debtTotal) + ' de dettes</strong>. Chaque dollar rembours\u00e9 \u00e9quivaut \u00e0 un rendement garanti au taux de la dette. La d\u00e9cision <strong>rembourser ou investir</strong> se r\u00e9sout en comparant le rendement apr\u00e8s imp\u00f4t de l\'\u00e9pargne au taux d\'int\u00e9r\u00eat de la dette : tant que les soldes \u00e0 taux \u00e9lev\u00e9 ne sont pas \u00e9limin\u00e9s, le co\u00fbt d\'opportunit\u00e9 d\'investir d\'abord d\u00e9passe le rendement attendu.'
+          : 'The central trade-off of your case: <strong>structured paydown of ' + f$(debtTotal) + ' in debt</strong>. Each dollar repaid equals a guaranteed return at the debt rate. The <strong>pay debt or invest</strong> decision resolves by comparing the after-tax return on savings against the debt interest rate ; until high-rate balances are cleared, the opportunity cost of investing first exceeds the expected return.';
       case 'gap_savings':
         // BEATS: contribution_room_addressed (droits de cotisation REER/CELI),
         // retirement_age_lever (retraite plus tard / report retraite). Both
@@ -3431,8 +3431,8 @@
       h += '<div class="cd inflation-bridge" style="margin:8px 0 12px;padding:8px 12px;background:#fafafa;border-left:3px solid ' + C.gold + ';font-size:10.5px;color:#444;line-height:1.55">' +
         '<strong>' + (fr ? 'Lecture des dollars' : 'Reading the dollars') + '\u202f:</strong> ' +
         (fr
-          ? 'Les d\u00e9penses cibles ci-dessous sont en <strong>dollars 2026</strong> (pouvoir d\'achat constant). En valeur nominale, la m\u00eame cible vaudrait ' + F.fmtCompact(Math.round(_spendAt75)) + '\u202f$ \u00e0 75 ans et ' + F.fmtCompact(Math.round(_spendAtDeath)) + '\u202f$ \u00e0 ' + (p.deathAge || 90) + ' ans \u00e0 ' + (_infRate * 100).toFixed(1) + '\u202f% d\'inflation. Les revenus index\u00e9s (RRQ + PSV + pension PD si applicable) suivent l\'inflation; les retraits de portefeuille sont calibr\u00e9s pour pr\u00e9server le pouvoir d\'achat.'
-          : 'Target spending below is stated in <strong>2026 dollars</strong> (constant purchasing power). In nominal terms, the same target would be ' + F.fmtCompact(Math.round(_spendAt75)) + '$ at age 75 and ' + F.fmtCompact(Math.round(_spendAtDeath)) + '$ at age ' + (p.deathAge || 90) + ' at ' + (_infRate * 100).toFixed(1) + '% inflation. Indexed income (CPP + OAS + DB pension if applicable) tracks inflation; portfolio withdrawals are calibrated to preserve purchasing power.') +
+          ? 'Les d\u00e9penses cibles ci-dessous sont en <strong>dollars 2026</strong> (pouvoir d\'achat constant). En valeur nominale, la m\u00eame cible vaudrait ' + F.fmtCompact(Math.round(_spendAt75)) + ' \u00e0 75 ans et ' + F.fmtCompact(Math.round(_spendAtDeath)) + ' \u00e0 ' + (p.deathAge || 90) + ' ans \u00e0 ' + (_infRate * 100).toFixed(1) + '\u202f% d\'inflation. Les revenus index\u00e9s (RRQ + PSV + pension PD si applicable) suivent l\'inflation; les retraits de portefeuille sont calibr\u00e9s pour pr\u00e9server le pouvoir d\'achat.'
+          : 'Target spending below is stated in <strong>2026 dollars</strong> (constant purchasing power). In nominal terms, the same target would be ' + F.fmtCompact(Math.round(_spendAt75)) + ' at age 75 and ' + F.fmtCompact(Math.round(_spendAtDeath)) + ' at age ' + (p.deathAge || 90) + ' at ' + (_infRate * 100).toFixed(1) + '% inflation. Indexed income (CPP + OAS + DB pension if applicable) tracks inflation; portfolio withdrawals are calibrated to preserve purchasing power.') +
         '</div>';
     }
 
@@ -6781,7 +6781,7 @@ h += secPageEnd();
       _gapItems.forEach(function(item) { h += '<li style="margin-bottom:4px">' + item + '</li>'; });
       h += '</ul></div>';
     }
-    h += '<div class="meth-p"><strong>' + (fr ? 'Hypoth\u00e8ses de march\u00e9' : 'Market assumptions') + ':</strong> ' + (fr ? 'Rendement actions ' : 'Equity return ') + F.pc(p.eqRetS || 0.07) + (fr ? ', obligations ' : ' / bonds ') + F.pc(p.bndRetS || 0.035) + '. ' + (p.fatT ? (fr ? 'queues \u00e9paisses (krachs rares plus probables qu\'une distribution normale)' : 'fat tails (rare crashes more likely than under a normal distribution)') : (fr ? 'distribution normale' : 'normal distribution')) + '. ' + (fr ? 'Corr\u00e9lation entre 5 classes d\'actifs (DMS 2024). ' : 'Cross-asset correlation across 5 classes (DMS 2024). ') + (p.stochInf ? (fr ? 'Inflation stochastique \u00b11.5%.' : 'Stochastic inflation \u00b11.5%.') : (fr ? 'Inflation fixe ' : 'Fixed inflation ') + F.pc(p.inf) + '.') + '</div>';
+    h += '<div class="meth-p"><strong>' + (fr ? 'Hypoth\u00e8ses de march\u00e9' : 'Market assumptions') + ':</strong> ' + (fr ? 'Rendement actions ' : 'Equity return ') + F.pc(p.eqRet || p.eqRetS || 0.065) + (fr ? ', obligations ' : ' / bonds ') + F.pc(p.bndRet || p.bndRetS || 0.03) + '. ' + (p.fatT ? (fr ? 'queues \u00e9paisses (krachs rares plus probables qu\'une distribution normale)' : 'fat tails (rare crashes more likely than under a normal distribution)') : (fr ? 'distribution normale' : 'normal distribution')) + '. ' + (fr ? 'Corr\u00e9lation entre 5 classes d\'actifs (DMS 2024). ' : 'Cross-asset correlation across 5 classes (DMS 2024). ') + (p.stochInf ? (fr ? 'Inflation stochastique \u00b11.5%.' : 'Stochastic inflation \u00b11.5%.') : (fr ? 'Inflation fixe ' : 'Fixed inflation ') + F.pc(p.inf) + '.') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Mortalit\u00e9' : 'Mortality') + ':</strong> ' + (fr ? 'Tables CPM-2023 (ICA). Horizon d\u00e9terministe: ' : 'CPM-2023 tables (CIA). Deterministic horizon: ') + (p.deathAge || 90) + (fr ? ' ans. Esp\u00e9rance de vie CPM: H=85.5, F=87.4 (\u00e0 65 ans).' : ' yrs. CPM life expectancy: M=85.5, F=87.4 (at 65).') + '</div>';
     h += '<div class="meth-p"><strong>' + (fr ? 'Fiscalit\u00e9' : 'Taxation') + ':</strong> ' + (fr ? 'Bar\u00e8mes f\u00e9d\u00e9raux et provinciaux 2026 index\u00e9s. Cr\u00e9dits pour revenu de pension (2\u00a0000$), cr\u00e9dit en raison de l\'\u00e2ge (8\u00a0790$), bonification PSV 75+ (10%). Inclusion des gains en capital: ' : 'Federal and provincial 2026 brackets indexed. Pension credit ($2,000), age credit ($8,790), OAS 75+ bonus (10%). Capital gains inclusion: ') + (p.cgIncLo || 0.5) * 100 + '% / ' + ((p.cgIncHi || 0.6667) * 100).toFixed(0) + '%.</div>';
 
@@ -6898,8 +6898,14 @@ h += secPageEnd();
     // from the local client record before rendering. No-op when the slots carry
     // no placeholder (legacy responses) or when no name is on file.
     if (data && data.ai && data.client) {
-      var _cn = (data.client.fn || '').toString();
-      var _sn = (data.client.sfn || '').toString();
+      // Read the same name fields buildReportPayload uses (firstName /
+      // spouseFirstName, with a full-name fallback). Audit 2026-06-17: this ran
+      // BEFORE buildReportPayload and read only `.fn`/`.sfn`, which the raw
+      // client record doesn't carry — so [[CLIENT_NAME]] rehydrated to "" and
+      // the letter body greeted "Dear ," (Okafor). The header was unaffected
+      // because it reads the post-payload d.fn.
+      var _cn = (data.client.fn || data.client.firstName || (data.client.name || '').split(/\s+/)[0] || '').toString();
+      var _sn = (data.client.sfn || data.client.spouseFirstName || (data.client.spouseName || '').split(/\s+/)[0] || '').toString();
       var _rehydrateNames = function(v) {
         if (typeof v === 'string') {
           return v.replace(/\[\[CLIENT_NAME\]\]/g, _cn).replace(/\[\[SPOUSE_NAME\]\]/g, _sn);

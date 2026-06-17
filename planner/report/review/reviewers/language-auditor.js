@@ -241,6 +241,48 @@ function audit(pack) {
     });
   }
 
+  // ─── Currency convention (audit 2026-06-17) ──────────────────────────
+  // EN reports must use the prefix form ($200K); the FR suffix form (200K$ /
+  // 1.4M$) is a convention leak — it reached EN reports because the prompt DATA
+  // block is suffix-form regardless of language and the narration quoted it, and
+  // because some chart labels were hardcoded. Flag any visible suffix money in
+  // an EN report. (FR suffix is correct, so FR is not checked here.)
+  if (!fr) {
+    var _curHits = visible.match(/\b\d+(?:\.\d+)?[KM]\$/g) || [];
+    if (_curHits.length > 0) {
+      var _uniq = Array.from(new Set(_curHits));
+      findings.push({
+        id: 'lang-en-currency-suffix',
+        reviewer: 'language',
+        severity: 'major',
+        category: 'currency_convention',
+        section: null,
+        message: 'EN report uses FR suffix currency (' + _curHits.length + 'x, e.g. "' + _uniq[0] + '"). EN convention is the $ prefix.',
+        evidence: _uniq.slice(0, 6).join(', '),
+        fix_kind: 'manual',
+        fix_target: 'currency'
+      });
+    }
+  }
+
+  // Double currency symbol — any language. "$219K$" / "219K$ $": a formatter
+  // that already includes the symbol followed by an appended literal "$". Guards
+  // against an f$(x) + '$' regression in either FR or EN. (Audit 2026-06-17.)
+  var _dbl = visible.match(/\$\d+(?:\.\d+)?[KM]\$|[KM]\$\s?\$/g) || [];
+  if (_dbl.length > 0) {
+    findings.push({
+      id: 'lang-double-currency',
+      reviewer: 'language',
+      severity: 'major',
+      category: 'currency_convention',
+      section: null,
+      message: 'Double currency symbol detected (' + _dbl.length + 'x, e.g. "' + _dbl[0].trim() + '") — a formatter already includes "$" and a literal "$" was appended.',
+      evidence: Array.from(new Set(_dbl)).slice(0, 5).join(', '),
+      fix_kind: 'manual',
+      fix_target: 'currency'
+    });
+  }
+
   return findings;
 }
 

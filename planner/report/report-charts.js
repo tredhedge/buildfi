@@ -529,7 +529,7 @@
       offset += dashLen;
     });
     // Center text — total
-    var totalLbl = total >= 1e6 ? Math.round(total / 1e5) / 10 + 'M$' : Math.round(total / 1e3) + 'K$';
+    var totalLbl = f$(total); // lang-aware ($219K in EN, 219K$ in FR) — audit 2026-06-17
     svg += '<text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" font-size="22" font-weight="700" fill="#252d39" font-family="JetBrains Mono,monospace">' + totalLbl + '</text>';
     if (opts.subLabel) {
       svg += '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="10" fill="#888" font-family="Inter,sans-serif">' + opts.subLabel + '</text>';
@@ -624,7 +624,7 @@
       startAngle = endAngle;
     });
     // Center total
-    var totalLbl = total >= 1e6 ? Math.round(total / 1e5) / 10 + 'M$' : Math.round(total / 1e3) + 'K$';
+    var totalLbl = f$(total); // lang-aware ($219K in EN, 219K$ in FR) — audit 2026-06-17
     svg += '<text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" font-size="20" font-weight="700" fill="#252d39" font-family="JetBrains Mono,monospace">' + totalLbl + '</text>';
     if (opts.subLabel) {
       svg += '<text x="' + cx + '" y="' + (cy + 14) + '" text-anchor="middle" font-size="9" fill="#888" font-family="Inter,sans-serif">' + opts.subLabel + '</text>';
