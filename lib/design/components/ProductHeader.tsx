@@ -4,7 +4,7 @@
  *
  * For: marketing landing, debt tool, decumulation tool, expert dashboard,
  * wizard, acheter-planner, secondary product surfaces (merci, feedback,
- * not-found, error, acces, simulateur, bilan-annuel).
+ * not-found, error, acces, simulateur).
  *
  * Replaces the inline <Nav> in app/page.tsx and the ad-hoc inline headers
  * across the tool pages. Theme-aware via getProductPalette().

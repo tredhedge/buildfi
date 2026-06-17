@@ -120,10 +120,12 @@ Never remove, simplify, or downgrade validated behavior without explicit written
   landing (Bilan 360 $29.99 / Planner $69.99 / report-pack $19.99), the legal pages
   (`conditions`/`confidentialite`, FR HTML + EN `T` tables), and the `/expert` cross-sell
   CTA (now → the Bilan 360 wizard, was "Diagnostic $14.50").
-- `app/outils/bilan-annuel/` **public route retired** (product dropped). Dead code still to
-  sweep: `lib/bilan-annuel.ts`, `app/api/bilan-annuel`, `app/api/cron/ba-reminder` (NOT
-  scheduled in `vercel.json`), `tests/bilan-annuel.test.ts`, and the `bilan-annuel`
-  reference in `lib/design/components/ProductHeader.tsx`.
+- `app/outils/bilan-annuel/` **public route retired** + `lib/bilan-annuel.ts` and
+  `tests/bilan-annuel.test.ts` deleted (the lib was imported only by its test). `ProductHeader`
+  comment tidied. **Still coupled to the parked `/simulateur`** (it `fetch`es `/api/bilan-annuel`),
+  so the remaining endpoints are deferred until /simulateur's fate is decided:
+  `app/api/bilan-annuel`, `app/api/cron/ba-reminder` + `app/api/ba-reminder/subscribe`
+  (cron NOT scheduled in `vercel.json`). Retire them together with the /simulateur call.
 - Remaining stale product copy ("Laboratoire"/"Lab") lives only in the **parked**
   `app/simulateur/*` — leave until /simulateur is revived or dropped.
 - Internal-only legacy kept on purpose: `normalizeTier()` aliases (checkout/webhook) and
