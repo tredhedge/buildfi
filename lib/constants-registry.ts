@@ -87,7 +87,8 @@ export const CPP_QPP = {
   earlyReductionPerMonth: 0.006,
   deferralBonusPerMonth: 0.007,
   minAdjFactor: 0.64,
-  maxAdjFactor: 1.42,
+  maxAdjFactor: 1.588, // QC/QPP: deferral to age 72 (0.7%/mo × 84mo). Province-aware 2026-06-18.
+  cppMaxAdjFactor: 1.42, // Rest-of-Canada/CPP: deferral to age 70 (0.7%/mo × 60mo).
   maxContribYears: 40,
   survivorBenefitCap: 784,
   department: "ESDC (CPP) + RRQ (QPP)",

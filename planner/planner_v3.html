@@ -2330,7 +2330,8 @@ var C = {
   QPP_EARLY_REDUCTION_PER_MONTH: 0.006,
   QPP_LATE_BONUS_PER_MONTH: 0.007,
   QPP_ADJ_FLOOR: 0.64,
-  QPP_ADJ_CAP: 1.42,    // 2026-06-17: cap at age 70 (CPP/QPP max deferral is 70: 0.7%/mo × 60mo = 42%). Reverts audit 2.3's incorrect 1.588/defer-to-72; matches canonical lib/engine + Canadian rules.
+  QPP_ADJ_CAP: 1.588,   // QC/QPP cap: deferral to age 72 (0.7%/mo × 84mo = 58.8%). Since Jan 2024 QPP allows start to 72. Province-aware (2026-06-18): used for prov==='QC'.
+  CPP_ADJ_CAP: 1.42,    // Rest-of-Canada/CPP cap: deferral to age 70 (0.7%/mo × 60mo = 42%). Used for non-QC provinces (CPP max deferral is 70).
   QPP_SURVIVOR_CAP_MONTHLY: 784,
   QPP_SURVIVOR_FRACTION: 0.6,
   GIS_MAX_SINGLE: 1108.74,  // 2026 (audit 2.13)
@@ -2914,13 +2915,16 @@ function calcCorpTax(activeIncome, passiveIncome, prov, yr, infR) {
     effectiveRate: totalInc > 0 ? (activeTax + passiveTax) / totalInc : 0
   };
 }
-function calcQPP(startAge, avgEarn, yrsContrib) {
+function calcQPP(startAge, avgEarn, yrsContrib, prov) {
   var maxM = QPP_MAX_MONTHLY, mga = QPP_MGA;
   var ratio = Math.min(1, avgEarn / mga) * Math.min(1, yrsContrib / C.QPP_MAX_CONTRIB_YEARS);
   var adj = 1;
   if (startAge < 65) adj = 1 - C.QPP_EARLY_REDUCTION_PER_MONTH * (65 - startAge) * 12;
   else if (startAge > 65) adj = 1 + C.QPP_LATE_BONUS_PER_MONTH * (startAge - 65) * 12;
-  adj = Math.max(C.QPP_ADJ_FLOOR, Math.min(C.QPP_ADJ_CAP, adj));
+  // Province-aware deferral cap (2026-06-18): QC/QPP allows start to 72 (C.QPP_ADJ_CAP=1.588);
+  // rest-of-Canada/CPP caps at 70 (C.CPP_ADJ_CAP=1.42). Default QC when prov omitted.
+  var _cap = (prov && prov !== 'QC') ? (C.CPP_ADJ_CAP != null ? C.CPP_ADJ_CAP : 1.42) : C.QPP_ADJ_CAP;
+  adj = Math.max(C.QPP_ADJ_FLOOR, Math.min(_cap, adj));
   var base = maxM * ratio * adj;
   // QPP2/CPP2: enhancement on earnings between YMPE and YAMPE
   var rrq2 = avgEarn > mga ? QPP2_MAX_MONTHLY * Math.min(1, (Math.min(avgEarn, QPP_YAMPE) - mga) / (QPP_YAMPE - mga)) * Math.min(1, yrsContrib / C.QPP_MAX_CONTRIB_YEARS) * adj : 0;
@@ -3053,7 +3057,7 @@ function optimizeDecum(p) {
     }
 
     // Government income
-    var qpp = age >= p.qppAge ? calcQPP(p.qppAge, p.avgE || 0, p.qppYrs || 0) * 12 * infM : 0;
+    var qpp = age >= p.qppAge ? calcQPP(p.qppAge, p.avgE || 0, p.qppYrs || 0, p.prov) * 12 * infM : 0;
     var oas = age >= p.oasAge ? calcOAS(p.oasAge, 0, y, inf, age) * 12 : 0; // estimate without clawback first
     var penMonth = 0;
     if (p.penType === "db" && retired) {
@@ -3367,7 +3371,7 @@ function optimizeDecum(p) {
       var _cAge2 = (p.cAge || p.age) + y;
       var _cRetired = _cAge2 >= (p.cRetAge || p.retAge);
       cTaxInc += cRrifMin;
-      if (_cRetired && _cAge2 >= (p.cQppAge || 65)) cTaxInc += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
+      if (_cRetired && _cAge2 >= (p.cQppAge || 65)) cTaxInc += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 * infM;
       if (p.cPenType === "db" && _cRetired) cTaxInc += (p.cPenM || 0) * 12 * (p.cPenIdx ? infM : 1);
       if (!_cRetired) cTaxInc += (p.cSal || 0) * infM;
       if (_cRetired && _cAge2 >= (p.cOasAge || 65)) cTaxInc += calcOAS(p.cOasAge || 65, cTaxInc, y, inf, _cAge2) * 12;
@@ -3878,6 +3882,32 @@ function runMC(pInput, N, _progressCb) {
   p.noP = Math.max(0, Math.min(p.noP != null ? p.noP : C.noP, 1.5));
   // Health multiplier: 0-10%
   p.healthMul = Math.max(0, Math.min(p.healthMul || 0, 0.10));
+  // === SSOT SELF-CONTAINMENT: QPP career inputs (Phase 1, user decision 2026-06-18) ===
+  // runMC historically ran only behind the front-end, which ALWAYS pre-populates
+  // avgE (career-average pensionable earnings) and qppYrs from the user's salary/
+  // work history. As the canonical server engine, runMC must not silently NaN on a
+  // raw profile that omits them: calcQPP(qppAge, undefined, undefined) returns NaN,
+  // which then cascades qpp -> govInc -> withdrawal `need` -> balances -> tax AND
+  // defeats ruin detection downstream (NaN <= 0 is false, so `ruined` never flips),
+  // producing a SPURIOUS 100% success with rMedF=0. Default policy: derive avgE from
+  // salary (mirrors quiz-translator-360's `impliedAvgE` terminal fallback `: sal`);
+  // qppYrs ~ years since 18, capped at the QPP contributory max (matches the
+  // translators' clamp(age-18, 0, 40)). Honours any explicit value the caller set.
+  // avgE: prefer salary; for sal=0 (already-retired raw profiles) fall back to explicit
+  // retirement income / spending so QPP isn't silently zeroed (the translator normally
+  // pre-fills avgE via preRetIncome/impliedAvgE; this guards raw/lab/test callers).
+  if (p.avgE == null || isNaN(p.avgE)) p.avgE = p.sal > 0 ? p.sal : (p.retIncome > 0 ? p.retIncome : (p.retSpM > 0 ? p.retSpM * 12 : 0));
+  if (p.qppYrs == null || isNaN(p.qppYrs)) p.qppYrs = Math.min(40, Math.max(0, (p.age || 30) - 18));
+  // Province-aware QPP start-age clamp: QC/RRQ defers to 72 (since Jan 2024); CPP elsewhere
+  // caps at 70. Keeps the canonical server engine (generated from here) from silently
+  // un-clamping ROC to 72, while letting QC capture the 70→72 deferral.
+  var _qppMaxAge = (p.prov && p.prov !== 'QC') ? 70 : 72;
+  p.qppAge = Math.max(60, Math.min(_qppMaxAge, p.qppAge || 60));
+  if (p.cOn) {
+    if (p.cAvgE == null || isNaN(p.cAvgE)) p.cAvgE = p.cSal > 0 ? p.cSal : (p.cRetSpM > 0 ? p.cRetSpM * 12 : 0);
+    if (p.cQppYrs == null || isNaN(p.cQppYrs)) p.cQppYrs = Math.min(40, Math.max(0, (p.cAge || p.age || 30) - 18));
+    if (p.cQppAge != null) p.cQppAge = Math.max(60, Math.min(_qppMaxAge, p.cQppAge));
+  }
   // === END SANITIZATION ===
   var maxYrs = Math.floor(p.deathAge - p.age);
   if (maxYrs <= 0) return null;
@@ -4064,7 +4094,7 @@ function runMC(pInput, N, _progressCb) {
       }
       var infShock = sInfOvr !== null ? sInfOvr : p.stochInf ? p.inf + C.STOCH_INF_VOL * zz[_maOn ? 5 : 2] : p.inf;
       infShock = Math.max(5e-3, Math.min(0.08, infShock));
-      cumInf *= 1 + infShock;
+      if (y > 0) cumInf *= 1 + infShock; // Bug #12 reverse-port (2026-06-18): y=0 is the current year, no inflation accrued yet (was unconditional here; lib/engine already guarded)
       var infM = cumInf;
       var _infEff = y > 0 ? Math.pow(cumInf, 1 / y) - 1 : infShock;
       // Stochastic RE: correlated with equity (rho=0.35), lower vol (~10% residential)
@@ -4424,7 +4454,7 @@ function runMC(pInput, N, _progressCb) {
         if (retired) { pen2Month = (age >= 72 ? getRRIFMin(age, dc2) : dc2 * 0.04) / 12; dc2 = Math.max(0, dc2 - pen2Month * 12); }
       }
       penMonth += pen2Month;
-      var qpp = age >= p.qppAge ? calcQPP(p.qppAge, p.avgE, p.qppYrs) * 12 * infM : 0;
+      var qpp = age >= p.qppAge ? calcQPP(p.qppAge, p.avgE, p.qppYrs, p.prov) * 12 * infM : 0;
       var retIncome = retired ? qpp + penMonth * 12 + ptInc + (retired && rr > 0 ? getRRIFMin(age, rr) : 0) : p.sal * infM;
       // OAS pass 1: estimate without withdrawal income (recalculated after withdrawals)
       var oas = age >= p.oasAge ? calcOAS(p.oasAge, retIncome, y, p.inf, age) * 12 : 0;
@@ -4452,9 +4482,9 @@ function runMC(pInput, N, _progressCb) {
       var cInc = 0;
       var cQppY = 0, cOasY = 0, cPenY = 0, cGisY = 0;
       if (cAlive) {
-        if (cRetired && cAge2 >= (p.cQppAge || 65)) { cQppY = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM; cInc += cQppY; }
+        if (cRetired && cAge2 >= (p.cQppAge || 65)) { cQppY = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 * infM; cInc += cQppY; }
         if (cRetired && cAge2 >= (p.cOasAge || 65)) { var _cPenEst = (p.cPenType === 'db' && cRetired ? (p.cPenM || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPenType) >= 0 && cRetired ? cdc * 0.04 : 0) + (p.cPen2Type === 'db' ? (p.cPen2M || 0) * 12 : 0) + (['cd','rpdb','rrs','rver'].indexOf(p.cPen2Type) >= 0 ? cdc2 * 0.04 : 0); var _cOasInc = cInc + (cEstRrifMin||0) + _cPenEst; cOasY = calcOAS(p.cOasAge || 65, _cOasInc, y, p.inf, cAge2) * 12; cInc += cOasY; }
-        if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
+        if (cAge2 >= 65) { var _cGisInc = ((p.cAvgE || 0) > 0 ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 : 0) + (cEstRrifMin || 0) + (cRetired && p.cPenType === 'db' ? (p.cPenM || 0) * 12 : 0); cGisY = calcGIS(cAge2, _cGisInc, y, p.inf, true) * 12; cInc += cGisY; }
         if (p.cPenType === "db" && cRetired) { cPenY = (p.cPenM || 0) * 12; cInc += cPenY; }
         if (["cd", "rpdb", "rrs", "rver"].indexOf(p.cPenType) >= 0 && cRetired) { var _cdcY = cdc * 0.04; cPenY += _cdcY; cInc += _cdcY; }
         // Secondary spouse pension — income pass (pre-retirement handled below)
@@ -4494,7 +4524,7 @@ function runMC(pInput, N, _progressCb) {
         // audit 2.9: combined-maximum test — the survivor's OWN QPP plus the
         // survivor benefit cannot exceed the individual monthly maximum.
         var _survOwnMo = qpp > 0 ? qpp / 12 / Math.max(1e-9, infM) : 0;
-        var _survRawMo = Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * C.QPP_SURVIVOR_FRACTION, C.QPP_SURVIVOR_CAP_MONTHLY);
+        var _survRawMo = Math.min(calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * C.QPP_SURVIVOR_FRACTION, C.QPP_SURVIVOR_CAP_MONTHLY);
         var _survMo = Math.max(0, Math.min(_survRawMo, C.QPP_MAX_MONTHLY - _survOwnMo));
         cInc += _survMo * 12 * infM;
       }
@@ -4517,7 +4547,7 @@ function runMC(pInput, N, _progressCb) {
       var qppShareAdj = 0;
       if (p.qppShare && p.cOn && cAlive && age >= 65 && cAge2 >= 65) {
         var myQpp = qpp;
-        var spQpp = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
+        var spQpp = calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 * infM;
         var avgQpp = (myQpp + spQpp) / 2;
         qppShareAdj = (myQpp - avgQpp) * 0.15; // Tax benefit from equalization
       }
@@ -5129,7 +5159,7 @@ function runMC(pInput, N, _progressCb) {
           // with cost-basis tracking in the exit block above (_pepmTaxableYr).
           _tiOther = (ptInc || 0) + (liraWith || 0) + (_ippWith || 0) + (_pepmTaxableYr || 0);
           if (p.cOn && cAlive) {
-            var cQppInc = cAge2 >= (p.cQppAge || 65) ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM : 0;
+            var cQppInc = cAge2 >= (p.cQppAge || 65) ? calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 * infM : 0;
             var cPenInc = 0;
             // Primary spouse pension (monthly → annual, DB vs DC/RPDB/RRS/RVER)
             if (p.cPenType === "db" && cRetired) cPenInc = (p.cPenM || 0) * 12 * ((+p.cPenIdx || 0) ? infM : 1);
@@ -5286,7 +5316,7 @@ function runMC(pInput, N, _progressCb) {
         var _simTaxInc2 = 0;
         if (p.cOn && cAlive) {
           _simTaxInc2 = retired ? (cEstRrifMin || 0) + (cLiraWith || 0) : (p.cSal || 0) * infM;
-          if (cRetired && cAge2 >= (p.cQppAge || 65)) _simTaxInc2 += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0) * 12 * infM;
+          if (cRetired && cAge2 >= (p.cQppAge || 65)) _simTaxInc2 += calcQPP(p.cQppAge || 65, p.cAvgE || 0, p.cQppYrs || 0, p.prov) * 12 * infM;
           if (cRetired && cAge2 >= (p.cOasAge || 65)) _simTaxInc2 += calcOAS(p.cOasAge || 65, _simTaxInc2, y, p.inf, cAge2) * 12;
           if (p.cPenType === "db" && cRetired) _simTaxInc2 += (p.cPenM || 0) * 12;
         }
@@ -5520,7 +5550,7 @@ function runMC(pInput, N, _progressCb) {
       var _mrWdCapped = Math.min(_mrWdNeed, _mrAvailBal);
       mrTaxInc = (mrp.qpp||0) + (mrp.oas||0) + (mrp.pen||0) + _mrWdCapped;
       var mrCTaxInc = 0;
-      if (p.cOn) { var mrCA = (p.cAge||p.age) + mri; if (mrCA >= (p.cQppAge||65)) mrCTaxInc += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0)*12*mrInf; if (mrCA >= (p.cOasAge||65)) mrCTaxInc += calcOAS(p.cOasAge||65,mrCTaxInc,mri,p.inf,mrCA)*12; if (p.cPenType==="db") mrCTaxInc += (p.cPenM||0)*12; }
+      if (p.cOn) { var mrCA = (p.cAge||p.age) + mri; if (mrCA >= (p.cQppAge||65)) mrCTaxInc += calcQPP(p.cQppAge||65, p.cAvgE||0, p.cQppYrs||0, p.prov)*12*mrInf; if (mrCA >= (p.cOasAge||65)) mrCTaxInc += calcOAS(p.cOasAge||65,mrCTaxInc,mri,p.inf,mrCA)*12; if (p.cPenType==="db") mrCTaxInc += (p.cPenM||0)*12; }
       var mrRetTxCalc = calcTax(mrTaxInc, mri, p.prov || "QC", p.inf, mrRetired);
       var _mrCRetired = p.cOn && ((p.cAge||p.age) + mri >= (p.cRetAge||p.retAge));
       var mrCRetTx = mrCTaxInc > 0 ? calcTax(mrCTaxInc, mri, p.prov || "QC", p.inf, _mrCRetired) : {total:0};
@@ -5817,7 +5847,7 @@ function runMC(pInput, N, _progressCb) {
           var sp = pp.retSpM * 12 * im * sm;
           var _gE3 = (pp.goals && pp.goals.length > 1) ? calcGoalSpending(pp.goals, a2, im) : 0;
           if (_gE3 > 0) sp += _gE3;
-          var q2 = a2 >= pp.qppAge ? calcQPP(pp.qppAge, pp.avgE, pp.qppYrs) * 12 : 0;
+          var q2 = a2 >= pp.qppAge ? calcQPP(pp.qppAge, pp.avgE, pp.qppYrs, pp.prov) * 12 : 0;
           var o2 = a2 >= pp.oasAge ? calcOAS(pp.oasAge, sp) * 12 : 0;
           var nd = Math.max(0, sp - q2 - o2);
           var fn = Math.min(n2, nd);

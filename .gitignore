@@ -79,3 +79,7 @@ planner/report/realai/bilan360-personas/review/*.fail.json
 # ship-loop generated artifacts (regenerable via `npm run shiploop:dump`; large MC payloads)
 planner/report/realai/corpus*/payload/
 planner/report/realai/corpus*/out/
+
+# Engine SSOT generated/backup artifacts
+lib/engine/index.candidate.js
+lib/engine/*.pre-ssot-promote

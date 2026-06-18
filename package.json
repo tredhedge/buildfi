@@ -26,7 +26,7 @@
     "report:release:gate": "node planner/report/hardening/sprint8/release-gate.js",
     "report:release:gate:full": "node planner/report/hardening/sprint8/release-gate.js --full",
     "report:excel:test": "node planner/report/excel-roundtrip-test.js",
-    "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npx tsx tests/report-shared.test.ts && npx tsx tests/fiscal-constants-sync.test.ts && npx tsx tests/simulate-contract.test.ts && npx tsx tests/wizard-contract.test.ts && node .audit-harness/run-suite.js && npx tsx tests/engine-parity.test.ts && npm run lint:amf && npm run build",
+    "qa:full": "node tests/debt-tool-tests.js && tsx tests/constants-drift.test.js && npx tsx tests/report-shared.test.ts && npx tsx tests/fiscal-constants-sync.test.ts && npx tsx tests/simulate-contract.test.ts && npx tsx tests/wizard-contract.test.ts && node .audit-harness/run-suite.js && npx tsx tests/engine-parity.test.ts && npx tsx tests/engine-ssot-sync.test.ts && npx tsx tests/constants-c-shim-drift.test.ts && npm run lint:amf && npm run build",
     "test:constants": "tsx tests/constants-drift.test.js",
     "test:simulate-contract": "tsx tests/simulate-contract.test.ts",
     "test:wizard-contract": "tsx tests/wizard-contract.test.ts",
@@ -35,7 +35,10 @@
     "lint:amf": "node scripts/lint-amf.js",
     "shiploop:gen": "node planner/report/realai/corpus/gen-corpus.mjs",
     "shiploop:dump": "npx tsx planner/report/realai/ship-loop.ts dump --base=planner/report/realai/corpus-30",
-    "shiploop:gate": "npx tsx planner/report/realai/ship-loop.ts render --base=planner/report/realai/corpus-30 && npx tsx planner/report/realai/ship-loop.ts report --base=planner/report/realai/corpus-30 --min=99"
+    "shiploop:gate": "npx tsx planner/report/realai/ship-loop.ts render --base=planner/report/realai/corpus-30 && npx tsx planner/report/realai/ship-loop.ts report --base=planner/report/realai/corpus-30 --min=99",
+    "gen-engine": "node scripts/gen-engine-from-planner.mjs",
+    "promote-engine": "node scripts/gen-engine-from-planner.mjs && node -e \"require('fs').copyFileSync('lib/engine/index.candidate.js','lib/engine/index.js')\"",
+    "test:engine-ssot": "npx tsx tests/engine-ssot-sync.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

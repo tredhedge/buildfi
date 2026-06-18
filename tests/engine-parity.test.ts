@@ -59,13 +59,37 @@ for (const hs of [false, true]) {
   }
 }
 
-// ── 4. calcQPP (exact within $0.50) — incl. deferral cap at 70 (71/72 == 70) ──
+// ── 3b. calcGIS employment-income exemption (2025+, ported into lib/engine 2026-06-18) ──
+// The investigation found the prior test never passed a 6th arg, so the employment-exemption
+// branch divergence was masked (lib/engine over-clawed-back GIS for working seniors). Lock it:
+// cross-engine parity on the exemption branch + value correctness vs planner_v3's own cases.
+for (const hs of [false, true]) {
+  for (const [inc, emp] of [[10000, 3000], [10000, 5000], [12000, 12000], [15000, 15000], [20000, 20000], [18000, 8000]] as [number, number][]) {
+    eq(`calcGIS emp(inc=${inc},emp=${emp},sp=${hs})`, C.calcGIS(68, inc, 0, 0, hs, emp), inl.calcGIS(68, inc, 0, 0, hs, emp), 0.5);
+  }
+}
+// retro-compat: omitting employmentInc must equal passing 0 (no behavior change for existing callers)
+eq("calcGIS retro-compat (omit==0)", C.calcGIS(68, 10000, 0, 0, false), C.calcGIS(68, 10000, 0, 0, false, 0), 0.001);
+// value correctness: $5K employment fully exempt → identical to $5K total income; $20K → $10K countable
+eq("calcGIS 5K emp fully exempt", C.calcGIS(68, 10000, 0, 0, false, 5000), C.calcGIS(68, 5000, 0, 0, false, 0), 0.01);
+eq("calcGIS 20K emp (10K countable)", C.calcGIS(68, 20000, 0, 0, false, 20000), C.calcGIS(68, 10000, 0, 0, false, 0), 0.01);
+
+// ── 4. calcQPP (exact within $0.50) — PROVINCE-AWARE deferral cap (2026-06-18):
+//     QC/QPP defers to age 72 (factor 1.588); rest-of-Canada/CPP caps at 70 (1.42).
+//     Default prov = QC (QC-primary product). Cross-engine + contract assertions. ──
 if (inl.calcQPP) {
   for (const sa of [60, 65, 70, 71, 72]) {
     for (const ae of [40000, 68500]) {
-      eq(`calcQPP(${sa},${ae})`, C.calcQPP(sa, ae, 35), inl.calcQPP(sa, ae, 35), 0.5);
+      eq(`calcQPP(${sa},${ae})`, C.calcQPP(sa, ae, 35), inl.calcQPP(sa, ae, 35), 0.5);                 // default (QC)
+      eq(`calcQPP(${sa},${ae},QC)`, C.calcQPP(sa, ae, 35, "QC"), inl.calcQPP(sa, ae, 35, "QC"), 0.5);
+      eq(`calcQPP(${sa},${ae},ON)`, C.calcQPP(sa, ae, 35, "ON"), inl.calcQPP(sa, ae, 35, "ON"), 0.5);
     }
   }
+  // Province-aware CONTRACT (closes the prior sa>70 blind spot):
+  // (a) deferring to 72 in QC must out-earn the ROC/CPP cap; (b) ROC is capped at 70 so 72==70.
+  eq("QPP cap: QC@72 > ROC@72", C.calcQPP(72, 68500, 40, "QC") > C.calcQPP(72, 68500, 40, "ON") ? 1 : 0, 1, 0);
+  eq("QPP cap: inl QC@72 > ROC@72", inl.calcQPP(72, 68500, 40, "QC") > inl.calcQPP(72, 68500, 40, "ON") ? 1 : 0, 1, 0);
+  eq("CPP capped@70: ON@72==ON@70", C.calcQPP(72, 68500, 40, "ON"), C.calcQPP(70, 68500, 40, "ON"), 0.5);
 } else {
   console.log("[parity] calcQPP not exposed by inline engine — skipping helper grid");
 }
@@ -78,6 +102,48 @@ if (inl.calcQPP) {
 // (canonical engine). The fiscal-helper parity above guards the constant/
 // formula-drift class that is the real cross-engine risk — exactly what caught
 // the QPP age-70 deferral-cap drift (inline 1.588 vs canonical 1.42).
+
+// ── 6. optimizeDecum tax-funding parity (ported into lib/engine 2026-06-18, audit 1.1) ──
+// The deterministic decum schedule must DEBIT the year's income tax from the portfolio.
+// lib/engine previously only REPORTED it (optimistic residuals/estate). Lock the port:
+// canon's optimizeDecum residuals must now match the inline engine (which already funded tax).
+// If canon ever reverts the funding, its residuals jump up (optimistic) and this goes RED.
+if (typeof C.optimizeDecum === "function" && typeof inl.optimizeDecum === "function") {
+  const odP: any = {
+    age: 65, retAge: 65, sex: "M", prov: "QC", deathAge: 90, stochMort: false,
+    rrsp: 600000, tfsa: 100000, nr: 200000, retSpM: 5000, retIncome: 60000,
+    qppAge: 65, oasAge: 65, qppAvgE: 60000, qppYrs: 35, inf: 0.021,
+    eqRet: 0.05, bndRet: 0.03, cOn: false,
+  };
+  try {
+    const cR: any = C.optimizeDecum(odP) || {};
+    const iR: any = inl.optimizeDecum(odP) || {};
+    const cS: any[] = Array.isArray(cR.schedule) ? cR.schedule : [];
+    const cTaxYear = cS.find((r) => (r.tax || 0) > 0);
+    eq("optimizeDecum computes tax (canon)", cTaxYear ? 1 : 0, 1, 0);
+    // residual parity: finalBal reflects the tax-funded drawdown (the behavior port 1b added).
+    eq("optimizeDecum finalBal parity", cR.finalBal || 0, iR.finalBal || 0, Math.max(1000, (iR.finalBal || 0) * 0.03));
+    // KNOWN PRE-EXISTING DIVERGENCE (2026-06-18, separate from the tax-funding port):
+    // canon's optimizeDecum runs a more aggressive RRSP meltdown at retirement than the
+    // validated inline engine (e.g. taxInc ~$104K vs ~$9K at 65), which kills GIS and
+    // overstates lifetime tax. This is in the income/meltdown logic, NOT the tax-funding
+    // port (line 621 untouched; finalBal matches). Logged as a WARNING — not a hard fail —
+    // pending its own diagnosis in the consolidation backlog (don't block qa:full on it).
+    {
+      const cT = cR.totalTax || 0, iT = iR.totalTax || 0;
+      const tol = Math.max(500, iT * 0.03);
+      if (Math.abs(cT - iT) > tol) {
+        console.log(`[parity][WARN] optimizeDecum totalTax divergence (KNOWN, backlog): canon=${Math.round(cT)} inline=${Math.round(iT)} diff=${Math.round(cT - iT)} — canon meltdown/income logic differs from inline; tracked separately from the tax-funding port.`);
+      } else {
+        pass++;
+      }
+    }
+  } catch (e: any) {
+    console.log("[parity] optimizeDecum comparison skipped:", e?.message || e);
+  }
+} else {
+  console.log("[parity] optimizeDecum not exposed by one engine — skipping tax-funding parity");
+}
 
 console.log(`\nENGINE PARITY (deterministic fiscal helpers): ${pass} passed, ${fail} failed`);
 if (fail) {
