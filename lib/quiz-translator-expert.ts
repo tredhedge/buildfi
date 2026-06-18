@@ -292,7 +292,9 @@ export function translateToMCExpert(a: Record<string, any>): ExpertTranslatorRes
     };
   }
 
-  const deathAge = sex === "F" ? 92 : 90;
+  // FP Canada / IQPF PAG: 75th-pct survival horizon (<=25% chance of outliving);
+  // couple = last survivor. Raised from 90/92 to remove longevity-tail optimism. (2026-06-17)
+  const deathAge = cOn ? 97 : (sex === "F" ? 94 : 92);
 
   // --- Mortgage payment (same as Inter) ---
   const mortPayment = props.length > 0 && props[0].mb > 0

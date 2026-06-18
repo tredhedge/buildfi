@@ -19,9 +19,11 @@ import {
   updateExpertProfile,
 } from "@/lib/kv";
 import { buildMagicLinkUrl } from "@/lib/auth";
-import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
-import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
-import { sanitizeAISlotsExpert, type ExpertAINarration, type ExpertSectionKey } from "@/lib/ai-constants";
+// 2026-06-17: unified onto the Bilan 360 pipeline (was report-html-expert).
+import { extractReportData360, renderReportHTML360, determinePhase } from "@/lib/report-html-360";
+import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
+import { buildBuildFiData } from "@/lib/report-data-360";
+import { sanitizeAISlots360 } from "@/lib/ai-constants";
 import { sendExpertDeliveryEmail } from "@/lib/email-expert";
 
 export const maxDuration = 120; // Expert reports can take longer (4 AI batches)
@@ -111,43 +113,40 @@ export async function POST(req: NextRequest) {
     const mcMs = Date.now() - start;
     console.log(`[export] MC 5000 sims in ${mcMs}ms for ${authResult.email}`);
 
-    // ── Step 2: Extract report data ─────────────────────────────
-    const D = extractReportDataExpert(mc, params);
-    const grade = String(D.grade);
-
-    // ── Step 3: Detect active sections ──────────────────────────
-    const activeSections = detectExpertSections(params, mc, grade);
-
-    // ── Step 4: Build AI prompts (4 batches) ────────────────────
+    // ── Step 2: Report on the Bilan 360 pipeline (full long-form coverage) ──
+    const fr = lang === "fr";
     const quiz = params._quiz || {};
-    const batches = buildExpertPromptBatches(D, mc, params, quiz, activeSections);
+    const phase = determinePhase(Number((params as any).age) || 40, Number((params as any).retAge) || 65);
 
-    // ── Step 5: Run AI batches in parallel ──────────────────────
+    // Stress scenarios (3×1000) for the resilience section.
+    const stWhen = phase === "ACCUM" ? "ret" : "now";
+    const extraRuns = {
+      mcStressCrash08: runMC({ ...params, strs: "crash08", stWhen }, 1000) as Record<string, any> | null,
+      mcStressStagflation: runMC({ ...params, strs: "stagflation", stWhen }, 1000) as Record<string, any> | null,
+      mcStressProlonged: runMC({ ...params, strs: "prolonged", stWhen }, 1000) as Record<string, any> | null,
+    };
+
+    const D = extractReportData360(mc, params, phase, extraRuns);
+    const grade = String(D.grade);
+    const buildfiData = buildBuildFiData(mc, params, phase, lang, extraRuns);
+
+    // ── AI narration (single prompt) — fails OPEN to deterministic fallbacks ──
     const aiStart = Date.now();
-    const batchResults = await Promise.all(
-      batches.map(b => callAnthropicBatch(b.sys, b.usr))
-    );
+    const prompt = buildAIPrompt360(D, params, fr, quiz, phase, undefined);
+    const raw360 = await callAnthropicBatch(prompt.sys, prompt.usr);
+    const ai = sanitizeAISlots360(raw360);
     const aiMs = Date.now() - aiStart;
-    console.log(`[export] ${batches.length} AI batches in ${aiMs}ms`);
+    console.log(`[export] AI: ${Object.keys(ai).length} slots in ${aiMs}ms`);
 
-    // Merge all batch results
-    const mergedRaw: Record<string, any> = {};
-    for (const result of batchResults) {
-      Object.assign(mergedRaw, result);
-    }
+    // Section list for metadata (the 360 report is data-driven / self-gating).
+    const sectionList = ["diagnostic", "revenus", "projection", "risque"];
+    if (D.properties?.length) sectionList.push("immobilier");
+    if (D.debts?.length) sectionList.push("dettes");
+    if (D.hasInsurance) sectionList.push("assurance");
+    if (D.business) sectionList.push("entreprise");
+    if (D.hasAlt) sectionList.push("alternatifs");
 
-    // Sanitize
-    const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
-    console.log(`[export] ${Object.keys(ai).length}/${activeSections.length} AI sections filled`);
-
-    // ── Step 6: Render HTML report ──────────────────────────────
-    // comparisonData: optional array of {label, successPct, wealthDelta} from client-side scenario comparison
-    const validComparison = Array.isArray(comparisonData)
-      ? comparisonData.filter(
-          (c: any) => c && typeof c.label === "string" && typeof c.successPct === "number" && typeof c.wealthDelta === "number"
-        ).slice(0, 10)
-      : undefined;
-    const html = renderReportHTMLExpert(D, mc, params, ai, activeSections, lang, undefined, validComparison);
+    const html = renderReportHTML360(D, mc, params, lang, ai, phase, "", extraRuns, buildfiData);
 
     // ── Step 7: Upload to Blob ──────────────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);
@@ -175,7 +174,7 @@ export async function POST(req: NextRequest) {
               id: reportId,
               date: new Date().toISOString(),
               type: "expert" as const,
-              sections: activeSections as string[],
+              sections: sectionList,
               engineVersion: ENGINE_VERSION,
               fiscalYear: CONSTANTS_YEAR,
               blobUrl: blob.url,
@@ -191,7 +190,7 @@ export async function POST(req: NextRequest) {
                 reportId,
                 grade,
                 successPct: D.successPct,
-                sections: activeSections.length,
+                sections: sectionList.length,
                 blobUrl: blob.url,
               },
             },
@@ -241,7 +240,7 @@ export async function POST(req: NextRequest) {
 
     const totalMs = Date.now() - start;
     console.log(
-      `[export] Complete in ${totalMs}ms — MC:${mcMs}ms AI:${aiMs}ms — ${activeSections.length} sections, grade ${grade} for ${authResult.email}`
+      `[export] Complete in ${totalMs}ms — MC:${mcMs}ms AI:${aiMs}ms — ${sectionList.length} sections, grade ${grade} for ${authResult.email}`
     );
 
     return NextResponse.json({
@@ -249,7 +248,7 @@ export async function POST(req: NextRequest) {
       downloadUrl: blob.url,
       grade,
       successPct: D.successPct,
-      sections: activeSections.length,
+      sections: sectionList.length,
       remaining: creditResult.remaining,
       meta: {
         sims: 5000,

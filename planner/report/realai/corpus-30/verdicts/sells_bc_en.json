@@ -1,0 +1,51 @@
+{
+  "key": "sells_bc_en",
+  "lang": "en",
+  "phase": "TRANSITION",
+  "band": "sound",
+  "grade": "A+",
+  "successPct": 95,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 31,
+    "expected": 33,
+    "emptySlots": 2
+  },
+  "htmlBytes": 47944,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [
+      {
+        "category": "canonical_quote_drift",
+        "reviewer": "canonical",
+        "message": "AI slot \"cpp_timing\" quotes pct value 85 for \"success_rate\" but canonical is 94.54. Slot must be regenerated to match canonical."
+      }
+    ],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

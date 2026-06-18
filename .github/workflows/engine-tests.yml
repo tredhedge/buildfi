@@ -1,0 +1,29 @@
+name: Engine tests
+
+# Engine-correctness guards: the embedded 505-suite (inline planner_v3 engine),
+# the inline-vs-canonical fiscal-helper parity test, and the API contract tests.
+# Fast (no build) so it gates every PR.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: 505-suite (inline engine)
+        run: node .audit-harness/run-suite.js
+      - name: Engine parity (inline vs canonical fiscal helpers)
+        run: npx tsx tests/engine-parity.test.ts
+      - name: Simulate contract (canonical engine)
+        run: npx tsx tests/simulate-contract.test.ts
+      - name: Wizard contract
+        run: npx tsx tests/wizard-contract.test.ts

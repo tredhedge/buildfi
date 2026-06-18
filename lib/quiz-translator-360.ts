@@ -90,8 +90,12 @@ export function translateBilan360(rawA: Record<string, any>, phase: string): Rec
   retAge = clamp(retAge, age, 95);
 
   const sal = isDecum ? 0 : Math.round(n(a.income, 70000));
-  // Use the client's stated horizon when given; else gendered/phase default.
-  const deathAge = clamp(Math.round(n(a.deathAge, isDecum ? 105 : (sex === "F" ? 92 : 90))), age + 1, 110);
+  // Planning horizon. FP Canada / IQPF Projection Assumption Guidelines: plan to the
+  // age with a <=25% chance of outliving capital (75th-pct survival), and for couples
+  // to the LAST survivor — this avoids the longevity-tail optimism of a median-ish
+  // horizon. The client's stated horizon still wins when provided. (2026-06-17)
+  const _couple360 = String(a.couple || "no") === "yes" && n(a.cAge) > 0;
+  const deathAge = clamp(Math.round(n(a.deathAge, isDecum ? 105 : (_couple360 ? 97 : (sex === "F" ? 94 : 92)))), age + 1, 110);
 
   const rrsp = Math.round(n(a.rrsp));
   const tfsa = Math.round(n(a.tfsa));

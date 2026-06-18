@@ -6,7 +6,7 @@ function loadEngine(htmlPath) {
   const sandbox = { Math, JSON, Date, Array, Object, Number, String, Boolean, isNaN, isFinite, parseFloat, parseInt, console,
     html: '', localStorage: { getItem: () => null, setItem: () => {} }, SAM_STRATEGIES: [], window: {}, self: {} };
   sandbox.globalThis = sandbox; vm.createContext(sandbox);
-  vm.runInContext(code + '\n;this.__engine={runMC,optimizeDecum,calcCorpTax,calcOAS,calcGIS,calcPayroll,tRn,C,calcTax};', sandbox, { filename: 'engine.js' });
+  vm.runInContext(code + '\n;this.__engine={runMC,optimizeDecum,calcCorpTax,calcOAS,calcGIS,calcPayroll,tRn,C,calcTax,calcQPP:(typeof calcQPP!=="undefined"?calcQPP:null),getRRIFMin:(typeof getRRIFMin!=="undefined"?getRRIFMin:null)};', sandbox, { filename: 'engine.js' });
   return sandbox.__engine;
 }
 module.exports = { loadEngine };

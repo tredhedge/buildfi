@@ -75,3 +75,7 @@ planner/report/realai/bilan360-personas/corrected/
 planner/report/realai/bilan360-personas/final/
 planner/report/realai/bilan360-personas/responses-todo/
 planner/report/realai/bilan360-personas/review/*.fail.json
+
+# ship-loop generated artifacts (regenerable via `npm run shiploop:dump`; large MC payloads)
+planner/report/realai/corpus*/payload/
+planner/report/realai/corpus*/out/

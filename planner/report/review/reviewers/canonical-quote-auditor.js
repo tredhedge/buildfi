@@ -51,8 +51,11 @@ var CONCEPT_PATTERNS = [
   { metric: 'lifetime_tax_real', re: /\b(lifetime tax|imp\u00f4t viager)\b/i, kind: 'dollar' },
   { metric: 'monthly_gap', re: /\b(monthly gap|\u00e9cart mensuel)\b/i, kind: 'dollar' },
   { metric: 'p50_wealth_real', re: /\b(median (final )?wealth|patrimoine m\u00e9dian)\b/i, kind: 'dollar' },
-  { metric: 'p25_wealth_real', re: /\b(P25|cautious wealth|sc\u00e9nario prudent|patrimoine prudent)\b/i, kind: 'dollar' },
-  { metric: 'p75_wealth_real', re: /\b(P75|favourable wealth|favorable wealth|sc\u00e9nario favorable|patrimoine favorable)\b/i, kind: 'dollar' },
+  // ship-loop 2026-06-18: P25/P75 concepts removed from canonical-quote. They almost
+  // always appear together in a "range from X (P25) to Y (P75)" sentence, where a
+  // proximity matcher can't tell which number is which \u2192 false positives. These
+  // percentile values are ALREADY grounded by value+unit in the narration guardrail,
+  // so dropping them here loses no real protection while removing the FP source.
   { metric: 'net_estate', re: /\b(net estate|h\u00e9ritage net)\b/i, kind: 'dollar' },
   { metric: 'lifetime_gis', re: /\b(lifetime gis|srg viager)\b/i, kind: 'dollar' },
   { metric: 'gis_years', re: /\b(gis years|ann\u00e9es srg|years? of gis)\b/i, kind: 'years' }
@@ -75,8 +78,11 @@ function _extractNumbers(text) {
     else if (unit === '$') { kind = 'dollar'; value = num; }
     else if (/year|ann\u00e9e|ans/.test(unit)) { kind = 'years'; value = num; }
     else continue;
-    var contextStart = Math.max(0, m.index - 100);
-    var contextEnd = Math.min(text.length, m.index + 50);
+    // ship-loop 2026-06-18: tightened from (100,50) to (45,20) so a concept keyword
+    // far from the number (e.g. "héritage net" ~55 chars before an unrelated monthly
+    // figure) no longer binds — kills the proximity false positives.
+    var contextStart = Math.max(0, m.index - 45);
+    var contextEnd = Math.min(text.length, m.index + 20);
     out.push({ value: value, kind: kind, index: m.index, context: text.slice(contextStart, contextEnd) });
   }
   return out;

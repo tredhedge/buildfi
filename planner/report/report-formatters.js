@@ -349,7 +349,7 @@
     decum:           { fr: "S\u00e9quence de d\u00e9caissement", en: "Withdrawal sequence" },
     tax:             { fr: "Marges d'efficacit\u00e9 fiscale", en: "Tax efficiency margins" },
     gis:             { fr: "Préservation du SRG", en: "GIS preservation" },
-    meltdown:        { fr: "Fen\u00eatre de meltdown REER", en: "RRSP meltdown window" },
+    meltdown:        { fr: "Fen\u00eatre de d\u00e9caissement anticip\u00e9 REER", en: "RRSP meltdown window" },
     succession:      { fr: "Transmission successorale", en: "Estate transfer" },
     realestate:      { fr: "Place de l'immobilier", en: "Real estate position" },
     rsu:             { fr: "Actions RSU", en: "RSU Grants" },

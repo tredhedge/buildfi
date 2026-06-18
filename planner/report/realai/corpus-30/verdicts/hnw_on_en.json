@@ -1,0 +1,56 @@
+{
+  "key": "hnw_on_en",
+  "lang": "en",
+  "phase": "ACCUM",
+  "band": "sound",
+  "grade": "B+",
+  "successPct": 81,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 28,
+    "expected": 29,
+    "emptySlots": 1
+  },
+  "htmlBytes": 51389,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [
+      {
+        "category": "canonical_quote_drift",
+        "reviewer": "canonical",
+        "message": "AI slot \"best_lever\" quotes pct value 79 for \"success_rate\" but canonical is 80.62. Slot must be regenerated to match canonical."
+      },
+      {
+        "category": "canonical_quote_drift",
+        "reviewer": "canonical",
+        "message": "AI slot \"strategy_comparison\" quotes pct value 79 for \"success_rate\" but canonical is 80.62. Slot must be regenerated to match canonical."
+      }
+    ],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

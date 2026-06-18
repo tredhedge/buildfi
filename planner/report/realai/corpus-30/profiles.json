@@ -1,0 +1,1104 @@
+{
+  "_generated": "gen-corpus.mjs",
+  "count": 22,
+  "profiles": [
+    {
+      "id": "young_qc",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "moderate",
+        "detailPref": "balanced"
+      },
+      "client": {
+        "name": "Léa Côté",
+        "firstName": "Léa",
+        "email": "léa@example.com"
+      },
+      "answers": {
+        "age": 32,
+        "sex": "F",
+        "prov": "QC",
+        "income": 68000,
+        "retAge": 65,
+        "rrsp": 18000,
+        "tfsa": 12000,
+        "nr": 2000,
+        "monthlyContrib": 500,
+        "retSpM": 3800,
+        "currentSpM": 3200,
+        "risk": "growth",
+        "investStyle": "low_fee_etf",
+        "couple": "no",
+        "homeowner": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 68000,
+        "qppYearsWorked": 10,
+        "spendingFlex": "flexible",
+        "confidence": 3,
+        "psychLiteracy": "medium",
+        "detailPreference": "balanced",
+        "worries": [
+          "enough"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "young_on",
+      "lang": "en",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "low",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Tyler Brooks",
+        "firstName": "Tyler",
+        "email": "tyler@example.com"
+      },
+      "answers": {
+        "age": 32,
+        "sex": "M",
+        "prov": "ON",
+        "income": 60000,
+        "retAge": 65,
+        "rrsp": 18000,
+        "tfsa": 12000,
+        "nr": 2000,
+        "monthlyContrib": 350,
+        "retSpM": 3800,
+        "currentSpM": 3200,
+        "risk": "growth",
+        "investStyle": "low_fee_etf",
+        "couple": "no",
+        "homeowner": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 60000,
+        "qppYearsWorked": 10,
+        "spendingFlex": "flexible",
+        "confidence": 5,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "enough"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "midcouple_ab",
+      "lang": "en",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "advanced",
+        "stressLevel": "low",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Daniel Reyes",
+        "firstName": "Daniel",
+        "email": "daniel@example.com"
+      },
+      "answers": {
+        "age": 44,
+        "sex": "M",
+        "prov": "AB",
+        "income": 105000,
+        "retAge": 62,
+        "rrsp": 160000,
+        "tfsa": 60000,
+        "nr": 30000,
+        "monthlyContrib": 1800,
+        "retSpM": 6500,
+        "currentSpM": 6000,
+        "risk": "balanced",
+        "investStyle": "low_fee_etf",
+        "couple": "yes",
+        "cAge": 42,
+        "cSex": "F",
+        "cIncome": 72000,
+        "cRetAge": 62,
+        "cRrsp": 95000,
+        "cTfsa": 40000,
+        "homeowner": true,
+        "homeValue": 600000,
+        "mortgageBal": 220000,
+        "mortgageRate": 4.9,
+        "mortgageAmort": 16,
+        "sellAtRet": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 105000,
+        "qppYearsWorked": 22,
+        "spendingFlex": "moderate",
+        "confidence": 5,
+        "psychLiteracy": "high",
+        "detailPreference": "detailed",
+        "worries": [
+          "market",
+          "tax"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "midcouple_qc",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "high",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Marc Bélanger",
+        "firstName": "Marc",
+        "email": "marc@example.com"
+      },
+      "answers": {
+        "age": 44,
+        "sex": "M",
+        "prov": "QC",
+        "income": 92000,
+        "retAge": 62,
+        "rrsp": 160000,
+        "tfsa": 60000,
+        "nr": 30000,
+        "monthlyContrib": 1800,
+        "retSpM": 6500,
+        "currentSpM": 6000,
+        "risk": "balanced",
+        "investStyle": "low_fee_etf",
+        "couple": "yes",
+        "cAge": 42,
+        "cSex": "F",
+        "cIncome": 72000,
+        "cRetAge": 62,
+        "cRrsp": 95000,
+        "cTfsa": 40000,
+        "homeowner": true,
+        "homeValue": 600000,
+        "mortgageBal": 220000,
+        "mortgageRate": 4.9,
+        "mortgageAmort": 16,
+        "sellAtRet": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 92000,
+        "qppYearsWorked": 22,
+        "spendingFlex": "moderate",
+        "confidence": 2,
+        "psychLiteracy": "medium",
+        "detailPreference": "detailed",
+        "worries": [
+          "market",
+          "tax"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "hnw_bc",
+      "lang": "en",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "advanced",
+        "stressLevel": "low",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Priya Nair",
+        "firstName": "Priya",
+        "email": "priya@example.com"
+      },
+      "answers": {
+        "age": 48,
+        "sex": "M",
+        "prov": "BC",
+        "income": 145000,
+        "retAge": 58,
+        "rrsp": 320000,
+        "tfsa": 110000,
+        "nr": 90000,
+        "monthlyContrib": 3200,
+        "retSpM": 8500,
+        "currentSpM": 7800,
+        "risk": "growth",
+        "investStyle": "diy_stocks",
+        "couple": "yes",
+        "cAge": 46,
+        "cSex": "F",
+        "cIncome": 90000,
+        "cRetAge": 58,
+        "cRrsp": 150000,
+        "cTfsa": 70000,
+        "homeowner": true,
+        "homeValue": 900000,
+        "mortgageBal": 350000,
+        "mortgageRate": 4.7,
+        "mortgageAmort": 18,
+        "sellAtRet": false,
+        "rentalValue1": 480000,
+        "rentalMortgage1": 210000,
+        "rentalIncome1": 26000,
+        "rentalMortgageRate1": 5,
+        "rentalValue2": 410000,
+        "rentalMortgage2": 180000,
+        "rentalIncome2": 22000,
+        "rentalMortgageRate2": 5.1,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 70,
+        "preRetIncome": 145000,
+        "qppYearsWorked": 26,
+        "spendingFlex": "flexible",
+        "confidence": 5,
+        "psychLiteracy": "high",
+        "detailPreference": "detailed",
+        "worries": [
+          "tax",
+          "estate"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "hnw_on",
+      "lang": "en",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "high",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Greg Sutton",
+        "firstName": "Greg",
+        "email": "greg@example.com"
+      },
+      "answers": {
+        "age": 48,
+        "sex": "M",
+        "prov": "ON",
+        "income": 130000,
+        "retAge": 58,
+        "rrsp": 320000,
+        "tfsa": 110000,
+        "nr": 90000,
+        "monthlyContrib": 3200,
+        "retSpM": 8500,
+        "currentSpM": 7800,
+        "risk": "growth",
+        "investStyle": "diy_stocks",
+        "couple": "yes",
+        "cAge": 46,
+        "cSex": "F",
+        "cIncome": 90000,
+        "cRetAge": 58,
+        "cRrsp": 150000,
+        "cTfsa": 70000,
+        "homeowner": true,
+        "homeValue": 900000,
+        "mortgageBal": 350000,
+        "mortgageRate": 4.7,
+        "mortgageAmort": 18,
+        "sellAtRet": false,
+        "rentalValue1": 480000,
+        "rentalMortgage1": 210000,
+        "rentalIncome1": 26000,
+        "rentalMortgageRate1": 5,
+        "rentalValue2": 410000,
+        "rentalMortgage2": 180000,
+        "rentalIncome2": 22000,
+        "rentalMortgageRate2": 5.1,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 70,
+        "preRetIncome": 130000,
+        "qppYearsWorked": 26,
+        "spendingFlex": "flexible",
+        "confidence": 2,
+        "psychLiteracy": "medium",
+        "detailPreference": "detailed",
+        "worries": [
+          "tax",
+          "estate"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "hugesave_qc",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "prefs": {
+        "finLiteracy": "advanced",
+        "stressLevel": "low",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Sophie Lévesque",
+        "firstName": "Sophie",
+        "email": "sophie@example.com"
+      },
+      "answers": {
+        "age": 40,
+        "sex": "F",
+        "prov": "QC",
+        "income": 200000,
+        "retAge": 55,
+        "rrsp": 600000,
+        "tfsa": 200000,
+        "nr": 400000,
+        "monthlyContrib": 5000,
+        "retSpM": 9000,
+        "currentSpM": 8000,
+        "risk": "growth",
+        "investStyle": "diy_stocks",
+        "couple": "no",
+        "homeowner": true,
+        "homeValue": 1100000,
+        "mortgageBal": 200000,
+        "mortgageRate": 4.5,
+        "mortgageAmort": 12,
+        "sellAtRet": false,
+        "qppPlannedAge": 70,
+        "oasPlannedAge": 70,
+        "preRetIncome": 200000,
+        "qppYearsWorked": 18,
+        "spendingFlex": "flexible",
+        "confidence": 5,
+        "psychLiteracy": "high",
+        "detailPreference": "detailed",
+        "worries": [
+          "tax",
+          "estate"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "latedebt_qc",
+      "lang": "fr",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Nathalie Roy",
+        "firstName": "Nathalie",
+        "email": "nathalie@example.com"
+      },
+      "answers": {
+        "age": 55,
+        "sex": "F",
+        "prov": "QC",
+        "income": 58000,
+        "retAge": 62,
+        "rrsp": 38000,
+        "tfsa": 9000,
+        "nr": 1000,
+        "monthlyContrib": 300,
+        "retSpM": 3600,
+        "currentSpM": 3400,
+        "risk": "conservative",
+        "investStyle": "high_fee_etf",
+        "couple": "no",
+        "homeowner": false,
+        "debtCards": 8000,
+        "debtCardRate": 19.99,
+        "debtAuto": 12000,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 58000,
+        "qppYearsWorked": 28,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "enough",
+          "debt"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "latedebt_on",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Karen Webb",
+        "firstName": "Karen",
+        "email": "karen@example.com"
+      },
+      "answers": {
+        "age": 55,
+        "sex": "F",
+        "prov": "ON",
+        "income": 54000,
+        "retAge": 62,
+        "rrsp": 38000,
+        "tfsa": 9000,
+        "nr": 1000,
+        "monthlyContrib": 300,
+        "retSpM": 3600,
+        "currentSpM": 3400,
+        "risk": "conservative",
+        "investStyle": "high_fee_etf",
+        "couple": "no",
+        "homeowner": false,
+        "debtCards": 8000,
+        "debtCardRate": 19.99,
+        "debtAuto": 12000,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 54000,
+        "qppYearsWorked": 28,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "enough",
+          "debt"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "preretdb_on",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "high",
+        "detailPref": "detailed"
+      },
+      "client": {
+        "name": "Robert Klein",
+        "firstName": "Robert",
+        "email": "robert@example.com"
+      },
+      "answers": {
+        "age": 59,
+        "sex": "M",
+        "prov": "ON",
+        "income": 88000,
+        "retAge": 63,
+        "rrsp": 240000,
+        "tfsa": 85000,
+        "nr": 15000,
+        "monthlyContrib": 700,
+        "retSpM": 5800,
+        "currentSpM": 5400,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "yes",
+        "cAge": 60,
+        "cSex": "F",
+        "cIncome": 52000,
+        "cRetAge": 63,
+        "cRrsp": 110000,
+        "cTfsa": 35000,
+        "hasPension": "db",
+        "penM": 2100,
+        "homeowner": true,
+        "homeValue": 680000,
+        "mortgageBal": 90000,
+        "mortgageRate": 5,
+        "mortgageAmort": 8,
+        "sellAtRet": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 88000,
+        "qppYearsWorked": 35,
+        "spendingFlex": "moderate",
+        "confidence": 2,
+        "psychLiteracy": "medium",
+        "detailPreference": "detailed",
+        "worries": [
+          "market",
+          "healthcare",
+          "longevity"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "preretdb_qc",
+      "lang": "fr",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "moderate",
+        "detailPref": "balanced"
+      },
+      "client": {
+        "name": "Diane Fortin",
+        "firstName": "Diane",
+        "email": "diane@example.com"
+      },
+      "answers": {
+        "age": 59,
+        "sex": "F",
+        "prov": "QC",
+        "income": 88000,
+        "retAge": 63,
+        "rrsp": 240000,
+        "tfsa": 85000,
+        "nr": 15000,
+        "monthlyContrib": 700,
+        "retSpM": 5800,
+        "currentSpM": 5400,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "cAge": 60,
+        "cSex": "F",
+        "cIncome": 52000,
+        "cRetAge": 63,
+        "cRrsp": 110000,
+        "cTfsa": 35000,
+        "hasPension": "db",
+        "penM": 2100,
+        "homeowner": true,
+        "homeValue": 680000,
+        "mortgageBal": 90000,
+        "mortgageRate": 5,
+        "mortgageAmort": 8,
+        "sellAtRet": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 88000,
+        "qppYearsWorked": 35,
+        "spendingFlex": "moderate",
+        "confidence": 3,
+        "psychLiteracy": "medium",
+        "detailPreference": "balanced",
+        "worries": [
+          "market",
+          "healthcare",
+          "longevity"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "sells_bc",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "moderate",
+        "detailPref": "balanced"
+      },
+      "client": {
+        "name": "Janet Cho",
+        "firstName": "Janet",
+        "email": "janet@example.com"
+      },
+      "answers": {
+        "age": 60,
+        "sex": "F",
+        "prov": "BC",
+        "income": 70000,
+        "retAge": 64,
+        "rrsp": 150000,
+        "tfsa": 50000,
+        "nr": 8000,
+        "monthlyContrib": 600,
+        "retSpM": 5200,
+        "currentSpM": 4800,
+        "risk": "balanced",
+        "investStyle": "low_fee_etf",
+        "couple": "no",
+        "homeowner": true,
+        "homeValue": 720000,
+        "mortgageBal": 60000,
+        "mortgageRate": 5,
+        "mortgageAmort": 6,
+        "sellAtRet": true,
+        "downsizeAge": 66,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 70000,
+        "qppYearsWorked": 33,
+        "spendingFlex": "moderate",
+        "confidence": 3,
+        "psychLiteracy": "medium",
+        "detailPreference": "balanced",
+        "worries": [
+          "healthcare"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "sells_qc",
+      "lang": "fr",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "low",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Manon Girard",
+        "firstName": "Manon",
+        "email": "manon@example.com"
+      },
+      "answers": {
+        "age": 60,
+        "sex": "F",
+        "prov": "QC",
+        "income": 64000,
+        "retAge": 64,
+        "rrsp": 150000,
+        "tfsa": 50000,
+        "nr": 8000,
+        "monthlyContrib": 600,
+        "retSpM": 5200,
+        "currentSpM": 4800,
+        "risk": "balanced",
+        "investStyle": "low_fee_etf",
+        "couple": "no",
+        "homeowner": true,
+        "homeValue": 720000,
+        "mortgageBal": 60000,
+        "mortgageRate": 5,
+        "mortgageAmort": 6,
+        "sellAtRet": true,
+        "downsizeAge": 66,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 64000,
+        "qppYearsWorked": 33,
+        "spendingFlex": "moderate",
+        "confidence": 5,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "healthcare"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "zerosave_ab",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Wayne Foster",
+        "firstName": "Wayne",
+        "email": "wayne@example.com"
+      },
+      "answers": {
+        "age": 58,
+        "sex": "M",
+        "prov": "AB",
+        "income": 50000,
+        "retAge": 60,
+        "rrsp": 0,
+        "tfsa": 0,
+        "nr": 0,
+        "monthlyContrib": 0,
+        "retSpM": 4000,
+        "currentSpM": 3800,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 50000,
+        "qppYearsWorked": 30,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "enough",
+          "running_out"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "reteqage_qc",
+      "lang": "fr",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "moderate",
+        "detailPref": "balanced"
+      },
+      "client": {
+        "name": "Pierre Dubé",
+        "firstName": "Pierre",
+        "email": "pierre@example.com"
+      },
+      "answers": {
+        "age": 64,
+        "sex": "M",
+        "prov": "QC",
+        "income": 90000,
+        "retAge": 64,
+        "rrsp": 300000,
+        "tfsa": 90000,
+        "nr": 20000,
+        "monthlyContrib": 0,
+        "retSpM": 5500,
+        "currentSpM": 5200,
+        "risk": "balanced",
+        "investStyle": "low_fee_etf",
+        "couple": "no",
+        "homeowner": true,
+        "homeValue": 550000,
+        "mortgageBal": 0,
+        "mortgageRate": 5,
+        "mortgageAmort": 0,
+        "sellAtRet": false,
+        "qppPlannedAge": 65,
+        "oasPlannedAge": 65,
+        "preRetIncome": 90000,
+        "qppYearsWorked": 38,
+        "spendingFlex": "moderate",
+        "confidence": 3,
+        "psychLiteracy": "medium",
+        "detailPreference": "balanced",
+        "worries": [
+          "market"
+        ],
+        "estatePref": "balanced"
+      }
+    },
+    {
+      "id": "retmodest_qc",
+      "lang": "fr",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Claire Bergeron",
+        "firstName": "Claire",
+        "email": "claire@example.com"
+      },
+      "answers": {
+        "age": 69,
+        "sex": "F",
+        "prov": "QC",
+        "retirementStatus": "retired",
+        "deathAge": 94,
+        "rrsp": 120000,
+        "tfsa": 35000,
+        "nr": 4000,
+        "retSpM": 3100,
+        "currentSpM": 3000,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": false,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 900,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "running_out",
+          "healthcare"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "retmodest_on",
+      "lang": "en",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "low",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Harold Price",
+        "firstName": "Harold",
+        "email": "harold@example.com"
+      },
+      "answers": {
+        "age": 69,
+        "sex": "M",
+        "prov": "ON",
+        "retirementStatus": "retired",
+        "deathAge": 94,
+        "rrsp": 180000,
+        "tfsa": 35000,
+        "nr": 4000,
+        "retSpM": 3100,
+        "currentSpM": 3000,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": false,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 900,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 5,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "running_out",
+          "healthcare"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "retmodest_bc",
+      "lang": "en",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "intermediate",
+        "stressLevel": "moderate",
+        "detailPref": "balanced"
+      },
+      "client": {
+        "name": "Susan Lim",
+        "firstName": "Susan",
+        "email": "susan@example.com"
+      },
+      "answers": {
+        "age": 69,
+        "sex": "F",
+        "prov": "BC",
+        "retirementStatus": "retired",
+        "deathAge": 94,
+        "rrsp": 120000,
+        "tfsa": 35000,
+        "nr": 4000,
+        "retSpM": 3100,
+        "currentSpM": 3000,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": true,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 900,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 3,
+        "psychLiteracy": "medium",
+        "detailPreference": "balanced",
+        "worries": [
+          "running_out",
+          "healthcare"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "gis_qc",
+      "lang": "fr",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Yvette Tremblay",
+        "firstName": "Yvette",
+        "email": "yvette@example.com"
+      },
+      "answers": {
+        "age": 67,
+        "sex": "F",
+        "prov": "QC",
+        "retirementStatus": "retired",
+        "deathAge": 92,
+        "rrsp": 15000,
+        "tfsa": 6000,
+        "nr": 0,
+        "retSpM": 1900,
+        "currentSpM": 1850,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": false,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 520,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "running_out"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "gis_on",
+      "lang": "en",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "low",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Edna Walsh",
+        "firstName": "Edna",
+        "email": "edna@example.com"
+      },
+      "answers": {
+        "age": 67,
+        "sex": "F",
+        "prov": "ON",
+        "retirementStatus": "retired",
+        "deathAge": 92,
+        "rrsp": 15000,
+        "tfsa": 6000,
+        "nr": 0,
+        "retSpM": 1900,
+        "currentSpM": 1850,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "no",
+        "homeowner": false,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 520,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 5,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "running_out"
+        ],
+        "estatePref": "spend_it"
+      }
+    },
+    {
+      "id": "veryold_qc",
+      "lang": "fr",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "high",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Gérald Caron",
+        "firstName": "Gérald",
+        "email": "gérald@example.com"
+      },
+      "answers": {
+        "age": 78,
+        "sex": "M",
+        "prov": "QC",
+        "retirementStatus": "retired",
+        "deathAge": 100,
+        "rrsp": 80000,
+        "tfsa": 60000,
+        "nr": 10000,
+        "retSpM": 4200,
+        "currentSpM": 4100,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "yes",
+        "cAge": 76,
+        "cSex": "F",
+        "cRrsp": 40000,
+        "cTfsa": 20000,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 1100,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 2,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "healthcare",
+          "longevity"
+        ],
+        "estatePref": "leave_max"
+      }
+    },
+    {
+      "id": "veryold_ab",
+      "lang": "en",
+      "phase": "DECUM",
+      "prefs": {
+        "finLiteracy": "beginner",
+        "stressLevel": "low",
+        "detailPref": "concise"
+      },
+      "client": {
+        "name": "Frank Olsen",
+        "firstName": "Frank",
+        "email": "frank@example.com"
+      },
+      "answers": {
+        "age": 78,
+        "sex": "M",
+        "prov": "AB",
+        "retirementStatus": "retired",
+        "deathAge": 100,
+        "rrsp": 80000,
+        "tfsa": 60000,
+        "nr": 10000,
+        "retSpM": 4200,
+        "currentSpM": 4100,
+        "risk": "conservative",
+        "investStyle": "mutual_funds",
+        "couple": "yes",
+        "cAge": 76,
+        "cSex": "F",
+        "cRrsp": 40000,
+        "cTfsa": 20000,
+        "qppAlreadyClaiming": true,
+        "qppCurrentAmount": 1100,
+        "oasAlreadyClaiming": true,
+        "oasCurrentAmount": 713,
+        "spendingFlex": "rigid",
+        "confidence": 5,
+        "psychLiteracy": "low",
+        "detailPreference": "short",
+        "worries": [
+          "healthcare",
+          "longevity"
+        ],
+        "estatePref": "leave_max"
+      }
+    }
+  ]
+}

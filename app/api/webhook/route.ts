@@ -12,14 +12,12 @@ import { runMC } from "@/lib/engine";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { determinePhase, extractReportData360, renderReportHTML360 } from "@/lib/report-html-360";
 import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
+import { autoRepairNarration } from "@/lib/report-narration-repair";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
 import { sendReportEmail } from "@/lib/email";
 import { put } from "@vercel/blob";
-import { sanitizeAISlotsExpert, sanitizeAISlots360 } from "@/lib/ai-constants";
-import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
-import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
-import type { ExpertAINarration } from "@/lib/ai-constants";
+import { sanitizeAISlots360 } from "@/lib/ai-constants";
 import {
   createExpertProfile,
   getExpertProfile,
@@ -222,7 +220,8 @@ async function handleCheckoutCompleted(
 
   // Route by checkout type
   if (type === "addon" || type === "report-pack") {
-    return handleExportAddon(email, session.id);
+    // 2026-06-17 fix: report-pack grants 4 credits ($19.99); legacy addon stays at 1.
+    return handleExportAddon(email, session.id, type === "report-pack" ? 4 : 1);
   }
 
   // Planner SKU (new primary) — reuses Expert profile infra but with known 5-credit init
@@ -335,9 +334,9 @@ async function handleBilan360Purchase(
     const prompt = buildAIPrompt360(D, params, fr, quiz, phase, stratData || undefined);
     let ai: Record<string, string | undefined>;
     try {
-      const useOpus = process.env.ANTHROPIC_MODEL === "opus";
+      const narrationModel = "claude-opus-4-8";
       ai = await Promise.race([
-        callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots360, useOpus ? "claude-opus-4-6" : undefined, 8000),
+        callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots360, narrationModel, 8000),
         new Promise<Record<string, string | undefined>>((_, reject) =>
           setTimeout(() => reject(new Error("AI timeout 90s")), 90000)
         ),
@@ -347,6 +346,44 @@ async function handleBilan360Purchase(
       ai = {};
     }
     console.log(`[webhook] Bilan 360 AI in ${Date.now() - aiStart}ms (${Object.keys(ai).length} slots)`);
+
+    // ── Narration guardrail + auto-repair ──────────────────
+    // Validate the FINISHED AI narration (accuracy: every number traces to the
+    // DATA block; logic: band/tone; compliance: AMF/jargon; completeness). On
+    // failure, regenerate ONLY the offending slots with a targeted re-prompt and
+    // re-validate (N≤2). Stays within the AI time budget; fail-open on error.
+    let narrationOk = true;
+    let narrationReasons = "";
+    try {
+      const band: "fragile" | "sound" =
+        Number((mcBase as Record<string, any>)?.succ ?? 1) < 0.45 ? "fragile" : "sound";
+      const repairModel = "claude-opus-4-8";
+      const repair = await autoRepairNarration({
+        aiSlots: ai,
+        promptSys: prompt.sys,
+        promptUser: prompt.usr,
+        lang: lang as "fr" | "en",
+        band,
+        maxAttempts: 2,
+        // Budget guard (maxDuration=120s): reserve ~20s after mcStart for
+        // render+upload+email, and cap each repair call at 18s, so a slow
+        // narration can never push the handler past its limit — it just falls back.
+        deadline: mcStart + 100_000,
+        perAttemptTimeoutMs: 18_000,
+        narrate: (sys, usr) => callAnthropic(sys, usr, sanitizeAISlots360, repairModel, 8000),
+        onAttempt: (n, v) =>
+          console.warn(`[webhook] narration repair attempt ${n}: ${v.findings.map((f) => f.slot + ":" + f.kind).join(", ")}`),
+      });
+      ai = repair.ai;
+      narrationOk = repair.verdict.ok;
+      narrationReasons = repair.verdict.findings.map((f) => `${f.slot}:${f.kind}`).join(", ");
+      console.log(
+        `[webhook] narration guardrail: ${narrationOk ? "OK" : "FAILED"} after ${repair.attempts} repair attempt(s)` +
+          (narrationOk ? "" : ` [${narrationReasons}]`)
+      );
+    } catch (grErr) {
+      console.error("[webhook] narration guardrail error (fail-open):", grErr);
+    }
 
     // ── Feedback token ────────────────────────────────────
     const feedbackToken = randomUUID();
@@ -369,12 +406,27 @@ async function handleBilan360Purchase(
       const verdict = evaluateReportShip(reportHTML, lang as "fr" | "en", {
         coreInvalid: (D as Record<string, any>)?._integrity?.coreInvalid === true,
       });
-      if (!verdict.ok) {
-        console.warn(`[webhook] Bilan 360 ship-gate FAILED [${verdict.reasons.join(", ")}] for ${maskEmail(email)} — serving needs-attention variant`);
+      // Hold the report if EITHER the structural gate fails OR the narration
+      // guardrail could not be satisfied after auto-repair.
+      if (!verdict.ok || !narrationOk) {
+        const allReasons = [
+          ...verdict.reasons,
+          ...(narrationOk ? [] : [`narration(${narrationReasons})`]),
+        ].join(", ");
+        console.warn(`[webhook] Bilan 360 ship HELD [${allReasons}] for ${maskEmail(email)} — serving needs-attention variant`);
         reportHTML = renderNeedsAttentionHTML({
           firstName: (D as Record<string, any>)?.firstName || (params as Record<string, any>)?.firstName || "",
           lang: lang as "fr" | "en",
         });
+        // The customer was promised a human-reviewed report within 24h — alert a
+        // human so that SLA can actually be met. Fire-and-forget (never blocks delivery).
+        await sendAdminAlert(
+          "Bilan 360 report held — 24h human review owed",
+          `A report was held before delivery and the customer received the "needs-attention" fallback.\n` +
+            `They were told a finalized report will arrive within 24h.\n\n` +
+            `Email: ${email}\nSession: ${sessionId}\nLang: ${lang}\nPhase: ${phase}\n` +
+            `Reasons: ${allReasons}\n`
+        ).catch((e) => console.error("[webhook] needs-attention alert failed:", e));
       }
     } catch (gateErr) {
       console.error("[webhook] ship-gate error (fail-open, shipping rendered report):", gateErr);
@@ -506,42 +558,42 @@ async function handleExpertPurchase(
       if (!mc) throw new Error("MC engine returned null");
       console.log(`[webhook] Expert initial MC completed in ${Date.now() - mcStart}ms`);
 
-      const D = extractReportDataExpert(mc, mcParams);
-      const grade = String(D.grade);
-      const activeSections = detectExpertSections(mcParams, mc, grade);
+      // 2026-06-17: Planner initial report unified onto the Bilan 360 pipeline.
+      const phase = determinePhase(Number((mcParams as any).age) || 40, Number((mcParams as any).retAge) || 65);
       const quiz = mcParams._quiz || {};
-      const batches = buildExpertPromptBatches(D, mc, mcParams, quiz, activeSections);
+      const stWhen = phase === "ACCUM" ? "ret" : "now";
+      const extraRuns = {
+        mcStressCrash08: runMC({ ...mcParams, strs: "crash08", stWhen }, 1000) as Record<string, any> | null,
+        mcStressStagflation: runMC({ ...mcParams, strs: "stagflation", stWhen }, 1000) as Record<string, any> | null,
+        mcStressProlonged: runMC({ ...mcParams, strs: "prolonged", stWhen }, 1000) as Record<string, any> | null,
+      };
+      const D = extractReportData360(mc, mcParams, phase, extraRuns);
+      const grade = String(D.grade);
+      const buildfiData = buildBuildFiData(mc, mcParams, phase, lang, extraRuns);
 
-      // Run AI batches in parallel with 90s timeout (Vercel max 120s)
+      // AI narration (single prompt, 90s cap). Fails OPEN to deterministic fallbacks.
       const aiStart = Date.now();
-      // NOTE: Intermediate batch results are intentionally unsanitized (identity cast).
-      // Post-hoc sanitizeAISlotsExpert() call below handles AMF compliance for all merged slots.
-      let batchResults: Record<string, string>[];
+      const prompt = buildAIPrompt360(D, mcParams, fr, quiz, phase, undefined);
+      let ai: Record<string, string | undefined>;
       try {
-        batchResults = await Promise.race([
-          Promise.all(
-            batches.map(b => callAnthropic(b.sys, b.usr, (raw) => raw as Record<string, string>))
-          ),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("AI batch timeout (90s)")), 90_000)
+        const narrationModel = "claude-opus-4-8";
+        ai = await Promise.race([
+          callAnthropic(prompt.sys, prompt.usr, sanitizeAISlots360, narrationModel, 8000),
+          new Promise<Record<string, string | undefined>>((_, reject) =>
+            setTimeout(() => reject(new Error("AI timeout 90s")), 90_000)
           ),
         ]);
-      } catch (timeoutErr) {
-        console.warn("[webhook] Expert AI batch timed out, using fallback (numeric-only report)");
-        batchResults = [];
+      } catch (aiErr) {
+        console.warn("[webhook] Planner initial AI failed/timed out, using static fallbacks:", aiErr);
+        ai = {};
       }
-      const mergedRaw: Record<string, any> = {};
-      for (const result of batchResults) {
-        Object.assign(mergedRaw, result);
-      }
-      const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
-      console.log(`[webhook] Expert AI: ${Object.keys(ai).length}/${activeSections.length} sections in ${Date.now() - aiStart}ms`);
+      console.log(`[webhook] Planner initial AI: ${Object.keys(ai).length} slots in ${Date.now() - aiStart}ms`);
 
-      // Generate feedback token for expert report
+      // Generate feedback token
       const expertFeedbackToken = randomUUID();
-      await createFeedbackRecord(expertFeedbackToken, email, "expert", lang);
+      await createFeedbackRecord(expertFeedbackToken, email, "bilan360", lang);
 
-      const reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, expertFeedbackToken);
+      const reportHTML = renderReportHTML360(D, mc, mcParams, lang, ai, phase, expertFeedbackToken, extraRuns, buildfiData);
 
       const timestamp = new Date().toISOString().slice(0, 10);
       const filename = `bilan-expert-${timestamp}-${sessionId.slice(-8)}.html`;
@@ -596,7 +648,7 @@ async function handleExpertPurchase(
 
 // ── Export addon handler ──────────────────────────────────
 
-async function handleExportAddon(email: string, sessionId: string): Promise<NextResponse> {
+async function handleExportAddon(email: string, sessionId: string, credits: number = 1): Promise<NextResponse> {
   try {
     // Verify profile exists before incrementing
     const profile = await getExpertProfile(email);
@@ -609,7 +661,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
     }
 
     // Atomic increment via Lua script to prevent race conditions
-    const { success, remaining } = await incrementExportCredit(email);
+    const { success, remaining } = await incrementExportCredit(email, credits);
     if (!success) {
       throw new Error(`incrementExportCredit failed for ${email}`);
     }
@@ -621,7 +673,7 @@ async function handleExportAddon(email: string, sessionId: string): Promise<Next
         {
           date: new Date().toISOString(),
           action: "addon_purchased",
-          details: { credits_added: 1, new_total: remaining },
+          details: { credits_added: credits, new_total: remaining },
         },
       ],
     });

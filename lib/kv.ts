@@ -267,25 +267,28 @@ export async function decrementExportCredit(
 }
 
 export async function incrementExportCredit(
-  email: string
+  email: string,
+  count: number = 1
 ): Promise<{ success: boolean; remaining: number }> {
   const norm = normalizeEmail(email);
   const key = KEYS.expert(norm);
+  // 2026-06-17 fix: parameterized so report-pack can grant 4 (was hardcoded +1).
+  const n = Math.max(1, Math.floor(count) || 1);
   try {
     const result = await redis.eval(
       `local d = redis.call('GET', KEYS[1])
        if not d then return {0, -1} end
        local p = cjson.decode(d)
-       p.exportsAI = (p.exportsAI or 0) + 1
+       p.exportsAI = (p.exportsAI or 0) + tonumber(ARGV[1])
        redis.call('SET', KEYS[1], cjson.encode(p))
        return {1, p.exportsAI}`,
-      [key], []
+      [key], [String(n)]
     ) as [number, number];
     return { success: result[0] === 1, remaining: result[1] };
   } catch {
     const profile = await getExpertProfile(email);
     if (!profile) return { success: false, remaining: 0 };
-    const remaining = profile.exportsAI + 1;
+    const remaining = profile.exportsAI + n;
     await updateExpertProfile(email, { exportsAI: remaining });
     return { success: true, remaining };
   }

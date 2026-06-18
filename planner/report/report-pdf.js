@@ -4983,9 +4983,9 @@
 
     // Post-data narrative — AI supersedes deterministic
     var _meltDet = fr
-      ? 'L\u2019objectif du meltdown est de r\u00e9duire la masse imposable du REER avant la conversion FERR obligatoire. En retirant ' + fR(p.meltTgt || 0) + ' par ann\u00e9e pendant ' + _meltYrs + ' ans, le solde REER diminue de ' + _meltPctRed + '%.' + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' Cette strat\u00e9gie g\u00e9n\u00e8re un alpha fiscal estim\u00e9 de <strong>' + fR(Math.round(d._taxAlpha)) + '</strong>, en r\u00e9duisant les retraits FERR obligatoires, la r\u00e9cup\u00e9ration PSV et l\u2019imp\u00f4t au d\u00e9c\u00e8s.' : ' Cela diminue les retraits FERR obligatoires et la r\u00e9cup\u00e9ration potentielle de la PSV.')
+      ? 'L\u2019objectif du d\u00e9caissement anticip\u00e9 est de r\u00e9duire la masse imposable du REER avant la conversion FERR obligatoire. En retirant ' + fR(p.meltTgt || 0) + ' par ann\u00e9e pendant ' + _meltYrs + ' ans, le solde REER diminue de ' + _meltPctRed + '%.' + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' Cette strat\u00e9gie g\u00e9n\u00e8re un alpha fiscal estim\u00e9 de <strong>' + fR(Math.round(d._taxAlpha)) + '</strong>, en r\u00e9duisant les retraits FERR obligatoires, la r\u00e9cup\u00e9ration PSV et l\u2019imp\u00f4t au d\u00e9c\u00e8s.' : ' Cela diminue les retraits FERR obligatoires et la r\u00e9cup\u00e9ration potentielle de la PSV.')
       : 'The meltdown objective is to reduce the taxable RRSP mass before mandatory RRIF conversion. By withdrawing ' + fR(p.meltTgt || 0) + ' per year over ' + _meltYrs + ' years, the RRSP balance decreases by ' + _meltPctRed + '%.' + (d._taxAlpha !== null && d._taxAlpha > 0 ? ' This strategy generates an estimated tax alpha of <strong>' + fR(Math.round(d._taxAlpha)) + '</strong>, by reducing mandatory RRIF withdrawals, OAS clawback, and tax at death.' : ' This reduces mandatory RRIF withdrawals and potential OAS clawback.');
-    h += narrAi(_meltDet, d.ai.meltdown_insight, fr, fr ? 'Meltdown \u2014 Analyse IA' : 'Meltdown \u2014 AI Analysis');
+    h += narrAi(_meltDet, d.ai.meltdown_insight, fr, fr ? 'D\u00e9caissement anticip\u00e9 \u2014 Analyse IA' : 'Meltdown \u2014 AI Analysis');
     h += secPageEnd();
     return h;
   }

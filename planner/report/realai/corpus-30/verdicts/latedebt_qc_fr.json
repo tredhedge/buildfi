@@ -1,0 +1,45 @@
+{
+  "key": "latedebt_qc_fr",
+  "lang": "fr",
+  "phase": "TRANSITION",
+  "band": "fragile",
+  "grade": "F",
+  "successPct": 0,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 30,
+    "expected": 33,
+    "emptySlots": 3
+  },
+  "htmlBytes": 48167,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

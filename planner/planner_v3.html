@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="description" content="BuildFi Laboratoire - Simulateur de retraite canadien avec Monte Carlo, fiscalite 13 provinces, QPP/OAS/GIS.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--bf-font-ui),BlinkMacSystemFont,sans-serif;--bf-cd:#2c2820;--bf-bd:#443e34;--bf-tx:#c8c4bf;--bf-rail-bg:rgba(36,40,48,.96);--bf-rail-border:rgba(132,154,182,.24);--bf-rail-btn:rgba(208,217,230,.62);--bf-rail-hover-bg:rgba(90,140,196,.16);--bf-rail-hover-tx:rgba(215,232,250,.96);--bf-rail-active-bg:rgba(84,130,182,.24);--bf-rail-active-tx:#8ec0f2;--bf-overlay-bg:rgba(34,40,52,.94);--bf-overlay-backdrop:rgba(0,0,0,.22);--bf-overlay-shadow:0 6px 22px rgba(0,0,0,.22);--bf-field-bg:rgba(20,26,34,.5);--bf-field-border:rgba(126,151,178,.42)}#root{min-height:100vh}
+<style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--bf-font-ui),BlinkMacSystemFont,sans-serif;background:#252d39;color:#d9e2ee;--bf-cd:#2d3748;--bf-bd:#46535f;--bf-tx:#d9e2ee;--bf-rail-bg:rgba(34,42,55,.92);--bf-rail-border:rgba(132,154,182,.24);--bf-rail-btn:rgba(208,217,230,.62);--bf-rail-hover-bg:rgba(90,140,196,.16);--bf-rail-hover-tx:rgba(215,232,250,.96);--bf-rail-active-bg:rgba(84,130,182,.24);--bf-rail-active-tx:#8ec0f2;--bf-overlay-bg:rgba(34,40,52,.94);--bf-overlay-backdrop:rgba(0,0,0,.22);--bf-overlay-shadow:0 6px 22px rgba(0,0,0,.22);--bf-field-bg:rgba(20,26,34,.5);--bf-field-border:rgba(126,151,178,.42)}#root{min-height:100vh}
 .bf-content [style*="overflow"] table thead th,.bf-content [style*="overflow"] table thead td,.bf-content [style*="overflow"] table thead tr{position:sticky;top:0;z-index:2;background:var(--bf-cd);box-shadow:0 1px 0 var(--bf-bd)}
 
 
@@ -45,11 +45,11 @@
   .kpi-tip{padding:10px 8px!important}
   .kpi-tip .kpi-val{font-size:18px!important}
 }
-.bf-progress-bar{display:flex;align-items:center;gap:2px;padding:6px 12px;background:var(--bf-paper-2);color:var(--bf-ink);border-bottom:1px solid rgba(192,138,78,0.25);font-size:11px;position:relative;z-index:100}
+.bf-progress-bar{display:flex;align-items:center;gap:2px;padding:6px 12px;background:var(--bf-cd);color:var(--bf-tx);border-bottom:1px solid rgba(196,148,74,0.25);font-size:11px;position:relative;z-index:100}
 .bf-progress-bar .step{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;cursor:pointer;transition:all .2s ease;white-space:nowrap;font-weight:500}
 .bf-progress-bar .step.done{opacity:0.75}
 .bf-progress-bar .step.done::before{content:"\2713";font-size:10px}
-.bf-progress-bar .step.active{background:rgba(192,138,78,0.18);color:var(--bf-ink);font-weight:600}
+.bf-progress-bar .step.active{background:rgba(196,148,74,0.18);color:var(--bf-tx);font-weight:600}
 .bf-progress-bar .step-line{width:16px;height:1px;background:rgba(192,138,78,0.3);flex-shrink:0}
 .bf-progress-bar .bf-dismiss-prog{margin-left:auto;background:none;border:none;color:rgba(192,138,78,0.5);cursor:pointer;font-size:14px;padding:2px 6px;line-height:1}
 .bf-progress-bar .dismiss-prog:hover{color:rgba(192,138,78,0.9)}
@@ -57,6 +57,7 @@
 @media(max-width:768px){
   .bf-diag-grid{grid-template-columns:1fr!important}
   .bf-kpi{grid-template-columns:repeat(2,1fr)!important;gap:6px!important}
+  .bf-kpi-strip{grid-template-columns:repeat(2,1fr)!important;gap:6px!important}
   .bf-content table{font-size:11px!important}
   .bf-content table th,.bf-content table td{padding:3px 4px!important}
   .sb-tip .sb-tip-box{width:200px;font-size:10px}
@@ -157,7 +158,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* Clickable KPI affordance — subtle chevron + hover lift signals that the
    card routes to a drill-in tab. Applied via inline className="bf-kpi-click". */
-.bf-kpi-click{position:relative;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
+.bf-kpi-click{position:relative;box-shadow:0 1px 2px rgba(12,18,28,0.16);transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
 .bf-kpi-click::after{content:"\203A";position:absolute;bottom:4px;right:8px;font-size:14px;line-height:1;color:var(--bf-ac,var(--bf-gold));opacity:.45;transition:opacity .12s ease,transform .12s ease}
 .bf-kpi-click:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.12)}
 .bf-kpi-click:hover::after{opacity:.9;transform:translateX(2px)}
@@ -168,7 +169,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   position: fixed; left: 0; top: 0; bottom: 0; width: 84px;
   background: var(--bf-rail-bg); border-right: 1px solid var(--bf-rail-border);
   z-index: 8500; display: flex; flex-direction: column; align-items: center;
-  padding: 8px 0 6px; gap: 1px;
+  padding: 10px 0 8px; gap: 5px;
   overflow-y: auto; overflow-x: hidden;
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
@@ -176,10 +177,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bf-rail::-webkit-scrollbar-thumb{background:var(--bf-rail-border);border-radius:3px}
 .bf-rail::-webkit-scrollbar-track{background:transparent}
 .bf-rail-btn {
-  width: 72px; min-height: 38px; border-radius: 8px; border: none;
+  width: 72px; min-height: 46px; border-radius: 10px; border: none;
   background: transparent; color: var(--bf-rail-btn); font-size: 15px;
   cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: all .2s ease; position: relative; padding: 3px 2px 2px; gap: 0;
+  transition: all .2s ease; position: relative; padding: 6px 2px 5px; gap: 3px;
 }
 .bf-rail-btn:hover { background: var(--bf-rail-hover-bg); color: var(--bf-rail-hover-tx); }
 .bf-rail-btn.active { background: var(--bf-rail-active-bg); color: var(--bf-rail-active-tx); box-shadow: inset 2px 0 0 var(--bf-rail-active-tx); }
@@ -846,7 +847,7 @@ body[data-bf-cockpit="1"] .bf-t2-inline { display: none !important; }
 var FS = { xxs: 10, xs: 11, sm: 12, base: 13, md: 14, lg: 18, xl: 24, xxl: 30 };
 var FW = { normal: 400, medium: 600, bold: 700 };
 var SP = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 };
-var RAD = { sm: 4, md: 8, lg: 16 };
+var RAD = { sm: 6, md: 10, lg: 14 };
 
 
 window.onerror = function(msg, url, line, col, err) { var d = document.createElement("div"); d.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:#cc0000;color:#fff;padding:8px 12px;font:12px monospace;max-height:120px;overflow:auto"; d.textContent = "JS Error L" + line + ": " + msg; document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 15000); };
@@ -1475,8 +1476,11 @@ if (typeof document !== "undefined" && typeof location !== "undefined" && /^http
   document.head.appendChild(_mf);
 }
 
-const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#344155", bd: "#4d5d75", bd2: "#677b98", tx: "#d7e2ef", al: "#f2f7fd", dm: "#bccbe0", ac: "#d2a764", bl: "#6aa6de", gn: "#48a66d", rd: "#cf6060", or: "#cf9850", go: "#c1ab52", pr: "#927bd0", tl: "#56c0c8", gd: "#36845d", cp: "#8f66ff" };
-const CL_LIGHT = { bg: "#f5f8fc", cd: "#fcfdff", s2: "#eef3f9", bd: "#d6e0ec", bd2: "#c2cfde", tx: "#2a3442", al: "#172332", dm: "#5d7085", ac: "#8f6d2f", bl: "#3b79b6", gn: "#2f8a4a", rd: "#b93f43", or: "#b5772f", go: "#99832f", pr: "#6656ac", tl: "#2f8d92", gd: "#2c6f47", cp: "#7c3aed" };
+// Aesthetic port (2026-06-16). Soft-slate dark (user-preferred, lighter than the
+// deep-navy first pass), canonical gold #c4944a, V4 clean light scale. These two
+// objects are the master source every inline style reads via CL.*.
+const CL_DARK = { bg: "#252d39", cd: "#2d3748", s2: "#36414f", bd: "#46535f", bd2: "#637592", tx: "#d9e2ee", al: "#f2f6fc", dm: "#aeb9ca", ac: "#c4944a", bl: "#66a4dc", gn: "#49a76e", rd: "#d06b66", or: "#d39a52", go: "#c5b056", pr: "#927bd0", tl: "#56c0c8", gd: "#37875f", cp: "#8f66ff" };
+const CL_LIGHT = { bg: "#f7f8fb", cd: "#ffffff", s2: "#f0f3f8", bd: "#cdd4e0", bd2: "#b3bccd", tx: "#28303c", al: "#0e1420", dm: "#5f6a7d", ac: "#a87c34", bl: "#3b79b6", gn: "#2f8a4a", rd: "#b93f43", or: "#b5772f", go: "#99832f", pr: "#6656ac", tl: "#2f8d92", gd: "#2c6f47", cp: "#7c3aed" };
 var CL = CL_DARK;
 var TX = {
   primary: function() { return CL.al; },
@@ -1602,9 +1606,9 @@ var S = {
   kpiLabel:        { fontSize: FS.sm, fontWeight: FW.normal, color: CL.dm },
 
   // \u2500\u2500 Cards \u2500\u2500
-  card:            { padding: SP[3], background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: SP[4] },
+  card:            { padding: SP[3], background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: SP[4], boxShadow: "0 1px 2px rgba(12,18,28,0.16), 0 3px 12px rgba(12,18,28,0.10)" },
   cardInner:       { padding: SP[2], background: CL.s2, borderRadius: RAD.sm, border: "1px solid " + CL.bd },
-  cardKpi:         { textAlign: "center", padding: "10px 6px", borderRadius: RAD.md, background: CL.cd, border: "1px solid " + CL.bd },
+  cardKpi:         { textAlign: "center", padding: "12px 8px", borderRadius: RAD.md, background: CL.cd, border: "1px solid " + CL.bd, boxShadow: "0 1px 2px rgba(12,18,28,0.14)" },
 
   // \u2500\u2500 Tables \u2500\u2500
   th:              { padding: "6px 8px", fontWeight: FW.medium, fontSize: FS.sm, borderBottom: "2px solid " + CL.ac },
@@ -2268,8 +2272,8 @@ var C = {
       abate: 1,
       eligDivCr: 0.1202,
       nonEligDivCr: 0.0067,
-      ageAmt: 8790,
-      ageThresh: 44325,
+      ageAmt: 9209,     // 2026 — Yukon mirrors FED_AGE_AMT (was 8790 = 2024) — audit 2026-06-18
+      ageThresh: 46433, // 2026 — Yukon mirrors FED_AGE_THRESH (was 44325 = 2024) — audit 2026-06-18
       penAmt: 2000
     },
     NU: {
@@ -2326,7 +2330,7 @@ var C = {
   QPP_EARLY_REDUCTION_PER_MONTH: 0.006,
   QPP_LATE_BONUS_PER_MONTH: 0.007,
   QPP_ADJ_FLOOR: 0.64,
-  QPP_ADJ_CAP: 1.588,   // defer to 72: 0.7%/mo × 84mo past 65 (audit 2.3; was 1.42 = age-70 cap)
+  QPP_ADJ_CAP: 1.42,    // 2026-06-17: cap at age 70 (CPP/QPP max deferral is 70: 0.7%/mo × 60mo = 42%). Reverts audit 2.3's incorrect 1.588/defer-to-72; matches canonical lib/engine + Canadian rules.
   QPP_SURVIVOR_CAP_MONTHLY: 784,
   QPP_SURVIVOR_FRACTION: 0.6,
   GIS_MAX_SINGLE: 1108.74,  // 2026 (audit 2.13)
@@ -3054,7 +3058,7 @@ function optimizeDecum(p) {
     var penMonth = 0;
     if (p.penType === "db" && retired) {
       penMonth = (p.penM || 0) * (p.penIdx ? infM : 1);
-      if (p.bridge && age < (p.brEnd || 65)) penMonth += (p.brAmt || 0);
+      if (p.bridge && age < (p.brEnd || 65)) penMonth += (p.brAmt || 0) * infM; // 2026-06-17: index to match MC engine (reconcile deterministic schedule)
     }
     if (["cd","rpdb","rrs","rver"].indexOf(p.penType) >= 0 && retired) {
       penMonth = (p.dcBal || 0) * 0.04 / 12;
@@ -4496,7 +4500,10 @@ function runMC(pInput, N, _progressCb) {
       }
       var splitB = 0;
       if (p.split && age >= 65 && (penMonth > 0 || rrifMin > 0) && p.cOn && cAlive) {
-        // Real pension splitting: eligible income split to spouse
+        // Real pension splitting: eligible income split to spouse.
+        // NOTE 2026-06-17: kept age>=65 gate (Quebec requires 65+ for pension splitting
+        // since 2014); federal T1032 would allow DB life-annuity at any age — needs
+        // province-aware treatment + rule confirmation before relaxing. Mirrors lib/engine.
         var eligiblePenInc = penMonth * 12 + (age >= 65 ? rrifMin : 0);
         var splitAmt = eligiblePenInc * (p.splitP || C.PENSION_SPLIT_MAX);
         // Compute actual benefit: tax on full income vs tax after splitting
@@ -6013,17 +6020,17 @@ function runTestSuite() {
   var tpd=calcTax(15000,0,"QC",0);T("Tax","Below personal",tpd.total,0,50);
   var t5=calcTax(100000,5,"QC",0.02);T("Tax","Indexed brackets",t5.total<EXP_TAX.QC[100000]?1:0,1,0);
   var te=calcTax(100000,0,"ON",0);T("Tax","Eff<Marg",te.eff<te.marg?1:0,1,0);
-  T("QPP","Max@65",calcQPP(65,71300,40),1441,10);
-  T("QPP","Early@60",calcQPP(60,71300,40),922.21,6);
-  T("QPP","Late@70",calcQPP(70,71300,40),2046.16,12);
-  T("QPP","Partial",calcQPP(65,50000,30),757.87,5);
+  T("QPP","Max@65",calcQPP(65,74600,40),1507.65,2);   // 2026: avgE=MGA(74600) -> QPP_MAX 1507.65 (was 71300=2025)
+  T("QPP","Early@60",calcQPP(60,74600,40),964.90,3);
+  T("QPP","Late@70",calcQPP(70,74600,40),2140.86,3);
+  T("QPP","Partial",calcQPP(65,50000,30),757.87,2);
   T("QPP","Zero",calcQPP(65,0,0),0,0);
-  T("QPP","RRQ2>MGA",calcQPP(65,80000,40)>1441?1:0,1,0);
-  T("OAS","Max@65",calcOAS(65,0,0,0),743.05,1);
-  T("OAS","Late@70",calcOAS(70,0,0,0),1010.55,2);
-  T("OAS","Clawback@100K",calcOAS(65,100000,0,0),684.59,2);
+  T("QPP","RRQ2>MGA",calcQPP(65,80000,40)>1500?1:0,1,0);
+  T("OAS","Max@65",calcOAS(65,0,0,0),742.31,1);   // 2026: OAS_MAX_MONTHLY (was 743.05=2025)
+  T("OAS","Late@70",calcOAS(70,0,0,0),1009.54,2);
+  T("OAS","Clawback@100K",calcOAS(65,100000,0,0),683.85,2);
   T("OAS","Full claw@200K",calcOAS(65,200000,0,0),0,1);
-  T("OAS","Indexed",calcOAS(65,0,10,0.02)>743.05?1:0,1,0);
+  T("OAS","Indexed",calcOAS(65,0,10,0.02)>742.31?1:0,1,0);
   T("GIS","Max single",calcGIS(65,0,0,0,false),1108.74,1); // audit 2.13: 2026 GIS max single
   T("GIS","Max couple",calcGIS(65,0,0,0,true),665.41,1);
   T("GIS","Reduced",calcGIS(65,20000,0,0,false)<1108.74?1:0,1,0);
@@ -8353,11 +8360,11 @@ var SAM_STRATEGIES = [
   { id: "qpp70", cat: "gov", name: { fr: "Reporter le RRQ \u00e0 70 ans", en: "Defer QPP to 70" },
     cond: function(p) { return p.qppAge < 70 && p.age < 70; },
     apply: function(p) { return Object.assign({}, p, { qppAge: 70 }); },
-    explain: { fr: "Les projections indiquent qu\u2019un report du RRQ \u00e0 70 ans augmenterait la rente de 42%.", en: "Projections indicate deferring QPP to 70 would increase the pension by 42%." } },
+    explain: { fr: "Les projections indiquent qu\u2019un report du RRQ \u00e0 70 ans augmenterait la rente (jusqu'à +42 % par rapport à 65 ans).", en: "Projections indicate deferring QPP to 70 would increase the pension (up to +42% versus age 65)." } },
   { id: "oas70", cat: "gov", name: { fr: "Reporter la PSV \u00e0 70 ans", en: "Defer OAS to 70" },
     cond: function(p) { return p.oasAge < 70 && p.age < 70; },
     apply: function(p) { return Object.assign({}, p, { oasAge: 70 }); },
-    explain: { fr: "Les projections indiquent qu\u2019un report de la PSV \u00e0 70 ans augmenterait la rente de 36%.", en: "Projections indicate deferring OAS to 70 would increase the pension by 36%." } },
+    explain: { fr: "Les projections indiquent qu\u2019un report de la PSV \u00e0 70 ans augmenterait la rente (jusqu'à +36 % par rapport à 65 ans).", en: "Projections indicate deferring OAS to 70 would increase the pension (up to +36% versus age 65)." } },
   { id: "oas65", cat: "gov", name: { fr: "Prendre la PSV \u00e0 65 ans", en: "Take OAS at 65" },
     cond: function(p) { return p.oasAge > 65; },
     apply: function(p) { return Object.assign({}, p, { oasAge: 65 }); },
@@ -8368,7 +8375,7 @@ var SAM_STRATEGIES = [
     apply: function(p) { return Object.assign({}, p, { retSpM: Math.round(p.retSpM * 0.9) }); },
     explain: { fr: "Les projections indiquent qu\u2019une r\u00e9duction de 10% des d\u00e9penses am\u00e9liorerait significativement la durabilit\u00e9 du plan.", en: "Projections indicate a 10% spending reduction would significantly improve plan sustainability." } },
   { id: "spend80", cat: "spending", name: { fr: "R\u00e9duire les d\u00e9penses de 20%", en: "Reduce spending by 20%" },
-    cond: function(p) { return p.retSpM > 500 && p.retSpM > 3000; },
+    cond: function(p) { return p.retSpM > 3000; },
     apply: function(p) { return Object.assign({}, p, { retSpM: Math.round(p.retSpM * 0.8) }); },
     explain: { fr: "Les projections indiquent qu\u2019une r\u00e9duction de 20% des d\u00e9penses aurait un impact majeur sur la long\u00e9vit\u00e9 du portefeuille.", en: "Projections indicate a 20% spending cut would have a major impact on portfolio longevity." } },
   // === RETIREMENT AGE ===
@@ -8401,7 +8408,7 @@ var SAM_STRATEGIES = [
   { id: "maxTFSA", cat: "savings", name: { fr: "Maximiser le C\u00c9LI (7000$/an)", en: "Max TFSA ($7000/yr)" },
     cond: function(p) { return (p.tfsaC || 0) < 7000 && p.sal > 30000; },
     apply: function(p) { return Object.assign({}, p, { tfsaC: 7000 }); },
-    explain: { fr: "Les projections indiquent que la maximisation du C\u00c9LI offrirait une croissance libre d\u2019imp\u00f4t optimale.", en: "Projections indicate maximizing TFSA would provide optimal tax-free growth." } },
+    explain: { fr: "Les projections indiquent que la maximisation du C\u00c9LI offrirait une croissance libre d\u2019imp\u00f4t additionnelle.", en: "Projections indicate maximizing TFSA would provide additional tax-free growth." } },
   { id: "maxRRSP", cat: "savings", name: { fr: "Maximiser le REER (18%)", en: "Max RRSP (18%)" },
     cond: function(p) { return p.sal > 0 && (p.rrspC || 0) < p.sal * 0.18; },
     apply: function(p) { return Object.assign({}, p, { rrspC: Math.round(Math.min(p.sal * 0.18, 33810)) }); }, // audit A: 2026 RRSP dollar limit (was 31560 = 2024)
@@ -8425,7 +8432,7 @@ var SAM_STRATEGIES = [
   { id: "moreEq", cat: "allocation", name: { fr: "Augmenter les actions \u00e0 80%", en: "Increase equities to 80%" },
     cond: function(p) { return (p.allocR || 0.6) < 0.75 && p.age < 50; },
     apply: function(p) { return Object.assign({}, p, { allocR: 0.80, allocT: 0.80, allocN: 0.80 }); },
-    explain: { fr: "Les projections indiquent qu\u2019une allocation plus agressive pourrait \u00eatre appropri\u00e9e pour un horizon long.", en: "Projections indicate a more aggressive allocation could be appropriate for a long horizon." } },
+    explain: { fr: "Les projections indiquent qu\u2019une allocation plus agressive est g\u00e9n\u00e9ralement associ\u00e9e \u00e0 un horizon long.", en: "Projections indicate a more aggressive allocation is generally associated with a long horizon." } },
   { id: "lessEq", cat: "allocation", name: { fr: "R\u00e9duire les actions \u00e0 40%", en: "Reduce equities to 40%" },
     cond: function(p) { return (p.allocR || 0.6) > 0.5 && p.age >= 55; },
     apply: function(p) { return Object.assign({}, p, { allocR: 0.40, allocT: 0.40, allocN: 0.40 }); },
@@ -8845,6 +8852,11 @@ function App() {
     document.body.style.setProperty("--bf-overlay-shadow", dark ? "0 6px 18px rgba(0,0,0,0.18)" : "0 4px 14px rgba(45,72,102,0.10)");
     document.body.style.setProperty("--bf-field-bg", dark ? "rgba(21,28,39,0.55)" : "rgba(255,255,255,0.94)");
     document.body.style.setProperty("--bf-field-border", dark ? "rgba(138,165,196,0.46)" : "rgba(118,145,171,0.44)");
+    // Verdict/grade card: keep it theme-aware (the static [data-theme=dark] block is
+    // dead code since we never set data-theme). Dark = gold-tinted slate certificate.
+    document.body.style.setProperty("--bf-verdict-bg", dark ? "#2f3a47" : "#fbf6ec");
+    document.body.style.setProperty("--bf-verdict-fg", dark ? "#f2f6fc" : "#1a1610");
+    document.body.style.setProperty("--bf-verdict-sub", dark ? "#d8be84" : "#9a7b3e");
     // Rebuild style objects with new CL
     S.sectionTitle.color = CL.ac; S.sectionTitle.borderBottom = "1px solid " + CL.bd; S.sectionTitleLg.color = CL.ac; S.sectionTitleLg.borderBottom = "1px solid " + CL.bd; S.pageTitle.color = CL.ac;
     S.body.color = CL.tx; S.bodyMuted.color = CL.dm; S.caption.color = CL.dm;
@@ -9584,6 +9596,9 @@ function App() {
   // updates this AFTER render completes, so the current render still sees the
   // prior values and can diff against them.
   var _prevMcRef = useRef({ succ: null, medF: null, p5Ruin: null, govTotal: null });
+  // Decision-loop baseline (2026-06-17): the first real MC of this profile becomes the
+  // reference the user's edits are measured against. Reset to null on profile load.
+  var _baselineMcRef = useRef(null);
   // FIRE (Financial Independence, Retire Early) lens. When true, Diagnostic
   // tab exposes a FIRE analysis block (Years-to-FI, FI number, savings rate,
   // classification: Lean / Traditional / Fat / Coast / Barista). Persisted so
@@ -9704,6 +9719,7 @@ function App() {
   var _pe2 = useState(0), penEE = _pe2[0], sPEE2 = _pe2[1];
   var _pPct = useState(false), penPctMode = _pPct[0], sPenPctMode = _pPct[1];
   var _stRes = useState(null), stressResults = _stRes[0], setStressResults = _stRes[1];
+  var _stRun2 = useState(false), stressRunning = _stRun2[0], setStressRunning = _stRun2[1];
   var _sensTab = useState("stress"), sensTab = _sensTab[0], setSensTab = _sensTab[1];
   var _stExp = useState(null), stExpanded = _stExp[0], setStExpanded = _stExp[1];
   var _stShockAge = useState(null), stShockAge = _stShockAge[0], setStShockAge = _stShockAge[1];
@@ -9803,6 +9819,24 @@ function App() {
     sFN(parts[0] || "");
     sLN(parts.slice(1).join(" "));
   }, [cName]);
+  // Preemptive constraint (2026-06-17): keep the RESP capital-return age after the
+  // contribution window so the "Retour REEE" validation can never fire. Auto-corrects
+  // loaded profiles / changes to age or remaining contribution years.
+  useEffect(function() {
+    if (!respOn) return;
+    var _min = age + (respYrsLeft || 0) + 1;
+    if (respReturnAge < _min) setRespRetAge(Math.min(75, _min));
+  }, [respOn, age, respYrsLeft, respReturnAge]);
+  // Preemptive range/cross-field clamps (2026-06-17): keep inputs inside the validator's
+  // bounds so the "à corriger" banner can't fire on loaded profiles or dependent changes.
+  useEffect(function() {
+    if (qppAge < 60) sQA(60); else if (qppAge > 70) sQA(70);
+    if (oasAge < 65) sOA(65); else if (oasAge > 70) sOA(70);
+    if (cQppAge < 60) sCQA(60); else if (cQppAge > 70) sCQA(70);
+    if (cOasAge < 65) sCOA(65); else if (cOasAge > 70) sCOA(70);
+    if (deathAge > 0 && deathAge < retAge + 3) sDA(retAge + 3);
+    if (splitP > 0.5) sSP(0.5);
+  }, [qppAge, oasAge, cQppAge, cOasAge, deathAge, retAge, splitP]);
   // === CCPC / Business module state (Ref: PASSATION_CCPC_MODULE.md §5.1) ===
   var _biz = useState(function() { try { var s = localStorage.getItem("bf_sbf"); if (s) { var p = JSON.parse(s); return !!p.biz; } } catch(e) {} return false; }), bizOn = _biz[0], setBizOn = _biz[1];
   var _bizType = useState("ccpc"), bizType = _bizType[0], setBizType = _bizType[1];
@@ -10335,10 +10369,11 @@ function App() {
   var valWarnings = {};
   if (age < 18 || age > 80) valErrors.age = lang === "fr" ? "L'\u00e2ge doit se situer entre 18 et 80 ans." : "Age must be between 18 and 80.";
   if (deathAge > 120) valErrors.deathAge = lang === "fr" ? "L'horizon de vie ne peut d\u00e9passer 120 ans." : "Life horizon cannot exceed 120.";
-  if (retAge < age) valErrors.retAge = lang === "fr" ? "L'\u00e2ge de retraite est ant\u00e9rieur \u00e0 l'\u00e2ge actuel." : "Retirement age is before current age.";
+  // 2026-06-17: removed the "retAge < age" error \u2014 a retirement age below the current age is
+  // the valid already-retired / FIRE state (engine uses Math.max(0, retAge-age)), not a mistake.
   if (retAge > deathAge) valErrors.retAge = lang === "fr" ? "L'\u00e2ge de retraite d\u00e9passe l'horizon de vie." : "Retirement age exceeds life horizon.";
   if (deathAge > 0 && deathAge < retAge + 3) valErrors.deathAge = lang === "fr" ? "L'horizon de vie doit \u00eatre au moins 3 ans apr\u00e8s la retraite." : "Life horizon must be at least 3 years past retirement.";
-  if (qppAge < 60 || qppAge > 72) valErrors.qppAge = lang === "fr" ? "Le d\u00e9but RRQ/RPC doit se situer entre 60 et 72 ans." : "QPP/CPP start must be between 60 and 72.";
+  if (qppAge < 60 || qppAge > 70) valErrors.qppAge = lang === "fr" ? "Le d\u00e9but RRQ/RPC doit se situer entre 60 et 70 ans." : "QPP/CPP start must be between 60 and 70.";
   if (oasAge < 65 || oasAge > 70) valErrors.oasAge = lang === "fr" ? "Le d\u00e9but PSV doit se situer entre 65 et 70 ans." : "OAS start must be between 65 and 70.";
   if (sal > 0 && retSpM > 0 && retSpM * 12 > sal * 0.9) valWarnings.retSpM = lang === "fr" ? "Les d\u00e9penses planifi\u00e9es d\u00e9passent 90 % du salaire." : "Planned spending exceeds 90% of salary.";
   if (sal > 0 && rrspC > Math.min(33810, sal * 0.18)) valWarnings.rrspC = lang === "fr" ? "Cotisation REER au-del\u00e0 du plafond estim\u00e9 (~" + f$(Math.round(Math.min(33810, sal * 0.18))) + "/an)." : "RRSP contribution above estimated limit (~" + f$(Math.round(Math.min(33810, sal * 0.18))) + "/yr).";
@@ -10359,13 +10394,13 @@ function App() {
   if (splitP > 0.5) valErrors.splitP = lang === "fr" ? "Le fractionnement de pension est plafonn\u00e9 \u00e0 50 %." : "Pension splitting is capped at 50%.";
   debts.forEach(function(d, i) {
     if (d.bal > 0 && d.rate > 0 && d.pay > 0 && d.pay < d.bal * d.rate / 12) {
-      valErrors["debt_" + i] = lang === "fr" ? "Le paiement mensuel est inf\u00e9rieur aux int\u00e9r\u00eats \u2014 le solde augmente." : "Monthly payment is below interest — balance is growing.";
+      valWarnings["debt_" + i] = lang === "fr" ? "Le paiement mensuel est inf\u00e9rieur aux int\u00e9r\u00eats \u2014 le solde augmente." : "Monthly payment is below interest — balance is growing.";
     }
   });
   if (cOn) {
-    if (cRetAge < cAge) valErrors.cRetAge = lang === "fr" ? "La retraite du conjoint est ant\u00e9rieure \u00e0 son \u00e2ge actuel." : "Spouse retirement age is before their current age.";
-    if (cQppAge < 60 || cQppAge > 72) valErrors.cQppAge = lang === "fr" ? "Le d\u00e9but RRQ du conjoint doit se situer entre 60 et 72 ans." : "Spouse QPP start must be between 60 and 72.";
-    if (cOasAge < 65 || cOasAge > 72) valErrors.cOasAge = lang === "fr" ? "Le d\u00e9but PSV du conjoint doit se situer entre 65 et 72 ans." : "Spouse OAS start must be between 65 and 72.";
+    // 2026-06-17: removed "cRetAge < cAge" error \u2014 spouse already-retired is a valid state.
+    if (cQppAge < 60 || cQppAge > 70) valErrors.cQppAge = lang === "fr" ? "Le d\u00e9but RRQ du conjoint doit se situer entre 60 et 70 ans." : "Spouse QPP start must be between 60 and 70.";
+    if (cOasAge < 65 || cOasAge > 70) valErrors.cOasAge = lang === "fr" ? "Le d\u00e9but PSV du conjoint doit se situer entre 65 et 70 ans." : "Spouse OAS start must be between 65 and 70.";
   }
   var valCount = Object.keys(valErrors).length;
   var warnCount = Object.keys(valWarnings).length;
@@ -11135,7 +11170,7 @@ var reportHTML = useMemo(function() {
     var _retBal = _retRow ? ((_retRow.aRR||0) + (_retRow.aTF||0) + (_retRow.aNR||0) + (_retRow.aPE||0) + (_retRow.aPM||0) + (_retRow.aDC||0) + (_retRow.aCRR||0) + (_retRow.aCTF||0) + (_retRow.aCNR||0)) : 0;
     var _wdPct = _retRow && _retBal > 0 ? ((_retRow.ret||0)/_retBal*100).toFixed(1) : null;
     var _replRatio = covRatio > 0 ? Math.round(covRatio * 100) : 0;
-    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=200?(fr?'Jamais':'Never'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>', fr?'\u00c9puisement \u00e9pargne':'Savings depletion', (mc.p5Ruin||999)>=200?'#2a8c46':'#cc4444');
+    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=999?(fr?'Jamais':'Never'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>', fr?'\u00c9puisement \u00e9pargne':'Savings depletion', (mc.p5Ruin||999)>=999?'#2a8c46':'#cc4444');
     h += KPI('<span class="mono">'+(_wdPct?_wdPct+'%':'\u2014')+'</span>', fr?'Retrait initial (% \u00e9pargne)':'Init. WR (% portfolio)', _wdPct&&parseFloat(_wdPct)>4?'#cc4444':_wdPct&&parseFloat(_wdPct)>3.5?'#b89830':'#2a8c46');
     if (exp) h += KPI('<span class="mono">'+(_taxAlpha !== null && _taxAlpha > 0 ? f$(Math.round(_taxAlpha)) : f$(Math.round(_optTax)))+'</span>', _taxAlpha !== null && _taxAlpha > 0 ? (fr?'Alpha fiscal':'Tax alpha') : (fr?'Imp\u00f4t viager':'Lifetime tax'), _taxAlpha !== null && _taxAlpha > 0 ? '#2a8c46' : '#cc4444');
     h += '</div>';
@@ -11147,7 +11182,7 @@ var reportHTML = useMemo(function() {
     h += (fr?' Les prestations gouvernementales couvrent <strong>'+_replRatio+'%</strong> des d\u00e9penses':' Government benefits cover <strong>'+_replRatio+'%</strong> of spending');
     h += (fr?', laissant un \u00e9cart de <strong>'+fD(Math.round(gapM))+'/mois</strong>.':',  leaving a gap of <strong>'+fD(Math.round(gapM))+'/mo</strong>.');
     if (_wdPct) {
-      var _wrNote = parseFloat(_wdPct) > 5 ? (fr ? " Ce taux \u00e9lev\u00e9 est soutenable parce que les revenus gouvernementaux couvrent " + _replRatio + "% des d\u00e9penses." : " This high rate is sustainable because government income covers " + _replRatio + "% of spending.") : "";
+      var _wrNote = parseFloat(_wdPct) > 5 ? (fr ? " Ce taux \u00e9lev\u00e9 pourrait \u00eatre soutenable tant que les revenus gouvernementaux couvrent " + _replRatio + "% des d\u00e9penses (avant toute r\u00e9cup\u00e9ration de la PSV)." : " This high rate could be sustainable as long as government income covers " + _replRatio + "% of spending (before any OAS clawback).") : "";
       h += (fr?' Taux de retrait initial sur l\'\u00e9pargne: <strong>'+_wdPct+'%</strong>.'+_wrNote:' Initial savings withdrawal rate: <strong>'+_wdPct+'%</strong>.'+_wrNote);
     }
     h += '</div>';
@@ -11927,8 +11962,8 @@ var reportHTML = useMemo(function() {
     h += '<div class="g4" style="margin-bottom:8px">';
     h += KPI('<span class="mono">'+f$(mc.rVar5||mc.var5)+'</span>','VaR P5 (r\u00e9el)','#cc4444');
     h += KPI('<span class="mono">'+f$(mc.rCvar5||mc.cvar5||Math.round((mc.rVar5||mc.var5)*0.7))+'</span>','CVaR P5 (r\u00e9el)','#cc4444');
-    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=200?(fr?'Jamais':'Never'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>',fr?'\u00c9puisement \u00e9pargne (P5)':'Savings depletion (P5)',(mc.p5Ruin||999)>=200?'#2a8c46':'#cc4444');
-    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=200?(fr?'Aucune':'None'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>',fr?'Ruine P5':'Ruin P5',(mc.p5Ruin||999)>=200?'#2a8c46':'#cc4444');
+    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=999?(fr?'Jamais':'Never'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>',fr?'\u00c9puisement \u00e9pargne (P5)':'Savings depletion (P5)',(mc.p5Ruin||999)>=999?'#2a8c46':'#cc4444');
+    h += KPI('<span class="mono">'+((mc.p5Ruin||999)>=999?(fr?'Aucune':'None'):mc.p5Ruin+(fr?' ans':' yrs'))+'</span>',fr?'Ruine P5':'Ruin P5',(mc.p5Ruin||999)>=999?'#2a8c46':'#cc4444');
     h += '</div>';
     if (mc.gkOn) {
       h+=Card('<div style="font-weight:700;color:#c4944a;font-size:12px;margin-bottom:6px">Guyton-Klinger</div><div class="g4"><table>'+R(fr?"Baisses moy.":"Avg cuts",Math.round(mc.gkAvgCuts||0))+R(fr?"Hausses moy.":"Avg raises",Math.round(mc.gkAvgRaises||0))+'</table><table>'+R(fr?"Facteur min.":"Min factor",((mc.gkAvgMinFactor||1)*100).toFixed(0)+"%")+R(fr?"S\u00e9rie max":"Max streak",Math.round(mc.gkAvgMaxStreak||0))+'</table></div>');
@@ -12338,11 +12373,9 @@ var reportHTML = useMemo(function() {
   // === SPRINT 5C: Coaching suggestions ===
   var _coachApplied = useState({}), coachApplied = _coachApplied[0], setCoachApplied = _coachApplied[1];
   var _coachDismissed = useState({}), coachDismissed = _coachDismissed[0], setCoachDismissed = _coachDismissed[1];
-  var _optState = useState(null), optResult = _optState[0], setOptResult = _optState[1];
-  var _optRun = useState(false), optRunning = _optRun[0], setOptRunning = _optRun[1];
   var _smithState = useState(null), smithResult = _smithState[0], setSmithResult = _smithState[1];
   var _smithRun = useState(false), smithRunning = _smithRun[0], setSmithRunning = _smithRun[1];
-  var _optProg = useState(0), optProgress = _optProg[0], setOptProgress = _optProg[1];
+  // optResult/optRunning/optProgress state removed 2026-06-18 — "Mode avancé" Plan Optimizer retired (AMF).
   // === SAM (Strategic Advice Manager) State ===
   var _samRes = useState(null), samResults = _samRes[0], setSamResults = _samRes[1];
   var _samView = useState("sam"), samView = _samView[0], setSamView = _samView[1];
@@ -13167,7 +13200,7 @@ wizStep === 6 && React.createElement("div", null,
           style: { padding: "8px 24px", background: CL.gn, border: "none", borderRadius: RAD.sm + 2, color: CL.al, fontSize: FS.md, fontWeight: FW.bold, cursor: "pointer" }, "aria-label": lang === "fr" ? "Lancer la simulation" : "Run simulation" },
           lang === "fr" ? "Lancer mon analyse" : "Run my analysis") : null)));
 
-var _sidebarContent = React.createElement(React.Fragment, null, React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 } }, React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac } }, t.title, " ", React.createElement("span", { style: { fontSize: FS.base, color: CL.dm } }, "v12.0.0")), React.createElement("div", { style: { display: "flex", gap: 3 } }, React.createElement("button", { onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); },
+var _sidebarContent = React.createElement(React.Fragment, null, React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 } }, React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac } }, t.title), React.createElement("div", { style: { display: "flex", gap: 3 } }, React.createElement("button", { onClick: function() { var nd = !dark; setDark(nd); localStorage.setItem("bf_dark", nd ? "1" : "0"); },
     style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.md, padding: "2px 6px", cursor: "pointer", lineHeight: 1.3 } }, dark ? "\u2600\ufe0f" : "\ud83c\udf19"),
 React.createElement("button", { onClick: function() { setShowWiz(true); setWizStep(0); }, title: lang === "fr" ? "Relancer l'assistant" : "Relaunch wizard", style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.dm, fontSize: FS.md, padding: "2px 6px", cursor: "pointer", lineHeight: 1.3 } }, "\ud83e\uddd9"),
 React.createElement("button", { onClick: function() {
@@ -13401,9 +13434,9 @@ secVis("profil") && React.createElement(React.Fragment, null,
     React.createElement(Field, { l: lang === "fr" ? "Prénom" : "First name" }, React.createElement("input", { value: firstName, onChange: function(e) { sFN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Marie" : "E.g. Marie", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
     React.createElement(Field, { l: lang === "fr" ? "Nom" : "Last name" }, React.createElement("input", { value: lastName, onChange: function(e) { sLN(e.target.value); }, placeholder: lang === "fr" ? "Ex: Tremblay" : "E.g. Smith", style: { background: CL.cd, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: CL.al, fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
     React.createElement(Field, { l: lang === "fr" ? "Nom complet (auto)" : "Full name (auto)", full: true }, React.createElement("input", { value: cName || "", readOnly: true, style: { background: CL.s2, border: "1px solid " + CL.bd, borderRadius: RAD.sm, color: TX.secondary(), fontSize: FS.base, width: "100%", padding: "6px 8px" } })),
-    React.createElement(Field, { l: t.age, tip: TIP.age }, React.createElement(NumField, { v: age, set: sAge, step: 1, min: 18, max: 90 })),
+    React.createElement(Field, { l: t.age, tip: TIP.age }, React.createElement(NumField, { v: age, set: sAge, step: 1, min: 18, max: 80 })),
     React.createElement(Field, { l: t.ret, tip: TIP.ret, err: valErrors.retAge }, React.createElement(NumField, { v: retAge, set: sRA, step: 1, min: 45, max: 75 })),
-    !cockpitMode && React.createElement(Field, { l: t.hor, tip: TIP.hor, err: valErrors.deathAge }, React.createElement(NumField, { v: deathAge, set: sDA, step: 1, min: 75, max: 105 })),
+    !cockpitMode && React.createElement(Field, { l: t.hor, tip: TIP.hor, err: valErrors.deathAge }, React.createElement(NumField, { v: deathAge, set: sDA, step: 1, min: 70, max: 110 })),
     React.createElement(Field, { l: t.sal, tip: TIP.sal, warn: valWarnings.sal }, React.createElement(NumField, { v: sal, set: sSal, step: 500, min: 0 })),
     React.createElement(Field, { l: lang === "fr" ? "Sexe" : "Sex" }, React.createElement("div", { style: { display: "flex", gap: 4 } }, [["M", lang === "fr" ? "Homme" : "Male"], ["F", lang === "fr" ? "Femme" : "Female"]].map(function(o) { return React.createElement("button", { key: o[0], onClick: function() { setSex(o[0]); }, style: { flex: 1, padding: "3px 6px", fontSize: FS.base, borderRadius: RAD.sm, border: "1px solid " + (sex === o[0] ? CL.ac : CL.bd), background: sex === o[0] ? CL.ac : "transparent", color: sex === o[0] ? CL.bg : TX.secondary(), cursor: "pointer", fontWeight: sex === o[0] ? 700 : 400 } }, o[1]); }))),
     React.createElement(Field, { l: "Province" }, React.createElement("select", { value: prov, onChange: function(e) { setProv(e.target.value); }, style: { width: "100%", background: CL.cd, color: CL.al, border: "1px solid " + CL.bd, borderRadius: RAD.sm, padding: "4px 6px", fontSize: FS.base, cursor: "pointer" } }, ["QC","ON","BC","AB","SK","MB","NB","NS","PE","NL","NT","YT","NU"].map(function(p) { return React.createElement("option", { key: p, value: p }, p); })))
@@ -13849,7 +13882,7 @@ cPtM > 0 && React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm,
     hasTerm && d.bal > 0 && d._auto === "term" && React.createElement("div", { style: { fontSize: FS.xs, padding: "4px 8px", background: "rgba(80,144,200,.12)", borderLeft: "2px solid " + CL.bl, borderRadius: RAD.sm, marginBottom: 3, color: TX.primary() } }, "🧮 ", lang === "fr" ? ("Terme calculé : " + d.term + " mois (~" + (d.term/12).toFixed(1) + " ans) — modifiez pour surpasser.") : ("Term computed: " + d.term + " months (~" + (d.term/12).toFixed(1) + " yrs) — override by editing.")),
     /* Payment — only once balance > 0. Auto-calc helper picks up missing
        term/pay automatically; no separate "Apply" button needed. */
-    (d.bal || 0) > 0 && React.createElement(Field, { l: (lang === "fr" ? "Paiement/mois" : "Payment/mo") + (d._auto === "pay" ? (lang === "fr" ? " (calculé)" : " (auto)") : "") }, React.createElement(NumField, { v: d.pay || 0, set: function(v) { _updDebtField("pay", v); }, step: 50 })),
+    (d.bal || 0) > 0 && React.createElement(Field, { l: (lang === "fr" ? "Paiement/mois" : "Payment/mo") + (d._auto === "pay" ? (lang === "fr" ? " (calculé)" : " (auto)") : ""), warn: valWarnings["debt_" + i] }, React.createElement(NumField, { v: d.pay || 0, set: function(v) { _updDebtField("pay", v); }, step: 50 })),
     /* Mismatch warning */
     payMismatch && React.createElement("div", { style: { fontSize: FS.base, padding: "3px 6px", background: "rgba(208,72,72,.12)", borderRadius: RAD.sm, marginBottom: 3, color: CL.rd } },
       "\u26a0\ufe0f ", lang === "fr" ? "Incoh\u00e9rence: \u00e9ch\u00e9ance " + d.term + " mois implique " + f$(Math.round(calcPayFromTerm)) + "/m, mais vous payez " + f$(d.pay) + "/m." : "Mismatch: " + d.term + " month term implies " + f$(Math.round(calcPayFromTerm)) + "/mo, but you pay " + f$(d.pay) + "/mo.",
@@ -14048,7 +14081,7 @@ respOn && React.createElement(React.Fragment, null,
   React.createElement(Field, { l: lang === "fr" ? "Cotisation/mois par enfant" : "Contribution/mo per child" , tip: TIP.respCDesc}, React.createElement(NumField, { v: respContrib, set: setRespContrib, step: 25 })),
   
   React.createElement(Field, { l: lang === "fr" ? "Ann\u00e9es de cotis. restantes" : "Contribution years remaining", tip: TIP.respYrsRemain }, React.createElement(Slider, { v: respYrsLeft, set: setRespYrs, mn: 0, mx: 18 })),
-  React.createElement(Field, { l: lang === "fr" ? "Retour capital \u00e0 (votre \u00e2ge)" : "Capital return at (your age)", tip: TIP.respCapReturn }, React.createElement(Slider, { v: respReturnAge, set: setRespRetAge, mn: age + 1, mx: 75 })),
+  React.createElement(Field, { l: lang === "fr" ? "Retour capital \u00e0 (votre \u00e2ge)" : "Capital return at (your age)", tip: TIP.respCapReturn }, React.createElement(Slider, { v: respReturnAge, set: setRespRetAge, mn: Math.min(74, age + (respYrsLeft || 0) + 1), mx: 75 })),
   React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, marginBottom: 2, padding: "2px 4px" }, title: (lang === "fr" ? "Capital: " : "Capital: ") + f$(respAlready) + " + " + f$(respContrib * 12 * respYrsLeft * respKids) + (lang === "fr" ? " futures\nSCEE: " : " future\nCESG: ") + f$(Math.min(respContrib * 12, 2500) * 0.2 * respYrsLeft * respKids) + (lang === "fr" ? "\nRetour \u00e0 " + respReturnAge + " ans \u2192 NR" : "\nReturn age " + respReturnAge + " \u2192 NR") },
     lang === "fr" ? "Total: " : "Total: ", React.createElement("b", { style: { color: CL.gn } }, f$(respAlready + respContrib * 12 * respYrsLeft * respKids)), " \u00b7 SCEE ", React.createElement("b", { style: { color: CL.gn } }, f$(Math.min(respContrib * 12, 2500) * 0.2 * respYrsLeft * respKids)), " \u00b7 -", React.createElement("b", { style: { color: CL.or } }, f$(respContrib * 12 * respKids)), "/", lang === "fr" ? "an \u24d8" : "yr \u24d8"),
 ),
@@ -15314,7 +15347,7 @@ React.createElement("div", { style: sty.head },
           : "Opens the full form in fullscreen — all ~190 engine variables with tooltips, defaults and explanations. For initial setup or annual review."
       }, "\ud83d\udccb " + (lang === "fr" ? "Formulaire complet" : "Full form")),
       React.createElement("button", { onClick: function() { setTab(9); }, style: { padding: "6px 10px", background: "transparent", color: CL.dm, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Rapport client":"Client report" }, "\ud83d\udcca"),
-      mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: tab === 5 ? "0 16px" : "6px 16px", borderBottom: tab === 5 ? "none" : "1px solid " + CL.bd, opacity: tab === 5 ? 0 : 1, maxHeight: tab === 5 ? 0 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", pointerEvents: tab === 5 ? "none" : "auto", cursor: "default" } }, React.createElement("div", { style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
+      mc && snapshots.length < 3 ? React.createElement("button", { onClick: _saveSnap, style: { padding: "6px 10px", background: "transparent", color: CL.gn, border: "1px solid " + CL.gn, borderRadius: RAD.sm, fontSize: FS.md, cursor: "pointer" }, title: lang==="fr"?"Sauvegarder sc\u00e9nario ("+snapshots.length+"/3)":"Save scenario ("+snapshots.length+"/3)" }, "\ud83d\udcf8") : null)),React.createElement("div", { style: { padding: tab === 5 ? "0 16px" : "6px 16px", borderBottom: tab === 5 ? "none" : "1px solid " + CL.bd, opacity: tab === 5 ? 0 : 1, maxHeight: tab === 5 ? 0 : 200, overflow: "hidden", transition: "opacity 0.3s, max-height 0.3s", pointerEvents: tab === 5 ? "none" : "auto", cursor: "default" } }, React.createElement("div", { className: "bf-kpi-strip", style: { display: "grid", gridTemplateColumns: false ? "repeat(3,1fr)" : "repeat(5,1fr)", gap: 8 } },
 cOn && React.createElement("div", { style: { gridColumn: "1 / -1", textAlign: "center", fontSize: FS.sm, color: CL.tl, fontWeight: FW.medium, background: "rgba(72,184,168,0.06)", borderRadius: RAD.sm, padding: "3px 0", border: "1px solid rgba(72,184,168,0.15)" } }, "\ud83d\udc6a ", lang === "fr" ? "R\u00e9sultats Monte Carlo pour le m\u00e9nage (deux conjoints combin\u00e9s)" : "Monte Carlo results for the household (both spouses combined)"),
 valCount > 0 && React.createElement("div", { style: { padding: "6px 12px", background: "rgba(208,72,72,.12)", border: "1px solid " + CL.rd, borderRadius: RAD.sm + 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 } },
 React.createElement("span", { style: { fontSize: FS.lg } }, "\u26a0\ufe0f"),
@@ -15464,7 +15497,7 @@ null,
     16: fr ? "Strat\u00e9gie de d\u00e9caissement optimale. Comparaison des approches de retrait et seuils fiscaux." : "Optimal decumulation strategy. Withdrawal approach comparison and tax thresholds.",
     19: fr ? "Immobilier : hypoth\u00e8que, HELOC, Smith Manoeuvre, DPA locatif. Simul\u00e9 dans le MC." : "Real estate: mortgage, HELOC, Smith Manoeuvre, rental CCA. Simulated within MC.",
     20: fr ? "Impact cumul\u00e9 des frais de gestion sur votre patrimoine. M\u00eame 0.5% co\u00fbte cher sur 30 ans." : "Cumulative impact of management fees on your wealth. Even 0.5% costs a lot over 30 years.",
-    21: fr ? "L'optimiseur teste des milliers de combinaisons pour trouver la strat\u00e9gie qui maximise votre patrimoine apr\u00e8s imp\u00f4t." : "The optimizer tests thousands of combinations to find the strategy that maximizes after-tax wealth.",
+    21: fr ? "Compare les taux de succ\u00e8s simul\u00e9s selon diff\u00e9rents \u00e2ges de d\u00e9but du RRQ/RPC et de la PSV. Les \u00e9carts sont indicatifs et sensibles \u00e0 la variabilit\u00e9 Monte Carlo." : "Compares simulated success rates across different QPP/CPP and OAS start ages. Differences are indicative and sensitive to Monte-Carlo variability.",
     26: fr ? "Analyse de mortalit\u00e9 et long\u00e9vit\u00e9 : distribution stochastique des \u00e2ges de d\u00e9c\u00e8s (CPM 2023)." : "Mortality and longevity analysis: stochastic death age distribution (CPM 2023)."
   };
   var tip = TIPS[tab];
@@ -15874,10 +15907,10 @@ tab === 29 && (props.some(function(p) { return p.on; }) ? React.createElement("d
     var cashColor = monthlyRentalNet >= 250 ? CL.gn : monthlyRentalNet >= -250 ? CL.or : CL.rd;
     var _immoMetricCard = { background: CL.s2, borderRadius: RAD.sm, padding: "9px 8px", textAlign: "center", border: "1px solid " + CL.bd };
     var nextAction = monthlyRentalNet < 0
-      ? (fr ? "Priorit\u00e9 90 jours: remonter le cashflow locatif (loyer, co\u00fbts, refinancement) avant d'ajouter du risque." : "90-day priority: improve rental cashflow (rent, costs, refinancing) before adding risk.")
+      ? (fr ? "Avec un cashflow locatif n\u00e9gatif, la robustesse du plan pourrait \u00eatre sensible aux taux et aux impr\u00e9vus; le loyer, les co\u00fbts et les options de refinancement sont des facteurs \u00e0 examiner." : "With negative rental cashflow, the plan's resilience could be sensitive to rates and surprises; rent, costs and refinancing options are factors to examine.")
       : leverage > 70
-      ? (fr ? "Priorit\u00e9 90 jours: r\u00e9duire le levier (pr\u00e9pa refinancement, remboursement cibl\u00e9, vente non strat\u00e9gique)." : "90-day priority: reduce leverage (refinance prep, targeted paydown, non-core sale).")
-      : (fr ? "Priorit\u00e9 90 jours: s\u00e9curiser la trajectoire (fonds de r\u00e9serve, r\u00e8gles de vente/downsizing, discipline de co\u00fbts)." : "90-day priority: lock in the trajectory (cash reserve, sale/downsizing rules, cost discipline).");
+      ? (fr ? "Avec un levier sup\u00e9rieur \u00e0 70%, la sensibilit\u00e9 aux taux d'int\u00e9r\u00eat pourrait \u00eatre \u00e9lev\u00e9e; le niveau d'endettement, le refinancement et la liquidit\u00e9 sont des \u00e9l\u00e9ments \u00e0 consid\u00e9rer." : "With leverage above 70%, sensitivity to interest rates could be high; debt level, refinancing and liquidity are elements to consider.")
+      : (fr ? "Le portefeuille immobilier appara\u00eet relativement \u00e9quilibr\u00e9; un fonds de r\u00e9serve et des r\u00e8gles claires de vente/downsizing pourraient soutenir sa robustesse." : "The real-estate portfolio appears relatively balanced; a cash reserve and clear sale/downsizing rules could support its resilience.");
     return React.createElement("div", { style: { padding: 12, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: 12 } },
       React.createElement("div", { style: { fontSize: FS.md, fontWeight: FW.medium, color: CL.ac, marginBottom: 6 } }, fr ? "Lecture rapide de l'analyse immo" : "Quick real-estate read"),
       React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 10 } },
@@ -15885,7 +15918,7 @@ tab === 29 && (props.some(function(p) { return p.on; }) ? React.createElement("d
           React.createElement("div", null, fr ? "1) Solidit\u00e9 du bilan: levier et \u00e9quit\u00e9 nette." : "1) Balance-sheet strength: leverage and net equity."),
           React.createElement("div", null, fr ? "2) Moteur locatif: cashflow mensuel net apr\u00e8s service de dette." : "2) Rental engine: monthly net cashflow after debt service."),
           React.createElement("div", null, fr ? "3) Ex\u00e9cution: refinancement, downsizing, fiscalit\u00e9 locative." : "3) Execution: refinancing, downsizing, rental tax."),
-          React.createElement("div", { style: { marginTop: 8, padding: "8px 10px", borderRadius: RAD.sm, background: CL.s2, border: "1px solid " + CL.bd, borderLeft: "3px solid " + CL.ac, color: CL.tx } }, nextAction)),
+          React.createElement("div", { style: { marginTop: 8, padding: "8px 10px", borderRadius: RAD.sm, background: CL.s2, border: "1px solid " + CL.bd, borderLeft: "3px solid " + CL.ac, color: CL.tx } }, nextAction, React.createElement("div", { style: { fontSize: FS.xs, color: CL.dm, marginTop: 4 } }, fr ? "Modélisation — pas un conseil." : "Modeling — not advice."))),
         React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr", gap: 6 } },
           React.createElement("div", { style: _immoMetricCard },
             React.createElement("div", { style: { fontSize: FS.xs, color: CL.tx, textTransform: "uppercase" } }, fr ? "Levier global" : "Portfolio leverage"),
@@ -16505,7 +16538,7 @@ StratBadge(true), React.createElement("div", { style: { marginTop: 10, backgroun
   var _rd65 = revD.find(function(r){ return r.age >= Math.max(65, oasAge); });
   if (_rd65 && (_rd65.taxInc||0) > 0) { _oasClawInc = _rd65.taxInc; }
   else { var _rI = (penType === "db" ? (penM||0)*12 : 0) + calcQPP(qppAge,avgE,qppYrs)*12; _oasClawInc = _rI + (retSpM*12*0.3); }
-  if (_oasClawInc > OAS_CLAWBACK_THR * 0.85) { var _oasRedEst = _oasClawInc > OAS_CLAWBACK_THR ? Math.round(Math.min(OAS_MAX_MONTHLY * 12, (_oasClawInc - OAS_CLAWBACK_THR) * 0.15)) : 0; recos.push({ pri: _oasClawInc > OAS_CLAWBACK_THR ? 3 : 2, icon: _oasClawInc > OAS_CLAWBACK_THR ? "\ud83d\udd34" : "\ud83d\udfe1", cat: "PSV/OAS", title: fr?"R\u00e9cup\u00e9ration PSV: ~"+fD(_oasRedEst)+"/an":"OAS clawback: ~"+fD(_oasRedEst)+"/yr", body: fr?"Revenu imposable projet\u00e9 \u00e0 la retraite: ~"+fD(Math.round(_oasClawInc))+"/an. Seuil de r\u00e9cup\u00e9ration: "+fD(OAS_CLAWBACK_THR)+"$. "+(_oasClawInc > OAS_CLAWBACK_THR ? "La PSV sera r\u00e9duite de ~"+fD(_oasRedEst)+"/an." : "Proche du seuil."):"Projected retirement taxable income: ~"+fD(Math.round(_oasClawInc))+"/yr. Clawback threshold: "+fD(OAS_CLAWBACK_THR)+". "+(_oasClawInc > OAS_CLAWBACK_THR ? "OAS will be reduced by ~"+fD(_oasRedEst)+"/yr." : "Close to threshold."), impact: _oasClawInc > OAS_CLAWBACK_THR ? "-"+fD(_oasRedEst)+"/"+( fr?"an":"yr") : fr?"Surveiller":"Monitor" }); }
+  if (_oasClawInc > OAS_CLAWBACK_THR * 0.85) { var _oasRedEst = _oasClawInc > OAS_CLAWBACK_THR ? Math.round(Math.min(OAS_MAX_MONTHLY * 12, (_oasClawInc - OAS_CLAWBACK_THR) * 0.15)) : 0; recos.push({ pri: _oasClawInc > OAS_CLAWBACK_THR ? 3 : 2, icon: _oasClawInc > OAS_CLAWBACK_THR ? "\ud83d\udd34" : "\ud83d\udfe1", cat: "PSV/OAS", title: fr?"R\u00e9cup\u00e9ration PSV: ~"+fD(_oasRedEst)+"/an":"OAS clawback: ~"+fD(_oasRedEst)+"/yr", body: fr?"Revenu imposable projet\u00e9 \u00e0 la retraite: ~"+fD(Math.round(_oasClawInc))+"/an. Seuil de r\u00e9cup\u00e9ration: "+fD(OAS_CLAWBACK_THR)+"$. "+(_oasClawInc > OAS_CLAWBACK_THR ? "La PSV pourrait \u00eatre r\u00e9duite d'environ "+fD(_oasRedEst)+"/an." : "Proche du seuil."):"Projected retirement taxable income: ~"+fD(Math.round(_oasClawInc))+"/yr. Clawback threshold: "+fD(OAS_CLAWBACK_THR)+". "+(_oasClawInc > OAS_CLAWBACK_THR ? "OAS could be reduced by about "+fD(_oasRedEst)+"/yr." : "Close to threshold."), impact: _oasClawInc > OAS_CLAWBACK_THR ? "-"+fD(_oasRedEst)+"/"+( fr?"an":"yr") : fr?"Surveiller":"Monitor" }); }
   if (cOn && (insVieCov||0) + (lifeInsBenefit||0) + (cLifeInsBenefit||0) < estTax_ && estTax_ > 30000) { recos.push({ pri: 1, icon: "\ud83d\udfe2", cat: fr?"Assurance":"Insurance", title: fr?"Couverture vie insuffisante":"Insufficient life coverage", body: fr?"Couverture totale du m\u00e9nage: "+f$(Math.round((insVieCov||0)+(lifeInsBenefit||0)+(cLifeInsBenefit||0)))+". Imp\u00f4t successoral estim\u00e9: "+f$(Math.round(estTax_))+".":"Total household coverage: "+f$(Math.round((insVieCov||0)+(lifeInsBenefit||0)+(cLifeInsBenefit||0)))+". Estimated estate tax: "+f$(Math.round(estTax_))+".", impact: f$(Math.round(estTax_)) }); }
   if (sal > 0) { var _hhSpend = (retSpM + (cOn ? (cRetSpM||0) : 0)) * 12; var _hhSal = sal + (cOn ? (cSal||0) : 0); var _replR = Math.round(_hhSpend / _hhSal * 100); if (_replR > 70) { recos.push({ pri: 2, icon: "\ud83d\udfe1", cat: fr?"D\u00e9penses":"Spending", title: fr?"Remplacement \u00e9lev\u00e9 ("+_replR+"%)":"High replacement ("+_replR+"%)", body: fr?(cOn ? "D\u00e9penses du m\u00e9nage" : "D\u00e9penses")+" = "+_replR+"% "+(cOn ? "des salaires combin\u00e9s" : "du salaire")+". Ratio habituel: 60-70%.":(cOn ? "Household spending" : "Spending")+" = "+_replR+"% of "+(cOn ? "combined salary" : "salary")+". Typical ratio: 60-70%.", impact: fD(Math.round(_hhSpend*0.15))+"/"+( fr?"an":"yr") }); } }
   // === CCPC RECOMMENDATIONS ===
@@ -16716,8 +16749,8 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
       var _subj_fr = cOn ? "Votre ménage" : "Votre plan";
       var _subj_en = cOn ? "Your household" : "Your plan";
       var interpLbl = fr
-        ? (mc.succ >= 0.90 ? _subj_fr + " résiste même aux scénarios défavorables." : mc.succ >= 0.75 ? _subj_fr + " fonctionne dans la majorité des scénarios, mais certains risques persistent." : mc.succ >= 0.50 ? _subj_fr + " échoue dans trop de scénarios. Des ajustements sont nécessaires." : "Risque élevé d'épuisement pour " + (cOn ? "le ménage" : "le plan") + ". Action urgente recommandée.")
-        : (mc.succ >= 0.90 ? _subj_en + " withstands even adverse scenarios." : mc.succ >= 0.75 ? _subj_en + " works in most scenarios, but some risks remain." : mc.succ >= 0.50 ? _subj_en + " fails in too many scenarios. Adjustments needed." : "High depletion risk for the " + (cOn ? "household" : "plan") + ". Urgent action recommended.");
+        ? (mc.succ >= 0.90 ? _subj_fr + " résiste même aux scénarios défavorables." : mc.succ >= 0.75 ? _subj_fr + " fonctionne dans la majorité des scénarios, mais certains risques persistent." : mc.succ >= 0.50 ? _subj_fr + " échoue dans plusieurs scénarios; des ajustements pourraient améliorer les résultats." : "Le risque d'épuisement est élevé pour " + (cOn ? "le ménage" : "le plan") + " dans la majorité des scénarios testés.")
+        : (mc.succ >= 0.90 ? _subj_en + " withstands even adverse scenarios." : mc.succ >= 0.75 ? _subj_en + " works in most scenarios, but some risks remain." : mc.succ >= 0.50 ? _subj_en + " fails in several scenarios; adjustments could improve the outcome." : "Depletion risk is high for the " + (cOn ? "household" : "plan") + " in most tested scenarios.");
       var _annSp = (retSpM || 0) * 12 + (cOn ? (cRetSpM || 0) * 12 : 0);
       var _var5 = mc.rVar5 != null ? mc.rVar5 : (mc.var5 || 0);
       var _bufYrs = _annSp > 0 ? _var5 / _annSp : 0;
@@ -17429,8 +17462,8 @@ React.createElement("div", { style: { fontSize: FS.sm, fontWeight: FW.medium, co
           // Row 4: Ruin
           E("div", { style: { padding: "4px 10px", color: CL.al } }, fr ? "Ruine" : "Ruin"),
           E("div", { style: { textAlign: "right", padding: "4px 10px", fontFamily: "JetBrains Mono,monospace", color: CL.ac } }, _dFinal > 0 ? (fr ? "Jamais" : "Never") : (fr ? "Oui" : "Yes")),
-          E("div", { style: { textAlign: "right", padding: "4px 10px", fontFamily: "JetBrains Mono,monospace", color: CL.ac } }, (mc.p5Ruin || 999) >= 200 ? "P5: " + (fr ? "Jamais" : "Never") : "P5: " + mc.p5Ruin + (fr ? " ans" : " yrs")),
-          E("div", { style: { textAlign: "right", padding: "4px 10px" } }, (mc.p5Ruin || 999) < 200 ? "\u26a0" : "")
+          E("div", { style: { textAlign: "right", padding: "4px 10px", fontFamily: "JetBrains Mono,monospace", color: CL.ac } }, (mc.p5Ruin || 999) >= 999 ? "P5: " + (fr ? "Jamais" : "Never") : "P5: " + mc.p5Ruin + (fr ? " ans" : " yrs")),
+          E("div", { style: { textAlign: "right", padding: "4px 10px" } }, (mc.p5Ruin || 999) < 999 ? "\u26a0" : "")
         ),
         E("div", { style: { fontSize: FS.xs, color: CL.dm, marginTop: 10, lineHeight: 1.5 } }, fr
           ? "\u2139 La r\u00e9f\u00e9rence suppose des rendements constants. L\u2019\u00e9cart refl\u00e8te le co\u00fbt de l\u2019incertitude des march\u00e9s."
@@ -17946,6 +17979,9 @@ tab === 6 && mc && React.createElement("div", { style: { padding: 16 } }, _ctxSu
       strs2 && strs2 !== "none" ? React.createElement("span", { style: { fontSize: FS.sm, color: CL.pr } }, lang==="fr" ? "(ex: Crash 2008 \u00e0 58 + Inflation 70s \u00e0 65)" : "(e.g., 2008 Crash at 58 + 70s Inflation at 65)") : null
     ),
     !stressResults ? React.createElement("button", { onClick: function() {
+      if (stressRunning) return;          // gate: prevent double-run
+      setStressRunning(true);
+      setTimeout(function() {             // yield so the "Computing..." state paints before the blocking loop
       var miniN = 1000;
       var ssAge2 = stShockAge || retAge;
       var baseP = { age, sex, retAge, deathAge, sal, rrsp, tfsa, nr, rrspC, tfsaC, nrC, contGr, inf, qppAge, avgE, qppYrs, oasAge, retSpM, penType, penM, dcBal, dcY, bridge, brAmt, brEnd, melt, meltTgt, rrifTax, split, splitP, wStrat, merR, merT, merN, nrTaxDrag, fatT, custEq: custStrs, custBd, custInf, stWhen: "age", stAge: ssAge2, strs2: "none", stWhen2, stAge2, goP, slP, noP, healthMul, healthAge, smileSlAge, smileNoAge, ptM, ptYrs, props, peBal, yPE: peY, vPE: peV, fxVol, peFee, peLock, peExit, peExitStrat, peExitYrs, pmBal, yPM: pmY, vPM: pmV, pmExit, pmExitStrat, pmExitYrs, ev1Age, ev1Amt, ev2Age, ev2Amt, inc1Age, inc1Amt, inc2Age, inc2Amt, inc3Age, inc3Amt, cOn, cAge, cRetAge, cDeath, cRRSP, cTFSA, cRRSPC, cTFSAC, cQppAge, cAvgE, cQppYrs, cOasAge, cPenType, cPenM, cDCBal: cDCBal2, cRetSpM, prov, stochMort: false, stochInf, eqRet: eqRetS, eqVol: eqVolS, bndRet: bndRetS, bndVol: bndVolS, infHealth, infHousing, glide, glideSpd, allocR, allocT, allocN, penIdx, penEE: effPenEE, penER: effPenER, penMER, pen2Type, pen2M, pen2Idx, dc2Bal, pen2EE, pen2ER, reRntInf, reCostInf, costBase, cgIncLo, cgIncHi, cgThresh, respOn, respContrib, respYrsLeft, respReturnAge, respKids, respAlready, liraBal: liraBal, cLiraBal: cLiraBal, fhsaBal: fhsaBal, fhsaC: fhsaC, cFhsaBal: cFhsaBal, cFhsaC: cFhsaC, lifeInsBenefit: lifeInsBenefit, lifeInsPremium: lifeInsPremium, cSal: cSal, cLifeInsBenefit: cLifeInsBenefit, cLifeInsPremium: cLifeInsPremium, cNR: cNR, cNRC: cNRC, debts: debts };
@@ -17961,9 +17997,11 @@ tab === 6 && mc && React.createElement("div", { style: { padding: 16 } }, _ctxSu
         results.push({ key: sc, name: names[sc], succ: r.succ||0, medF: isNaN(r.rMedF)?r.medF||0:r.rMedF, var5: isNaN(r.rVar5)?r.var5||0:r.rVar5, medTax: r.medEstateTax||0, medRuin: r.medRuin||999 });
       });
       setStressResults(results);
-    }, style: { padding: "8px 20px", background: CL.ac, color: CL.al, border: "none", borderRadius: RAD.sm + 2, fontSize: FS.sm, fontWeight: FW.bold, cursor: "pointer", boxShadow: "0 2px 6px rgba(192,138,78,0.3)" } }, lang==="fr" ? "Lancer la comparaison" : "Run comparison") :
+      setStressRunning(false);
+      }, 30);
+    }, disabled: stressRunning, style: { padding: "8px 20px", background: stressRunning ? CL.bd : CL.ac, color: stressRunning ? CL.dm : CL.al, border: "none", borderRadius: RAD.sm + 2, fontSize: FS.sm, fontWeight: FW.bold, cursor: stressRunning ? "wait" : "pointer", boxShadow: "0 2px 6px rgba(192,138,78,0.3)" } }, stressRunning ? (lang==="fr" ? "⏳ Calcul en cours..." : "⏳ Computing...") : (lang==="fr" ? "Lancer la comparaison" : "Run comparison")) :
     React.createElement("div", null,
-      React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 6 } }, lang==="fr" ? "N="+500+" simulations par sc\u00e9nario. \u0394 = \u00e9cart vs sc\u00e9nario de base." : "N="+500+" simulations per scenario. \u0394 = delta vs baseline."),
+      React.createElement("div", { style: { fontSize: FS.base, color: CL.dm, marginBottom: 6 } }, lang==="fr" ? "N=1000 simulations par sc\u00e9nario. \u0394 = \u00e9cart vs sc\u00e9nario de base." : "N=1000 simulations per scenario. \u0394 = delta vs baseline."),
       React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: FS.base, marginBottom: 8 } },
         React.createElement("thead", null,
           React.createElement("tr", { style: { position:"sticky",top:0,zIndex:2, background: CL.cd } },
@@ -20811,11 +20849,11 @@ tab === 20 && _ctxSummary(20), tab === 20 && (function() {
   scenarios.forEach(function(sc, i) { var d = Math.abs(sc.mer - curMER); if (d < minDist) { minDist = d; userScIdx = i; } });
 
   var zeroFinal = projections[0].vals[horizon];
-  var costData = projections.map(function(pr) { return { label: pr.label, color: pr.color, final: pr.vals[horizon], cost: zeroFinal - pr.vals[horizon], costPct: ((zeroFinal - pr.vals[horizon]) / zeroFinal * 100) }; });
+  var costData = projections.map(function(pr) { return { label: pr.label, color: pr.color, final: pr.vals[horizon], cost: zeroFinal - pr.vals[horizon], costPct: (zeroFinal > 0 ? ((zeroFinal - pr.vals[horizon]) / zeroFinal * 100) : 0) }; }); // 2026-06-17: guard zero-savings /0 (was NaN%)
 
   var chartW = 760, chartH = 280, padL = 82, padR = 28, padT = 20, padB = 42;
   var drawW = chartW - padL - padR, drawH = chartH - padT - padB;
-  var maxVal = projections[0].vals[horizon];
+  var maxVal = Math.max(1, projections[0].vals[horizon]); // 2026-06-17: avoid /0 in cY when no savings entered
   function cX(yr) { return padL + (yr / horizon) * drawW; }
   function cY(v) { return padT + drawH - (v / maxVal) * drawH; }
 
@@ -21003,7 +21041,7 @@ tab === 21 && (function() {
       ),
       E("div", { style: { textAlign: "center", padding: "10px 6px", borderRadius: RAD.md, background: CL.cd, border: "1px solid rgba(56,152,90,.25)", cursor: "help" }, title: lang === "fr" ? "Meilleure combinaison: RRQ " + (bestCombo ? bestCombo.q1 : "?") + " / " + (bestCombo ? bestCombo.q2 : "?") : "Best combo: QPP " + (bestCombo ? bestCombo.q1 : "?") + " / " + (bestCombo ? bestCombo.q2 : "?") },
         E("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: CL.gn } }, bestSucc >= 0 ? (bestSucc*100).toFixed(1) + "%" : "\u2014"),
-        E("div", { style: { fontSize: FS.sm, color: CL.dm } }, lang === "fr" ? "Optimal" : "Optimal")
+        E("div", { style: { fontSize: FS.sm, color: CL.dm } }, lang === "fr" ? "Plus \u00e9lev\u00e9" : "Highest")
       ),
       E("div", { style: { textAlign: "center", padding: "10px 6px", borderRadius: RAD.md, background: CL.cd, border: delta > 0.01 ? "1px solid rgba(56,152,90,.25)" : "1px solid " + CL.bd, cursor: "help" }, title: lang === "fr" ? "Gain en adoptant la combinaison optimale" : "Gain from optimal combination" },
         E("div", { style: { fontSize: FS.xl, fontWeight: FW.bold, color: delta > 0.01 ? CL.gn : CL.dm } }, delta > 0 ? "+" + (delta*100).toFixed(1) + " pp" : "\u2014"),
@@ -21012,12 +21050,12 @@ tab === 21 && (function() {
     ),
 
     // \u2500\u2500 Recommendation card \u2500\u2500
-    bestCombo && delta > 0.005 && E("div", { style: { padding: 12, background: CL.cd, border: "1px solid rgba(56,152,90,.25)", borderRadius: RAD.md + 2, marginBottom: 16, lineHeight: 1.8 } },
-      E("div", { style: { fontWeight: FW.bold, color: CL.gn, marginBottom: 4, fontSize: FS.md } }, "" + (lang === "fr" ? "Combinaison optimale" : "Optimal Combination")),
+    bestCombo && delta > 0.02 && E("div", { style: { padding: 12, background: CL.cd, border: "1px solid rgba(56,152,90,.25)", borderRadius: RAD.md + 2, marginBottom: 16, lineHeight: 1.8 } },
+      E("div", { style: { fontWeight: FW.bold, color: CL.ac, marginBottom: 4, fontSize: FS.md } }, "" + (lang === "fr" ? "Lecture de la grille" : "Reading the grid")),
       E("div", { style: { fontSize: FS.sm, color: CL.tx } },
         lang === "fr"
-          ? "En retardant la " + (prov === "QC" ? "RRQ" : "RPC") + " du principal \u00e0 " + bestCombo.q1 + " ans et celle du conjoint \u00e0 " + bestCombo.q2 + " ans, vous gagnez +" + (delta*100).toFixed(1) + " points de taux de succ\u00e8s. " + (delta > 0.03 ? "C'est un impact majeur sur votre plan." : "Un ajustement modeste mais significatif.")
-          : "By deferring primary " + (prov === "QC" ? "QPP" : "CPP") + " to age " + bestCombo.q1 + " and spouse QPP to age " + bestCombo.q2 + ", you gain +" + (delta*100).toFixed(1) + " percentage points in success rate. " + (delta > 0.03 ? "This is a major impact on your plan." : "A modest but meaningful adjustment.")
+          ? "Dans ces simulations, des \u00e2ges de " + (prov === "QC" ? "RRQ" : "RPC") + " de " + bestCombo.q1 + " ans (principal) et " + bestCombo.q2 + " ans (conjoint) correspondent au taux de succ\u00e8s simul\u00e9 le plus \u00e9lev\u00e9, soit environ +" + (delta*100).toFixed(1) + " points de plus que les \u00e2ges actuels. Cet \u00e9cart est indicatif et sensible \u00e0 la variabilit\u00e9 Monte Carlo \u2014 il ne constitue pas une recommandation."
+          : "In these simulations, " + (prov === "QC" ? "QPP" : "CPP") + " ages of " + bestCombo.q1 + " (primary) and " + bestCombo.q2 + " (spouse) correspond to the highest simulated success rate, about +" + (delta*100).toFixed(1) + " points above the current ages. This gap is indicative and sensitive to Monte-Carlo variability \u2014 it is not a recommendation."
       )
     ),
 
@@ -21205,11 +21243,11 @@ tab === 27 && (function() {
     return E("div", { style: { padding: 16, color: CL.tx } },
       // Toggle bar
       E("div", { style: { display: "flex", gap: 0, marginBottom: 16, borderRadius: RAD.md, overflow: "hidden", border: "1px solid " + CL.bd } },
-        E("button", { onClick: function() { setSamView("sam"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.bold, background: CL.ac, color: "#fff", border: "none", cursor: "pointer" } }, "\ud83e\udde0 ", fr ? "Conseiller" : "Advisor"),
-        E("button", { onClick: function() { setSamView("grid"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.medium, background: CL.cd, color: CL.dm, border: "none", cursor: "pointer" } }, "\ud83d\udd27 ", fr ? "Mode avanc\u00e9" : "Advanced Mode")),
+        E("button", { onClick: function() { setSamView("sam"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.bold, background: CL.ac, color: "#fff", border: "none", cursor: "pointer" } }, "\ud83e\udde0 ", fr ? "Synthèse" : "Synthesis"),
+        false && E("button", { onClick: function() { setSamView("grid"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.medium, background: CL.cd, color: CL.dm, border: "none", cursor: "pointer" } },"\ud83d\udd27 ", fr ? "Mode avanc\u00e9" : "Advanced Mode")),
       // Header
       E("div", { style: { marginBottom: 12 } },
-        E("h3", { style: { fontSize: FS.lg, color: CL.ac, margin: "0 0 4px" } }, "\ud83e\udde0 ", fr ? "Conseiller strat\u00e9gique" : "Strategic Advisor"),
+        E("h3", { style: { fontSize: FS.lg, color: CL.ac, margin: "0 0 4px" } }, "\ud83e\udde0 ", fr ? "Synth\u00e8se strat\u00e9gique" : "Strategic synthesis"),
         E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, fr ? "\u00c9value " + SAM_STRATEGIES.length + " strat\u00e9gies en utilisant le moteur d\u00e9terministe. Chaque strat\u00e9gie est test\u00e9e instantan\u00e9ment et class\u00e9e par impact sur le patrimoine et l\u2019imp\u00f4t." : "Evaluates " + SAM_STRATEGIES.length + " strategies using the deterministic engine. Each strategy is tested instantly and ranked by wealth and tax impact.")),
       // Launch button
       E("div", { style: { textAlign: "center", marginBottom: 16 } },
@@ -21250,11 +21288,14 @@ tab === 27 && (function() {
       // Methodology
       samResults !== null && E("div", { style: { padding: 10, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: 8 } },
         E("div", { style: { fontSize: FS.base, fontWeight: FW.medium, color: CL.ac, marginBottom: 4 } }, fr ? "M\u00e9thodologie" : "Methodology"),
-        E("div", { style: { fontSize: FS.base, color: CL.dm, lineHeight: 1.5 } }, fr ? "Score = 60% \u0394patrimoine + 40% \u0394imp\u00f4t. Moteur d\u00e9terministe optimizeDecum (~1ms/strat\u00e9gie). Les strat\u00e9gies non applicables au profil sont filtr\u00e9es automatiquement." : "Score = 60% \u0394wealth + 40% \u0394tax. Deterministic optimizeDecum engine (~1ms/strategy). Strategies not applicable to the profile are filtered automatically.")),
-      E("div", { style: { fontSize: FS.sm, color: CL.dm } }, fr ? "R\u00e9sultats indicatifs bas\u00e9s sur le moteur d\u00e9terministe. Pas un conseil financier. Conformit\u00e9 AMF." : "Indicative results based on deterministic engine. Not financial advice. AMF compliant."));
+        E("div", { style: { fontSize: FS.base, color: CL.dm, lineHeight: 1.5 } }, fr ? "Score = 60% \u0394patrimoine + 40% \u0394imp\u00f4t. Moteur Monte Carlo (N=400, tirages appari\u00e9s/CRN). Les strat\u00e9gies non applicables au profil sont filtr\u00e9es automatiquement." : "Score = 60% \u0394wealth + 40% \u0394tax. Monte Carlo engine (N=400, paired draws/CRN). Strategies not applicable to the profile are filtered automatically.")),
+      E("div", { style: { fontSize: FS.sm, color: CL.dm } }, fr ? "R\u00e9sultats indicatifs bas\u00e9s sur des simulations Monte Carlo. Pas un conseil financier. Conformit\u00e9 AMF." : "Indicative results based on Monte Carlo simulations. Not financial advice. AMF compliant."));
   }
 
-  // === GRID OPTIMIZER VIEW (existing) ===
+  // === GRID OPTIMIZER / "Mode avancé" retired 2026-06-18 — AMF: optimizing to a stochastic success
+  // threshold manufactures false precision and erodes the safety cushion. samView is always "sam",
+  // so everything below is permanently UNREACHABLE (kept dormant, never executed, cannot be revived). ===
+  return null;
   function launchOptimizer() {
     setOptResult(null); setOptRunning(true); setOptProgress(0);
     var rAges = []; for (var ra = Math.max(age+1, retAge-3); ra <= Math.min(75, retAge+3); ra++) rAges.push(ra);
@@ -21377,7 +21418,7 @@ tab === 27 && (function() {
   return E("div", { style: { padding: 16, color: CL.tx } },
     // Toggle bar (grid view)
     E("div", { style: { display: "flex", gap: 0, marginBottom: 16, borderRadius: RAD.md, overflow: "hidden", border: "1px solid " + CL.bd } },
-      E("button", { onClick: function() { setSamView("sam"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.medium, background: CL.cd, color: CL.dm, border: "none", cursor: "pointer" } }, "\ud83e\udde0 ", fr ? "Conseiller" : "Advisor"),
+      E("button", { onClick: function() { setSamView("sam"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.medium, background: CL.cd, color: CL.dm, border: "none", cursor: "pointer" } }, "\ud83e\udde0 ", fr ? "Synthèse" : "Synthesis"),
       E("button", { onClick: function() { setSamView("grid"); }, style: { flex: 1, padding: "10px 16px", fontSize: FS.sm, fontWeight: FW.bold, background: CL.ac, color: "#fff", border: "none", cursor: "pointer" } }, "\ud83d\udd27 ", fr ? "Mode avanc\u00e9" : "Advanced Mode")),
     E("div", { style: { marginBottom: 12 } },
       E("h3", { style: { fontSize: FS.lg, color: CL.ac, margin: "0 0 4px" } }, "\ud83d\udd27 ", fr ? "Optimiseur de plan" : "Plan Optimizer"),
@@ -21711,7 +21752,7 @@ tab === 32 && bizOn && mc && (function() {
   // Format Y label
   var fYL = function(v) { return v === 0 ? "0" : fmtIntLocale(v, lang); };
   return E("div", { style: { maxWidth: LAYOUT_UI.maxW, margin: "0 auto", padding: 16, display: "flex", flexDirection: "column", gap: LAYOUT_UI.cardGap } }, _ctxSummary(32),
-    E("div", { style: { fontSize: CHART_UI.titleSize, fontWeight: CHART_UI.titleWeight, color: CL.ac, borderBottom: "2px solid " + CL.ac + "33", paddingBottom: 6 } }, fr ? "Optimiseur salaire / dividende" : "Salary / Dividend Optimizer"),
+    E("div", { style: { fontSize: CHART_UI.titleSize, fontWeight: CHART_UI.titleWeight, color: CL.ac, borderBottom: "2px solid " + CL.ac + "33", paddingBottom: 6 } }, fr ? "Comparateur salaire / dividende" : "Salary / Dividend comparison"),
     E("div", { style: sx(_optCard, { fontSize: FS.sm, color: CL.dm, lineHeight: 1.55 }) }, fr ? "Cet outil compare diff\u00e9rentes fa\u00e7ons de vous payer depuis votre compagnie. Salaire = cotisations RRQ + droit au REER. Dividende = possiblement moins d'imp\u00f4t imm\u00e9diat mais pas de RRQ ni de REER. Note: le calcul GRIP (dividendes \u00e9ligibles) est simplifi\u00e9. Consultez un comptable." : "This tool compares different ways to pay yourself from your company. Salary = CPP contributions + RRSP room. Dividend = potentially less immediate tax but no CPP or RRSP room. Note: GRIP (eligible dividend) calculation is simplified. Consult an accountant."),
     E("div", { style: { fontSize: FS.sm, color: CL.dm, lineHeight: 1.5 } }, fr ? "Imp\u00f4t combin\u00e9 (corporatif + personnel) selon le % vers\u00e9 en salaire. Revenu net d'affaires: " + f$(netInc) + "/an." : "Combined tax (corporate + personal) by salary %. Net business income: " + f$(netInc) + "/yr."),
     _optH2(fr ? "Visualisation fiscale" : "Tax visualization"),
@@ -21748,9 +21789,9 @@ tab === 32 && bizOn && mc && (function() {
         E("text", { x: pad.l + 63, y: 10, fontSize: CHART_UI.legendSize, fill: CL.tx }, fr ? "Perso." : "Personal"),
         // Optimal callout at top-right
         E("text", { x: W - pad.r, y: 11, textAnchor: "end", fontSize: CHART_UI.axisLabelSize, fontWeight: "bold", fill: CL.gn },
-          (fr ? "Optimal: " : "Optimal: ") + minTax.pct + "% " + (fr ? "sal." : "sal.") + " = " + fYL(Math.round(minTax.totalTax))),
-        optSav > 500 ? E("text", { x: W - pad.r, y: 22, textAnchor: "end", fontSize: CHART_UI.tickSize, fill: CL.gn },
-          (fr ? "\u00c9conomie: " : "Savings: ") + fYL(Math.round(optSav)) + (fr ? "/an" : "/yr")) : null,
+          (fr ? "Imp\u00f4t min. (1 an): " : "Lowest 1-yr tax: ") + minTax.pct + "% " + (fr ? "sal." : "sal.") + " = " + fYL(Math.round(minTax.totalTax))),
+        optSav > 500 ? E("text", { x: W - pad.r, y: 22, textAnchor: "end", fontSize: CHART_UI.tickSize, fill: CL.dm },
+          (fr ? "\u00c9cart vs 100% sal.: " : "Gap vs 100% sal.: ") + fYL(Math.round(optSav)) + (fr ? "/an" : "/yr")) : null,
         // Invisible hover rects
         scenarios.map(function(s, i) {
           return E("rect", { key: "hov" + i, x: xS(i) - barArea / 2, y: pad.t, width: barArea, height: cH, fill: "transparent", style: { cursor: "pointer" },
@@ -22001,16 +22042,16 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
           [fr ? "1. Remplir le wizard" : "1. Complete the wizard", fr ? "Entrez vos informations de base: \u00e2ge, revenus, \u00e9pargne, province. Si vous \u00eates entrepreneur incorpor\u00e9, activez le module Entreprise dans Modules actifs." : "Enter your basic info: age, income, savings, province. If you're an incorporated business owner, enable the Business module in Active Modules.", CL.ac],
           [fr ? "2. Lire votre Diagnostic" : "2. Read your Diagnostic", fr ? "Votre note, vos indicateurs cl\u00e9s et les leviers identifi\u00e9s." : "Your grade, key indicators and identified levers.", CL.gn],
           [fr ? "3. Explorer les onglets" : "3. Explore the tabs", fr ? "Revenus, Projection, Patrimoine \u2014 chaque onglet montre un aspect de votre plan." : "Income, Projection, Wealth \u2014 each tab shows a different aspect of your plan.", CL.bl],
-          [fr ? "4. Ajuster et re-simuler" : "4. Adjust and re-simulate", fr ? "Modifiez vos param\u00e8tres dans la barre lat\u00e9rale (\u00e0 gauche), puis cliquez Simuler." : "Change your parameters in the sidebar (left panel), then click Simulate.", CL.or]
+          [fr ? "4. Ajuster et re-simuler" : "4. Adjust and re-simulate", fr ? "Modifiez vos param\u00e8tres via le rail de gauche (ou le Formulaire complet), puis cliquez Simuler." : "Change your parameters via the left rail (or the full form), then click Simulate.", CL.or]
         ].map(function(s, i) { return E("div", { key: i, style: { padding: 12, background: CL.s2 || CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd } },
           E("div", { style: { fontWeight: FW.bold, color: s[2], fontSize: FS.md, marginBottom: 4 } }, s[0]),
           E("div", { style: { fontSize: FS.sm, color: G_TX, lineHeight: 1.6 } }, s[1])); })
       ),
 
       // --- Sidebar explanation ---
-      Hd(fr ? "La barre lat\u00e9rale (panneau gauche)" : "The sidebar (left panel)"),
+      Hd(fr ? "Le rail de gauche et les panneaux" : "The left rail and panels"),
       E("div", { style: { padding: 12, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: 12 } },
-        P(fr ? "La barre lat\u00e9rale est votre tableau de bord de param\u00e8tres. C'est l\u00e0 que vous entrez toutes vos donn\u00e9es personnelles. Elle est organis\u00e9e en sections d\u00e9pliables:" : "The sidebar is your parameter dashboard. It's where you enter all your personal data. It's organized in collapsible sections:"),
+        P(fr ? "Le rail de gauche ouvre des panneaux o\u00f9 vous entrez toutes vos donn\u00e9es personnelles; le Formulaire complet donne acc\u00e8s \u00e0 toutes les variables. Les sections:" : "The left rail opens panels where you enter all your personal data; the full form exposes every variable. The sections:"),
         E("table", { style: { width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: FS.sm } },
           E("tbody", null,
             [

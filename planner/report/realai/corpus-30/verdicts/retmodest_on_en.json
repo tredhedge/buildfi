@@ -1,0 +1,45 @@
+{
+  "key": "retmodest_on_en",
+  "lang": "en",
+  "phase": "DECUM",
+  "band": "sound",
+  "grade": "A+",
+  "successPct": 100,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 27,
+    "expected": 30,
+    "emptySlots": 3
+  },
+  "htmlBytes": 45768,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

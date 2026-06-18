@@ -532,8 +532,8 @@ function ReviewStep({ lang, answers, setAnswers, blocks, onBack, onSubmit, submi
       <h1 className="wiz-title">{lang === "fr" ? "Vérifiez et ajustez vos réponses" : "Review and adjust your answers"}</h1>
       <p className="wiz-sub" style={{ fontSize: "var(--fs-md)" }}>
         {lang === "fr"
-          ? "Modifiez n'importe quelle réponse directement ici. Après paiement, votre rapport est généré en ~30 secondes et livré par courriel."
-          : "Edit any answer directly here. After payment, your report is generated in ~30 seconds and delivered by email."}
+          ? "Modifiez n'importe quelle réponse directement ici. Après paiement, votre rapport est généré et livré par courriel en quelques minutes."
+          : "Edit any answer directly here. After payment, your report is generated and delivered by email within a few minutes."}
       </p>
       <div>
         {blocks.map((b: any) => (
@@ -565,7 +565,7 @@ function ReviewStep({ lang, answers, setAnswers, blocks, onBack, onSubmit, submi
             <li>{lang === "fr" ? "1 rapport HTML interactif personnalisé" : "1 interactive personalized HTML report"}</li>
             <li>{lang === "fr" ? "Narration IA Opus (analyse de vos chiffres)" : "Opus AI narration (analysis of your numbers)"}</li>
             <li>{lang === "fr" ? "Plan testé contre krach, inflation, longévité extrême" : "Plan stress-tested against crash, inflation, extreme longevity"}</li>
-            <li>{lang === "fr" ? "Livré par courriel après paiement (~30 secondes)" : "Delivered by email after payment (~30 seconds)"}</li>
+            <li>{lang === "fr" ? "Livré par courriel après paiement (quelques minutes)" : "Delivered by email after payment (a few minutes)"}</li>
           </ul>
         </div>
       </div>

@@ -1,0 +1,45 @@
+{
+  "key": "walsh_transition_on_en",
+  "lang": "en",
+  "phase": "TRANSITION",
+  "band": "sound",
+  "grade": "A",
+  "successPct": 88,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 32,
+    "expected": 33,
+    "emptySlots": 1
+  },
+  "htmlBytes": 49028,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

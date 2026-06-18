@@ -1,0 +1,51 @@
+{
+  "key": "veryold_ab_en",
+  "lang": "en",
+  "phase": "DECUM",
+  "band": "sound",
+  "grade": "A+",
+  "successPct": 100,
+  "model": {
+    "valid": true,
+    "problems": []
+  },
+  "prod": {
+    "shipOk": true,
+    "shipReasons": [],
+    "narrationOk": true,
+    "narrationFindings": [],
+    "pass": true
+  },
+  "narrationCoverage": {
+    "returned": 28,
+    "expected": 30,
+    "emptySlots": 2
+  },
+  "htmlBytes": 45162,
+  "lab": {
+    "canShip": true,
+    "blockerCount": 0,
+    "majorCount": 0,
+    "blockerCategories": [],
+    "majorCategories": [],
+    "findings": [],
+    "advisories": [
+      {
+        "category": "canonical_quote_drift",
+        "reviewer": "canonical",
+        "message": "AI slot \"revenue_analysis\" quotes pct value 7.3 for \"success_rate\" but canonical is 99.76. Slot must be regenerated to match canonical."
+      }
+    ],
+    "auditorsRun": [
+      "canonical-quote",
+      "risk-collapse",
+      "language",
+      "compliance",
+      "narration",
+      "thesis-coherence",
+      "scope-reconciliation",
+      "polish"
+    ]
+  },
+  "fullPass": true
+}

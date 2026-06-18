@@ -200,7 +200,7 @@ const COPY = {
     ],
 
     ctaBottomTitle: "Prêt à voir où vous en êtes ?",
-    ctaBottomSub: "10 minutes pour répondre. Rapport livré en 30 secondes.",
+    ctaBottomSub: "10 minutes pour répondre. Rapport livré en quelques minutes.",
 
     footerLegal: "Informations légales",
     footerPrivacy: "Confidentialité",
@@ -384,7 +384,7 @@ const COPY = {
     ],
 
     ctaBottomTitle: "Ready to see where you stand?",
-    ctaBottomSub: "10 minutes to answer. Report delivered in 30 seconds.",
+    ctaBottomSub: "10 minutes to answer. Report delivered within a few minutes.",
 
     footerLegal: "Legal",
     footerPrivacy: "Privacy",

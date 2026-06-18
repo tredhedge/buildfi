@@ -15,12 +15,13 @@ import {
 import { maskEmail } from "@/lib/auth";
 import { translateToMCExpert } from "@/lib/quiz-translator-expert";
 import { runMC } from "@/lib/engine";
-import { extractReportDataExpert, renderReportHTMLExpert } from "@/lib/report-html-expert";
+// 2026-06-17: Planner report unified onto the Bilan 360 pipeline (was report-html-expert).
+import { extractReportData360, renderReportHTML360, determinePhase } from "@/lib/report-html-360";
 import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
-import { buildExpertPromptBatches, detectExpertSections } from "@/lib/ai-prompt-expert";
-import { sanitizeAISlotsExpert } from "@/lib/ai-constants";
-import type { ExpertAINarration } from "@/lib/ai-constants";
-import { sendExpertDeliveryEmail } from "@/lib/email-expert";
+import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
+import { buildBuildFiData } from "@/lib/report-data-360";
+import { sanitizeAISlots360 } from "@/lib/ai-constants";
+import { sendExpertDeliveryEmail, sendAdminAlert } from "@/lib/email-expert";
 import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 120;
@@ -123,38 +124,50 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (!mc) throw new Error("MC engine returned null");
     console.log(`[regenerate] MC 5000 in ${Date.now() - mcStart}ms`);
 
-    const D = extractReportDataExpert(mc, mcParams);
-    const grade = String(D.grade);
-    const activeSections = detectExpertSections(mcParams, mc, grade);
+    // ── Report on the Bilan 360 pipeline (covers the full long-form variable set) ──
+    const fr = lang === "fr";
     const quiz = (mcParams as any)._quiz || {};
-    const batches = buildExpertPromptBatches(D, mc, mcParams, quiz, activeSections);
+    const phase = determinePhase(Number((mcParams as any).age) || 40, Number((mcParams as any).retAge) || 65);
 
-    // AI batches with 90s cap (Vercel max 120s)
+    // Stress scenarios (3×1000) for the report's resilience section.
+    const stWhen = phase === "ACCUM" ? "ret" : "now";
+    const extraRuns = {
+      mcStressCrash08: runMC({ ...mcParams, strs: "crash08", stWhen }, 1000) as Record<string, any> | null,
+      mcStressStagflation: runMC({ ...mcParams, strs: "stagflation", stWhen }, 1000) as Record<string, any> | null,
+      mcStressProlonged: runMC({ ...mcParams, strs: "prolonged", stWhen }, 1000) as Record<string, any> | null,
+    };
+
+    const D = extractReportData360(mc, mcParams, phase, extraRuns);
+    const grade = String(D.grade);
+    const buildfiData = buildBuildFiData(mc, mcParams, phase, lang, extraRuns);
+
+    // AI narration (single prompt, 90s cap). Fails OPEN to deterministic fallbacks.
     const aiStart = Date.now();
-    let batchResults: Record<string, string>[];
+    const prompt = buildAIPrompt360(D, mcParams, fr, quiz, phase, undefined);
+    let ai: Record<string, string | undefined>;
     try {
-      batchResults = await Promise.race([
-        Promise.all(
-          batches.map((b) => callAnthropic(b.sys, b.usr, (raw) => raw as unknown as Record<string, string>))
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("AI batch timeout (90s)")), 90_000)
+      ai = await Promise.race([
+        callAnthropic(prompt.sys, prompt.usr, (raw) => {
+          try {
+            const cleaned = String(raw).replace(/```json?\s*/g, "").replace(/```/g, "").trim();
+            return sanitizeAISlots360(JSON.parse(cleaned)) as Record<string, string | undefined>;
+          } catch { return {} as Record<string, string | undefined>; }
+        }),
+        new Promise<Record<string, string | undefined>>((_, reject) =>
+          setTimeout(() => reject(new Error("AI timeout 90s")), 90_000)
         ),
       ]);
-    } catch (timeoutErr) {
-      console.warn("[regenerate] AI batch timed out, falling back to numeric-only");
-      batchResults = [];
+    } catch (aiErr) {
+      console.warn("[regenerate] AI failed/timed out, using static fallbacks:", aiErr);
+      ai = {};
     }
-    const mergedRaw: Record<string, any> = {};
-    for (const result of batchResults) Object.assign(mergedRaw, result);
-    const ai: ExpertAINarration = sanitizeAISlotsExpert(mergedRaw, activeSections);
-    console.log(`[regenerate] AI: ${Object.keys(ai).length}/${activeSections.length} sections in ${Date.now() - aiStart}ms`);
+    console.log(`[regenerate] AI: ${Object.keys(ai).length} slots in ${Date.now() - aiStart}ms`);
 
     // Feedback token (per-report, one-shot)
     const feedbackToken = randomUUID();
-    await createFeedbackRecord(feedbackToken, email, "expert", lang);
+    await createFeedbackRecord(feedbackToken, email, "bilan360", lang);
 
-    let reportHTML = renderReportHTMLExpert(D, mc, mcParams, ai, activeSections, lang, feedbackToken);
+    let reportHTML = renderReportHTML360(D, mc, mcParams, lang, ai, phase, feedbackToken, extraRuns, buildfiData);
 
     // ── Ship gate (audit 2026-06-16, planner/report/AUDIT.md) ──────────────
     // Don't deliver a broken / non-compliant regenerated report. Fail OPEN.
@@ -168,6 +181,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           firstName: (D as Record<string, any>)?.firstName || (mcParams as Record<string, any>)?.firstName || "",
           lang: lang as "fr" | "en",
         });
+        // Customer was promised a human-reviewed report within 24h — alert a human
+        // so that SLA can be met. Fire-and-forget (never blocks delivery).
+        await sendAdminAlert(
+          "Planner regenerate ship-gate held a report — 24h human review owed",
+          `A regenerated Planner report failed the ship gate and the customer received the ` +
+            `"needs-attention" fallback (promised within 24h).\n\n` +
+            `Email: ${email}\nLang: ${lang}\nGate reasons: ${verdict.reasons.join(", ")}\n`
+        ).catch((e) => console.error("[regenerate] needs-attention alert failed:", e));
       }
     } catch (gateErr) {
       console.error("[regenerate] ship-gate error (fail-open, shipping rendered report):", gateErr);

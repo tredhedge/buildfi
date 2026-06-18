@@ -44,8 +44,19 @@ export function evaluateReportShip(
 
   const vis = visibleText(html);
 
-  // 1. Empty / truncated render.
-  if (!html || vis.length < 2000) reasons.push("empty_or_tiny_render");
+  // 1. Empty / truncated render. The Bilan 360 production renderer emits an
+  //    INTERACTIVE dashboard (~28KB) whose content lives in an embedded data
+  //    payload (window.__BUILDFI__), not in static HTML — so its visible
+  //    (script-stripped) text is ~2000 chars by design. A static report
+  //    (report-pdf.js / clientExport) instead carries its content as visible
+  //    text. Treat as empty only when NEITHER signal is present, else a valid
+  //    interactive report would wrongly fall to the needs-attention fallback.
+  const hasInteractivePayload =
+    /window\.__BUILDFI__\s*=/.test(String(html)) &&
+    (String(html).match(/<script[\s\S]*?<\/script>/gi) || []).join("").length > 4000;
+  if (!html || (vis.length < 2000 && !hasInteractivePayload)) {
+    reasons.push("empty_or_tiny_render");
+  }
 
   // 2. Broken-render sentinels in visible copy.
   if (/\bData insufficient\b/i.test(vis)) reasons.push("data_insufficient_sentinel");
@@ -57,6 +68,17 @@ export function evaluateReportShip(
   //    a currency marker to stay high-confidence.
   if (/-\s*\$\s?\d[\d.,   ]*\s?M\b/i.test(vis) || /-\s*\d[\d.,   ]*\s?M\$/i.test(vis)) {
     reasons.push("negative_millions_displayed");
+  }
+
+  // 3b. Negative wealth WITHOUT an "M" suffix shown to the client (e.g. the written
+  //     "-3 903 273 $" / "-$3,903,273"). Real wealth is floored at 0, so any large
+  //     negative currency (≥1 thousands-group ≈ 4+ digits) is a broken/nominal-leak
+  //     draft. ship-loop 2026-06-18 — the M-only check above missed these.
+  if (
+    /-\s*\$\s?\d{1,3}(?:[ .,   ]\d{3})+/.test(vis) ||
+    /-\s*\d{1,3}(?:[ .,   ]\d{3})+\s?\$/.test(vis)
+  ) {
+    reasons.push("negative_wealth_displayed");
   }
 
   // 4. AMF banned stems in visible copy (optimis*/optimiz* family, plan d'action).
@@ -80,12 +102,12 @@ export function renderNeedsAttentionHTML(opts: { firstName?: string; lang: "fr" 
   const name = (opts.firstName || "").trim();
   const hello = fr ? (name ? `Bonjour ${escapeHtml(name)},` : "Bonjour,") : (name ? `Hi ${escapeHtml(name)},` : "Hi,");
   const body = fr
-    ? "Votre bilan de retraite a bien été généré, mais une vérification de qualité a relevé un élément à revoir avant que nous vous le transmettions. Notre équipe finalise votre rapport et vous le fera parvenir sous peu. Aucune action n'est requise de votre part."
-    : "Your retirement report was generated, but a quality check flagged something to review before we send it to you. Our team is finalizing your report and will deliver it shortly. No action is needed on your part.";
+    ? "Nous avons rencontré un point lors de la préparation de votre bilan qui nécessite une révision humaine avant l'envoi. Notre équipe le révise et vous fera parvenir votre rapport finalisé dans les 24 heures. Aucune action n'est requise de votre part, et aucun nouveau paiement ne sera demandé."
+    : "We encountered an issue while building your report that requires human review before delivery. Our team is reviewing it and will send you the finalized report within 24 hours. No action is needed on your part, and you will not be charged again.";
   const reply = fr
-    ? "Des questions ? Répondez simplement à votre courriel de confirmation."
-    : "Questions? Just reply to your confirmation email.";
-  const title = fr ? "Votre bilan — en finalisation" : "Your report — being finalized";
+    ? "Des questions entre-temps ? Répondez simplement à votre courriel de confirmation."
+    : "Questions in the meantime? Just reply to your confirmation email.";
+  const title = fr ? "Votre bilan — révision en cours" : "Your report — under review";
   return (
     '<!doctype html><html lang="' + (fr ? "fr" : "en") + '"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1"><title>BuildFi — ' + title + '</title></head>' +

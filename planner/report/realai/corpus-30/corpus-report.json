@@ -1,0 +1,23 @@
+{
+  "base": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\realai\\corpus-30",
+  "profiles": 22,
+  "prodPassRate": 100,
+  "labPassRate": 100,
+  "fullPassRate": 100,
+  "prodPass": 22,
+  "labPass": 22,
+  "fullPass": 22,
+  "failureClasses": [
+    {
+      "class": "coverage:empty_slots",
+      "count": 22,
+      "examples": [
+        "gis_on_en",
+        "gis_qc_fr",
+        "hnw_bc_en",
+        "hnw_on_en",
+        "hugesave_qc_fr"
+      ]
+    }
+  ]
+}

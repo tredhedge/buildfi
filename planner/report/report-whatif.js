@@ -577,7 +577,7 @@
       mer:         { group: 'markets',  label: isFR ? 'MER (frais portefeuille)' : 'MER (portfolio fees)', min: 0, max: 3, step: 0.1, val: Math.round((baselineParams.merWt || 0) * 1000) / 10, unit: '%' },
       rrspC:       { group: 'strategy', label: isFR ? 'Cotis. REER/an' : 'RRSP contrib/yr',          min: 0, max: 32000, step: 500, val: baselineParams.rrspC || 0, unit: '$/an' },
       tfsaC:       { group: 'strategy', label: isFR ? 'Cotis. CELI/an' : 'TFSA contrib/yr',          min: 0, max: 7000, step: 250, val: baselineParams.tfsaC || 0, unit: '$/an' },
-      meltTgt:     { group: 'strategy', label: isFR ? 'Cible meltdown REER' : 'RRSP meltdown target', min: 0, max: 150000, step: 5000, val: baselineParams.meltTgt || 0, unit: '$/an' },
+      meltTgt:     { group: 'strategy', label: isFR ? 'Cible de décaissement anticipé REER' : 'RRSP meltdown target', min: 0, max: 150000, step: 5000, val: baselineParams.meltTgt || 0, unit: '$/an' },
       allocR:      { group: 'strategy', label: isFR ? 'Allocation actions REER' : 'RRSP equity alloc', min: 20, max: 95, step: 5, val: Math.round((baselineParams.allocR || 0.6) * 100), unit: '%' }
     };
     var archPhase = _readArchetypePhase(baselineParams);

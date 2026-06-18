@@ -1,0 +1,151 @@
+{
+  "gate": "evaluateReportShip (production)",
+  "renderMode": "deterministic-fallback (no AI narration)",
+  "total": 20,
+  "passed": 20,
+  "failed": 0,
+  "passPct": 100,
+  "failureClasses": {},
+  "results": [
+    {
+      "id": "c01_young_renter",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c02_mid_renter",
+      "lang": "en",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c03_zero_savings",
+      "lang": "en",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c04_couple_home",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c05_hnw_rental",
+      "lang": "en",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c06_two_rentals",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c07_db_pension",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c08_sell_home",
+      "lang": "fr",
+      "phase": "TRANSITION",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c09_latestart_debt",
+      "lang": "fr",
+      "phase": "TRANSITION",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c10_immediate_ret",
+      "lang": "en",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c11_retired_modest",
+      "lang": "fr",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c12_gis_eligible",
+      "lang": "en",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c13_retired_couple",
+      "lang": "en",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "c14_retired_hnw",
+      "lang": "fr",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e01_age18",
+      "lang": "en",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e02_age95",
+      "lang": "fr",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e03_huge_savings",
+      "lang": "en",
+      "phase": "TRANSITION",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e04_underwater",
+      "lang": "en",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e05_retAge_eq_age",
+      "lang": "fr",
+      "phase": "DECUM",
+      "ok": true,
+      "reasons": []
+    },
+    {
+      "id": "e06_low_income_qc",
+      "lang": "fr",
+      "phase": "ACCUM",
+      "ok": true,
+      "reasons": []
+    }
+  ]
+}

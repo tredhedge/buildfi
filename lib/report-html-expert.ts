@@ -350,7 +350,7 @@ function renderExpertReport(
     priorites_action: { fr: "Leviers à plus grand impact", en: "Highest-impact levers" },
     analyse_fiscale: { fr: "Marges d'efficacité fiscale", en: "Tax efficiency margins" },
     decaissement: { fr: "Séquence de décaissement", en: "Withdrawal sequence" },
-    couple: { fr: "Optimisation du ménage", en: "Household optimization" },
+    couple: { fr: "Analyse du ménage", en: "Household analysis" },
     corporatif: { fr: "Stratégie corporative", en: "Corporate strategy" },
     remuneration: { fr: "Arbitrage rémunération", en: "Compensation tradeoff" },
     immobilier: { fr: "Place de l'immobilier", en: "Real estate position" },
@@ -528,7 +528,7 @@ function renderExpertReport(
     h += kp(f$(D.rP5F), "P5", "#b93f43", t("Sc\u00e9nario pessimiste", "Pessimistic scenario"));
     h += kp(f$(D.rP25F), "P25", "var(--bf-gold)");
     h += kp(f$(D.rP75F), "P75", "#2f8a4a");
-    h += kp(f$(D.rP95F), "P95", "#2f8a4a", t("Sc\u00e9nario optimiste", "Optimistic scenario"));
+    h += kp(f$(D.rP95F), "P95", "#2f8a4a", t("Sc\u00e9nario favorable", "Favourable scenario"));
     h += '</div>';
 
     // Ruin risk
@@ -675,7 +675,7 @@ function renderExpertReport(
   // Couple
   if (has("couple")) {
     secN++;
-    h += secH(secN, t("Optimisation du m\u00e9nage", "Household optimization"), t("Impact du conjoint sur le plan", "Partner impact on the plan"));
+    h += secH(secN, t("Analyse du m\u00e9nage", "Household analysis"), t("Impact du conjoint sur le plan", "Partner impact on the plan"));
     h += card(
       kvr(t("\u00c2ge du conjoint", "Partner age"), (D.cAge || "\u2014") + " " + t("ans", "yrs"))
       + kvr(t("Retraite du conjoint", "Partner retirement"), (D.cRetAge || "\u2014") + " " + t("ans", "yrs"))
@@ -917,13 +917,13 @@ function renderExpertReport(
     h += badgeValidate();
     h += aiSlot("questions_fiscaliste", t(
       "1. Quelle serait la strat\u00e9gie optimale de d\u00e9caissement entre le REER et le CELI?\n"
-      + "2. Le meltdown REER serait-il avantageux dans ma situation?\n"
-      + "3. Comment optimiser le fractionnement des revenus de retraite?\n"
+      + "2. Le décaissement anticipé du REER serait-il avantageux dans ma situation?\n"
+      + "3. Comment ajuster le fractionnement des revenus de retraite?\n"
       + "4. Quel serait l'impact fiscal de reporter le " + gP + " \u00e0 " + D.qppAge + " ans?\n"
       + "5. Comment minimiser l'imp\u00f4t au d\u00e9c\u00e8s sur le REER r\u00e9siduel?",
       "1. What would be the optimal withdrawal strategy between RRSP and TFSA?\n"
       + "2. Would RRSP meltdown be advantageous in my situation?\n"
-      + "3. How to optimize retirement income splitting?\n"
+      + "3. How to structure retirement income splitting?\n"
       + "4. What would be the tax impact of deferring " + gP + " to age " + D.qppAge + "?\n"
       + "5. How to minimize tax at death on residual RRSP?"
     ));

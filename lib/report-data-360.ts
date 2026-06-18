@@ -56,6 +56,49 @@ function runSucc(extra: AnyRec | null | undefined): number | null {
   return clamp(Math.round(n(extra.succ) * 100), 0, 100);
 }
 
+/**
+ * Canonical client-facing figures the report narrates — the SINGLE SOURCE OF TRUTH
+ * (docs/REPORT-MODEL-CONSOLIDATION.md). The prompt DATA block + slot hints (and, in
+ * step 3, the renderer-agnostic QA) all read these instead of re-deriving, which is
+ * what kills the number-drift bug class. Expressions mirror the slot hints in
+ * ai-prompt-360.ts EXACTLY so the figures are byte-identical.
+ */
+export function buildReportModelCanon(
+  D: AnyRec,
+  params: AnyRec,
+  stratData?: Array<{ key: string; succ: number; medF: number }>
+): AnyRec {
+  const rp: AnyRec = params._report || {};
+  const totalWealth =
+    (rp.rrsp ?? params.rrsp ?? 0) + (rp.tfsa ?? params.tfsa ?? 0) + (rp.nr ?? params.nr ?? 0) +
+    (rp.cRRSP ?? params.cRRSP ?? 0) + (rp.cTFSA ?? params.cTFSA ?? 0) + (rp.cNR ?? params.cNR ?? 0);
+  const taxDiffPerYear = (D.sal || 0) > 0
+    ? Math.round(D.sal * Math.abs((D.taxCurrentEffective || 0) - (D.taxRetirementEffective || 0)) / 100)
+    : 0;
+  const canon: AnyRec = {
+    income: D.sal || 0,
+    retTargetAnnual: Math.round((D.retSpM || 0) * 12),
+    replacementPct: (D.sal || 0) > 0 ? Math.round(((D.retSpM || 0) * 12) / D.sal * 100) : 0,
+    taxDiffPerYear,
+    rrspSharePct: totalWealth > 0 ? Math.round(((params.rrsp ?? 0) / totalWealth) * 100) : 0,
+    gkMaxCutPct: Math.round((params.gkMaxCut ?? 0.20) * 100),
+    gkMaxCutMonthly: Math.round((params.gkMaxCut ?? 0.20) * (D.retSpM || 0)), // spendFlexHint asks to "translate into monthly dollar impact"
+    withdrawalRatePct: D.withdrawalRatePct, // narrated in every phase but DATA.spend is ACCUM/TRANSITION-only
+    reviewMonths: 12, // the next_horizon hint always closes on a 12-month check-in
+    mcScenarios: 5000, // narration may cite the simulation count ("5,000 scenarios")
+  };
+  if (params.cOn) {
+    canon.partnerSavingsTotal = (params.cRRSP ?? 0) + (params.cTFSA ?? 0) + (params.cNR ?? 0);
+  }
+  if (stratData && stratData.length > 0) {
+    // stratDesc asks the narrator for the "median wealth difference vs statu_quo".
+    const sq = stratData.find((s) => s.key === "statu_quo") || stratData[0];
+    const sqMed = Math.max(0, sq.medF);
+    canon.stratDeltasVsStatuQuo = stratData.map((s) => Math.abs(Math.max(0, s.medF) - sqMed));
+  }
+  return canon;
+}
+
 export function buildBuildFiData(
   mc: AnyRec,
   params: AnyRec,

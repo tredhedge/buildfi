@@ -1,0 +1,23 @@
+{
+  "base": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\realai\\corpus",
+  "profiles": 5,
+  "prodPassRate": 100,
+  "labPassRate": 100,
+  "fullPassRate": 100,
+  "prodPass": 5,
+  "labPass": 5,
+  "fullPass": 5,
+  "failureClasses": [
+    {
+      "class": "coverage:empty_slots",
+      "count": 5,
+      "examples": [
+        "bouchard_decum_qc_fr",
+        "gagnon_transition_qc_fr",
+        "maxime_accum_qc_fr",
+        "okafor_accum_ab_en",
+        "walsh_transition_on_en"
+      ]
+    }
+  ]
+}

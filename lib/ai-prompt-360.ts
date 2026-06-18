@@ -20,6 +20,7 @@
 //   next_horizon, model_blind_spots, efficiency_gap
 
 import { computeDerivedProfile, computeRenderPlan, computeCompositeSignals } from "./ai-profile";
+import { buildReportModelCanon } from "./report-data-360";
 
 const PLAIN_LANG_NOTE = `
 JARGON INTERDIT (jamais dans le texte visible) :
@@ -392,8 +393,11 @@ export function buildAIPrompt360(
     },
     results: {
       pct: successPct, grade: D.grade,
-      med: D.rMedF || D.medWealth, p5Floor: D.rP5F || D.p5Wealth,
-      p25Cautious: D.rP25F || D.p25Wealth, p75Favorable: D.rP75F || D.p75Wealth,
+      // ship-loop (2026-06-18): show REAL wealth floored at 0, never the nominal
+      // fallback. `rX || nominal` leaked nominal when real was 0 (failing plans),
+      // surfacing negative millions; `Math.max(0, rX ?? 0)` is the truthful figure.
+      med: Math.max(0, D.rMedF ?? 0), p5Floor: Math.max(0, D.rP5F ?? 0),
+      p25Cautious: Math.max(0, D.rP25F ?? 0), p75Favorable: Math.max(0, D.rP75F ?? 0),
       savingsDurability: D.medRuin || 0,
       medEstate: D.medEstate || D.medEstateNet || 0,
     },
@@ -408,6 +412,12 @@ export function buildAIPrompt360(
       avgDeath: D.avgDeath || D.deathAge || 87,
     },
   };
+
+  // ship-loop (2026-06-18): the canonical figures the slot hints narrate come from
+  // ONE shared builder (buildReportModelCanon) so the prompt DATA block, the guardrail
+  // pool, and the QA all read identical numbers — no per-layer re-derivation, no drift.
+  // See docs/REPORT-MODEL-CONSOLIDATION.md.
+  data.canon = buildReportModelCanon(D, params, stratData);
 
   // Phase-specific data additions
   if (phase === "ACCUM" || phase === "TRANSITION") {
@@ -469,7 +479,7 @@ export function buildAIPrompt360(
   // Strategies
   if (stratData && stratData.length > 0) {
     data.strategies = stratData.map((s) => ({
-      key: s.key, succ: Math.round(s.succ * 100), medF: s.medF,
+      key: s.key, succ: Math.round(s.succ * 100), medF: Math.max(0, s.medF), // floored real (no negative nominal leak)
     }));
   }
 
@@ -529,7 +539,7 @@ export function buildAIPrompt360(
     ? "Return empty string — " + gP + " already in payment."
     : "Compare three claiming ages: 60 (" + (D.mc60Succ ?? "?") + "%), 65 (" + (D.mc65Succ ?? "?") + "%), 70 (" + (D.mc70Succ ?? "?") + "%). The reader can toggle between these scenarios using interactive pills. Observational only. DO NOT prescribe which age.";
 
-  const longevityHint = "Fan chart spread: P25 (cautious)=" + fmt(D.rP25F || D.p25Wealth || 0) + "$ to P75 (favorable)=" + fmt(D.rP75F || D.p75Wealth || 0) + "$. This is the likely range — half of all scenarios fall within it. Frame P25 as 'cautious', never 'worst case'. The reader can hover over the interactive fan chart to see percentiles at any age.";
+  const longevityHint = "Fan chart spread: P25 (cautious)=" + fmt(Math.max(0, D.rP25F ?? 0)) + "$ to P75 (favorable)=" + fmt(Math.max(0, D.rP75F ?? 0)) + "$. This is the likely range — half of all scenarios fall within it. Frame P25 as 'cautious', never 'worst case'. The reader can hover over the interactive fan chart to see percentiles at any age.";
 
   const spendFlexHint = gkActive
     ? "Spending flexibility active. Max cumulative reduction: " + Math.round((params.gkMaxCut ?? 0.20) * 100) + "%. " + (D.gkCutFreq !== null ? "Cuts triggered in " + Math.round((D.gkCutFreq ?? 0) * 100) + "% of years." : "") + " Translate into monthly dollar impact. Do NOT name 'Guyton-Klinger'. The spending smile chart shows Go-Go/Slow-Go/No-Go phases — the reader can hover to see estimated spending at each age."
@@ -541,7 +551,7 @@ export function buildAIPrompt360(
     ? "Best strategy from DATA.strategies. Reference specific success rate improvement and median wealth difference vs statu_quo."
     : "General strategy context based on profile.";
 
-  const sequenceHint = "Portfolio spread: P25 (cautious) " + fmt(D.rP25F || D.p25Wealth || 0) + "$ to P75 (favorable) " + fmt(D.rP75F || D.p75Wealth || 0) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly depending on early returns. The tornado chart ranks which parameters have the most impact — reference it. Never mention P95.";
+  const sequenceHint = "Portfolio spread: P25 (cautious) " + fmt(Math.max(0, D.rP25F ?? 0)) + "$ to P75 (favorable) " + fmt(Math.max(0, D.rP75F ?? 0)) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly depending on early returns. The tornado chart ranks which parameters have the most impact — reference it. Never mention P95.";
 
   const meltdownHint = D.meltIsBase
     ? "Income already at or below meltdown target (" + fmt(D.meltTarget || 0) + "$/yr). Zero margin for reduction."

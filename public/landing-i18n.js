@@ -223,7 +223,7 @@ window.BF_I18N = {
 
   /* final cta + footer */
   "final-h2": { fr: "Prêt à voir où vous en êtes&nbsp;?", en: "Ready to see where you stand?" },
-  "final-p": { fr: "10 minutes pour répondre. Rapport livré en 30 secondes.", en: "10 minutes to answer. Report delivered in 30 seconds." },
+  "final-p": { fr: "10 minutes pour répondre. Rapport livré en quelques minutes.", en: "10 minutes to answer. Report delivered within a few minutes." },
   "final-cta": { fr: "Commencer mon Bilan", en: "Start my Bilan" },
   "final-legal": { fr: "Projections observationnelles établies à partir de vos données et de vos hypothèses. Les résultats pourraient différer. Ne constitue pas un conseil financier personnalisé au sens de la Loi sur les valeurs mobilières.", en: "Observational projections established from your inputs and your assumptions. Results could differ. This does not constitute personalized financial advice under securities law." },
   "footer-terms": { fr: "Conditions", en: "Terms" },
