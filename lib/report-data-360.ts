@@ -63,6 +63,26 @@ function runSucc(extra: AnyRec | null | undefined): number | null {
  * what kills the number-drift bug class. Expressions mirror the slot hints in
  * ai-prompt-360.ts EXACTLY so the figures are byte-identical.
  */
+// Shared strategy anchoring (single source for BOTH the prompt's data.strategies AND the
+// __BUILDFI__ embed, so they cite identical, verifiable lever outcomes). statu_quo is anchored
+// to the headline success + real median, and every strategy is shifted by the same offsets so
+// the relative deltas are preserved but the baseline matches the headline the client sees.
+const STRAT_LABELS_FR: Record<string, string> = { statu_quo: "statu quo", work_longer: "travailler plus longtemps", save_more: "épargner davantage", qpp_70: "reporter le RRQ à 70 ans", meltdown: "décaissement REER anticipé" };
+const STRAT_LABELS_EN: Record<string, string> = { statu_quo: "status quo", work_longer: "working longer", save_more: "saving more", qpp_70: "delaying CPP to 70", meltdown: "early RRSP drawdown" };
+export function anchorStrategies(stratData: any, headlineRMedF: number, headlineSuccPct: number, lang: string): Array<{ key: string; label: string; succ: number; medF: number }> {
+  if (!Array.isArray(stratData) || stratData.length === 0) return [];
+  const labels = lang === "en" ? STRAT_LABELS_EN : STRAT_LABELS_FR;
+  const sq = stratData.find((s: any) => s.key === "statu_quo") || stratData[0];
+  const sqOffset = Math.round(headlineSuccPct) - Math.round((sq.succ || 0) * 100);
+  const medOffset = Math.max(0, Math.round(headlineRMedF || 0)) - Math.max(0, Math.round(sq.medF || 0));
+  return stratData.map((s: any) => ({
+    key: s.key,
+    label: labels[s.key] || String(s.key).replace(/_/g, " "),
+    succ: Math.min(100, Math.max(0, Math.round((s.succ || 0) * 100) + sqOffset)),
+    medF: Math.max(0, Math.round(Math.max(0, s.medF || 0) + medOffset)),
+  }));
+}
+
 export function buildReportModelCanon(
   D: AnyRec,
   params: AnyRec,
@@ -232,6 +252,9 @@ export function buildBuildFiData(
       age65: runSucc(extraRuns?.mcC65),
       age70: runSucc(extraRuns?.mcC70),
     },
+    // Anchored strategy/lever outcomes — IDENTICAL to the prompt's data.strategies (shared helper),
+    // so the lever figures the narration cites (e.g. "working longer → $X") are verifiable here.
+    strategies: anchorStrategies(extraRuns?.stratData, n(mc?.rMedF, n(mc?.medF, 0)), clamp(Math.round(n(mc?.succ) * 100), 0, 100), lang === "en" ? "en" : "fr"),
     debug: {
       nSims: Array.isArray(mc?.fins) ? mc.fins.length : 0,
       hasPD: pD.length > 0,

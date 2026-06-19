@@ -20,7 +20,7 @@
 //   next_horizon, model_blind_spots, efficiency_gap
 
 import { computeDerivedProfile, computeRenderPlan, computeCompositeSignals } from "./ai-profile";
-import { buildReportModelCanon } from "./report-data-360";
+import { buildReportModelCanon, anchorStrategies } from "./report-data-360";
 
 const PLAIN_LANG_NOTE = `
 JARGON INTERDIT (jamais dans le texte visible) :
@@ -185,8 +185,17 @@ export function buildAIPrompt360(
   const retYears = Math.max(0, (D.deathAge || 87) - (D.retAge || 65));
   const totalAccounts = (D.rrsp || 0) + (D.tfsa || 0) + (D.nr || 0);
   const monthlyContrib = phase !== "DECUM" ? (quiz.monthlyContrib || D.monthlyContrib || 0) : 0;
-  const savingsRate = D.sal > 0 ? Math.round(monthlyContrib * 12 / D.sal * 100) : 0;
-  const autonomyYears = D.gapMonthly > 0 ? Math.round((D.retBal || 0) / (D.gapMonthly * 12) * 10) / 10 : 99;
+  // PRE-COMPUTED, single-sourced figures (option 2): the narrator must DESCRIBE these, never
+  // select or derive them. Wrong-field selection was the dominant residual blocker —
+  // e.g. citing today's median (p50Now) as the at-retirement capital, or individual income
+  // in a household report. Each concept gets ONE exact labeled value here.
+  const householdIncomeForRate = D.householdIncome || D.sal || 0; // household for couples
+  const savingsRate = householdIncomeForRate > 0 ? Math.round(monthlyContrib * 12 / householdIncomeForRate * 100) : 0;
+  const capitalAtRetirement = Math.max(0, Math.round(D.retYearBalance || D.retBal || 0)); // p50Ret, NOT p50Now
+  const capitalToday = Math.max(0, Math.round(D.retBal || totalAccounts || 0)); // p50Now (today)
+  const householdTargetAnnualFig = Math.round((D.householdRetTargetMonthly || D.retSpM || 0) * 12);
+  const yearsOfRunway = householdTargetAnnualFig > 0 ? Math.round(capitalAtRetirement / householdTargetAnnualFig * 10) / 10 : 99;
+  const autonomyYears = yearsOfRunway; // legacy alias (now correctly: capital-at-retirement ÷ household target)
   const taxDiffPerYear = D.sal > 0 ? Math.round(D.sal * Math.abs((D.taxCurrentEffective || 0) - (D.taxRetirementEffective || 0)) / 100) : 0;
   const fmt = (n: number) => Math.round(n).toLocaleString("fr-CA");
 
@@ -482,8 +491,10 @@ export function buildAIPrompt360(
       gkMaxCut: params.gkMaxCut, gkCutFreq: D.gkCutFreq, gkAvgCut: D.gkAvgCut,
     };
     data.meltdown = {
-      meltIsBase: !!D.meltIsBase, meltTarget: D.meltTarget,
-      meltGap: D.meltGap, melt1Succ: D.melt1Succ,
+      // Only expose the meltdown target when the user set one; otherwise it's a default constant
+      // that must not enter the narrator's number pool (it leaked as a client-specific "$58,523 target").
+      meltIsBase: !!D.meltIsBase, meltTarget: params.melt ? D.meltTarget : undefined,
+      meltGap: params.melt ? D.meltGap : undefined, melt1Succ: D.melt1Succ,
     };
     data.cppTiming = alreadyClaiming ? null : {
       mc60Succ: D.mc60Succ, mc65Succ: D.mc65Succ, mc70Succ: D.mc70Succ,
@@ -526,27 +537,9 @@ export function buildAIPrompt360(
     // statu_quo to the headline success and shift every strategy by the SAME offset, so the
     // DELTAS are preserved but the report cites ONE baseline number. Also give statu_quo a
     // clean display label (the raw key leaked as "statu-quo" into EN prose).
-    const sqStrat = stratData.find((s) => s.key === "statu_quo") || stratData[0];
-    const sqRaw = sqStrat.succ;
-    const sqOffset = successPct - Math.round(sqRaw * 100);
-    // Same anchoring for median wealth: the statu_quo strategy run's medF drifts from the
-    // headline real median (separate run / nominal basis), surfacing as "is my baseline median
-    // 173k or 217k?". Shift every strategy's medF by the SAME offset so the baseline displays as
-    // the headline rMedF and the relative $ deltas are preserved.
-    const medOffset = Math.max(0, Math.round(Number(D.rMedF) || 0)) - Math.max(0, Math.round(Number(sqStrat.medF) || 0));
-    const STRAT_LABELS: Record<string, string> = {
-      statu_quo: fr ? "statu quo" : "status quo",
-      work_longer: fr ? "travailler plus longtemps" : "working longer",
-      save_more: fr ? "épargner davantage" : "saving more",
-      qpp_70: fr ? "reporter le RRQ à 70 ans" : "delaying CPP to 70",
-      meltdown: fr ? "réduction des dépenses" : "spending reduction",
-    };
-    data.strategies = stratData.map((s) => ({
-      key: s.key,
-      label: STRAT_LABELS[s.key] || s.key.replace(/_/g, " "), // never leak raw snake_case keys into prose
-      succ: Math.min(100, Math.max(0, Math.round(s.succ * 100) + sqOffset)),
-      medF: Math.max(0, Math.round(Math.max(0, s.medF) + medOffset)), // anchored to headline rMedF; deltas preserved
-    }));
+    // Shared anchoring — IDENTICAL to the __BUILDFI__ embed's strategies (single source), so the
+    // lever figures the narration cites match what an auditor can verify in the shipped report.
+    data.strategies = anchorStrategies(stratData, Number(D.rMedF) || 0, successPct, fr ? "fr" : "en");
   }
 
   // Signals
@@ -595,9 +588,9 @@ export function buildAIPrompt360(
   // Section-specific hints
   const revenueHint = phase === "DECUM"
     ? "Income breakdown: " + fmt(params.retIncome || 0) + "$/yr target. Government covers " + (D.govMonthly || 0) + "$/mo. Portfolio fills the gap. Explain the sustainability of this structure."
-    : "Current income " + fmt(D.sal || 0) + "$/yr → retirement target " + fmt(D.retSpM * 12 || 0) + "$/yr. Replacement ratio: " + (D.sal > 0 ? Math.round((D.retSpM * 12 || 0) / D.sal * 100) : 0) + "%. What this means for lifestyle continuity.";
+    : "Current " + (params.cOn ? "HOUSEHOLD " : "") + "income " + fmt(householdIncomeForRate) + "$/yr → " + (params.cOn ? "household " : "") + "retirement target " + fmt(householdTargetAnnualFig) + "$/yr. Replacement ratio: " + (D.householdReplacementPct ?? (householdIncomeForRate > 0 ? Math.round(householdTargetAnnualFig / householdIncomeForRate * 100) : 0)) + "%. Use the HOUSEHOLD income/target/replacement for couples — never one partner's salary. What this means for lifestyle continuity.";
 
-  const savingsHint = "Current savings " + fmt(totalAccounts || totalWealth) + "$ → projected " + fmt(D.retBal || 0) + "$ at retirement. ~" + autonomyYears + " years of autonomous spending. Savings rate: " + savingsRate + "% of income.";
+  const savingsHint = "Today's savings " + fmt(capitalToday) + "$ → projected capital AT RETIREMENT " + fmt(capitalAtRetirement) + "$ (use THIS exact figure for 'capital at retirement'; the " + fmt(capitalToday) + "$ figure is TODAY, do NOT label it as at-retirement). At the " + (params.cOn ? "household " : "") + "target of " + fmt(householdTargetAnnualFig) + "$/yr, that capital could sustain about " + yearsOfRunway + " years. " + (params.cOn ? "Household savings" : "Savings") + " rate: " + savingsRate + "%.";
 
   const govHint = gP + " " + (D.qppMonthly || 0) + "$/mo + " + oN + " " + (D.oasMonthly || 0) + "$/mo = " + (D.govMonthly || 0) + "$/mo covering " + (D.coveragePct || Math.round((D.govCoveragePct ?? 0) * 100)) + "% of spending. Activation ages: " + gP + " at " + (D.qppAge || params.qppAge || 65) + ", " + oN + " at " + (D.oasAge || params.oasAge || 65) + ".";
 
@@ -619,9 +612,13 @@ export function buildAIPrompt360(
 
   const sequenceHint = "Portfolio spread: P25 (cautious) " + fmt(Math.max(0, D.rP25F ?? 0)) + "$ to P75 (favorable) " + fmt(Math.max(0, D.rP75F ?? 0)) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly depending on early returns. The tornado chart ranks which parameters have the most impact — reference it. Never mention P95.";
 
-  const meltdownHint = D.meltIsBase
-    ? "Income already at or below meltdown target (" + fmt(D.meltTarget || 0) + "$/yr). Zero margin for reduction."
-    : "Stress test: spending reduced from " + fmt(params.retIncome || 0) + "$ to " + fmt(D.meltTarget || 0) + "$/yr. " + (D.melt1Succ !== null ? "Success rate at meltdown: " + (D.melt1Succ || 0) + "% vs " + successPct + "% baseline." : "");
+  // Only cite the meltdown TARGET dollar figure when the user actually set a meltdown (params.melt);
+  // otherwise meltTarget is a generic default constant that must NOT be presented as a client figure.
+  const meltdownHint = !params.melt
+    ? "Discuss RRSP/RRIF drawdown timing QUALITATIVELY for this profile (no user meltdown target is set — do NOT cite a specific reduction-target dollar figure)." + (D.melt1Succ !== null ? " A modeled accelerated-drawdown scenario reached " + (D.melt1Succ || 0) + "% success vs " + successPct + "% baseline." : "")
+    : D.meltIsBase
+    ? "Spending is already near the modeled drawdown floor; limited additional margin (observational only)."
+    : "A modeled accelerated RRSP-drawdown scenario was tested. " + (D.melt1Succ !== null ? "Success at that scenario: " + (D.melt1Succ || 0) + "% vs " + successPct + "% baseline." : "");
 
   const taxHint = "Current effective rate " + (D.taxCurrentEffective || 0) + "% → retirement " + (D.taxRetirementEffective || 0) + "%. " + (taxDiffPerYear > 0 ? "~" + taxDiffPerYear + "$/yr difference." : "Rates are similar.") + (totalWealth > 0 && (params.rrsp ?? 0) / totalWealth > 0.5 ? " RRSP is " + Math.round((params.rrsp ?? 0) / totalWealth * 100) + "% of savings — RRIF conversion at 71 implications." : "");
 
