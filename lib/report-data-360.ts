@@ -75,10 +75,32 @@ export function buildReportModelCanon(
   const taxDiffPerYear = (D.sal || 0) > 0
     ? Math.round(D.sal * Math.abs((D.taxCurrentEffective || 0) - (D.taxRetirementEffective || 0)) / 100)
     : 0;
+  // Household-aware figures (2026-06-18 blind-review fix): for couples, replacement and the
+  // spending target must be HOUSEHOLD, and gov coverage must be STEADY-STATE (post-CPP/OAS,
+  // incl. spouse). These come pre-computed from the extract (D.*) — single-sourced here so
+  // they land in the guardrail's allowed-number pool and the narrator cites them, not the
+  // bridge-snapshot $0 / individual figures.
+  const householdIncome = D.householdIncome ?? (D.sal || 0);
+  const householdTargetAnnual = Math.round((D.householdRetTargetMonthly ?? (D.retSpM || 0)) * 12);
   const canon: AnyRec = {
     income: D.sal || 0,
-    retTargetAnnual: Math.round((D.retSpM || 0) * 12),
-    replacementPct: (D.sal || 0) > 0 ? Math.round(((D.retSpM || 0) * 12) / D.sal * 100) : 0,
+    householdIncome,
+    retTargetAnnual: householdTargetAnnual,
+    householdRetTargetMonthly: Math.round(D.householdRetTargetMonthly ?? (D.retSpM || 0)),
+    retSpendReduction: Math.max(0, householdIncome - householdTargetAnnual),
+    replacementPct: D.householdReplacementPct ?? ((D.sal || 0) > 0 ? Math.round(((D.retSpM || 0) * 12) / D.sal * 100) : 0),
+    retGovMonthly: Math.round(D.retGovMonthly || 0),
+    retGovCoveragePct: Math.round(D.retGovCoveragePct || 0),
+    // Verified steady-state gov component split (sums to retGovMonthly) — lets the narrator cite
+    // QPP/OAS/GIS/spouse parts without the guardrail flagging them as foreign numbers.
+    retQppPrimaryMonthly: Math.round(D.retQppPrimaryMonthly || 0),
+    retOasPrimaryMonthly: Math.round(D.retOasPrimaryMonthly || 0),
+    retGisMonthly: Math.round(D.retGisMonthly || 0),
+    retPenMonthly: Math.round(D.retPenMonthly || 0),
+    retSpouseGovMonthly: Math.round(D.retSpouseGovMonthly || 0),
+    retSteadyAge: Math.round(D.retSteadyAge || 0),
+    bridgeYears: Math.round(D.bridgeYears || 0),
+    bridgeCostReal: Math.round(D.bridgeCostReal || 0),
     taxDiffPerYear,
     rrspSharePct: totalWealth > 0 ? Math.round(((params.rrsp ?? 0) / totalWealth) * 100) : 0,
     gkMaxCutPct: Math.round((params.gkMaxCut ?? 0.20) * 100),
@@ -126,7 +148,9 @@ export function buildBuildFiData(
   const incomeByAge = rd.map((r: AnyRec) => {
     const age = Math.round(n(r.age, baseAge));
     const def = realDeflator(baseAge, age, inf);
-    const govMonthly = Math.round((n(r.rrq) + n(r.psv) + n(r.gis) + n(r.pen)) * def / 12);
+    // HOUSEHOLD gov: primary + spouse (cQpp/cOas/cGis now emitted by the engine). Without
+    // the spouse terms the income chart showed ~1/3 of the householded prose figure (couples).
+    const govMonthly = Math.round((n(r.rrq) + n(r.psv) + n(r.gis) + n(r.pen) + n(r.cQpp) + n(r.cOas) + n(r.cGis)) * def / 12);
     const spendMonthly = Math.round(n(r.spend) * def / 12);
     const portWithdrawMonthly = Math.max(0, Math.round(n(r.ret) * def / 12));
     const portfolio = Math.max(0, toRealPortfolioFromMedRow(r, baseAge, inf));
@@ -144,7 +168,7 @@ export function buildBuildFiData(
     const revRow = nearestRowByAge(rd, age);
     const p50 = Math.max(0, Math.round(pickPD(pdRow || {}, "rp50", pickPD(pdRow || {}, "p50", 0))));
     const def = realDeflator(baseAge, age, inf);
-    const govAnnualNom = n(revRow?.rrq) + n(revRow?.psv) + n(revRow?.gis) + n(revRow?.pen);
+    const govAnnualNom = n(revRow?.rrq) + n(revRow?.psv) + n(revRow?.gis) + n(revRow?.pen) + n(revRow?.cQpp) + n(revRow?.cOas) + n(revRow?.cGis); // household (incl. spouse)
     const govMonthly = Math.round(govAnnualNom * def / 12);
     const spendMonthly = Math.round(n(revRow?.spend) * def / 12);
     let portMonthly = Math.max(0, Math.round(n(revRow?.ret) * def / 12));

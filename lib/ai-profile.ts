@@ -280,7 +280,11 @@ export function computeCompositeSignals(
   // 12. Bridge period (self-funded before gov income)
   const qppAge = D.qppAge || 65;
   const retAge = D.retAge || 65;
-  if (qppAge > retAge) {
+  // Prefer the extract's real bridge (modeled HOUSEHOLD spend net of gov over the pre-gov
+  // years, incl. spouse). Fall back to the flat individual estimate only if unavailable.
+  if ((D.bridgeYears ?? 0) > 0) {
+    signals.bridgePeriod = { years: D.bridgeYears, totalCost: D.bridgeCostReal ?? ((D.retSpM || 0) * 12 * D.bridgeYears) };
+  } else if (qppAge > retAge) {
     const bridgeYrs = qppAge - retAge;
     const retSpM = D.retSpM || 0;
     signals.bridgePeriod = { years: bridgeYrs, totalCost: retSpM * 12 * bridgeYrs };

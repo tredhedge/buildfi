@@ -45,7 +45,27 @@ export function buildAIPrompt360(
   stratData?: Array<{ key: string; succ: number; medF: number }>
 ): { sys: string; usr: string; obsLabels: Record<string, string> } {
   const q = params._quiz || {};
-  const rp = params._report || {};
+  const rp: any = { ...(params._report || {}) };
+  // ship-loop (2026-06-18): the prompt reads rp.rentals, but the translator stores ALL
+  // properties in params.props (flat array, `pri` flag) — so rentals never reached the
+  // narration while the renderer (which reads params.props) DID show them, producing a
+  // self-contradictory report (narration "your home is your only property" vs a table with
+  // rental income). Populate rp.rentals from the same source the renderer uses.
+  if (!(rp.rentals && rp.rentals.length)) {
+    const _rent = (Array.isArray(params.props) ? params.props : [])
+      .filter((p: any) => p && p.on && Number(p.val) > 0 && !p.pri)
+      .map((p: any) => {
+        const value = Math.round(Number(p.val) || 0), mortgage = Math.round(Number(p.mb) || 0);
+        const income = Math.round((Number(p.rm) || 0) * 12);
+        return { name: p.name, value, mortgage, equity: Math.max(0, value - mortgage), income, expenses: 0, cashFlow: income };
+      });
+    if (_rent.length) {
+      rp.rentals = _rent;
+      rp.rentalTotalValue = _rent.reduce((s: number, r: any) => s + r.value, 0);
+      rp.rentalTotalIncome = _rent.reduce((s: number, r: any) => s + r.income, 0);
+      rp.rentalTotalExpenses = 0;
+    }
+  }
 
   // Province-aware full names (zero acronyms)
   const isQC = (params.prov || "QC") === "QC";
@@ -174,7 +194,7 @@ export function buildAIPrompt360(
   const propSlot = (rp.mortBal > 0
     ? (rp.mortFreeAge > (params.retAge || 65) ? "MORTGAGE IN RETIREMENT: extends " + (rp.mortFreeAge - (params.retAge || 65)) + " years past retirement. " + (rp.mortPayment || 0) + "$/mo added to retirement spending."
       : "Mortgage paid by age " + rp.mortFreeAge + " — housing costs drop at retirement.") : "")
-    + (rp.rentals && rp.rentals.length > 0 ? " RENTAL PORTFOLIO: " + rp.rentals.length + " propert" + (rp.rentals.length > 1 ? "ies" : "y") + ", total value " + (rp.rentalTotalValue || 0) + "$, net cash-flow " + ((rp.rentalTotalIncome || 0) - (rp.rentalTotalExpenses || 0)) + "$/yr." : "");
+    + (rp.rentals && rp.rentals.length > 0 ? " RENTAL PORTFOLIO: " + rp.rentals.length + " propert" + (rp.rentals.length > 1 ? "ies" : "y") + ", total value " + (rp.rentalTotalValue || 0) + "$, rental income (pre-tax, net of modeled expenses) " + ((rp.rentalTotalIncome || 0) - (rp.rentalTotalExpenses || 0)) + "$/yr. Describe it as rental income, not guaranteed net cash flow." : "");
 
   // WIN/FIX (ACCUM/TRANSITION only)
   let winInstr = "";
@@ -256,7 +276,7 @@ export function buildAIPrompt360(
   // Rental portfolio
   if (rp.rentals && rp.rentals.length >= 2) {
     const rTotCF = rp.rentals.reduce((s: number, r: any) => s + (r.cashFlow || 0), 0);
-    obsPool.push({ topic: "rental-portfolio", labelFr: "Portefeuille locatif", labelEn: "Rental portfolio", instr: "Rental portfolio: " + rp.rentals.length + " properties, net cash-flow " + rTotCF + "$/yr. What this income stream means for withdrawal pressure." });
+    obsPool.push({ topic: "rental-portfolio", labelFr: "Portefeuille locatif", labelEn: "Rental portfolio", instr: "Rental portfolio: " + rp.rentals.length + " properties, rental income (pre-tax) " + rTotCF + "$/yr. What this income stream means for withdrawal pressure. Call it rental income, not guaranteed net cash flow." });
   }
 
   // RRIF conversion (DECUM/TRANSITION)
@@ -283,8 +303,23 @@ export function buildAIPrompt360(
   if (D.successPct >= 90 && (D.rMedF || D.medEstate || 0) > 200000)
     obsPool.push({ topic: "estate-structure", labelFr: "Structure successorale", labelEn: "Estate structure", instr: "Estate: " + fmt(D.rMedF || D.medEstate || 0) + "$ median residual. Registered accounts are fully taxable at death. TFSA passes tax-free." });
 
-  // Gov coverage
-  obsPool.push({ topic: "gov-coverage", labelFr: "Couverture gouvernementale", labelEn: "Government coverage", instr: gP + " " + (D.qppMonthly || 0) + "$/mo + " + oN + " " + (D.oasMonthly || 0) + "$/mo = " + (D.govMonthly || 0) + "$/mo covering " + (D.coveragePct || Math.round((D.govCoveragePct ?? 0) * 100)) + "% of spending." });
+  // Gov coverage — STEADY-STATE HOUSEHOLD (post-CPP/OAS, incl. spouse). Do NOT cite the
+  // pre-65 bridge snapshot (often 0$) as the lifetime coverage figure.
+  {
+    const _gqpp = D.retQppPrimaryMonthly || 0, _goas = D.retOasPrimaryMonthly || 0, _ggis = D.retGisMonthly || 0, _gpen = D.retPenMonthly || 0, _gsp = D.retSpouseGovMonthly || 0;
+    // VERIFIED component split that sums EXACTLY to retGovMonthly. Use these exact parts; never
+    // invent a breakdown. The DB/employer pension is part of the guaranteed-income floor (label it
+    // as an employer pension, NOT government). Name GIS/SRG when present.
+    const _parts = [_gqpp ? gP + " " + _gqpp + "$/mo" : "", _goas ? oN + " " + _goas + "$/mo" : "",
+      _ggis ? "the Guaranteed Income Supplement (SRG/GIS) " + _ggis + "$/mo" : "",
+      _gpen ? "an employer/DB pension " + _gpen + "$/mo (not a government benefit)" : "",
+      _gsp ? "the spouse's benefits " + _gsp + "$/mo" : ""].filter(Boolean).join(" + ");
+    obsPool.push({ topic: "gov-coverage", labelFr: "Couverture gouvernementale", labelEn: "Government coverage", instr:
+      "STEADY STATE (once " + gP + "/" + oN + " have begun" + (params.cOn ? " for both partners" : "") + ", ~age " + (D.retSteadyAge || 65) + "): guaranteed government income is " + (D.retGovMonthly || 0) + "$/mo" +
+      (_parts ? " — composed of " + _parts + " (these sum to " + (D.retGovMonthly || 0) + "$; use these EXACT components, do NOT invent or recompute a split)" : "") +
+      ", covering " + (D.retGovCoveragePct || 0) + "% of the " + (D.householdRetTargetMonthly || D.retSpM || 0) + "$/mo " + (params.cOn ? "household " : "") +
+      "spending target. Benefits begin at 65+ (or later if deferred), so the pre-retirement BRIDGE years carry little/no government income — describe bridge and steady state as DISTINCT phases; NEVER state lifetime coverage as 0%." + (_ggis ? " This is a GIS/SRG-eligible profile; name the SRG." : "") });
+  }
 
   // Tax bracket shift
   if (Math.abs((D.taxCurrentEffective || 0) - (D.taxRetirementEffective || 0)) >= 5)
@@ -331,8 +366,10 @@ export function buildAIPrompt360(
   const cSex = params.cSex || "F";
   const mainGovMonthly = (D.qppMonthly || 0) + (D.oasMonthly || 0) + (D.dbPensionMonthly || D.penMonthly || 0);
   const partnerGovMonthly = (rp.cPenMonthly || params.cPenM || 0);
-  // QPP/CPP survivor benefit: ~60% of deceased partner's pension
-  const mainQppSurvivorBenefit = Math.round((D.qppMonthly || 0) * 0.6);
+  // QPP/CPP survivor benefit: ~60% of deceased partner's STEADY-STATE pension. Must use the
+  // post-claim QPP (retQppPrimaryMonthly), not D.qppMonthly which is sampled at retirement start
+  // (pre-claim => $0 for early retirees, producing an implausible "$0 survivor benefit").
+  const mainQppSurvivorBenefit = Math.round((D.retQppPrimaryMonthly || D.qppMonthly || 0) * 0.6);
   const partnerSavings = (params.cRRSP || 0) + (params.cTFSA || 0) + (params.cNR || 0);
   const survivorContext = params.cOn
     ? " SURVIVOR SCENARIO: If the primary earner (age " + (D.age || 65) + ") dies first, the surviving partner would retain their own pensions + ~" + mainQppSurvivorBenefit + "$/mo survivor " + gP + " benefit + the TFSA transfers tax-free. Household income would shift. If the partner (age " + cAge + ") dies first, the primary retains all registered accounts. Partner total savings: " + fmt(partnerSavings) + "$. Address BOTH trajectories briefly."
@@ -400,12 +437,15 @@ export function buildAIPrompt360(
       p25Cautious: Math.max(0, D.rP25F ?? 0), p75Favorable: Math.max(0, D.rP75F ?? 0),
       savingsDurability: D.medRuin || 0,
       medEstate: D.medEstate || D.medEstateNet || 0,
+      p10Estate: D.p10Estate || 0, // ship-loop 2026-06-18: estate P10 was only in the DECUM/TRANSITION estate block; narrated in every phase, so surface it here (real, deflated) for all phases.
     },
     tax: { curr: D.taxCurrentEffective, ret: D.taxRetirementEffective, marg: D.taxCurrentMarginal },
     fees: { mer: D.merWeighted || 0, cost: D.feeCostLifetime || 0, investStyle: q.investStyle || "unsure" },
     coverageYears: autonomyYears < 99 ? autonomyYears : null,
-    bridgeYears: Math.max(0, (D.qppAge || params.qppAge || 65) - (D.retAge || 65)),
-    bridgeCost: Math.max(0, (D.qppAge || params.qppAge || 65) - (D.retAge || 65)) * (D.gapMonthly || 0) * 12,
+    // Bridge from the extract: real years to first HOUSEHOLD gov benefit + the MODELED
+    // household spend over those years (was a flat individual gap×months understatement).
+    bridgeYears: D.bridgeYears ?? Math.max(0, (D.qppAge || params.qppAge || 65) - (D.retAge || 65)),
+    bridgeCost: D.bridgeCostReal ?? (Math.max(0, (D.qppAge || params.qppAge || 65) - (D.retAge || 65)) * (D.gapMonthly || 0) * 12),
     feesCostInMonths: (D.retSpM || 1) > 0 ? Math.round((D.feeCostLifetime || 0) / (D.retSpM || 1)) : 0,
     timeline: {
       yrsToRet, retirementYears: retYears,
@@ -460,6 +500,8 @@ export function buildAIPrompt360(
   if (rp.rentals && rp.rentals.length > 0)
     data.rentalPortfolio = {
       count: rp.rentals.length,
+      totalValue: rp.rentalTotalValue,
+      totalIncome: rp.rentalTotalIncome, // combined annual rental income (so the narrated total grounds)
       properties: rp.rentals.map((r: any) => ({ name: r.name, value: r.value, mortgage: r.mortgage, rent: r.income, expenses: r.expenses, cashFlow: r.cashFlow })),
     };
 
@@ -478,8 +520,32 @@ export function buildAIPrompt360(
 
   // Strategies
   if (stratData && stratData.length > 0) {
+    // ship-loop 2026-06-18: statu_quo is a SEPARATE 5000-path MC run, so its raw success
+    // drifts ~1pt from the headline base run by sampling noise (e.g. 81% vs the headline
+    // 80%) — which surfaced as "is my plan 80% or 81%?" in review. Anchor the displayed
+    // statu_quo to the headline success and shift every strategy by the SAME offset, so the
+    // DELTAS are preserved but the report cites ONE baseline number. Also give statu_quo a
+    // clean display label (the raw key leaked as "statu-quo" into EN prose).
+    const sqStrat = stratData.find((s) => s.key === "statu_quo") || stratData[0];
+    const sqRaw = sqStrat.succ;
+    const sqOffset = successPct - Math.round(sqRaw * 100);
+    // Same anchoring for median wealth: the statu_quo strategy run's medF drifts from the
+    // headline real median (separate run / nominal basis), surfacing as "is my baseline median
+    // 173k or 217k?". Shift every strategy's medF by the SAME offset so the baseline displays as
+    // the headline rMedF and the relative $ deltas are preserved.
+    const medOffset = Math.max(0, Math.round(Number(D.rMedF) || 0)) - Math.max(0, Math.round(Number(sqStrat.medF) || 0));
+    const STRAT_LABELS: Record<string, string> = {
+      statu_quo: fr ? "statu quo" : "status quo",
+      work_longer: fr ? "travailler plus longtemps" : "working longer",
+      save_more: fr ? "épargner davantage" : "saving more",
+      qpp_70: fr ? "reporter le RRQ à 70 ans" : "delaying CPP to 70",
+      meltdown: fr ? "réduction des dépenses" : "spending reduction",
+    };
     data.strategies = stratData.map((s) => ({
-      key: s.key, succ: Math.round(s.succ * 100), medF: Math.max(0, s.medF), // floored real (no negative nominal leak)
+      key: s.key,
+      label: STRAT_LABELS[s.key] || s.key.replace(/_/g, " "), // never leak raw snake_case keys into prose
+      succ: Math.min(100, Math.max(0, Math.round(s.succ * 100) + sqOffset)),
+      medF: Math.max(0, Math.round(Math.max(0, s.medF) + medOffset)), // anchored to headline rMedF; deltas preserved
     }));
   }
 
@@ -548,7 +614,7 @@ export function buildAIPrompt360(
   const whatIfHint = "Reference the what-if scenarios from the report. Which scenario has the biggest impact on success rate? What does this reveal about the plan's sensitivity?";
 
   const stratDesc = stratData && stratData.length > 0
-    ? "Best strategy from DATA.strategies. Reference specific success rate improvement and median wealth difference vs statu_quo."
+    ? "Best strategy from DATA.strategies. Reference specific success rate improvement and median wealth difference vs the status-quo plan. Refer to each strategy by its human `label` field (e.g. 'working longer'), NEVER the raw snake_case key."
     : "General strategy context based on profile.";
 
   const sequenceHint = "Portfolio spread: P25 (cautious) " + fmt(Math.max(0, D.rP25F ?? 0)) + "$ to P75 (favorable) " + fmt(Math.max(0, D.rP75F ?? 0)) + "$. Explain sequence-of-returns risk in plain language: two identical portfolios can diverge vastly depending on early returns. The tornado chart ranks which parameters have the most impact — reference it. Never mention P95.";
@@ -566,8 +632,12 @@ export function buildAIPrompt360(
   const investStyleLabel = investStyleLabels[q.investStyle] || "unknown vehicle";
   const feesHint = "Investment vehicle: " + investStyleLabel + ". MER " + Math.round((D.merWeighted || 0) * 10000) / 100 + "% → lifetime cost " + fmt(D.feeCostLifetime || 0) + "$. Translate into months of retirement income lost. The interactive fee impact chart lets the reader hover to compare 5 MER scenarios over time." + (q.investStyle === "mutual_funds" ? " The fee drag is substantial — quantify the gap vs a low-fee alternative." : q.investStyle === "diy_stocks" || q.investStyle === "low_fee_etf" ? " Fees are already well-managed — acknowledge this strength." : "");
 
+  const _saleProp = (D.properties || []).find((p) => (p?.saleAge || 0) > 0);
   const propertyHint = (rp.homeVal ?? rp.homeValue ?? 0) > 0
-    ? "Primary: " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + "$, mortgage " + fmt(rp.mortBal ?? rp.homeMortgage ?? 0) + "$." + (rp.rentals && rp.rentals.length > 0 ? " Rentals: " + rp.rentals.length + " properties." : "") + " Observe concentration and role in retirement income."
+    ? "Primary: " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + "$, mortgage " + fmt(rp.mortBal ?? rp.homeMortgage ?? 0) + "$." + (rp.rentals && rp.rentals.length > 0 ? " Rentals: " + rp.rentals.length + " properties." : "")
+      + (_saleProp
+        ? " IMPORTANT: a sale at age " + _saleProp.saleAge + " IS MODELED — the projection already injects the net sale proceeds into the portfolio at that age (the median path reflects it). Describe it as a planned, already-reflected liquidity event; do NOT say the home is static, illiquid, excluded, or 'not drawn on'."
+        : " The projection does NOT draw on home equity (no sale is scheduled); observe concentration/illiquidity and its standby role.")
     : "Return empty string — no property.";
 
   const strengthsHint = "Identify 2-3 strengths and 2-3 risks specific to THIS profile. Reference actual numbers from DATA. Strengths first, then risks. Each must be a specific data point, not generic.";
@@ -582,7 +652,9 @@ export function buildAIPrompt360(
   // model_blind_spots — profile-specific limitations (Upgrade 6)
   const blindSpotFactors: string[] = [];
   if (params.cOn) blindSpotFactors.push(fr ? "le fractionnement du revenu de pension entre conjoints" : "pension income splitting between spouses");
-  if ((rp.homeVal ?? rp.homeValue ?? 0) > 300000) blindSpotFactors.push(fr ? "la vente éventuelle de la propriété de " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + " $" : "potential sale of the " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + "$ property");
+  // Only an UNMODELED sale is a blind spot. If a sale is scheduled (saleAge), the engine models it — don't list it as unmodeled.
+  const _saleModeled = (D.properties || []).some((p) => (p?.saleAge || 0) > 0);
+  if ((rp.homeVal ?? rp.homeValue ?? 0) > 300000 && !_saleModeled) blindSpotFactors.push(fr ? "la vente éventuelle de la propriété de " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + " $" : "potential sale of the " + fmt(rp.homeVal ?? rp.homeValue ?? 0) + "$ property");
   if (totalWealth > 0 && (params.rrsp ?? 0) / totalWealth > 0.50) blindSpotFactors.push(fr ? "les stratégies de décaissement REER progressif avant 71 ans" : "progressive RRSP drawdown strategies before age 71");
   if (phase !== "DECUM") blindSpotFactors.push(fr ? "les événements de vie futurs (changement de carrière, héritage, divorce)" : "future life events (career change, inheritance, divorce)");
   if ((rp.debtBal ?? 0) > 0) blindSpotFactors.push(fr ? "le refinancement ou la consolidation des dettes" : "debt refinancing or consolidation");
@@ -591,7 +663,10 @@ export function buildAIPrompt360(
   const blindSpotList = blindSpotFactors.slice(0, 3);
   const modelBlindSpotsHint = "2-3 sentences. Identify the 2-3 unmodeled factors that could have the MOST impact on THIS specific profile. Not generic limitations — specific ones. "
     + "Profile-specific factors to consider: " + blindSpotList.join(", ") + ". "
-    + (fr ? "End with: 'Ces dimensions seraient explorables avec le Laboratoire interactif.'" : "End with: 'These dimensions could be explored with the interactive Laboratoire.'");
+    // 2026-06-18: dropped the "Laboratoire interactif" close — that product no longer
+    // exists for Bilan 360 (one-shot report), so it leaked a dead, French-only feature
+    // name into EN reports. Close on a neutral observational note instead.
+    + (fr ? "End with: 'Ces dimensions pourraient être approfondies lors d\\'une révision ultérieure.'" : "End with: 'These dimensions could be explored in a future review.'");
 
   // efficiency_gap — A+ profiles only (Upgrade 14)
   const surplusMonthly = (D.govMonthly || 0) - (D.retSpM || 0);
@@ -734,6 +809,11 @@ export function buildAIPrompt360(
     + "2. Tax-efficient withdrawal sequencing (RRSP→RRIF conversion timing, TFSA maximization)\n"
     + "3. Estate efficiency (what % of estate goes to taxes, what could be tax-free)\n"
     + "4. Flexibility deployment (what the surplus enables without reducing success)\n"
+    + "\n=== NUMERIC COHERENCE (hard rules) ===\n"
+    + "- ARITHMETIC MUST HOLD: if you state a breakdown (e.g. 'CPP X/mo + OAS Y/mo = Z/mo'), the parts MUST sum to the total. If unsure, cite ONLY the DATA total and do NOT invent a component split.\n"
+    + "- NEVER state a coverage %, replacement %, or gap unless it equals (the figure cited) ÷ (the spending target in DATA). Do not assert ratios the DATA does not support (e.g. '132% of target' when no such ratio exists).\n"
+    + "- DIRECTION MUST MATCH THE DATA: do not say the portfolio 'erodes/declines/shrinks' if the median path in DATA rises (or vice-versa). Read the trajectory before describing it.\n"
+    + "- PERCENTILES: P25/P75 are the bounds of the MIDDLE-50% 'likely range'. Call P75 the 'upper end of the likely range', NOT the 'best case' or 'optimistic edge' (that is P95, which you must not cite). P25 is 'cautious', never 'worst case'.\n"
     + "\n=== PRECISION CALIBRATION ===\n"
     + "MC outputs (percentiles, success rates, median wealth) are statistical results from 5,000 simulations. You may cite them precisely: '523 719 $', '86 %', 'P25'.\n"
     + "AI-derived implications (coverage duration, per-dollar gains, cumulative effects) are APPROXIMATIONS. You must signal this:\n"
