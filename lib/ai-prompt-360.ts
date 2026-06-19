@@ -586,13 +586,11 @@ export function buildAIPrompt360(
   const mirrorHint = "Summarize this person's financial situation in 3-4 sentences as if explaining to a friend. Cover: age/retirement timeline, total savings, income sources, key risk. Use the person's actual numbers from DATA. Warm, clear, factual.";
 
   // Section-specific hints
-  const revenueHint = phase === "DECUM"
-    ? "Income breakdown: " + fmt(params.retIncome || 0) + "$/yr target. Government covers " + (D.govMonthly || 0) + "$/mo. Portfolio fills the gap. Explain the sustainability of this structure."
-    : "Current " + (params.cOn ? "HOUSEHOLD " : "") + "income " + fmt(householdIncomeForRate) + "$/yr → " + (params.cOn ? "household " : "") + "retirement target " + fmt(householdTargetAnnualFig) + "$/yr. Replacement ratio: " + (D.householdReplacementPct ?? (householdIncomeForRate > 0 ? Math.round(householdTargetAnnualFig / householdIncomeForRate * 100) : 0)) + "%. Use the HOUSEHOLD income/target/replacement for couples — never one partner's salary. What this means for lifestyle continuity.";
+  const revenueHint = "A FACTUAL LINE (household income, retirement spending target, replacement ratio) is rendered immediately before your text. Do NOT repeat those figures or use one partner's salary. Write 2-3 sentences QUALITATIVELY on what the replacement level means for lifestyle continuity and how the income structure sustains it. Observational/conditional.";
 
-  const savingsHint = "Today's savings " + fmt(capitalToday) + "$ → projected capital AT RETIREMENT " + fmt(capitalAtRetirement) + "$ (use THIS exact figure for 'capital at retirement'; the " + fmt(capitalToday) + "$ figure is TODAY, do NOT label it as at-retirement). At the " + (params.cOn ? "household " : "") + "target of " + fmt(householdTargetAnnualFig) + "$/yr, that capital could sustain about " + yearsOfRunway + " years. " + (params.cOn ? "Household savings" : "Savings") + " rate: " + savingsRate + "%.";
+  const savingsHint = "A FACTUAL LINE (today's savings, projected capital AT RETIREMENT, runway in years, savings rate) is rendered immediately before your text. Do NOT repeat or recompute any of those numbers, and never confuse today's capital with capital at retirement. Write 2-3 sentences of QUALITATIVE interpretation only: what the accumulation trajectory means, its main driver, and the key takeaway. Observational/conditional.";
 
-  const govHint = gP + " " + (D.qppMonthly || 0) + "$/mo + " + oN + " " + (D.oasMonthly || 0) + "$/mo = " + (D.govMonthly || 0) + "$/mo covering " + (D.coveragePct || Math.round((D.govCoveragePct ?? 0) * 100)) + "% of spending. Activation ages: " + gP + " at " + (D.qppAge || params.qppAge || 65) + ", " + oN + " at " + (D.oasAge || params.oasAge || 65) + ".";
+  const govHint = "A FACTUAL LINE (steady-state guaranteed income, its component split, coverage %, and the pre-65 bridge) is rendered immediately before your text. Do NOT repeat those figures or invent a split. Write 2-3 sentences of QUALITATIVE meaning: the role of the guaranteed-income floor, the bridge-vs-steady-state distinction, and what it implies for portfolio reliance. Observational/conditional; never state lifetime coverage as 0%.";
 
   const cppTimingHint = alreadyClaiming
     ? "Return empty string — " + gP + " already in payment."
@@ -811,6 +809,7 @@ export function buildAIPrompt360(
     + "- NEVER state a coverage %, replacement %, or gap unless it equals (the figure cited) ÷ (the spending target in DATA). Do not assert ratios the DATA does not support (e.g. '132% of target' when no such ratio exists).\n"
     + "- DIRECTION MUST MATCH THE DATA: do not say the portfolio 'erodes/declines/shrinks' if the median path in DATA rises (or vice-versa). Read the trajectory before describing it.\n"
     + "- PERCENTILES: P25/P75 are the bounds of the MIDDLE-50% 'likely range'. Call P75 the 'upper end of the likely range', NOT the 'best case' or 'optimistic edge' (that is P95, which you must not cite). P25 is 'cautious', never 'worst case'.\n"
+    + "- SPENDING IS NOT FIXED: the projection applies an age-based spending pattern (a 'smile' that typically steps DOWN in the later slow-go/no-go years, plus pre-65 bridge effects). NEVER claim spending is 'fixed', 'held flat', or 'constant' at one number, and never call a plan '100% success at a fixed target' — success reflects that modeled, age-varying spend. Describe the stated figure as the planned/early-retirement target.\n"
     + "\n=== PRECISION CALIBRATION ===\n"
     + "MC outputs (percentiles, success rates, median wealth) are statistical results from 5,000 simulations. You may cite them precisely: '523 719 $', '86 %', 'P25'.\n"
     + "AI-derived implications (coverage duration, per-dollar gains, cumulative effects) are APPROXIMATIONS. You must signal this:\n"
