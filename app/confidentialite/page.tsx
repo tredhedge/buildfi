@@ -173,6 +173,14 @@ function FrenchPolicy() {
             <strong>Utilisation</strong> : pages visitées, interactions
             (PostHog) pour améliorer le service.
           </li>
+          <li>
+            <strong>Brouillon local (navigateur)</strong> : le simulateur et le
+            formulaire de planification enregistrent automatiquement vos saisies
+            dans le stockage local (« localStorage ») de votre appareil afin de
+            restaurer votre travail. Ces données restent sur votre appareil, ne
+            sont jamais transmises à nos serveurs, et peuvent être effacées à tout
+            moment via le bouton « Effacer les données locales » du planificateur.
+          </li>
         </ul>
       </Section>
 
@@ -225,7 +233,7 @@ function FrenchPolicy() {
 
       <Section n={5} title="Conservation">
         <ul className="list-disc pl-5 space-y-1">
-          <li>Rapports HTML : 12 mois.</li>
+          <li>Rapports HTML : 30 jours, puis suppression automatique.</li>
           <li>Profils Planner (compte) : durée d&apos;activité + 30 jours après dernière connexion.</li>
           <li>Registre de consentement : 90 jours après le dernier achat.</li>
           <li>Journaux courriel Resend : 30 jours.</li>
@@ -378,6 +386,14 @@ function EnglishPolicy() {
             <strong>Usage</strong>: pages visited, interactions (PostHog) to
             improve the service.
           </li>
+          <li>
+            <strong>Local draft (browser)</strong>: the simulator and planning
+            form automatically save your entries to your device&apos;s local
+            storage (&quot;localStorage&quot;) so your work can be restored. This
+            data stays on your device, is never transmitted to our servers, and
+            can be erased at any time via the &quot;Clear local data&quot; button
+            in the planner.
+          </li>
         </ul>
       </Section>
 
@@ -426,7 +442,7 @@ function EnglishPolicy() {
 
       <Section n={5} title="Retention">
         <ul className="list-disc pl-5 space-y-1">
-          <li>HTML reports: 12 months.</li>
+          <li>HTML reports: 30 days, then automatically deleted.</li>
           <li>Planner profiles (account): subscription duration + 30 days after last login.</li>
           <li>Consent record: 90 days after last purchase.</li>
           <li>Resend email logs: 30 days.</li>
