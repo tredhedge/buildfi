@@ -1,6 +1,6 @@
 // /app/api/webhook/route.ts
 // Stripe webhook handler — routes to tier-specific pipelines
-// Events: checkout.session.completed, customer.subscription.updated
+// Events: checkout.session.completed
 // Expert additions: KV profile creation, magic link, referral tracking, addon credits
 
 import { NextRequest, NextResponse } from "next/server";
@@ -27,7 +27,6 @@ import {
   getReferral,
   incrementReferralConversion,
   incrementExportCredit,
-  renewExpertProfile,
   markProcessed,
   unmarkProcessed,
   createFeedbackRecord,
@@ -180,10 +179,6 @@ export async function POST(req: NextRequest) {
   // ── Route by event type ─────────────────────────────────
   if (event.type === "checkout.session.completed") {
     return handleCheckoutCompleted(event);
-  }
-
-  if (event.type === "customer.subscription.updated") {
-    return handleSubscriptionUpdated(event);
   }
 
   return NextResponse.json({ received: true });
@@ -837,56 +832,3 @@ async function handleReferralConversion(
   }
 }
 
-// ── Subscription renewal handler ──────────────────────────
-
-async function handleSubscriptionUpdated(
-  event: Stripe.Event
-): Promise<NextResponse> {
-  const subscription = event.data.object as Stripe.Subscription;
-
-  try {
-    const customer = await stripe.customers.retrieve(
-      subscription.customer as string
-    );
-    if (customer.deleted) {
-      console.error("[webhook] Subscription update: customer deleted");
-      return NextResponse.json({ received: true });
-    }
-    const email = customer.email;
-
-    if (!email) {
-      console.error("[webhook] Subscription update: no customer email");
-      return NextResponse.json({ received: true });
-    }
-
-    if (subscription.status === "active") {
-      console.log(`[webhook] Renewal successful emailHashed=${hashEmail(email)}`);
-      const renewed = await renewExpertProfile(email);
-
-      if (renewed) {
-        // Send new magic link
-        const lang = (renewed.quizData?.lang as "fr" | "en") || "fr";
-        await sendMagicLinkEmail({
-          to: email,
-          lang,
-          token: renewed.token,
-          isNewAccount: false,
-        });
-        console.log(`[webhook] Renewal magic link sent emailHashed=${hashEmail(email)}`);
-      }
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Subscription processing failed";
-    console.error("[webhook] Subscription update error:", err);
-    await sendAdminAlert(
-      "Subscription renewal failed",
-      `Subscription: ${subscription.id}\nError: ${msg}`
-    );
-    return NextResponse.json(
-      { received: true, error: msg },
-      { status: 500 }
-    );
-  }
-}

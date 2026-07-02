@@ -19,7 +19,7 @@ import { Redis } from "@upstash/redis";
 // Bump CURRENT_POLICY_VERSION whenever /confidentialite content changes
 // in a way that affects what users consented to (data categories, sub-
 // processors, retention, rights). Format: YYYY-MM-DD-vN.
-export const CURRENT_POLICY_VERSION = "2026-04-26-v1";
+export const CURRENT_POLICY_VERSION = "2026-07-02-v2";
 
 // ── Storage ───────────────────────────────────────────────────────────
 const CONSENT_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 days
