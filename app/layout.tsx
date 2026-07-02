@@ -53,6 +53,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  // Canonical host is www (apex 307s to it in prod). metadataBase also makes
+  // relative asset URLs (og-image, icons) resolve to absolute www URLs.
+  metadataBase: new URL("https://www.buildfi.ca"),
   title: "BuildFi — Planification retraite canadienne bilingue | 29,99 $",
   description:
     "Plan de retraite testé contre krach, inflation et longévité. Fiscalité 2026 fédéral + 13 provinces et territoires. Bilingue FR/EN. CPP/RRQ, PSV, meltdown REER, CCPC, fractionnement. Bilan dès 29,99 $, Planner 69,99 $.",
@@ -71,7 +74,7 @@ export const metadata: Metadata = {
     title: "BuildFi — Planification retraite canadienne bilingue",
     description:
       "Plan testé contre krach, inflation, longévité. Fiscalité Canada 2026 — 13 provinces et territoires. Bilingue FR/EN. Bilan 29,99 $ · Planner 69,99 $. Projections observationnelles, pas un conseil financier.",
-    url: "https://buildfi.ca",
+    url: "https://www.buildfi.ca",
     type: "website",
     locale: "fr_CA",
     siteName: "BuildFi",
@@ -90,11 +93,18 @@ export const metadata: Metadata = {
       { url: "/icon512.png", sizes: "512x512", type: "image/png" },
     ],
   },
-  alternates: {
-    canonical: "https://buildfi.ca",
-    languages: { "fr-CA": "https://buildfi.ca", "en-CA": "https://buildfi.ca?lang=en" },
-  },
+  // No alternates here on purpose: a root-level canonical is inherited by every
+  // page that doesn't override it, which stamped "canonical = homepage" on
+  // /support, /merci, etc. — telling crawlers those pages are duplicates of the
+  // landing. Canonicals + hreflang are declared per page (each layout.tsx); the
+  // landing itself is static public/index.html and carries its own tags.
   robots: { index: true, follow: true },
+  // Search Console / Bing verification (T1) — DNS TXT verification is preferred
+  // (no code change). If meta-tag verification is chosen instead, uncomment:
+  // verification: {
+  //   google: "[À FOURNIR — Maitre]",
+  //   other: { "msvalidate.01": "[À FOURNIR — Maitre]" },
+  // },
 };
 
 export default function RootLayout({

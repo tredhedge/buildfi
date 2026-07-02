@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Simulateur de décaissement — BuildFi",
     description:
       "RRQ/PSV, portefeuille, flexibilité de dépenses, allocation. Calcul instantané, aucune donnée envoyée. Gratuit.",
-    url: "https://buildfi.ca/outils/decaissement",
+    url: "https://www.buildfi.ca/outils/decaissement",
     type: "website",
     locale: "fr_CA",
     siteName: "BuildFi",
@@ -31,10 +31,11 @@ export const metadata: Metadata = {
     description: "Estimation instantanée de la durabilité de votre portefeuille de retraite.",
   },
   alternates: {
-    canonical: "https://buildfi.ca/outils/decaissement",
+    canonical: "https://www.buildfi.ca/outils/decaissement",
     languages: {
-      "fr-CA": "https://buildfi.ca/outils/decaissement",
-      "en-CA": "https://buildfi.ca/outils/decaissement?lang=en",
+      "fr-CA": "https://www.buildfi.ca/outils/decaissement",
+      "en-CA": "https://www.buildfi.ca/outils/decaissement?lang=en",
+      "x-default": "https://www.buildfi.ca/outils/decaissement",
     },
   },
   robots: { index: true, follow: true },
@@ -47,10 +48,10 @@ export default function DecumLayout({ children }: { children: React.ReactNode })
     name: "BuildFi — Simulateur de décaissement",
     applicationCategory: "FinanceApplication",
     operatingSystem: "Web",
-    url: "https://buildfi.ca/outils/decaissement",
+    url: "https://www.buildfi.ca/outils/decaissement",
     inLanguage: ["fr-CA", "en-CA"],
     offers: { "@type": "Offer", price: "0", priceCurrency: "CAD" },
-    provider: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
+    provider: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
     featureList: [
       "QPP/CPP + OAS income modeling",
       "Portfolio sustainability estimate",

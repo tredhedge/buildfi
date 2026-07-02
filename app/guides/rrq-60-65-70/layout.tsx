@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     title: "RRQ à 60, 65 ou 70 ans — L'analyse complète | BuildFi",
     description:
       "36 % de moins à 60 ans, 42 % de plus à 70 ans. Point d'équilibre ≈ 82 ans. Calcul complet + outil interactif.",
-    url: "https://buildfi.ca/guides/rrq-60-65-70",
+    url: "https://www.buildfi.ca/guides/rrq-60-65-70",
     type: "article",
     locale: "fr_CA",
     siteName: "BuildFi",
   },
   alternates: {
-    canonical: "https://buildfi.ca/guides/rrq-60-65-70",
+    canonical: "https://www.buildfi.ca/guides/rrq-60-65-70",
   },
   robots: { index: true, follow: true },
 };
@@ -35,17 +35,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     headline: "RRQ à 60, 65 ou 70 ans : l'analyse complète",
     description:
       "Guide complet sur le choix de l'âge de début de la RRQ : point d'équilibre, exceptions, impact successoral, et quand les règles normales ne s'appliquent pas.",
-    author: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
+    author: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
     publisher: {
       "@type": "Organization",
       name: "BuildFi",
-      url: "https://buildfi.ca",
-      logo: { "@type": "ImageObject", url: "https://buildfi.ca/icon512.png" },
+      url: "https://www.buildfi.ca",
+      logo: { "@type": "ImageObject", url: "https://www.buildfi.ca/icon512.png" },
     },
     inLanguage: "fr-CA",
     datePublished: "2026-04-24",
     dateModified: "2026-04-24",
-    mainEntityOfPage: "https://buildfi.ca/guides/rrq-60-65-70",
+    mainEntityOfPage: "https://www.buildfi.ca/guides/rrq-60-65-70",
   };
   const ldFAQ = {
     "@context": "https://schema.org",

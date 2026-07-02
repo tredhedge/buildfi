@@ -17,12 +17,12 @@ export const metadata: Metadata = {
     title: "Meltdown REER : calcul, exemples et pièges | BuildFi",
     description:
       "Stratégie qui peut économiser 40 k$ à 120 k$ en impôts + PSV sur 25 ans. Avec étapes, pièges, et cas où ça ne vaut pas.",
-    url: "https://buildfi.ca/guides/meltdown-reer",
+    url: "https://www.buildfi.ca/guides/meltdown-reer",
     type: "article",
     locale: "fr_CA",
     siteName: "BuildFi",
   },
-  alternates: { canonical: "https://buildfi.ca/guides/meltdown-reer" },
+  alternates: { canonical: "https://www.buildfi.ca/guides/meltdown-reer" },
   robots: { index: true, follow: true },
 };
 
@@ -32,12 +32,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     "@type": "Article",
     headline: "Meltdown REER : calcul, exemples et pièges",
     description: "Stratégie de décaissement stratégique du REER entre 60 et 72 ans pour minimiser l'impôt à vie et protéger la PSV.",
-    author: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
-    publisher: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca", logo: { "@type": "ImageObject", url: "https://buildfi.ca/icon512.png" } },
+    author: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
+    publisher: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca", logo: { "@type": "ImageObject", url: "https://www.buildfi.ca/icon512.png" } },
     inLanguage: "fr-CA",
     datePublished: "2026-04-24",
     dateModified: "2026-04-24",
-    mainEntityOfPage: "https://buildfi.ca/guides/meltdown-reer",
+    mainEntityOfPage: "https://www.buildfi.ca/guides/meltdown-reer",
   };
   const ldFAQ = {
     "@context": "https://schema.org",

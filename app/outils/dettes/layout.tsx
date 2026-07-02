@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Calculateur de dettes interactif — BuildFi",
     description: "Avalanche vs snowball, rembourser ou investir, date de liberté financière. Multi-provinces. Gratuit. Aucun compte requis.",
-    url: "https://buildfi.ca/outils/dettes",
+    url: "https://www.buildfi.ca/outils/dettes",
     type: "website",
     locale: "fr_CA",
     siteName: "BuildFi",
@@ -29,10 +29,13 @@ export const metadata: Metadata = {
     description: "Avalanche vs snowball. Rembourser ou investir. Date de liberté financière. Gratuit.",
   },
   alternates: {
-    canonical: "https://buildfi.ca/outils/dettes",
+    canonical: "https://www.buildfi.ca/outils/dettes",
     languages: {
-      "fr-CA": "https://buildfi.ca/outils/dettes",
-      "en-CA": "https://buildfi.ca/tools/debt",
+      "fr-CA": "https://www.buildfi.ca/outils/dettes",
+      // ?lang=en (client toggle) — /tools/debt never existed; the old value
+      // pointed hreflang at a 404.
+      "en-CA": "https://www.buildfi.ca/outils/dettes?lang=en",
+      "x-default": "https://www.buildfi.ca/outils/dettes",
     },
   },
   robots: { index: true, follow: true },
@@ -45,10 +48,10 @@ export default function DettesLayout({ children }: { children: React.ReactNode }
     name: "BuildFi — Calculateur de dettes",
     applicationCategory: "FinanceApplication",
     operatingSystem: "Web",
-    url: "https://buildfi.ca/outils/dettes",
+    url: "https://www.buildfi.ca/outils/dettes",
     inLanguage: ["fr-CA", "en-CA"],
     offers: { "@type": "Offer", price: "0", priceCurrency: "CAD" },
-    provider: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
+    provider: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
     featureList: [
       "Avalanche vs Snowball comparison",
       "Repay vs Invest analysis",

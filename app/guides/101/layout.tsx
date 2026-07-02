@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Guide 101 — Les bases de vos finances | BuildFi",
     description:
       "Tout ce qu'un Canadien devrait savoir, en langage simple. Budget, dette, épargne, retraite — en ordre, avec calculateurs interactifs.",
-    url: "https://buildfi.ca/guides/101",
+    url: "https://www.buildfi.ca/guides/101",
     type: "article",
     locale: "fr_CA",
     siteName: "BuildFi",
@@ -32,10 +32,11 @@ export const metadata: Metadata = {
       "Budget, dette, épargne, REER vs CELI, RRQ, PSV. Calculateurs gratuits. 2026.",
   },
   alternates: {
-    canonical: "https://buildfi.ca/guides/101",
+    canonical: "https://www.buildfi.ca/guides/101",
     languages: {
-      "fr-CA": "https://buildfi.ca/guides/101",
-      "en-CA": "https://buildfi.ca/guides/101?lang=en",
+      "fr-CA": "https://www.buildfi.ca/guides/101",
+      "en-CA": "https://www.buildfi.ca/guides/101?lang=en",
+      "x-default": "https://www.buildfi.ca/guides/101",
     },
   },
   robots: { index: true, follow: true },
@@ -48,17 +49,17 @@ export default function Guide101Layout({ children }: { children: React.ReactNode
     headline: "Guide 101 — Les bases de vos finances",
     description:
       "Budget, dette, crédit, épargne, REER vs CELI vs CELIAPP, RRQ, PSV, SRG, assurances — expliqués avec calculateurs interactifs.",
-    author: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
+    author: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
     publisher: {
       "@type": "Organization",
       name: "BuildFi",
-      url: "https://buildfi.ca",
-      logo: { "@type": "ImageObject", url: "https://buildfi.ca/icon512.png" },
+      url: "https://www.buildfi.ca",
+      logo: { "@type": "ImageObject", url: "https://www.buildfi.ca/icon512.png" },
     },
     inLanguage: "fr-CA",
     datePublished: "2026-04-20",
     dateModified: "2026-04-20",
-    mainEntityOfPage: "https://buildfi.ca/guides/101",
+    mainEntityOfPage: "https://www.buildfi.ca/guides/101",
   };
   const ldFAQ = {
     "@context": "https://schema.org",

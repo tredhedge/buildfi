@@ -1,6 +1,14 @@
-﻿User-agent: *
+User-agent: *
 Allow: /
-Disallow: /outils/
-Disallow: /outils/allocation-epargne.html
 Disallow: /api/
+Disallow: /admin
+Disallow: /expert
+Disallow: /simulateur
+Disallow: /merci
+Disallow: /acces
+Disallow: /feedback/
+Disallow: /old-landing
 Disallow: /assets/
+Disallow: /outils/decaissement-simulateur.html
+
+Sitemap: https://www.buildfi.ca/sitemap.xml

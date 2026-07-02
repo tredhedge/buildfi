@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Guide 201 — Optimiser votre retraite | BuildFi",
     description:
       "Les leviers qui changent tout : ordre de retrait, protection PSV, timing RRQ, frais, meltdown. Pour portefeuilles établis.",
-    url: "https://buildfi.ca/guides/201",
+    url: "https://www.buildfi.ca/guides/201",
     type: "article",
     locale: "fr_CA",
     siteName: "BuildFi",
@@ -34,10 +34,11 @@ export const metadata: Metadata = {
       "Retrait, taxes, frais, meltdown, CCPC. Calculateurs gratuits. 2026.",
   },
   alternates: {
-    canonical: "https://buildfi.ca/guides/201",
+    canonical: "https://www.buildfi.ca/guides/201",
     languages: {
-      "fr-CA": "https://buildfi.ca/guides/201",
-      "en-CA": "https://buildfi.ca/guides/201?lang=en",
+      "fr-CA": "https://www.buildfi.ca/guides/201",
+      "en-CA": "https://www.buildfi.ca/guides/201?lang=en",
+      "x-default": "https://www.buildfi.ca/guides/201",
     },
   },
   robots: { index: true, follow: true },
@@ -50,17 +51,17 @@ export default function Guide201Layout({ children }: { children: React.ReactNode
     headline: "Guide 201 — Optimiser votre retraite",
     description:
       "Stratégies de retrait, fiscalité, PSV, RRQ, fractionnement, frais, meltdown REER, CCPC, immobilier — avec calculateurs interactifs.",
-    author: { "@type": "Organization", name: "BuildFi", url: "https://buildfi.ca" },
+    author: { "@type": "Organization", name: "BuildFi", url: "https://www.buildfi.ca" },
     publisher: {
       "@type": "Organization",
       name: "BuildFi",
-      url: "https://buildfi.ca",
-      logo: { "@type": "ImageObject", url: "https://buildfi.ca/icon512.png" },
+      url: "https://www.buildfi.ca",
+      logo: { "@type": "ImageObject", url: "https://www.buildfi.ca/icon512.png" },
     },
     inLanguage: "fr-CA",
     datePublished: "2026-04-20",
     dateModified: "2026-04-20",
-    mainEntityOfPage: "https://buildfi.ca/guides/201",
+    mainEntityOfPage: "https://www.buildfi.ca/guides/201",
   };
   const ldFAQ = {
     "@context": "https://schema.org",
