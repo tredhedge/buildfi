@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow"><!-- Phase 4 prep: planner_v3 superseded by /simulateur (server-driven). Kept temporarily for verification. -->
-<title>BuildFi Laboratoire v12.0.0 (deprecated — use /simulateur)</title>
+<title>BuildFi Planner — Simulateur de retraite</title>
 <meta name="theme-color" content="#1a1714">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BuildFi Laboratoire">
+<meta name="apple-mobile-web-app-title" content="BuildFi Planner">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="description" content="BuildFi Laboratoire - Simulateur de retraite canadien avec Monte Carlo, fiscalite 13 provinces, QPP/OAS/GIS.">
+<meta name="description" content="BuildFi Planner - Simulateur de retraite canadien avec Monte Carlo, fiscalite 13 provinces, QPP/OAS/GIS.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>.skip-link{position:absolute;left:-9999px;top:0;z-index:99999;padding:8px 16px;background:#c4944a;color:#1a1714;font-weight:700;font-size:14px;border-radius:0 0 4px 0}.skip-link:focus{left:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--bf-font-ui),BlinkMacSystemFont,sans-serif;background:#252d39;color:#d9e2ee;--bf-cd:#2d3748;--bf-bd:#46535f;--bf-tx:#d9e2ee;--bf-rail-bg:rgba(34,42,55,.92);--bf-rail-border:rgba(132,154,182,.24);--bf-rail-btn:rgba(208,217,230,.62);--bf-rail-hover-bg:rgba(90,140,196,.16);--bf-rail-hover-tx:rgba(215,232,250,.96);--bf-rail-active-bg:rgba(84,130,182,.24);--bf-rail-active-tx:#8ec0f2;--bf-overlay-bg:rgba(34,40,52,.94);--bf-overlay-backdrop:rgba(0,0,0,.22);--bf-overlay-shadow:0 6px 22px rgba(0,0,0,.22);--bf-field-bg:rgba(20,26,34,.5);--bf-field-border:rgba(126,151,178,.42)}#root{min-height:100vh}
 .bf-content [style*="overflow"] table thead th,.bf-content [style*="overflow"] table thead td,.bf-content [style*="overflow"] table thead tr{position:sticky;top:0;z-index:2;background:var(--bf-cd);box-shadow:0 1px 0 var(--bf-bd)}
@@ -3359,8 +3359,10 @@ function optimizeDecum(p) {
 
     // 6. Compute GIS with final taxable
     var finalTaxable = fixedTaxable + meltAmt + row.fromRRSP;
-    var _odEmpInc = (ptInc || 0) / infM;
-    var gis = age >= 65 ? calcGIS(age, finalTaxable / infM, y, inf, p.cOn && cAlive, _odEmpInc) * 12 : 0;
+    // calcGIS indexes the max to nominal (idx); income must be NOMINAL too (not deflated),
+    // else the 50% income-test reduction is under-scaled and GIS is overstated over time.
+    var _odEmpInc = (ptInc || 0);
+    var gis = age >= 65 ? calcGIS(age, finalTaxable, y, inf, p.cOn && cAlive, _odEmpInc) * 12 : 0;
     row.gis = gis;
 
     // 7. Compute tax
@@ -3873,6 +3875,17 @@ function runMC(pInput, N, _progressCb) {
   p.nr = Math.max(0, p.nr || 0);
   p.sal = Math.max(0, p.sal || 0);
   p.retSpM = Math.max(0, p.retSpM || 0);
+  // audit 2026-07-02 (Hole A): floor the other user-entered monetary inputs.
+  // Only the 5 core balances above were floored; a typed-negative contribution,
+  // DB pension, bridge/part-time income, premium or secondary balance otherwise
+  // flows through as a silent drain (no crash — the 8 balance Math.max(0,...)
+  // guards prevent that — but a false-but-plausible result with no warning).
+  // Conditional floor: clamp only values that are actually present so we never
+  // inject a key or override an engine default for an absent param.
+  ['rrspC','tfsaC','nrC','cRRSPC','cTFSAC','cNRC','penM','pen2M','cPenM',
+   'brAmt','ptM','cPtM','lifeInsPremium','lifeInsBenefit',
+   'fhsaBal','fhsaC','cFhsaBal','cFhsaC','liraBal','cLiraBal','dcBal','dc2Bal'
+  ].forEach(function (_k) { if (p[_k] != null && !isNaN(p[_k])) p[_k] = Math.max(0, p[_k]); });
   // Spending phases: 0-150%
   p.goP = Math.max(0, Math.min(p.goP || 1, 1.5));
   // audit 1.5 + 2.10: honour explicit 0 and use ONE canonical smile default
@@ -4467,9 +4480,10 @@ function runMC(pInput, N, _progressCb) {
         estMelt = Math.max(0, Math.min(rr, mTgt - govEst));
       }
       var gisInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + estRrifMin + cEstRrifMin + estMelt;
-      // calcGIS indexes thresholds internally; pass deflated income + employment portion
-      var _gisEmpInc = (ptInc || 0) / Math.max(1, infM);
-      var gis = age >= 65 ? calcGIS(age, gisInc / Math.max(1, infM), y, p.inf, p.cOn && cAlive, _gisEmpInc) * 12 : 0;
+      // calcGIS indexes the max to nominal (idx); income must be NOMINAL too (not deflated),
+      // else the 50% income-test reduction is under-scaled and GIS is overstated over time.
+      var _gisEmpInc = (ptInc || 0);
+      var gis = age >= 65 ? calcGIS(age, gisInc, y, p.inf, p.cOn && cAlive, _gisEmpInc) * 12 : 0;
       var gstCredit = 0;
       if (retired) {
         // GST/HST credit 2025: $519/yr single (+ $171/spouse), phaseout 5% above ~$44,324
@@ -4980,7 +4994,9 @@ function runMC(pInput, N, _progressCb) {
       // Note: GIS tests income not assets (Line 23600). TFSA-heavy retirees legitimately qualify.
       if (retired && age >= 65 && gis > 0) {
         var _gisFullInc = qpp + (penMonth || 0) * 12 + (ptInc || 0) + (rrifMin || 0) + (cRrifMin || 0) + (meltAmt || 0) + (_wFromRR || 0) + (reNet > 0 ? reNet : 0) + (liraWith || 0) + (cLiraWith || 0) + _nrInvIncomeHH; // audit 2.6: NR investment income
-        var gisNew = calcGIS(age, _gisFullInc / Math.max(1, infM), y, p.inf, p.cOn && cAlive, (ptInc || 0) / Math.max(1, infM)) * 12;
+        // Income must be NOMINAL to match calcGIS's nominal-indexed max (deflating it under-scales
+        // the 50% income-test reduction, overstating GIS by a growing margin over the horizon).
+        var gisNew = calcGIS(age, _gisFullInc, y, p.inf, p.cOn && cAlive, (ptInc || 0)) * 12;
         if (gisNew !== gis) {
           govInc += (gisNew - gis);
           gis = gisNew;
@@ -5564,6 +5580,20 @@ function runMC(pInput, N, _progressCb) {
       var _mrCRetired = p.cOn && ((p.cAge||p.age) + mri >= (p.cRetAge||p.retAge));
       var mrCRetTx = mrCTaxInc > 0 ? calcTax(mrCTaxInc, mri, p.prov || "QC", p.inf, _mrCRetired) : {total:0};
       mrTax = mrRetTxCalc.total + (mrCRetTx ? mrCRetTx.total : 0);
+      // GIS correctness fix (2026-06-19, user-authorized): GIS is HOUSEHOLD-income-tested on ALL
+      // taxable income (incl. discretionary withdrawals), not just RRIF minimums/pensions, and not
+      // on spouse-only income. The sim-path gis (mrp.gis) and the inline spouse gis undercounted
+      // income, so affluent households showed a spurious GIS floor (flagged in the 2026-06 report
+      // assessment). Recompute on the REAL household non-OAS taxable income already derived here
+      // (mrTaxInc / mrCTaxInc include the actual capped withdrawals). For couples, each partner is
+      // tested on combined income (both receive OAS); for singles the spouse term is 0.
+      if (mrAge >= 65) {
+        var _hhNonOas = Math.max(0, mrTaxInc - (mrp.oas||0)) + (p.cOn ? Math.max(0, mrCTaxInc - (mrCOas||0)) : 0);
+        // NOMINAL income vs calcGIS's nominal-indexed max (deflating under-scales the income test).
+        var _gisPP = calcGIS(mrAge, _hhNonOas, mri, p.inf, !!p.cOn) * 12;
+        mrp.gis = _gisPP;
+        if (p.cOn) mrCGis = _gisPP;
+      }
     } else {
       mrTaxInc = p.sal * mrInf;
       var mrCPreTaxInc = p.cOn ? (p.cSal || 0) * mrInf : 0;
@@ -10102,6 +10132,15 @@ function App() {
       // FTQ
       if (p3.ftqOn != null) setFTQ(!!p3.ftqOn);
       if (p3.ftqAmt != null) setFTQAmt(p3.ftqAmt);
+      // v4→v3 handoff parity (2026-07-02): the longform now collects these
+      // (charitable donations, salary volatility, disability event), but the
+      // apply path never read them, so "Fermer et simuler" silently dropped
+      // them. salVol/disabProb arrive as fractions (already /100 in the longform,
+      // and _normalizeProfileFractions leaves values <=1 untouched).
+      if (p3.donAnn != null) setDonAnn(p3.donAnn);
+      if (p3.salVol != null) setSalVol(p3.salVol);
+      if (p3.disabProb != null) setDisabProb(p3.disabProb);
+      if (p3.disabMo != null) setDisabMo(p3.disabMo);
       // Contribution growth / RRSP room
       if (p3.contGr != null) sCG2(p3.contGr);
       if (p3.rrspRoom != null) sRRRoom(p3.rrspRoom);
@@ -12102,7 +12141,7 @@ var reportHTML = useMemo(function() {
 
   // Disclaimer
   h += '<div class="disclaimer"><strong>\u26a0 '+(fr?'Mise en garde':'Disclaimer')+'</strong><br/>'+(fr?'Ce rapport est g\u00e9n\u00e9r\u00e9 \u00e0 des fins \u00e9ducatives et informationnelles uniquement. Il ne constitue pas un conseil financier, fiscal ou juridique. Les projections sont bas\u00e9es sur des simulations Monte Carlo avec des hypoth\u00e8ses qui peuvent ne pas se r\u00e9aliser. Consultez un planificateur financier certifi\u00e9 (Pl. Fin.) ou un conseiller en placement inscrit avant toute d\u00e9cision financi\u00e8re.':'This report is generated for educational and informational purposes only. It does not constitute financial, tax, or legal advice. Projections are based on Monte Carlo simulations with assumptions that may not materialize. Consult a certified financial planner (CFP) or registered investment advisor before making financial decisions.')+'</div>';
-  h += '<div class="ft">BuildFi Laboratoire \u00b7 '+today+' \u00b7 v12.0.0 \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='standard'?'Standard':'Expert')+'</div>';
+  h += '<div class="ft">BuildFi Planner \u00b7 '+today+' \u00b7 v12.0.0 \u00b7 <span class="mono">'+nSim+'</span> simulations MC \u00b7 '+(fr?'Niveau':'Tier')+': '+(rm==='standard'?'Standard':'Expert')+'</div>';
   h += '<div class="page-footer print-only" style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:8px;color:#aaa;padding:4px">BuildFi Technologies inc. \u2014 buildfi.ca \u00b7 ' + (fr ? 'Projections. Ne constitue pas un conseil financier.' : 'Projections. Does not constitute financial advice.') + '</div>';
   h += '</body></html>';
   return h;
@@ -12272,7 +12311,7 @@ var reportHTML = useMemo(function() {
     setAiLoading(true);
     setAiReport(null);
     var payload = _serializeForAI(tier, rl);
-    var sysPrompt = 'You are a Canadian retirement planning analyst generating a report section for BuildFi Laboratoire, a Monte Carlo simulation tool.\n\nKEY DEFINITIONS:\n- Success rate: % of MC simulations where savings last until death\n- Tax alpha: cumulative tax savings from optimized vs naive withdrawal strategy (positive = savings)\n- OAS clawback: years where taxable income exceeds ~$95K, causing Old Age Security reduction (15% recovery tax)\n- Meltdown: accelerated RRSP-to-RRIF conversion to reduce future tax burden\n- VaR P5: 5th percentile final wealth (worst 5% of scenarios)\n- CVaR P5: expected wealth in worst 5% of scenarios\n- Median ruin: age at which savings deplete in median scenario (999 or None = never depletes)\n- Go-Go/Slow-Go/No-Go: Blanchett spending smile model phases\n- MER: Management Expense Ratio (annual fund fees)\n\nCRITICAL RULES \u2014 LEGAL COMPLIANCE:\n1. OBSERVATIONAL LANGUAGE ONLY. Use: "The projections indicate...", "The data suggests...", "The modeling reveals..."\n2. NEVER DIRECTIVE. No: "You should...", "We recommend...", "Consider..."\n3. NO FINANCIAL ADVICE. Present observations about the mathematical model only.\n4. CITE SPECIFIC NUMBERS from data.\n5. PROFESSIONAL TONE. No emojis, no exclamation marks. ' + (fr ? 'French Canadian register (vous).' : 'Canadian English register.') + '\n6. RESPOND ONLY IN VALID JSON. No markdown, no backticks, no preamble.';
+    var sysPrompt = 'You are a Canadian retirement planning analyst generating a report section for BuildFi Planner, a Monte Carlo simulation tool.\n\nKEY DEFINITIONS:\n- Success rate: % of MC simulations where savings last until death\n- Tax alpha: cumulative tax savings from optimized vs naive withdrawal strategy (positive = savings)\n- OAS clawback: years where taxable income exceeds ~$95K, causing Old Age Security reduction (15% recovery tax)\n- Meltdown: accelerated RRSP-to-RRIF conversion to reduce future tax burden\n- VaR P5: 5th percentile final wealth (worst 5% of scenarios)\n- CVaR P5: expected wealth in worst 5% of scenarios\n- Median ruin: age at which savings deplete in median scenario (999 or None = never depletes)\n- Go-Go/Slow-Go/No-Go: Blanchett spending smile model phases\n- MER: Management Expense Ratio (annual fund fees)\n\nCRITICAL RULES \u2014 LEGAL COMPLIANCE:\n1. OBSERVATIONAL LANGUAGE ONLY. Use: "The projections indicate...", "The data suggests...", "The modeling reveals..."\n2. NEVER DIRECTIVE. No: "You should...", "We recommend...", "Consider..."\n3. NO FINANCIAL ADVICE. Present observations about the mathematical model only.\n4. CITE SPECIFIC NUMBERS from data.\n5. PROFESSIONAL TONE. No emojis, no exclamation marks. ' + (fr ? 'French Canadian register (vous).' : 'Canadian English register.') + '\n6. RESPOND ONLY IN VALID JSON. No markdown, no backticks, no preamble.';
     // Append narrative tone preferences to system prompt
     var _toneBlock = '\n\nNARRATIVE TONE CALIBRATION (adapt your writing style to match these client preferences):\n';
     _toneBlock += '- Financial stress level: ' + stressLevel + '. ';
@@ -15404,7 +15443,7 @@ React.createElement("span", { style: { fontSize: FS.base, color: CL.go, fontWeig
   var _grLbl = _kpiIncomplete ? (lang === "fr" ? "Incomplet" : "Incomplete") : lang === "fr" ? (_s >= 0.95 ? "Excellent" : _s >= 0.90 ? "Tr\u00e8s solide" : _s >= 0.85 ? "Solide" : _s >= 0.80 ? "Acceptable" : _s >= 0.70 ? "Fragile" : _s >= 0.50 ? "Risqu\u00e9" : "Critique") : (_s >= 0.95 ? "Excellent" : _s >= 0.90 ? "Very solid" : _s >= 0.85 ? "Solid" : _s >= 0.80 ? "Acceptable" : _s >= 0.70 ? "Fragile" : _s >= 0.50 ? "At risk" : "Critical");
   var _essLabel = lang === "fr" ? "Note du plan" : "Plan grade";
   var _expLabel = lang === "fr" ? "Succ\u00e8s MC" : "MC Success";
-  return React.createElement("div", { style: { textAlign: "center", padding: "8px 4px 6px", borderRadius: RAD.sm + 2, background: "var(--bf-verdict-bg)", border: "1px solid var(--bf-gold)", position: "relative", overflow: "hidden", cursor: "help" }, className: "kpi-tip bf-verdict-card", "data-tip": false ? (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". Votre note repr\u00e9sente la solidit\u00e9 de votre plan de retraite. R\u00e9f\u00e9rence de l'industrie: A- (90%+). Bas\u00e9 sur " + nSim + " sc\u00e9narios simul\u00e9s." : _gr + " \u2014 " + _grLbl + ". Your grade represents your retirement plan robustness. Industry benchmark: A- (90%+). Based on " + nSim + " simulated scenarios.") : (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". " + _pct + "% des " + nSim + " simulations MC o\u00f9 le patrimoine" + (cOn ? " du m\u00e9nage" : "") + " ne tombe jamais \u00e0 0$." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " Mortalit\u00e9 CPM 2023." : " Horizon fixe " + deathAge + " ans.") + " Cible: A- (85%+)." : _gr + " \u2014 " + _grLbl + ". " + _pct + "% of " + nSim + " MC sims where" + (cOn ? " household" : "") + " wealth never reaches $0." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " CPM 2023 mortality." : " Fixed horizon " + deathAge + ".") + " Target: A- (85%+).") },
+  return React.createElement("div", { style: { textAlign: "center", padding: "8px 4px 6px", borderRadius: RAD.sm + 2, background: "var(--bf-verdict-bg)", border: "1px solid var(--bf-gold)", position: "relative", overflow: "hidden", cursor: "help" }, className: "kpi-tip bf-verdict-card", "data-tip": false ? (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". Votre note repr\u00e9sente la solidit\u00e9 de votre plan de retraite. R\u00e9f\u00e9rence de l'industrie: A- (85%+). Bas\u00e9 sur " + nSim + " sc\u00e9narios simul\u00e9s." : _gr + " \u2014 " + _grLbl + ". Your grade represents your retirement plan robustness. Industry benchmark: A- (85%+). Based on " + nSim + " simulated scenarios.") : (lang === "fr" ? _gr + " \u2014 " + _grLbl + ". " + _pct + "% des " + nSim + " simulations MC o\u00f9 le patrimoine" + (cOn ? " du m\u00e9nage" : "") + " ne tombe jamais \u00e0 0$." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " Mortalit\u00e9 CPM 2023." : " Horizon fixe " + deathAge + " ans.") + " Cible: A- (85%+)." : _gr + " \u2014 " + _grLbl + ". " + _pct + "% of " + nSim + " MC sims where" + (cOn ? " household" : "") + " wealth never reaches $0." + (fatT ? " Fat tails (t-Student df=5)." : "") + (stochMort ? " CPM 2023 mortality." : " Fixed horizon " + deathAge + ".") + " Target: A- (85%+).") },
   React.createElement("div", { style: { position: "absolute", top: 0, left: 0, width: "100%", height: 3, background: "var(--bf-gold)" } }),
   React.createElement("div", { style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, borderRadius: "50%", border: "3px solid " + succC, color: succC, fontFamily: "var(--bf-font-num)", fontWeight: 800, fontSize: FS.lg, letterSpacing: -0.5, lineHeight: 1 } }, _gr),
   React.createElement("div", { style: { fontSize: FS.xs, color: "var(--bf-verdict-sub)", fontFamily: "var(--bf-font-num)", marginTop: 2 } }, _kpiIncomplete ? "" : _pct + "%"),
@@ -22069,9 +22108,9 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
 
       // --- Welcome block ---
       E("div", { style: { padding: 16, background: CL.cd, borderRadius: RAD.md, border: "1px solid " + CL.bd, marginBottom: 16 } },
-        E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.ac, marginBottom: 8 } }, fr ? "Bienvenue dans BuildFi Laboratoire" : "Welcome to BuildFi Laboratoire"),
+        E("div", { style: { fontSize: FS.lg, fontWeight: FW.bold, color: CL.ac, marginBottom: 8 } }, fr ? "Bienvenue dans BuildFi Planner" : "Welcome to BuildFi Planner"),
         P(fr ? "Cet outil teste la solidit\u00e9 de votre plan de retraite en simulant " + nSim + " sc\u00e9narios \u00e9conomiques diff\u00e9rents \u2014 incluant des krachs boursiers, de l'inflation \u00e9lev\u00e9e et une long\u00e9vit\u00e9 variable. C'est un crash test pour vos finances." : "This tool stress-tests your retirement plan by simulating " + nSim + " different economic scenarios \u2014 including market crashes, high inflation and variable longevity. It's a crash test for your finances."),
-        P(fr ? "Votre note (A+ \u00e0 F) repr\u00e9sente le pourcentage de ces sc\u00e9narios o\u00f9 votre argent dure toute votre vie. Cible: A- (90%+)." : "Your grade (A+ to F) represents the percentage of scenarios where your money lasts your entire life. Target: A- (90%+).")
+        P(fr ? "Votre note (A+ \u00e0 F) repr\u00e9sente le pourcentage de ces sc\u00e9narios o\u00f9 votre argent dure toute votre vie. Cible: A- (85%+)." : "Your grade (A+ to F) represents the percentage of scenarios where your money lasts your entire life. Target: A- (85%+).")
       ),
 
       // --- Quick start steps ---
@@ -22222,11 +22261,11 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
     _gSub === 3 && E(React.Fragment, null,
       Hd("FAQ"),
       Qa(fr ? "100% de succ\u00e8s = garanti?" : "100% success = guaranteed?",
-         fr ? "Non. 100% signifie que dans les " + nSim + " sc\u00e9narios test\u00e9s, aucun n'a men\u00e9 \u00e0 l'\u00e9puisement. Mais les simulations utilisent des hypoth\u00e8ses (rendements historiques, inflation mod\u00e9r\u00e9e). Un \u00e9v\u00e9nement sans pr\u00e9c\u00e9dent pourrait survenir. Cible r\u00e9aliste: A- (90%+)." : "No. 100% means that in the " + nSim + " tested scenarios, none led to depletion. But simulations use assumptions (historical returns, moderate inflation). An unprecedented event could occur. Realistic target: A- (90%+)."),
+         fr ? "Non. 100% signifie que dans les " + nSim + " sc\u00e9narios test\u00e9s, aucun n'a men\u00e9 \u00e0 l'\u00e9puisement. Mais les simulations utilisent des hypoth\u00e8ses (rendements historiques, inflation mod\u00e9r\u00e9e). Un \u00e9v\u00e9nement sans pr\u00e9c\u00e9dent pourrait survenir. Cible r\u00e9aliste: A- (85%+)." : "No. 100% means that in the " + nSim + " tested scenarios, none led to depletion. But simulations use assumptions (historical returns, moderate inflation). An unprecedented event could occur. Realistic target: A- (85%+)."),
       Qa(fr ? "Mes donn\u00e9es sont-elles confidentielles?" : "Is my data confidential?",
          fr ? "Oui. Tout reste dans votre navigateur. Aucune donn\u00e9e n'est envoy\u00e9e \u00e0 un serveur. Les calculs s'ex\u00e9cutent localement. Vous pouvez v\u00e9rifier en d\u00e9connectant votre internet: l'outil fonctionne toujours." : "Yes. Everything stays in your browser. No data is sent to any server. Calculations run locally. You can verify by disconnecting your internet: the tool still works."),
       Qa(fr ? "Devrais-je reporter ma RRQ?" : "Should I delay my QPP/CPP?",
-         fr ? "Reporter la RRQ de 65 \u00e0 70 ans augmente la prestation de ~42% (8.4%/an d'ajustement actuariel). C'est souvent optimal si vous avez assez d'\u00e9pargne pour couvrir l'attente et si votre esp\u00e9rance de vie est normale ou \u00e9lev\u00e9e. L'onglet Optimiseur peut tester automatiquement diff\u00e9rents \u00e2ges." : "Delaying QPP from 65 to 70 increases the benefit by ~42% (8.4%/yr actuarial adjustment). It's often optimal if you have enough savings to cover the wait and if your life expectancy is normal or high. The Optimizer tab can automatically test different ages."),
+         fr ? "Reporter la RRQ de 65 \u00e0 70 ans augmente la prestation de ~42% (8.4%/an d'ajustement actuariel); au Qu\u00e9bec, le report va d\u00e9sormais jusqu'\u00e0 72 ans (~+58.8%). C'est souvent optimal si vous avez assez d'\u00e9pargne pour couvrir l'attente et si votre esp\u00e9rance de vie est normale ou \u00e9lev\u00e9e. L'onglet Optimiseur peut tester automatiquement diff\u00e9rents \u00e2ges." : "Delaying QPP from 65 to 70 increases the benefit by ~42% (8.4%/yr actuarial adjustment); in Quebec, deferral now extends to 72 (~+58.8%). It's often optimal if you have enough savings to cover the wait and if your life expectancy is normal or high. The Optimizer tab can automatically test different ages."),
       Qa(fr ? "REER ou CELI en priorit\u00e9?" : "RRSP or TFSA first?",
          fr ? "D\u00e9pend de votre taux marginal. Si votre taux actuel est plus \u00e9lev\u00e9 qu'\u00e0 la retraite, REER est souvent mieux (d\u00e9duction maintenant, imposition plus basse plus tard). Si votre taux est bas maintenant, le CELI est pr\u00e9f\u00e9rable (aucun imp\u00f4t \u00e0 la sortie, jamais). L'outil optimise cette allocation automatiquement." : "Depends on your marginal rate. If your current rate is higher than in retirement, RRSP is often better (deduction now, lower tax later). If your rate is low now, TFSA is preferable (no tax ever on withdrawal). The tool optimizes this allocation automatically."),
       Qa(fr ? "Les rendements sont-ils r\u00e9alistes?" : "Are the returns realistic?",
@@ -22477,7 +22516,7 @@ tab === 28 && _ctxSummary(28), tab === 28 && (function() {
             }, style: { padding: "4px 10px", background: CL.s2, color: G_TX, border: "1px solid " + CL.bd, borderRadius: RAD.sm, fontSize: FS.sm, cursor: "pointer" } }, "\ud83d\udce5 CSV")
           )
         ),
-        _P(fr ? "Cette section d\u00e9taille le moteur de calcul, les hypoth\u00e8ses et les donn\u00e9es de r\u00e9f\u00e9rence utilis\u00e9s par BuildFi Laboratoire. Toutes les valeurs refl\u00e8tent vos param\u00e8tres actuels." : "This section details the calculation engine, assumptions and reference data used by BuildFi Laboratoire. All values reflect your current settings."),
+        _P(fr ? "Cette section d\u00e9taille le moteur de calcul, les hypoth\u00e8ses et les donn\u00e9es de r\u00e9f\u00e9rence utilis\u00e9s par BuildFi Planner. Toutes les valeurs refl\u00e8tent vos param\u00e8tres actuels." : "This section details the calculation engine, assumptions and reference data used by BuildFi Planner. All values reflect your current settings."),
 
     _S(lang === "fr" ? "1. Moteur Monte Carlo" : "1. Monte Carlo Engine",
       E("div", null,

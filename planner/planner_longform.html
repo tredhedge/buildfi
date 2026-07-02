@@ -176,7 +176,22 @@ body { min-height: 100vh; }
 
 /* ─────────────── ToC (sticky side nav) ─────────────── */
 .body-grid { display: grid; grid-template-columns: 232px 1fr; gap: 40px; align-items: start; }
-@media (max-width: 960px) { .body-grid { grid-template-columns: 1fr; } .toc { display: none; } }
+/* P2-c (2026-07-02): mobile ToC drawer controls (base/desktop state = hidden).
+   The <=960px media query that turns the ToC into an off-canvas drawer is defined
+   AFTER the base .toc rule below, so it wins on source order. */
+.toc-mobile-toggle {
+  display: none; position: fixed; left: 16px; bottom: 16px; z-index: 1000;
+  align-items: center; gap: 7px; padding: 12px 16px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border-soft);
+  border-radius: 999px; box-shadow: var(--shadow-md, var(--shadow-sm));
+  font-size: var(--fs-sm); font-weight: 600; cursor: pointer;
+}
+.toc-mobile-toggle .burger { font-size: 15px; line-height: 1; }
+.toc-backdrop {
+  position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.45);
+  opacity: 0; pointer-events: none; transition: opacity 0.26s var(--ease);
+}
+.toc-backdrop.open { opacity: 1; pointer-events: auto; }
 .toc {
   position: sticky; top: 24px;
   background: linear-gradient(180deg, var(--surface), var(--surface) 60%, rgba(23,32,51,0.6));
@@ -184,6 +199,19 @@ body { min-height: 100vh; }
   border-radius: var(--radius-lg); padding: 16px 12px;
   backdrop-filter: blur(8px);
   box-shadow: var(--shadow-sm);
+}
+/* P2-c: at <=960px the ToC becomes an off-canvas drawer (was display:none). Placed
+   after the base .toc/.toc-mobile-toggle rules so it overrides them on source order. */
+@media (max-width: 960px) {
+  .body-grid { grid-template-columns: 1fr; }
+  .toc {
+    position: fixed; top: 0; left: 0; bottom: 0; margin: 0; z-index: 1001;
+    width: 286px; max-width: 84vw; overflow-y: auto; border-radius: 0;
+    border: none; border-right: 1px solid var(--border-soft);
+    transform: translateX(-100%); transition: transform 0.26s var(--ease);
+  }
+  .toc.open { transform: translateX(0); }
+  .toc-mobile-toggle { display: inline-flex; }
 }
 .toc-head { font-size: var(--fs-xs); font-weight: 700; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; padding: 0 8px; }
 .toc-link {
@@ -727,6 +755,7 @@ body[data-embed="1"] .bf-actionbar { display: none; }
            in v3 on the outside of the iframe. -->
       <button class="btn btn-ghost hdr-standalone-only" onclick="loadProfile()"><svg class="i"><use href="#i-folder"/></svg><span data-i18n="load">Charger</span></button>
       <button class="btn hdr-standalone-only" onclick="saveProfile()"><svg class="i"><use href="#i-save"/></svg><span data-i18n="save">Sauvegarder</span></button>
+      <button class="btn btn-ghost hdr-standalone-only" onclick="clearLocalData()" title="Efface le brouillon enregistré localement dans ce navigateur (Loi 25)"><svg class="i"><use href="#i-x"/></svg><span data-i18n="clearLocal">Effacer les données locales</span></button>
       <button class="btn btn-ghost hdr-standalone-only" onclick="switchToPlanner()" title="Basculer vers la vue compacte (v3) avec transfert automatique des données"><svg class="i"><use href="#i-compass"/></svg><span data-i18n="toSidebar">Vue compacte →</span></button>
       <!-- Embed-only: close the drawer and send state back to v3 via postMessage. -->
       <button class="btn btn-primary hdr-embed-only" onclick="closeEmbed()" style="display:none"><svg class="i"><use href="#i-check"/></svg><span data-i18n="closeEmbed">Fermer et simuler</span></button>
@@ -760,7 +789,9 @@ body[data-embed="1"] .bf-actionbar { display: none; }
   <div class="body-grid">
 
     <!-- ─────────────── ToC ─────────────── -->
-    <aside class="toc" aria-label="Navigation">
+    <button class="toc-mobile-toggle" onclick="_toggleToc(true)" aria-label="Sections" aria-controls="toc-nav"><span class="burger" aria-hidden="true">☰</span><span data-i18n="sections">Sections</span></button>
+    <div class="toc-backdrop" onclick="_toggleToc(false)" aria-hidden="true"></div>
+    <aside class="toc" id="toc-nav" aria-label="Navigation">
       <div class="toc-head" data-i18n="sections">Sections</div>
       <div class="search-wrap">
         <span class="search-ico"><svg class="i"><use href="#i-search"/></svg></span>
@@ -1251,6 +1282,21 @@ body[data-embed="1"] .bf-actionbar { display: none; }
             </div>
           </div>
 
+          <!-- P2-a (2026-07-02): charitable donations (v3 parity: donAnn). $ amount;
+               engine models the ~40% donation tax credit pre/post retirement. -->
+          <div class="subsec">
+            <div class="subsec-head" data-i18n="donHead">Dons de bienfaisance</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="donAnn" data-i18n="donAnn">Dons annuels <span class="field-unit">$/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="donAnnTip">Montant donné chaque année à des organismes de bienfaisance enregistrés. Un crédit d'impôt combiné (fédéral + provincial) d'environ 40 à 50 % sur la portion au-delà de 200 $ réduit l'impôt, avant comme après la retraite.</span></span>
+                </div>
+                <input data-bf-num="1" max="100000000" inputmode="numeric" id="donAnn" type="text" class="field-input" placeholder="0" min="0" step="500">
+                <div class="field-help" data-i18n="donAnnHelp">Crédit d'impôt estimé ~40 % du montant. Laissez à 0 si aucun don récurrent.</div>
+              </div>
+            </div>
+          </div>
+
           <div class="subsec">
             <div class="subsec-head" data-i18n="eventsHead">Événements ponctuels</div>
             <div class="subsec-intro" data-i18n="eventsIntro">Entrées ou sorties exceptionnelles : héritage, vente d'actif, rénovation, voyage majeur. Laissez l'âge à 0 pour désactiver un slot.</div>
@@ -1649,6 +1695,31 @@ body[data-embed="1"] .bf-actionbar { display: none; }
                 <input inputmode="numeric" id="oasAge" type="number" class="field-input" placeholder="" min="65" max="70">
               </div>
             </div>
+            <div class="spacer-sm"></div>
+            <!-- P1-b (2026-07-02): principal RRQ career inputs, mirroring the spouse's
+                 cAvgE/cQppYrs. Checked = engine derives (avgE≈85%×salary, qppYrs≈age-18);
+                 uncheck to override for interrupted careers / recent immigration. -->
+            <label class="check-row">
+              <input type="checkbox" id="qppAuto" checked onchange="document.getElementById('qpp-detail').hidden = this.checked">
+              <div><div class="check-label" data-i18n="qppAutoLabel">Estimer automatiquement mes gains RRQ et années cotisées</div>
+              <div class="check-help" data-i18n="qppAutoHelp">Par défaut, estimés d'après votre salaire (~85 %) et vos années depuis 18 ans. Décochez pour saisir vos vraies valeurs — utile pour une carrière interrompue, une immigration récente ou un historique de cotisation partiel.</div></div>
+            </label>
+            <div class="field-grid" id="qpp-detail" hidden>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="avgE" data-i18n="avgE">Gains admissibles moyens RRQ <span class="field-unit">$</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0" aria-label="Aide">i</span><span class="tip-body" data-i18n="avgETip">Moyenne de vos gains annuels soumis au RRQ/RPC sur votre carrière (plafonnés au MGA de chaque année, ~68 500 $ en 2024). Laissez la case cochée pour une estimation automatique.</span></span>
+                </div>
+                <input data-bf-num="1" max="100000000" inputmode="numeric" id="avgE" type="text" class="field-input" placeholder="" min="0" step="5000">
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label class="field-label" for="qppYrs" data-i18n="qppYrs">Années cotisées au RRQ <span class="field-unit">ans</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0" aria-label="Aide">i</span><span class="tip-body" data-i18n="qppYrsTip">Nombre d'années où vous avez cotisé au RRQ/RPC (max ~40). Une carrière interrompue ou une immigration après 18 ans réduit ce nombre, et donc la rente.</span></span>
+                </div>
+                <input inputmode="numeric" id="qppYrs" type="number" class="field-input" placeholder="" min="0" max="45" step="1">
+              </div>
+            </div>
           </div>
 
           <div class="subsec">
@@ -1918,6 +1989,24 @@ body[data-embed="1"] .bf-actionbar { display: none; }
                 <input max="100000000" inputmode="numeric" id="insInvPrime" type="number" class="field-input" placeholder="0" min="0" step="5">
               </div>
             </div>
+            <!-- P2-a (2026-07-02): disability EVENT modelling (v3 parity: disabProb/disabMo).
+                 Distinct from the coverage/premium above — this drives the stochastic
+                 income-loss event the coverage then partially offsets. -->
+            <div class="subsec-intro" data-i18n="disabEventIntro" style="margin-top:6px">Modélisation de l'événement : la simulation peut tirer une invalidité avant la retraite. Laissez la probabilité à 0 pour l'ignorer.</div>
+            <div class="field-grid">
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="disabProb" data-i18n="disabProb">Probabilité d'invalidité <span class="field-unit">%/an</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="disabProbTip">Probabilité annuelle de subir une invalidité empêchant de travailler, avant la retraite. À titre indicatif : ~1 à 3 %/an selon l'âge et le métier. Laissez 0 pour ignorer l'événement.</span></span>
+                </div>
+                <input inputmode="numeric" id="disabProb" type="number" class="field-input" placeholder="0" min="0" max="10" step="0.5">
+              </div>
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="disabMo" data-i18n="disabMo">Durée si invalide <span class="field-unit">mois</span></label>
+                  <span class="tip-wrap"><span class="tip-trigger" tabindex="0">i</span><span class="tip-body" data-i18n="disabMoTip">Si une invalidité survient, nombre de mois de revenu d'emploi perdus cette année-là (1 à 12). La couverture d'assurance invalidité ci-dessus en compense une partie.</span></span>
+                </div>
+                <input inputmode="numeric" id="disabMo" type="number" class="field-input" placeholder="6" min="1" max="12" step="1">
+              </div>
+            </div>
           </div>
 
           <div class="subsec">
@@ -1974,16 +2063,16 @@ body[data-embed="1"] .bf-actionbar { display: none; }
           <div class="subsec">
             <div class="subsec-head" data-i18n="bizKindHead">Structure de l'entreprise</div>
             <div class="pill-group" role="radiogroup">
-              <button class="pill on" onclick="setBizKind('none', this)" role="radio" aria-checked="true" data-i18n="bizKindNone">
-                <span>Salarié seulement</span>
+              <button class="pill on" onclick="setBizKind('none', this)" role="radio" aria-checked="true">
+                <span data-i18n="bizKindNone">Salarié seulement</span>
                 <span class="pill-desc" data-i18n="bizKindNoneDesc">Aucune entreprise</span>
               </button>
-              <button class="pill" onclick="setBizKind('sole', this)" role="radio" aria-checked="false" data-i18n="bizKindSole">
-                <span>Travailleur autonome</span>
+              <button class="pill" onclick="setBizKind('sole', this)" role="radio" aria-checked="false">
+                <span data-i18n="bizKindSole">Travailleur autonome</span>
                 <span class="pill-desc" data-i18n="bizKindSoleDesc">Pigiste, consultant (T1)</span>
               </button>
-              <button class="pill" onclick="setBizKind('ccpc', this)" role="radio" aria-checked="false" data-i18n="bizKindCcpc">
-                <span>Entreprise incorporée (SPCC)</span>
+              <button class="pill" onclick="setBizKind('ccpc', this)" role="radio" aria-checked="false">
+                <span data-i18n="bizKindCcpc">Entreprise incorporée (SPCC)</span>
                 <span class="pill-desc" data-i18n="bizKindCcpcDesc">CCPC · extraction, LCGE, IPP</span>
               </button>
             </div>
@@ -2495,6 +2584,13 @@ body[data-embed="1"] .bf-actionbar { display: none; }
                 <input inputmode="decimal" id="contGr" type="number" class="field-input" placeholder="0" min="0" max="10" step="0.5">
                 <div class="field-help" data-i18n="contGrHelp">Augmentation annuelle des cotisations REER/CÉLI (ex : avec le salaire).</div>
               </div>
+              <!-- P2-a (2026-07-02): salary volatility (v3 parity: salVol). Percent-entry
+                   0-40; _BF_TO_ENGINE divides by 100 → fraction the engine expects. -->
+              <div class="field">
+                <div class="field-head"><label class="field-label" for="salVol" data-i18n="salVol">Volatilité du salaire <span class="field-unit">%/an</span></label></div>
+                <input inputmode="decimal" id="salVol" type="number" class="field-input" placeholder="0" min="0" max="40" step="1">
+                <div class="field-help" data-i18n="salVolHelp">Variation aléatoire du salaire d'une année à l'autre avant la retraite (± %). 0 = salaire stable. Modélise les revenus irréguliers (commissions, travail autonome, années sabbatiques).</div>
+              </div>
             </div>
           </div>
 
@@ -2559,7 +2655,7 @@ var I18N = {
     reqBadge: "obligatoire",
     suggested: "suggéré", median: "médiane QC", stoch: "stochastique", max2026: "plafond 2026", pag2025: "PAG 2025",
     hintCurAge: "45 ans — médiane des utilisateurs", hintQppAge: "65 ans (âge RRQ standard)", hintSpendDefault: "6 200 $/mois (couple, QC)", hint65yrs: "65 ans",
-    load: "Charger", save: "Sauvegarder", toSidebar: "Vue compacte", simulate: "Simuler mon plan",
+    load: "Charger", save: "Sauvegarder", clearLocal: "Effacer les données locales", toSidebar: "Vue compacte", simulate: "Simuler mon plan",
     restore: "Restaurer", dismiss: "Ignorer", autosaveLead: "Sauvegarde automatique — il y a ", autosaveTail: " min",
     closeEmbed: "Fermer et simuler",
     toolbarHint: "Formulaire complet · ~190 variables · toutes les sections optionnelles sauf <strong>Identité</strong> et <strong>Revenus</strong>.",
@@ -2585,6 +2681,36 @@ var I18N = {
     coupleHint: "En mode Couple, les dépenses du ménage sont un total commun. Les comptes REER et CÉLI restent individuels. Les actifs partagés (immobilier, dettes) peuvent se répartir selon un pourcentage personnalisé.",
     spouseHead: "Conjoint(e)",
     spouseIntro: "Par défaut, nous utilisons vos valeurs pour éviter la double saisie. Les champs techniques (âge RRQ, mortalité, gains admissibles) sont partagés. Décochez une hypothèse pour révéler une valeur propre au conjoint(e).",
+    /* i18n audit 2026-07-02: keys used in the HTML but previously absent from
+       both dicts (setLang's `if(dict[k])` guard left them hardcoded FR in EN mode). */
+    spouseDetailIntro: "<strong>Champs révélés par les toggles de synchronisation.</strong> Les valeurs de retraite, RRQ/PSV, mortalité, allocations et assurance vie du conjoint(e) copient les vôtres tant que les cases correspondantes sont cochées dans Identité → Conjoint. Décochez une case pour entrer une valeur propre ici.",
+    allocOvLocalization: "<strong>Localisation fiscale :</strong> les <em>intérêts</em> (obligations) sont taxés à 100 % → REER prioritaire. Les <em>dividendes canadiens</em> bénéficient d'un crédit d'impôt → NR acceptable. Les <em>gains de croissance</em> ne sont taxés qu'à la vente à 50 % → NR ou CÉLI. Les dividendes étrangers subissent une retenue à la source → REER (conventions fiscales).",
+    altDisclaimer: "<strong>Placements de niche.</strong> PE : périodes d'illiquidité + frais élevés. Métaux précieux : aucun rendement intrinsèque, couverture contre l'inflation. Ignorer si vous investissez uniquement en FNB/fonds communs.",
+    cgExplain: "<strong>À savoir :</strong> quand vous vendez un placement, seule une <em>fraction</em> du gain (la différence entre le prix de vente et ce que vous avez payé) est ajoutée à votre revenu imposable. Cette fraction s'appelle le <strong>taux d'inclusion</strong>. Au Canada, elle est de <strong>50 %</strong>.",
+    gkWhen: "<strong>Pertinent si :</strong> vous prévoyez une retraite longue (30+ ans) <em>et</em> vous tolérez de réduire vos dépenses de ~10 % les mauvaises années. <strong>Moins pertinent si :</strong> revenu de retraite dominé par des pensions à prestations déterminées (RRQ, PSV, pension d'employeur PD) — les garde-fous n'agissent que sur les retraits de portefeuille.",
+    gkCaution: "<strong>Contrepartie :</strong> votre train de vie devient plus variable (± 10 à 20 % d'une année à l'autre). Si vous avez besoin d'un revenu stable mois après mois (loyer, médicaments), utilisez plutôt une rente viagère pour la portion fixe.",
+    bizKindNone: "Salarié seulement",
+    bizKindSole: "Travailleur autonome",
+    bizKindCcpc: "Entreprise incorporée (SPCC)",
+    /* P1-b (2026-07-02): principal RRQ career override. */
+    qppAutoLabel: "Estimer automatiquement mes gains RRQ et années cotisées",
+    qppAutoHelp: "Par défaut, estimés d'après votre salaire (~85 %) et vos années depuis 18 ans. Décochez pour saisir vos vraies valeurs — utile pour une carrière interrompue, une immigration récente ou un historique de cotisation partiel.",
+    avgE: "Gains admissibles moyens RRQ",
+    avgETip: "Moyenne de vos gains annuels soumis au RRQ/RPC sur votre carrière (plafonnés au MGA de chaque année, ~68 500 $ en 2024). Laissez la case cochée pour une estimation automatique.",
+    qppYrs: "Années cotisées au RRQ",
+    qppYrsTip: "Nombre d'années où vous avez cotisé au RRQ/RPC (max ~40). Une carrière interrompue ou une immigration après 18 ans réduit ce nombre, et donc la rente.",
+    /* P2-a (2026-07-02): v3-parity features ported to the longform. */
+    disabEventIntro: "Modélisation de l'événement : la simulation peut tirer une invalidité avant la retraite. Laissez la probabilité à 0 pour l'ignorer.",
+    disabProb: "Probabilité d'invalidité",
+    disabProbTip: "Probabilité annuelle de subir une invalidité empêchant de travailler, avant la retraite. À titre indicatif : ~1 à 3 %/an selon l'âge et le métier. Laissez 0 pour ignorer l'événement.",
+    disabMo: "Durée si invalide",
+    disabMoTip: "Si une invalidité survient, nombre de mois de revenu d'emploi perdus cette année-là (1 à 12). La couverture d'assurance invalidité ci-dessus en compense une partie.",
+    salVol: "Volatilité du salaire",
+    salVolHelp: "Variation aléatoire du salaire d'une année à l'autre avant la retraite (± %). 0 = salaire stable. Modélise les revenus irréguliers (commissions, travail autonome, années sabbatiques).",
+    donHead: "Dons de bienfaisance",
+    donAnn: "Dons annuels",
+    donAnnTip: "Montant donné chaque année à des organismes de bienfaisance enregistrés. Un crédit d'impôt combiné (fédéral + provincial) d'environ 40 à 50 % sur la portion au-delà de 200 $ réduit l'impôt, avant comme après la retraite.",
+    donAnnHelp: "Crédit d'impôt estimé ~40 % du montant. Laissez à 0 si aucun don récurrent.",
     youCol: "Vous", youColBody: "Identité + revenus saisis ci-dessus. Mêmes informations utilisées par défaut pour le conjoint(e).",
     spouseCol: "Conjoint(e)", spouseFirst: "Prénom", spouseAge: "Âge actuel", spouseSex: "Sexe", spouseSal: "Salaire brut",
     sameRet: "Même âge de retraite", sameRetHelp: "Par défaut, le conjoint(e) prend sa retraite la même année que vous.",
@@ -2949,7 +3075,7 @@ var I18N = {
     sections: "Sections", searchPh: "Search a field…", notReviewed: "to confirm", reqBadge: "required",
     suggested: "suggested", median: "QC median", stoch: "stochastic", max2026: "2026 limit", pag2025: "PAG 2025",
     hintCurAge: "45 yrs — median of users", hintQppAge: "65 yrs (standard QPP age)", hintSpendDefault: "$6,200/mo (couple, QC)", hint65yrs: "65 yrs",
-    load: "Load", save: "Save", toSidebar: "Compact view", simulate: "Simulate my plan",
+    load: "Load", save: "Save", clearLocal: "Clear local data", toSidebar: "Compact view", simulate: "Simulate my plan",
     restore: "Restore", dismiss: "Dismiss", autosaveLead: "Autosave — ", autosaveTail: " min ago",
     closeEmbed: "Close and simulate",
     toolbarHint: "Full form · ~190 variables · all sections optional except <strong>Identity</strong> and <strong>Income</strong>.",
@@ -2975,6 +3101,35 @@ var I18N = {
     coupleHint: "In Couple mode, household spending is a shared total. RRSP and TFSA accounts remain individual. Shared assets (real estate, debts) can be split by a custom percentage.",
     spouseHead: "Spouse",
     spouseIntro: "By default, we use your values to avoid duplicate entry. Technical fields (QPP age, mortality, pensionable earnings) are shared. Uncheck an assumption to reveal a spouse-specific value.",
+    /* i18n audit 2026-07-02: EN parity for the keys added to the FR dict above. */
+    spouseDetailIntro: "<strong>Fields revealed by the sync toggles.</strong> The spouse's retirement, QPP/OAS, mortality, allocation and life-insurance values copy yours as long as the matching boxes are checked in Identity → Spouse. Uncheck a box to enter a spouse-specific value here.",
+    allocOvLocalization: "<strong>Tax-efficient asset location:</strong> <em>interest</em> (bonds) is taxed at 100% → prioritize RRSP. <em>Canadian dividends</em> get a dividend tax credit → non-registered is acceptable. <em>Growth gains</em> are taxed only on sale at 50% → non-registered or TFSA. Foreign dividends face withholding tax → RRSP (tax treaties).",
+    altDisclaimer: "<strong>Niche investments.</strong> PE: illiquidity periods + high fees. Precious metals: no intrinsic yield, an inflation hedge. Ignore if you invest solely in ETFs/mutual funds.",
+    cgExplain: "<strong>Good to know:</strong> when you sell an investment, only a <em>fraction</em> of the gain (the difference between the sale price and what you paid) is added to your taxable income. That fraction is called the <strong>inclusion rate</strong>. In Canada it is <strong>50%</strong>.",
+    gkWhen: "<strong>Relevant if:</strong> you anticipate a long retirement (30+ years) <em>and</em> you can tolerate reducing spending by ~10% in bad years. <strong>Less relevant if:</strong> retirement income is dominated by defined-benefit pensions (QPP, OAS, DB employer pension) — the guardrails act only on portfolio withdrawals.",
+    gkCaution: "<strong>Trade-off:</strong> your lifestyle becomes more variable (± 10 to 20% from one year to the next). If you need stable income month to month (rent, medication), consider a life annuity for the fixed portion instead.",
+    bizKindNone: "Employee only",
+    bizKindSole: "Self-employed",
+    bizKindCcpc: "Incorporated business (CCPC)",
+    /* P1-b (2026-07-02): principal QPP career override. */
+    qppAutoLabel: "Auto-estimate my QPP earnings and contribution years",
+    qppAutoHelp: "By default, estimated from your salary (~85%) and your years since age 18. Uncheck to enter your real values — useful for an interrupted career, recent immigration, or a partial contribution history.",
+    avgE: "Avg QPP pensionable earnings",
+    avgETip: "The average of your annual QPP/CPP-pensionable earnings over your career (capped at each year's YMPE, ~$68,500 in 2024). Leave the box checked for an automatic estimate.",
+    qppYrs: "QPP contribution years",
+    qppYrsTip: "The number of years you contributed to QPP/CPP (max ~40). An interrupted career or immigrating after age 18 reduces this, and therefore the pension.",
+    /* P2-a (2026-07-02): v3-parity features ported to the longform. */
+    disabEventIntro: "Event modelling: the simulation may draw a disability before retirement. Leave the probability at 0 to ignore it.",
+    disabProb: "Disability probability",
+    disabProbTip: "Annual probability of a disability preventing work, before retirement. As a guide: ~1 to 3%/yr depending on age and occupation. Leave at 0 to ignore the event.",
+    disabMo: "Duration if disabled",
+    disabMoTip: "If a disability occurs, the number of months of employment income lost that year (1 to 12). The disability coverage above offsets part of it.",
+    salVol: "Salary volatility",
+    salVolHelp: "Random year-to-year variation in salary before retirement (± %). 0 = stable salary. Models irregular income (commissions, self-employment, sabbaticals).",
+    donHead: "Charitable donations",
+    donAnn: "Annual donations",
+    donAnnTip: "Amount given each year to registered charities. A combined (federal + provincial) tax credit of roughly 40 to 50% on the portion above $200 reduces tax, both before and after retirement.",
+    donAnnHelp: "Estimated tax credit ~40% of the amount. Leave at 0 if no recurring donation.",
     youCol: "You", youColBody: "Identity + income entered above. Same values used by default for spouse.",
     spouseCol: "Spouse", spouseFirst: "First name", spouseAge: "Current age", spouseSex: "Sex", spouseSal: "Gross salary",
     sameRet: "Same retirement age", sameRetHelp: "By default, the spouse retires the same year as you.",
@@ -3243,7 +3398,14 @@ function setLang(l) {
   var dict = I18N[l];
   document.querySelectorAll("[data-i18n]").forEach(function (el) {
     var k = el.getAttribute("data-i18n");
-    if (dict[k]) { if (dict[k].indexOf("<strong>") >= 0) el.innerHTML = dict[k]; else el.textContent = dict[k]; }
+    if (!dict[k]) return;
+    if (dict[k].indexOf("<strong>") >= 0) { el.innerHTML = dict[k]; return; }
+    /* i18n audit 2026-07-02: many labels carry a trailing <span class="field-unit">
+       ($, %, ans…) as a CHILD of the data-i18n element. A bare textContent assignment
+       destroyed that unit span on every language toggle. Preserve it. */
+    var unit = el.querySelector(".field-unit");
+    el.textContent = dict[k];
+    if (unit) { el.appendChild(document.createTextNode(" ")); el.appendChild(unit); }
   });
   document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
     var k = el.getAttribute("data-i18n-ph"); if (dict[k]) el.setAttribute("placeholder", dict[k]);
@@ -3342,6 +3504,17 @@ document.getElementById("penPctMode") && document.getElementById("penPctMode").a
 /* Establish initial state on load — without this, the dynamic hidden logic
    only runs on user change, leaving stale fields visible after a handoff. */
 _syncPenFields();
+
+/* P1-b: reflect a loaded/restored profile's RRQ override into the auto checkbox.
+   If the profile carries avgE/qppYrs, reveal the detail and uncheck auto so
+   collectProfile keeps the values instead of dropping them as auto-derived. */
+function _syncQppAuto() {
+  var qa = document.getElementById("qppAuto"), det = document.getElementById("qpp-detail");
+  if (!qa || !det) return;
+  var a = document.getElementById("avgE"), y = document.getElementById("qppYrs");
+  var hasOverride = (a && a.value !== "" && a.value != null) || (y && y.value !== "" && y.value != null);
+  if (hasOverride) { qa.checked = false; det.hidden = false; }
+}
 
 function _syncPen2Fields() {
   var t = document.getElementById("pen2Type").value;
@@ -3503,6 +3676,18 @@ document.addEventListener("click", function (ev) {
   /* Sync active class without waiting for the scroll to settle. */
   document.querySelectorAll(".toc-link").forEach(function (l) { l.classList.remove("active"); });
   link.classList.add("active");
+  /* P2-c: on mobile, picking a section closes the drawer. */
+  if (typeof _toggleToc === "function") _toggleToc(false);
+});
+/* P2-c: mobile ToC drawer open/close. */
+function _toggleToc(open) {
+  var t = document.getElementById("toc-nav"), b = document.querySelector(".toc-backdrop");
+  if (t) t.classList.toggle("open", open);
+  if (b) b.classList.toggle("open", open);
+}
+/* Close the drawer on Escape. */
+document.addEventListener("keydown", function (ev) {
+  if (ev.key === "Escape") { var t = document.getElementById("toc-nav"); if (t && t.classList.contains("open")) _toggleToc(false); }
 });
 
 /* ─────────────── RSU grants editor (array) ─────────────── */
@@ -3524,7 +3709,7 @@ function renderRsu() {
     var projected = g.shares * g.price * Math.pow(1 + g.growth, g.vestYrs);
     card.innerHTML = '<div class="editor-card-head">'
       + '<div style="flex:1"><div class="editor-card-title">' + _bfIco('chart-bar') + ' ' + g.name + '</div>'
-      + '<div class="editor-card-meta">' + (fr ? "Valeur projetée vesting · " : "Projected at vesting · ") + '$' + Math.round(projected).toLocaleString() + '</div></div>'
+      + '<div class="editor-card-meta">' + (fr ? "Valeur projetée vesting · " : "Projected at vesting · ") + _bfCur(projected) + '</div></div>'
       + '<button class="editor-card-remove" onclick="removeRsu(' + i + ')" aria-label="' + (fr ? "Retirer" : "Remove") + '">' + _bfIco('x') + '</button></div>'
       + '<div class="field-grid">'
       +   '<div class="field"><div class="field-head"><label class="field-label">' + (fr ? "Nom" : "Name") + '</label></div><input class="field-input" value="' + g.name + '" oninput="updR(' + i + ', \'name\', this.value)"></div>'
@@ -3757,8 +3942,8 @@ function renderGoals() {
       + '<div style="flex:1;min-width:0"><div style="font-weight:600;color:var(--text);letter-spacing:-0.005em">' + g.name + '</div>'
       + '<div style="font-size:var(--fs-xs);color:var(--text-dim);font-family:\'JetBrains Mono\';margin-top:2px">'
       +   (g.type === "education"
-          ? (fr ? "Éducation · " : "Education · ") + '$' + g.amount.toLocaleString() + (fr ? "/an · âges " : "/yr · ages ") + g.startAge + "–" + g.endAge
-          : (fr ? "Ponctuel · " : "Lump sum · ") + '$' + g.amount.toLocaleString() + " @ " + g.startAge + (fr ? " ans" : ""))
+          ? (fr ? "Éducation · " : "Education · ") + _bfCur(g.amount) + (fr ? "/an · âges " : "/yr · ages ") + g.startAge + "–" + g.endAge
+          : (fr ? "Ponctuel · " : "Lump sum · ") + _bfCur(g.amount) + " @ " + g.startAge + (fr ? " ans" : ""))
       + '</div></div>'
       + '<button class="editor-card-remove" onclick="removeGoal(\'' + g.id + '\')" aria-label="' + (fr ? "Retirer" : "Remove") + '">' + _bfIco('x') + '</button>';
     list.appendChild(card);
@@ -3805,7 +3990,7 @@ function renderProps() {
     var titleLabel = pr.pri ? (fr ? _bfIco('home') + " Résidence principale" : _bfIco('home') + " Principal residence") : (fr ? _bfIco('building') + " Immeuble locatif" : _bfIco('building') + " Rental property");
     card.innerHTML = '<div class="editor-card-head">'
       + '<div style="flex:1"><div class="editor-card-title">' + titleLabel + ' #' + (i + 1) + '</div>'
-      + '<div class="editor-card-meta">' + (fr ? "Valeur estimée · " : "Est. value · ") + '$' + (pr.val || 0).toLocaleString() + '</div></div>'
+      + '<div class="editor-card-meta">' + (fr ? "Valeur estimée · " : "Est. value · ") + _bfCur(pr.val || 0) + '</div></div>'
       + '<button class="editor-card-remove" onclick="removeProperty(' + i + ')" aria-label="' + (fr ? "Retirer" : "Remove") + '">' + _bfIco('x') + '</button></div>'
       + '<label class="check-row"><input type="checkbox" ' + (pr.pri ? "checked" : "") + ' onchange="updP(' + i + ', \'pri\', this.checked)">'
       +   '<div><div class="check-label">' + (fr ? "Résidence principale" : "Principal residence") + '</div>'
@@ -3952,17 +4137,22 @@ function renderDebts() {
     var isAmort = d.type === "auto" || d.type === "student" || d.type === "other";
     card.innerHTML = '<div class="editor-card-head">'
       + '<div style="flex:1"><div class="editor-card-title">' + _bfIco('card') + ' ' + (TYPES[d.type] || TYPES.other) + '</div>'
-      + '<div class="editor-card-meta">' + (fr ? "Solde · " : "Balance · ") + '$' + (d.bal || 0).toLocaleString() + ' · ' + (fr ? "Taux " : "Rate ") + (d.rate * 100).toFixed(2) + '%' + (d.pay > 0 ? ' · ' + (fr ? "Paie " : "Pay ") + '$' + (d.pay || 0).toLocaleString() + (fr ? "/mois" : "/mo") : '') + '</div></div>'
+      + '<div class="editor-card-meta">' + (fr ? "Solde · " : "Balance · ") + _bfCur(d.bal || 0) + ' · ' + (fr ? "Taux " : "Rate ") + (d.rate * 100).toFixed(2) + '%' + (d.pay > 0 ? ' · ' + (fr ? "Paie " : "Pay ") + _bfCur(d.pay || 0) + (fr ? "/mois" : "/mo") : '') + '</div></div>'
       + '<button class="editor-card-remove" onclick="removeDebt(' + i + ')" aria-label="' + (fr ? "Retirer" : "Remove") + '">' + _bfIco('x') + '</button></div>'
       + '<div class="field-grid">'
       +   '<div class="field"><div class="field-head"><label class="field-label">' + (fr ? "Type" : "Type") + '</label></div>'
       +     '<select class="field-input" onchange="updD(' + i + ', \'type\', this.value)">' + opts + '</select></div>'
       +   _f("dbal-" + i, fr ? "Solde" : "Balance", "$", d.bal, function(v){updD(i,"bal",+v);})
       +   (d.bal > 0 ? _f("drate-" + i, fr ? "Taux" : "Rate", "%", (d.rate * 100).toFixed(2), function(v){updD(i,"rate",+v/100);}) : "")
-      +   (d.bal > 0 ? _f("dpay-" + i, (fr ? "Paiement /mois" : "Payment /mo") + (d._auto === "pay" ? (fr ? " (calculé)" : " (auto)") : ""), "$", d.pay, function(v){updD(i,"pay",+v);}) : "")
+      +   (d.bal > 0 ? _f("dpay-" + i, (fr ? "Paiement /mois" : "Payment /mo") + (!isAmort ? (fr ? " (minimum)" : " (minimum)") : (d._auto === "pay" ? (fr ? " (calculé)" : " (auto)") : "")), "$", d.pay, function(v){updD(i,"pay",+v);}) : "")
       +   (d.bal > 0 && isAmort ? _f("dterm-" + i, (fr ? "Terme (mois rest.)" : "Term (months left)") + (d._auto === "term" ? (fr ? " (calculé)" : " (auto)") : ""), "", d.term, function(v){updD(i,"term",+v);}) : "")
       + '</div>'
       + autoHint
+      /* P3-a (2026-07-02): revolving credit (cards / lines of credit) has no fixed
+         term, so no auto-calc hint fires; clarify what "Paiement /mois" means. */
+      + (d.bal > 0 && !isAmort ? '<div class="bf-autocalc-hint"><span>' + _bfIco('bulb') + '</span><span>' + (fr
+          ? ("Carte ou marge de crédit : sans terme fixe. Entrez le paiement mensuel réel — au moins les intérêts (~" + _bfCur(Math.round((d.bal || 0) * (d.rate || 0) / 12)) + "/mois) pour que le solde ne croisse pas.")
+          : ("Credit card or line of credit: no fixed term. Enter the actual monthly payment — at least the interest (~" + _bfCur(Math.round((d.bal || 0) * (d.rate || 0) / 12)) + "/mo) so the balance doesn't grow.")) + '</span></div>' : "")
       + (d.bal > 0 ? '<label class="check-row" style="margin-top:8px"><input type="checkbox" ' + (d.deductible ? "checked" : "") + ' onchange="updD(' + i + ', \'deductible\', this.checked)">'
       +   '<div><div class="check-label">' + (fr ? "Intérêts déductibles d'impôt (Manœuvre de Smith)" : "Tax-deductible interest (Smith Manoeuvre)") + '</div>'
       +   '<div class="check-help">' + (fr ? "Prêt dont l'intérêt est déductible — ex : emprunt pour investir." : "Loan whose interest is deductible — e.g. borrowing to invest.") + '</div></div></label>' : "")
@@ -3977,7 +4167,7 @@ function _f(id, label, unit, val, onChange) {
   var key = "_v4cb_" + id;
   window[key] = onChange;
   return '<div class="field"><div class="field-head"><label class="field-label">' + label + (unit ? ' <span class="field-unit">' + unit + '</span>' : '') + '</label></div>'
-    + '<input max="100000000" inputmode="numeric" id="' + id + '" class="field-input" type="number" value="' + (val == null ? "" : val) + '" onchange="window[\'' + key + '\'](this.value)"></div>';
+    + '<input min="0" max="100000000" inputmode="numeric" id="' + id + '" class="field-input" type="number" value="' + (val == null ? "" : val) + '" onchange="window[\'' + key + '\'](this.value)"></div>';
 }
 
 /* Ownership pill HTML (couple mode only). 4 presets + custom slider. */
@@ -4070,6 +4260,18 @@ function collectProfile() {
      withdrawal gate (→ meltTgt collected but never applied). */
   p.cOn = !!window._cOn;
   p.melt = !!document.querySelector('.pill.on[onclick*="meltdown"]');
+  /* FHSA enable gate. v3 has no `fhsaOn` flag — it infers FHSA participation
+     from fhsaBal/fhsaC (its _applyProfileFromV4 reads balances, not an enable
+     bit, unlike respOn/ftqOn). The fhsaOn checkbox only *hides* #fhsa-fields
+     without clearing them, and collectProfile captures hidden inputs, so an
+     unchecked FHSA would still ship stale balances → v3 keeps FHSA active.
+     Zero them here so "off" actually propagates. */
+  if (!p.fhsaOn) { p.fhsaBal = 0; p.fhsaC = 0; p.fhsaForHome = false; p.fhsaHomeAge = 0; }
+  /* P1-b: when the principal RRQ auto-estimate is on, drop avgE/qppYrs so the
+     engine derives them (avgE≈salary, qppYrs≈age-18) instead of shipping a stale
+     typed override that the hidden #qpp-detail inputs would otherwise carry. */
+  var _qppAuto = document.getElementById("qppAuto");
+  if (!_qppAuto || _qppAuto.checked) { p.avgE = null; p.qppYrs = null; }
   return p;
 }
 function saveProfile() {
@@ -4092,7 +4294,7 @@ var _BF_PCT_KEYS = {
   merR:1, merT:1, merN:1, cMerR:1, cMerT:1, cMerN:1,
   nrTaxDrag:1, cgIncLo:1, cgIncHi:1,
   eqRet:1, eqVol:1, bndRet:1, bndVol:1, fxVol:1,
-  inf:1, infHealth:1, infHousing:1, contGr:1,
+  inf:1, infHealth:1, infHousing:1, contGr:1, salVol:1, disabProb:1,
   bizGrowth:1, bizVolatility:1, bizSoleGrowth:1, bizSoleVol:1,
   bizSalaryPct:1, bizInvAlloc:1,
   peY:1, peV:1, peFee:1, pmY:1, pmV:1,
@@ -4186,6 +4388,7 @@ function loadProfile() {
         if (typeof _syncGA === "function") _syncGA();
         if (typeof _syncOverride === "function") _syncOverride();
         if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+        if (typeof _syncQppAuto === "function") _syncQppAuto();
         if (typeof updateSectionCounts === "function") updateSectionCounts();
         if (typeof validateInputs === "function") validateInputs();
       } catch (e) { alert("Erreur de lecture du fichier"); }
@@ -4309,6 +4512,14 @@ function _bfFmt(n) {
   var parts = String(n).split("."); var sep = (_lang === "fr") ? " " : ",";
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, sep);
   return parts.join(".");
+}
+/* Currency with locale-correct symbol placement: FR = "250 000 $" (suffix),
+   EN = "$250,000" (prefix). Replaces the ad-hoc `'$' + n.toLocaleString()`
+   pattern in the card renderers, which rendered "$250,000" even in FR. */
+function _bfCur(n) {
+  if (n === "" || n == null || isNaN(n)) n = 0;
+  var s = _bfFmt(Math.round(n));
+  return (_lang === "fr") ? s + " $" : "$" + s;
 }
 function _bfNumVal(id) { var el = document.getElementById(id); if (!el) return 0; var n = parseFloat(_bfStrip(el.value)); return isNaN(n) ? 0 : n; }
 function formatAllBfNum() {
@@ -4454,6 +4665,37 @@ function validateInputs() {
     ? "Dépense très basse pour un ménage canadien (< 1 500 $/mois). Vérifiez."
     : "Very low for a Canadian household (< $1,500/mo). Verify.");
   else _setWarn("retSpM-warn", null, "");
+  /* Hole B (2026-07-02): outlier warnings on the other high-magnitude monetary
+     inputs (previously only retSpM had one). Catches monthly/annual mix-ups and
+     typos like a $500k/mo pension. Warn-only — never blocks Simulate. */
+  function _outlier(id, hi, msgFr, msgEn) {
+    var input = document.getElementById(id); if (!input) return;
+    var wid = id + "-warn", w = document.getElementById(wid);
+    if (!w) { w = document.createElement("div"); w.id = wid; w.className = "bf-warn-inline"; w.hidden = true; input.parentNode.appendChild(w); }
+    if (_bfNumVal(id) > hi) _setWarn(wid, "warn", fr ? msgFr : msgEn);
+    else _setWarn(wid, null, "");
+  }
+  _outlier("penM", 30000,
+    "Pension mensuelle très élevée (> 30 000 $/mois). Vérifiez qu'il s'agit d'un montant mensuel, pas annuel.",
+    "Very high monthly pension (> $30,000/mo). Check this is a monthly, not annual, amount.");
+  _outlier("brAmt", 20000,
+    "Prestation de pont très élevée (> 20 000 $/mois). Vérifiez le montant.",
+    "Very high bridge benefit (> $20,000/mo). Verify the amount.");
+  ["insViePrime", "insInvPrime", "insMGPrime"].forEach(function (pid) {
+    _outlier(pid, 3000,
+      "Prime mensuelle inhabituellement élevée (> 3 000 $/mois). Vérifiez qu'il s'agit d'un montant mensuel.",
+      "Unusually high monthly premium (> $3,000/mo). Check this is a monthly amount.");
+  });
+  /* Hole C: cross-field ordering error, surfaced beside the life-horizon field
+     (also hard-blocks the handoff in switchToPlanner). */
+  var deathInput = document.getElementById("deathAge");
+  if (deathInput) {
+    if (!document.getElementById("deathAge-warn")) {
+      var dcw = document.createElement("div"); dcw.id = "deathAge-warn"; dcw.className = "bf-warn-inline"; dcw.hidden = true; deathInput.parentNode.appendChild(dcw);
+    }
+    var _cf = _crossFieldError();
+    _setWarn("deathAge-warn", _cf ? "err" : null, _cf);
+  }
 }
 document.addEventListener("input", validateInputs);
 document.addEventListener("change", validateInputs);
@@ -4554,6 +4796,7 @@ function _applyEmbedProfile(p) {
     if (typeof _syncGA === "function") _syncGA();
     if (typeof _syncOverride === "function") _syncOverride();
     if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+    if (typeof _syncQppAuto === "function") _syncQppAuto();
     updateSectionCounts();
   } catch (e) { console.error("apply embed profile failed:", e); }
 }
@@ -4584,7 +4827,29 @@ function _writeHandoff() {
     return true;
   } catch (e) { console.error("handoff failed:", e); return false; }
 }
+/* Hole C (2026-07-02): cross-field sanity. age>=deathAge makes runMC return null
+   (blank result screen in v3); retAge>=deathAge or retAge<age produce a coherent
+   but nonsensical plan. Returns the first blocking message, or "" if OK. deathAge
+   is optional (engine defaults it), so ordering is only enforced when it's set. */
+function _crossFieldError() {
+  var fr = _lang === "fr";
+  var age = _bfNumVal("age"), retAge = _bfNumVal("retAge"), deathAge = _bfNumVal("deathAge");
+  var deathEl = document.getElementById("deathAge");
+  var deathSet = deathEl && deathEl.value !== "" && deathEl.value != null;
+  if (deathSet && age > 0 && age >= deathAge) return fr
+    ? ("L'âge actuel (" + age + ") doit être inférieur à l'horizon de vie (" + deathAge + ").")
+    : ("Current age (" + age + ") must be below the life horizon (" + deathAge + ").");
+  if (deathSet && retAge > 0 && retAge >= deathAge) return fr
+    ? ("L'âge de retraite (" + retAge + ") doit être inférieur à l'horizon de vie (" + deathAge + ").")
+    : ("Retirement age (" + retAge + ") must be below the life horizon (" + deathAge + ").");
+  if (age > 0 && retAge > 0 && retAge < age) return fr
+    ? ("L'âge de retraite (" + retAge + ") est antérieur à votre âge actuel (" + age + ").")
+    : ("Retirement age (" + retAge + ") is before your current age (" + age + ").");
+  return "";
+}
 function switchToPlanner() {
+  var _cf = _crossFieldError();
+  if (_cf) { alert(_cf); return; }
   if (!_writeHandoff()) {
     alert(_lang === "fr" ? "Impossible de transférer. Utilisez Sauvegarder puis Charger manuellement." : "Could not hand off. Use Save then Load manually.");
     return;
@@ -4662,6 +4927,7 @@ function runSimulation() {
     if (typeof _syncGA === "function") _syncGA();
     if (typeof _syncOverride === "function") _syncOverride();
     if (typeof _syncStAgeLabels === "function") _syncStAgeLabels();
+    if (typeof _syncQppAuto === "function") _syncQppAuto();
     /* Banner confirming the auto-load. */
     var banner = document.createElement("div");
     banner.style.cssText = "position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--green);color:#0e1420;padding:10px 18px;border-radius:999px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);font-size:13px";
@@ -4691,6 +4957,17 @@ setInterval(_autoSave, 15000);
 /* Also save on blur (user tabs away) so we don't miss recent edits. */
 window.addEventListener("blur", _autoSave);
 window.addEventListener("beforeunload", _autoSave);
+/* Loi 25 (disclosed in /confidentialite §5): let the user erase the browser-local
+   autosave draft on demand. Only touches our autosave key, not the theme pref. */
+function clearLocalData() {
+  var fr = _lang === "fr";
+  if (!confirm(fr
+    ? "Effacer le brouillon enregistré localement dans ce navigateur ? Vos saisies non exportées seront perdues."
+    : "Erase the draft saved locally in this browser? Any unexported entries will be lost.")) return;
+  try { localStorage.removeItem(_BF_AUTOSAVE_KEY); } catch (e) {}
+  var b = document.getElementById("bf-autosave-banner"); if (b) b.remove();
+  alert(fr ? "Données locales effacées." : "Local data cleared.");
+}
 
 /* On load, check for an autosave and offer restoration. Runs after the
    sessionStorage handoff so a fresh handoff takes precedence. */
@@ -4705,6 +4982,7 @@ window.addEventListener("beforeunload", _autoSave);
     var ageMin = Math.max(1, Math.round((Date.now() - data._savedAt) / 60000));
     var fr = (typeof _lang !== "undefined") ? (_lang === "fr") : ((navigator.language || "").indexOf("fr") === 0);
     var banner = document.createElement("div");
+    banner.id = "bf-autosave-banner";
     banner.style.cssText = "margin:14px 24px 0;background:var(--surface-2);border:1px solid var(--accent);padding:10px 16px;border-radius:var(--radius-md);box-shadow:var(--shadow-soft);font-size:13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap";
     banner.innerHTML = '<span>' + _bfIco('save') + '</span>'
       + '<span><span data-i18n="autosaveLead">' + (fr ? "Sauvegarde automatique — il y a " : "Autosave — ") + '</span>' + ageMin + '<span data-i18n="autosaveTail">' + (fr ? " min" : " min ago") + '</span></span>'
@@ -4755,7 +5033,7 @@ function _updateWhatifLabels() {
   var rs = +document.getElementById("wif-retSpM").value;
   var al = +document.getElementById("wif-allocR").value;
   document.getElementById("wif-retAge-val").textContent = ra + (_lang === "fr" ? " ans" : " yrs") + " (Δ" + ((ra - _bfWhatif.retAge) >= 0 ? "+" : "") + (ra - _bfWhatif.retAge) + ")";
-  document.getElementById("wif-retSpM-val").textContent = "$" + rs.toLocaleString() + " (Δ" + ((rs - _bfWhatif.retSpM) >= 0 ? "+" : "") + (rs - _bfWhatif.retSpM) + ")";
+  document.getElementById("wif-retSpM-val").textContent = _bfCur(rs) + " (Δ" + ((rs - _bfWhatif.retSpM) >= 0 ? "+" : "") + (rs - _bfWhatif.retSpM) + ")";
   document.getElementById("wif-allocR-val").textContent = al + "% (Δ" + ((al - _bfWhatif.allocR) >= 0 ? "+" : "") + (al - _bfWhatif.allocR) + ")";
 }
 function applyWhatif() {
