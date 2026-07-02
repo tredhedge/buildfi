@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { listExpertProfiles, deleteExpertProfile } from "@/lib/kv";
+import { list, del } from "@vercel/blob";
 
 export const maxDuration = 60;
 
@@ -51,8 +52,43 @@ export async function GET(req: NextRequest) {
 
   console.log(`[cron/purge] Processed ${allProfiles.length} profiles:`, stats);
 
+  // ── Report blobs: hard-delete reports older than 30 days ──────────────
+  // The delivery emails promise a 30-day link and the privacy policy states a
+  // 30-day retention. Vercel Blob has no native TTL, so enumerate and delete
+  // expired report .html blobs here. (Guides/static assets live in /public,
+  // never in Blob, so filtering on .html is safe.)
+  const REPORT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const blobStats = { deleted: 0, kept: 0, errors: 0 };
+  try {
+    let cursor: string | undefined = undefined;
+    do {
+      const res: Awaited<ReturnType<typeof list>> = await list({ cursor, limit: 1000 });
+      for (const b of res.blobs) {
+        try {
+          const age = now - new Date(b.uploadedAt).getTime();
+          if (b.pathname.endsWith(".html") && age > REPORT_TTL_MS) {
+            await del(b.url);
+            blobStats.deleted++;
+          } else {
+            blobStats.kept++;
+          }
+        } catch (e) {
+          console.error(`[cron/purge] Blob delete error ${b.pathname}:`, e);
+          blobStats.errors++;
+        }
+      }
+      cursor = res.hasMore ? res.cursor : undefined;
+    } while (cursor);
+    console.log(`[cron/purge] Report blobs:`, blobStats);
+  } catch (e) {
+    console.error(`[cron/purge] Blob list failed:`, e);
+  }
+
   return NextResponse.json({
     processed: allProfiles.length,
     ...stats,
+    reportsDeleted: blobStats.deleted,
+    reportsKept: blobStats.kept,
+    reportBlobErrors: blobStats.errors,
   });
 }

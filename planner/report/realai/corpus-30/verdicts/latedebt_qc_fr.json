@@ -9,6 +9,11 @@
     "valid": true,
     "problems": []
   },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
+  },
   "prod": {
     "shipOk": true,
     "shipReasons": [],
@@ -21,7 +26,7 @@
     "expected": 33,
     "emptySlots": 3
   },
-  "htmlBytes": 48167,
+  "htmlBytes": 62998,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

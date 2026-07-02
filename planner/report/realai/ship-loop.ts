@@ -131,6 +131,10 @@ import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { sanitizeAISlots360, AI_SLOTS_360 } from "@/lib/ai-constants";
 import { evaluateReportShip } from "@/lib/report-ship-gate";
 import { evaluateNarration } from "@/lib/report-narration-guardrail";
+// DATA-TRUTH gate (2026-07-02): invariants on the facts object + full-HTML
+// locale/structure lint. This is the gate the "impossible gis report shipped
+// as A+" defect proved was missing — it validates the NUMBERS, not the prose.
+import { runCoherenceGate } from "@/lib/report-coherence-gate";
 
 type Persona = {
   id: string;
@@ -192,6 +196,18 @@ function validateReportModel(D: any): { ok: boolean; problems: string[] } {
 }
 
 // ── The prod MC orchestration (mirrors app/api/webhook/route.ts handleBilan360Purchase) ──
+// ship-loop 2026-06-18: deterministic per-profile seed. The engine honors params._seed
+// (index.js ~908, "common random numbers"). Without it every dump re-runs 5000 sims with
+// fresh randomness, the success/strategy numbers drift ±1-2%, and a narration written
+// against the prior dump suddenly reads as foreign_number. Seeding makes dumps fully
+// reproducible AND — because base, strategies and stress all share the seed (common random
+// numbers) — makes statu_quo === base exactly, dissolving the 80/81 drift at its source.
+function stableSeed(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return (h >>> 0) || 1;
+}
+
 function computeProfile(p: Persona) {
   const quiz = p.answers as Record<string, any>;
   const lang = p.lang;
@@ -200,7 +216,9 @@ function computeProfile(p: Persona) {
   const retAge = Number(quiz.retAge) || 65;
   const phase = determinePhase(age, retAge);
 
+  const seed = stableSeed(keyOf(p));
   const params = translateBilan360(quiz, phase);
+  (params as any)._seed = seed;
   const mcBase = runMC(params, 5000);
   if (!mcBase) throw new Error(`MC baseline null for ${keyOf(p)}`);
 
@@ -223,9 +241,9 @@ function computeProfile(p: Persona) {
   if (phase === "TRANSITION" || phase === "DECUM") {
     const alreadyClaiming = quiz.qppAlreadyClaiming === true || quiz.qppAlreadyClaiming === "true";
     if (!alreadyClaiming) {
-      const pC60 = translateBilan360({ ...quiz, qppPlannedAge: 60, qppAlreadyClaiming: false }, phase);
-      const pC65 = translateBilan360({ ...quiz, qppPlannedAge: 65, qppAlreadyClaiming: false }, phase);
-      const pC70 = translateBilan360({ ...quiz, qppPlannedAge: 70, qppAlreadyClaiming: false }, phase);
+      const pC60 = { ...translateBilan360({ ...quiz, qppPlannedAge: 60, qppAlreadyClaiming: false }, phase), _seed: seed };
+      const pC65 = { ...translateBilan360({ ...quiz, qppPlannedAge: 65, qppAlreadyClaiming: false }, phase), _seed: seed };
+      const pC70 = { ...translateBilan360({ ...quiz, qppPlannedAge: 70, qppAlreadyClaiming: false }, phase), _seed: seed };
       mcC60 = runMC(pC60 as any, 1000);
       mcC65 = runMC(pC65 as any, 1000);
       mcC70 = runMC(pC70 as any, 1000);
@@ -339,12 +357,20 @@ function doRender() {
     const slotsExpected = activeSlots(pl.phase).length;
     const model = validateReportModel(pl.D);
     const lab = runLabQA(p, pl, ai, html);
+    // Data-truth gate: numbers must be internally coherent AND plausible
+    // BEFORE any prose-level pass matters. Blocks prodPass.
+    const coherence = runCoherenceGate(pl.D, pl.params, html, pl.lang);
 
-    const prodPass = ship.ok && narr.ok && model.ok;
+    const prodPass = ship.ok && narr.ok && model.ok && coherence.ok;
     const verdict = {
       key, lang: pl.lang, phase: pl.phase, band: pl.band,
       grade: pl.D?.grade, successPct: pl.D?.successPct,
       model: { valid: model.ok, problems: model.problems },
+      coherence: {
+        ok: coherence.ok,
+        blockers: coherence.blockers.map((b) => ({ id: b.id, message: b.message, expected: b.expected, actual: b.actual })),
+        warnings: coherence.warnings.map((w) => ({ id: w.id, message: w.message, expected: w.expected, actual: w.actual })),
+      },
       prod: {
         shipOk: ship.ok, shipReasons: ship.reasons,
         narrationOk: narr.ok, narrationFindings: narr.findings,
@@ -357,8 +383,9 @@ function doRender() {
     };
     fs.writeFileSync(path.join(dir("verdicts"), `${key}.json`), JSON.stringify(verdict, null, 2));
     const tag = verdict.fullPass ? "FULL-PASS" : (prodPass ? "LAB-FAIL " : "PROD-FAIL");
-    console.log(`[render] ${key.padEnd(28)} ${tag} ship=${ship.ok} narr=${narr.ok} model=${model.ok} lab=${lab.canShip} slots=${slotsReturned}/${slotsExpected}` +
+    console.log(`[render] ${key.padEnd(28)} ${tag} ship=${ship.ok} narr=${narr.ok} model=${model.ok} data=${coherence.ok} lab=${lab.canShip} slots=${slotsReturned}/${slotsExpected}` +
       `${ship.ok ? "" : " [" + ship.reasons.join(",") + "]"}${narr.ok ? "" : " narr:[" + narr.findings.map((f: any) => f.slot + ":" + f.kind).join(",") + "]"}` +
+      `${coherence.ok ? "" : " data:[" + coherence.blockers.map((b) => b.id).join(",") + "]"}` +
       `${lab.canShip ? "" : " lab:[" + [...lab.blockerCategories, ...lab.majorCategories].join(",") + "]"}`);
   }
 }
@@ -381,6 +408,7 @@ function doReport() {
     if (buckets[cls].examples.length < 5) buckets[cls].examples.push(key);
   };
   for (const v of verdicts) {
+    if (v.coherence && !v.coherence.ok) (v.coherence.blockers || []).forEach((b: any) => bump(`data:${b.id}`, v.key));
     if (v.model && !v.model.valid) (v.model.problems || []).forEach((p: string) => bump(`model:${p.split(":")[0]}`, v.key));
     if (!v.prod?.shipOk) (v.prod.shipReasons || []).forEach((r: string) => bump(`prod_ship:${r}`, v.key));
     if (!v.prod?.narrationOk) (v.prod.narrationFindings || []).forEach((f: any) => bump(`narration:${f.kind}`, v.key));

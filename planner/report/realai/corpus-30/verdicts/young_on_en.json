@@ -3,11 +3,16 @@
   "lang": "en",
   "phase": "ACCUM",
   "band": "fragile",
-  "grade": "D",
-  "successPct": 40,
+  "grade": "F",
+  "successPct": 28,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,7 +26,7 @@
     "expected": 29,
     "emptySlots": 3
   },
-  "htmlBytes": 51853,
+  "htmlBytes": 63030,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
@@ -29,18 +34,7 @@
     "blockerCategories": [],
     "majorCategories": [],
     "findings": [],
-    "advisories": [
-      {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"what_if_analysis\" quotes pct value 42 for \"success_rate\" but canonical is 40.34. Slot must be regenerated to match canonical."
-      },
-      {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"strategy_comparison\" quotes pct value 48 for \"success_rate\" but canonical is 40.34. Slot must be regenerated to match canonical."
-      }
-    ],
+    "advisories": [],
     "auditorsRun": [
       "canonical-quote",
       "risk-collapse",

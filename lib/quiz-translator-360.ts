@@ -94,8 +94,18 @@ export function translateBilan360(rawA: Record<string, any>, phase: string): Rec
   // age with a <=25% chance of outliving capital (75th-pct survival), and for couples
   // to the LAST survivor — this avoids the longevity-tail optimism of a median-ish
   // horizon. The client's stated horizon still wins when provided. (2026-06-17)
+  //
+  // 2026-06-18: Bilan 360 now runs DETERMINISTIC mortality (stochMort:false, below) —
+  // every path runs to this single conservative age, so the report is coherent by
+  // construction (estate = the chart's endpoint; no "survive-past-life-expectancy" tail
+  // to explain). The Planner keeps stochastic mortality. Because this is now a FIXED
+  // horizon, it must be the conservative planning age for EVERY phase — the old decum
+  // value of 105 was a stochastic CAP, not a planning age, and would sink most decum
+  // plans if used as a fixed horizon. Conservative (biased high vs ~85/87 median LE):
+  // single M 92 / F 94, couple (last survivor) 95. The wizard can pass an explicit
+  // a.deathAge (e.g. a "family longevity" preset → 96/97), which still wins.
   const _couple360 = String(a.couple || "no") === "yes" && n(a.cAge) > 0;
-  const deathAge = clamp(Math.round(n(a.deathAge, isDecum ? 105 : (_couple360 ? 97 : (sex === "F" ? 94 : 92)))), age + 1, 110);
+  const deathAge = clamp(Math.round(n(a.deathAge, _couple360 ? 95 : (sex === "F" ? 94 : 92))), age + 1, 110);
 
   const rrsp = Math.round(n(a.rrsp));
   const tfsa = Math.round(n(a.tfsa));
@@ -263,7 +273,10 @@ export function translateBilan360(rawA: Record<string, any>, phase: string): Rec
     gkRaise: 0.1,
     gkMaxCut,
     fatT: true,
-    stochMort: true,
+    // 2026-06-18: Bilan 360 = deterministic mortality (every path to `deathAge`, a
+    // conservative fixed planning horizon). Makes the one-page report coherent by
+    // construction. The Planner keeps stochMort:true for full longevity modeling.
+    stochMort: false,
     stochInf: false,
     eqRet: 0.065,
     bndRet: 0.03,

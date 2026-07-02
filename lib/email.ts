@@ -29,8 +29,8 @@ export async function sendReportEmail(params: SendReportParams) {
   const fr = lang === "fr";
 
   const tierName = fr
-    ? { bilan360: "Bilan 360", expert: "Laboratoire" }[tier] || tier
-    : { bilan360: "Snapshot 360", expert: "Lab" }[tier] || tier;
+    ? { bilan360: "Bilan 360", planner: "Planner", expert: "Planner" }[tier] || tier
+    : { bilan360: "Bilan 360", planner: "Planner", expert: "Planner" }[tier] || tier;
 
   const subject = fr
     ? `Votre bilan ${tierName} buildfi.ca est prêt — Note ${grade}`
@@ -99,13 +99,13 @@ function buildEmailHTML(params: {
     cta: fr ? "Consulter mon bilan" : "View my assessment",
     linkExpiry: fr ? "Ce lien est valide 30\u00a0jours" : "This link is valid for 30\u00a0days",
     fallbackLink: fr ? "Si le bouton ne fonctionne pas\u00a0:" : "If the button doesn\u2019t work:",
-    upsellTitle: fr ? "Envie d\u2019aller plus loin\u00a0?" : "Want to go further?",
+    upsellTitle: fr ? "Un proche pourrait en profiter\u00a0?" : "Someone close could benefit?",
     // E-1: "stratégies optimisées" → "approches possibles"
     // E-2: "Votre note pourrait changer" → "Une analyse plus détaillée..."
     upsellBody: fr
-      ? "Le Laboratoire int\u00e8gre la planification RESP, la conversion REER\u00a0\u2192\u00a0FERR optimis\u00e9e, 5\u00a0profils de risque, la strat\u00e9gie FRV/CRI avanc\u00e9e et l\u2019analyse successorale compl\u00e8te. Une analyse encore plus approfondie pourrait r\u00e9v\u00e9ler des leviers suppl\u00e9mentaires."
-      : "The Lab includes RESP planning, optimized RRSP\u00a0\u2192\u00a0RRIF conversion, 5\u00a0risk profiles, advanced LIF/LIRA strategy, and full estate analysis. An even deeper analysis could reveal additional levers.",
-    upsellCta: fr ? "En savoir plus\u00a0\u2192" : "Learn more\u00a0\u2192",
+      ? "Un 2e Bilan 360 est \u00e0 moiti\u00e9 prix avec le code SECOND50 \u2014 id\u00e9al pour votre conjoint(e) ou un proche qui planifie aussi sa retraite."
+      : "A second Bilan 360 is half price with code SECOND50 \u2014 perfect for your spouse or someone close who is also planning their retirement.",
+    upsellCta: fr ? "Offrir un 2e Bilan\u00a0\u2192" : "Get a second Bilan\u00a0\u2192",
     disclaimer: fr
       ? "Cet outil est fourni \u00e0 titre informatif et \u00e9ducatif seulement. Il ne constitue pas un avis financier personnalis\u00e9."
       : "This tool is provided for informational and educational purposes only. It does not constitute personalized financial advice.",
@@ -393,7 +393,7 @@ function buildEmailHTML(params: {
                       <!-- A-2: Upsell CTA link -->
                       <tr>
                         <td style="font-family:${FONT};font-size:13px;color:${GOLD};font-weight:700;padding-top:10px;">
-                          <a href="https://www.buildfi.ca/index.html#products" style="color:${GOLD};text-decoration:none;">
+                          <a href="https://www.buildfi.ca/#tarifs" style="color:${GOLD};text-decoration:none;">
                             ${s.upsellCta}
                           </a>
                         </td>

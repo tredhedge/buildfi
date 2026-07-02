@@ -21,15 +21,17 @@ export default function PostHogProvider({
   const initialized = useRef(false);
 
   useEffect(() => {
-    // Guard: SSR, missing key, no consent, or already loaded
-    if (typeof window === "undefined") return;
-    if (!POSTHOG_KEY) return;
-    if (localStorage.getItem("buildfi_consent") !== "yes") return;
-    if (initialized.current) return;
-    initialized.current = true;
+    if (typeof window === "undefined" || !POSTHOG_KEY) return;
 
-    // If posthog is already on the page (e.g. manual snippet), just init
-    if (window.posthog) return;
+    // Boot PostHog only once consent is granted. Runs on mount and again when
+    // ConsentBanner dispatches "bf-consent-granted" (same session, no reload).
+    const initPH = () => {
+      if (initialized.current) return;
+      if (localStorage.getItem("buildfi_consent") !== "yes") return;
+      initialized.current = true;
+
+      // If a real posthog is already on the page (manual snippet), leave it.
+      if (window.posthog) return;
 
     // PostHog standard async snippet -----------------------------------------
     // This mirrors the official snippet from https://posthog.com/docs/libraries/js
@@ -91,6 +93,11 @@ export default function PostHogProvider({
       }
     };
     document.head.appendChild(script);
+    };
+
+    initPH();
+    window.addEventListener("bf-consent-granted", initPH);
+    return () => window.removeEventListener("bf-consent-granted", initPH);
   }, []);
 
   return <>{children}</>;

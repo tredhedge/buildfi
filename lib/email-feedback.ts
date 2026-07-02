@@ -270,10 +270,8 @@ export async function sendReferralConversionEmail(params: {
           ${conversions === 1
             ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 50 % de rabais sur votre prochain achat." : "Reward unlocked: 50% off your next purchase.")
             : conversions === 3
-              ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 1 export AI gratuit ajout\u00e9 \u00e0 votre compte." : "Reward unlocked: 1 free AI export added to your account.")
-              : conversions === 5
-                ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 1 an d\u2019acc\u00e8s Laboratoire gratuit\u00a0!" : "Reward unlocked: 1 free year of Lab access!")
-                : (fr ? "Continuez \u00e0 partager pour d\u00e9bloquer plus de r\u00e9compenses." : "Keep sharing to unlock more rewards.")}
+              ? (fr ? "R\u00e9compense d\u00e9bloqu\u00e9e\u00a0: 3 rapports IA gratuits ajout\u00e9s \u00e0 votre compte Planner." : "Reward unlocked: 3 free AI reports added to your Planner account.")
+              : (fr ? "Continuez \u00e0 partager pour d\u00e9bloquer plus de r\u00e9compenses." : "Keep sharing to unlock more rewards.")}
         </td></tr>`;
 
   const html = emailWrapper(lang, fr ? "Nouvelle conversion via votre lien" : "New conversion via your link", body);

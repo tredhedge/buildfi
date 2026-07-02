@@ -5351,10 +5351,12 @@ function runMC(pInput, N, _progressCb) {
       // success rates systematically optimistic), and unspent mandatory
       // withdrawals simply vanish from household wealth.
       var _settleTfWith = 0;
+      var _settleReinvest = 0; // additive (report data-truth gate): net settle credited to TFSA/NR this year
       if (alive && retired) {
         var _forcedSurplus = Math.max(0, (govInc + rrifMin + cRrifMin + meltAmt) - spending);
         var _netSettle = _forcedSurplus - (_yrTax || 0);
         if (_netSettle > 0) {
+          _settleReinvest = _netSettle;
           // Reinvest surplus: TFSA up to tracked room, remainder to NR (ACB credit).
           var _stTF = _mcTfsaRoom > 0 ? Math.min(_netSettle, _mcTfsaRoom) : 0;
           if (_stTF > 0) { tf += _stTF; _mcTfsaRoom -= _stTF; }
@@ -5376,7 +5378,7 @@ function runMC(pInput, N, _progressCb) {
         }
       }
       var total = alive ? rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + reTotal + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0) - (_debtBalTot || 0) : 0; // audit B: net of debt
-      path.push({ total, rr, tf, nr, pe, pm, crr, ctf, cnr, fhsa: fhsa, cFhsa: cFhsa, dc: dc, dc2: dc2, disc: total / (infM || 1), re: reTotal, corp: p.bizOn ? corpBal : 0, ipp: p.ippOn ? _ippBal : 0, tax: _yrTax, p1Tax: _p1Tax, p2Tax: _p2Tax, spend: spending || 0, qpp: qpp || 0, oas: oas || 0, pen: (penMonth || 0) * 12, pt: ptInc || 0, gis: gis || 0, cQpp: cQppY || 0, cOas: cOasY || 0, cPen: cPenY || 0, cGis: cGisY || 0, cInc: cInc || 0, penCont: dcCont || 0, lira: lira, cLira: cLira });
+      path.push({ total, rr, tf, nr, pe, pm, crr, ctf, cnr, fhsa: fhsa, cFhsa: cFhsa, dc: dc, dc2: dc2, disc: total / (infM || 1), re: reTotal, corp: p.bizOn ? corpBal : 0, ipp: p.ippOn ? _ippBal : 0, tax: _yrTax, p1Tax: _p1Tax, p2Tax: _p2Tax, spend: spending || 0, qpp: qpp || 0, oas: oas || 0, pen: (penMonth || 0) * 12, pt: ptInc || 0, gis: gis || 0, cQpp: cQppY || 0, cOas: cOasY || 0, cPen: cPenY || 0, cGis: cGisY || 0, cInc: cInc || 0, penCont: dcCont || 0, lira: lira, cLira: cLira, reinvest: _settleReinvest });
       _mcTfsaLastW = (_wFromTF || 0) + _settleTfWith; // TFSA withdrawals restore room next year
       var finAssets = rr + tf + nr + pe + pm + crr + ctf + cnr + fhsa + cFhsa + dc + dc2 + lira + cLira + (p.bizOn ? corpBal : 0) + (p.ippOn ? _ippBal : 0) - (_debtBalTot || 0); // R14 + audit B: net of debt
       if (finAssets <= 0 && retired && !ruined) {

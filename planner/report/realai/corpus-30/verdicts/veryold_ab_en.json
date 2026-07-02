@@ -3,11 +3,16 @@
   "lang": "en",
   "phase": "DECUM",
   "band": "sound",
-  "grade": "A+",
-  "successPct": 100,
+  "grade": "B+",
+  "successPct": 82,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -17,11 +22,11 @@
     "pass": true
   },
   "narrationCoverage": {
-    "returned": 28,
+    "returned": 27,
     "expected": 30,
-    "emptySlots": 2
+    "emptySlots": 3
   },
-  "htmlBytes": 45162,
+  "htmlBytes": 56701,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
@@ -29,13 +34,7 @@
     "blockerCategories": [],
     "majorCategories": [],
     "findings": [],
-    "advisories": [
-      {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"revenue_analysis\" quotes pct value 7.3 for \"success_rate\" but canonical is 99.76. Slot must be regenerated to match canonical."
-      }
-    ],
+    "advisories": [],
     "auditorsRun": [
       "canonical-quote",
       "risk-collapse",

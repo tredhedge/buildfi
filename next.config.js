@@ -33,6 +33,12 @@ const nextConfig = {
       // Laboratoire naming → Planner
       { source: '/laboratoire', destination: '/acheter-planner', permanent: true },
 
+      // Privacy policy canonical URL is /confidentialite, served by the static
+      // public/confidentialite.html (via the rewrite below). Redirect the
+      // legacy .html path to the clean URL so every link converges on one page
+      // — no duplicate content, no shadowed route.
+      { source: '/confidentialite.html', destination: '/confidentialite', permanent: true },
+
       // Legacy static homepage → static landing (served at root via rewrite below)
       { source: '/index.html', destination: '/', permanent: true },
 
@@ -51,7 +57,7 @@ const nextConfig = {
       // Planner portal entry point (post-purchase)
       { source: '/expert/landing', destination: '/expert' },
 
-      // Legal pages served as static HTML
+      // Legal pages served as static HTML at clean URLs.
       { source: '/conditions', destination: '/conditions.html' },
       { source: '/confidentialite', destination: '/confidentialite.html' },
       { source: '/avis-legal', destination: '/avis-legal.html' },

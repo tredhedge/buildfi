@@ -3,11 +3,16 @@
   "lang": "fr",
   "phase": "ACCUM",
   "band": "sound",
-  "grade": "B+",
-  "successPct": 84,
+  "grade": "B",
+  "successPct": 72,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,7 +26,7 @@
     "expected": 29,
     "emptySlots": 2
   },
-  "htmlBytes": 52214,
+  "htmlBytes": 65540,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

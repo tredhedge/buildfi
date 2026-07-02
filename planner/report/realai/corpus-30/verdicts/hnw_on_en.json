@@ -3,11 +3,16 @@
   "lang": "en",
   "phase": "ACCUM",
   "band": "sound",
-  "grade": "B+",
-  "successPct": 81,
+  "grade": "C+",
+  "successPct": 62,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,7 +26,7 @@
     "expected": 29,
     "emptySlots": 1
   },
-  "htmlBytes": 51389,
+  "htmlBytes": 64019,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
@@ -29,18 +34,7 @@
     "blockerCategories": [],
     "majorCategories": [],
     "findings": [],
-    "advisories": [
-      {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"best_lever\" quotes pct value 79 for \"success_rate\" but canonical is 80.62. Slot must be regenerated to match canonical."
-      },
-      {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"strategy_comparison\" quotes pct value 79 for \"success_rate\" but canonical is 80.62. Slot must be regenerated to match canonical."
-      }
-    ],
+    "advisories": [],
     "auditorsRun": [
       "canonical-quote",
       "risk-collapse",

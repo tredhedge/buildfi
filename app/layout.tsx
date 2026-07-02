@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import PostHogProvider from "./components/PostHogProvider";
+import ConsentBanner from "./components/ConsentBanner";
 
 /*
   Mobile viewport — explicit (Next.js auto-injects a default if absent, but
@@ -108,6 +109,7 @@ export default function RootLayout({
         className={`${dmSans.variable} ${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <PostHogProvider>{children}</PostHogProvider>
+        <ConsentBanner />
       </body>
     </html>
   );

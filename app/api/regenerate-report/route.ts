@@ -18,9 +18,11 @@ import { runMC } from "@/lib/engine";
 // 2026-06-17: Planner report unified onto the Bilan 360 pipeline (was report-html-expert).
 import { extractReportData360, renderReportHTML360, determinePhase } from "@/lib/report-html-360";
 import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
+import { runCoherenceGate } from "@/lib/report-coherence-gate";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
 import { sanitizeAISlots360 } from "@/lib/ai-constants";
+import { autoRepairNarration } from "@/lib/report-narration-repair";
 import { sendExpertDeliveryEmail, sendAdminAlert } from "@/lib/email-expert";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -163,6 +165,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     console.log(`[regenerate] AI: ${Object.keys(ai).length} slots in ${Date.now() - aiStart}ms`);
 
+    // Number-free guardrail + repair (2026-06-19): the Planner report shares the Bilan 360
+    // number-free pipeline (every figure is an engine fact line), so the AI prose must carry NO
+    // numbers. Enforce it here exactly like the webhook does — without it, AI-emitted numbers
+    // could contradict the deterministic fact lines. Fail-open to whatever we have.
+    if (Object.keys(ai).length > 0) {
+      try {
+        const band: "fragile" | "sound" = Number((mc as Record<string, any>)?.succ ?? 1) < 0.45 ? "fragile" : "sound";
+        const repair = await autoRepairNarration({
+          aiSlots: ai, promptSys: prompt.sys, promptUser: prompt.usr, lang: lang as "fr" | "en", band,
+          maxAttempts: 3,
+          deadline: aiStart + 100_000, perAttemptTimeoutMs: 18_000,
+          narrate: (sys, usr) => callAnthropic(sys, usr, (raw) => {
+            try { return sanitizeAISlots360(JSON.parse(String(raw).replace(/```json?\s*/g, "").replace(/```/g, "").trim())) as Record<string, string | undefined>; }
+            catch { return {} as Record<string, string | undefined>; }
+          }),
+        });
+        ai = repair.ai;
+        console.log(`[regenerate] narration guardrail: ${repair.verdict.ok ? "OK" : "FAILED"} after ${repair.attempts} repair attempt(s)`);
+      } catch (grErr) {
+        console.warn("[regenerate] narration guardrail error (fail-open):", grErr);
+      }
+    }
+
     // Feedback token (per-report, one-shot)
     const feedbackToken = randomUUID();
     await createFeedbackRecord(feedbackToken, email, "bilan360", lang);
@@ -175,8 +200,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const verdict = evaluateReportShip(reportHTML, lang as "fr" | "en", {
         coreInvalid: (D as Record<string, any>)?._integrity?.coreInvalid === true,
       });
-      if (!verdict.ok) {
-        console.warn(`[regenerate] ship-gate FAILED [${verdict.reasons.join(", ")}] — serving needs-attention variant`);
+      // DATA-TRUTH gate (2026-07-02): numeric invariants + locale/structure lint
+      // on the final HTML. Blocks like a structural failure; BF_COHERENCE_ENFORCE=0
+      // downgrades to log-only.
+      const coherence = runCoherenceGate(D, mcParams, reportHTML, lang as "fr" | "en");
+      const coherenceEnforced = process.env.BF_COHERENCE_ENFORCE !== "0";
+      if (!coherence.ok) {
+        console.warn(`[regenerate] coherence gate: ${coherence.blockers.length} blocker(s) [${coherence.blockers.map((b) => b.id).join(", ")}]${coherenceEnforced ? "" : " (log-only)"}`);
+      }
+      if (!verdict.ok || (coherenceEnforced && !coherence.ok)) {
+        const allReasons = [
+          ...verdict.reasons,
+          ...(coherence.ok ? [] : coherence.blockers.map((b) => `data(${b.id})`)),
+        ].join(", ");
+        console.warn(`[regenerate] ship HELD [${allReasons}] — serving needs-attention variant`);
         reportHTML = renderNeedsAttentionHTML({
           firstName: (D as Record<string, any>)?.firstName || (mcParams as Record<string, any>)?.firstName || "",
           lang: lang as "fr" | "en",
@@ -187,7 +224,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           "Planner regenerate ship-gate held a report — 24h human review owed",
           `A regenerated Planner report failed the ship gate and the customer received the ` +
             `"needs-attention" fallback (promised within 24h).\n\n` +
-            `Email: ${email}\nLang: ${lang}\nGate reasons: ${verdict.reasons.join(", ")}\n`
+            `Email: ${email}\nLang: ${lang}\nGate reasons: ${allReasons}\n`
         ).catch((e) => console.error("[regenerate] needs-attention alert failed:", e));
       }
     } catch (gateErr) {

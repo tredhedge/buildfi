@@ -98,3 +98,46 @@ This is why the "adapter" dissolves: there is nothing renderer-specific left to 
   structurally impossible.
 - ship-loop ≥99% on the corpus under the full bar (prod ship-gate + model-QA), held across re-runs.
 - CI runs the ship-loop; a new failure class fails CI. No more per-symptom patching.
+
+---
+
+## 2026-07-02 — Step 4 SHIPPED: facts factory + data-truth gate
+
+Root-cause audit (Fable 5 session) found the number layer had THREE coexisting
+bases for the same KPI and no gate on data truth:
+- hero withdrawal rate = gap ÷ TODAY's portfolio (73.1% for a 32-yo);
+- three gap definitions (individual@ret-start / household@ret-start /
+  household@steady-state) → snapshot vs synthesis contradictions;
+- feeCostLifetime = MER × TERMINAL wealth × full horizon (≈10× overstatement);
+- EN reports carried FR postfix currency in every renderer-emitted figure;
+- run-pipeline's `_dataBlocked` ship-gate hook existed but nothing ever set it.
+
+### What shipped
+1. **`lib/report-facts-360.js`** — the number factory. `extractReportData360`
+   moved out of the renderer (re-exported for compat), every figure defined
+   once: withdrawal rate = engine-actual first-year withdrawal ÷ retirement-date
+   portfolio; ONE gap (household steady-state, = target − guaranteed by
+   construction); fees = MER × median-path AUM integrated yearly; surplus
+   integral + `surplusReinvested` disclosure flag; `fmtMoney360/fmtPct360`
+   locale-correct formatters (FR `287 916 $`/`9,3 %`, EN `$287,916`/`9.3%`).
+2. **`lib/report-coherence-gate.ts`** — data-truth invariants (C1 component
+   sums, C2 coverage, C3 gap reconciliation, C4 withdrawal funding-needs
+   reconciliation, C5 percentile order, C6 inflow-aware ending-wealth
+   plausibility, C7 fee/AUM bound, C8 snapshot rows) + full-HTML locale lint +
+   disclaimer/assumptions structure lint. Sets `D._dataBlocked`.
+3. **Wired**: ship-loop verdicts (`data=` column, blocks prodPass), webhook
+   Bilan 360 (held → needs-attention + admin alert), webhook Planner-initial
+   (skip + alert; previously ungated), regenerate (held), export (402-style
+   refusal, no credit burn). `BF_COHERENCE_ENFORCE=0` = log-only.
+4. **Renderer**: mandatory assumptions table (eqRet/bndRet/inf/alloc/MER/
+   horizon/5000) + AMF/AI-disclosure block (`data-bf-disclaimer`), surplus
+   note on savings FACT, "Taux de retrait initial" KPI label.
+5. **`tests/report-coherence.test.ts`** (npm run test:coherence, in qa:full) —
+   unit invariants + formatter goldens + all-22 corpus golden pass with a
+   KNOWN_ENGINE_BUGS quarantine list.
+
+### Corpus status: 20/22 FULL-PASS; gis_on_en + gis_qc_fr quarantined on
+`C6_implausible_growth` — a REAL engine defect (TFSA phantom inflow in the
+melt/settle loop: median TFSA 16K→427K nominal with spend ≡ govInc every year,
+GIS growing past its indexed cap). Engine fix tracked separately; the gate
+guarantees it cannot ship meanwhile.

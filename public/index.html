@@ -93,9 +93,9 @@ section{padding:92px 0}
 .lang{font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.06em; color:var(--muted);
   border:1px solid var(--line); border-radius:var(--r-pill); padding:5px 12px; background:var(--panel); cursor:pointer}
 .lang b{color:var(--ink)}
-.nav-cta{font-size:14px; font-weight:600; color:#fff; background:var(--navy); text-decoration:none;
+.nav-links>a.nav-cta{font-size:14px; font-weight:600; color:#fff; background:var(--navy); text-decoration:none;
   padding:9px 18px; border-radius:var(--r-pill); transition:all .15s}
-.nav-cta:hover{background:#2f3a4a; transform:translateY(-1px)}
+.nav-links>a.nav-cta:hover{background:#344155; color:#fff; transform:translateY(-1px)}
 .nav-free{color:var(--gold)!important; font-weight:600}
 .nav-toggle{display:none; background:none; border:0; cursor:pointer; padding:6px; margin:-6px; color:var(--ink); line-height:0}
 #outils{scroll-margin-top:84px}
@@ -433,6 +433,9 @@ footer svg{height:22px; width:auto; opacity:.85}
 /* Tarifs — psychologie produit reformulée (sous-titre carte) */
 .card .who2{font-size:14px; color:var(--gold); font-weight:600; margin:-2px 0 14px; font-style:italic}
 </style>
+<!-- Analytics (Law 25): PostHog stays dormant until buildfi_consent === "yes". -->
+<script src="/analytics-config.js"></script>
+<script src="/analytics-init.js" defer></script>
 </head>
 <body>
 
@@ -467,15 +470,15 @@ footer svg{height:22px; width:auto; opacity:.85}
         <span class="h1-line"><span data-i18n="hero-h1-line1">Votre plan de retraite,</span></span>
         <span class="h1-line"><span><em data-i18n="hero-h1-em">testé contre l&rsquo;adversité.</em></span></span>
       </h1>
-      <p class="hero-sub" data-i18n="hero-sub">La rigueur d&rsquo;un conseiller, le prix d&rsquo;une sortie au restaurant. Pour quiconque veut planifier sa retraite — en couple ou seul, avec ou sans société, propriétaire ou locataire. BuildFi modélise votre situation exacte contre des milliers de trajectoires de marché.</p>
+      <p class="hero-sub" data-i18n="hero-sub">BuildFi modélise votre situation exacte — en couple ou seul, avec ou sans société, propriétaire ou locataire — contre des milliers de trajectoires de marché.</p>
       <div class="cta-row">
         <a class="btn btn-gold" href="#tarifs"><span data-i18n="hero-cta-primary">Commencer mon Bilan</span>
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         <a class="btn btn-ghost" href="#rapport" data-i18n="hero-cta-secondary">Voir ce que vous recevez</a>
       </div>
       <div class="trust">
-        <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 2.5 4v4c0 3.3 2.3 5.6 5.5 6 3.2-.4 5.5-2.7 5.5-6V4L8 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span data-i18n="hero-trust1">Vos données ne sont jamais stockées</span></div>
-        <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.3 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-i18n="hero-trust2">Résultats en 5 minutes</span></div>
+        <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 2.5 4v4c0 3.3 2.3 5.6 5.5 6 3.2-.4 5.5-2.7 5.5-6V4L8 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span data-i18n="hero-trust1">Aucun compte requis</span></div>
+        <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.3 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-i18n="hero-trust2">Rapport livré en quelques minutes</span></div>
         <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="hero-trust3">Un seul paiement, pas d&rsquo;abonnement</span></div>
         <div><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="hero-trust4">13 provinces et territoires, chaque règle</span></div>
       </div>
@@ -518,7 +521,7 @@ footer svg{height:22px; width:auto; opacity:.85}
     <div class="reveal">
       <p class="eyebrow" data-i18n="rp-eyebrow">Le rapport Bilan 360</p>
       <h2 data-i18n="rp-h2">Bien plus qu&rsquo;une réponse&nbsp;:<br>un <em>dossier complet.</em></h2>
-      <p style="font-size:16px; color:var(--prose); margin:0 0 4px; line-height:1.65" data-i18n="rp-intro">Vous ne recevez pas un score isolé. Vous recevez un document personnalisé, dont la structure s&rsquo;adapte à votre profil — avec des mini-outils interactifs intégrés et une narration IA — que vous pouvez explorer, ajuster et garder à vie.</p>
+      <p style="font-size:16px; color:var(--prose); margin:0 0 4px; line-height:1.65" data-i18n="rp-intro">Vous ne recevez pas un score isolé. Vous recevez un document personnalisé, dont la structure s&rsquo;adapte à votre profil — avec des mini-outils interactifs intégrés et une narration IA — que vous pouvez explorer, ajuster et exporter en PDF.</p>
       <ul class="rp-points">
         <li><span class="rp-k">&sect;1</span><div>
           <h3 data-i18n="rp-point1-h">Votre diagnostic complet</h3>
@@ -530,7 +533,7 @@ footer svg{height:22px; width:auto; opacity:.85}
         </div></li>
         <li><span class="rp-k">&sect;3</span><div>
           <h3 data-i18n="rp-point3-h">Des mini-outils, dans le rapport même</h3>
-          <p data-i18n="rp-point3-p">Un curseur d&rsquo;années pour voyager dans votre projection, un simulateur «&nbsp;et si&nbsp;?&nbsp;» intégré, un glossaire de 63 termes. Le rapport se manipule, il ne se lit pas seulement.</p>
+          <p data-i18n="rp-point3-p">Un curseur d&rsquo;années pour voyager dans votre projection, un simulateur «&nbsp;et si&nbsp;?&nbsp;» intégré, un glossaire intégré. Le rapport se manipule, il ne se lit pas seulement.</p>
         </div></li>
         <li><span class="rp-k">&sect;4</span><div>
           <h3 data-i18n="rp-point4-h">Une narration IA qui explique</h3>
@@ -540,11 +543,11 @@ footer svg{height:22px; width:auto; opacity:.85}
       <div class="rp-tools">
         <span class="rp-tool"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h12M8 4v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span data-i18n="rp-tool1">Curseur d&rsquo;années</span></span>
         <span class="rp-tool"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13V7m5 6V3m5 10V9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span data-i18n="rp-tool2">Simulateur «&nbsp;et si&nbsp;?&nbsp;»</span></span>
-        <span class="rp-tool"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span data-i18n="rp-tool3">Glossaire 63 termes</span></span>
+        <span class="rp-tool"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.6"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span data-i18n="rp-tool3">Glossaire intégré</span></span>
         <span class="rp-tool"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 3h8v10l-4-2.2L4 13V3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span data-i18n="rp-tool4">Export PDF</span></span>
       </div>
       <div class="cta-row" style="margin-top:22px">
-        <a class="btn btn-ink" href="/samples/bilan-exemple-fr.html"><span data-i18n="rp-cta">Voir un rapport complet — profil fictif</span>
+        <a class="btn btn-ink" id="rp-sample-link" href="/samples/bilan-exemple-fr.html"><span data-i18n="rp-cta">Voir un rapport complet — profil fictif</span>
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
@@ -654,7 +657,7 @@ footer svg{height:22px; width:auto; opacity:.85}
       </div>
 
       <div class="pl-side reveal d1">
-        <h3 data-i18n="pl-side-h3">190+ variables. Vingt-quatre onglets. Vos règles.</h3>
+        <h3 data-i18n="pl-side-h3">190+ variables. Interface multi-onglets. Vos règles.</h3>
         <p data-i18n="pl-side-p">Le Bilan répond une fois. Le Planner répond chaque fois que votre vie change — nouvelle offre d&rsquo;emploi, héritage, vente d&rsquo;immeuble, marché qui plonge. Vous ajustez, il recalcule, vous comparez. À vie.</p>
         <div class="pl-mods">
           <div class="pl-mod"><svg class="ck-svg" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pl-mod1">Fiscalité + 13 provinces</span></div>
@@ -786,7 +789,7 @@ footer svg{height:22px; width:auto; opacity:.85}
         <p class="who2" data-i18n="card-bilan-who2">Mon portrait, fait pour moi.</p>
         <div class="price" data-i18n="card-bilan-price">29,99&nbsp;$ <small>paiement unique</small></div>
         <ul class="feat">
-          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-bilan-feat1">Dossier complet et personnalisé, à vie</span></li>
+          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-bilan-feat1">Dossier complet et personnalisé, exportable en PDF</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-bilan-feat2">Mini-outils intégrés (curseur, «&nbsp;et si&nbsp;?&nbsp;», glossaire)</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-bilan-feat3">Plan testé&nbsp;: krach, inflation, longévité</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-bilan-feat4">Narration IA + export PDF</span></li>
@@ -800,12 +803,12 @@ footer svg{height:22px; width:auto; opacity:.85}
         <p class="who2" data-i18n="card-planner-who2">Le simulateur, entre mes mains.</p>
         <div class="price" data-i18n="card-planner-price">69,99&nbsp;$ <small>paiement unique · accès à vie</small></div>
         <ul class="feat">
-          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat1">190+ variables, 24 onglets, scénarios illimités</span></li>
+          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat1">190+ variables, interface multi-onglets, scénarios illimités</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat2">Simulation configurable (1&nbsp;000 à 10&nbsp;000 trajectoires)</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat3">5 générations de rapport IA incluses</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat4">Tests de stress et arbitrages illimités</span></li>
           <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat5">Export Excel + PDF · Sauvegarde et comparaison</span></li>
-          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat6">Tout le Bilan inclus, + accès à vie</span></li>
+          <li><svg class="ck" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2.5 8.5 3.5 3.5 7.5-8" stroke="#c4944a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="card-planner-feat6">Bilan 360 complet inclus, + accès à vie</span></li>
         </ul>
         <p class="card-note" data-i18n="card-planner-note">Compteur de rapports restants dans le Planner. +4 générations&nbsp;: 19,99&nbsp;$.</p>
         <a class="btn btn-ink btn-card" href="/acheter-planner" data-i18n="card-planner-cta">Choisir le Planner — 69,99 $</a>
@@ -825,12 +828,12 @@ footer svg{height:22px; width:auto; opacity:.85}
     <div class="faq-list reveal">
       <details><summary data-i18n="faq-q1">Est-ce un conseil financier personnalisé&nbsp;?</summary><div class="faq-a" data-i18n="faq-a1">Non. BuildFi fournit des projections basées sur vos données et des hypothèses de marché. Ce n&rsquo;est pas un conseil personnalisé au sens de la Loi sur les valeurs mobilières. Pour une recommandation officielle, consultez un planificateur financier (Pl.&nbsp;Fin.).</div></details>
       <details><summary data-i18n="faq-q2">C&rsquo;est pour qui&nbsp;?</summary><div class="faq-a" data-i18n="faq-a2">Pour quiconque veut planifier sa retraite&nbsp;: en couple ou seul, avec ou sans société, propriétaire ou locataire, que la retraite soit dans 5 ans ou dans 25. Si vous débutez votre carrière, nos Guides gratuits 101 et 201 sont un meilleur point de départ.</div></details>
-      <details><summary data-i18n="faq-q3">Comment je récupère mon rapport après l&rsquo;achat&nbsp;?</summary><div class="faq-a" data-i18n="faq-a3">Votre rapport vous est livré par un lien unique (magic link) à votre adresse courriel, immédiatement après le paiement. Il reste accessible à vie&nbsp;: vous pouvez le rouvrir, l&rsquo;imprimer en PDF, ou le repartager. Aucun compte à créer, aucun mot de passe à retenir.</div></details>
-      <details><summary data-i18n="faq-q4">Mes données sont-elles protégées&nbsp;?</summary><div class="faq-a" data-i18n="faq-a4">Oui. Les simulations tournent côté serveur BuildFi avec vos paramètres, le résultat est encrypté et livré via lien unique. Nous ne vendons ni ne partageons vos données.</div></details>
+      <details><summary data-i18n="faq-q3">Comment je récupère mon rapport après l&rsquo;achat&nbsp;?</summary><div class="faq-a" data-i18n="faq-a3">Votre rapport vous est livré par un lien unique (magic link) à votre adresse courriel, immédiatement après le paiement. Il reste accessible en ligne pendant 30 jours&nbsp;; exportez-le en PDF pour le conserver au-delà, le rouvrir ou le repartager. Aucun compte à créer, aucun mot de passe à retenir.</div></details>
+      <details><summary data-i18n="faq-q4">Mes données sont-elles protégées&nbsp;?</summary><div class="faq-a" data-i18n="faq-a4">Oui. Les simulations tournent côté serveur BuildFi avec vos paramètres, le résultat est chiffré et livré via lien unique. Nous ne vendons ni ne partageons vos données.</div></details>
       <details><summary data-i18n="faq-q5">Que se passe-t-il si je vis plus de 95 ans&nbsp;?</summary><div class="faq-a" data-i18n="faq-a5">Le moteur utilise la mortalité stochastique (CPM&nbsp;2023) jusqu&rsquo;à 105 ans. Votre rapport inclut un test de stress «&nbsp;longévité extrême&nbsp;» qui évalue votre plan si vous viviez bien au-delà de la moyenne.</div></details>
       <details><summary data-i18n="faq-q6">Différence entre Bilan et Planner&nbsp;?</summary><div class="faq-a" data-i18n="faq-a6">Le Bilan&nbsp;360 est un dossier complet fait pour vous&nbsp;: structure adaptée à votre profil, mini-outils intégrés, narration IA, à un moment précis. Le Planner est le simulateur que vous pilotez&nbsp;: 190+ variables, scénarios illimités, sauvegarde, et 5 rapports inclus. Le Planner comprend tout le Bilan.</div></details>
       <details><summary data-i18n="faq-q7">Et si mes chiffres changent&nbsp;?</summary><div class="faq-a" data-i18n="faq-a7">Le Bilan est une photo, à un moment précis. Si votre situation évolue — nouvel emploi, héritage, vente d&rsquo;une propriété — le Planner est fait pour ça&nbsp;: vous ajustez et générez un nouveau rapport quand vous le souhaitez (5 inclus, +4 pour 19,99&nbsp;$).</div></details>
-      <details><summary data-i18n="faq-q8">Pourquoi 29,99&nbsp;$ et non 5&nbsp;$ ou 200&nbsp;$&nbsp;?</summary><div class="faq-a" data-i18n="faq-a8">Des évaluations équivalentes en institution ou en cabinet coûtent de 500&nbsp;$ à 2&nbsp;000&nbsp;$. Les robots-conseillers ne produisent pas ce type de plan. BuildFi est conçu pour rester accessible — un seul paiement, pas d&rsquo;abonnement.</div></details>
+      <details><summary data-i18n="faq-q8">Pourquoi 29,99&nbsp;$ et non 5&nbsp;$ ou 200&nbsp;$&nbsp;?</summary><div class="faq-a" data-i18n="faq-a8">Le prix reflète ce que vous recevez&nbsp;: moteur Monte Carlo 5&nbsp;000 scénarios, fiscalité 2026 fédérale + provinciale, et narration IA. Un seul paiement, pas d&rsquo;abonnement, pas de frais annuels.</div></details>
     </div>
   </div>
 </section>
@@ -856,6 +859,15 @@ footer svg{height:22px; width:auto; opacity:.85}
     <span>© 2026 BuildFi Technologies inc. · support@buildfi.ca</span>
   </div>
 </footer>
+
+<!-- Law 25 opt-in consent bar. Localized via data-i18n; wired in the main script. -->
+<div id="cookieConsent" role="dialog" aria-live="polite" aria-label="Consentement aux témoins" hidden style="position:fixed;bottom:0;left:0;right:0;z-index:9998;background:rgba(26,39,68,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.85)">
+  <span data-i18n="cc-text" style="max-width:640px">Ce site utilise des témoins analytiques, activés seulement avec votre accord, pour améliorer l&rsquo;expérience. <a href="/confidentialite" style="color:#d4af37;text-decoration:underline">Politique de confidentialité</a>.</span>
+  <span style="display:flex;gap:10px;flex:none">
+    <button id="consentAccept" type="button" data-i18n="cc-accept" style="padding:8px 20px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:linear-gradient(135deg,#c49a1a,#d4af37);color:#fff">Accepter</button>
+    <button id="consentDecline" type="button" data-i18n="cc-decline" style="padding:8px 18px;border:1px solid rgba(255,255,255,.28);border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:rgba(255,255,255,.72)">Refuser</button>
+  </span>
+</div>
 
 <script src="/landing-i18n.js"></script>
 <script>
@@ -1031,6 +1043,7 @@ function applyI18N(){
   if(D["meta-title"])document.title=D["meta-title"][LANG];
   var md=document.querySelector('meta[name="description"]');if(md&&D["meta-desc"])md.setAttribute("content",D["meta-desc"][LANG]);
   var lb=document.querySelector(".lang");if(lb)lb.innerHTML=LANG==="fr"?"<b>FR</b> · EN":"FR · <b>EN</b>";
+  var rl=document.getElementById("rp-sample-link");if(rl)rl.href=LANG==="fr"?"/samples/bilan-exemple-fr.html":"/samples/bilan-sample-en.html";
   var oa=document.getElementById("o-age");if(oa)oa.textContent=ageVal(state.age);
   var od=document.getElementById("o-dep");if(od)od.textContent=money(state.dep)+(LANG==="fr"?"/mois":"/mo");
 }
@@ -1050,6 +1063,25 @@ if(navIn&&navToggle){
    sent to /api/referral/use (see that route's header comment). Persists the
    code so checkout can credit the referrer on conversion. Fire-and-forget. */
 try{var __ref=new URLSearchParams(location.search).get("ref");if(__ref){__ref=__ref.trim().toUpperCase();if(__ref.length>=4&&__ref.length<=12){try{localStorage.setItem("bf_ref",__ref);}catch(e){}fetch("/api/referral/use",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:__ref}),keepalive:true}).catch(function(){});}}}catch(e){}
+
+/* Cookie consent (Law 25) — opt-in gate for PostHog. analytics-init.js keeps
+   PostHog dormant until buildfi_consent === "yes"; __bf_consentGranted() boots
+   it in the same session on accept. Banner text is already localized (applyI18N
+   ran above), and re-localizes on the language toggle. */
+(function(){
+  var CC=document.getElementById("cookieConsent");
+  if(!CC)return;
+  try{if(localStorage.getItem("buildfi_consent")){return;}}catch(e){return;}
+  CC.hidden=false;
+  function decide(v){
+    try{localStorage.setItem("buildfi_consent",v);}catch(e){}
+    if(v==="yes"&&typeof window.__bf_consentGranted==="function"){window.__bf_consentGranted();}
+    CC.remove();
+  }
+  var a=document.getElementById("consentAccept"),d=document.getElementById("consentDecline");
+  if(a)a.addEventListener("click",function(){decide("yes");});
+  if(d)d.addEventListener("click",function(){decide("no");});
+})();
 })();
 </script>
 </body>

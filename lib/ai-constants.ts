@@ -92,7 +92,18 @@ export function sanitizeAISlots360(raw: Record<string, any>): AINarration360 {
     const val = raw[key];
     if (val && typeof val === "string") {
       const maxLen = AI_SLOT_MAX_LENGTH_360[key] || 800;
-      const stripped = val.replace(/<[^>]*>/g, "").slice(0, maxLen);
+      // Boundary-safe truncation (2026-06-19): a raw .slice(0,maxLen) severed slots mid-word
+      // ("...aurait év"), which shipped a broken sentence. If over the cap, cut back to the last
+      // sentence end before the cap, else the last word boundary — never mid-word.
+      const raw360 = val.replace(/<[^>]*>/g, "");
+      let stripped = raw360;
+      if (raw360.length > maxLen) {
+        const head = raw360.slice(0, maxLen);
+        const lastSentence = Math.max(head.lastIndexOf(". "), head.lastIndexOf("! "), head.lastIndexOf("? "), head.lastIndexOf("."), head.lastIndexOf("!"), head.lastIndexOf("?"));
+        const lastSpace = head.lastIndexOf(" ");
+        const cut = lastSentence > maxLen * 0.6 ? lastSentence + 1 : (lastSpace > 0 ? lastSpace : maxLen);
+        stripped = head.slice(0, cut).trim();
+      }
       // Two-pass: try to soften prescriptive verbs first (you should → you
       // could, etc.). Only drop if the rewrite still trips the regex.
       const clean = softenAISlot(stripped);
@@ -131,7 +142,7 @@ export const SOFT_REWRITES: Array<[RegExp, string]> = [
   [/\bwe suggest\s+/gi, "one approach is "],
   [/\bwe advise\s+/gi, "one approach is "],
   [/\byou should\s+/gi, "you could "],
-  [/\byou must\s+/gi, "the plan would benefit from "],
+  [/\byou must\s+/gi, "you would typically "],
   [/\byou ought to\s+/gi, "you could "],
   [/\byou need to\s+/gi, "the plan benefits from "],
   [/\bmake sure (?:that |to )?/gi, "an avenue is to "],

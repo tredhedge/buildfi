@@ -3,11 +3,16 @@
   "lang": "fr",
   "phase": "DECUM",
   "band": "sound",
-  "grade": "A+",
-  "successPct": 98,
+  "grade": "C",
+  "successPct": 48,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -17,11 +22,11 @@
     "pass": true
   },
   "narrationCoverage": {
-    "returned": 28,
+    "returned": 27,
     "expected": 30,
-    "emptySlots": 2
+    "emptySlots": 3
   },
-  "htmlBytes": 45018,
+  "htmlBytes": 57530,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

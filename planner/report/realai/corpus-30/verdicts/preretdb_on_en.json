@@ -3,11 +3,16 @@
   "lang": "en",
   "phase": "TRANSITION",
   "band": "sound",
-  "grade": "A",
-  "successPct": 88,
+  "grade": "B+",
+  "successPct": 75,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,7 +26,7 @@
     "expected": 33,
     "emptySlots": 1
   },
-  "htmlBytes": 48797,
+  "htmlBytes": 64548,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

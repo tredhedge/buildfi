@@ -21,6 +21,7 @@ import {
 import { buildMagicLinkUrl } from "@/lib/auth";
 // 2026-06-17: unified onto the Bilan 360 pipeline (was report-html-expert).
 import { extractReportData360, renderReportHTML360, determinePhase } from "@/lib/report-html-360";
+import { runCoherenceGate } from "@/lib/report-coherence-gate";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
 import { sanitizeAISlots360 } from "@/lib/ai-constants";
@@ -147,6 +148,21 @@ export async function POST(req: NextRequest) {
     if (D.hasAlt) sectionList.push("alternatifs");
 
     const html = renderReportHTML360(D, mc, params, lang, ai, phase, "", extraRuns, buildfiData);
+
+    // DATA-TRUTH gate (2026-07-02): block delivery on numeric-invariant or
+    // locale/structure blockers (this route also credits a paid export — a
+    // data-broken report must not consume a credit). BF_COHERENCE_ENFORCE=0 → log-only.
+    const coherence = runCoherenceGate(D, params, html, lang as "fr" | "en");
+    if (!coherence.ok) {
+      const ids = coherence.blockers.map((b) => b.id).join(", ");
+      console.warn(`[export] coherence gate: ${coherence.blockers.length} blocker(s) [${ids}]`);
+      if (process.env.BF_COHERENCE_ENFORCE !== "0") {
+        return NextResponse.json(
+          { error: "report_data_incoherent", message: "Report failed data-truth validation and was not generated. No credit was used.", blockers: ids },
+          { status: 500 }
+        );
+      }
+    }
 
     // ── Step 7: Upload to Blob ──────────────────────────────────
     const timestamp = new Date().toISOString().slice(0, 10);

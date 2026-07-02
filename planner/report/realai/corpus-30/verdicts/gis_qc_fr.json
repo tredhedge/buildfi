@@ -9,19 +9,31 @@
     "valid": true,
     "problems": []
   },
+  "coherence": {
+    "ok": false,
+    "blockers": [
+      {
+        "id": "C6_implausible_growth",
+        "message": "Median ending wealth exceeds what today's portfolio plus every visible inflow could reach at 8% real — engine output not explainable by the report's own data.",
+        "expected": 118561,
+        "actual": 280695
+      }
+    ],
+    "warnings": []
+  },
   "prod": {
     "shipOk": true,
     "shipReasons": [],
     "narrationOk": true,
     "narrationFindings": [],
-    "pass": true
+    "pass": false
   },
   "narrationCoverage": {
     "returned": 27,
     "expected": 30,
     "emptySlots": 3
   },
-  "htmlBytes": 45851,
+  "htmlBytes": 58442,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
@@ -41,5 +53,5 @@
       "polish"
     ]
   },
-  "fullPass": true
+  "fullPass": false
 }

@@ -47,7 +47,7 @@ async function callAnthropic(sys: string, usr: string): Promise<Record<string, s
       const repair = await autoRepairNarration({
         aiSlots: initial, promptSys: p.sys, promptUser: p.usr, lang,
         band: p.band === "fragile" ? "fragile" : "sound",
-        maxAttempts: 2, // match webhook: no requiredSlots override (band-default; conditionally-empty slots like efficiency_gap are not forced)
+        maxAttempts: 4, // number-free is a strict new constraint; number-dense retired profiles need a few passes to fully strip digits (was 2)
         narrate: (sys, usr) => callAnthropic(sys, usr),
         onAttempt: (n, v) => console.log(`  [${key}] repair ${n}: ${v.findings.map((f: any) => f.slot + ":" + f.kind).join(", ")}`),
       });

@@ -233,8 +233,13 @@ export function evaluateNarration(opts: {
   lang: "fr" | "en";
   band?: "fragile" | "sound";
   requiredSlots?: string[];
+  /** User rule (2026-06-18): the AI must author NO numbers — the engine renders every
+   *  figure as a deterministic fact line. When on (default), any numeric literal in a
+   *  slot is a blocker. Off = legacy provenance-only (numbers allowed if grounded). */
+  numberFree?: boolean;
 }): NarrationVerdict {
   const { aiSlots, promptUser, lang } = opts;
+  const numberFree = opts.numberFree !== false;
   const fragile = opts.band === "fragile";
   const findings: NarrationFinding[] = [];
   const pools = buildPools(promptUser || "", lang);
@@ -257,11 +262,42 @@ export function evaluateNarration(opts: {
       findings.push({ slot, kind: "undefined_or_nan", detail: (text.match(/\bundefined\b|\bNaN\b/) || [""])[0], severity: "blocker" });
     }
 
-    // 1. ACCURACY — unit-aware provenance.
-    const foreign = extractNarrationNumbers(text, lang).filter((nn) => !isGrounded(nn, pools));
-    if (foreign.length) {
-      const detail = [...new Set(foreign.map((f) => `${f.value}${f.unit !== "generic" ? "@" + f.unit : ""}`))].slice(0, 8).join(", ");
-      findings.push({ slot, kind: "foreign_number", detail, severity: "blocker" });
+    // 1. ACCURACY.
+    const allNums = extractNarrationNumbers(text, lang);
+    if (numberFree) {
+      // User rule: the AI authors no numbers. Any numeric literal is a blocker; the engine
+      // renders all figures as fact lines. Repair restates the prose qualitatively.
+      if (allNums.length) {
+        const detail = [...new Set(allNums.map((f) => `${f.value}${f.unit !== "generic" ? "@" + f.unit : ""}`))].slice(0, 8).join(", ");
+        findings.push({ slot, kind: "ai_emitted_number", detail, severity: "blocker" });
+      }
+      // Layer 2 (2026-06-19): numbers smuggled as WORDS contradict the engine fact lines
+      // ("un mois" vs the fact line's "0,5 mois", "thirteen times"). A spelled number + a
+      // unit is still an authored quantity — block it.
+      // NB: exclude the article-numbers "un/une"/"one" and the ambiguous units "fois"/"point" —
+      // in French "une fois" (once), "chaque fois", "un point de départ" are connectors, not
+      // quantities, and matching them false-flagged clean qualitative prose. Catch deux+/two+
+      // with concrete duration units, which is where real authored counts ("deux mois") appear.
+      const SPELLED = lang === "fr"
+        ? /\b(deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|dix-?(sept|huit|neuf)|vingt|trente|quarante|cinquante|cent)\s+(mois|ans?|ann[ée]es?|jours?|semaines?)\b/i
+        : /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|hundred)[- ](months?|years?|times?|days?|weeks?|fold)\b/i;
+        const sp = SPELLED.exec(text);
+      if (sp) findings.push({ slot, kind: "ai_emitted_number", detail: `spelled: ${sp[0]}`, severity: "blocker" });
+      // Layer 3 (2026-06-19): false closeness/equality comparisons against engine figures
+      // ("proche de votre épargne" when 217k vs 385k; "balanced incomes" for 88k/52k). The
+      // engine owns the relationship; the AI must not assert two quantities are equal/close.
+      const COMPARE = lang === "fr"
+        ? /\b(proche de (votre|vos|cette|ce|la|le|l['’])|[àa] peu pr[èe]s [ée]gaux|[ée]quilibr[ée]s?|comparable[s]? [àa] (votre|vos|ce|cette)|du m[êe]me ordre|au m[êe]me niveau que|sensiblement [ée]gaux)\b/i
+        : /\b(balanced incomes?|incomes?[^.]{0,24}(balanced|aren'?t far apart|are close|near-?matched|roughly equal)|near-?matched[^.]{0,12}incomes?|close to your (current )?(savings|balance|nest)|comparable to your|on par with your|about the same as your)\b/i;
+      const cmp = COMPARE.exec(text);
+      if (cmp) findings.push({ slot, kind: "ai_quant_comparison", detail: cmp[0].trim().slice(0, 40), severity: "blocker" });
+    } else {
+      // Legacy: unit-aware provenance — numbers allowed only if they trace to the DATA pool.
+      const foreign = allNums.filter((nn) => !isGrounded(nn, pools));
+      if (foreign.length) {
+        const detail = [...new Set(foreign.map((f) => `${f.value}${f.unit !== "generic" ? "@" + f.unit : ""}`))].slice(0, 8).join(", ");
+        findings.push({ slot, kind: "foreign_number", detail, severity: "blocker" });
+      }
     }
 
     // 2. LOGIC — band/direction (major).

@@ -12,6 +12,7 @@ import { runMC } from "@/lib/engine";
 import { run5Strategies, calcCostOfDelay, calcMinViableReturn } from "@/lib/strategies-inter";
 import { determinePhase, extractReportData360, renderReportHTML360 } from "@/lib/report-html-360";
 import { evaluateReportShip, renderNeedsAttentionHTML } from "@/lib/report-ship-gate";
+import { runCoherenceGate } from "@/lib/report-coherence-gate";
 import { autoRepairNarration } from "@/lib/report-narration-repair";
 import { buildAIPrompt360 } from "@/lib/ai-prompt-360";
 import { buildBuildFiData } from "@/lib/report-data-360";
@@ -34,7 +35,7 @@ import {
   getFeedbackByEmail,
 } from "@/lib/kv";
 import { randomUUID } from "crypto";
-import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail } from "@/lib/email-expert";
+import { sendMagicLinkEmail, sendExpertDeliveryEmail, sendAdminAlert, sendReferralUpgradeEmail, sendReportPackReceiptEmail } from "@/lib/email-expert";
 import { sendReferralConversionEmail } from "@/lib/email-feedback";
 import { buildMagicLinkUrl, maskEmail } from "@/lib/auth";
 import { getValidConsent, hashEmail, CURRENT_POLICY_VERSION } from "@/lib/consent";
@@ -221,7 +222,7 @@ async function handleCheckoutCompleted(
   // Route by checkout type
   if (type === "addon" || type === "report-pack") {
     // 2026-06-17 fix: report-pack grants 4 credits ($19.99); legacy addon stays at 1.
-    return handleExportAddon(email, session.id, type === "report-pack" ? 4 : 1);
+    return handleExportAddon(email, session.id, type === "report-pack" ? 4 : 1, (metadata.lang as "fr" | "en") || "fr");
   }
 
   // Planner SKU (new primary) — reuses Expert profile infra but with known 5-credit init
@@ -364,7 +365,10 @@ async function handleBilan360Purchase(
         promptUser: prompt.usr,
         lang: lang as "fr" | "en",
         band,
-        maxAttempts: 2,
+        // 3 (was 2): the number-free guardrail now also catches spelled-out numbers + closeness
+        // comparisons, so number-dense profiles need an extra pass; the deadline guard below still
+        // caps total wall-clock, so a slow narration falls back rather than overruns. 2026-06-19.
+        maxAttempts: 3,
         // Budget guard (maxDuration=120s): reserve ~20s after mcStart for
         // render+upload+email, and cap each repair call at 18s, so a slow
         // narration can never push the handler past its limit — it just falls back.
@@ -406,12 +410,24 @@ async function handleBilan360Purchase(
       const verdict = evaluateReportShip(reportHTML, lang as "fr" | "en", {
         coreInvalid: (D as Record<string, any>)?._integrity?.coreInvalid === true,
       });
-      // Hold the report if EITHER the structural gate fails OR the narration
-      // guardrail could not be satisfied after auto-repair.
-      if (!verdict.ok || !narrationOk) {
+      // DATA-TRUTH gate (2026-07-02): numeric invariants on the facts object +
+      // full-HTML locale/structure lint. A report whose numbers don't reconcile
+      // (gap ≠ spending − guaranteed, implausible ending wealth, fee formula on
+      // the wrong basis…) is held exactly like a structural failure — the
+      // customer gets the honest needs-attention variant and a human reviews
+      // within 24h. Opt-out: BF_COHERENCE_ENFORCE=0 downgrades to log-only.
+      const coherence = runCoherenceGate(D, params, reportHTML, lang as "fr" | "en");
+      const coherenceEnforced = process.env.BF_COHERENCE_ENFORCE !== "0";
+      if (!coherence.ok) {
+        console.warn(`[webhook] coherence gate: ${coherence.blockers.length} blocker(s) [${coherence.blockers.map((b) => b.id).join(", ")}]${coherenceEnforced ? "" : " (log-only)"}`);
+      }
+      // Hold the report if the structural gate fails, the narration guardrail
+      // could not be satisfied after auto-repair, OR the data-truth gate blocks.
+      if (!verdict.ok || !narrationOk || (coherenceEnforced && !coherence.ok)) {
         const allReasons = [
           ...verdict.reasons,
           ...(narrationOk ? [] : [`narration(${narrationReasons})`]),
+          ...(coherence.ok ? [] : coherence.blockers.map((b) => `data(${b.id})`)),
         ].join(", ");
         console.warn(`[webhook] Bilan 360 ship HELD [${allReasons}] for ${maskEmail(email)} — serving needs-attention variant`);
         reportHTML = renderNeedsAttentionHTML({
@@ -595,6 +611,24 @@ async function handleExpertPurchase(
 
       const reportHTML = renderReportHTML360(D, mc, mcParams, lang, ai, phase, expertFeedbackToken, extraRuns, buildfiData);
 
+      // DATA-TRUTH gate (2026-07-02): this initial report previously uploaded with
+      // NO gate. It is a bonus (magic link + simulator already delivered), so on
+      // data blockers we skip it and alert a human rather than make a broken
+      // report the customer's first impression. BF_COHERENCE_ENFORCE=0 → log-only.
+      const coherence = runCoherenceGate(D, mcParams, reportHTML, lang as "fr" | "en");
+      if (!coherence.ok) {
+        const ids = coherence.blockers.map((b) => b.id).join(", ");
+        console.warn(`[webhook] Planner initial report coherence blockers [${ids}]`);
+        if (process.env.BF_COHERENCE_ENFORCE !== "0") {
+          await sendAdminAlert(
+            "Planner initial report held (data coherence)",
+            `The initial Planner report failed the data-truth gate and was NOT delivered.\nEmail: ${email}\nSession: ${sessionId}\nBlockers: ${ids}\n` +
+              coherence.blockers.map((b) => `- ${b.id}: ${b.message} (expected ${b.expected}, actual ${b.actual})`).join("\n")
+          ).catch((e) => console.error("[webhook] coherence alert failed:", e));
+          throw new Error(`coherence gate blocked initial report: ${ids}`);
+        }
+      }
+
       const timestamp = new Date().toISOString().slice(0, 10);
       const filename = `bilan-expert-${timestamp}-${sessionId.slice(-8)}.html`;
       const blob = await put(filename, reportHTML, {
@@ -648,7 +682,7 @@ async function handleExpertPurchase(
 
 // ── Export addon handler ──────────────────────────────────
 
-async function handleExportAddon(email: string, sessionId: string, credits: number = 1): Promise<NextResponse> {
+async function handleExportAddon(email: string, sessionId: string, credits: number = 1, lang: "fr" | "en" = "fr"): Promise<NextResponse> {
   try {
     // Verify profile exists before incrementing
     const profile = await getExpertProfile(email);
@@ -679,6 +713,14 @@ async function handleExportAddon(email: string, sessionId: string, credits: numb
     });
 
     console.log(`[webhook] Export addon for ${maskEmail(email)}, new total: ${remaining}`);
+
+    // Purchase receipt (non-blocking — credit is already secured above)
+    await sendReportPackReceiptEmail({
+      to: email,
+      lang,
+      creditsAdded: credits,
+      newTotal: remaining,
+    }).catch((err) => console.error("[webhook] Report-pack receipt email failed:", err));
 
     return NextResponse.json({
       received: true,
@@ -761,31 +803,32 @@ async function handleReferralConversion(
       // Re-fetch profile to get latest state after possible earlier updates
       const freshProfile = await getExpertProfile(updated.referrerEmail);
       if (freshProfile) {
-        const newExpiry = new Date(
-          Math.max(new Date(freshProfile.expiry).getTime(), Date.now()) +
-            365 * 86400000
-        ).toISOString();
+        // 2-SKU reward: 3 conversions = +3 free AI report credits. (The old
+        // "+1 year Lab expiry" is gone — Planner access is lifetime, so an
+        // expiry bump is meaningless; the credits ARE the reward.)
+        const creditsAdded = 3;
+        const newTotal = freshProfile.exportsAI + creditsAdded;
 
         await updateExpertProfile(updated.referrerEmail, {
-          expiry: newExpiry,
-          exportsAI: freshProfile.exportsAI + 3,
+          exportsAI: newTotal,
           changelog: [
             ...freshProfile.changelog,
             {
               date: new Date().toISOString(),
               action: "referral_reward_3",
-              details: { code, conversions: updated.conversions, newExpiry, exportsAdded: 3 },
+              details: { code, conversions: updated.conversions, creditsAdded },
             },
           ],
         });
-        console.log(`[webhook] Referral ${code}: referral_reward_3 applied (1 year extension + 3 exports)`);
+        console.log(`[webhook] Referral ${code}: referral_reward_3 applied (+${creditsAdded} AI report credits, new total ${newTotal})`);
 
         // Send congratulations email
         const referrerLang = ((freshProfile.quizData?.lang as string) || "fr") as "fr" | "en";
         await sendReferralUpgradeEmail({
           to: updated.referrerEmail,
           lang: referrerLang,
-          newExpiry,
+          creditsAdded,
+          newTotal,
         }).catch((err) =>
           console.error("[webhook] Referral upgrade congratulations email failed:", err)
         );

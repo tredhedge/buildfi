@@ -3,11 +3,16 @@
   "lang": "fr",
   "phase": "DECUM",
   "band": "sound",
-  "grade": "A",
-  "successPct": 93,
+  "grade": "B+",
+  "successPct": 78,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,14 +26,21 @@
     "expected": 30,
     "emptySlots": 2
   },
-  "htmlBytes": 49320,
+  "htmlBytes": 60567,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
     "majorCount": 0,
     "blockerCategories": [],
     "majorCategories": [],
-    "findings": [],
+    "findings": [
+      {
+        "reviewer": "compliance",
+        "severity": "minor",
+        "category": "compliance_prescriptive",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
+      }
+    ],
     "advisories": [],
     "auditorsRun": [
       "canonical-quote",

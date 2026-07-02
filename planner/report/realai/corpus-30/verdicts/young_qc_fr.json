@@ -2,12 +2,17 @@
   "key": "young_qc_fr",
   "lang": "fr",
   "phase": "ACCUM",
-  "band": "sound",
-  "grade": "C",
-  "successPct": 50,
+  "band": "fragile",
+  "grade": "D",
+  "successPct": 40,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -21,21 +26,22 @@
     "expected": 29,
     "emptySlots": 3
   },
-  "htmlBytes": 52527,
+  "htmlBytes": 64849,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
     "majorCount": 0,
     "blockerCategories": [],
     "majorCategories": [],
-    "findings": [],
-    "advisories": [
+    "findings": [
       {
-        "category": "canonical_quote_drift",
-        "reviewer": "canonical",
-        "message": "AI slot \"strategy_comparison\" quotes dollar value 76213 for \"p50_wealth_real\" but canonical is 0. Slot must be regenerated to match canonical."
+        "reviewer": "compliance",
+        "severity": "minor",
+        "category": "compliance_prescriptive",
+        "message": "Tightened prescriptive constructions detected (close-to-imperative language)."
       }
     ],
+    "advisories": [],
     "auditorsRun": [
       "canonical-quote",
       "risk-collapse",

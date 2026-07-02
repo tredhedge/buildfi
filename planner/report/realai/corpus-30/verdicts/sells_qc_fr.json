@@ -3,11 +3,16 @@
   "lang": "fr",
   "phase": "TRANSITION",
   "band": "sound",
-  "grade": "A",
-  "successPct": 90,
+  "grade": "A+",
+  "successPct": 98,
   "model": {
     "valid": true,
     "problems": []
+  },
+  "coherence": {
+    "ok": true,
+    "blockers": [],
+    "warnings": []
   },
   "prod": {
     "shipOk": true,
@@ -17,11 +22,11 @@
     "pass": true
   },
   "narrationCoverage": {
-    "returned": 31,
+    "returned": 32,
     "expected": 33,
-    "emptySlots": 2
+    "emptySlots": 1
   },
-  "htmlBytes": 48095,
+  "htmlBytes": 64639,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

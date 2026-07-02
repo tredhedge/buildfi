@@ -16,6 +16,14 @@ const HUMAN_RULE: Record<string, { en: string; fr: string }> = {
     en: "contains a number that is NOT in the DATA block — use only numbers that appear in DATA",
     fr: "contient un nombre ABSENT du bloc DONNÉES — n'utilisez que des nombres présents dans DONNÉES",
   },
+  ai_emitted_number: {
+    en: "contains a number (digits OR a spelled-out count like 'two months', 'thirteen times') — you must write NO numbers at all. The system renders every figure separately. Restate qualitatively in words with NO count and NO spelled number (e.g. 'a small fraction of your income', 'far more than the portfolio earns', 'a brief stretch').",
+    fr: "contient un nombre (chiffres OU un nombre écrit en lettres comme « deux mois », « treize fois ») — vous ne devez écrire AUCUN nombre. Le système affiche chaque chiffre séparément. Reformulez de façon qualitative, en mots, SANS aucune quantité ni nombre écrit (p. ex. « une faible part de votre revenu », « bien plus que ce que le portefeuille génère », « une courte période »).",
+  },
+  ai_quant_comparison: {
+    en: "asserts two amounts are equal/close/balanced (e.g. 'balanced incomes', 'close to your savings') — the engine owns that relationship and the fact line states the real figures, which differ. Do NOT claim quantities are equal, balanced, near-matched, or close. Describe the qualitative implication without comparing magnitudes, or state plainly that one is larger/smaller.",
+    fr: "affirme que deux montants sont égaux/proches/équilibrés (p. ex. « revenus équilibrés », « proche de votre épargne ») — le moteur possède cette relation et la ligne de faits indique les vrais chiffres, qui diffèrent. N'affirmez PAS que des montants sont égaux, équilibrés ou proches. Décrivez l'implication qualitative sans comparer les ordres de grandeur, ou dites simplement que l'un est plus élevé/plus faible.",
+  },
   direction_violation: {
     en: "uses reassuring language though the plan's success is fragile — stay observational and conditional",
     fr: "emploie un ton rassurant alors que le succès du plan est fragile — restez observationnel et conditionnel",

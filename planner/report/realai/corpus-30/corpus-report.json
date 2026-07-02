@@ -1,12 +1,12 @@
 {
   "base": "C:\\Users\\tredh\\OneDrive\\Documents\\GitHub\\buildfi\\planner\\report\\realai\\corpus-30",
   "profiles": 22,
-  "prodPassRate": 100,
+  "prodPassRate": 86.4,
   "labPassRate": 100,
-  "fullPassRate": 100,
-  "prodPass": 22,
+  "fullPassRate": 86.4,
+  "prodPass": 19,
   "labPass": 22,
-  "fullPass": 22,
+  "fullPass": 19,
   "failureClasses": [
     {
       "class": "coverage:empty_slots",
@@ -17,6 +17,21 @@
         "hnw_bc_en",
         "hnw_on_en",
         "hugesave_qc_fr"
+      ]
+    },
+    {
+      "class": "data:C6_implausible_growth",
+      "count": 2,
+      "examples": [
+        "gis_on_en",
+        "gis_qc_fr"
+      ]
+    },
+    {
+      "class": "data:C4_withdrawal_vs_coverage",
+      "count": 1,
+      "examples": [
+        "veryold_ab_en"
       ]
     }
   ]
