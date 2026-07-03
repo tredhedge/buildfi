@@ -14,6 +14,7 @@ import {
   TFSA,
   RRSP,
   EI,
+  QPIP,
   RESP,
   CORPORATE,
   CAPITAL_GAINS,
@@ -196,20 +197,19 @@ function extractPlannerConstants() {
 function extractInlineConstants() {
   const engine = readFileSync(resolve(root, "lib/engine/index.js"), "utf-8");
 
-  // EI: var eiMIE = 65700 * inf;
-  const eiMIE = engine.match(/var eiMIE\s*=\s*(\d+)\s*\*/);
-  // EI QC rate: var eiRate = isQC ? 0.0130 : 0.0163
-  const eiRates = engine.match(/var eiRate\s*=\s*isQC\s*\?\s*([\d.]+)\s*:\s*([\d.]+)/);
-  // QPIP: var rqapMax = 94000 * inf;
-  const qpipMax = engine.match(/var rqapMax\s*=\s*(\d+)\s*\*/);
-  // QPIP rate: * 0.00494
-  const qpipRate = engine.match(/rqapMax\)\s*\*\s*([\d.]+)/);
-  // CESG: 2500) * 0.2
+  // 2026-07-02: the engine moved every fiscal constant into the canonical C
+  // object (SSOT) during the generate-from-planner_v3 migration, so the old
+  // `var eiMIE = 65700 * inf` inline literals no longer exist — read the C
+  // fields directly (the values the engine actually uses via C.EI_MAX_INSURABLE
+  // etc. at lib/engine/index.js:1775, :2426, calcCorpTax).
+  const eiMIE = engine.match(/EI_MAX_INSURABLE:\s*(\d+)/);
+  const eiRates = engine.match(/EI_RATE_QC:\s*([\d.]+)[\s\S]*?EI_RATE_ROC:\s*([\d.]+)/);
+  const qpipMax = engine.match(/RQAP_MAX_INSURABLE:\s*(\d+)/);
+  const qpipRate = engine.match(/RQAP_RATE:\s*([\d.]+)/);
+  // CESG: 2500) * 0.2  (still inline in the RESP contribution logic)
   const cesgRate = engine.match(/2500\)\s*\*\s*([\d.]+)\s*\*/);
-  // SBD: var sbd = 500000
-  const sbd = engine.match(/var sbd\s*=\s*(\d+)\s*\*/);
-  // LCGE: 1250000
-  const lcge = engine.match(/bizLCGE\s*\?\s*(\d+)/);
+  const sbd = engine.match(/SBD_LIMIT:\s*(\d+)/);
+  const lcge = engine.match(/\bLCGE:\s*(\d+)/);
 
   return {
     eiMaxInsurable: eiMIE ? parseInt(eiMIE[1]) : null,
@@ -290,10 +290,10 @@ const inline = extractInlineConstants();
 assertEqual(inline.eiMaxInsurable, EI.maxInsurableEarnings, "EI max insurable earnings");
 assertEqual(inline.eiRateQC, EI.rateQC, "EI rate QC");
 assertEqual(inline.eiRateROC, EI.rateROC, "EI rate ROC");
-assertEqual(inline.qpipMaxInsurable, parseInt(String(RESP.cesgEligibleMax)) ? inline.qpipMaxInsurable : null, "QPIP — see below");
-// Fix: compare QPIP properly
-assertEqual(inline.qpipMaxInsurable, 94000, "QPIP max insurable (engine)");
-assertEqual(inline.qpipRate, 0.00494, "QPIP rate (engine)");
+// QPIP: engine inline value must equal the registry (no hardcoded literals in
+// the test — those were themselves a drift point, 2026-07-02).
+assertEqual(inline.qpipMaxInsurable, QPIP.maxInsurable, "QPIP max insurable (engine ↔ registry)");
+assertEqual(inline.qpipRate, QPIP.employeeRate, "QPIP rate (engine ↔ registry)");
 assertEqual(inline.cesgRate, RESP.cesgMatchRate, "CESG match rate");
 assertEqual(inline.sbdLimit, CORPORATE.sbdLimit, "SBD limit");
 assertEqual(inline.lcge, CORPORATE.lcge, "LCGE");

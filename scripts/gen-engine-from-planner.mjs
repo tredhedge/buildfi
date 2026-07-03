@@ -36,6 +36,15 @@ const WANT_EXPORTS = [
   "runMC", "optimizeDecum", "calcTax", "calcOAS", "calcGIS", "calcQPP", "getRRIFMin",
   "calcCorpTax", "calcPayroll", "tRn", "pCr", "stochDeath", "blendRet", "chol", "sMul",
   "RRIF", "PROV_TAX", "CRM", "CRM_CRISIS", "CHL", "CHL_CRISIS", "CPM_F", "CPM_M", "STR",
+  // Fiscal constants consumed by tests/fiscal-constants-sync.test.ts (2026-07-02):
+  // the engine's C object is the SSOT for 2026 tax constants; export the named
+  // top-level vars so the sync test can compare them against the fiscal-2026.ts
+  // mirror. (These were silently dropped when the engine moved to generated-from-
+  // planner_v3, leaving the test reading `undefined` for every federal constant.)
+  "TAX_BASE_YEAR", "FED_BRACKETS", "FED_RATES", "FED_PERSONAL",
+  "OAS_CLAWBACK_THR", "OAS_MAX_MONTHLY", "GIS_MAX_SINGLE", "GIS_MAX_COUPLE",
+  "QPP_MAX_MONTHLY", "QPP_MGA", "QPP_YAMPE", "QPP2_MAX_MONTHLY",
+  "PENSION_CREDIT_MAX", "TFSA_LIMIT_2026",
 ];
 
 const html = readFileSync(PLANNER, "utf8");

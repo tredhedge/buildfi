@@ -79,11 +79,16 @@ const federal: FederalConstants = {
   FED_RATES: [0.14, 0.205, 0.26, 0.29, 0.33],
   FED_PERSONAL: 16452,
   OAS_CLAWBACK_THR: 95323,
-  OAS_MAX_MONTHLY: 743.05,    // Q2 2026 (April–June); +0.10% from Q1 ($742.31)
-  OAS_MAX_MONTHLY_75: 817.36, // Q2 2026; 10% boost over base for 75+
-  OAS_ZERO_POINT_65: 154767,  // 95323 + (743.05 * 12) / 0.15 ≈ 154,767
-  GIS_MAX_SINGLE: 1105.43,
-  GIS_MAX_COUPLE: 667.41,
+  // OAS/GIS standardized to the engine SSOT basis (2026-07-02). The engine C
+  // object (audit 2.13) is canonical and drives every projection; this mirror
+  // follows it so tests/fiscal-constants-sync stays green. Both the former Q2
+  // values and these are legitimate 2026 quarterly figures (<0.3% apart) — to
+  // adopt a later quarter, update the engine SSOT (planner_v3.html), then this.
+  OAS_MAX_MONTHLY: 742.31,    // 2026 — matches engine SSOT (audit 2.13)
+  OAS_MAX_MONTHLY_75: 816.54, // 2026; 10% boost over base for 75+ (742.31 × 1.10)
+  OAS_ZERO_POINT_65: 154708,  // 95323 + (742.31 * 12) / 0.15 ≈ 154,708
+  GIS_MAX_SINGLE: 1108.74,    // 2026 — matches engine SSOT (audit 2.13)
+  GIS_MAX_COUPLE: 665.41,     // 2026 — matches engine SSOT
   QPP_MAX_MONTHLY: 1507.65,
   QPP_MGA: 74600,
   QPP_YAMPE: 85000,
@@ -101,18 +106,21 @@ const federal: FederalConstants = {
 // ---------------------------------------------------------------------------
 
 const provincial: Record<ProvinceCode, ProvincialTax> = {
-  QC: { b: [54345, 108680, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362, ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
+  QC: { b: [54345, 108730, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362, ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
   ON: { b: [53891, 107785, 150000, 220000], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863, ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
   BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196, ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
-  AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218, ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
+  // AB added an 8% bracket on the first $60,000 (Budget 2025, effective 2025+).
+  AB: { b: [60000, 154259, 185203, 246938, 370220], r: [0.08, 0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218, ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
   SK: { b: [54532, 155805], r: [0.105, 0.125, 0.145], pd: 20381, abate: 1, eligDivCr: 0.11, nonEligDivCr: 0.02105, ageAmt: 5518, ageThresh: 0, penAmt: 1000 },
   MB: { b: [47000, 100000], r: [0.108, 0.1275, 0.174], pd: 15780, abate: 1, eligDivCr: 0.08, nonEligDivCr: 0.007835, ageAmt: 3728, ageThresh: 0, penAmt: 1000 },
   NB: { b: [51306, 102614, 190081], r: [0.094, 0.14, 0.16, 0.195], pd: 13396, abate: 1, eligDivCr: 0.14, nonEligDivCr: 0.027518, ageAmt: 5849, ageThresh: 42553, penAmt: 1000 },
-  NS: { b: [30182, 60364, 94860, 153000], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 8651, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015, ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
+  // NS raised the basic personal amount to $11,744 (2025 unfreeze + indexation).
+  NS: { b: [30182, 60364, 94860, 153000], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 11744, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015, ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
   PE: { b: [33538, 67079], r: [0.098, 0.138, 0.167], pd: 13865, abate: 1, eligDivCr: 0.105, nonEligDivCr: 0.013, ageAmt: 4862, ageThresh: 0, penAmt: 1000 },
   NL: { b: [44062, 88123, 157329, 220262, 281387, 562714], r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], pd: 11034, abate: 1, eligDivCr: 0.063, nonEligDivCr: 0.032, ageAmt: 7742, ageThresh: 39880, penAmt: 1000 },
   NT: { b: [51963, 103931, 169067], r: [0.059, 0.086, 0.122, 0.1405], pd: 17041, abate: 1, eligDivCr: 0.115, nonEligDivCr: 0.06, ageAmt: 8200, ageThresh: 0, penAmt: 1000 },
-  YT: { b: [58523, 117045, 181440, 258482, 500000], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067, ageAmt: 8790, ageThresh: 44325, penAmt: 2000 },
+  // YT age amount/threshold track the federal 2026 values (9209 / 46433; were 2024 8790 / 44325).
+  YT: { b: [58523, 117045, 181440, 258482, 500000], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067, ageAmt: 9209, ageThresh: 46433, penAmt: 2000 },
   NU: { b: [54333, 108668, 177231], r: [0.04, 0.07, 0.09, 0.115], pd: 18284, abate: 1, eligDivCr: 0.0551, nonEligDivCr: 0.025904, ageAmt: 14865, ageThresh: 0, penAmt: 2000 },
 };
 
@@ -122,7 +130,7 @@ const provincial: Record<ProvinceCode, ProvincialTax> = {
 
 const metadata: FiscalMetadata = {
   year: 2026,
-  verifiedDate: "2026-04-30",
+  verifiedDate: "2026-07-02", // reconciled to engine SSOT: AB 8% bracket, NS BPA, YT/OAS/GIS 2026 values
   sources: [
     "CRA T1 General 2026 — federal brackets, rates, personal amount",
     "Service Canada — OAS recovery threshold + Q2 2026 (April–June) max monthly: $743.05 (65–74), $817.36 (75+); GIS max (2026 Q1)",

@@ -103,7 +103,7 @@ export const CPP_QPP = {
 // ── OAS ──────────────────────────────────────────────────────────
 
 export const OAS = {
-  maxMonthly: 743.05,
+  maxMonthly: 742.31,   // 2026 — matches engine SSOT (audit 2.13); was Q2 743.05
   /** Q2 2026 monthly amount for recipients aged 75+ (10% top-up over base). */
   maxMonthly75: 817.36,
   clawbackThreshold: 95323,
@@ -120,7 +120,7 @@ export const OAS = {
 // ── GIS ──────────────────────────────────────────────────────────
 
 export const GIS = {
-  maxSingle: 1105.43,
+  maxSingle: 1108.74,   // 2026 — matches engine SSOT (audit 2.13)
   maxCouple: 665.41, // Service Canada Q1 2026 canonical (engine-shim + report-constants-2026 both at 665.41; the legacy 667.41 was a $2 over-estimate caught at adoption time)
   reductionRate: 0.50,
   department: "Service Canada / ESDC",
@@ -177,7 +177,7 @@ export const FHSA = {
 // ── Employment Insurance ─────────────────────────────────────────
 
 export const EI = {
-  maxInsurableEarnings: 65700,
+  maxInsurableEarnings: 68900,  // 2026 MIE — matches engine SSOT (audit 2.2); was 65700=2025
   rateQC: 0.0130,
   rateROC: 0.0163,
   department: "CRA (rates set by CEIC — Canada Employment Insurance Commission)",
@@ -189,8 +189,8 @@ export const EI = {
 // ── QPIP / RQAP ─────────────────────────────────────────────────
 
 export const QPIP = {
-  maxInsurable: 94000,
-  employeeRate: 0.00494,
+  maxInsurable: 103000,  // 2026 — matches engine SSOT (audit 2.2); was 94000=2024
+  employeeRate: 0.0043,  // 2026 — matches engine SSOT (audit 2.2); was 0.00494
   department: "RQAP / Conseil de gestion de l'assurance parentale",
   source: "RQAP 2026 premium rates — QC-only parental insurance",
   sourceUrl: "rqap.gouv.qc.ca/en/about-the-plan/general-information/premiums-and-maximum-insurable-earnings",
@@ -201,7 +201,7 @@ export const QPIP = {
 
 export const CAPITAL_GAINS = {
   inclusionRateLow: 0.50,
-  inclusionRateHigh: 0.6667,
+  inclusionRateHigh: 0.5,  // 66.67% high-tier was CANCELLED 2025-03-21 (engine CG_INCLUSION_HIGH=0.5; hypo kept separately)
   threshold: 250000,
   department: "Finance Canada",
   source: "Budget 2024 (Bill C-69) — 2/3 inclusion above $250K, effective June 25 2024",
