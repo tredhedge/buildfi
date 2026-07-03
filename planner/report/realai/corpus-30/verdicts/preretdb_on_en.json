@@ -4,7 +4,7 @@
   "phase": "TRANSITION",
   "band": "sound",
   "grade": "B+",
-  "successPct": 75,
+  "successPct": 76,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 33,
     "emptySlots": 1
   },
-  "htmlBytes": 64548,
+  "htmlBytes": 64164,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

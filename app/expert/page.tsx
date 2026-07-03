@@ -7,6 +7,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 import { getProductPalette } from "@/lib/design/product.tokens";
+import { CURRENT_POLICY_VERSION } from "@/lib/consent-version";
 
 // Palette: shared Product system (light-only static page).
 // See docs/DESIGN-SYSTEM.md.
@@ -480,10 +481,9 @@ function PortalContent() {
                             type: "report-pack",
                             lang,
                             termsAccepted: true,
-                            // Loi 25 / LPRPDE — re-affirm at purchase. Must match
-                            // CURRENT_POLICY_VERSION in /lib/consent.ts.
+                            // Loi 25 / LPRPDE — re-affirm at purchase.
                             consent: {
-                              policyVersion: "2026-04-26-v1",
+                              policyVersion: CURRENT_POLICY_VERSION,
                               acceptedAt: new Date().toISOString(),
                             },
                           }),

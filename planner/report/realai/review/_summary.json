@@ -1,7 +1,7 @@
 [
   {
-    "profile": "low_income_gis_en",
-    "sku": "bilan",
+    "profile": "hnw_couple_fr",
+    "sku": "planner",
     "pre": {
       "blockers": 0,
       "majors": 0,
@@ -18,11 +18,11 @@
     "ai_regen_slots": 0
   },
   {
-    "profile": "early_retiree_single_en",
-    "sku": "planner",
+    "profile": "mortgage_in_retirement_en",
+    "sku": "bilan",
     "pre": {
       "blockers": 0,
-      "majors": 5,
+      "majors": 0,
       "minors": 1
     },
     "post": {
@@ -33,24 +33,6 @@
     "shipped": true,
     "pre_blocker_categories": [],
     "post_blocker_categories": [],
-    "ai_regen_slots": 4
-  },
-  {
-    "profile": "high_rrsp_oas_clawback_en",
-    "sku": "planner",
-    "pre": {
-      "blockers": 0,
-      "majors": 4,
-      "minors": 2
-    },
-    "post": {
-      "blockers": 0,
-      "majors": 0,
-      "minors": 2
-    },
-    "shipped": true,
-    "pre_blocker_categories": [],
-    "post_blocker_categories": [],
-    "ai_regen_slots": 4
+    "ai_regen_slots": 0
   }
 ]

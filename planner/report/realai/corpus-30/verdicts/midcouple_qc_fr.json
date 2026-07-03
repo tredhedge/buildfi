@@ -3,8 +3,8 @@
   "lang": "fr",
   "phase": "ACCUM",
   "band": "sound",
-  "grade": "C+",
-  "successPct": 57,
+  "grade": "C",
+  "successPct": 53,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 29,
     "emptySlots": 1
   },
-  "htmlBytes": 66143,
+  "htmlBytes": 66091,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

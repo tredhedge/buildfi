@@ -127,6 +127,31 @@ function withCodexRail(html) {
   return html.replace('</body>', script + '</body>');
 }
 
+// FR typography pass (2026-07-02): the renderer has ~30 `toFixed(n)+'%'`
+// emitters that print dot decimals ("6.5 %") regardless of language — wrong in
+// FR ("6,5 %") and flagged in the public-sample audit. Rather than patch 30
+// sites, localize decimal percents in TEXT NODES ONLY (scripts, styles, and
+// tag attributes are untouched, so style="width:6.2%" and JS stay valid).
+function frFixDotPct(html, lang) {
+  if (lang !== 'fr') return html;
+  const parts = String(html).split(/(<[^>]+>)/);
+  let inScript = 0, inStyle = 0;
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (p.startsWith('<')) {
+      const t = p.slice(0, 9).toLowerCase();
+      if (t.startsWith('<script')) inScript++;
+      else if (t.startsWith('</script')) inScript = Math.max(0, inScript - 1);
+      else if (t.startsWith('<style')) inStyle++;
+      else if (t.startsWith('</style')) inStyle = Math.max(0, inStyle - 1);
+      continue;
+    }
+    if (inScript || inStyle) continue;
+    parts[i] = p.replace(/(\d)\.(\d{1,2})((?:\s| | )*%)/g, '$1,$2$3');
+  }
+  return parts.join('');
+}
+
 function preparePayload(prof, ai) {
   const mcPath = path.join(mcDir, prof.id + '_' + prof.lang + '.json');
   const mc = JSON.parse(fs.readFileSync(mcPath, 'utf8'));
@@ -193,7 +218,7 @@ SELECTED.forEach(prof => {
 
   // ─── Pass 1: DRAFT ────────────────────────────────────────────────
   const data1 = preparePayload(prof, aiResp);
-  const draftHtml = withCodexRail(buildReport(data1));
+  const draftHtml = frFixDotPct(withCodexRail(buildReport(data1)), prof.lang);
   const draftPath = path.join(draftDir, outTag + '.html');
   fs.writeFileSync(draftPath, draftHtml, 'utf8');
 
@@ -214,7 +239,7 @@ SELECTED.forEach(prof => {
   corrector.applyFixPlan(data2, arbResult.fix_plan);
 
   // ─── Pass 4: CORRECTED render ─────────────────────────────────────
-  const correctedHtml = withCodexRail(buildReport(data2));
+  const correctedHtml = frFixDotPct(withCodexRail(buildReport(data2)), prof.lang);
   const correctedPath = path.join(correctedDir, outTag + '.html');
   fs.writeFileSync(correctedPath, correctedHtml, 'utf8');
 

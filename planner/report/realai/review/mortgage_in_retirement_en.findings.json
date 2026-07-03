@@ -1,94 +1,6 @@
 {
   "findings": [
     {
-      "id": "canonical-quote-success_rate-overall_assessment",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-overall-assessment",
-      "message": "AI slot \"overall_assessment\" quotes pct value 59 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The plan currently shows a **59%** success rate (grade **C**, Under strain), wh\"  (canon=57.05, quoted=59)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
-      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-income-insight",
-      "message": "AI slot \"income_insight\" quotes pct value 72 for \"guaranteed_income_coverage\" but canonical is 69.26. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Guaranteed income coverage stands at **72%**, with QPP/CPP at **$3,551** monthly and OAS\"  (canon=69.25941455611284, quoted=72)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "income_insight"
-    },
-    {
-      "id": "canonical-quote-lifetime_tax_real-taxInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes dollar value 521000 for \"lifetime_tax_real\" but canonical is 375392. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The lifetime tax estimate is **521K$** with an average effective rate of **13.9%*\"  (canon=375392, quoted=521000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
-    },
-    {
-      "id": "canonical-quote-net_estate-estateInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-estateInsight",
-      "message": "AI slot \"estateInsight\" quotes dollar value 52000 for \"net_estate\" but canonical is 47335.88. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The projected net estate of **52K$** with **0$** of tax at death reflects the mo\"  (canon=47335.882994132575, quoted=52000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "estateInsight"
-    },
-    {
-      "id": "canonical-quote-success_rate-stress_interpretation",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-stress-interpretation",
-      "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
-      "evidence": "\"…pending shocks (success rate drops to **16%** under the spending+15% scenario) and to long\"  (canon=57.05, quoted=16)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "thesis-drift-advisor_letter-failure",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": "sec-advisor-letter",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"advisor_letter\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match.",
-      "evidence": "truth_band=fragile  found_token=\"rebuild\"  drift=2",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "advisor_letter"
-    },
-    {
-      "id": "thesis-drift-sec-letter-deterministic-failure",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": "sec-letter-deterministic",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"sec-letter-deterministic\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match.",
-      "evidence": "truth_band=fragile  found_token=\"rebuild\"  drift=2",
-      "fix_kind": "manual",
-      "fix_target": "sec-letter-deterministic"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"fragile\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=solid, sec-assessment-deterministic=solid, sec-closing-recap-deterministic=solid",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -101,96 +13,7 @@
     }
   ],
   "blockers": [],
-  "majors": [
-    {
-      "id": "canonical-quote-success_rate-overall_assessment",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-overall-assessment",
-      "message": "AI slot \"overall_assessment\" quotes pct value 59 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The plan currently shows a **59%** success rate (grade **C**, Under strain), wh\"  (canon=57.05, quoted=59)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
-      "id": "canonical-quote-guaranteed_income_coverage-income_insight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-income-insight",
-      "message": "AI slot \"income_insight\" quotes pct value 72 for \"guaranteed_income_coverage\" but canonical is 69.26. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Guaranteed income coverage stands at **72%**, with QPP/CPP at **$3,551** monthly and OAS\"  (canon=69.25941455611284, quoted=72)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "income_insight"
-    },
-    {
-      "id": "canonical-quote-lifetime_tax_real-taxInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes dollar value 521000 for \"lifetime_tax_real\" but canonical is 375392. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The lifetime tax estimate is **521K$** with an average effective rate of **13.9%*\"  (canon=375392, quoted=521000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
-    },
-    {
-      "id": "canonical-quote-net_estate-estateInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-estateInsight",
-      "message": "AI slot \"estateInsight\" quotes dollar value 52000 for \"net_estate\" but canonical is 47335.88. Slot must be regenerated to match canonical.",
-      "evidence": "\"…The projected net estate of **52K$** with **0$** of tax at death reflects the mo\"  (canon=47335.882994132575, quoted=52000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "estateInsight"
-    },
-    {
-      "id": "canonical-quote-success_rate-stress_interpretation",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-stress-interpretation",
-      "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical.",
-      "evidence": "\"…pending shocks (success rate drops to **16%** under the spending+15% scenario) and to long\"  (canon=57.05, quoted=16)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "stress_interpretation"
-    },
-    {
-      "id": "thesis-drift-advisor_letter-failure",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": "sec-advisor-letter",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"advisor_letter\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match.",
-      "evidence": "truth_band=fragile  found_token=\"rebuild\"  drift=2",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "advisor_letter"
-    },
-    {
-      "id": "thesis-drift-sec-letter-deterministic-failure",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": "sec-letter-deterministic",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"sec-letter-deterministic\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match.",
-      "evidence": "truth_band=fragile  found_token=\"rebuild\"  drift=2",
-      "fix_kind": "manual",
-      "fix_target": "sec-letter-deterministic"
-    },
-    {
-      "id": "thesis-cumulative-drift",
-      "reviewer": "narrative",
-      "severity": "major",
-      "category": "thesis_band_drift",
-      "section": null,
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"fragile\"). Cumulatively the report swings posture; consolidate tone.",
-      "evidence": "overall_assessment=solid, sec-assessment-deterministic=solid, sec-closing-recap-deterministic=solid",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    }
-  ],
+  "majors": [],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -206,61 +29,12 @@
   ],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [
-      {
-        "section": "sec-overall-assessment",
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "AI slot \"overall_assessment\" quotes pct value 59 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-income-insight",
-        "target": "income_insight",
-        "severity": "major",
-        "message": "AI slot \"income_insight\" quotes pct value 72 for \"guaranteed_income_coverage\" but canonical is 69.26. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-taxInsight",
-        "target": "taxInsight",
-        "severity": "major",
-        "message": "AI slot \"taxInsight\" quotes dollar value 521000 for \"lifetime_tax_real\" but canonical is 375392. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-estateInsight",
-        "target": "estateInsight",
-        "severity": "major",
-        "message": "AI slot \"estateInsight\" quotes dollar value 52000 for \"net_estate\" but canonical is 47335.88. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-stress-interpretation",
-        "target": "stress_interpretation",
-        "severity": "major",
-        "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-advisor-letter",
-        "target": "advisor_letter",
-        "severity": "major",
-        "message": "Plan posture is \"fragile\" (succ=57%) but slot \"advisor_letter\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match."
-      },
-      {
-        "section": null,
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "3 slots use vocabulary 1 band away from the truth band (\"fragile\"). Cumulatively the report swings posture; consolidate tone."
-      }
-    ],
+    "rerun_ai_slot": [],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
     "localize_label": [],
     "manual": [
-      {
-        "section": "sec-letter-deterministic",
-        "target": "sec-letter-deterministic",
-        "severity": "major",
-        "message": "Plan posture is \"fragile\" (succ=57%) but slot \"sec-letter-deterministic\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match."
-      },
       {
         "section": null,
         "target": "global",
@@ -269,8 +43,8 @@
       }
     ]
   },
-  "can_ship": false,
+  "can_ship": true,
   "blocker_count": 0,
-  "major_count": 8,
+  "major_count": 0,
   "minor_count": 1
 }

@@ -8,8 +8,8 @@ import { BuildFiLogo } from "@/lib/design/components";
 
 /* Palette: shared Product system. See docs/DESIGN-SYSTEM.md. */
 
-// Loi 25 / LPRPDE — must match CURRENT_POLICY_VERSION in /lib/consent.ts.
-const CLIENT_POLICY_VERSION = "2026-04-26-v1";
+// Loi 25 / LPRPDE — same constant the server enforces (lib/consent-version.ts).
+import { CURRENT_POLICY_VERSION as CLIENT_POLICY_VERSION } from "@/lib/consent-version";
 
 const COPY = {
   fr: {
@@ -31,7 +31,7 @@ const COPY = {
     termsLink: "Conditions d'utilisation",
     andAvis: "et l'",
     avisLink: "Avis légal",
-    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mon rapport. Conservation : 90 jours. Suppression sur demande.",
+    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mes rapports. Conservation : tant que votre compte est actif. Suppression sur demande.",
     consentLink: "Politique de confidentialité",
     cta: "Continuer vers le paiement sécurisé Stripe",
     ctaLoading: "Redirection en cours…",
@@ -61,7 +61,7 @@ const COPY = {
     termsLink: "Terms of Service",
     andAvis: "and ",
     avisLink: "Legal Notice",
-    consentLabel: "I authorize BuildFi to process my financial data to generate my report. Retention: 90 days. Deletion on request.",
+    consentLabel: "I authorize BuildFi to process my financial data to generate my reports. Retained while your account is active. Deletion on request.",
     consentLink: "Privacy Policy",
     cta: "Continue to secure Stripe payment",
     ctaLoading: "Redirecting…",

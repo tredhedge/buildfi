@@ -3,8 +3,8 @@
   "lang": "en",
   "phase": "DECUM",
   "band": "sound",
-  "grade": "B+",
-  "successPct": 82,
+  "grade": "C+",
+  "successPct": 63,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 30,
     "emptySlots": 3
   },
-  "htmlBytes": 56701,
+  "htmlBytes": 57045,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

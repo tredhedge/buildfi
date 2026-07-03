@@ -4,7 +4,7 @@
   "phase": "ACCUM",
   "band": "fragile",
   "grade": "F",
-  "successPct": 28,
+  "successPct": 21,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 29,
     "emptySlots": 3
   },
-  "htmlBytes": 63030,
+  "htmlBytes": 63049,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

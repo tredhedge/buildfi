@@ -2,9 +2,9 @@
   "key": "veryold_qc_fr",
   "lang": "fr",
   "phase": "DECUM",
-  "band": "sound",
-  "grade": "C",
-  "successPct": 48,
+  "band": "fragile",
+  "grade": "F",
+  "successPct": 30,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 30,
     "emptySlots": 3
   },
-  "htmlBytes": 57530,
+  "htmlBytes": 57037,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

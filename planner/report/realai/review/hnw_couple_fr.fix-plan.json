@@ -1,25 +1,6 @@
 {
   "remove_section": [],
-  "rerun_ai_slot": [
-    {
-      "section": "sec-overall-assessment",
-      "target": "overall_assessment",
-      "severity": "major",
-      "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-taxInsight",
-      "target": "taxInsight",
-      "severity": "major",
-      "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-estateInsight",
-      "target": "estateInsight",
-      "severity": "major",
-      "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical."
-    }
-  ],
+  "rerun_ai_slot": [],
   "recompute_from_canonical": [],
   "block_data": [],
   "replace_with_callout": [],

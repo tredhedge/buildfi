@@ -1,60 +1,11 @@
 {
   "remove_section": [],
-  "rerun_ai_slot": [
-    {
-      "section": "sec-overall-assessment",
-      "target": "overall_assessment",
-      "severity": "major",
-      "message": "AI slot \"overall_assessment\" quotes pct value 59 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-income-insight",
-      "target": "income_insight",
-      "severity": "major",
-      "message": "AI slot \"income_insight\" quotes pct value 72 for \"guaranteed_income_coverage\" but canonical is 69.26. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-taxInsight",
-      "target": "taxInsight",
-      "severity": "major",
-      "message": "AI slot \"taxInsight\" quotes dollar value 521000 for \"lifetime_tax_real\" but canonical is 375392. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-estateInsight",
-      "target": "estateInsight",
-      "severity": "major",
-      "message": "AI slot \"estateInsight\" quotes dollar value 52000 for \"net_estate\" but canonical is 47335.88. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-stress-interpretation",
-      "target": "stress_interpretation",
-      "severity": "major",
-      "message": "AI slot \"stress_interpretation\" quotes pct value 16 for \"success_rate\" but canonical is 57.05. Slot must be regenerated to match canonical."
-    },
-    {
-      "section": "sec-advisor-letter",
-      "target": "advisor_letter",
-      "severity": "major",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"advisor_letter\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match."
-    },
-    {
-      "section": null,
-      "target": "overall_assessment",
-      "severity": "major",
-      "message": "3 slots use vocabulary 1 band away from the truth band (\"fragile\"). Cumulatively the report swings posture; consolidate tone."
-    }
-  ],
+  "rerun_ai_slot": [],
   "recompute_from_canonical": [],
   "block_data": [],
   "replace_with_callout": [],
   "localize_label": [],
   "manual": [
-    {
-      "section": "sec-letter-deterministic",
-      "target": "sec-letter-deterministic",
-      "severity": "major",
-      "message": "Plan posture is \"fragile\" (succ=57%) but slot \"sec-letter-deterministic\" uses \"rebuild\" (band=\"failure\", 2 bands away). Posture must match."
-    },
     {
       "section": null,
       "target": "global",

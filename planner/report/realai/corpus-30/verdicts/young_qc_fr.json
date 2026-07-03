@@ -3,8 +3,8 @@
   "lang": "fr",
   "phase": "ACCUM",
   "band": "fragile",
-  "grade": "D",
-  "successPct": 40,
+  "grade": "F",
+  "successPct": 26,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 29,
     "emptySlots": 3
   },
-  "htmlBytes": 64849,
+  "htmlBytes": 64972,
   "lab": {
     "canShip": true,
     "blockerCount": 0,

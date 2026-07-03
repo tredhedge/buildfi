@@ -79,6 +79,15 @@ function _stripGlossary(html) {
     .replace(/<dd\b[^>]*class="[^"]*glossary-def[^"]*"[\s\S]*?<\/dd>/gi, ' ');
 }
 
+// Tables are structural data, not narrative — the twin spouse profile cards
+// legitimately repeat the same label run ("Longévité modélisée … Province")
+// once per partner, which false-majored hnw_couple_fr (2026-07-02). The scan
+// header already states it targets narrative stutter, not table content, so
+// exclude <table> blocks the same way glossary blocks are excluded.
+function _stripTables(html) {
+  return String(html || '').replace(/<table\b[\s\S]*?<\/table>/gi, ' ');
+}
+
 // Build labels / version strings that should never appear in visible output.
 var BUILD_LABELS = [
   '\\bv\\d+\\.\\d+\\.\\d+\\b',                 // v12.0.0
@@ -96,7 +105,7 @@ function audit(pack) {
   // ─── 1) Repeated phrase in close proximity (BLOCKER) ─────────────────
   // Scan with glossary term/def blocks removed — their parallel phrasing is
   // reference material, not narrative stutter.
-  var repeats = _findRepeatedPhrases(_visibleText(_stripGlossary(html)));
+  var repeats = _findRepeatedPhrases(_visibleText(_stripTables(_stripGlossary(html))));
   if (repeats.length > 0) {
     findings.push({
       id: 'polish-repeated-phrase',

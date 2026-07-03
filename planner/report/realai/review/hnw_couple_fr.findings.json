@@ -1,39 +1,6 @@
 {
   "findings": [
     {
-      "id": "canonical-quote-p25_wealth_real-overall_assessment",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-overall-assessment",
-      "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
-      "evidence": "\"…comprimerait le scénario prudent vers **466K$** d'actifs résiduels. À l'inverse, la durabi\"  (canon=405044.6398872129, quoted=466000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
-      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Le taux effectif moyen projeté à **24.3%** sur un fardeau fiscal viager de **1.9M$**\"  (canon=22.729684467680382, quoted=24.3)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
-    },
-    {
-      "id": "canonical-quote-p25_wealth_real-estateInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-estateInsight",
-      "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
-      "evidence": "\"…nt, la succession nette descendrait à **822K$**, ce qui circonscrit l'amplitude du transfe\"  (canon=405044.6398872129, quoted=822000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "estateInsight"
-    },
-    {
       "id": "polish-debris-triple-em-dash",
       "reviewer": "polish",
       "severity": "minor",
@@ -46,41 +13,7 @@
     }
   ],
   "blockers": [],
-  "majors": [
-    {
-      "id": "canonical-quote-p25_wealth_real-overall_assessment",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-overall-assessment",
-      "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
-      "evidence": "\"…comprimerait le scénario prudent vers **466K$** d'actifs résiduels. À l'inverse, la durabi\"  (canon=405044.6398872129, quoted=466000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "overall_assessment"
-    },
-    {
-      "id": "canonical-quote-lifetime_effective_tax_rate-taxInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-taxInsight",
-      "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical.",
-      "evidence": "\"…Le taux effectif moyen projeté à **24.3%** sur un fardeau fiscal viager de **1.9M$**\"  (canon=22.729684467680382, quoted=24.3)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "taxInsight"
-    },
-    {
-      "id": "canonical-quote-p25_wealth_real-estateInsight",
-      "reviewer": "canonical",
-      "severity": "major",
-      "category": "canonical_quote_drift",
-      "section": "sec-estateInsight",
-      "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical.",
-      "evidence": "\"…nt, la succession nette descendrait à **822K$**, ce qui circonscrit l'amplitude du transfe\"  (canon=405044.6398872129, quoted=822000)",
-      "fix_kind": "rerun_ai_slot",
-      "fix_target": "estateInsight"
-    }
-  ],
+  "majors": [],
   "minors": [
     {
       "id": "polish-debris-triple-em-dash",
@@ -96,26 +29,7 @@
   ],
   "fix_plan": {
     "remove_section": [],
-    "rerun_ai_slot": [
-      {
-        "section": "sec-overall-assessment",
-        "target": "overall_assessment",
-        "severity": "major",
-        "message": "AI slot \"overall_assessment\" quotes dollar value 466000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-taxInsight",
-        "target": "taxInsight",
-        "severity": "major",
-        "message": "AI slot \"taxInsight\" quotes pct value 24.3 for \"lifetime_effective_tax_rate\" but canonical is 22.73. Slot must be regenerated to match canonical."
-      },
-      {
-        "section": "sec-estateInsight",
-        "target": "estateInsight",
-        "severity": "major",
-        "message": "AI slot \"estateInsight\" quotes dollar value 822000 for \"p25_wealth_real\" but canonical is 405044.64. Slot must be regenerated to match canonical."
-      }
-    ],
+    "rerun_ai_slot": [],
     "recompute_from_canonical": [],
     "block_data": [],
     "replace_with_callout": [],
@@ -129,8 +43,8 @@
       }
     ]
   },
-  "can_ship": false,
+  "can_ship": true,
   "blocker_count": 0,
-  "major_count": 3,
+  "major_count": 0,
   "minor_count": 1
 }

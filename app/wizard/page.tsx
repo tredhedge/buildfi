@@ -11,6 +11,7 @@ import {
   type Mode1Question,
   type WizardField,
 } from "@/lib/wizard/blocks";
+import { THEME_STORAGE_KEY } from "@/lib/design/product.tokens";
 import "./wizard.css";
 
 /* Bilan 360 wizard — ported onto the Planner longform design (navy + gold,
@@ -19,8 +20,8 @@ import "./wizard.css";
    submit are unchanged — only the presentation moved off the editorial system.
    The wizard keeps its Mode 1 classifier → one-section-per-screen Mode 2 flow. */
 
-// Loi 25 / LPRPDE — must match CURRENT_POLICY_VERSION in /lib/consent.ts.
-const CLIENT_POLICY_VERSION = "2026-04-26-v1";
+// Loi 25 / LPRPDE — same constant the server enforces (lib/consent-version.ts).
+import { CURRENT_POLICY_VERSION as CLIENT_POLICY_VERSION } from "@/lib/consent-version";
 
 const COPY = {
   fr: {
@@ -45,7 +46,7 @@ const COPY = {
     termsLink: "Conditions d'utilisation",
     andAvis: "et l'",
     avisLink: "Avis légal",
-    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mon rapport. Conservation : 90 jours. Suppression sur demande.",
+    consentLabel: "J'autorise BuildFi à traiter mes données financières pour générer mon rapport. Conservation : 30 jours après la livraison. Suppression sur demande.",
     consentLink: "Politique de confidentialité",
     yes: "Oui",
     no: "Non",
@@ -86,7 +87,7 @@ const COPY = {
     termsLink: "Terms of Use",
     andAvis: "and ",
     avisLink: "Legal Notice",
-    consentLabel: "I authorize BuildFi to process my financial data to generate my report. Retention: 90 days. Deletion on request.",
+    consentLabel: "I authorize BuildFi to process my financial data to generate my report. Retention: 30 days after delivery. Deletion on request.",
     consentLink: "Privacy Policy",
     yes: "Yes",
     no: "No",
@@ -594,20 +595,32 @@ function stripInternalKeys(obj: Record<string, unknown>): Record<string, unknown
 function WizardInner() {
   const params = useSearchParams();
   const [lang, setLang] = useState<"fr" | "en">("fr");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
-  // Match the page background to the dark navy shell (avoids white flash / overscroll edge).
+  // Portfolio-wide theme persistence (same key as landing + tools).
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved === "dark" || saved === "light") setTheme(saved);
+    } catch {}
+  }, []);
+  useEffect(() => { try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch {} }, [theme]);
+
+  // Match the page background to the themed shell (avoids white flash / overscroll edge).
   useEffect(() => {
     const prevBg = document.body.style.background;
     const prevColor = document.body.style.color;
-    document.body.style.background = "#0e1420";
-    document.body.style.color = "#e8ecf5";
+    document.body.style.background = theme === "light" ? "#f5f6fa" : "#0f1520";
+    document.body.style.color = theme === "light" ? "#182236" : "#edf2fb";
     return () => { document.body.style.background = prevBg; document.body.style.color = prevColor; };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     try {
       const p = params?.get("lang");
       if (p === "en" || p === "fr") setLang(p);
+      const th = params?.get("theme");
+      if (th === "light" || th === "dark") setTheme(th);
     } catch {}
     trackEvent(EVENTS.WIZARD_STARTED, {});
   }, [params]);
@@ -809,13 +822,34 @@ function WizardInner() {
   } else { current = totalSteps - 1; label = t.reviewStep; }
 
   return (
-    <div className="bf-wiz" suppressHydrationWarning>
+    <div className="bf-wiz" data-theme={theme} suppressHydrationWarning>
       <div className="wiz-shell">
         <header className="wiz-hdr">
           <a className="brand-logo" href={`/${lang === "en" ? "?lang=en" : ""}`} aria-label="BuildFi">BuildFi</a>
-          <div className="seg">
-            <button type="button" className={lang === "fr" ? "on" : ""} onClick={() => setLang("fr")}>FR</button>
-            <button type="button" className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>EN</button>
+          <div className="hdr-tools">
+            <button
+              type="button"
+              className="theme-btn"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label={theme === "dark"
+                ? (lang === "fr" ? "Passer au thème clair" : "Switch to light theme")
+                : (lang === "fr" ? "Passer au thème sombre" : "Switch to dark theme")}
+            >
+              {theme === "dark" ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+                </svg>
+              )}
+            </button>
+            <div className="seg">
+              <button type="button" className={lang === "fr" ? "on" : ""} onClick={() => setLang("fr")}>FR</button>
+              <button type="button" className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>EN</button>
+            </div>
           </div>
         </header>
 

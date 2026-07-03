@@ -77,10 +77,10 @@ console.log("Part 3 — corpus-30 golden pass");
 // this blocker until the engine fix lands (then remove them from this list —
 // the test will fail loudly either way if reality changes).
 const KNOWN_ENGINE_BUGS: Record<string, string> = {
-  // 2026-07-02: TFSA phantom-inflow / GIS-above-cap defect in the melt/settle
-  // loop — median wealth 17× a never-drawn portfolio. Remove after engine fix.
-  gis_on_en: "C6_implausible_growth",
-  gis_qc_fr: "C6_implausible_growth",
+  // (empty — the 2026-07-02 GIS nominal/real income-test defect was fixed in
+  // the engine, and the surplus-reinvestment inflow is now emitted as
+  // medRevData.reinvest, so C6 passes on true data. History: gis_on_en /
+  // gis_qc_fr were quarantined here on C6_implausible_growth.)
 };
 const BASE = path.resolve(__dirname, "../planner/report/realai/corpus-30");
 const payloadDir = path.join(BASE, "payload");

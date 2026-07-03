@@ -1,33 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 /* ───────────────────────────────────────────────────────────────────
-   Bilan 360 wizard — ported from planner/planner_longform.html so the
-   purchase funnel reads as the Planner, not an app. Everything is scoped
-   under `.bf-wiz` so it can't leak into the rest of the Next app. Dark
-   navy + gold is the default (the longform/Planner look); a light theme
-   is available via .bf-wiz[data-theme="light"].
+   Bilan 360 wizard — longform layout on the shared Product palette
+   (lib/design/product.tokens.ts: PRODUCT_DARK / PRODUCT_LIGHT + brand
+   gold). Everything is scoped under `.bf-wiz` so it can't leak into the
+   rest of the Next app. Dark is the default; the light theme activates
+   via .bf-wiz[data-theme="light"], toggled in the header and persisted
+   under the portfolio-wide `buildfi_theme` localStorage key.
    ─────────────────────────────────────────────────────────────────── */
 
 .bf-wiz {
-  --bg:            #0e1420;
-  --bg-soft:       #121a2a;
-  --surface:       #172033;
-  --surface-2:     #1e2940;
-  --surface-3:     #293552;
-  --border:        #2d3a56;
-  --border-soft:   #24304a;
-  --text:          #e8ecf5;
-  --text-soft:     #b4becf;
-  --text-dim:      #7a8499;
-  --text-muted:    #505a70;
+  /* Product system palette — keep in sync with lib/design/product.tokens.ts
+     (PRODUCT_DARK / PRODUCT_LIGHT / BRAND / SEMANTIC). */
+  --bg:            #0f1520;
+  --bg-soft:       #151c28;
+  --surface:       #181f2d;
+  --surface-2:     #20293a;
+  --surface-3:     #283246;
+  --border:        #364259;
+  --border-soft:   #2f3a50;
+  --text:          #edf2fb;
+  --text-soft:     #98a6c2;
+  --text-dim:      #7c89a4;
+  --text-muted:    #5f6b87;
   --accent:        #c4944a;
-  --accent-soft:   #c4944a1f;
-  --accent-ring:   #c4944a55;
-  --accent-strong: #d9a820;
+  --accent-soft:   rgba(196,148,74,.12);
+  --accent-ring:   rgba(196,148,74,.33);
+  --accent-strong: #d4a55e;
   --blue:          #5090c8;
-  --green:         #2a8c46;
-  --red:           #d04848;
-  --orange:        #d48820;
+  --green:         #69be81;
+  --red:           #d87373;
+  --orange:        #d88a42;
   --teal:          #48b8a8;
   --purple:        #8468c0;
 
@@ -60,7 +63,7 @@
 
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(196,154,26,0.04), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(196,148,74,0.05), transparent 60%),
     radial-gradient(ellipse 60% 40% at 100% 0%, rgba(80,144,200,0.05), transparent 55%),
     var(--bg);
   color: var(--text);
@@ -72,29 +75,30 @@
   transition: background-color 200ms ease, color 200ms ease;
 }
 .bf-wiz[data-theme="light"] {
-  --bg:            #f7f8fb;
-  --bg-soft:       #eef1f6;
+  --bg:            #f5f6fa;
+  --bg-soft:       #edf1f8;
   --surface:       #ffffff;
-  --surface-2:     #f0f3f8;
-  --surface-3:     #e3e8f0;
-  --border:        #cdd4e0;
-  --border-soft:   #dfe3ec;
-  --text:          #0e1420;
-  --text-soft:     #374151;
-  --text-dim:      #5f6a7d;
-  --text-muted:    #8690a3;
-  --accent-soft:   #c4944a1a;
-  --shadow-sm: 0 1px 2px rgba(17,24,39,0.08);
-  --shadow-md: 0 4px 12px rgba(17,24,39,0.1);
-  --shadow-lg: 0 12px 28px rgba(17,24,39,0.18);
+  --surface-2:     #f3f6fb;
+  --surface-3:     #e9eef6;
+  --border:        #d7deeb;
+  --border-soft:   #e0e6f0;
+  --text:          #182236;
+  --text-soft:     #46516b;
+  --text-dim:      #5f6b87;
+  --text-muted:    #7d889e;
+  --accent-soft:   rgba(196,148,74,.10);
+  --blue:          #3b79b6;
+  --green:         #2f8a4a;
+  --red:           #b93f43;
+  --orange:        #b5772f;
+  --shadow-sm: 0 1px 2px rgba(20,30,50,0.06);
+  --shadow-md: 0 4px 12px rgba(20,30,50,0.08);
+  --shadow-lg: 0 12px 26px rgba(20,30,50,0.10);
 }
 
 .bf-wiz *, .bf-wiz *::before, .bf-wiz *::after { box-sizing: border-box; }
 .bf-wiz [hidden] { display: none !important; }
 .bf-wiz ::selection { background: var(--accent-ring); color: var(--text); }
-.bf-wiz[data-theme="light"] .btn-primary,
-.bf-wiz[data-theme="light"] .pill.on,
-.bf-wiz[data-theme="light"] .wiz-cta { color: #0e1420; }
 
 /* ── Layout ── */
 .bf-wiz .wiz-shell { max-width: 760px; margin: 0 auto; padding: 28px 20px 100px; }
@@ -126,8 +130,18 @@
   cursor: pointer; border-radius: 999px; letter-spacing: .04em;
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
-.bf-wiz .seg button.on { background: var(--accent); color: #0e1420; }
+.bf-wiz .seg button.on { background: var(--accent); color: #fff; }
 .bf-wiz .seg button:not(.on):hover { color: var(--text); }
+.bf-wiz .hdr-tools { display: flex; align-items: center; gap: 10px; }
+.bf-wiz .theme-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-soft); cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.bf-wiz .theme-btn:hover { color: var(--accent); border-color: var(--accent); }
+.bf-wiz .theme-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ── Step intro / titles ── */
 .bf-wiz .eyebrow {
@@ -217,7 +231,7 @@
 }
 .bf-wiz .pill:hover { border-color: var(--text-dim); color: var(--text); }
 .bf-wiz .pill:active { transform: translateY(1px); }
-.bf-wiz .pill.on { background: linear-gradient(180deg, var(--accent-strong), var(--accent)); color: #0e1420; border-color: var(--accent); font-weight: 700; box-shadow: 0 2px 8px rgba(196,154,26,0.28); }
+.bf-wiz .pill.on { background: linear-gradient(180deg, var(--accent-strong), var(--accent)); color: #fff; border-color: var(--accent); font-weight: 700; box-shadow: 0 2px 8px rgba(196,148,74,0.28); }
 .bf-wiz .pill .pill-desc { display: block; font-size: 10px; font-weight: 400; opacity: 0.82; margin-top: 3px; }
 .bf-wiz .pill.on .pill-desc { opacity: 0.72; }
 
@@ -247,8 +261,8 @@
 /* ── Tooltips ── */
 .bf-wiz .tip-wrap { position: relative; display: inline-flex; }
 .bf-wiz .tip-trigger { width: 16px; height: 16px; border-radius: 50%; background: var(--surface-3); color: var(--text-dim); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; cursor: help; font-style: italic; font-family: var(--mono); transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
-.bf-wiz .tip-trigger:hover { background: var(--accent); color: #0e1420; transform: scale(1.1); }
-.bf-wiz .tip-body { position: absolute; left: 22px; top: -6px; background: #0a0f1a; color: #eceff6; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 13px; font-size: var(--fs-xs); line-height: 1.55; width: 260px; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(-4px) scale(0.98); transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); box-shadow: var(--shadow-lg); }
+.bf-wiz .tip-trigger:hover { background: var(--accent); color: #fff; transform: scale(1.1); }
+.bf-wiz .tip-body { position: absolute; left: 22px; top: -6px; background: #121927; color: #edf2fb; border: 1px solid #364259; border-radius: var(--radius-md); padding: 10px 13px; font-size: var(--fs-xs); line-height: 1.55; width: 260px; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(-4px) scale(0.98); transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); box-shadow: var(--shadow-lg); }
 .bf-wiz .tip-body strong { color: #fff; }
 .bf-wiz .tip-wrap:hover .tip-body, .bf-wiz .tip-trigger:focus + .tip-body { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
 @media (max-width: 720px) { .bf-wiz .tip-body { width: min(78vw, 260px); } }
@@ -268,13 +282,13 @@
 .bf-wiz .btn-link:hover { color: var(--text); }
 .bf-wiz .wiz-cta {
   flex: 1; background: linear-gradient(180deg, var(--accent-strong), var(--accent));
-  color: #0e1420; border: none; border-radius: 999px; padding: 14px 22px;
+  color: #fff; border: none; border-radius: 999px; padding: 14px 22px;
   font-family: inherit; font-size: var(--fs-lg); font-weight: 700; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 6px 18px rgba(196,154,26,0.30);
+  box-shadow: 0 6px 18px rgba(196,148,74,0.30);
   transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
 }
-.bf-wiz .wiz-cta:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(196,154,26,0.40); }
+.bf-wiz .wiz-cta:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(196,148,74,0.40); }
 .bf-wiz .wiz-cta:active:not(:disabled) { transform: translateY(0); }
 .bf-wiz .wiz-cta:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; filter: grayscale(.35); }
 

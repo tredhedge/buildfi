@@ -84,8 +84,17 @@ function audit(pack) {
   var findings = [];
 
   // 1) Percentage contradictions
+  // Scenario-scoped values are the SAME concept under a DIFFERENT scenario
+  // (2008 crash, stagflation, longevity, prolonged bear, CPP-timing, strategy
+  // what-ifs) — a legitimate multi-value family, not a contradiction. Without
+  // this exemption the baseline success rate (90%) and the crash-stress rate
+  // (76%) in the same report false-block as "conflicting values" (2026-07-02,
+  // hnw_couple_fr). Genuine contradictions (two BASE values differing) still
+  // land in the same pool and still block.
+  var SCENARIO_CTX = /(2008|krach|crash|stagflation|baissier|bear|long[ée]vit[ée]|longevity|sc[ée]nario|scenario|stress|choc|shock|passerait|glisserait|chuterait|remonterait|would (drop|fall|slip|rise|climb)|falls? to|drops? to|rrq [àa] \d{2}|cpp at \d{2}|[àa] 60\b|[àa] 70\b|at 60\b|at 70\b|strat[ée]gie|strategy)/i;
   var byConcept = {};
   pack.percentages.forEach(function(p) {
+    if (SCENARIO_CTX.test(p.context)) return;
     var concept = _classify(p.context);
     if (!concept) return;
     if (!byConcept[concept]) byConcept[concept] = [];

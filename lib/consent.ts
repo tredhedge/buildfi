@@ -16,10 +16,11 @@ import { createHash } from "crypto";
 import { Redis } from "@upstash/redis";
 
 // ── Policy versioning ─────────────────────────────────────────────────
-// Bump CURRENT_POLICY_VERSION whenever /confidentialite content changes
-// in a way that affects what users consented to (data categories, sub-
-// processors, retention, rights). Format: YYYY-MM-DD-vN.
-export const CURRENT_POLICY_VERSION = "2026-07-02-v2";
+// The version constant lives in lib/consent-version.ts (client-safe, no
+// crypto/Redis imports) so checkout pages import the exact value the
+// server enforces. Re-exported here for existing server-side imports.
+export { CURRENT_POLICY_VERSION } from "./consent-version";
+import { CURRENT_POLICY_VERSION } from "./consent-version";
 
 // ── Storage ───────────────────────────────────────────────────────────
 const CONSENT_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 days

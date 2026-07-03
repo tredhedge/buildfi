@@ -92,7 +92,7 @@ process.env.KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN || "stub";
 console.log("=== TEST 1+2: Consent validation (pure function) ===");
 // Re-implement validateConsentPayload here in pure JS to test in isolation
 // from TS toolchain. This mirrors lib/consent.ts:validateConsentPayload.
-const CURRENT_POLICY_VERSION = "2026-04-26-v1";
+const CURRENT_POLICY_VERSION = "2026-07-02-v2";
 
 function validateConsentPayload(raw) {
   if (!raw || typeof raw !== "object") {
@@ -117,13 +117,13 @@ function validateConsentPayload(raw) {
   return { policyVersion: c.policyVersion, acceptedAt: c.acceptedAt };
 }
 
-// Verify the in-test version matches what lib/consent.ts ships, otherwise
-// our coverage is fictional.
+// Verify the in-test version matches what lib/consent-version.ts ships,
+// otherwise our coverage is fictional.
 {
-  const consentTs = readFileSync(resolve(ROOT, "lib/consent.ts"), "utf8");
+  const consentTs = readFileSync(resolve(ROOT, "lib/consent-version.ts"), "utf8");
   const m = consentTs.match(/CURRENT_POLICY_VERSION\s*=\s*"([^"]+)"/);
   check(
-    "test setup: in-test policy version matches lib/consent.ts",
+    "test setup: in-test policy version matches lib/consent-version.ts",
     !!m && m[1] === CURRENT_POLICY_VERSION,
     m ? `lib says ${m[1]}, test says ${CURRENT_POLICY_VERSION}` : "no version found in lib"
   );

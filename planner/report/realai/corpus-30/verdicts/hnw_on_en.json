@@ -4,7 +4,7 @@
   "phase": "ACCUM",
   "band": "sound",
   "grade": "C+",
-  "successPct": 62,
+  "successPct": 61,
   "model": {
     "valid": true,
     "problems": []
@@ -26,7 +26,7 @@
     "expected": 29,
     "emptySlots": 1
   },
-  "htmlBytes": 64019,
+  "htmlBytes": 63627,
   "lab": {
     "canShip": true,
     "blockerCount": 0,
