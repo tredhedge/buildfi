@@ -258,16 +258,10 @@ console.log("\n=== TEST 4: Webhook audit log PII scrub ===");
 
   // Bonus: AI prompts contain no '@' (PII audit gate 4.3)
   const aiSrc1 = readFileSync(resolve(ROOT, "lib/ai-prompt-360.ts"), "utf8");
-  const aiSrc2 = readFileSync(resolve(ROOT, "lib/ai-prompt-expert.ts"), "utf8");
   check(
     "bonus: lib/ai-prompt-360.ts contains no '@' (no email leaks into prompts)",
     !aiSrc1.includes("@"),
     "found '@' in ai-prompt-360.ts"
-  );
-  check(
-    "bonus: lib/ai-prompt-expert.ts contains no '@' (no email leaks into prompts)",
-    !aiSrc2.includes("@"),
-    "found '@' in ai-prompt-expert.ts"
   );
 }
 

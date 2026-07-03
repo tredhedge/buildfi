@@ -69,7 +69,6 @@ const EXEMPT_LINE_PATTERNS = [
 // detection patterns / soft-rewrite maps / AI-prompt negative lists, so they
 // legitimately contain the banned strings as code rather than advisory copy.
 const EXEMPT_FILE_SUFFIXES = [
-  "ai-prompt-expert.ts",
   "ai-prompt-inter.ts",
   "ai-prompt-decum.ts",
   "ai-constants.ts",

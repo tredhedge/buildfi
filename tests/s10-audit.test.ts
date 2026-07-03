@@ -7,7 +7,6 @@ import { runMC, calcTax } from "../lib/engine";
 import { translateToMCExpert } from "../lib/quiz-translator-expert";
 import { translateBilan360 } from "../lib/quiz-translator-360";
 import { determinePhase, extractReportData360 } from "../lib/report-html-360";
-import { extractReportDataExpert } from "../lib/report-html-expert";
 import {
   gradeFromSuccess,
   formatMCResults,
@@ -188,36 +187,7 @@ console.log("\n=== 4. Report generation (3 tiers) ===");
   }
 }
 
-// 4c. Expert
-{
-  const expertQuiz = { age: 42, retAge: 60, sex: "M", prov: "QC", income: 80000,
-    couple: "no", sources: ["employed", "ccpc"],
-    rrsp: 30000, tfsa: 50000, nr: 20000, monthlyContrib: 500,
-    bizRevenue: 200000, bizExpenses: 50000, bizBNR: 350000,
-    bizRemun: "mix", bizSalaryPct: 50, bizGrowth: 3,
-    lifestyle: "active", risk: "balanced",
-    parttime: "no", worries: ["tax"],
-    objective: "optimize", confidence: 4, decaissement: "meltdown",
-    homeowner: true, homeValue: 550000, mortgage: 200000, mortgageAmort: 18,
-    hasRental: true, rentalValue: 300000, rentalMortgage: 150000,
-    rentalIncome: 24000, rentalExpenses: 8000, rentalVacancy: 5,
-    debts: [{ type: "loc", amount: 15000, rate: 7.5, minPayment: 200 }],
-    sophistication: "personnalise" };
-  try {
-    const { mcParams } = translateToMCExpert(expertQuiz);
-    const mc = runMC(mcParams, 1000) as Record<string, any>;
-    check("[Expert] MC ok", !!mc);
-    const D = extractReportDataExpert(mc, mcParams);
-    check("[Expert] D has successPct", typeof D.successPct === "number");
-    check("[Expert] D has grade", typeof D.grade === "string");
-    const compact = formatMCCompact(mc);
-    check("[Expert] compact has grade", typeof compact.grade === "string");
-    console.log(`  OK   [Expert] succ=${(mc.succ * 100).toFixed(1)}%`);
-  } catch (err) {
-    console.error("  CRASH [Expert]", err);
-    fail++;
-  }
-}
+
 
 // ── 5. API helpers ────────────────────────────────────────────
 
@@ -308,7 +278,6 @@ const requiredFiles = [
   "lib/tracking.ts",
   "lib/email-expert.ts",
   "lib/report-html-360.js",
-  "lib/report-html-expert.ts",
   "lib/quiz-translator-360.ts",
   "lib/quiz-translator-expert.ts",
 ];
