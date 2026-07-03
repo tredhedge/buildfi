@@ -107,6 +107,23 @@ export const metadata: Metadata = {
   // },
 };
 
+// Organization JSON-LD (T6) — global on every React page. The static landing
+// (public/index.html) carries its own copy since it bypasses this layout.
+const LD_ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "BuildFi",
+  legalName: "BuildFi Technologies inc.",
+  url: "https://www.buildfi.ca",
+  logo: "https://www.buildfi.ca/icon512.png",
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "support@buildfi.ca",
+    contactType: "customer support",
+    availableLanguage: ["fr", "en"],
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -117,6 +134,10 @@ export default function RootLayout({
       <body
         className={`${dmSans.variable} ${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(LD_ORGANIZATION) }}
+        />
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>

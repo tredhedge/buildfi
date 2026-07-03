@@ -22,6 +22,109 @@
 <meta name="google-site-verification" content="[À FOURNIR — Maitre]">
 <meta name="msvalidate.01" content="[À FOURNIR — Maitre]">
 -->
+<!-- JSON-LD (T6). Organization + SoftwareApplication (prix 2-SKU actuels) +
+     FAQPage (miroir exact des 8 Q/R de la section #faq — si la FAQ change,
+     mettre à jour ce bloc en même temps). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "BuildFi",
+  "legalName": "BuildFi Technologies inc.",
+  "url": "https://www.buildfi.ca",
+  "logo": "https://www.buildfi.ca/icon512.png",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "support@buildfi.ca",
+    "contactType": "customer support",
+    "availableLanguage": ["fr", "en"]
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "BuildFi",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "url": "https://www.buildfi.ca/",
+  "inLanguage": ["fr-CA", "en-CA"],
+  "description": "Rapport de retraite et simulateur Monte Carlo bilingues (FR/EN). Fiscalité canadienne 2026, 13 provinces et territoires.",
+  "provider": { "@type": "Organization", "name": "BuildFi", "url": "https://www.buildfi.ca" },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Bilan 360",
+      "price": "29.99",
+      "priceCurrency": "CAD",
+      "url": "https://www.buildfi.ca/wizard"
+    },
+    {
+      "@type": "Offer",
+      "name": "Planner",
+      "price": "69.99",
+      "priceCurrency": "CAD",
+      "url": "https://www.buildfi.ca/acheter-planner"
+    },
+    {
+      "@type": "Offer",
+      "name": "Rapports IA supplémentaires (+4)",
+      "price": "19.99",
+      "priceCurrency": "CAD"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "fr-CA",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Est-ce un conseil financier personnalisé ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Non. BuildFi fournit des projections basées sur vos données et des hypothèses de marché. Ce n’est pas un conseil personnalisé au sens de la Loi sur les valeurs mobilières. Pour une recommandation officielle, consultez un planificateur financier (Pl. Fin.)." }
+    },
+    {
+      "@type": "Question",
+      "name": "C’est pour qui ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Pour quiconque veut planifier sa retraite : en couple ou seul, avec ou sans société, propriétaire ou locataire, que la retraite soit dans 5 ans ou dans 25. Si vous débutez votre carrière, nos Guides gratuits 101 et 201 sont un meilleur point de départ." }
+    },
+    {
+      "@type": "Question",
+      "name": "Comment je récupère mon rapport après l’achat ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Votre rapport vous est livré par un lien unique (magic link) à votre adresse courriel, immédiatement après le paiement. Il reste accessible à vie : vous pouvez le rouvrir, l’imprimer en PDF, ou le repartager. Aucun compte à créer, aucun mot de passe à retenir." }
+    },
+    {
+      "@type": "Question",
+      "name": "Mes données sont-elles protégées ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Oui. Les simulations tournent côté serveur BuildFi avec vos paramètres, le résultat est encrypté et livré via lien unique. Nous ne vendons ni ne partageons vos données." }
+    },
+    {
+      "@type": "Question",
+      "name": "Que se passe-t-il si je vis plus de 95 ans ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Le moteur utilise la mortalité stochastique (CPM 2023) jusqu’à 105 ans. Votre rapport inclut un test de stress « longévité extrême » qui évalue votre plan si vous viviez bien au-delà de la moyenne." }
+    },
+    {
+      "@type": "Question",
+      "name": "Différence entre Bilan et Planner ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Le Bilan 360 est un dossier complet fait pour vous : structure adaptée à votre profil, mini-outils intégrés, narration IA, à un moment précis. Le Planner est le simulateur que vous pilotez : 190+ variables, scénarios illimités, sauvegarde, et 5 rapports inclus. Le Planner comprend tout le Bilan." }
+    },
+    {
+      "@type": "Question",
+      "name": "Et si mes chiffres changent ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Le Bilan est une photo, à un moment précis. Si votre situation évolue — nouvel emploi, héritage, vente d’une propriété — le Planner est fait pour ça : vous ajustez et générez un nouveau rapport quand vous le souhaitez (5 inclus, +4 pour 19,99 $)." }
+    },
+    {
+      "@type": "Question",
+      "name": "Pourquoi 29,99 $ et non 5 $ ou 200 $ ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Des évaluations équivalentes en institution ou en cabinet coûtent de 500 $ à 2 000 $. Les robots-conseillers ne produisent pas ce type de plan. BuildFi est conçu pour rester accessible — un seul paiement, pas d’abonnement." }
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
