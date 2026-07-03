@@ -258,7 +258,6 @@ const requiredFiles = [
   "public/conditions.html",
   "public/confidentialite.html",
   "public/avis-legal.html",
-  "public/quiz-360.html",
   "public/quiz-expert.html",
   "app/api/health/route.ts",
   "app/api/simulate/route.ts",
