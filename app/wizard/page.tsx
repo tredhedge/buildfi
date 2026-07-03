@@ -780,14 +780,21 @@ function WizardInner() {
         if (key.startsWith("__")) continue; // internal (email, terms)
         if (activeIds.has(key)) wizardAnswers[key] = answers[key];
       }
-      const betaCode = typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("beta") || undefined) : undefined;
+      const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const betaCode = qs?.get("beta") || undefined;
+      // Second Bilan 360 at 50% off (SECOND50): merci/feedback pages link here with
+      // ?second=1. The discount is a distinct checkout type gated server-side on the
+      // customer having rated their first report (couponUnlocked). Replaces the retired
+      // quiz-360.html path, which ignored ?second=1 and silently charged full price.
+      const isSecond = qs?.get("second") === "1";
       const resp = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: answers.__email.trim(),
-          type: "report",
-          tier: "bilan360",
+          ...(isSecond
+            ? { type: "second", originalTier: "bilan360" }
+            : { type: "report", tier: "bilan360" }),
           quizAnswers: wizardAnswers,
           lang,
           termsAccepted: true,
@@ -800,7 +807,17 @@ function WizardInner() {
       });
       const data = await resp.json();
       if (!resp.ok || !data.url) {
-        setError(data.error || t.errorGeneric);
+        // Second-report discount not yet unlocked → the customer must rate their
+        // first report. Surface the bilingual server message and route to feedback.
+        if (data.error === "second_report_not_unlocked") {
+          setError(data.message || t.errorGeneric);
+          if (data.feedbackToken) {
+            window.location.href = `/feedback/${data.feedbackToken}`;
+            return;
+          }
+        } else {
+          setError(data.error || t.errorGeneric);
+        }
         setSubmitting(false);
         return;
       }

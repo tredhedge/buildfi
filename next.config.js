@@ -30,6 +30,10 @@ const nextConfig = {
       { source: '/quiz-expert.html', destination: '/acheter-planner', permanent: true },
       { source: '/expert-landing.html', destination: '/acheter-planner', permanent: true },
 
+      // Retired Bilan 360 quiz → the adaptive Wizard. The wizard now handles the
+      // ?second= second-Bilan discount flow the old quiz-360.html ignored.
+      { source: '/quiz-360.html', destination: '/wizard', permanent: true },
+
       // Laboratoire naming → Planner
       { source: '/laboratoire', destination: '/acheter-planner', permanent: true },
 

@@ -355,7 +355,7 @@ function ConfirmationContent() {
                   : "Your 2nd assessment is automatically 50% off."}
               </div>
               <a
-                href={`/quiz-360.html?lang=${fr ? "fr" : "en"}&second=1`}
+                href={`/wizard?lang=${fr ? "fr" : "en"}&second=1`}
                 style={{
                   display: "inline-block", background: GOLD, color: "#fff",
                   padding: "9px 20px", borderRadius: 8, textDecoration: "none",
