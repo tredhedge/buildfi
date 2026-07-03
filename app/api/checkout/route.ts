@@ -44,14 +44,21 @@ const RL_WINDOW_SEC = 15 * 60;
 const RL_MAX = 10;
 
 async function isCheckoutRateLimited(ip: string): Promise<boolean> {
-  const key = `ratelimit:checkout:${ip}`;
-  const now = Date.now();
-  const timestamps: number[] = (await redis.get<number[]>(key)) || [];
-  const recent = timestamps.filter((t) => now - t < RL_WINDOW_SEC * 1000);
-  if (recent.length >= RL_MAX) return true;
-  recent.push(now);
-  await redis.set(key, recent, { ex: RL_WINDOW_SEC });
-  return false;
+  // Fail-open: a KV outage must not hard-500 checkout at the first step.
+  // (Consent recording below still fails closed, as Loi 25 requires.)
+  try {
+    const key = `ratelimit:checkout:${ip}`;
+    const now = Date.now();
+    const timestamps: number[] = (await redis.get<number[]>(key)) || [];
+    const recent = timestamps.filter((t) => now - t < RL_WINDOW_SEC * 1000);
+    if (recent.length >= RL_MAX) return true;
+    recent.push(now);
+    await redis.set(key, recent, { ex: RL_WINDOW_SEC });
+    return false;
+  } catch (e) {
+    console.error("[checkout] rate-limit KV unavailable, failing open:", e);
+    return false;
+  }
 }
 
 // Stripe metadata values have a 500-char limit per key.
@@ -394,6 +401,7 @@ export async function POST(req: NextRequest) {
 
     // Discount priority: beta (free) > upgrade > referral > launch promo
     // Stripe only allows one of discounts OR allow_promotion_codes per session
+    let launchPromoApplied = false;
     if (betaCoupon) {
       checkoutParams.discounts = [{ coupon: betaCoupon }];
     } else if (body.upgradeFrom === "essentiel" || body.upgradeFrom === "intermediaire") {
@@ -415,9 +423,25 @@ export async function POST(req: NextRequest) {
       // Launch promo — auto-applied for all tiers including Décaissement
       // To end promo: delete or deactivate LAUNCH50 coupon in Stripe Dashboard
       checkoutParams.discounts = [{ coupon: "LAUNCH50" }];
+      launchPromoApplied = true;
     }
 
-    const session = await stripe.checkout.sessions.create(checkoutParams);
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create(checkoutParams);
+    } catch (err) {
+      // The launch promo is best-effort: if LAUNCH50 is deleted, deactivated,
+      // or maxed out, retry at full price (the documented way to end the promo)
+      // instead of hard-failing every checkout. Entitled discounts (beta 100%,
+      // upgrade, referral) still fail closed — never silently charge more.
+      const couponFailed =
+        err instanceof Stripe.errors.StripeInvalidRequestError &&
+        /coupon/i.test(err.message);
+      if (!launchPromoApplied || !couponFailed) throw err;
+      console.error("[checkout] LAUNCH50 unusable, retrying at full price:", err.message);
+      delete checkoutParams.discounts;
+      session = await stripe.checkout.sessions.create(checkoutParams);
+    }
     return NextResponse.json({ url: session.url });
   } catch (err: unknown) {
     console.error("Checkout error:", err);
