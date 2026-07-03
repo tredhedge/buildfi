@@ -25,8 +25,8 @@
     FED_BRACKETS: [58523, 117045, 181440, 258482],
     FED_RATES: [0.14, 0.205, 0.26, 0.29, 0.33],
     FED_PERSONAL: 16452,
-    FED_AGE_AMT: 8790,
-    FED_AGE_THRESH: 44325,
+    FED_AGE_AMT: 9209,   // 2026 (audit 2.13; was 8790=2024)
+    FED_AGE_THRESH: 46433, // 2026 (audit 2.13; was 44325=2024)
     FED_CREDIT_RATE: 0.15,
     FED_AGE_CLAWBACK_RATE: 0.15,
     PENSION_CREDIT_MAX: 2000,
@@ -40,21 +40,21 @@
       QC: { b: [54345, 108730, 132245], r: [0.14, 0.19, 0.24, 0.2575], pd: 18952, abate: 0.835, eligDivCr: 0.1118, nonEligDivCr: 0.039362, ageAmt: 3903, ageThresh: 0, penAmt: 2918 },
       ON: { b: [53891, 107785, 150000, 220000], r: [0.0505, 0.0915, 0.1116, 0.1216, 0.1316], pd: 12091, abate: 1, eligDivCr: 0.10, nonEligDivCr: 0.029863, ageAmt: 5286, ageThresh: 42335, penAmt: 1580 },
       BC: { b: [49159, 98320, 112883, 137073, 185854, 259197], r: [0.0506, 0.077, 0.105, 0.1229, 0.147, 0.168, 0.205], pd: 12901, abate: 1, eligDivCr: 0.12, nonEligDivCr: 0.0196, ageAmt: 5766, ageThresh: 42660, penAmt: 1000 },
-      AB: { b: [154259, 185203, 246938, 370220], r: [0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218, ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
+      AB: { b: [60000, 154259, 185203, 246938, 370220], r: [0.08, 0.1, 0.12, 0.13, 0.14, 0.15], pd: 22769, abate: 1, eligDivCr: 0.0812, nonEligDivCr: 0.0218, ageAmt: 5553, ageThresh: 43906, penAmt: 1491 },
       SK: { b: [54532, 155805], r: [0.105, 0.125, 0.145], pd: 20381, abate: 1, eligDivCr: 0.11, nonEligDivCr: 0.02105, ageAmt: 5518, ageThresh: 0, penAmt: 1000 },
       MB: { b: [47000, 100000], r: [0.108, 0.1275, 0.174], pd: 15780, abate: 1, eligDivCr: 0.08, nonEligDivCr: 0.007835, ageAmt: 3728, ageThresh: 0, penAmt: 1000 },
       NB: { b: [51306, 102614, 190081], r: [0.094, 0.14, 0.16, 0.195], pd: 13396, abate: 1, eligDivCr: 0.14, nonEligDivCr: 0.027518, ageAmt: 5849, ageThresh: 42553, penAmt: 1000 },
-      NS: { b: [30182, 60364, 94860, 153000], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 8651, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015, ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
+      NS: { b: [30182, 60364, 94860, 153000], r: [0.0879, 0.1495, 0.1667, 0.175, 0.21], pd: 11744, abate: 1, eligDivCr: 0.0885, nonEligDivCr: 0.015, ageAmt: 4897, ageThresh: 0, penAmt: 1000 },
       PE: { b: [33538, 67079], r: [0.098, 0.138, 0.167], pd: 13865, abate: 1, eligDivCr: 0.105, nonEligDivCr: 0.013, ageAmt: 4862, ageThresh: 0, penAmt: 1000 },
       NL: { b: [44062, 88123, 157329, 220262, 281387, 562714], r: [0.087, 0.145, 0.158, 0.178, 0.198, 0.208, 0.213], pd: 11034, abate: 1, eligDivCr: 0.063, nonEligDivCr: 0.032, ageAmt: 7742, ageThresh: 39880, penAmt: 1000 },
       NT: { b: [51963, 103931, 169067], r: [0.059, 0.086, 0.122, 0.1405], pd: 17041, abate: 1, eligDivCr: 0.115, nonEligDivCr: 0.06, ageAmt: 8200, ageThresh: 0, penAmt: 1000 },
-      YT: { b: [58523, 117045, 181440, 258482, 500000], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067, ageAmt: 8790, ageThresh: 44325, penAmt: 2000 },
+      YT: { b: [58523, 117045, 181440, 258482, 500000], r: [0.064, 0.09, 0.109, 0.128, 0.15, 0.16], pd: 16452, abate: 1, eligDivCr: 0.1202, nonEligDivCr: 0.0067, ageAmt: 9209, ageThresh: 46433, penAmt: 2000 },
       NU: { b: [54333, 108668, 177231], r: [0.04, 0.07, 0.09, 0.115], pd: 18284, abate: 1, eligDivCr: 0.0551, nonEligDivCr: 0.025904, ageAmt: 14865, ageThresh: 0, penAmt: 2000 }
     },
 
-    ON_SURTAX_THR1: 4991,
+    ON_SURTAX_THR1: 5818, // 2026 ON Form 428 (audit 2.13); was 4991
     ON_SURTAX_RATE1: 0.20,
-    ON_SURTAX_THR2: 6387,
+    ON_SURTAX_THR2: 7446, // 2026 ON Form 428 (audit 2.13); was 6387
     ON_SURTAX_RATE2: 0.36,
 
     CORP_RATES: {
@@ -63,9 +63,9 @@
       BC: { small: 0.11, general: 0.27, passive: 0.5067 },
       AB: { small: 0.11, general: 0.23, passive: 0.4667 },
       SK: { small: 0.11, general: 0.27, passive: 0.5067 },
-      MB: { small: 0.11, general: 0.27, passive: 0.5067 },
+      MB: { small: 0.09, general: 0.27, passive: 0.5067 },
       NB: { small: 0.115, general: 0.29, passive: 0.5267 },
-      NS: { small: 0.115, general: 0.29, passive: 0.5267 },
+      NS: { small: 0.105, general: 0.29, passive: 0.5267 },
       PE: { small: 0.10, general: 0.31, passive: 0.5467 },
       NL: { small: 0.12, general: 0.30, passive: 0.5367 },
       NT: { small: 0.11, general: 0.265, passive: 0.5017 },

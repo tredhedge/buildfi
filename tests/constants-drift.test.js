@@ -18,6 +18,7 @@ import {
   RESP,
   CORPORATE,
   CAPITAL_GAINS,
+  PROVINCIAL,
 } from "../lib/constants-registry.ts";
 
 // CAPITAL_GAINS field naming sanity — prevents silent undefined comparisons if the
@@ -41,6 +42,7 @@ import {
   PENSION_CREDIT_MAX,
   TFSA_LIMIT_2026,
   TAX_BASE_YEAR,
+  PROV_TAX,
 } from "../lib/engine/index.js";
 
 // ── Test infra ─────────────────────────────────────────────────
@@ -243,6 +245,22 @@ assertArrayEqual(FED_BRACKETS, [...FEDERAL.brackets], "Federal brackets match");
 assertArrayEqual(FED_RATES, [...FEDERAL.rates], "Federal rates match");
 assertEqual(FED_PERSONAL, FEDERAL.personalAmount, "Federal personal amount match");
 assertEqual(PENSION_CREDIT_MAX, FEDERAL.pensionCreditMax, "Pension credit max match");
+
+// ── 2b. Provincial tables (registry ↔ engine PROV_TAX) ─────────
+// Added 2026-07-03: the registry's provincial brackets/pd/age-credit silently
+// drifted (AB 8% bracket, NS BPA, YT age, QC bracket) because nothing checked
+// them. Guard every province, field by field, against the engine SSOT.
+console.log("── Provincial (registry ↔ engine PROV_TAX) ──");
+for (const prov of Object.keys(PROVINCIAL)) {
+  const rp = PROVINCIAL[prov];
+  const ep = PROV_TAX[prov];
+  if (!ep) { errors.push({ name: `Province ${prov} in engine`, detail: "missing from PROV_TAX" }); failed++; continue; }
+  assertArrayEqual([...ep.b], [...rp.brackets], `${prov} brackets match`);
+  assertArrayEqual([...ep.r], [...rp.rates], `${prov} rates match`);
+  assertEqual(ep.pd, rp.personalAmount, `${prov} personal amount match`);
+  assertEqual(ep.ageAmt, rp.ageCreditAmount, `${prov} age-credit amount match`);
+  assertEqual(ep.ageThresh, rp.ageCreditThreshold, `${prov} age-credit threshold match`);
+}
 
 // ── 3. CPP/QPP ───────────────────────────────────────────────
 
