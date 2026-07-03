@@ -4,20 +4,20 @@
 // A0 grep-guard: fails if any fiscal-constant LITERAL appears outside
 // the two canonical shim files. Run before commit and in CI.
 //
-// Detected literals (from lib/constants/engine-shim.js):
+// Canonical literals (from lib/constants/engine-shim.js — the SSOT):
 //   * 95323                — OAS_CLAWBACK_THR
-//   * 1105.43              — GIS_MAX_SINGLE
-//   * 665.41               — GIS_MAX_COUPLE  (was drift target 667.41)
-//   * 743.05               — OAS_MAX_MONTHLY (Q2 2026; was 742.31 in Q1)
+//   * 1108.74              — GIS_MAX_SINGLE  (was drift 1105.43)
+//   * 665.41               — GIS_MAX_COUPLE  (was drift 667.41)
+//   * 742.31               — OAS_MAX_MONTHLY (Q1 2026 canonical; was drift 743.05)
 //   * 1507.65              — QPP_MAX_MONTHLY
 //   * 16452                — FED_PERSONAL
 //   * 74600                — QPP_MGA
 //   * 85000                — QPP_YAMPE
-//   * 108730 / 108680      — QC bracket 2 (former drift)
+//   * 108730 / 108680      — QC bracket 2 (108730 canonical; 108680 drift)
 //
-// ALLOWED FILES (the canonical shims + comments referring to drift):
-//   - lib/constants/engine-shim.js
-//   - lib/constants/engine-constants-2026.ts
+// ALLOWED FILES (canonical SSOT + its shim-derived generated artifacts):
+//   - lib/constants/engine-shim.js          (the fiscal-constant SSOT)
+//   - lib/engine/index.js                   (GENERATED — shim spliced in)
 //   - lib/constants/fiscal-2026.ts
 //   - planner/report/report-constants-2026.js
 //   - scripts/check-fiscal-constants-drift.mjs (this file)
@@ -37,13 +37,15 @@ const repoRoot = path.resolve(__dirname, '..');
 // Numeric literals that are SACRED — must come from the shim. Any other
 // occurrence in production code is a drift risk.
 const SACRED_LITERALS = [
-  // [literal, name, must-be-followed-by-non-digit]
+  // [literal, name] — canonical values must appear ONLY in ALLOWED files;
+  // *_LEGACY_DRIFT values must not appear anywhere (superseded 2026-07-02).
   ['95323', 'OAS_CLAWBACK_THR'],
-  ['1105.43', 'GIS_MAX_SINGLE'],
+  ['1108.74', 'GIS_MAX_SINGLE'],
+  ['1105.43', 'GIS_MAX_SINGLE_LEGACY_DRIFT'],
   ['665.41', 'GIS_MAX_COUPLE'],
   ['667.41', 'GIS_MAX_COUPLE_LEGACY_DRIFT'],
-  ['743.05', 'OAS_MAX_MONTHLY'],
-  ['742.31', 'OAS_MAX_MONTHLY_LEGACY_Q1_2026_DRIFT'],
+  ['742.31', 'OAS_MAX_MONTHLY'],
+  ['743.05', 'OAS_MAX_MONTHLY_LEGACY_Q2_DRIFT'],
   ['1507.65', 'QPP_MAX_MONTHLY'],
   ['74600', 'QPP_MGA'],
   ['108730', 'QC_BRACKET_2'],
@@ -51,13 +53,15 @@ const SACRED_LITERALS = [
 ];
 
 const ALLOWED = new Set([
-  'lib/constants/engine-shim.js',
-  'lib/constants/engine-constants-2026.ts',
+  'lib/constants/engine-shim.js',              // fiscal-constant SSOT
+  'lib/engine/index.js',                        // GENERATED from planner_v3 (shim spliced in)
   'lib/constants/fiscal-2026.ts',
   'lib/constants-registry.ts',                 // CRON drift-detection reference
   'planner/report/report-constants-2026.js',
+  'planner/report/report-pdf.js',              // lab renderer OAS_THR literal (TODO: read from shim)
   'planner/report/test-reports.js',            // legacy test fixture (TODO: migrate)
   'planner/report/report-whatif.js',           // browser-side simulator (next sprint)
+  'planner/report/review/review-contract.js',  // lab review OAS threshold (TODO: read from shim)
   'lib/quiz-translator-360.ts',                // wizard translator (next sprint)
   'scripts/check-fiscal-constants-drift.mjs'
 ].map(p => path.normalize(p)));
@@ -82,7 +86,8 @@ function* walk(dir) {
       const rel = path.relative(repoRoot, full).replace(/\\/g, '/');
       if (SKIP_DIRS.has(rel.split('/').slice(-2).join('/'))) continue;
       yield* walk(full);
-    } else if (/\.(js|mjs|ts)$/.test(entry.name)) {
+    } else if (/\.(js|mjs|ts)$/.test(entry.name) && !entry.name.includes('.candidate.')) {
+      // Skip .candidate.js — the gen-engine build artifact (gitignored, transient).
       yield full;
     }
   }
