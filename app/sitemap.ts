@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BLOG_PATH, getPair, getPublishedPosts, postUrl, type BlogLang } from "@/lib/blog";
 
 // Sitemap for www.buildfi.ca — generated at build (T2, SEO-STRATEGY.md).
 //
@@ -36,12 +37,44 @@ const PAGES: PublicPage[] = [
 // - /conditions, /confidentialite, /avis-legal: legal pages are the P0.7
 //   chantier (currently noindex) — that chantier owns their indexation.
 // - /guides/protection: redirects to /guides/101#protection.
-// - /blogue/*, /blog/*: added by the blog infrastructure phase.
 // - /expert, /simulateur, /admin, /merci, /acces, /feedback, /old-landing:
 //   private, parked, or legacy (robots.txt Disallow).
 
+// Blog: published posts only (drafts excluded by getPublishedPosts). The
+// /blogue and /blog indexes are listed only once at least one post is live —
+// indexing empty listing pages helps nobody.
+function blogEntries(): MetadataRoute.Sitemap {
+  const out: MetadataRoute.Sitemap = [];
+  for (const lang of ["fr", "en"] as BlogLang[]) {
+    const posts = getPublishedPosts(lang);
+    if (posts.length > 0) {
+      out.push({ url: `${BASE}${BLOG_PATH[lang]}`, lastModified: posts[0].updated ?? posts[0].date });
+    }
+    for (const p of posts) {
+      const url = postUrl(lang, p.slug);
+      const pair = getPair(p);
+      out.push({
+        url,
+        lastModified: p.updated ?? p.date,
+        ...(pair && !pair.draft
+          ? {
+              alternates: {
+                languages: {
+                  "fr-CA": lang === "fr" ? url : postUrl("fr", pair.slug),
+                  "en-CA": lang === "en" ? url : postUrl("en", pair.slug),
+                  "x-default": lang === "fr" ? url : postUrl("fr", pair.slug),
+                },
+              },
+            }
+          : {}),
+      });
+    }
+  }
+  return out;
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return PAGES.map((p) => {
+  const staticEntries: MetadataRoute.Sitemap = PAGES.map((p) => {
     const url = `${BASE}${p.path}`;
     return {
       url,
@@ -59,4 +92,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
         : {}),
     };
   });
+  return [...staticEntries, ...blogEntries()];
 }
