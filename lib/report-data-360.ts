@@ -1,5 +1,12 @@
 // /lib/report-data-360.ts
 // Short, stable data adapter for Bilan 360 report rendering.
+//
+// 2026-07-03: the deflator / real-portfolio / nearest-row helpers are imported
+// from report-facts-360.js (the number-factory SSOT) instead of being local
+// duplicates — one implementation of each, per the SSOT consolidation.
+
+// @ts-ignore — report-facts-360.js is untyped plain ESM (the .js engine SSOT layer).
+import { deflator, nearestByAge, portfolioFromRevRow } from "./report-facts-360";
 
 type AnyRec = Record<string, any>;
 
@@ -12,43 +19,10 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function realDeflator(baseAge: number, age: number, inf: number): number {
-  return 1 / Math.pow(1 + inf, Math.max(0, age - baseAge));
-}
-
 function pickPD(row: AnyRec, key: string, fallback = 0): number {
   const v = n(row?.[key], NaN);
   if (Number.isFinite(v)) return v;
   return fallback;
-}
-
-function toRealPortfolioFromMedRow(row: AnyRec, baseAge: number, inf: number): number {
-  const nominal =
-    n(row?.aRR) +
-    n(row?.aTF) +
-    n(row?.aNR) +
-    n(row?.aDC) +
-    n(row?.aPE) +
-    n(row?.aPM) +
-    n(row?.aLIRA) +
-    n(row?.aCRR) +
-    n(row?.aCTF) +
-    n(row?.aCNR);
-  return Math.round(nominal * realDeflator(baseAge, n(row?.age, baseAge), inf));
-}
-
-function nearestRowByAge(rows: AnyRec[], age: number): AnyRec | null {
-  if (!rows.length) return null;
-  let best = rows[0];
-  let bestDist = Math.abs(n(best.age) - age);
-  for (const r of rows) {
-    const d = Math.abs(n(r.age) - age);
-    if (d < bestDist) {
-      best = r;
-      bestDist = d;
-    }
-  }
-  return best;
 }
 
 function runSucc(extra: AnyRec | null | undefined): number | null {
@@ -167,13 +141,13 @@ export function buildBuildFiData(
 
   const incomeByAge = rd.map((r: AnyRec) => {
     const age = Math.round(n(r.age, baseAge));
-    const def = realDeflator(baseAge, age, inf);
+    const def = deflator(baseAge, age, inf);
     // HOUSEHOLD gov: primary + spouse (cQpp/cOas/cGis now emitted by the engine). Without
     // the spouse terms the income chart showed ~1/3 of the householded prose figure (couples).
     const govMonthly = Math.round((n(r.rrq) + n(r.psv) + n(r.gis) + n(r.pen) + n(r.cQpp) + n(r.cOas) + n(r.cGis)) * def / 12);
     const spendMonthly = Math.round(n(r.spend) * def / 12);
     const portWithdrawMonthly = Math.max(0, Math.round(n(r.ret) * def / 12));
-    const portfolio = Math.max(0, toRealPortfolioFromMedRow(r, baseAge, inf));
+    const portfolio = Math.max(0, portfolioFromRevRow(r, baseAge, inf));
     return { age, govMonthly, spendMonthly, portWithdrawMonthly, portfolio };
   });
 
@@ -184,10 +158,10 @@ export function buildBuildFiData(
   if (!milestoneAges.includes(stop)) milestoneAges.push(stop);
 
   const decumRows = milestoneAges.map((age) => {
-    const pdRow = nearestRowByAge(pD, age);
-    const revRow = nearestRowByAge(rd, age);
+    const pdRow = nearestByAge(pD, age);
+    const revRow = nearestByAge(rd, age);
     const p50 = Math.max(0, Math.round(pickPD(pdRow || {}, "rp50", pickPD(pdRow || {}, "p50", 0))));
-    const def = realDeflator(baseAge, age, inf);
+    const def = deflator(baseAge, age, inf);
     const govAnnualNom = n(revRow?.rrq) + n(revRow?.psv) + n(revRow?.gis) + n(revRow?.pen) + n(revRow?.cQpp) + n(revRow?.cOas) + n(revRow?.cGis); // household (incl. spouse)
     const govMonthly = Math.round(govAnnualNom * def / 12);
     const spendMonthly = Math.round(n(revRow?.spend) * def / 12);
@@ -206,8 +180,8 @@ export function buildBuildFiData(
     };
   });
 
-  const startPD = nearestRowByAge(pD, baseAge) || {};
-  const retPD = nearestRowByAge(pD, retAge) || startPD;
+  const startPD = nearestByAge(pD, baseAge) || {};
+  const retPD = nearestByAge(pD, retAge) || startPD;
   const p50Now = Math.max(0, Math.round(pickPD(startPD, "rp50", pickPD(startPD, "p50", n(params?.rrsp) + n(params?.tfsa) + n(params?.nr)))));
   const p50Ret = Math.max(0, Math.round(pickPD(retPD, "rp50", pickPD(retPD, "p50", p50Now))));
 
